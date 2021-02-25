@@ -61,13 +61,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.kinetics.LibraryReaction<a class="headerlink" href="#rmgpy-data-kinetics-libraryreaction" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="rmgpy.data.kinetics.LibraryReaction">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.kinetics.</code><code class="sig-name descname">LibraryReaction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">reactants</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">products</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">specific_collider</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kinetics</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">network_kinetics</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reversible</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">transition_state</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">duplicate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">degeneracy</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">pairs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">library</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">allow_pdep_route</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">elementary_high_p</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">allow_max_rate_violation</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">entry</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.data.kinetics.</span></code><code class="sig-name descname"><span class="pre">LibraryReaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific_collider</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kinetics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_kinetics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reversible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transition_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duplicate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">library</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_pdep_route</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elementary_high_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_max_rate_violation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Reaction object generated from a reaction library. In addition to the
 usual attributes, this class includes <cite>library</cite> and <cite>entry</cite> attributes to
 store the library and the entry in that library that it was created from.</p>
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.SurfaceArrhenius">
-<code class="sig-name descname">SurfaceArrhenius</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.SurfaceArrhenius" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">SurfaceArrhenius</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.SurfaceArrhenius" title="Permalink to this definition">¶</a></dt>
 <dd><p>object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -78,7 +78,7 @@ store the library and the entry in that library that it was created from.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.allow_max_rate_violation">
-<code class="sig-name descname">allow_max_rate_violation</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.allow_max_rate_violation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">allow_max_rate_violation</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.allow_max_rate_violation" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -89,7 +89,7 @@ store the library and the entry in that library that it was created from.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.allow_pdep_route">
-<code class="sig-name descname">allow_pdep_route</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.allow_pdep_route" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">allow_pdep_route</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.allow_pdep_route" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -100,14 +100,14 @@ store the library and the entry in that library that it was created from.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.calculate_coll_limit">
-<code class="sig-name descname">calculate_coll_limit</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">float temp</em>, <em class="sig-param">bool reverse=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.calculate_coll_limit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">calculate_coll_limit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">float</span> <span class="pre">temp</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">reverse=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.calculate_coll_limit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the collision limit rate in m3/mol-s for the given temperature
 implemented as recommended in Wang et al. doi 10.1016/j.combustflame.2017.08.005 (Eq. 1)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.calculate_microcanonical_rate_coefficient">
-<code class="sig-name descname">calculate_microcanonical_rate_coefficient</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray e_list</em>, <em class="sig-param">ndarray j_list</em>, <em class="sig-param">ndarray reac_dens_states</em>, <em class="sig-param">ndarray prod_dens_states=None</em>, <em class="sig-param">double T=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.calculate_microcanonical_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">calculate_microcanonical_rate_coefficient</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">j_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">reac_dens_states</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">prod_dens_states=None</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T=0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.calculate_microcanonical_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the microcanonical rate coefficient <span class="math notranslate nohighlight">\(k(E)\)</span> for the reaction
 <cite>reaction</cite> at the energies <cite>e_list</cite> in J/mol. <cite>reac_dens_states</cite> and
 <cite>prod_dens_states</cite> are the densities of states of the reactant and product
@@ -132,7 +132,7 @@ inverse Laplace transform method.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.calculate_tst_rate_coefficient">
-<code class="sig-name descname">calculate_tst_rate_coefficient</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.calculate_tst_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">calculate_tst_rate_coefficient</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.calculate_tst_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the forward rate coefficient for the reaction with
 corresponding transition state <cite>TS</cite> at temperature <cite>T</cite> in K using
 (canonical) transition state theory. The TST equation is</p>
@@ -149,12 +149,12 @@ correction.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.calculate_tst_rate_coefficients">
-<code class="sig-name descname">calculate_tst_rate_coefficients</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray Tlist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.calculate_tst_rate_coefficients" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">calculate_tst_rate_coefficients</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">Tlist</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.calculate_tst_rate_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.can_tst">
-<code class="sig-name descname">can_tst</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.can_tst" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">can_tst</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.can_tst" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the necessary parameters are available for using
 transition state theory – or the microcanonical equivalent, RRKM
 theory – to compute the rate coefficient for this reaction, or
@@ -163,7 +163,7 @@ theory – to compute the rate coefficient for this reaction, or
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.check_collision_limit_violation">
-<code class="sig-name descname">check_collision_limit_violation</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">float t_min</em>, <em class="sig-param">float t_max</em>, <em class="sig-param">float p_min</em>, <em class="sig-param">float p_max</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.check_collision_limit_violation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">check_collision_limit_violation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">float</span> <span class="pre">t_min</span></em>, <em class="sig-param"><span class="pre">float</span> <span class="pre">t_max</span></em>, <em class="sig-param"><span class="pre">float</span> <span class="pre">p_min</span></em>, <em class="sig-param"><span class="pre">float</span> <span class="pre">p_max</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.check_collision_limit_violation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Warn if a core reaction violates the collision limit rate in either the forward or reverse direction
 at the relevant extreme T/P conditions. Assuming a monotonic behaviour of the kinetics.
 Returns a list with the reaction object and the direction in which the violation was detected.</p>
@@ -171,7 +171,7 @@ Returns a list with the reaction object and the direction in which the violation
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.comment">
-<code class="sig-name descname">comment</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.comment" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">comment</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.comment" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -182,13 +182,13 @@ Returns a list with the reaction object and the direction in which the violation
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.copy">
-<code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.copy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">copy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a deep copy of the current reaction.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.degeneracy">
-<code class="sig-name descname">degeneracy</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.degeneracy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">degeneracy</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.degeneracy" title="Permalink to this definition">¶</a></dt>
 <dd><p>The reaction path degeneracy for this reaction.</p>
 <p>If the reaction has kinetics, changing the degeneracy
 will adjust the reaction rate by a ratio of the new
@@ -197,7 +197,7 @@ degeneracy to the old degeneracy.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.draw">
-<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.draw" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">draw</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.draw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a pictorial representation of the chemical reaction using the
 <code class="xref py py-mod docutils literal notranslate"><span class="pre">draw</span></code> module. Use <cite>path</cite> to specify the file to save
 the generated image to; the image type is automatically determined by
@@ -208,7 +208,7 @@ vector formats.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.duplicate">
-<code class="sig-name descname">duplicate</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.duplicate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">duplicate</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.duplicate" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -219,7 +219,7 @@ vector formats.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.elementary_high_p">
-<code class="sig-name descname">elementary_high_p</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.elementary_high_p" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">elementary_high_p</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.elementary_high_p" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -230,7 +230,7 @@ vector formats.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.ensure_species">
-<code class="sig-name descname">ensure_species</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bool reactant_resonance=False</em>, <em class="sig-param">bool product_resonance=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.ensure_species" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">ensure_species</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">reactant_resonance=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">product_resonance=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.ensure_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ensure the reaction contains species objects in its reactant and product
 attributes. If the reaction is found to hold molecule objects, it
 modifies the reactant, product and pairs to hold
@@ -242,7 +242,7 @@ resonance for reactants or products that start as Species objects.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.fix_barrier_height">
-<code class="sig-name descname">fix_barrier_height</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bool force_positive=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.fix_barrier_height" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">fix_barrier_height</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">force_positive=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.fix_barrier_height" title="Permalink to this definition">¶</a></dt>
 <dd><p>Turns the kinetics into Arrhenius (if they were ArrheniusEP)
 and ensures the activation energy is at least the endothermicity
 for endothermic reactions, and is not negative only as a result
@@ -253,14 +253,14 @@ are forced to have a non-negative barrier.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.fix_diffusion_limited_a_factor">
-<code class="sig-name descname">fix_diffusion_limited_a_factor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">T</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.fix_diffusion_limited_a_factor" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">fix_diffusion_limited_a_factor</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.fix_diffusion_limited_a_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decrease the pre-exponential factor (A) by the diffusion factor
 to account for the diffusion limit at the specified temperature.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.generate_3d_ts">
-<code class="sig-name descname">generate_3d_ts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">reactants</span></em>, <em class="sig-param"><span class="n">products</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.generate_3d_ts" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_3d_ts</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.generate_3d_ts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the 3D structure of the transition state. Called from
 model.generate_kinetics().</p>
 <p>self.reactants is a list of reactants
@@ -269,7 +269,7 @@ self.products is a list of products</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.generate_high_p_limit_kinetics">
-<code class="sig-name descname">generate_high_p_limit_kinetics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.generate_high_p_limit_kinetics" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_high_p_limit_kinetics</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.generate_high_p_limit_kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>If the LibraryReactions represented by <cite>self</cite> has pressure dependent kinetics,
 try extracting the high pressure limit rate from it.
 Used for incorporating library reactions with pressure-dependent kinetics in PDep networks.
@@ -283,7 +283,7 @@ If this method successfully generated the high pressure limit kinetics, return <
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.generate_pairs">
-<code class="sig-name descname">generate_pairs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.generate_pairs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_pairs</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.generate_pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the reactant-product pairs to use for this reaction when
 performing flux analysis. The exact procedure for doing so depends on
 the reaction type:</p>
@@ -326,43 +326,45 @@ rigorous algorithm may be needed for some cases.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.generate_reverse_rate_coefficient">
-<code class="sig-name descname">generate_reverse_rate_coefficient</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bool network_kinetics=False</em>, <em class="sig-param">Tmin=None</em>, <em class="sig-param">Tmax=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.generate_reverse_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_reverse_rate_coefficient</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">network_kinetics=False</span></em>, <em class="sig-param"><span class="pre">Tmin=None</span></em>, <em class="sig-param"><span class="pre">Tmax=None</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">surface_site_density=0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.generate_reverse_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate and return a rate coefficient model for the reverse reaction.
 Currently this only works if the <cite>kinetics</cite> attribute is one of several
 (but not necessarily all) kinetics types.</p>
+<p>If the reaction kinetics model is Sticking Coefficient, please provide a nonzero
+surface site density in <cite>mol/m^2</cite> which is required to evaluate the rate coefficient.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_enthalpies_of_reaction">
-<code class="sig-name descname">get_enthalpies_of_reaction</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray Tlist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_enthalpies_of_reaction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_enthalpies_of_reaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">Tlist</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_enthalpies_of_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpies of reaction in J/mol evaluated at temperatures
 <cite>Tlist</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_enthalpy_of_reaction">
-<code class="sig-name descname">get_enthalpy_of_reaction</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_enthalpy_of_reaction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_enthalpy_of_reaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_enthalpy_of_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy of reaction in J/mol evaluated at temperature
 <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_entropies_of_reaction">
-<code class="sig-name descname">get_entropies_of_reaction</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray Tlist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_entropies_of_reaction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_entropies_of_reaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">Tlist</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_entropies_of_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropies of reaction in J/mol*K evaluated at temperatures
 <cite>Tlist</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_entropy_of_reaction">
-<code class="sig-name descname">get_entropy_of_reaction</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_entropy_of_reaction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_entropy_of_reaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_entropy_of_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy of reaction in J/mol*K evaluated at temperature <cite>T</cite>
 in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_equilibrium_constant">
-<code class="sig-name descname">get_equilibrium_constant</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em>, <em class="sig-param">unicode type=u'Kc'</em>, <em class="sig-param">double surface_site_density=2.5e-05</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_equilibrium_constant" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_equilibrium_constant</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">type=u'Kc'</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">surface_site_density=2.5e-05</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_equilibrium_constant" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the equilibrium constant for the reaction at the specified
 temperature <cite>T</cite> in K and reference <cite>surface_site_density</cite>
 in mol/m^2 (2.5e-05 default) The <cite>type</cite> parameter lets you specify
@@ -375,7 +377,7 @@ surface species, the <cite>surface_site_density</cite> is the assumed reference.
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_equilibrium_constants">
-<code class="sig-name descname">get_equilibrium_constants</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray Tlist</em>, <em class="sig-param">unicode type=u'Kc'</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_equilibrium_constants" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_equilibrium_constants</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">Tlist</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">type=u'Kc'</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_equilibrium_constants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the equilibrium constants for the reaction at the specified
 temperatures <cite>Tlist</cite> in K. The <cite>type</cite> parameter lets you specify the
 quantities used in the equilibrium constant: <code class="docutils literal notranslate"><span class="pre">Ka</span></code> for activities,
@@ -385,21 +387,21 @@ this function currently assumes an ideal gas mixture.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_free_energies_of_reaction">
-<code class="sig-name descname">get_free_energies_of_reaction</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ndarray Tlist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_free_energies_of_reaction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_free_energies_of_reaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">Tlist</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_free_energies_of_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energies of reaction in J/mol evaluated at
 temperatures <cite>Tlist</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_free_energy_of_reaction">
-<code class="sig-name descname">get_free_energy_of_reaction</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_free_energy_of_reaction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_free_energy_of_reaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_free_energy_of_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy of reaction in J/mol evaluated at
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_mean_sigma_and_epsilon">
-<code class="sig-name descname">get_mean_sigma_and_epsilon</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bool reverse=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_mean_sigma_and_epsilon" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_mean_sigma_and_epsilon</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">reverse=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_mean_sigma_and_epsilon" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the collision diameter (sigma) using an arithmetic mean
 Calculates the well depth (epsilon) using a geometric mean
 If reverse is <code class="docutils literal notranslate"><span class="pre">False</span></code> the above is calculated for the reactants, otherwise for the products</p>
@@ -407,32 +409,34 @@ If reverse is <code class="docutils literal notranslate"><span class="pre">False
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_rate_coefficient">
-<code class="sig-name descname">get_rate_coefficient</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em>, <em class="sig-param">double P=0</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_rate_coefficient</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">P=0</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">surface_site_density=0</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the overall rate coefficient for the forward reaction at
 temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa, including any reaction
 path degeneracies.</p>
 <p>If diffusion_limiter is enabled, the reaction is in the liquid phase and we use
 a diffusion limitation to correct the rate. If not, then use the intrinsic rate
 coefficient.</p>
+<p>If the reaction has sticking coefficient kinetics, a nonzero surface site density
+in <cite>mol/m^2</cite> must be provided</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_reduced_mass">
-<code class="sig-name descname">get_reduced_mass</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bool reverse=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_reduced_mass" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_reduced_mass</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">reverse=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_reduced_mass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the reduced mass of the reactants if reverse is <code class="docutils literal notranslate"><span class="pre">False</span></code>
 Returns the reduced mass of the products if reverse is <code class="docutils literal notranslate"><span class="pre">True</span></code></p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_source">
-<code class="sig-name descname">get_source</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_source" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_source</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_source" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the database that was the source of this reaction. For a
 LibraryReaction this should be a KineticsLibrary object.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_stoichiometric_coefficient">
-<code class="sig-name descname">get_stoichiometric_coefficient</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Species spec</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_stoichiometric_coefficient" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_stoichiometric_coefficient</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Species</span> <span class="pre">spec</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_stoichiometric_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the stoichiometric coefficient of species <cite>spec</cite> in the reaction.
 The stoichiometric coefficient is increased by one for each time <cite>spec</cite>
 appears as a product and decreased by one for each time <cite>spec</cite> appears
@@ -441,7 +445,7 @@ as a reactant.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_surface_rate_coefficient">
-<code class="sig-name descname">get_surface_rate_coefficient</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em>, <em class="sig-param">double surface_site_density</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_surface_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_surface_rate_coefficient</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">surface_site_density</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_surface_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the overall surface rate coefficient for the forward reaction at
 temperature <cite>T</cite> in K with surface site density <cite>surface_site_density</cite> in mol/m2.
 Value is returned in combination of [m,mol,s]</p>
@@ -449,13 +453,13 @@ Value is returned in combination of [m,mol,s]</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.get_url">
-<code class="sig-name descname">get_url</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_url" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_url</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.get_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a URL to search for this reaction in the rmg website.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.has_template">
-<code class="sig-name descname">has_template</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list reactants</em>, <em class="sig-param">list products</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.has_template" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">has_template</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">reactants</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">products</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.has_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the reaction matches the template of <cite>reactants</cite>
 and <cite>products</cite>, which are both lists of <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code> objects, or
 <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
@@ -463,7 +467,7 @@ and <cite>products</cite>, which are both lists of <code class="xref py py-class
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.index">
-<code class="sig-name descname">index</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.index" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">index</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.index" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -474,28 +478,28 @@ and <cite>products</cite>, which are both lists of <code class="xref py py-class
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.is_association">
-<code class="sig-name descname">is_association</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_association" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">is_association</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_association" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the reaction represents an association reaction
 <span class="math notranslate nohighlight">\(\ce{A + B &lt;=&gt; C}\)</span> or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.is_balanced">
-<code class="sig-name descname">is_balanced</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_balanced" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">is_balanced</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_balanced" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the reaction has the same number of each atom on
 each side of the reaction equation, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.is_dissociation">
-<code class="sig-name descname">is_dissociation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_dissociation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">is_dissociation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_dissociation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the reaction represents a dissociation reaction
 <span class="math notranslate nohighlight">\(\ce{A &lt;=&gt; B + C}\)</span> or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.is_forward">
-<code class="sig-name descname">is_forward</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_forward" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">is_forward</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_forward" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -506,14 +510,14 @@ each side of the reaction equation, or <code class="docutils literal notranslate
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.is_isomerization">
-<code class="sig-name descname">is_isomerization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_isomerization" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">is_isomerization</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_isomerization" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the reaction represents an isomerization reaction
 <span class="math notranslate nohighlight">\(\ce{A &lt;=&gt; B}\)</span> or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.is_isomorphic">
-<code class="sig-name descname">is_isomorphic</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Reaction other</em>, <em class="sig-param">bool either_direction=True</em>, <em class="sig-param">bool check_identical=False</em>, <em class="sig-param">bool check_only_label=False</em>, <em class="sig-param">bool check_template_rxn_products=False</em>, <em class="sig-param">bool generate_initial_map=False</em>, <em class="sig-param">bool strict=True</em>, <em class="sig-param">bool save_order=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_isomorphic" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">is_isomorphic</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Reaction</span> <span class="pre">other</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">either_direction=True</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">check_identical=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">check_only_label=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">check_template_rxn_products=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">generate_initial_map=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if this reaction is the same as the <cite>other</cite> reaction,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> if they are different. The comparison involves comparing
 isomorphism of reactants and products, and doesn’t use any kinetic
@@ -537,13 +541,13 @@ ignoring molecular structure comparisons</p></li>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.is_surface_reaction">
-<code class="sig-name descname">is_surface_reaction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_surface_reaction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">is_surface_reaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_surface_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if one or more reactants or products are surface species (or surface sites)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.is_unimolecular">
-<code class="sig-name descname">is_unimolecular</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_unimolecular" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">is_unimolecular</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.is_unimolecular" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the reaction has a single molecule as either reactant or product (or both)
 <span class="math notranslate nohighlight">\(\ce{A &lt;=&gt; B + C}\)</span> or <span class="math notranslate nohighlight">\(\ce{A + B &lt;=&gt; C}\)</span> or <span class="math notranslate nohighlight">\(\ce{A &lt;=&gt; B}\)</span>,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
@@ -551,7 +555,7 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.k_effective_cache">
-<code class="sig-name descname">k_effective_cache</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.k_effective_cache" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">k_effective_cache</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.k_effective_cache" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -562,7 +566,7 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.kinetics">
-<code class="sig-name descname">kinetics</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.kinetics" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">kinetics</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.model.KineticsModel</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -573,7 +577,7 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.label">
-<code class="sig-name descname">label</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.label" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">label</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.label" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -584,7 +588,7 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.matches_species">
-<code class="sig-name descname">matches_species</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list reactants</em>, <em class="sig-param">list products=None</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.matches_species" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">matches_species</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">reactants</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">products=None</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.matches_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compares the provided reactants and products against the reactants
 and products of this reaction. Both directions are checked.</p>
 <dl class="field-list simple">
@@ -599,7 +603,7 @@ and products of this reaction. Both directions are checked.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.network_kinetics">
-<code class="sig-name descname">network_kinetics</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.network_kinetics" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">network_kinetics</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.network_kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.arrhenius.Arrhenius</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -610,7 +614,7 @@ and products of this reaction. Both directions are checked.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.pairs">
-<code class="sig-name descname">pairs</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.pairs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">pairs</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -621,7 +625,7 @@ and products of this reaction. Both directions are checked.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.products">
-<code class="sig-name descname">products</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.products" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">products</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.products" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -632,7 +636,7 @@ and products of this reaction. Both directions are checked.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.rank">
-<code class="sig-name descname">rank</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.rank" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">rank</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.rank" title="Permalink to this definition">¶</a></dt>
 <dd><p>object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -643,7 +647,7 @@ and products of this reaction. Both directions are checked.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.reactants">
-<code class="sig-name descname">reactants</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.reactants" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">reactants</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.reactants" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -654,15 +658,24 @@ and products of this reaction. Both directions are checked.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.reverse_arrhenius_rate">
-<code class="sig-name descname">reverse_arrhenius_rate</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Arrhenius k_forward</em>, <em class="sig-param">unicode reverse_units</em>, <em class="sig-param">Tmin=None</em>, <em class="sig-param">Tmax=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.reverse_arrhenius_rate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">reverse_arrhenius_rate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Arrhenius</span> <span class="pre">k_forward</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">reverse_units</span></em>, <em class="sig-param"><span class="pre">Tmin=None</span></em>, <em class="sig-param"><span class="pre">Tmax=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.reverse_arrhenius_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reverses the given k_forward, which must be an Arrhenius type.
 You must supply the correct units for the reverse rate.
 The equilibrium constant is evaluated from the current reaction instance (self).</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="rmgpy.data.kinetics.LibraryReaction.reverse_sticking_coeff_rate">
+<code class="sig-name descname"><span class="pre">reverse_sticking_coeff_rate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">StickingCoefficient</span> <span class="pre">k_forward</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">reverse_units</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">surface_site_density</span></em>, <em class="sig-param"><span class="pre">Tmin=None</span></em>, <em class="sig-param"><span class="pre">Tmax=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.reverse_sticking_coeff_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reverses the given k_forward, which must be a StickingCoefficient type.
+You must supply the correct units for the reverse rate.
+The equilibrium constant is evaluated from the current reaction instance (self).
+The surface_site_density in <cite>mol/m^2</cite> is used to evalaute the forward rate constant.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.reverse_surface_arrhenius_rate">
-<code class="sig-name descname">reverse_surface_arrhenius_rate</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">SurfaceArrhenius k_forward</em>, <em class="sig-param">unicode reverse_units</em>, <em class="sig-param">Tmin=None</em>, <em class="sig-param">Tmax=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.reverse_surface_arrhenius_rate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">reverse_surface_arrhenius_rate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">SurfaceArrhenius</span> <span class="pre">k_forward</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">reverse_units</span></em>, <em class="sig-param"><span class="pre">Tmin=None</span></em>, <em class="sig-param"><span class="pre">Tmax=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.reverse_surface_arrhenius_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reverses the given k_forward, which must be a SurfaceArrhenius type.
 You must supply the correct units for the reverse rate.
 The equilibrium constant is evaluated from the current reaction instance (self).</p>
@@ -670,7 +683,7 @@ The equilibrium constant is evaluated from the current reaction instance (self).
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.reversible">
-<code class="sig-name descname">reversible</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.reversible" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">reversible</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.reversible" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -681,7 +694,7 @@ The equilibrium constant is evaluated from the current reaction instance (self).
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.specific_collider">
-<code class="sig-name descname">specific_collider</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.specific_collider" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">specific_collider</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.specific_collider" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.species.Species</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -692,7 +705,7 @@ The equilibrium constant is evaluated from the current reaction instance (self).
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.to_cantera">
-<code class="sig-name descname">to_cantera</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">species_list</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_chemkin_identifier</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.to_cantera" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">to_cantera</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_chemkin_identifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.to_cantera" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the RMG Reaction object to a Cantera Reaction object
 with the appropriate reaction class.</p>
 <p>If use_chemkin_identifier is set to False, the species label is used
@@ -701,7 +714,7 @@ instead. Be sure that species’ labels are unique when setting it False.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.to_chemkin">
-<code class="sig-name descname">to_chemkin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">species_list</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kinetics</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.to_chemkin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">to_chemkin</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kinetics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.to_chemkin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the chemkin-formatted string for this reaction.</p>
 <p>If <cite>kinetics</cite> is set to True, the chemkin format kinetics will also
 be returned (requires the <cite>species_list</cite> to figure out third body colliders.)
@@ -710,14 +723,14 @@ Otherwise, only the reaction string will be returned.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.to_labeled_str">
-<code class="sig-name descname">to_labeled_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">use_index</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.to_labeled_str" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">to_labeled_str</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.to_labeled_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than
 the labels plus the index in parentheses</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="rmgpy.data.kinetics.LibraryReaction.transition_state">
-<code class="sig-name descname">transition_state</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.transition_state" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">transition_state</span></code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.transition_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.species.TransitionState</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -821,7 +834,7 @@ the labels plus the index in parentheses</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

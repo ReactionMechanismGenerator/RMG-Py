@@ -13,7 +13,6 @@
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -62,7 +61,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <p>This module provides methods for converting molecules between RMG, RDKit, and OpenBabel.</p>
 <dl class="py function">
 <dt id="rmgpy.molecule.converter.debug_rdkit_mol">
-<code class="sig-prename descclassname">rmgpy.molecule.converter.</code><code class="sig-name descname">debug_rdkit_mol</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rdmol</span></em>, <em class="sig-param"><span class="n">level</span><span class="o">=</span><span class="default_value">logging.INFO</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.converter.debug_rdkit_mol" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.converter.</span></code><code class="sig-name descname"><span class="pre">debug_rdkit_mol</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rdmol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">logging.INFO</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.converter.debug_rdkit_mol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Takes an rdkit molecule object and logs some debugging information
 equivalent to calling rdmol.Debug() but uses our logging framework.
 Default logging level is INFO but can be controlled with the <cite>level</cite> parameter.
@@ -71,14 +70,14 @@ Also returns the message as a string, should you want it for something.</p>
 
 <dl class="py function">
 <dt id="rmgpy.molecule.converter.from_ob_mol">
-<code class="sig-prename descclassname">rmgpy.molecule.converter.</code><code class="sig-name descname">from_ob_mol</code><span class="sig-paren">(</span><em class="sig-param">Molecule mol</em>, <em class="sig-param">obmol</em>, <em class="sig-param">bool raise_atomtype_exception=True</em><span class="sig-paren">)</span> &#x2192; Molecule<a class="headerlink" href="#rmgpy.molecule.converter.from_ob_mol" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.converter.</span></code><code class="sig-name descname"><span class="pre">from_ob_mol</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">obmol</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Molecule</span><a class="headerlink" href="#rmgpy.molecule.converter.from_ob_mol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a OpenBabel Mol object <cite>obmol</cite> to a molecular structure. Uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="rmgpy.molecule.converter.from_rdkit_mol">
-<code class="sig-prename descclassname">rmgpy.molecule.converter.</code><code class="sig-name descname">from_rdkit_mol</code><span class="sig-paren">(</span><em class="sig-param">Molecule mol</em>, <em class="sig-param">rdkitmol</em>, <em class="sig-param">bool raise_atomtype_exception=True</em><span class="sig-paren">)</span> &#x2192; Molecule<a class="headerlink" href="#rmgpy.molecule.converter.from_rdkit_mol" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.converter.</span></code><code class="sig-name descname"><span class="pre">from_rdkit_mol</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">rdkitmol</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Molecule</span><a class="headerlink" href="#rmgpy.molecule.converter.from_rdkit_mol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a RDKit Mol object <cite>rdkitmol</cite> to a molecular structure. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 This Kekulizes everything, removing all aromatic atom types.</p>
@@ -86,14 +85,14 @@ This Kekulizes everything, removing all aromatic atom types.</p>
 
 <dl class="py function">
 <dt id="rmgpy.molecule.converter.to_ob_mol">
-<code class="sig-prename descclassname">rmgpy.molecule.converter.</code><code class="sig-name descname">to_ob_mol</code><span class="sig-paren">(</span><em class="sig-param">Molecule mol</em>, <em class="sig-param">bool return_mapping=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.converter.to_ob_mol" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.converter.</span></code><code class="sig-name descname"><span class="pre">to_ob_mol</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">return_mapping=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.converter.to_ob_mol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an OpenBabel OBMol object. Uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="rmgpy.molecule.converter.to_rdkit_mol">
-<code class="sig-prename descclassname">rmgpy.molecule.converter.</code><code class="sig-name descname">to_rdkit_mol</code><span class="sig-paren">(</span><em class="sig-param">Molecule mol</em>, <em class="sig-param">bool remove_h=True</em>, <em class="sig-param">bool return_mapping=False</em>, <em class="sig-param">bool sanitize=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.converter.to_rdkit_mol" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.converter.</span></code><code class="sig-name descname"><span class="pre">to_rdkit_mol</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">remove_h=True</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">return_mapping=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">sanitize=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.converter.to_rdkit_mol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to a RDKit rdmol object. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 Perceives aromaticity and, unless remove_h==False, removes Hydrogen atoms.</p>
@@ -194,7 +193,7 @@ atoms to RDKit’s atom indices.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

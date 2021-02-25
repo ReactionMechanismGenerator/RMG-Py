@@ -13,7 +13,6 @@
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -61,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.qm.qmverifier<a class="headerlink" href="#rmgpy-qm-qmverifier" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="rmgpy.qm.qmverifier.QMVerifier">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.qm.qmverifier.</code><code class="sig-name descname">QMVerifier</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molfile</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.qm.qmverifier.</span></code><code class="sig-name descname"><span class="pre">QMVerifier</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molfile</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Verifies whether a QM job (externalized) was succesfully completed by</dt><dd><ul class="simple">
 <li><p>searching for specific keywords in the output files,</p></li>
@@ -71,7 +70,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </dl>
 <dl class="py method">
 <dt id="rmgpy.qm.qmverifier.QMVerifier.check_for_inchi_key_collision">
-<code class="sig-name descname">check_for_inchi_key_collision</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_file_inchi</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier.check_for_inchi_key_collision" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">check_for_inchi_key_collision</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_file_inchi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier.check_for_inchi_key_collision" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is designed in the case a MOPAC output file was found but the InChI found in the file did not
 correspond to the InChI of the given molecule.</p>
 <p>This could mean two things:
@@ -83,7 +82,7 @@ second line and only a part of the InChI was actually taken as the ‘whole’ I
 
 <dl class="py method">
 <dt id="rmgpy.qm.qmverifier.QMVerifier.succesful_job_exists">
-<code class="sig-name descname">succesful_job_exists</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier.succesful_job_exists" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">succesful_job_exists</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmverifier.QMVerifier.succesful_job_exists" title="Permalink to this definition">¶</a></dt>
 <dd><p>checks whether one of the flags is true.
 If so, it returns true.</p>
 </dd></dl>
@@ -183,7 +182,7 @@ If so, it returns true.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

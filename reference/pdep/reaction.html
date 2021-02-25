@@ -63,7 +63,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2>Microcanonical rate coefficients<a class="headerlink" href="#microcanonical-rate-coefficients" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient">
-<code class="sig-prename descclassname">rmgpy.pdep.reaction.</code><code class="sig-name descname">calculate_microcanonical_rate_coefficient</code><span class="sig-paren">(</span><em class="sig-param">reaction</em>, <em class="sig-param">ndarray e_list</em>, <em class="sig-param">ndarray j_list</em>, <em class="sig-param">ndarray reac_dens_states</em>, <em class="sig-param">ndarray prod_dens_states=None</em>, <em class="sig-param">double T=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">rmgpy.pdep.reaction.</span></code><code class="sig-name descname"><span class="pre">calculate_microcanonical_rate_coefficient</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">reaction</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">j_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">reac_dens_states</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">prod_dens_states=None</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T=0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the microcanonical rate coefficient <span class="math notranslate nohighlight">\(k(E)\)</span> for the reaction
 <cite>reaction</cite> at the energies <cite>e_list</cite> in J/mol. <cite>reac_dens_states</cite> and
 <cite>prod_dens_states</cite> are the densities of states of the reactant and product
@@ -91,7 +91,7 @@ inverse Laplace transform method.</p>
 <h2>RRKM theory<a class="headerlink" href="#rrkm-theory" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="rmgpy.pdep.reaction.apply_rrkm_theory">
-<code class="sig-prename descclassname">rmgpy.pdep.reaction.</code><code class="sig-name descname">apply_rrkm_theory</code><span class="sig-paren">(</span><em class="sig-param">transition_state</em>, <em class="sig-param">ndarray e_list</em>, <em class="sig-param">ndarray j_list</em>, <em class="sig-param">ndarray dens_states</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_rrkm_theory" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">rmgpy.pdep.reaction.</span></code><code class="sig-name descname"><span class="pre">apply_rrkm_theory</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">transition_state</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">j_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dens_states</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_rrkm_theory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the microcanonical rate coefficient for a reaction using RRKM
 theory, where <cite>transition_state</cite> is the transition state of the reaction,
 <cite>e_list</cite> is the array of energies in J/mol at which to evaluate the
@@ -121,7 +121,7 @@ than the inverse Laplace transform method.</p>
 <h2>Inverse Laplace transform method<a class="headerlink" href="#inverse-laplace-transform-method" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="rmgpy.pdep.reaction.apply_inverse_laplace_transform_method">
-<code class="sig-prename descclassname">rmgpy.pdep.reaction.</code><code class="sig-name descname">apply_inverse_laplace_transform_method</code><span class="sig-paren">(</span><em class="sig-param">transition_state</em>, <em class="sig-param">Arrhenius kinetics</em>, <em class="sig-param">ndarray e_list</em>, <em class="sig-param">ndarray j_list</em>, <em class="sig-param">ndarray dens_states</em>, <em class="sig-param">double T=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_inverse_laplace_transform_method" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">rmgpy.pdep.reaction.</span></code><code class="sig-name descname"><span class="pre">apply_inverse_laplace_transform_method</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">transition_state</span></em>, <em class="sig-param"><span class="pre">Arrhenius</span> <span class="pre">kinetics</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">j_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dens_states</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T=0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_inverse_laplace_transform_method" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the microcanonical rate coefficient for a reaction using the
 inverse Laplace transform method, where <cite>kinetics</cite> is the high pressure
 limit rate coefficient, <cite>E0</cite> is the ground-state energy of the transition
@@ -257,7 +257,7 @@ the reaction barrier <span class="math notranslate nohighlight">\(E_0^\ddagger -
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -13,7 +13,6 @@
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -61,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.kinetics.KineticsFamily<a class="headerlink" href="#rmgpy-data-kinetics-kineticsfamily" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="rmgpy.data.kinetics.KineticsFamily">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.kinetics.</code><code class="sig-name descname">KineticsFamily</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">entries</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">top</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">reverse</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">reversible</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">short_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">long_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">forward_template</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">forward_recipe</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reverse_template</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reverse_recipe</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">forbidden</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">boundary_atoms</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tree_distances</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">save_order</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.data.kinetics.</span></code><code class="sig-name descname"><span class="pre">KineticsFamily</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reversible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">short_desc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_desc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forward_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forward_recipe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse_recipe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forbidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary_atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_distances</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for working with an RMG kinetics family: a set of reactions with
 similar chemistry, and therefore similar reaction rates. The attributes
 are:</p>
@@ -141,7 +140,7 @@ abstraction and intramolecular hydrogen migration); for these
 <cite>reverseTemplate</cite> and <cite>reverseRecipe</cite> will both be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.add_atom_labels_for_reaction">
-<code class="sig-name descname">add_atom_labels_for_reaction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reaction</span></em>, <em class="sig-param"><span class="n">output_with_resonance</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.add_atom_labels_for_reaction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">add_atom_labels_for_reaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_with_resonance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.add_atom_labels_for_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply atom labels on a reaction using the appropriate atom labels from
 this reaction family.</p>
 <p>The reaction is modified in place containing species objects with the
@@ -152,7 +151,7 @@ sucessfully able to map to the reaction is used. None is returned.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.add_entry">
-<code class="sig-name descname">add_entry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span></em>, <em class="sig-param"><span class="n">grp</span></em>, <em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.add_entry" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">add_entry</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.add_entry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds a group entry with parent parent
 group structure grp
 and group name name</p>
@@ -160,7 +159,7 @@ and group name name</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.add_reverse_attribute">
-<code class="sig-name descname">add_reverse_attribute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rxn</span></em>, <em class="sig-param"><span class="n">react_non_reactive</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.add_reverse_attribute" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">add_reverse_attribute</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">react_non_reactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.add_reverse_attribute" title="Permalink to this definition">¶</a></dt>
 <dd><p>For rxn (with species’ objects) from families with ownReverse, this method adds a <cite>reverse</cite>
 attribute that contains the reverse reaction information (like degeneracy)</p>
 <p>Returns <cite>True</cite> if successful and <cite>False</cite> if the reverse reaction is forbidden.
@@ -169,20 +168,20 @@ Will raise a <cite>KineticsError</cite> if unsuccessful for other reasons.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.add_rules_from_training">
-<code class="sig-name descname">add_rules_from_training</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">thermo_database</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">train_indices</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.add_rules_from_training" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">add_rules_from_training</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thermo_database</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.add_rules_from_training" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each reaction involving real reactants and products in the training
 set, add a rate rule for that reaction.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.ancestors">
-<code class="sig-name descname">ancestors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.ancestors" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">ancestors</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.ancestors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all the ancestors of a node, climbing up the tree to the top.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.apply_recipe">
-<code class="sig-name descname">apply_recipe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reactant_structures</span></em>, <em class="sig-param"><span class="n">forward</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">unique</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.apply_recipe" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">apply_recipe</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reactant_structures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forward</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.apply_recipe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply the recipe for this reaction family to the list of
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> objects <cite>reactant_structures</cite>. The atoms
 of the reactant structures must already be tagged with the appropriate
@@ -192,14 +191,14 @@ after checking that the correct number of products was produced.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.are_siblings">
-<code class="sig-name descname">are_siblings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em>, <em class="sig-param"><span class="n">node_other</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.are_siblings" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">are_siblings</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.are_siblings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <cite>True</cite> if <cite>node</cite> and <cite>node_other</cite> have the same parent node.  Otherwise, return <cite>False</cite>.
 Both <cite>node</cite> and <cite>node_other</cite> must be Entry types with items containing Group or LogicNode types.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.calculate_degeneracy">
-<code class="sig-name descname">calculate_degeneracy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reaction</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.calculate_degeneracy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">calculate_degeneracy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.calculate_degeneracy" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a <cite>reaction</cite>  with <cite>Molecule</cite> or <cite>Species</cite> objects given in the direction in which
 the kinetics are defined, compute the reaction-path degeneracy.</p>
 <p>This method by default adjusts for double counting of identical reactants.
@@ -210,7 +209,7 @@ identical reactants (since you will be reducing them later in the algorithm), ad
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.clean_tree_groups">
-<code class="sig-name descname">clean_tree_groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.clean_tree_groups" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">clean_tree_groups</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.clean_tree_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>clears groups and rules in the tree, generates an appropriate
 root group to start from and then reads training reactions
 Note this only works if a single top node (not a logic node)
@@ -219,7 +218,7 @@ can be generated</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.cross_validate">
-<code class="sig-name descname">cross_validate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">folds</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">template_rxn_map</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">test_rxn_inds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">1000.0</span></em>, <em class="sig-param"><span class="n">iters</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">random_state</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.cross_validate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">cross_validate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_rxn_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_rxn_inds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.cross_validate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform K-fold cross validation on an automatically generated tree at temperature T
 after finding an appropriate node for kinetics estimation it will move up the tree
 iters times.
@@ -228,14 +227,14 @@ Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.cross_validate_old">
-<code class="sig-name descname">cross_validate_old</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">folds</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">1000.0</span></em>, <em class="sig-param"><span class="n">random_state</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">estimator</span><span class="o">=</span><span class="default_value">'rate rules'</span></em>, <em class="sig-param"><span class="n">thermo_database</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.cross_validate_old" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">cross_validate_old</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rate</span> <span class="pre">rules'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermo_database</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.cross_validate_old" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform K-fold cross validation on an automatically generated tree at temperature T
 Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.descend_tree">
-<code class="sig-name descname">descend_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">structure</span></em>, <em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">root</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">strict</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.descend_tree" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">descend_tree</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.descend_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Descend the tree in search of the functional group node that best
 matches the local structure around <cite>atoms</cite> in <cite>structure</cite>.</p>
 <p>If root=None then uses the first matching top node.</p>
@@ -247,13 +246,13 @@ not generally used in other GAVs due to species generally not being prelabeled.<
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.descendants">
-<code class="sig-name descname">descendants</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.descendants" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">descendants</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.descendants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all the descendants of a node, climbing down the tree to the bottom.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.distribute_tree_distances">
-<code class="sig-name descname">distribute_tree_distances</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.distribute_tree_distances" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">distribute_tree_distances</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.distribute_tree_distances" title="Permalink to this definition">¶</a></dt>
 <dd><p>fills in nodal_distance (the distance between an entry and its parent)
 if not already entered with the value from tree_distances associated
 with the tree the entry comes from</p>
@@ -261,7 +260,7 @@ with the tree the entry comes from</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.estimate_kinetics_using_group_additivity">
-<code class="sig-name descname">estimate_kinetics_using_group_additivity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span></em>, <em class="sig-param"><span class="n">degeneracy</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.estimate_kinetics_using_group_additivity" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">estimate_kinetics_using_group_additivity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.estimate_kinetics_using_group_additivity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the appropriate kinetics for a reaction with the given
 <cite>template</cite> using group additivity.</p>
 <p>Returns just the kinetics, or None.</p>
@@ -269,7 +268,7 @@ with the tree the entry comes from</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.estimate_kinetics_using_rate_rules">
-<code class="sig-name descname">estimate_kinetics_using_rate_rules</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span></em>, <em class="sig-param"><span class="n">degeneracy</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.estimate_kinetics_using_rate_rules" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">estimate_kinetics_using_rate_rules</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.estimate_kinetics_using_rate_rules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the appropriate kinetics for a reaction with the given
 <cite>template</cite> using rate rules.</p>
 <p>Returns a tuple (kinetics, entry) where <cite>entry</cite> is the database
@@ -279,21 +278,21 @@ and is None if some averaging or use of a parent node took place.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.eval_ext">
-<code class="sig-name descname">eval_ext</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span></em>, <em class="sig-param"><span class="n">ext</span></em>, <em class="sig-param"><span class="n">extname</span></em>, <em class="sig-param"><span class="n">template_rxn_map</span></em>, <em class="sig-param"><span class="n">obj</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">1000.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.eval_ext" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">eval_ext</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_rxn_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.eval_ext" title="Permalink to this definition">¶</a></dt>
 <dd><p>evaluates the objective function obj
 for the extension ext with name extname to the parent entry parent</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.extend_node">
-<code class="sig-name descname">extend_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span></em>, <em class="sig-param"><span class="n">template_rxn_map</span></em>, <em class="sig-param"><span class="n">obj</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">1000.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.extend_node" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">extend_node</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_rxn_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.extend_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs an extension to the group parent based on evaluation
 of the objective function obj</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.extract_source_from_comments">
-<code class="sig-name descname">extract_source_from_comments</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reaction</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.extract_source_from_comments" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">extract_source_from_comments</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.extract_source_from_comments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the rate rule associated with the kinetics of a reaction by parsing the comments.
 Will return the template associated with the matched rate rule.
 Returns a tuple containing (Boolean_Is_Kinetics_From_Training_reaction, Source_Data)</p>
@@ -316,21 +315,21 @@ the kinetics used, and TrainingReactions are ones that have created rules used i
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.fill_rules_by_averaging_up">
-<code class="sig-name descname">fill_rules_by_averaging_up</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.fill_rules_by_averaging_up" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">fill_rules_by_averaging_up</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.fill_rules_by_averaging_up" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fill in gaps in the kinetics rate rules by averaging child nodes
 recursively starting from the top level root template.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.generate_old_tree">
-<code class="sig-name descname">generate_old_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">entries</span></em>, <em class="sig-param"><span class="n">level</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generate_old_tree" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_old_tree</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generate_old_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a multi-line string representation of the current tree using
 the old-style syntax.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.generate_product_template">
-<code class="sig-name descname">generate_product_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reactants0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generate_product_template" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_product_template</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reactants0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generate_product_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the product structures by applying the reaction template to
 the top-level nodes. For reactants defined by multiple structures, only
 the first is used here; it is assumed to be the most generic.</p>
@@ -338,7 +337,7 @@ the first is used here; it is assumed to be the most generic.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.generate_reactions">
-<code class="sig-name descname">generate_reactions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reactants</span></em>, <em class="sig-param"><span class="n">products</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">prod_resonance</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generate_reactions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_reactions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reactants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prod_resonance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generate_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all reactions between the provided list of one, two, or three
 <cite>reactants</cite>, which should be either single <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> objects
 or lists of same. Does not estimate the kinetics of these reactions
@@ -365,7 +364,7 @@ Degenerate reactions are returned as separate reactions.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.generate_tree">
-<code class="sig-name descname">generate_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rxns</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">obj</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">thermo_database</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">1000.0</span></em>, <em class="sig-param"><span class="n">nprocs</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">min_splitable_entry_num</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">min_rxns_to_spawn</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">max_batch_size</span><span class="o">=</span><span class="default_value">800</span></em>, <em class="sig-param"><span class="n">outlier_fraction</span><span class="o">=</span><span class="default_value">0.02</span></em>, <em class="sig-param"><span class="n">stratum_num</span><span class="o">=</span><span class="default_value">8</span></em>, <em class="sig-param"><span class="n">max_rxns_to_reopt_node</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generate_tree" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_tree</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermo_database</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nprocs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_splitable_entry_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_rxns_to_spawn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">800</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outlier_fraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.02</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stratum_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rxns_to_reopt_node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generate_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a tree by greedy optimization based on the objective function obj
 the optimization is done by iterating through every group and if the group has
 more than one training reaction associated with it a set of potential more specific extensions
@@ -399,19 +398,19 @@ in the first batch</p></li>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_backbone_roots">
-<code class="sig-name descname">get_backbone_roots</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_backbone_roots" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_backbone_roots</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_backbone_roots" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns: the top level backbone node in a unimolecular family.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_end_roots">
-<code class="sig-name descname">get_end_roots</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_end_roots" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_end_roots</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_end_roots" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns: A list of top level end nodes in a unimolecular family</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_entries_to_save">
-<code class="sig-name descname">get_entries_to_save</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_entries_to_save" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_entries_to_save</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_entries_to_save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a sorted list of the entries in this database that should be
 saved to the output file.</p>
 <p>Then renumber the entry indexes so that we never have any duplicate indexes.</p>
@@ -419,7 +418,7 @@ saved to the output file.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_extension_edge">
-<code class="sig-name descname">get_extension_edge</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span></em>, <em class="sig-param"><span class="n">template_rxn_map</span></em>, <em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">T</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_extension_edge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_extension_edge</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_rxn_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_extension_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>finds the set of all extension groups to parent such that
 1) the extension group divides the set of reactions under parent
 2) No generalization of the extension group divides the set of reactions under parent</p>
@@ -434,7 +433,7 @@ split at least one of ext1 and ext2 must result in a split</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_kinetics">
-<code class="sig-name descname">get_kinetics</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reaction</span></em>, <em class="sig-param"><span class="n">template_labels</span></em>, <em class="sig-param"><span class="n">degeneracy</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">estimator</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">return_all_kinetics</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_kinetics" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_kinetics</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_all_kinetics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the kinetics for the given <cite>reaction</cite> by searching the various
 depositories as well as generating a result using the user-specified <cite>estimator</cite>
 of either ‘group additivity’ or ‘rate rules’.  Unlike
@@ -454,7 +453,7 @@ a depository</p></li>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_kinetics_for_template">
-<code class="sig-name descname">get_kinetics_for_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span></em>, <em class="sig-param"><span class="n">degeneracy</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'rate rules'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_kinetics_for_template" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_kinetics_for_template</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rate</span> <span class="pre">rules'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_kinetics_for_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an estimate of the kinetics for a reaction with the given
 <cite>template</cite> and reaction-path <cite>degeneracy</cite>. There are two possible methods
 to use: ‘group additivity’ (new possible RMG-Py behavior) and ‘rate rules’ (old
@@ -468,7 +467,7 @@ returned is (kinetics, None).</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_kinetics_from_depository">
-<code class="sig-name descname">get_kinetics_from_depository</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">depository</span></em>, <em class="sig-param"><span class="n">reaction</span></em>, <em class="sig-param"><span class="n">template</span></em>, <em class="sig-param"><span class="n">degeneracy</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_kinetics_from_depository" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_kinetics_from_depository</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">depository</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_kinetics_from_depository" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search the given <cite>depository</cite> in this kinetics family for kinetics
 for the given <cite>reaction</cite>. Returns a list of all of the matching
 kinetics, the corresponding entries, and <code class="docutils literal notranslate"><span class="pre">True</span></code> if the kinetics
@@ -478,7 +477,7 @@ direction.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_labeled_reactants_and_products">
-<code class="sig-name descname">get_labeled_reactants_and_products</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reactants</span></em>, <em class="sig-param"><span class="n">products</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_labeled_reactants_and_products" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_labeled_reactants_and_products</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reactants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_labeled_reactants_and_products" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given <cite>reactants</cite>, a list of <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> objects, and products, a list of
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> objects, return two new lists of <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> objects with
 atoms labeled: one for reactants, one for products. Returned molecules are totally
@@ -488,21 +487,21 @@ If RMG cannot find appropriate labels, (None, None) will be returned.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_rate_rule">
-<code class="sig-name descname">get_rate_rule</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_rate_rule" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_rate_rule</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_rate_rule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate rule with the given <cite>template</cite>. Raises a
 <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code> if no corresponding entry exists.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_reaction_matches">
-<code class="sig-name descname">get_reaction_matches</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rxns</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">thermo_database</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">remove_degeneracy</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">estimate_thermo</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">fix_labels</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">exact_matches_only</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">get_reverse</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_reaction_matches" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_reaction_matches</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermo_database</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimate_thermo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact_matches_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_reaction_matches" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns a dictionary mapping for each entry in the tree:
 (entry.label,entry.item) : list of all training reactions (or the list given) that match that entry</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_reaction_pairs">
-<code class="sig-name descname">get_reaction_pairs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reaction</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_reaction_pairs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_reaction_pairs</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_reaction_pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given <cite>reaction</cite> with properly-labeled <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> objects
 as the reactants, return the reactant-product pairs to use when
 performing flux analysis.</p>
@@ -510,7 +509,7 @@ performing flux analysis.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_reaction_template">
-<code class="sig-name descname">get_reaction_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reaction</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_reaction_template" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_reaction_template</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_reaction_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given <cite>reaction</cite> with properly-labeled <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> objects
 as the reactants, determine the most specific nodes in the tree that
 describe the reaction.</p>
@@ -518,7 +517,7 @@ describe the reaction.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_reaction_template_labels">
-<code class="sig-name descname">get_reaction_template_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reaction</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_reaction_template_labels" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_reaction_template_labels</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_reaction_template_labels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve the template for the reaction and
 return the corresponding labels for each of the
 groups in the template.</p>
@@ -526,7 +525,7 @@ groups in the template.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_root_template">
-<code class="sig-name descname">get_root_template</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_root_template" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_root_template</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_root_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the root template for the reaction family. Most of the time this
 is the top-level nodes of the tree (as stored in the
 <a class="reference internal" href="kineticsgroups.html#rmgpy.data.kinetics.KineticsGroups" title="rmgpy.data.kinetics.KineticsGroups"><code class="xref py py-class docutils literal notranslate"><span class="pre">KineticsGroups</span></code></a> object), but there are a few exceptions (e.g.
@@ -535,7 +534,7 @@ R_Recombination).</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_rxn_batches">
-<code class="sig-name descname">get_rxn_batches</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rxns</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">1000.0</span></em>, <em class="sig-param"><span class="n">max_batch_size</span><span class="o">=</span><span class="default_value">800</span></em>, <em class="sig-param"><span class="n">outlier_fraction</span><span class="o">=</span><span class="default_value">0.02</span></em>, <em class="sig-param"><span class="n">stratum_num</span><span class="o">=</span><span class="default_value">8</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_rxn_batches" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_rxn_batches</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">800</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outlier_fraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.02</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stratum_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_rxn_batches" title="Permalink to this definition">¶</a></dt>
 <dd><p>Breaks reactions into batches based on a modified stratified sampling scheme
 Effectively:
 The top and bottom outlier_fraction of all reactions are always included in the first batch
@@ -548,7 +547,7 @@ A list of lists of reactions containing the batches is returned</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_sources_for_template">
-<code class="sig-name descname">get_sources_for_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_sources_for_template" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_sources_for_template</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_sources_for_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the set of rate rules and training reactions used to average this <cite>template</cite>.  Note that the tree must be
 averaged with verbose=True for this to work.</p>
 <p>Returns a tuple of
@@ -561,13 +560,13 @@ the [(rate_rule_entry, training_reaction_entry, weight_used_in_average),…]</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_species">
-<code class="sig-name descname">get_species</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">resonance</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_species" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_species</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resonance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the dictionary containing all of the species in a kinetics library or depository.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_top_level_groups">
-<code class="sig-name descname">get_top_level_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_top_level_groups" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_top_level_groups</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_top_level_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of group nodes that are the highest in the tree starting at node “root”.
 If “root” is a group node, then it will return a single-element list with “root”.
 Otherwise, for every child of root, we descend until we find no nodes with logic
@@ -576,13 +575,13 @@ nodes. We then return a list of all group nodes found along the way.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_training_depository">
-<code class="sig-name descname">get_training_depository</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_training_depository" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_training_depository</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_training_depository" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the <cite>training</cite> depository from self.depositories</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.get_training_set">
-<code class="sig-name descname">get_training_set</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">thermo_database</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">remove_degeneracy</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">estimate_thermo</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">fix_labels</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">get_reverse</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_training_set" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_training_set</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thermo_database</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimate_thermo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_training_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>retrieves all reactions in the training set, assigns thermo to the species objects
 reverses reactions as necessary so that all reactions are in the forward direction
 and returns the resulting list of reactions in the forward direction with thermo
@@ -591,27 +590,27 @@ assigned</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.has_rate_rule">
-<code class="sig-name descname">has_rate_rule</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.has_rate_rule" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">has_rate_rule</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.has_rate_rule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if a rate rule with the given <cite>template</cite> currently
 exists, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.is_entry_match">
-<code class="sig-name descname">is_entry_match</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol</span></em>, <em class="sig-param"><span class="n">entry</span></em>, <em class="sig-param"><span class="n">resonance</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.is_entry_match" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">is_entry_match</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resonance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.is_entry_match" title="Permalink to this definition">¶</a></dt>
 <dd><p>determines if the labeled molecule object of reactants matches the entry entry</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.is_molecule_forbidden">
-<code class="sig-name descname">is_molecule_forbidden</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.is_molecule_forbidden" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">is_molecule_forbidden</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.is_molecule_forbidden" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the molecule is forbidden in this family, or
 <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.load">
-<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">local_context</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">global_context</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">depository_labels</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depository_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a kinetics database from a file located at <cite>path</cite> on disk.</p>
 <p>If <cite>depository_labels</cite> is a list, eg. [‘training’,’PrIMe’], then only those
 depositories are loaded, and they are searched in that order when
@@ -622,7 +621,7 @@ If depository_labels is not None then load in the order specified in depository_
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.load_forbidden">
-<code class="sig-name descname">load_forbidden</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">group</span></em>, <em class="sig-param"><span class="n">shortDesc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">longDesc</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_forbidden" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_forbidden</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shortDesc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">longDesc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_forbidden" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load information about a forbidden structure.
 Note that argument names are retained for backward compatibility
 with loading database files.</p>
@@ -630,14 +629,14 @@ with loading database files.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.load_old">
-<code class="sig-name descname">load_old</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_old</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load an old-style RMG kinetics group additivity database from the
 location <cite>path</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.load_old_dictionary">
-<code class="sig-name descname">load_old_dictionary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">pattern</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old_dictionary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_old_dictionary</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse an old-style RMG database dictionary located at <cite>path</cite>. An RMG
 dictionary is a list of key-value pairs of a one-line string key and a
 multi-line string value. Each record is separated by at least one empty
@@ -648,19 +647,19 @@ value of <cite>pattern</cite>.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.load_old_library">
-<code class="sig-name descname">load_old_library</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">num_parameters</span></em>, <em class="sig-param"><span class="n">num_labels</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old_library" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_old_library</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse an RMG database library located at <cite>path</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.load_old_template">
-<code class="sig-name descname">load_old_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old_template" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_old_template</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load an old-style RMG reaction family template from the location <cite>path</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.load_old_tree">
-<code class="sig-name descname">load_old_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old_tree" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_old_tree</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse an old-style RMG database tree located at <cite>path</cite>. An RMG
 tree is an n-ary tree representing the hierarchy of items in the
 dictionary.</p>
@@ -668,13 +667,13 @@ dictionary.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.load_recipe">
-<code class="sig-name descname">load_recipe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">actions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_recipe" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_recipe</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_recipe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load information about the reaction recipe.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.load_template">
-<code class="sig-name descname">load_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reactants</span></em>, <em class="sig-param"><span class="n">products</span></em>, <em class="sig-param"><span class="n">ownReverse</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_template" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_template</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reactants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ownReverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load information about the reaction template.
 Note that argument names are retained for backward compatibility
 with loading database files.</p>
@@ -682,13 +681,13 @@ with loading database files.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.make_tree">
-<code class="sig-name descname">make_tree</code><span class="sig-paren">(</span><em class="sig-param">obj=None</em>, <em class="sig-param">regularization=&lt;function KineticsFamily.simple_regularization&gt;</em>, <em class="sig-param">thermo_database=None</em>, <em class="sig-param">T=1000.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.make_tree" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">make_tree</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">obj=None</span></em>, <em class="sig-param"><span class="pre">regularization=&lt;function</span> <span class="pre">KineticsFamily.simple_regularization&gt;</span></em>, <em class="sig-param"><span class="pre">thermo_database=None</span></em>, <em class="sig-param"><span class="pre">T=1000.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.make_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>generates tree structure and then generates rules for the tree</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.match_node_to_child">
-<code class="sig-name descname">match_node_to_child</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent_node</span></em>, <em class="sig-param"><span class="n">child_node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.match_node_to_child" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">match_node_to_child</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.match_node_to_child" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <cite>True</cite> if <cite>parent_node</cite> is a parent of <cite>child_node</cite>.  Otherwise, return <cite>False</cite>.
 Both <cite>parent_node</cite> and <cite>child_node</cite> must be Entry types with items containing Group or LogicNode types.
 If <cite>parent_node</cite> and <cite>child_node</cite> are identical, the function will also return <cite>False</cite>.</p>
@@ -696,14 +695,14 @@ If <cite>parent_node</cite> and <cite>child_node</cite> are identical, the funct
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.match_node_to_node">
-<code class="sig-name descname">match_node_to_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em>, <em class="sig-param"><span class="n">node_other</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.match_node_to_node" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">match_node_to_node</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.match_node_to_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <cite>True</cite> if <cite>node</cite> and <cite>node_other</cite> are identical.  Otherwise, return <cite>False</cite>.
 Both <cite>node</cite> and <cite>node_other</cite> must be Entry types with items containing Group or LogicNode types.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.match_node_to_structure">
-<code class="sig-name descname">match_node_to_structure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em>, <em class="sig-param"><span class="n">structure</span></em>, <em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">strict</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.match_node_to_structure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">match_node_to_structure</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.match_node_to_structure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if the <cite>structure</cite> centered at <cite>atom</cite> matches the
 structure at <cite>node</cite> in the dictionary. The structure at <cite>node</cite> should
 have atoms with the appropriate labels because they are set on loading
@@ -743,7 +742,7 @@ be found in node.  However the reverse is not true, unless <cite>strict</cite> i
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.parse_old_library">
-<code class="sig-name descname">parse_old_library</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">num_parameters</span></em>, <em class="sig-param"><span class="n">num_labels</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.parse_old_library" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">parse_old_library</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.parse_old_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse an RMG database library located at <cite>path</cite>, returning the loaded
 entries (rather than storing them in the database). This method does
 not discard duplicate entries.</p>
@@ -751,7 +750,7 @@ not discard duplicate entries.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.prune_tree">
-<code class="sig-name descname">prune_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rxns</span></em>, <em class="sig-param"><span class="n">thermo_database</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_rxns_to_reopt_node</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">fix_labels</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">exact_matches_only</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">get_reverse</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.prune_tree" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">prune_tree</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermo_database</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_rxns_to_reopt_node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact_matches_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.prune_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove nodes that have less than maxRxnToReoptNode reactions that match
 and clear the regularization dimensions of their parent
 This is used to remove smaller easier to optimize and more likely to change nodes
@@ -760,13 +759,13 @@ before adding a new batch in cascade model generation</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.regularize">
-<code class="sig-name descname">regularize</code><span class="sig-paren">(</span><em class="sig-param">regularization=&lt;function KineticsFamily.simple_regularization&gt;</em>, <em class="sig-param">keep_root=True</em>, <em class="sig-param">thermo_database=None</em>, <em class="sig-param">template_rxn_map=None</em>, <em class="sig-param">rxns=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.regularize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">regularize</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">regularization=&lt;function</span> <span class="pre">KineticsFamily.simple_regularization&gt;</span></em>, <em class="sig-param"><span class="pre">keep_root=True</span></em>, <em class="sig-param"><span class="pre">thermo_database=None</span></em>, <em class="sig-param"><span class="pre">template_rxn_map=None</span></em>, <em class="sig-param"><span class="pre">rxns=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.regularize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regularizes the tree according to the regularization function regularization</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.remove_group">
-<code class="sig-name descname">remove_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">group_to_remove</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.remove_group" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">remove_group</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group_to_remove</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.remove_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes a group that is in a tree from the database. In addition to deleting from self.entries,
 it must also update the parent/child relationships</p>
 <p>Returns the removed group</p>
@@ -774,7 +773,7 @@ it must also update the parent/child relationships</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.retrieve_original_entry">
-<code class="sig-name descname">retrieve_original_entry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template_label</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.retrieve_original_entry" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">retrieve_original_entry</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template_label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.retrieve_original_entry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieves the original entry, be it a rule or training reaction, given
 the template label in the form ‘group1;group2’ or ‘group1;group2;group3’</p>
 <p>Returns tuple in the form
@@ -784,7 +783,7 @@ the template label in the form ‘group1;group2’ or ‘group1;group2;group3’
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.retrieve_template">
-<code class="sig-name descname">retrieve_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template_labels</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.retrieve_template" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">retrieve_template</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template_labels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.retrieve_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reconstruct the groups associated with the
 labels of the reaction template and
 return a list.</p>
@@ -792,79 +791,79 @@ return a list.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.save">
-<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the current database to the file at location <cite>path</cite> on disk.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.save_depository">
-<code class="sig-name descname">save_depository</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">depository</span></em>, <em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_depository" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_depository</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">depository</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_depository" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the given kinetics family <cite>depository</cite> to the location <cite>path</cite> on
 disk.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.save_dictionary">
-<code class="sig-name descname">save_dictionary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_dictionary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_dictionary</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract species from all entries associated with a kinetics library or depository and save them
 to the path given.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.save_entry">
-<code class="sig-name descname">save_entry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">entry</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_entry" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_entry</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_entry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the given <cite>entry</cite> in the thermo database to the file object <cite>f</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.save_generated_tree">
-<code class="sig-name descname">save_generated_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_generated_tree" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_generated_tree</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_generated_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>clears the rules and saves the family to its
 current location in database</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.save_groups">
-<code class="sig-name descname">save_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_groups" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_groups</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the current database to the file at location <cite>path</cite> on disk.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.save_old">
-<code class="sig-name descname">save_old</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_old</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the old RMG kinetics groups to the given <cite>path</cite> on disk.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.save_old_dictionary">
-<code class="sig-name descname">save_old_dictionary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old_dictionary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_old_dictionary</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the current database dictionary to a text file using the old-style
 syntax.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.save_old_library">
-<code class="sig-name descname">save_old_library</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old_library" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_old_library</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the current database library to a text file using the old-style
 syntax.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.save_old_template">
-<code class="sig-name descname">save_old_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old_template" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_old_template</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save an old-style RMG reaction family template from the location <cite>path</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.save_old_tree">
-<code class="sig-name descname">save_old_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old_tree" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_old_tree</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the current database tree to a text file using the old-style
 syntax.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.save_training_reactions">
-<code class="sig-name descname">save_training_reactions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reactions</span></em>, <em class="sig-param"><span class="n">reference</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reference_type</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">short_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">long_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">rank</span><span class="o">=</span><span class="default_value">3</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_training_reactions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_training_reactions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">short_desc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_desc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_training_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function takes a list of reactions appends it to the training reactions file.  It ignores the existence of
 duplicate reactions.</p>
 <p>The rank for each new reaction’s kinetics is set to a default value of 3 unless the user specifies differently
@@ -874,7 +873,7 @@ for those reactions.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.simple_regularization">
-<code class="sig-name descname">simple_regularization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em>, <em class="sig-param"><span class="n">template_rxn_map</span></em>, <em class="sig-param"><span class="n">test</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.simple_regularization" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">simple_regularization</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_rxn_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.simple_regularization" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simplest regularization algorithm
 All nodes are made as specific as their descendant reactions
 Training reactions are assumed to not generalize
@@ -985,7 +984,7 @@ wasn’t used.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

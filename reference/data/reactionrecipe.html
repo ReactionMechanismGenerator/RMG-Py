@@ -13,7 +13,6 @@
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -61,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.kinetics.ReactionRecipe<a class="headerlink" href="#rmgpy-data-kinetics-reactionrecipe" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="rmgpy.data.kinetics.ReactionRecipe">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.kinetics.</code><code class="sig-name descname">ReactionRecipe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">actions</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.data.kinetics.</span></code><code class="sig-name descname"><span class="pre">ReactionRecipe</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a list of actions that, when executed, result in the conversion
 of a set of reactants to a set of products. There are currently five such
 actions:</p>
@@ -113,7 +112,7 @@ a list of items; the first is the action name, while the rest are the
 action parameters as indicated above.</p>
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.ReactionRecipe.add_action">
-<code class="sig-name descname">add_action</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.add_action" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">add_action</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.add_action" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an <cite>action</cite> to the reaction recipe, where <cite>action</cite> is a list
 containing the action name and the required parameters, as indicated in
 the table above.</p>
@@ -121,21 +120,21 @@ the table above.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.ReactionRecipe.apply_forward">
-<code class="sig-name descname">apply_forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">struct</span></em>, <em class="sig-param"><span class="n">unique</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.apply_forward" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">apply_forward</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">struct</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.apply_forward" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply the forward reaction recipe to <cite>molecule</cite>, a single
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.ReactionRecipe.apply_reverse">
-<code class="sig-name descname">apply_reverse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">struct</span></em>, <em class="sig-param"><span class="n">unique</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.apply_reverse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">apply_reverse</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">struct</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.apply_reverse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply the reverse reaction recipe to <cite>molecule</cite>, a single
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.kinetics.ReactionRecipe.get_reverse">
-<code class="sig-name descname">get_reverse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.get_reverse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_reverse</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.ReactionRecipe.get_reverse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a reaction recipe that, when applied, does the opposite of
 what the current recipe does, i.e., it is the recipe for the reverse
 of the reaction that this is the recipe for.</p>
@@ -236,7 +235,7 @@ of the reaction that this is the recipe for.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

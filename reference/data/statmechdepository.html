@@ -13,7 +13,6 @@
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -61,25 +60,25 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.statmech.StatmechDepository<a class="headerlink" href="#rmgpy-data-statmech-statmechdepository" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="rmgpy.data.statmech.StatmechDepository">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.statmech.</code><code class="sig-name descname">StatmechDepository</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">short_desc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">long_desc</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmech.</span></code><code class="sig-name descname"><span class="pre">StatmechDepository</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">short_desc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_desc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for working with the RMG statistical mechanics (frequencies)
 depository.</p>
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.ancestors">
-<code class="sig-name descname">ancestors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.ancestors" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">ancestors</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.ancestors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all the ancestors of a node, climbing up the tree to the top.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.are_siblings">
-<code class="sig-name descname">are_siblings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em>, <em class="sig-param"><span class="n">node_other</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.are_siblings" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">are_siblings</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.are_siblings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <cite>True</cite> if <cite>node</cite> and <cite>node_other</cite> have the same parent node.  Otherwise, return <cite>False</cite>.
 Both <cite>node</cite> and <cite>node_other</cite> must be Entry types with items containing Group or LogicNode types.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.descend_tree">
-<code class="sig-name descname">descend_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">structure</span></em>, <em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">root</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">strict</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.descend_tree" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">descend_tree</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.descend_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Descend the tree in search of the functional group node that best
 matches the local structure around <cite>atoms</cite> in <cite>structure</cite>.</p>
 <p>If root=None then uses the first matching top node.</p>
@@ -91,20 +90,20 @@ not generally used in other GAVs due to species generally not being prelabeled.<
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.descendants">
-<code class="sig-name descname">descendants</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.descendants" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">descendants</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.descendants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all the descendants of a node, climbing down the tree to the bottom.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.generate_old_tree">
-<code class="sig-name descname">generate_old_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">entries</span></em>, <em class="sig-param"><span class="n">level</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.generate_old_tree" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_old_tree</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.generate_old_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a multi-line string representation of the current tree using
 the old-style syntax.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.get_entries_to_save">
-<code class="sig-name descname">get_entries_to_save</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.get_entries_to_save" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_entries_to_save</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.get_entries_to_save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a sorted list of the entries in this database that should be
 saved to the output file.</p>
 <p>Then renumber the entry indexes so that we never have any duplicate indexes.</p>
@@ -112,13 +111,13 @@ saved to the output file.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.get_species">
-<code class="sig-name descname">get_species</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">resonance</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.get_species" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_species</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resonance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.get_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the dictionary containing all of the species in a kinetics library or depository.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.load">
-<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">local_context</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">global_context</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.load" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load an RMG-style database from the file at location <cite>path</cite> on disk.
 The parameters <cite>local_context</cite> and <cite>global_context</cite> are used to
 provide specialized mapping of identifiers in the input file to
@@ -129,14 +128,14 @@ provide these.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.load_entry">
-<code class="sig-name descname">load_entry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span></em>, <em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">molecule</span></em>, <em class="sig-param"><span class="n">statmech</span></em>, <em class="sig-param"><span class="n">reference</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">referenceType</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">shortDesc</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">longDesc</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.load_entry" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_entry</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statmech</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">referenceType</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shortDesc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">longDesc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.load_entry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method for parsing entries in database files.
 Note that these argument names are retained for backward compatibility.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.load_old">
-<code class="sig-name descname">load_old</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dictstr</span></em>, <em class="sig-param"><span class="n">treestr</span></em>, <em class="sig-param"><span class="n">libstr</span></em>, <em class="sig-param"><span class="n">num_parameters</span></em>, <em class="sig-param"><span class="n">num_labels</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">pattern</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.load_old" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_old</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treestr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.load_old" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a dictionary-tree-library based database. The database is stored
 in three files: <cite>dictstr</cite> is the path to the dictionary, <cite>treestr</cite> to
 the tree, and <cite>libstr</cite> to the library. The tree is optional, and should
@@ -145,7 +144,7 @@ be set to ‘’ if not desired.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.load_old_dictionary">
-<code class="sig-name descname">load_old_dictionary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">pattern</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.load_old_dictionary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_old_dictionary</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.load_old_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse an old-style RMG database dictionary located at <cite>path</cite>. An RMG
 dictionary is a list of key-value pairs of a one-line string key and a
 multi-line string value. Each record is separated by at least one empty
@@ -156,13 +155,13 @@ value of <cite>pattern</cite>.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.load_old_library">
-<code class="sig-name descname">load_old_library</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">num_parameters</span></em>, <em class="sig-param"><span class="n">num_labels</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.load_old_library" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_old_library</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.load_old_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse an RMG database library located at <cite>path</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.load_old_tree">
-<code class="sig-name descname">load_old_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.load_old_tree" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_old_tree</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.load_old_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse an old-style RMG database tree located at <cite>path</cite>. An RMG
 tree is an n-ary tree representing the hierarchy of items in the
 dictionary.</p>
@@ -170,7 +169,7 @@ dictionary.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.match_node_to_child">
-<code class="sig-name descname">match_node_to_child</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent_node</span></em>, <em class="sig-param"><span class="n">child_node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.match_node_to_child" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">match_node_to_child</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.match_node_to_child" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <cite>True</cite> if <cite>parent_node</cite> is a parent of <cite>child_node</cite>.  Otherwise, return <cite>False</cite>.
 Both <cite>parent_node</cite> and <cite>child_node</cite> must be Entry types with items containing Group or LogicNode types.
 If <cite>parent_node</cite> and <cite>child_node</cite> are identical, the function will also return <cite>False</cite>.</p>
@@ -178,14 +177,14 @@ If <cite>parent_node</cite> and <cite>child_node</cite> are identical, the funct
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.match_node_to_node">
-<code class="sig-name descname">match_node_to_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em>, <em class="sig-param"><span class="n">node_other</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.match_node_to_node" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">match_node_to_node</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.match_node_to_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <cite>True</cite> if <cite>node</cite> and <cite>node_other</cite> are identical.  Otherwise, return <cite>False</cite>.
 Both <cite>node</cite> and <cite>node_other</cite> must be Entry types with items containing Group or LogicNode types.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.match_node_to_structure">
-<code class="sig-name descname">match_node_to_structure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em>, <em class="sig-param"><span class="n">structure</span></em>, <em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">strict</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.match_node_to_structure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">match_node_to_structure</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.match_node_to_structure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if the <cite>structure</cite> centered at <cite>atom</cite> matches the
 structure at <cite>node</cite> in the dictionary. The structure at <cite>node</cite> should
 have atoms with the appropriate labels because they are set on loading
@@ -225,7 +224,7 @@ be found in node.  However the reverse is not true, unless <cite>strict</cite> i
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.parse_old_library">
-<code class="sig-name descname">parse_old_library</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">num_parameters</span></em>, <em class="sig-param"><span class="n">num_labels</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.parse_old_library" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">parse_old_library</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.parse_old_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse an RMG database library located at <cite>path</cite>, returning the loaded
 entries (rather than storing them in the database). This method does
 not discard duplicate entries.</p>
@@ -233,7 +232,7 @@ not discard duplicate entries.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.remove_group">
-<code class="sig-name descname">remove_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">group_to_remove</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.remove_group" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">remove_group</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group_to_remove</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.remove_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes a group that is in a tree from the database. In addition to deleting from self.entries,
 it must also update the parent/child relationships</p>
 <p>Returns the removed group</p>
@@ -241,47 +240,47 @@ it must also update the parent/child relationships</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.save">
-<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the current database to the file at location <cite>path</cite> on disk.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.save_dictionary">
-<code class="sig-name descname">save_dictionary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save_dictionary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_dictionary</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract species from all entries associated with a kinetics library or depository and save them
 to the path given.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.save_entry">
-<code class="sig-name descname">save_entry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">entry</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save_entry" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_entry</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save_entry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the given <cite>entry</cite> in the thermo database to the file object <cite>f</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.save_old">
-<code class="sig-name descname">save_old</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dictstr</span></em>, <em class="sig-param"><span class="n">treestr</span></em>, <em class="sig-param"><span class="n">libstr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save_old" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_old</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treestr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libstr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save_old" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the current database to a set of text files using the old-style
 syntax.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.save_old_dictionary">
-<code class="sig-name descname">save_old_dictionary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save_old_dictionary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_old_dictionary</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save_old_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the current database dictionary to a text file using the old-style
 syntax.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.save_old_library">
-<code class="sig-name descname">save_old_library</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save_old_library" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_old_library</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save_old_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the current database library to a text file using the old-style
 syntax.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDepository.save_old_tree">
-<code class="sig-name descname">save_old_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save_old_tree" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_old_tree</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDepository.save_old_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the current database tree to a text file using the old-style
 syntax.</p>
 </dd></dl>
@@ -381,7 +380,7 @@ syntax.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

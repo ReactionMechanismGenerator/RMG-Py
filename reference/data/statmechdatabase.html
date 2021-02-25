@@ -13,7 +13,6 @@
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -61,11 +60,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.statmech.StatmechDatabase<a class="headerlink" href="#rmgpy-data-statmech-statmechdatabase" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="rmgpy.data.statmech.StatmechDatabase">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.statmech.</code><code class="sig-name descname">StatmechDatabase</code><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmech.</span></code><code class="sig-name descname"><span class="pre">StatmechDatabase</span></code><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for working with the RMG statistical mechanics (frequencies) database.</p>
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.get_statmech_data">
-<code class="sig-name descname">get_statmech_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em>, <em class="sig-param"><span class="n">thermo_model</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.get_statmech_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_statmech_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermo_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.get_statmech_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the thermodynamic parameters for a given <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code>
 object <cite>molecule</cite>. This function first searches the loaded libraries
 in order, returning the first match found, before falling back to
@@ -74,7 +73,7 @@ estimation via group additivity.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.get_statmech_data_from_depository">
-<code class="sig-name descname">get_statmech_data_from_depository</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.get_statmech_data_from_depository" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_statmech_data_from_depository</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.get_statmech_data_from_depository" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return statmech data for the given <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <cite>molecule</cite>
 by searching the entries in the depository.
 Returns a list of tuples  (statmechData, depository, entry).</p>
@@ -82,7 +81,7 @@ Returns a list of tuples  (statmechData, depository, entry).</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.get_statmech_data_from_groups">
-<code class="sig-name descname">get_statmech_data_from_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em>, <em class="sig-param"><span class="n">thermo_model</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.get_statmech_data_from_groups" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_statmech_data_from_groups</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermo_model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.get_statmech_data_from_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return statmech data for the given <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <cite>molecule</cite>
 by estimating using characteristic group frequencies and fitting the
 remaining internal modes to heat capacity data from the given thermo
@@ -91,7 +90,7 @@ model <cite>thermo_model</cite>. This always returns valid degrees of freedom da
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.get_statmech_data_from_library">
-<code class="sig-name descname">get_statmech_data_from_library</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em>, <em class="sig-param"><span class="n">library</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.get_statmech_data_from_library" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_statmech_data_from_library</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">library</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.get_statmech_data_from_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return statmech data for the given <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <cite>molecule</cite>
 by searching the entries in the specified <a class="reference internal" href="statmechlibrary.html#rmgpy.data.statmech.StatmechLibrary" title="rmgpy.data.statmech.StatmechLibrary"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatmechLibrary</span></code></a> object
 <cite>library</cite>. Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if no data was found.</p>
@@ -99,70 +98,70 @@ by searching the entries in the specified <a class="reference internal" href="st
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.load">
-<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">libraries</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">depository</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.load" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depository</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the statmech database from the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.load_depository">
-<code class="sig-name descname">load_depository</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.load_depository" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_depository</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.load_depository" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the statmech database from the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.load_groups">
-<code class="sig-name descname">load_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.load_groups" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_groups</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.load_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the statmech database from the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.load_libraries">
-<code class="sig-name descname">load_libraries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">libraries</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.load_libraries" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_libraries</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.load_libraries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the statmech database from the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.load_old">
-<code class="sig-name descname">load_old</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.load_old" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_old</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.load_old" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the old RMG thermo database from the given <cite>path</cite> on disk, where
 <cite>path</cite> points to the top-level folder of the old RMG database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.save">
-<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.save" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the statmech database to the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the statmech database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.save_depository">
-<code class="sig-name descname">save_depository</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.save_depository" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_depository</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.save_depository" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the statmech depository to the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the statmech depository.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.save_groups">
-<code class="sig-name descname">save_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.save_groups" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_groups</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.save_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the statmech groups to the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the statmech groups.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.save_libraries">
-<code class="sig-name descname">save_libraries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.save_libraries" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_libraries</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.save_libraries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the statmech libraries to the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the statmech libraries.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.save_old">
-<code class="sig-name descname">save_old</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.save_old" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_old</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.save_old" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the old RMG thermo database to the given <cite>path</cite> on disk, where
 <cite>path</cite> points to the top-level folder of the old RMG database.</p>
 </dd></dl>
@@ -262,7 +261,7 @@ points to the top-level folder of the statmech libraries.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

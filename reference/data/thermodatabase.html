@@ -13,7 +13,6 @@
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -61,11 +60,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.thermo.ThermoDatabase<a class="headerlink" href="#rmgpy-data-thermo-thermodatabase" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="rmgpy.data.thermo.ThermoDatabase">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.data.thermo.</code><code class="sig-name descname">ThermoDatabase</code><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.data.thermo.</span></code><code class="sig-name descname"><span class="pre">ThermoDatabase</span></code><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for working with the RMG thermodynamics database.</p>
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.compute_group_additivity_thermo">
-<code class="sig-name descname">compute_group_additivity_thermo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.compute_group_additivity_thermo" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">compute_group_additivity_thermo</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.compute_group_additivity_thermo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of thermodynamic parameters corresponding to a given
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <code class="docutils literal notranslate"><span class="pre">molecule</span></code> using the group additivity values
 method. If no group additivity values are loaded, a <code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseError</span></code>
@@ -76,7 +75,7 @@ this should be done later by the calling function.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.correct_binding_energy">
-<code class="sig-name descname">correct_binding_energy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">thermo</span></em>, <em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">metal_to_scale_from</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">metal_to_scale_to</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.correct_binding_energy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">correct_binding_energy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thermo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metal_to_scale_from</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metal_to_scale_to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.correct_binding_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Changes the provided thermo, by applying a linear scaling relation
 to correct the adsorption energy.</p>
 <dl class="field-list simple">
@@ -96,7 +95,7 @@ to correct the adsorption energy.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.estimate_radical_thermo_via_hbi">
-<code class="sig-name descname">estimate_radical_thermo_via_hbi</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em>, <em class="sig-param"><span class="n">stable_thermo_estimator</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimate_radical_thermo_via_hbi" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">estimate_radical_thermo_via_hbi</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stable_thermo_estimator</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimate_radical_thermo_via_hbi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate the thermodynamics of a radical by saturating it,
 applying the provided stable_thermo_estimator method on the saturated species,
 then applying hydrogen bond increment corrections for the radical
@@ -107,7 +106,7 @@ This should be done later by the calling function.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.estimate_thermo_via_group_additivity">
-<code class="sig-name descname">estimate_thermo_via_group_additivity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">molecule</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimate_thermo_via_group_additivity" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">estimate_thermo_via_group_additivity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimate_thermo_via_group_additivity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of thermodynamic parameters corresponding to a given
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <code class="docutils literal notranslate"><span class="pre">molecule</span></code> using the group additivity values
 method. If no group additivity values are loaded, a <code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseError</span></code>
@@ -118,7 +117,7 @@ this should be done later by the calling function.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.extract_source_from_comments">
-<code class="sig-name descname">extract_source_from_comments</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.extract_source_from_comments" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">extract_source_from_comments</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.extract_source_from_comments" title="Permalink to this definition">¶</a></dt>
 <dd><p><cite>species</cite>: A species object containing thermo data and thermo data comments</p>
 <p>Parses the verbose string of comments from the thermo data of the species object,
 and extracts the thermo sources.</p>
@@ -139,7 +138,7 @@ and a GAV HBI correction.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.get_all_thermo_data">
-<code class="sig-name descname">get_all_thermo_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_all_thermo_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_all_thermo_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_all_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all possible sets of thermodynamic parameters for a given
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code> object <cite>species</cite>. The hits from the depository come
 first, then the libraries (in order), and then the group additivity
@@ -150,14 +149,14 @@ estimate. This method is useful for a generic search job.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.get_ring_groups_from_comments">
-<code class="sig-name descname">get_ring_groups_from_comments</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">thermo_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_ring_groups_from_comments" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_ring_groups_from_comments</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thermo_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_ring_groups_from_comments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Takes a string of comments from group additivity estimation, and extracts the ring and polycyclic ring groups
 from them, returning them as lists.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.get_thermo_data">
-<code class="sig-name descname">get_thermo_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">metal_to_scale_to</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">training_set</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_thermo_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metal_to_scale_to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the thermodynamic parameters for a given <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code>
 object <cite>species</cite>. This function first searches the loaded libraries
 in order, returning the first match found, before falling back to
@@ -171,7 +170,7 @@ are already corrected.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.get_thermo_data_for_surface_species">
-<code class="sig-name descname">get_thermo_data_for_surface_species</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_for_surface_species" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_thermo_data_for_surface_species</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_for_surface_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the thermo data for an adsorbed species,
 by desorbing it, finding the thermo of the gas-phase
 species, then adding an adsorption correction that
@@ -182,7 +181,7 @@ Does not apply linear scaling relationship.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_depository">
-<code class="sig-name descname">get_thermo_data_from_depository</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_depository" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_thermo_data_from_depository</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_depository" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all possible sets of thermodynamic parameters for a given
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code> object <cite>species</cite> from the depository. If no
 depository is loaded, a <code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseError</span></code> is raised.</p>
@@ -191,7 +190,7 @@ depository is loaded, a <code class="xref py py-class docutils literal notransla
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_groups">
-<code class="sig-name descname">get_thermo_data_from_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_groups" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_thermo_data_from_groups</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of thermodynamic parameters corresponding to a given
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code> object <cite>species</cite> by estimation using the group
 additivity values. If no group additivity values are loaded, a
@@ -204,7 +203,7 @@ the resonance isomers (items in <cite>species.molecule</cite> list) are sorted i
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_libraries">
-<code class="sig-name descname">get_thermo_data_from_libraries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">training_set</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_libraries" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_thermo_data_from_libraries</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_libraries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the thermodynamic parameters for a given <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code>
 object <cite>species</cite>. This function first searches the loaded libraries
 in order, returning the first match found, before failing and returning None.
@@ -216,7 +215,7 @@ rate calculation.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_library">
-<code class="sig-name descname">get_thermo_data_from_library</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">library</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_library" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_thermo_data_from_library</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">library</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of thermodynamic parameters corresponding to a given
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code> object <cite>species</cite> from the specified thermodynamics
 <cite>library</cite>. If <cite>library</cite> is a string, the list of libraries is searched
@@ -228,7 +227,7 @@ for a library with that name. If no match is found in that library,
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_ml">
-<code class="sig-name descname">get_thermo_data_from_ml</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">ml_estimator</span></em>, <em class="sig-param"><span class="n">ml_settings</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_ml" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_thermo_data_from_ml</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_estimator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_ml" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of thermodynamic parameters corresponding to a
 given <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code> object <cite>species</cite> by estimation using the
 ML estimator. Also compare the estimated uncertainties to the
@@ -243,28 +242,28 @@ This should be done later by the calling function.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.load">
-<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">libraries</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">depository</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">surface</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depository</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the thermo database from the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.load_depository">
-<code class="sig-name descname">load_depository</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load_depository" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_depository</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load_depository" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the thermo database from the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.load_groups">
-<code class="sig-name descname">load_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load_groups" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_groups</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the thermo database from the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.load_libraries">
-<code class="sig-name descname">load_libraries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">libraries</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load_libraries" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_libraries</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load_libraries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the thermo database from the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo database.</p>
 <p>If no libraries are given, all are loaded.</p>
@@ -272,35 +271,35 @@ points to the top-level folder of the thermo database.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.load_old">
-<code class="sig-name descname">load_old</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load_old" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_old</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load_old" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the old RMG thermo database from the given <cite>path</cite> on disk, where
 <cite>path</cite> points to the top-level folder of the old RMG database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.load_surface">
-<code class="sig-name descname">load_surface</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load_surface" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_surface</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.load_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the metal database from the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.prioritize_thermo">
-<code class="sig-name descname">prioritize_thermo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">thermo_data_list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.prioritize_thermo" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">prioritize_thermo</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermo_data_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.prioritize_thermo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use some metrics to reorder a list of thermo data from best to worst.
 Return a list of indices with the desired order associated with the index of thermo from the data list.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.prune_heteroatoms">
-<code class="sig-name descname">prune_heteroatoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">allowed</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.prune_heteroatoms" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">prune_heteroatoms</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allowed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.prune_heteroatoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove all species from thermo libraries that contain atoms other than those allowed.</p>
 <p>This is useful before saving the database for use in RMG-Java</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.record_polycylic_generic_nodes">
-<code class="sig-name descname">record_polycylic_generic_nodes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.record_polycylic_generic_nodes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">record_polycylic_generic_nodes</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.record_polycylic_generic_nodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identify generic nodes in tree for polycyclic groups.
 Saves them as a list in the <cite>generic_nodes</cite> attribute
 in the polycyclic <a class="reference internal" href="thermogroups.html#rmgpy.data.thermo.ThermoGroups" title="rmgpy.data.thermo.ThermoGroups"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThermoGroups</span></code></a> object, which
@@ -310,7 +309,7 @@ must be pre-loaded.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.record_ring_generic_nodes">
-<code class="sig-name descname">record_ring_generic_nodes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.record_ring_generic_nodes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">record_ring_generic_nodes</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.record_ring_generic_nodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identify generic nodes in tree for ring groups.
 Saves them as a list in the <cite>generic_nodes</cite> attribute
 in the ring <a class="reference internal" href="thermogroups.html#rmgpy.data.thermo.ThermoGroups" title="rmgpy.data.thermo.ThermoGroups"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThermoGroups</span></code></a> object, which
@@ -320,49 +319,49 @@ must be pre-loaded.</p>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.save">
-<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the thermo database to the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.save_depository">
-<code class="sig-name descname">save_depository</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save_depository" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_depository</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save_depository" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the thermo depository to the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo depository.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.save_groups">
-<code class="sig-name descname">save_groups</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save_groups" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_groups</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the thermo groups to the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo groups.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.save_libraries">
-<code class="sig-name descname">save_libraries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save_libraries" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_libraries</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save_libraries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the thermo libraries to the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the thermo libraries.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.save_old">
-<code class="sig-name descname">save_old</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save_old" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_old</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save_old" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the old RMG thermo database to the given <cite>path</cite> on disk, where
 <cite>path</cite> points to the top-level folder of the old RMG database.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.save_surface">
-<code class="sig-name descname">save_surface</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save_surface" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">save_surface</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.save_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the metal library to the given <cite>path</cite> on disk, where <cite>path</cite>
 points to the top-level folder of the metal library.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.set_binding_energies">
-<code class="sig-name descname">set_binding_energies</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">binding_energies</span><span class="o">=</span><span class="default_value">'Pt111'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.set_binding_energies" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">set_binding_energies</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binding_energies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Pt111'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.set_binding_energies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets and stores the atomic binding energies specified in the input file.</p>
 <p>All adsorbates will be scaled to use these elemental binding energies.</p>
 <dl class="field-list simple">
@@ -472,7 +471,7 @@ quantities) as values</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

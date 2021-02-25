@@ -61,7 +61,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.pdep.SingleExponentialDown<a class="headerlink" href="#rmgpy-pdep-singleexponentialdown" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="rmgpy.pdep.SingleExponentialDown">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.pdep.</code><code class="sig-name descname">SingleExponentialDown</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">alpha0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">T0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.pdep.</span></code><code class="sig-name descname"><span class="pre">SingleExponentialDown</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a single exponential down model of collisional energy
 transfer. The attributes are:</p>
 <table class="docutils align-default">
@@ -101,19 +101,19 @@ equation</p>
 temperature-independent value for <span class="math notranslate nohighlight">\(\alpha\)</span>.</p>
 <dl class="py attribute">
 <dt id="rmgpy.pdep.SingleExponentialDown.T0">
-<code class="sig-name descname">T0</code><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.T0" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">T0</span></code><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.T0" title="Permalink to this definition">¶</a></dt>
 <dd><p>The reference temperature.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="rmgpy.pdep.SingleExponentialDown.alpha0">
-<code class="sig-name descname">alpha0</code><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.alpha0" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">alpha0</span></code><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.alpha0" title="Permalink to this definition">¶</a></dt>
 <dd><p>The average energy transferred in a deactivating collision at the reference temperature.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.pdep.SingleExponentialDown.as_dict">
-<code class="sig-name descname">as_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.as_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">as_dict</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for dumping objects as dictionaries for YAML files</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -127,7 +127,7 @@ temperature-independent value for <span class="math notranslate nohighlight">\(\
 
 <dl class="py method">
 <dt id="rmgpy.pdep.SingleExponentialDown.calculate_collision_efficiency">
-<code class="sig-name descname">calculate_collision_efficiency</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em>, <em class="sig-param">ndarray e_list</em>, <em class="sig-param">ndarray j_list</em>, <em class="sig-param">ndarray dens_states</em>, <em class="sig-param">double E0</em>, <em class="sig-param">double e_reac</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.calculate_collision_efficiency" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">calculate_collision_efficiency</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">j_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dens_states</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">E0</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">e_reac</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.calculate_collision_efficiency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate an efficiency factor for collisions, particularly useful for the
 modified strong collision method. The collisions involve the given
 <cite>species</cite> with density of states <cite>dens_states</cite> corresponding to energies
@@ -147,7 +147,7 @@ described by Chang, Bozzelli, and Dean <a class="reference internal" href="../..
 
 <dl class="py method">
 <dt id="rmgpy.pdep.SingleExponentialDown.generate_collision_matrix">
-<code class="sig-name descname">generate_collision_matrix</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em>, <em class="sig-param">ndarray dens_states</em>, <em class="sig-param">ndarray e_list</em>, <em class="sig-param">ndarray j_list=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.generate_collision_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_collision_matrix</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dens_states</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">j_list=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.generate_collision_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate and return the collision matrix
 <span class="math notranslate nohighlight">\(\matrix{M}_\mathrm{coll} / \omega = \matrix{P} - \matrix{I}\)</span>
 corresponding to this collision model for a given set of energies
@@ -157,7 +157,7 @@ corresponding to this collision model for a given set of energies
 
 <dl class="py method">
 <dt id="rmgpy.pdep.SingleExponentialDown.get_alpha">
-<code class="sig-name descname">get_alpha</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.get_alpha" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_alpha</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.get_alpha" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the <span class="math notranslate nohighlight">\(\alpha\)</span> parameter - the average energy
 transferred in a deactivating collision - in J/mol at temperature <cite>T</cite>
 in K.</p>
@@ -165,7 +165,7 @@ in K.</p>
 
 <dl class="py method">
 <dt id="rmgpy.pdep.SingleExponentialDown.make_object">
-<code class="sig-name descname">make_object</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">dict data</em>, <em class="sig-param">dict class_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.make_object" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">make_object</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">data</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">class_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.make_object" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for constructing objects from a dictionary (used when loading YAML files)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -182,7 +182,7 @@ in K.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.pdep.SingleExponentialDown.n">
-<code class="sig-name descname">n</code><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.n" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">n</span></code><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.n" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -286,7 +286,7 @@ in K.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

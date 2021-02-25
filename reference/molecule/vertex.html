@@ -13,7 +13,6 @@
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -61,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.graph.Vertex<a class="headerlink" href="#rmgpy-molecule-graph-vertex" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="rmgpy.molecule.graph.Vertex">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.molecule.graph.</code><code class="sig-name descname">Vertex</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.graph.</span></code><code class="sig-name descname"><span class="pre">Vertex</span></code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base class for vertices in a graph. Contains several connectivity values
 useful for accelerating isomorphism searches, as proposed by
 <a class="reference external" href="http://dx.doi.org/10.1021/c160017a018">Morgan (1965)</a>.</p>
@@ -102,7 +101,7 @@ useful for accelerating isomorphism searches, as proposed by
 </table>
 <dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.connectivity1">
-<code class="sig-name descname">connectivity1</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity1" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">connectivity1</span></code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity1" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -113,7 +112,7 @@ useful for accelerating isomorphism searches, as proposed by
 
 <dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.connectivity2">
-<code class="sig-name descname">connectivity2</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity2" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">connectivity2</span></code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity2" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -124,7 +123,7 @@ useful for accelerating isomorphism searches, as proposed by
 
 <dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.connectivity3">
-<code class="sig-name descname">connectivity3</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity3" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">connectivity3</span></code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.connectivity3" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -135,7 +134,7 @@ useful for accelerating isomorphism searches, as proposed by
 
 <dl class="py method">
 <dt id="rmgpy.molecule.graph.Vertex.copy">
-<code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex">Vertex</a><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.copy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">copy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex"><span class="pre">Vertex</span></a><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of the vertex. The default implementation assumes that no
 semantic information is associated with each vertex, and therefore
 simply returns a new <a class="reference internal" href="#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex"><code class="xref py py-class docutils literal notranslate"><span class="pre">Vertex</span></code></a> object.</p>
@@ -143,7 +142,7 @@ simply returns a new <a class="reference internal" href="#rmgpy.molecule.graph.V
 
 <dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.edges">
-<code class="sig-name descname">edges</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.edges" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">edges</span></code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.edges" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -154,7 +153,7 @@ simply returns a new <a class="reference internal" href="#rmgpy.molecule.graph.V
 
 <dl class="py method">
 <dt id="rmgpy.molecule.graph.Vertex.equivalent">
-<code class="sig-name descname">equivalent</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Vertex other</em>, <em class="sig-param">bool strict=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.graph.Vertex.equivalent" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">equivalent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">other</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if two vertices <cite>self</cite> and <cite>other</cite> are semantically
 equivalent, or <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code> if not. You should reimplement this
 function in a derived class if your vertices have semantic information.</p>
@@ -162,7 +161,7 @@ function in a derived class if your vertices have semantic information.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.ignore">
-<code class="sig-name descname">ignore</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.ignore" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">ignore</span></code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.ignore" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -173,7 +172,7 @@ function in a derived class if your vertices have semantic information.</p>
 
 <dl class="py method">
 <dt id="rmgpy.molecule.graph.Vertex.is_specific_case_of">
-<code class="sig-name descname">is_specific_case_of</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.graph.Vertex.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">is_specific_case_of</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> is semantically more specific than <cite>other</cite>,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. You should reimplement this function in a derived
 class if your edges have semantic information.</p>
@@ -181,7 +180,7 @@ class if your edges have semantic information.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.mapping">
-<code class="sig-name descname">mapping</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.mapping" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">mapping</span></code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.mapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.molecule.graph.Vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -192,13 +191,13 @@ class if your edges have semantic information.</p>
 
 <dl class="py method">
 <dt id="rmgpy.molecule.graph.Vertex.reset_connectivity_values">
-<code class="sig-name descname">reset_connectivity_values</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.reset_connectivity_values" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">reset_connectivity_values</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.reset_connectivity_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the cached structure information for this vertex.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.sorting_label">
-<code class="sig-name descname">sorting_label</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.sorting_label" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">sorting_label</span></code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.sorting_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -209,7 +208,7 @@ class if your edges have semantic information.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.molecule.graph.Vertex.terminal">
-<code class="sig-name descname">terminal</code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.terminal" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">terminal</span></code><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.terminal" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -313,7 +312,7 @@ class if your edges have semantic information.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

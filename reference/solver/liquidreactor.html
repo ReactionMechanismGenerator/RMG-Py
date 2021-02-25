@@ -61,13 +61,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.solver.LiquidReactor<a class="headerlink" href="#rmgpy-solver-liquidreactor" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="rmgpy.solver.LiquidReactor">
-<em class="property">class </em><code class="sig-prename descclassname">rmgpy.solver.</code><code class="sig-name descname">LiquidReactor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">T</span></em>, <em class="sig-param"><span class="n">initial_concentrations</span></em>, <em class="sig-param"><span class="n">n_sims</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">termination</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sensitive_species</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sensitivity_threshold</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">sens_conditions</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">const_spc_names</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.solver.</span></code><code class="sig-name descname"><span class="pre">LiquidReactor</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_concentrations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">termination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitive_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">const_spc_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor" title="Permalink to this definition">¶</a></dt>
 <dd><p>A reaction system consisting of a homogeneous, isothermal, constant volume batch
 reactor. These assumptions allow for a number of optimizations that enable
 this solver to complete very rapidly, even for large kinetic models.</p>
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.Keq">
-<code class="sig-name descname">Keq</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.Keq" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">Keq</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.Keq" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -78,7 +78,7 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.P">
-<code class="sig-name descname">P</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.P" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">P</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.P" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.quantity.ScalarQuantity</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -89,7 +89,7 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.T">
-<code class="sig-name descname">T</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.T" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">T</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.T" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.quantity.ScalarQuantity</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -100,7 +100,7 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.Trange">
-<code class="sig-name descname">Trange</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.Trange" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">Trange</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.Trange" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -111,7 +111,7 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.V">
-<code class="sig-name descname">V</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.V" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">V</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.V" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -122,14 +122,14 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.add_reactions_to_surface">
-<code class="sig-name descname">add_reactions_to_surface</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list new_surface_reactions</em>, <em class="sig-param">list new_surface_reaction_inds</em>, <em class="sig-param">list surface_species</em>, <em class="sig-param">list surface_reactions</em>, <em class="sig-param">list edge_species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.add_reactions_to_surface" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">add_reactions_to_surface</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">new_surface_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">new_surface_reaction_inds</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.add_reactions_to_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>moves new surface reactions to the surface
 done after the while loop before the simulate call ends</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.advance">
-<code class="sig-name descname">advance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.advance" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">advance</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.advance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate from the current value of the independent variable to a
 specified value <cite>tout</cite>, taking as many steps as necessary. The resulting
 values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and
@@ -139,7 +139,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.atol_array">
-<code class="sig-name descname">atol_array</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.atol_array" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">atol_array</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.atol_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -150,7 +150,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.bimolecular_threshold">
-<code class="sig-name descname">bimolecular_threshold</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.bimolecular_threshold" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">bimolecular_threshold</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.bimolecular_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -161,7 +161,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.compute_network_variables">
-<code class="sig-name descname">compute_network_variables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">pdep_networks</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.compute_network_variables" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">compute_network_variables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdep_networks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.compute_network_variables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the arrays containing network information:</p>
 <ul class="simple">
 <li><dl class="simple">
@@ -181,14 +181,14 @@ product side of a reaction.</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.compute_rate_derivative">
-<code class="sig-name descname">compute_rate_derivative</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.compute_rate_derivative" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">compute_rate_derivative</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.compute_rate_derivative" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns derivative vector df/dk_j where dy/dt = f(y, t, k) and
 k_j is the rate parameter for the jth core reaction.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.const_spc_indices">
-<code class="sig-name descname">const_spc_indices</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.const_spc_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">const_spc_indices</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.const_spc_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -199,7 +199,7 @@ k_j is the rate parameter for the jth core reaction.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.const_spc_names">
-<code class="sig-name descname">const_spc_names</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.const_spc_names" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">const_spc_names</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.const_spc_names" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -210,7 +210,7 @@ k_j is the rate parameter for the jth core reaction.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.constant_volume">
-<code class="sig-name descname">constant_volume</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.constant_volume" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">constant_volume</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.constant_volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -221,14 +221,14 @@ k_j is the rate parameter for the jth core reaction.</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.convert_initial_keys_to_species_objects">
-<code class="sig-name descname">convert_initial_keys_to_species_objects</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">species_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.convert_initial_keys_to_species_objects" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">convert_initial_keys_to_species_objects</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.convert_initial_keys_to_species_objects" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the initial_concentrations dictionary from species names into species objects,
 using the given dictionary of species.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.core_reaction_rates">
-<code class="sig-name descname">core_reaction_rates</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.core_reaction_rates" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">core_reaction_rates</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.core_reaction_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -239,7 +239,7 @@ using the given dictionary of species.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.core_species_concentrations">
-<code class="sig-name descname">core_species_concentrations</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.core_species_concentrations" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">core_species_concentrations</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.core_species_concentrations" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -250,7 +250,7 @@ using the given dictionary of species.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.core_species_consumption_rates">
-<code class="sig-name descname">core_species_consumption_rates</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.core_species_consumption_rates" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">core_species_consumption_rates</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.core_species_consumption_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -261,7 +261,7 @@ using the given dictionary of species.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.core_species_production_rates">
-<code class="sig-name descname">core_species_production_rates</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.core_species_production_rates" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">core_species_production_rates</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.core_species_production_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -272,7 +272,7 @@ using the given dictionary of species.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.core_species_rates">
-<code class="sig-name descname">core_species_rates</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.core_species_rates" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">core_species_rates</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.core_species_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -283,7 +283,7 @@ using the given dictionary of species.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.dydt0">
-<code class="sig-name descname">dydt0</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.dydt0" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">dydt0</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.dydt0" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -294,7 +294,7 @@ using the given dictionary of species.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.edge_reaction_rates">
-<code class="sig-name descname">edge_reaction_rates</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.edge_reaction_rates" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">edge_reaction_rates</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.edge_reaction_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -305,7 +305,7 @@ using the given dictionary of species.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.edge_species_rates">
-<code class="sig-name descname">edge_species_rates</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.edge_species_rates" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">edge_species_rates</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.edge_species_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -316,7 +316,7 @@ using the given dictionary of species.</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.generate_rate_coefficients">
-<code class="sig-name descname">generate_rate_coefficients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">core_reactions</span></em>, <em class="sig-param"><span class="n">edge_reactions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.generate_rate_coefficients" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_rate_coefficients</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.generate_rate_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>Populates the forwardRateCoefficients, reverseRateCoefficients and equilibriumConstants
 arrays with the values computed at the temperature and (effective) pressure of the
 reacion system.</p>
@@ -324,47 +324,47 @@ reacion system.</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.generate_reactant_product_indices">
-<code class="sig-name descname">generate_reactant_product_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">core_reactions</span></em>, <em class="sig-param"><span class="n">edge_reactions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.generate_reactant_product_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_reactant_product_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.generate_reactant_product_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a matrix for the reactants and products.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.generate_reaction_indices">
-<code class="sig-name descname">generate_reaction_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">core_reactions</span></em>, <em class="sig-param"><span class="n">edge_reactions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.generate_reaction_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_reaction_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.generate_reaction_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assign an index to each reaction (core first, then edge) and
 store the (reaction, index) pair in a dictionary.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.generate_species_indices">
-<code class="sig-name descname">generate_species_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">core_species</span></em>, <em class="sig-param"><span class="n">edge_species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.generate_species_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">generate_species_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.generate_species_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assign an index to each species (core first, then edge) and
 store the (species, index) pair in a dictionary.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.get_const_spc_indices">
-<code class="sig-name descname">get_const_spc_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">core_species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.get_const_spc_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_const_spc_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.get_const_spc_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allow to identify constant Species position in solver</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.get_layering_indices">
-<code class="sig-name descname">get_layering_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.get_layering_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_layering_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.get_layering_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>determines the edge reaction indices that indicate reactions that are valid for movement from
 edge to surface based on the layering constraint</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.get_species_index">
-<code class="sig-name descname">get_species_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">spc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.get_species_index" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_species_index</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.get_species_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieves the index that is associated with the parameter species
 from the species index dictionary.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.get_threshold_rate_constants">
-<code class="sig-name descname">get_threshold_rate_constants</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">model_settings</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.get_threshold_rate_constants" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_threshold_rate_constants</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.get_threshold_rate_constants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the threshold rate constants for reaction filtering.</p>
 <p>model_settings is not used here, but is needed so that the method
 matches the one in simpleReactor.</p>
@@ -372,7 +372,7 @@ matches the one in simpleReactor.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.initial_concentrations">
-<code class="sig-name descname">initial_concentrations</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initial_concentrations" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">initial_concentrations</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initial_concentrations" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -383,7 +383,7 @@ matches the one in simpleReactor.</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.initialize">
-<code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initialize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">initialize</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the DASPK solver by setting the initial values of the
 independent variable <cite>t0</cite>, dependent variables <cite>y0</cite>, and first
 derivatives <cite>dydt0</cite>. If provided, the derivatives must be consistent
@@ -396,19 +396,19 @@ individual values for each dependent variable.</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.initialize_model">
-<code class="sig-name descname">initialize_model</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list core_species</em>, <em class="sig-param">list core_reactions</em>, <em class="sig-param">list edge_species</em>, <em class="sig-param">list edge_reactions</em>, <em class="sig-param">list surface_species=None</em>, <em class="sig-param">list surface_reactions=None</em>, <em class="sig-param">list pdep_networks=None</em>, <em class="sig-param">atol=1e-16</em>, <em class="sig-param">rtol=1e-8</em>, <em class="sig-param">sensitivity=False</em>, <em class="sig-param">sens_atol=1e-6</em>, <em class="sig-param">sens_rtol=1e-4</em>, <em class="sig-param">filter_reactions=False</em>, <em class="sig-param">dict conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initialize_model" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">initialize_model</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_species=None</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_reactions=None</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">pdep_networks=None</span></em>, <em class="sig-param"><span class="pre">atol=1e-16</span></em>, <em class="sig-param"><span class="pre">rtol=1e-8</span></em>, <em class="sig-param"><span class="pre">sensitivity=False</span></em>, <em class="sig-param"><span class="pre">sens_atol=1e-6</span></em>, <em class="sig-param"><span class="pre">sens_rtol=1e-4</span></em>, <em class="sig-param"><span class="pre">filter_reactions=False</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">conditions=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initialize_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a simulation of the liquid reactor using the provided kinetic
 model.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.initialize_solver">
-<code class="sig-name descname">initialize_solver</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initialize_solver" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">initialize_solver</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initialize_solver" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.initialize_surface">
-<code class="sig-name descname">initialize_surface</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list core_species</em>, <em class="sig-param">list core_reactions</em>, <em class="sig-param">list surface_species</em>, <em class="sig-param">list surface_reactions</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initialize_surface" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">initialize_surface</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_reactions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initialize_surface" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>removes surface_species and surface_reactions from  until they are self consistent:</dt><dd><ol class="arabic simple">
 <li><p>every reaction has one species in the surface</p></li>
@@ -420,19 +420,19 @@ model.</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.initiate_tolerances">
-<code class="sig-name descname">initiate_tolerances</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">atol</span><span class="o">=</span><span class="default_value">1e-16</span></em>, <em class="sig-param"><span class="n">rtol</span><span class="o">=</span><span class="default_value">1e-08</span></em>, <em class="sig-param"><span class="n">sensitivity</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">sens_atol</span><span class="o">=</span><span class="default_value">1e-06</span></em>, <em class="sig-param"><span class="n">sens_rtol</span><span class="o">=</span><span class="default_value">0.0001</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initiate_tolerances" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">initiate_tolerances</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_atol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initiate_tolerances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the number of differential equations and initializes the tolerance arrays.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.jacobian">
-<code class="sig-name descname">jacobian</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double t</em>, <em class="sig-param">ndarray y</em>, <em class="sig-param">ndarray dydt</em>, <em class="sig-param">double cj</em>, <em class="sig-param">ndarray senpar=np.zeros(1</em>, <em class="sig-param">np.float64)</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.jacobian" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">jacobian</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">t</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">y</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dydt</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">cj</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">senpar=np.zeros(1</span></em>, <em class="sig-param"><span class="pre">np.float64)</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.jacobian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the analytical Jacobian for the reaction system.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.jacobian_matrix">
-<code class="sig-name descname">jacobian_matrix</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.jacobian_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">jacobian_matrix</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.jacobian_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -443,7 +443,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.kb">
-<code class="sig-name descname">kb</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.kb" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">kb</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.kb" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -454,7 +454,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.kf">
-<code class="sig-name descname">kf</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.kf" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">kf</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.kf" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -465,19 +465,19 @@ model.</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.log_conversions">
-<code class="sig-name descname">log_conversions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">species_index</span></em>, <em class="sig-param"><span class="n">y0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.log_conversions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">log_conversions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.log_conversions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log information about the current conversion values.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.log_rates">
-<code class="sig-name descname">log_rates</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double char_rate</em>, <em class="sig-param">species</em>, <em class="sig-param">double species_rate</em>, <em class="sig-param">double max_dif_ln_accum_num</em>, <em class="sig-param">network</em>, <em class="sig-param">double network_rate</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.log_rates" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">log_rates</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">char_rate</span></em>, <em class="sig-param"><span class="pre">species</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">species_rate</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">max_dif_ln_accum_num</span></em>, <em class="sig-param"><span class="pre">network</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">network_rate</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.log_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log information about the current maximum species and network rates.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.max_edge_species_rate_ratios">
-<code class="sig-name descname">max_edge_species_rate_ratios</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">max_edge_species_rate_ratios</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -488,7 +488,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.max_network_leak_rate_ratios">
-<code class="sig-name descname">max_network_leak_rate_ratios</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.max_network_leak_rate_ratios" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">max_network_leak_rate_ratios</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.max_network_leak_rate_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -499,7 +499,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.n_sims">
-<code class="sig-name descname">n_sims</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.n_sims" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">n_sims</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.n_sims" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -510,7 +510,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.neq">
-<code class="sig-name descname">neq</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.neq" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">neq</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.neq" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -521,7 +521,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.network_indices">
-<code class="sig-name descname">network_indices</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.network_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">network_indices</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.network_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -532,7 +532,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.network_leak_coefficients">
-<code class="sig-name descname">network_leak_coefficients</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.network_leak_coefficients" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">network_leak_coefficients</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.network_leak_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -543,7 +543,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.network_leak_rates">
-<code class="sig-name descname">network_leak_rates</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.network_leak_rates" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">network_leak_rates</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.network_leak_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -554,7 +554,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.num_core_reactions">
-<code class="sig-name descname">num_core_reactions</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.num_core_reactions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">num_core_reactions</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.num_core_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -565,7 +565,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.num_core_species">
-<code class="sig-name descname">num_core_species</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.num_core_species" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">num_core_species</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.num_core_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -576,7 +576,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.num_edge_reactions">
-<code class="sig-name descname">num_edge_reactions</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.num_edge_reactions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">num_edge_reactions</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.num_edge_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -587,7 +587,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.num_edge_species">
-<code class="sig-name descname">num_edge_species</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.num_edge_species" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">num_edge_species</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.num_edge_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -598,7 +598,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.num_pdep_networks">
-<code class="sig-name descname">num_pdep_networks</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.num_pdep_networks" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">num_pdep_networks</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.num_pdep_networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -609,7 +609,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.product_indices">
-<code class="sig-name descname">product_indices</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.product_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">product_indices</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.product_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -620,7 +620,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.prunable_network_indices">
-<code class="sig-name descname">prunable_network_indices</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.prunable_network_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">prunable_network_indices</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.prunable_network_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -631,7 +631,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.prunable_networks">
-<code class="sig-name descname">prunable_networks</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.prunable_networks" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">prunable_networks</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.prunable_networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -642,7 +642,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.prunable_species">
-<code class="sig-name descname">prunable_species</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.prunable_species" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">prunable_species</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.prunable_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -653,7 +653,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.prunable_species_indices">
-<code class="sig-name descname">prunable_species_indices</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.prunable_species_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">prunable_species_indices</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.prunable_species_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -664,7 +664,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.reactant_indices">
-<code class="sig-name descname">reactant_indices</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.reactant_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">reactant_indices</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.reactant_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -675,7 +675,7 @@ model.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.reaction_index">
-<code class="sig-name descname">reaction_index</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.reaction_index" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">reaction_index</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.reaction_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -686,7 +686,7 @@ model.</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.reset_max_edge_species_rate_ratios">
-<code class="sig-name descname">reset_max_edge_species_rate_ratios</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.reset_max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">reset_max_edge_species_rate_ratios</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.reset_max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function sets max_edge_species_rate_ratios back to zero
 for pruning of ranged reactors it is important to avoid doing this
 every initialization</p>
@@ -694,14 +694,14 @@ every initialization</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.residual">
-<code class="sig-name descname">residual</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">double t</em>, <em class="sig-param">ndarray y</em>, <em class="sig-param">ndarray dydt</em>, <em class="sig-param">ndarray senpar=np.zeros(1</em>, <em class="sig-param">np.float64)</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.residual" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">residual</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">t</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">y</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dydt</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">senpar=np.zeros(1</span></em>, <em class="sig-param"><span class="pre">np.float64)</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.residual" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the residual function for the governing DAE system for the
 liquid reaction system.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.rtol_array">
-<code class="sig-name descname">rtol_array</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.rtol_array" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">rtol_array</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.rtol_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -712,7 +712,7 @@ liquid reaction system.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.sens_conditions">
-<code class="sig-name descname">sens_conditions</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.sens_conditions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">sens_conditions</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.sens_conditions" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -723,7 +723,7 @@ liquid reaction system.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.sensitive_species">
-<code class="sig-name descname">sensitive_species</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.sensitive_species" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">sensitive_species</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.sensitive_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -734,7 +734,7 @@ liquid reaction system.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.sensitivity_coefficients">
-<code class="sig-name descname">sensitivity_coefficients</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.sensitivity_coefficients" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">sensitivity_coefficients</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.sensitivity_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -745,7 +745,7 @@ liquid reaction system.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.sensitivity_threshold">
-<code class="sig-name descname">sensitivity_threshold</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.sensitivity_threshold" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">sensitivity_threshold</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.sensitivity_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -756,7 +756,7 @@ liquid reaction system.</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.set_initial_conditions">
-<code class="sig-name descname">set_initial_conditions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.set_initial_conditions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">set_initial_conditions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.set_initial_conditions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the initial conditions of the rate equations that represent the
 current reactor model.</p>
 <p>The volume is set to the value in m3 required to contain
@@ -769,24 +769,24 @@ y0 instance attribute.</p>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.set_initial_derivative">
-<code class="sig-name descname">set_initial_derivative</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.set_initial_derivative" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">set_initial_derivative</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.set_initial_derivative" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the derivative of the species moles with respect to the independent variable (time)
 equal to the residual.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.set_initial_reaction_thresholds">
-<code class="sig-name descname">set_initial_reaction_thresholds</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.set_initial_reaction_thresholds" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">set_initial_reaction_thresholds</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.set_initial_reaction_thresholds" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.set_prunable_indices">
-<code class="sig-name descname">set_prunable_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">edge_species</span></em>, <em class="sig-param"><span class="n">pdep_networks</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.set_prunable_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">set_prunable_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdep_networks</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.set_prunable_indices" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.simulate">
-<code class="sig-name descname">simulate</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">list core_species</em>, <em class="sig-param">list core_reactions</em>, <em class="sig-param">list edge_species</em>, <em class="sig-param">list edge_reactions</em>, <em class="sig-param">list surface_species</em>, <em class="sig-param">list surface_reactions</em>, <em class="sig-param">list pdep_networks=None</em>, <em class="sig-param">bool prune=False</em>, <em class="sig-param">bool sensitivity=False</em>, <em class="sig-param">list sens_worksheet=None</em>, <em class="sig-param">model_settings=None</em>, <em class="sig-param">simulator_settings=None</em>, <em class="sig-param">dict conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.simulate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">simulate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">pdep_networks=None</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">prune=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">sensitivity=False</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">sens_worksheet=None</span></em>, <em class="sig-param"><span class="pre">model_settings=None</span></em>, <em class="sig-param"><span class="pre">simulator_settings=None</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">conditions=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.simulate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate the reaction system with the provided reaction model,
 consisting of lists of core species, core reactions, edge species, and
 edge reactions. As the simulation proceeds the system is monitored for
@@ -799,7 +799,7 @@ the desired termination criteria and the model remains valid throughout,
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.snapshots">
-<code class="sig-name descname">snapshots</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.snapshots" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">snapshots</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.snapshots" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -810,7 +810,7 @@ the desired termination criteria and the model remains valid throughout,
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.species_index">
-<code class="sig-name descname">species_index</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.species_index" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">species_index</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.species_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -821,7 +821,7 @@ the desired termination criteria and the model remains valid throughout,
 
 <dl class="py method">
 <dt id="rmgpy.solver.LiquidReactor.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">step</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform one simulation step from the current value of the independent
 variable toward (but not past) a specified value <cite>tout</cite>. The resulting
 values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and
@@ -831,7 +831,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.surface_reaction_indices">
-<code class="sig-name descname">surface_reaction_indices</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.surface_reaction_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">surface_reaction_indices</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.surface_reaction_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -842,7 +842,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.surface_species_indices">
-<code class="sig-name descname">surface_species_indices</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.surface_species_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">surface_species_indices</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.surface_species_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -853,7 +853,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.t0">
-<code class="sig-name descname">t0</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.t0" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">t0</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.t0" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘float’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -864,7 +864,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.termination">
-<code class="sig-name descname">termination</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.termination" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">termination</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.termination" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -875,7 +875,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.trimolecular">
-<code class="sig-name descname">trimolecular</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.trimolecular" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">trimolecular</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.trimolecular" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -886,7 +886,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.trimolecular_threshold">
-<code class="sig-name descname">trimolecular_threshold</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.trimolecular_threshold" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">trimolecular_threshold</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.trimolecular_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -897,7 +897,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.unimolecular_threshold">
-<code class="sig-name descname">unimolecular_threshold</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.unimolecular_threshold" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">unimolecular_threshold</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.unimolecular_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -908,7 +908,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.valid_layering_indices">
-<code class="sig-name descname">valid_layering_indices</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.valid_layering_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">valid_layering_indices</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.valid_layering_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -919,7 +919,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.viscosity">
-<code class="sig-name descname">viscosity</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.viscosity" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">viscosity</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.viscosity" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -930,7 +930,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py attribute">
 <dt id="rmgpy.solver.LiquidReactor.y0">
-<code class="sig-name descname">y0</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.y0" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">y0</span></code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.y0" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1034,7 +1034,7 @@ and <cite>dydt</cite> attributes.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
