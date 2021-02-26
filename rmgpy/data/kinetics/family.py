@@ -1528,6 +1528,9 @@ class KineticsFamily(Database):
                 atom_labels['*5'].label = '*1'
                 atom_labels['*2'].label = '*4'
                 atom_labels['*4'].label = '*2'
+            else:
+                raise KineticsError(f"Unsure how to reverse labels of {label} reaction.")
+
         if not forward:
             template = self.reverse_template
             product_num = self.reactant_num or len(template.products)
