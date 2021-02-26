@@ -1521,6 +1521,13 @@ class KineticsFamily(Database):
                 atom_labels['*2'].label = '*3'
                 atom_labels['*3'].label = '*2'
 
+            elif label == 'surface_abstraction_single_vdw':
+                # *3 migrates from *2-*1 to *4-*5
+                # so swap *1 with *5, swap *2 with *4
+                atom_labels['*1'].label = '*5'
+                atom_labels['*5'].label = '*1'
+                atom_labels['*2'].label = '*4'
+                atom_labels['*4'].label = '*2'
         if not forward:
             template = self.reverse_template
             product_num = self.reactant_num or len(template.products)
