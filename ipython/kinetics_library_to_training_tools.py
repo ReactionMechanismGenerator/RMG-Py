@@ -50,7 +50,7 @@ def get_duplicate_reactions(training_depository,reaction):
 
     duplicate_reactions = []
     for i,training_entry in training_depository.entries.items():
-        if reaction.is_isomorphic(training_entry.item,generate_initial_map=True):
+        if reaction.is_isomorphic(training_entry.item, generate_initial_map=True):
             training_entry.item.kinetics = training_entry.data
             identical = reaction.kinetics.is_identical_to(training_entry.data)
             duplicate_reactions.append((training_entry, identical))
@@ -59,7 +59,7 @@ def get_duplicate_reactions(training_depository,reaction):
     
     return duplicate_reactions
 
-def compare_kinetics(database, lib_rxn, old_kinetics, metal, duplicate_reactions=None):
+def kinetics_comparison(database, lib_rxn, forward, old_kinetics, metal, duplicate_reactions=None):
     new_kinetics = lib_rxn.kinetics
     tlistinv = np.linspace(1000 / 2000, 1000 / 300, num=15)
     tlist = 1000 * np.reciprocal(tlistinv)
@@ -74,34 +74,55 @@ def compare_kinetics(database, lib_rxn, old_kinetics, metal, duplicate_reactions
         spc.thermo = database.thermo.get_thermo_data(copy_spc, training_set=True, metal_to_scale_to=metal)
         spc.thermo = spc.thermo.to_wilhoit()
     rxn_copy = deepcopy(lib_rxn)
+    if not forward:
+        rxn_copy.reactants = lib_rxn.products
+        rxn_copy.products = lib_rxn.reactants
     rxn_copy.kinetics = old_kinetics
     rxn_copy.fix_barrier_height()
     old_kinetics = rxn_copy.kinetics
+    if not forward:
+        rxn_copy.kinetics = rxn_copy.generate_reverse_rate_coefficient(surface_site_density=2.5e-5)
     # Evaluate kinetics
-    if isinstance(new_kinetics, StickingCoefficient):
-        newklist = np.log10(np.array([lib_rxn.get_surface_rate_coefficient(t, 2.5e-5) for t in tlist]))
-    else:
-        newklist = np.log10(np.array([new_kinetics.get_rate_coefficient(t) for t in tlist]))
-    if isinstance(old_kinetics, StickingCoefficient):
-        oldklist = np.log10(np.array([rxn_copy.get_surface_rate_coefficient(t, 2.5e-5) for t in tlist]))
-    else:
-        oldklist = np.log10(np.array([old_kinetics.get_rate_coefficient(t) for t in tlist]))
+    newklist = np.log10(np.array([lib_rxn.get_rate_coefficient(t, surface_site_density=2.5e-5) for t in tlist]))
+    oldklist = np.log10(np.array([rxn_copy.get_rate_coefficient(t, surface_site_density=2.5e-5) for t in tlist]))
 
     if isinstance(new_kinetics, StickingCoefficient) or \
         isinstance(old_kinetics, StickingCoefficient):
         # StickingCoeffs dont have `is_similar` method
-        is_similar = None
+        is_similar = '?'
     else:
         is_similar = new_kinetics.is_similar_to(old_kinetics)
 
     other_kinetics = []
     if duplicate_reactions:
-        for training_entry, _ in duplicate_reactions:
-            if isinstance(training_entry.item.kinetics, StickingCoefficient):
-                other_kinetics.append((training_entry.index,
-                np.log10(np.array([training_entry.item.get_surface_rate_coefficient(t, 2.5e-5) for t in tlist]))))
+        for entry, _ in duplicate_reactions:
+            if not entry.item.is_isomorphic(lib_rxn, either_direction=False):
+                entry.item.kinetics = entry.data
+                # this training entry is in reverse
+                if entry.facet is None:
+                    metal = entry.metal # could be None
+                else:
+                    metal = entry.metal + entry.facet
+                for spc in (entry.item.reactants + entry.item.products):
+                    copy_spc = spc.copy(deep=True)
+                    # Clear atom labels to avoid effects on thermo generation, ok because this is a deepcopy
+                    copy_spc.molecule[0].clear_labeled_atoms()
+                    try:
+                        copy_spc.generate_resonance_structures()
+                    except:
+                        pass
+                    spc.thermo = database.thermo.get_thermo_data(copy_spc, training_set=True, metal_to_scale_to=metal)
+                    spc.thermo = spc.thermo.to_wilhoit()
+                rxn_copy = deepcopy(entry.item)
+                rxn_copy.reactants = entry.item.products
+                rxn_copy.products = entry.item.reactants
+                data = entry.item.generate_reverse_rate_coefficient(surface_site_density=2.5e-5)
+                rxn_copy.kinetics = data
+                other_kinetics.append(
+                (entry.index,np.log10(np.array([rxn_copy.get_rate_coefficient(t,surface_site_density=2.5e-5) for t in tlist]))))   
             else:
-                other_kinetics.append((training_entry.index,np.log10(np.array([training_entry.data.get_rate_coefficient(t) for t in tlist]))))
+                other_kinetics.append(
+                (entry.index,np.log10(np.array([entry.item.get_rate_coefficient(t,surface_site_density=2.5e-5) for t in tlist]))))
 
     return tlistinv, newklist, oldklist, old_kinetics, other_kinetics, is_similar
 
@@ -303,7 +324,7 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                     new_kinetics = lib_rxn.kinetics
                     template_kinetics = database.kinetics.families[fam_rxn.family].get_kinetics_for_template(template, degeneracy=fam_rxn.degeneracy)[0]
                     tlistinv, newklist, oldklist, old_kinetics, other_kinetics, is_similar = \
-                        compare_kinetics(database, lib_rxn, template_kinetics, metal, duplicate_reactions)
+                        kinetics_comparison(database, lib_rxn, forward, template_kinetics, metal, duplicate_reactions)
                     # Create plot
                     plt.cla()
                     plt.plot(tlistinv, newklist, label='New')
