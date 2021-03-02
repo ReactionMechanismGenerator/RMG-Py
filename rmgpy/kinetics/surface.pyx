@@ -176,7 +176,7 @@ cdef class StickingCoefficient(KineticsModel):
         nu_ki = self._nu_ki
         species = self._species  # todo: need to get the concentration/surface site fraction/surface coverage of said species
         if species:
-            stickingCoefficient = A * (T / T0) ** n * exp(-Ea / (constants.R * T)) *
+            stickingCoefficient = A * (T / T0) ** n * exp(-Ea / (constants.R * T)) # * # todo: fix this
         else:
             stickingCoefficient = A * (T / T0) ** n * exp(-Ea / (constants.R * T))
 
@@ -234,7 +234,11 @@ cdef class StickingCoefficient(KineticsModel):
             exp(sqrt(cov[0, 0])),
             sqrt(cov[1, 1]),
             sqrt(cov[2, 2]) * 0.001,
-        )  # todo: add in coverage params here?
+        )
+        self.eps_ki  # todo: figure out what these should be
+        self.mu_ki
+        self.nu_ki
+        self.sepcies
 
         return self
 
