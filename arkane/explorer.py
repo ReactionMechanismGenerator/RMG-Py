@@ -43,6 +43,7 @@ from rmgpy.data.rmg import get_db
 from rmgpy.exceptions import InputError
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.statmech.conformer import Conformer
 
 ################################################################################
 
@@ -244,6 +245,16 @@ class ExplorerJob(object):
                             reaction_model.enlarge(react_edge=True, unimolecular_react=flags,
                                                    bimolecular_react=np.zeros((len(reaction_model.core.species),
                                                                               len(reaction_model.core.species))))
+        
+        for network in self.networks:
+            for rxn in network.path_reactions:
+                if rxn.transition_state is None:
+                    if rxn.network_kinetics is None:
+                        E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si
+                    else:
+                        E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si
+                    rxn.transition_state = rmgpy.species.TransitionState(conformer=Conformer(E0=(E0 * 0.001, "kJ/mol")))
+                
         for network in self.networks:
             rm_rxns = []
             for rxn in network.path_reactions:  # remove reactions with forbidden species
