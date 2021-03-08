@@ -34,6 +34,7 @@ functionality to RMG.
 
 import logging
 import os.path
+import shutil
 
 import mpmath as mp
 import numpy as np
@@ -530,7 +531,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         self.n_reac = len(self.reactants)
         self.n_prod = len(self.products)
 
-    def remove_reactions(self, reaction_model, rxns=None, prods=None):
+    def remove_reactions(self, reaction_model, networks, rxns=None, prods=None):
         """
         removes a list of reactions from the network and all reactions/products
         left disconnected by removing those reactions
@@ -575,15 +576,19 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         reaction_model.update_unimolecular_reaction_networks()
 
         if reaction_model.pressure_dependence.output_file:
-            path = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep')
+            path0 = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep')
+            path = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep','final')
+            if not os.path.exists(path):
+                os.mkdir(path)
+            for name in os.listdir(path0):
+                if name.endswith('.py') and '_' in name:
+                    s1,s2 = name.split('_')
+                    index = int(s1[7:])
+                    N_isomers = int(s2.split('.')[0]) 
+                    if index == self.index and N_isomers == len(self.isomers):
+                        shutil.copy(os.path.join(path0, name),
+                                  os.path.join(path, 'network{}_reduced.py'.format(networks.index(self))))
 
-            for name in os.listdir(path):  # remove the old reduced file
-                if name.endswith('reduced.py'):
-                    os.remove(os.path.join(path, name))
-
-            for name in os.listdir(path):  # find the new file and name it network_reduced.py
-                if not "full" in name:
-                    os.rename(os.path.join(path, name), os.path.join(path, name.split("_")[0]+"_reduced.py"))
 
     def merge(self, other):
         """
