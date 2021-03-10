@@ -46,13 +46,20 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, SurfaceArrhenius, \
 full = 12
 half = full / 2
 
-def get_duplicate_reactions(training_depository,reaction):
+def get_duplicate_reactions(training_depository,reaction,metal):
 
     duplicate_reactions = []
-    for i,training_entry in training_depository.entries.items():
+    for training_entry in training_depository.entries.values():
         if reaction.is_isomorphic(training_entry.item, generate_initial_map=True):
             training_entry.item.kinetics = training_entry.data
             identical = reaction.kinetics.is_identical_to(training_entry.data)
+            if identical and metal is not None:
+                if training_entry.facet is None:
+                    training_entry_metal = training_entry.metal # could be None
+                else:
+                    training_entry_metal = training_entry.metal + training_entry.facet
+                if training_entry_metal != metal:
+                    identical = False
             duplicate_reactions.append((training_entry, identical))
             if identical:
                 break
@@ -289,10 +296,15 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                     lib_rxn.reactants = fam_rxn.products
                     lib_rxn.products = fam_rxn.reactants
 
+                if entry.facet is None:
+                    metal = entry.metal # could be None
+                else:
+                    metal = entry.metal + entry.facet
+
                 identical = False
                 duplicate_reactions = []
                 if training_depository is not None:
-                    duplicate_reactions = get_duplicate_reactions(training_depository,lib_rxn)
+                    duplicate_reactions = get_duplicate_reactions(training_depository,lib_rxn,metal)
                     for training_entry, identical in duplicate_reactions:
                         if identical == True:
                             logging.warning(f"{lib_rxn.index} {lib_rxn.label} in {library_name} is identical to "
@@ -314,11 +326,6 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                     lib_rxn.kinetics.A = ScalarQuantity(value=A.value_si*A.get_conversion_factor_from_si_to_cm_mol_s(),units=units,uncertainty_type=A.uncertainty_type,uncertainty=A.uncertainty_si*A.get_conversion_factor_from_si_to_cm_mol_s())
 
                 template = database.kinetics.families[fam_rxn.family].retrieve_template(fam_rxn.template)
-
-                if entry.facet is None:
-                    metal = entry.metal # could be None
-                else:
-                    metal = entry.metal + entry.facet
 
                 if compare_kinetics:
                     new_kinetics = lib_rxn.kinetics
