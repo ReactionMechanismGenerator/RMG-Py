@@ -84,6 +84,11 @@ cdef class StickingCoefficient(KineticsModel):
         string = 'StickingCoefficient(A={0!r}, n={1!r}, Ea={2!r}, T0={3!r}'.format(self.A, self.n, self.Ea, self.T0)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.coverage_dependence is not None:
+            string += ", coverage_dependence={"
+            for species, parameters in self.coverage_dependence.items():
+                string += f"'{species}': {{'E':({parameters['E'].value}, '{parameters['E'].units}'), 'm':{parameters['m']}, 'a':{parameters['a']}}}"
+            string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
@@ -285,6 +290,11 @@ cdef class StickingCoefficientBEP(KineticsModel):
                                                                                          self.E0)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.coverage_dependence is not None:
+            string += ", coverage_dependence={"
+            for species, parameters in self.coverage_dependence.items():
+                string += f"'{species}': {{'E':({parameters['E'].value}, '{parameters['E'].units}'), 'm':{parameters['m']}, 'a':{parameters['a']}}}"
+            string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
@@ -482,6 +492,11 @@ cdef class SurfaceArrhenius(Arrhenius):
         string = 'SurfaceArrhenius(A={0!r}, n={1!r}, Ea={2!r}, T0={3!r}'.format(self.A, self.n, self.Ea, self.T0)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.coverage_dependence is not None:
+            string += ", coverage_dependence={"
+            for species, parameters in self.coverage_dependence.items():
+                string += f"'{species}': {{'E':({parameters['E'].value}, '{parameters['E'].units}'), 'm':{parameters['m']}, 'a':{parameters['a']}}}"
+            string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
         if self.uncertainty is not None: string += ', uncertainty={0!r}'.format(self.uncertainty)
@@ -571,6 +586,11 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
                                                                                       self.E0)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.coverage_dependence is not None:
+            string += ", coverage_dependence={"
+            for species, parameters in self.coverage_dependence.items():
+                string += f"'{species}': {{'E':({parameters['E'].value}, '{parameters['E'].units}'), 'm':{parameters['m']}, 'a':{parameters['a']}}}"
+            string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
         if self.uncertainty is not None: string += ', uncertainty={0!r}'.format(self.uncertainty)
