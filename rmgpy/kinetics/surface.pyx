@@ -129,8 +129,14 @@ cdef class StickingCoefficient(KineticsModel):
         """The coverage dependence parameters."""
         def __get__(self):
             return self._coverage_dependence
-        def __set__(self, dict):
-            self._coverage_dependence = dict
+        def __set__(self, value):
+             self._coverage_dependence = {}
+             if value:
+                 for species, parameters in value.items():
+                     processed_parameters = {'E': quantity.Energy(parameters['E']),
+                                             'm': quantity.Dimensionless(parameters['m']),
+                                             'a': quantity.Dimensionless(parameters['a'])}
+                     self._coverage_dependence[species] = processed_parameters
 
     cpdef double get_sticking_coefficient(self, double T) except -1:
         """
@@ -324,8 +330,14 @@ cdef class StickingCoefficientBEP(KineticsModel):
         """The coverage dependence parameters."""
         def __get__(self):
             return self._coverage_dependence
-        def __set__(self, dict):
-            self._coverage_dependence = dict
+        def __set__(self, value):
+             self._coverage_dependence = {}
+             if value:
+                 for species, parameters in value.items():
+                     processed_parameters = {'E': quantity.Energy(parameters['E']),
+                                             'm': quantity.Dimensionless(parameters['m']),
+                                             'a': quantity.Dimensionless(parameters['a'])}
+                     self._coverage_dependence[species] = processed_parameters
 
     cpdef double get_sticking_coefficient(self, double T, double dHrxn=0.0) except -1:
         """
@@ -453,8 +465,14 @@ cdef class SurfaceArrhenius(Arrhenius):
         """The coverage dependence parameters."""
         def __get__(self):
             return self._coverage_dependence
-        def __set__(self, dict):
-            self._coverage_dependence = dict
+        def __set__(self, value):
+             self._coverage_dependence = {}
+             if value:
+                 for species, parameters in value.items():
+                     processed_parameters = {'E': quantity.Energy(parameters['E']),
+                                             'm': quantity.Dimensionless(parameters['m']),
+                                             'a': quantity.Dimensionless(parameters['a'])}
+                     self._coverage_dependence[species] = processed_parameters
 
     def __repr__(self):
         """
@@ -535,8 +553,14 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
         """The coverage dependence parameters."""
         def __get__(self):
             return self._coverage_dependence
-        def __set__(self, dict):
-            self._coverage_dependence = dict
+        def __set__(self, value):
+             self._coverage_dependence = {}
+             if value:
+                 for species, parameters in value.items():
+                     processed_parameters = {'E': quantity.Energy(parameters['E']),
+                                             'm': quantity.Dimensionless(parameters['m']),
+                                             'a': quantity.Dimensionless(parameters['a'])}
+                     self._coverage_dependence[species] = processed_parameters
 
     def __repr__(self):
         """
