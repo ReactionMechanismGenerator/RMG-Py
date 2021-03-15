@@ -102,7 +102,7 @@ def _check_openbabel():
     missing = False
 
     try:
-        import openbabel
+        from openbabel import openbabel
     except ImportError:
         print('{0:<30}{1}'.format('OpenBabel',
                                   'Not found. Necessary for SMILES/InChI functionality for nitrogen compounds.'))
