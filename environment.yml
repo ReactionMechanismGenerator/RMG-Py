@@ -28,7 +28,7 @@ dependencies:
   - nose
   - rmg::numdifftools
   - numpy >=1.10.0
-  - openbabel
+  - conda-forge::openbabel >= 3
   - pandas
   - psutil
   - rmg::pydas >=1.0.2
