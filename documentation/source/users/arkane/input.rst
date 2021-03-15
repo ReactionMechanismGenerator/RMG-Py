@@ -110,9 +110,9 @@ The table below shows which model chemistries have atomization energy correction
 corrections (BC), and spin orbit corrections (SOC). It also lists which elements are available
 for a given model chemistry.
 
-================================================ ===== ==== ==== ========== ====================
+================================================ ===== ==== ==== ========== =========================
 Model Chemistry                                  AEC   BC   SOC  Freq Scale Supported Elements
-================================================ ===== ==== ==== ========== ====================
+================================================ ===== ==== ==== ========== =========================
 ``'CBS-QB3'``                                     v    v    v    v (0.990)  H, C, N, O, P, S
 ``'CBS-QB3-Paraskevas'``                          v    v    v    v (0.990)  H, C, N, O, P, S
 ``'G3'``                                          v         v               H, C, N, O, P, S
@@ -143,7 +143,9 @@ Model Chemistry                                  AEC   BC   SOC  Freq Scale Supp
 ``'B3LYP/6-31G(d,p)'``                            v    v         v (0.961)  H, C, O, S
 ``'MRCI+Davidson/aug-cc-pV(T+d)Z'``               v         v               H, C, N, O, S
 ``'wb97x-d/aug-cc-pvtz'``                         v         v               H, C, N, O
-================================================ ===== ==== ==== ========== ====================
+``'wb97x-d3/def2-tzvp'``                          v    v    v    v (0.984)  H, C, N, O, F, S, Cl, Br
+``'b97d-3/def2-msvp'``                            v    v    v    v (1.014)  H, C, N, O, F, S, Cl, Br
+================================================ ===== ==== ==== ========== =========================
 
 Notes:
 
