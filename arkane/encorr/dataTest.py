@@ -35,7 +35,7 @@ import unittest
 from collections import Counter
 
 import numpy as np
-import pybel
+from openbabel import pybel
 
 from rmgpy.molecule import Molecule as RMGMolecule
 
