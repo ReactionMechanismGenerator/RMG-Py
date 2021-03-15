@@ -144,6 +144,7 @@ Model Chemistry                                  AEC   BC   SOC  Freq Scale Supp
 ``'MRCI+Davidson/aug-cc-pV(T+d)Z'``               v         v               H, C, N, O, S
 ``'wb97x-d/aug-cc-pvtz'``                         v         v               H, C, N, O
 ``'wb97x-d3/def2-tzvp'``                          v    v    v    v (0.984)  H, C, N, O, F, S, Cl, Br
+``'wb97m-v/def2-tzvpd'``                          v         v    v (1.002)  H, C, N, O, F, S, Cl, Br
 ``'b97d-3/def2-msvp'``                            v    v    v    v (1.014)  H, C, N, O, F, S, Cl, Br
 ================================================ ===== ==== ==== ========== =========================
 
