@@ -5,9 +5,9 @@ channels:
   - conda-forge
 dependencies:
   - cairo
-  - rmg::cairocffi
+  - cairocffi
   - rmg::cantera >=2.3.0
-  - rmg::cclib
+  - cclib
   - rmg::chemprop
   - coolprop
   - coverage
@@ -28,7 +28,7 @@ dependencies:
   - nose
   - rmg::numdifftools
   - numpy >=1.10.0
-  - rmg::openbabel
+  - openbabel
   - pandas
   - psutil
   - rmg::pydas >=1.0.2
