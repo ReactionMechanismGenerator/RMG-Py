@@ -696,6 +696,41 @@ class RMG(util.Subject):
                 reaction_system.attach(SimulationProfilePlotter(
                     self.output_directory, index, self.reaction_model.core.species))
 
+    def check_thermo_valid(self):
+        """
+        Ensures thermo is valid at the minimum and maximum temperatures of the reacting system.
+        If the thermo is invalid, a new NASA polynomial is fit so that the minimum and maximum temperatues
+        are in the range of the reacting system.
+        """
+        for spcs in (self.reaction_model.core.species + self.reaction_model.edge.species):
+            thermo = spcs.thermo
+            Tmin, Tmax = thermo.is_temperature_valid(self.Tmin), thermo.is_temperature_valid(self.Tmax)
+            if Tmin and Tmax:
+                continue
+            else:
+                w = thermo.to_wilhoit()
+                if not Tmin:
+                    if not Tmax:
+                        logging.warning(f"{thermo} for {spcs} is invalid at {self.Tmin} K and {self.Tmax} K")
+                        Tint = (self.Tmin+self.Tmax+100)/2
+                        new_thermo = w.to_nasa(self.Tmin,self.Tmax + 100,Tint)
+                        comment = f"\nTmin changed from {thermo.Tmin.value_si} to {self.Tmin}"
+                        comment += f"\nTmax changed from {thermo.Tmax.value_si} to {self.Tmax + 100}"
+                    else:
+                        logging.warning(f"{thermo} for {spcs} is invalid at {self.Tmin} K")
+                        Tint = (self.Tmin+thermo.Tmax.value_si)/2
+                        new_thermo = w.to_nasa(self.Tmin,thermo.Tmax.value_si,Tint)
+                        comment = f"\nTmin changed from {thermo.Tmin.value_si} to {self.Tmin}"
+                else:
+                    logging.warning(f"{thermo} for {spcs} is invalid at {self.Tmax} K")
+                    Tint = (thermo.Tmin.value_si + self.Tmax + 100)/2
+                    new_thermo = w.to_nasa(thermo.Tmin.value_si, self.Tmax + 100, Tint)
+                    comment = f"\nTmax changed from {thermo.Tmax.value_si} to {self.Tmax + 100}"
+
+            new_thermo.comment += comment
+            logging.info(comment)
+            spcs.thermo = new_thermo
+
     def execute(self, initialize=True, **kwargs):
         """
         Execute an RMG job using the command-line arguments `args` as returned
@@ -714,6 +749,7 @@ class RMG(util.Subject):
         # determine min and max values for T and P (don't determine P values for liquid reactors)
         self.Tmin = min([x.Trange[0].value_si if x.Trange else x.T.value_si for x in self.reaction_systems])
         self.Tmax = max([x.Trange[1].value_si if x.Trange else x.T.value_si for x in self.reaction_systems])
+        self.check_thermo_valid()
         try:
             self.Pmin = min([x.Prange[0].value_si if hasattr(x, 'Prange') and x.Prange else x.P.value_si for x in self.reaction_systems])
             self.Pmax = max([x.Prange[1].value_si if hasattr(x, 'Prange') and x.Prange else x.P.value_si for x in self.reaction_systems])
@@ -765,6 +801,7 @@ class RMG(util.Subject):
                                         unimolecular_react=self.unimolecular_react,
                                         bimolecular_react=self.bimolecular_react,
                                         trimolecular_react=self.trimolecular_react)
+            self.check_thermo_valid()
 
         if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
             self.reaction_model.set_thermodynamic_filtering_parameters(
@@ -923,6 +960,7 @@ class RMG(util.Subject):
                         # Add objects to enlarge to the core first
                         for objectToEnlarge in objects_to_enlarge:
                             self.reaction_model.enlarge(objectToEnlarge)
+                        self.check_thermo_valid()
 
                         if model_settings.filter_reactions:
                             # Run a raw simulation to get updated reaction system threshold values
@@ -1018,6 +1056,7 @@ class RMG(util.Subject):
                                                     unimolecular_react=self.unimolecular_react,
                                                     bimolecular_react=self.bimolecular_react,
                                                     trimolecular_react=self.trimolecular_react)
+                        self.check_thermo_valid()
 
                         if old_edge_size != len(self.reaction_model.edge.reactions) or old_core_size != len(
                                 self.reaction_model.core.reactions):
