@@ -150,6 +150,13 @@ Chebyshev polynomial of degree <span class="math notranslate nohighlight">\(n\)<
 <dd><p>Changes kinetics rates by a multiple <code class="docutils literal notranslate"><span class="pre">factor</span></code>.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt id="rmgpy.kinetics.Chebyshev.chebyshev">
+<code class="sig-name descname"><span class="pre">chebyshev</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">n</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">x</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.chebyshev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value of the nth-order Chebyshev polynomial at the given
+value of <cite>x</cite>.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt id="rmgpy.kinetics.Chebyshev.coeffs">
 <code class="sig-name descname"><span class="pre">coeffs</span></code><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.coeffs" title="Permalink to this definition">¶</a></dt>
@@ -246,6 +253,22 @@ a numpy array.  This function helps assist rapid effective pressure calculations
 <dd><p>Return the rate coefficient in the appropriate combination of m^3,
 mol, and s at temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa by
 evaluating the Chebyshev expression.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rmgpy.kinetics.Chebyshev.get_reduced_pressure">
+<code class="sig-name descname"><span class="pre">get_reduced_pressure</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">P</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.get_reduced_pressure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the reduced pressure corresponding to the given pressure
+<cite>P</cite> in Pa. This maps the logarithm of the pressure onto the domain
+[-1, 1] using the <cite>Pmin</cite> and <cite>Pmax</cite> attributes as the limits.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rmgpy.kinetics.Chebyshev.get_reduced_temperature">
+<code class="sig-name descname"><span class="pre">get_reduced_temperature</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.get_reduced_temperature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the reduced temperature corresponding to the given temperature
+<cite>T</cite> in K. This maps the inverse of the temperature onto the domain
+[-1, 1] using the <cite>Tmin</cite> and <cite>Tmax</cite> attributes as the limits.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -429,7 +452,7 @@ where T’s are in units of K, P’s in units of Pa, and coeffs is 2D array of (
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
