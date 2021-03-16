@@ -245,6 +245,7 @@ class Reaction:
         else:
             return rmgpy.chemkin.write_reaction_string(self)
 
+    # WIP Chris B
     def to_cantera(self, species_list=None, use_chemkin_identifier=False):
         """
         Converts the RMG Reaction object to a Cantera Reaction object
@@ -283,9 +284,21 @@ class Reaction:
                 ct_products[product_name] = 1
         if self.specific_collider:  # add a specific collider if exists
             ct_collider[self.specific_collider.to_chemkin() if use_chemkin_identifier else self.specific_collider.label] = 1
+        
+        if self.kinetics.cov:
+            # todo: extract the SMILES and convert to RMG naming convention
+            ct_coverage = self.kinetics.cov
 
         if self.kinetics:
             if isinstance(self.kinetics, Arrhenius):
+                if self.kinetics.cov:  # todo: make coverage a list
+                    # coverage deps is a dict according to cantera documentation
+                    # key of dict is species names, values are tuples for a, m, and E
+                    # units are 
+                    # a:  m, kmol, s units
+                    # m: nondimensional
+                    # E: j/kmol 
+                    ct_reaction = ct.InterfaceReaction(reactants=ct_reactants, products=ct_products, coverage_deps=ct_coverage)
                 # Create an Elementary Reaction
                 ct_reaction = ct.ElementaryReaction(reactants=ct_reactants, products=ct_products)
             elif isinstance(self.kinetics, MultiArrhenius):
