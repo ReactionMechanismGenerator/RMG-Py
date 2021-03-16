@@ -41,7 +41,9 @@ import numpy as np
 
 from rmgpy.pdep import Configuration
 import rmgpy.quantity as quantity
+from rmgpy.reaction import Reaction
 from rmgpy.species import TransitionState
+from rmgpy.kinetics.arrhenius import Arrhenius
 from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongCollisionError, PressureDependenceError
 
 ################################################################################
@@ -335,7 +337,7 @@ class PDepSensitivity(object):
                 transition_states = []
                 for rxn in self.job.network.path_reactions:
                     # if rxn.transition_state is not None:
-                    transition_states.append(rxn.transition_state)
+                    transition_states.append(rxn)
                 entry = (wells+transition_states)[j]
                 if entry in wells:
                     logging.info("\n\nPerturbing well '{0}' by {1}:".format(entry, self.perturbation))
@@ -385,11 +387,17 @@ class PDepSensitivity(object):
         perturbation = self.perturbation.value_si
         if unperturb:
             perturbation *= -1
-        if isinstance(entry, TransitionState):
-            entry.conformer.E0 = quantity.Energy(entry.conformer.E0.value_si + perturbation, 'J/mol')
+        if isinstance(entry, Reaction):
+            entry.transition_state.conformer.E0 = quantity.Energy(entry.transition_state.conformer.E0.value_si + perturbation, 'J/mol')
+            if entry.kinetics:
+                if isinstance(entry.kinetics,Arrhenius):
+                    entry.kinetics.Ea = quantity.Energy(entry.kinetics.Ea.value_si + perturbation, 'J/mol')
+                else:
+                    logging.error("Non-Arrhenius kinetics not pertubed")
         elif isinstance(entry, Configuration):
-            entry.species[0].conformer.E0 = quantity.Energy(entry.species[0].conformer.E0.value_si + perturbation,
-                                                            'J/mol')
+            entry.species[0].conformer.E0 = quantity.Energy(entry.species[0].conformer.E0.value_si + perturbation, 'J/mol')
+        else:
+            raise ValueError
 
     def unperturb(self, entry):
         """A helper function for calling self.perturb cleanly when unperturbing"""
