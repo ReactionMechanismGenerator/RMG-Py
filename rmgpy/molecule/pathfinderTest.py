@@ -399,9 +399,9 @@ class FindAllylDelocalizationPathsTest(unittest.TestCase):
         self.assertTrue(paths)
 
     def test_nitrogenated_birad(self):
-        smiles = '[CH]=C[N]'
+        smiles = '[N]C=[CH]'
         mol = Molecule().from_smiles(smiles)
-        paths = find_allyl_delocalization_paths(mol.atoms[3])
+        paths = find_allyl_delocalization_paths(mol.atoms[0])
         self.assertTrue(paths)
 
 
