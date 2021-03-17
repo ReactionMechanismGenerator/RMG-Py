@@ -233,6 +233,7 @@ def to_ob_mol(mol, return_mapping=False):
         if atom.element.isotope != -1:
             a.SetIsotope(atom.element.isotope)
         a.SetFormalCharge(atom.charge)
+        # a.SetImplicitHCount(0) # the default is 0
         ob_atom_ids[atom] = a.GetId()
     orders = {1: 1, 2: 2, 3: 3, 4: 4, 1.5: 5}
     for atom1 in mol.vertices:
