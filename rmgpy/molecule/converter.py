@@ -257,6 +257,9 @@ def from_ob_mol(mol, obmol, raise_atomtype_exception=True):
     """
     Convert a OpenBabel Mol object `obmol` to a molecular structure. Uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+
+    It estimates radical placement based on undervalence of atoms,
+    and assumes overall spin multiplicity is radical count + 1
     """
     # Below are the declared variables for cythonizing the module
     # cython.declare(i=cython.int)
@@ -279,8 +282,10 @@ def from_ob_mol(mol, obmol, raise_atomtype_exception=True):
         element = elements.get_element(number, isotope or -1)
         # Process charge
         charge = obatom.GetFormalCharge()
-        obatom_multiplicity = obatom.GetSpinMultiplicity()
-        radical_electrons = obatom_multiplicity - 1 if obatom_multiplicity != 0 else 0
+        # Calculate the radical electrons due to undervalence,
+        # ignoring whatever may be set on obatom.GetSpinMultiplicity()
+        valence = obatom.GetTotalValence()
+        radical_electrons = openbabel.GetTypicalValence(number, valence, charge) - valence
 
         atom = mm.Atom(element, radical_electrons, charge, '', 0)
         mol.vertices.append(atom)
