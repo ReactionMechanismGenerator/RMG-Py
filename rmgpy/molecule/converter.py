@@ -262,9 +262,16 @@ def from_ob_mol(mol, obmol, raise_atomtype_exception=True):
     and assumes overall spin multiplicity is radical count + 1
     """
     # Below are the declared variables for cythonizing the module
-    # cython.declare(i=cython.int)
-    # cython.declare(radical_electrons=cython.int, charge=cython.int, lone_pairs=cython.int)
-    # cython.declare(atom=mm.Atom, atom1=mm.Atom, atom2=mm.Atom, bond=mm.Bond)
+    cython.declare(
+        number=cython.int,
+        isotope=cython.int,
+        element=elements.Element,
+        charge=cython.int,
+        valence=cython.int,
+        radical_electrons=cython.int,
+        atom=mm.Atom,
+        )
+
     if openbabel is None:
         raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')
 
