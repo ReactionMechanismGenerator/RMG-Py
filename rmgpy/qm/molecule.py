@@ -331,8 +331,12 @@ class QMMolecule(object):
         """
         parser = self.get_parser(self.output_file_path)
         parser.logger.setLevel(logging.ERROR)  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        parser.rotcons = [] # give it an attribute and it won't delete it, leaving it on the parser object
+        parser.molmass = None # give it an attribute and it won't delete it, leaving it on the parser object
         cclib_data = parser.parse()
         radical_number = self.molecule.get_radical_count()
+        cclib_data.rotcons = parser.rotcons # this hack required because rotcons not part of a default cclib data object
+        cclib_data.molmass = parser.molmass # this hack required because rotcons not part of a default cclib data object
         qm_data = parse_cclib_data(cclib_data, radical_number + 1)  # Should `radical_number+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
         return qm_data
 
