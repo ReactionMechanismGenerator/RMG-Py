@@ -6,30 +6,31 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 5
+    defaults:
+      run:
+        shell: bash -l {0}
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.7
-    - name: Add conda to system path
-      run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
-    - name: Install dependencies run tests
-      run: |
-        cd ..
-        git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
-        cd RMG-Py
-        conda env create -q -f environment.yml
-        source activate rmg_env
-        conda install -y -c conda-forge codecov
-        conda list
-        yes 'Yes' | /usr/share/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
-        git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
-        make
-        make test-unittests
-        make test-functional
-        make test-database
-        codecov
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: environment.yml
+          python-version: 3.7
+          activate-environment: rmg_env
+      - name: Conda info
+        run: |
+          conda info
+          conda list
+      - name: Compile and test
+        run: |
+          cd ..
+          git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+          cd RMG-Py
+          conda install -y -c conda-forge codecov
+          yes 'Yes' | ${CONDA_PREFIX}/bin/mopac $MOPACKEY > /dev/null
+          git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
+          make
+          make test-unittests
+          make test-functional
+          make test-database
+          codecov
