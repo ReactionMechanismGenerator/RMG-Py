@@ -23,10 +23,14 @@ jobs:
         run: |
           conda info
           conda list
-      - name: Install mopac
+      - name: Install MOPAC
+        env:
+          MOPACKEY: ${{ secrets.MOPACKEY }}
         timeout-minutes: 1
-        continue-on-error: true
-        run: yes 'Yes' | ${CONDA_PREFIX}/bin/mopac $MOPACKEY > /dev/null
+        continue-on-error: true # allowed to fail on pull request from a forked repository
+        run: |
+          set +o pipefail
+          yes 'Yes' | ${CONDA_PREFIX}/bin/mopac "$MOPACKEY"
       - name: Install and compile RMG
         run: |
           cd ..
