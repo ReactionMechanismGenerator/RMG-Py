@@ -133,6 +133,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 self.compat_func_name = test_name
                 yield test, family_name
 
+                test = lambda x: self.kinetics_check_coverage_dependence_units_are_correct(family_name)
+                test_name = "Kinetics surface family {0}: check coverage dependent units are correct?".format(family_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
+
             # these families have some sort of difficulty which prevents us from testing accessibility right now
             difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', 'Retroene']
 
@@ -427,6 +433,32 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 raise NameError('Entry {} with facet attribute {} does not have facet in its label'.format(entry.label, entry.facet))
             if not entry.label[0].isupper():
                 raise NameError('Entry {} should start with a capital letter'.format(entry.label))
+
+    def kinetics_check_coverage_dependence_units_are_correct(self, family_name):
+        """Test that each surface training reaction that has coverage dependent parameters has acceptable units"""
+        family = self.database.kinetics.families[family_name]
+        training = family.get_training_depository().entries.values()
+        failed = False
+
+        for entry in training:
+            cov_dep = entry.data.coverage_dependence
+            if cov_dep:
+                assert isinstance(cov_dep, dict)
+                for species, parameters in cov_dep.items():
+                    assert isinstance(species, str)
+                    assert parameters['E']
+                    if parameters['a'].units:
+                        "Should be dimensionless"
+                        failed = True
+                        logging.error(f"Entry {entry.label} has invalid units {parameters['a'].units} for a")
+                    if parameters['m'].units:
+                        "Should be dimensionless"
+                        failed = True
+                        logging.error(f"Entry {entry.label} has invalid units {parameters['m'].units} for m")
+
+        if failed:
+            raise ValueError('Surface coverage dependent parameters have incorrect units.'
+                             'Please check log warnings for all error messages.')
 
     def kinetics_check_training_reactions_have_surface_attributes(self, family_name):
         """Test that each surface training reaction has surface attributes"""
