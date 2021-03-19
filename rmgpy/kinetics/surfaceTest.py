@@ -55,6 +55,7 @@ class TestStickingCoefficient(unittest.TestCase):
         self.T0 = 1.
         self.Tmin = 300.
         self.Tmax = 3000.
+        self.coverage_dependence = {'*': {'E': (0.0, 'J/mol'), 'm': -1.0, 'a': 0.0}}
         self.comment = 'O2 dissociative'
         self.stick = StickingCoefficient(
             A=self.A,
@@ -64,6 +65,7 @@ class TestStickingCoefficient(unittest.TestCase):
             Tmin=(self.Tmin, "K"),
             Tmax=(self.Tmax, "K"),
             comment=self.comment,
+            coverage_dependence=self.coverage_dependence,
         )
 
     def test_A(self):
@@ -108,6 +110,12 @@ class TestStickingCoefficient(unittest.TestCase):
         """
         self.assertEqual(self.stick.comment, self.comment)
 
+    def test_coverage_dependence(self):
+        """
+        Test that the coverage dependent parameters was properly set.
+        """
+        self.assertEqual(self.stick.coverage_dependence, self.coverage_dependence)
+
     def test_is_temperature_valid(self):
         """
         Test the StickingCoefficient.is_temperature_valid() method.
@@ -137,6 +145,10 @@ class TestStickingCoefficient(unittest.TestCase):
         self.assertAlmostEqual(self.stick.Tmax.value, stick.Tmax.value, 4)
         self.assertEqual(self.stick.Tmax.units, stick.Tmax.units)
         self.assertEqual(self.stick.comment, stick.comment)
+        self.assertEqual(self.stick.coverage_dependence.keys(), stick.coverage_dependence.keys())
+        for species, parameters in self.stick.coverage_dependence.items():
+            for key, value in parameters.items():
+                self.assertEqual(value.value_si, stick.coverage_dependence[species][key].value_si)
         self.assertEqual(dir(self.stick), dir(stick))
 
     def test_repr(self):
@@ -160,6 +172,10 @@ class TestStickingCoefficient(unittest.TestCase):
         self.assertAlmostEqual(self.stick.Tmax.value, stick.Tmax.value, 4)
         self.assertEqual(self.stick.Tmax.units, stick.Tmax.units)
         self.assertEqual(self.stick.comment, stick.comment)
+        self.assertEqual(self.stick.coverage_dependence.keys(), stick.coverage_dependence.keys())
+        for species, parameters in self.stick.coverage_dependence.items():
+            for key, value in parameters.items():
+                self.assertEqual(value.value_si, stick.coverage_dependence[species][key].value_si)
         self.assertEqual(dir(self.stick), dir(stick))
 
     def test_copy(self):
@@ -181,6 +197,10 @@ class TestStickingCoefficient(unittest.TestCase):
         self.assertAlmostEqual(self.stick.Tmax.value, stick.Tmax.value, 4)
         self.assertEqual(self.stick.Tmax.units, stick.Tmax.units)
         self.assertEqual(self.stick.comment, stick.comment)
+        self.assertEqual(self.stick.coverage_dependence.keys(), stick.coverage_dependence.keys())
+        for species, parameters in self.stick.coverage_dependence.items():
+            for key, value in parameters.items():
+                self.assertEqual(value.value_si, stick.coverage_dependence[species][key].value_si)
         self.assertEqual(dir(self.stick), dir(stick))
 
     def test_is_identical_to(self):
@@ -207,6 +227,7 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.T0 = 1.
         self.Tmin = 300.
         self.Tmax = 3000.
+        self.coverage_dependence = {'*': {'E': (0.0, 'J/mol'), 'm': -1.0, 'a': 0.0}}
         self.comment = 'CH3x + Hx <=> CH4 + x + x'
         self.surfarr = SurfaceArrhenius(
             A=(self.A, 'm^2/(mol*s)'),
@@ -216,6 +237,7 @@ class TestSurfaceArrhenius(unittest.TestCase):
             Tmin=(self.Tmin, "K"),
             Tmax=(self.Tmax, "K"),
             comment=self.comment,
+            coverage_dependence=self.coverage_dependence,
         )
 
     def test_A(self):
@@ -260,6 +282,12 @@ class TestSurfaceArrhenius(unittest.TestCase):
         """
         self.assertEqual(self.surfarr.comment, self.comment)
 
+    def test_coverage_dependence(self):
+        """
+        Test that the coverage dependent parameters was properly set.
+        """
+        self.assertEqual(self.surfarr.coverage_dependence, self.coverage_dependence)
+
     def test_is_temperature_valid(self):
         """
         Test the SurfaceArrhenius.is_temperature_valid() method.
@@ -289,6 +317,9 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.assertAlmostEqual(self.surfarr.Tmax.value, surfarr.Tmax.value, 4)
         self.assertEqual(self.surfarr.Tmax.units, surfarr.Tmax.units)
         self.assertEqual(self.surfarr.comment, surfarr.comment)
+        for species, parameters in self.surfarr.coverage_dependence.items():
+            for key, value in parameters.items():
+                self.assertEqual(value.value_si, surfarr.coverage_dependence[species][key].value_si)
         self.assertEqual(dir(self.surfarr), dir(surfarr))
 
     def test_repr(self):
@@ -312,6 +343,10 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.assertAlmostEqual(self.surfarr.Tmax.value, surfarr.Tmax.value, 4)
         self.assertEqual(self.surfarr.Tmax.units, surfarr.Tmax.units)
         self.assertEqual(self.surfarr.comment, surfarr.comment)
+        self.assertEqual(self.surfarr.coverage_dependence.keys(), surfarr.coverage_dependence.keys())
+        for species, parameters in self.surfarr.coverage_dependence.items():
+            for key, value in parameters.items():
+                self.assertEqual(value.value_si, surfarr.coverage_dependence[species][key].value_si)
         self.assertEqual(dir(self.surfarr), dir(surfarr))
 
     def test_copy(self):
@@ -333,6 +368,10 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.assertAlmostEqual(self.surfarr.Tmax.value, surfarr.Tmax.value, 4)
         self.assertEqual(self.surfarr.Tmax.units, surfarr.Tmax.units)
         self.assertEqual(self.surfarr.comment, surfarr.comment)
+        self.assertEqual(self.surfarr.coverage_dependence.keys(), surfarr.coverage_dependence.keys())
+        for species, parameters in self.surfarr.coverage_dependence.items():
+            for key, value in parameters.items():
+                self.assertEqual(value.value_si, surfarr.coverage_dependence[species][key].value_si)
         self.assertEqual(dir(self.surfarr), dir(surfarr))
 
     def test_is_identical_to(self):
