@@ -24,6 +24,8 @@ jobs:
           conda info
           conda list
       - name: Install mopac
+        timeout-minutes: 1
+        continue-on-error: true
         run: yes 'Yes' | ${CONDA_PREFIX}/bin/mopac $MOPACKEY > /dev/null
       - name: Install and compile RMG
         run: |
@@ -35,8 +37,10 @@ jobs:
       - name: Unit tests
         run: make test-unittests
       - name: Functional tests
+        if: ${{ success() || failure() }} # Run even if the unit tests failed (but not if they were cancelled)
         run: make test-functional
       - name: Database tests
+        if: ${{ success() || failure() }} # Run even if the functional tests failed (but not if they were cancelled)
         run: make test-database
       - name: Code coverage
         run: codecov
