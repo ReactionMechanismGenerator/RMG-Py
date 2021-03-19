@@ -1,6 +1,11 @@
-on: [push]
 name: CI Tests
 
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened, ready_for_review, review_requested]
 jobs:
   build-and-test-linux:
     runs-on: ubuntu-latest
