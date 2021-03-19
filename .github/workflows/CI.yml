@@ -17,20 +17,26 @@ jobs:
           environment-file: environment.yml
           python-version: 3.7
           activate-environment: rmg_env
+      - name: Install codecov
+        run: conda install -y -c conda-forge codecov
       - name: Conda info
         run: |
           conda info
           conda list
-      - name: Compile and test
+      - name: Install mopac
+        run: yes 'Yes' | ${CONDA_PREFIX}/bin/mopac $MOPACKEY > /dev/null
+      - name: Install and compile RMG
         run: |
           cd ..
           git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
           cd RMG-Py
-          conda install -y -c conda-forge codecov
-          yes 'Yes' | ${CONDA_PREFIX}/bin/mopac $MOPACKEY > /dev/null
           git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
           make
-          make test-unittests
-          make test-functional
-          make test-database
-          codecov
+      - name: Unit tests
+        run: make test-unittests
+      - name: Functional tests
+        run: make test-functional
+      - name: Database tests
+        run: make test-database
+      - name: Code coverage
+        run: codecov
