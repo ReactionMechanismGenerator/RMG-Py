@@ -36,27 +36,8 @@ jobs:
   include:
     - stage: test
       install:
-        # Clone RMG-database
-        - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
         - cd RMG-Py
-        # Create and activate environment
-        - conda env create -q -f environment.yml
-        - source activate rmg_env
-        # Install codecov for coverage report
-        - conda install -y -c conda-forge codecov
-        - conda list
-        # Setup MOPAC license key
-        - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
-        # Install Q2DTor
-        - git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
-        # Compile RMG
-        - make
       script:
-        - make test-unittests
-        - make test-functional
-        - make test-database
-      after_success:
-        - codecov
         - bash ./deploy.sh
     - stage: documentation
       install:
