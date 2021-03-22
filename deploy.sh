@@ -2,20 +2,25 @@
 
 set -e # exit with nonzero exit code if anything fails
 
-if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+git config --global user.name "RMG Bot"
+git config --global user.email "rmg_dev@mit.edu"
+
+BRANCH=${GITHUB_REF#refs/heads/}
+
+if [ "$GITHUB_EVENT_NAME" != "push" ]; then
   echo "RMG-tests should not deploy from pull requests"
   exit 0
-elif [ "$TRAVIS_BRANCH" == "master" ]; then
+elif [ "$BRANCH" == "master" ]; then
   echo "RMG-tests should not deploy from the master branch"
   exit 0
-elif [ "$TRAVIS_BRANCH" == "stable" ]; then
+elif [ "$BRANCH" == "stable" ]; then
   echo "RMG-tests should not deploy from the stable branch"
   exit 0
 else
-  DEPLOY_BRANCH=$TRAVIS_BRANCH
+  DEPLOY_BRANCH=$BRANCH
 fi
 
-echo "TRAVIS_BUILD_DIR: $TRAVIS_BUILD_DIR"
+echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
 echo "DEPLOY_BRANCH: $DEPLOY_BRANCH"
 
 # URL for the official RMG-tests repository

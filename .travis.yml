@@ -9,7 +9,6 @@ env:
     - secure: "jIyBEzR10l5SWvY5ouEYzA8YzPHIZNMXMBdcXwuwte8NCU8GBYUqhHA1L67nTaBdLhWbrZ2NireVKPQWJp3ctcI0IB6xZzaYlVpgN/udGPO+1MZd9Xhp9TWuJWrGZ9EoWGB9L5H+O7RYwcDMVH5CUrCIBdsSJuyE8aDpky1/IVE="
 
 stages:
-  - test
   - name: documentation
     if: branch = master AND type = push
   - name: deploy
@@ -34,11 +33,6 @@ before_install:
 
 jobs:
   include:
-    - stage: test
-      install:
-        - cd RMG-Py
-      script:
-        - bash ./deploy.sh
     - stage: documentation
       install:
         - cd RMG-Py

@@ -14,7 +14,6 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
-
     steps:
       - uses: actions/checkout@v2
       - uses: conda-incubator/setup-miniconda@v2
@@ -43,6 +42,10 @@ jobs:
           cd RMG-Py
           git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
           make
+      - name: Trigger RMG-tests
+        env:
+          GH_TOKEN: ${{ secrets.RMG_DEV_TOKEN }}
+        run: ./deploy.sh
       - name: Unit tests
         run: make test-unittests
       - name: Functional tests
