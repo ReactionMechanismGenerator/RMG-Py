@@ -1,4 +1,7 @@
 #!/bin/bash
+# This script is designed to be run by Github Actions workflow
+# to trigger the RMG-tests at 
+# https://github.com/reactionmechanismgenerator/rmg-tests
 
 set -e # exit with nonzero exit code if anything fails
 
