@@ -285,27 +285,36 @@ class Reaction:
             ct_collider[self.specific_collider.to_chemkin() if use_chemkin_identifier else self.specific_collider.label] = 1
         
         ct_coverage = {} 
-        if isinstance(self.kinetics, SurfaceArrhenius):
-            if self.kinetics.cov:
-                # todo: extract the SMILES and convert to RMG naming convention, make more pythonic
-                # ask how to access smiles from kinetics object
-                print("poop")
-                # for key in self.kinetics.cov:
-                #     new_key = key
-                #     ct_coverage[new_key] = self.kinetics.cov[key])
- 
+        if self.kinetics.cov:
+            for key in self.kinetics.cov:
+
+                ct_E = self.kinetics.cov[key]['E'].value*1000 # get to J/mol
+                ct_a = self.kinetics.cov[key]['a'].value
+                ct_m = self.kinetics.cov[key]['m'].value
+                print(type(ct_a),type(ct_m))
+                ct_list = (ct_a, ct_m, ct_E)
+                cov_spec = Molecule().from_smiles(key)
+                for reac_prod in (self.products, self.reactants):
+                    for species in reac_prod:
+                        print(species)
+                        if species.smiles == cov_spec.smiles:
+                            #special case because smiles for PtH and Pt are both just [Pt]
+                            if (cov_spec.smiles == "[Pt]" and cov_spec.get_num_atoms("H") == \
+                                species.molecule[0].get_num_atoms("H")) or cov_spec.smiles != "[Pt]":
+                                new_key = species.label
+                                ct_coverage[new_key] = ct_list
+                print(ct_coverage)
+
+
         if self.kinetics:
             if isinstance(self.kinetics, Arrhenius):
-                if self.kinetics.cov:  # todo: make coverage a list
-                    # coverage deps is a dict according to cantera documentation
-                    # key of dict is species names, values are tuples for a, m, and E
-                    # units are 
-                    # a:  m, kmol, s units
-                    # m: nondimensional
-                    # E: j/kmol 
-                    ct_reaction = ct.InterfaceReaction(reactants=ct_reactants, products=ct_products, coverage_deps=ct_coverage)
+                if self.kinetics.cov:
+                    ct_reaction = ct.InterfaceReaction(reactants=ct_reactants, products=ct_products)
+                    ct_reaction.coverage_deps=ct_coverage
+                    print(ct_reaction.coverage_deps)
                 # Create an Elementary Reaction
-                ct_reaction = ct.ElementaryReaction(reactants=ct_reactants, products=ct_products)
+                else:
+                    ct_reaction = ct.ElementaryReaction(reactants=ct_reactants, products=ct_products)
             elif isinstance(self.kinetics, MultiArrhenius):
                 # Return a list of elementary reactions which are duplicates
                 ct_reaction = [ct.ElementaryReaction(reactants=ct_reactants, products=ct_products)

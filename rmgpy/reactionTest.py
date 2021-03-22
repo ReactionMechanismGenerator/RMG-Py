@@ -142,11 +142,13 @@ class TestSurfaceReaction(unittest.TestCase):
     def setUp(self):
         m_h2 = Molecule().from_smiles("[H][H]")
         m_x = Molecule().from_adjacency_list("1 X u0 p0")
-        m_hx = Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
+        m_hx = Molecule().from_smiles("[H][*]")
+        # m_hx = Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
         m_ch3 = Molecule().from_smiles("[CH3]")
         m_ch3x = Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
 
         s_h2 = Species(
+            label="H2(1)",
             molecule=[m_h2],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500, 2000],
                                      "K"),
@@ -155,6 +157,7 @@ class TestSurfaceReaction(unittest.TestCase):
                               H298=(0, "kcal/mol"),
                               S298=(31.129, "cal/(mol*K)")))
         s_x = Species(
+            label="X(2)",
             molecule=[m_x],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500, 2000],
                                      "K"),
@@ -162,6 +165,7 @@ class TestSurfaceReaction(unittest.TestCase):
                               H298=(0.0, "kcal/mol"),
                               S298=(0.0, "cal/(mol*K)")))
         s_hx = Species(
+            label="HX(3)",            
             molecule=[m_hx],
             thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500, 2000],
                                      "K"),
@@ -170,6 +174,7 @@ class TestSurfaceReaction(unittest.TestCase):
                               S298=(0.44, "cal/(mol*K)")))
 
         s_ch3 = Species(
+            label="CH3(4)",
             molecule=[m_ch3],
             thermo=NASA(polynomials=[
                 NASAPolynomial(coeffs=[3.91547, 0.00184155, 3.48741e-06, -3.32746e-09, 8.49953e-13, 16285.6, 0.351743],
@@ -183,6 +188,7 @@ class TestSurfaceReaction(unittest.TestCase):
         )
 
         s_ch3x = Species(
+            label="CH3X(5)",           
             molecule=[m_ch3x],
             thermo=NASA(polynomials=[NASAPolynomial(
                 coeffs=[-0.552219, 0.026442, -3.55617e-05, 2.60044e-08, -7.52707e-12, -4433.47, 0.692144],
@@ -233,7 +239,8 @@ class TestSurfaceReaction(unittest.TestCase):
                                       n=0.5,
                                       Ea=(5.0, 'kJ/mol'),
                                       T0=(1.0, 'K'),
-                                      cov={'*': {'E': (0.0, 'J/mol'), 'm': -1.0, 'a': 0.0}}))
+                                      cov={'*': {'E': (0.1, 'J/mol'), 'm': -1.0, 'a': 1.0},
+                                           '[H]*': {'E': (0.2, 'J/mol'), 'm': -2.0, 'a': 2.0}}))
 
     def test_is_surface_reaction_species(self):
         """Test is_surface_reaction for reaction based on Species """
@@ -308,11 +315,10 @@ class TestSurfaceReaction(unittest.TestCase):
 
     @wipd
     def test_cantera_export(self):
-        
-        self.rxn_covdep.to_cantera(self)
-
-        self.assertEqual(0,1)
-        #stuff
+        covdep_rxn = self.rxn_covdep.to_cantera(self)
+        test_coverages = {'X(2)': (1.0, -1.0, 100.0), 'HX(3)': (2.0, -2.0, 200.0)}
+        coverages = covdep_rxn.coverage_deps
+        self.assertDictEqual(test_coverages,coverages)
 
         self.assertEqual(1, 1)
         # stuff
