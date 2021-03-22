@@ -7,21 +7,8 @@ git config --global user.email "rmg_dev@mit.edu"
 
 BRANCH=${GITHUB_REF#refs/heads/}
 
-if [ "$GITHUB_EVENT_NAME" != "push" ]; then
-  echo "RMG-tests should not deploy from pull requests"
-  exit 0
-elif [ "$BRANCH" == "master" ]; then
-  echo "RMG-tests should not deploy from the master branch"
-  exit 0
-elif [ "$BRANCH" == "stable" ]; then
-  echo "RMG-tests should not deploy from the stable branch"
-  exit 0
-else
-  DEPLOY_BRANCH=$BRANCH
-fi
-
 echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-echo "DEPLOY_BRANCH: $DEPLOY_BRANCH"
+echo "BRANCH: $BRANCH"
 
 # URL for the official RMG-tests repository
 REPO=https://${GH_TOKEN}@github.com/ReactionMechanismGenerator/RMG-tests.git
@@ -39,7 +26,7 @@ cd $TARGET_DIR
 
 # create a new branch in RMG-tests with the name equal to
 # the branch name of the tested RMG-Py branch:
-RMGTESTSBRANCH=rmgpy-$DEPLOY_BRANCH
+RMGTESTSBRANCH=rmgpy-$BRANCH
 
 git checkout -b $RMGTESTSBRANCH || true 
 git checkout $RMGTESTSBRANCH

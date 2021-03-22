@@ -43,6 +43,7 @@ jobs:
           git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
           make
       - name: Trigger RMG-tests
+        if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/stable' }} # only push events to branches other than master and stable
         env:
           GH_TOKEN: ${{ secrets.RMG_DEV_TOKEN }}
         run: ./deploy.sh
