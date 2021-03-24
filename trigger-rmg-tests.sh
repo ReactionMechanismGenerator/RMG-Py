@@ -1,22 +1,17 @@
 #!/bin/bash
+# This script is designed to be run by Github Actions workflow
+# to trigger the RMG-tests at 
+# https://github.com/reactionmechanismgenerator/rmg-tests
 
 set -e # exit with nonzero exit code if anything fails
 
-if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-  echo "RMG-tests should not deploy from pull requests"
-  exit 0
-elif [ "$TRAVIS_BRANCH" == "master" ]; then
-  echo "RMG-tests should not deploy from the master branch"
-  exit 0
-elif [ "$TRAVIS_BRANCH" == "stable" ]; then
-  echo "RMG-tests should not deploy from the stable branch"
-  exit 0
-else
-  DEPLOY_BRANCH=$TRAVIS_BRANCH
-fi
+git config --global user.name "RMG Bot"
+git config --global user.email "rmg_dev@mit.edu"
 
-echo "TRAVIS_BUILD_DIR: $TRAVIS_BUILD_DIR"
-echo "DEPLOY_BRANCH: $DEPLOY_BRANCH"
+BRANCH=${GITHUB_REF#refs/heads/}
+
+echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+echo "BRANCH: $BRANCH"
 
 # URL for the official RMG-tests repository
 REPO=https://${GH_TOKEN}@github.com/ReactionMechanismGenerator/RMG-tests.git
@@ -34,7 +29,7 @@ cd $TARGET_DIR
 
 # create a new branch in RMG-tests with the name equal to
 # the branch name of the tested RMG-Py branch:
-RMGTESTSBRANCH=rmgpy-$DEPLOY_BRANCH
+RMGTESTSBRANCH=rmgpy-$BRANCH
 
 git checkout -b $RMGTESTSBRANCH || true 
 git checkout $RMGTESTSBRANCH
