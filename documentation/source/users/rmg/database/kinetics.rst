@@ -347,8 +347,6 @@ There are currently 58 reaction families in RMG:
     :scale: 40%
 .. |f66| image:: images/kinetics_families/Surface_Dissociation_vdW.png
     :scale: 40%
-.. |f67| image:: images/kinetics_families/Surface_Recombination.png
-    :scale: 40%
 .. |f68| image:: images/kinetics_families/intra_H_migration.png
     :scale: 40%
 .. |f69| image:: images/kinetics_families/intra_NO2_ONO_conversion.png
@@ -439,7 +437,6 @@ There are currently 58 reaction families in RMG:
     **Surface_Bidentate_Dissociation**                    |f64|
     **Surface_Dissociation**                              |f65|
     **Surface_Dissociation_vdW**                          |f66|
-    **Surface_Recombination**                             |f67|
     **intra_H_migration**                                 |f68|
     **intra_NO2_ONO_conversion**                          |f69|
     **intra_OH_migration**                                |f70|
