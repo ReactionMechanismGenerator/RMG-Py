@@ -18,19 +18,27 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    Note that you should restart your terminal in order for the changes to take effect, as the installer will tell you.
 
 #. There are a few system-level dependencies which are required and should not be installed via Anaconda. These include
-   `Git <https://git-scm.com/>`_ for version control and GNU ``make``, ``gcc``, and ``g++`` for compiling RMG.
+   `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG.
 
    For Linux users, you can check whether these are already installed by simply calling them via the command line, which
    will let you know if they are missing. To install any missing packages, you should use the appropriate package manager
-   for your system. For example, on Ubuntu you would use the ``apt`` package manager. For Ubuntu 16 and newer, the
-   necessary command would be ::
+   for your system.
+   
+   On Ubuntu and Debian the package manager is ``apt`` ::
 
     sudo apt install git gcc g++ make
     
-   On Fedora the package manager is ``dnf`` ::
+   On Fedora and Red Hat derivatives (RHEL 8+) the package manager is ``dnf`` ::
    
     sudo dnf install git gcc gcc-c++ make
 
+   Replace ``dnf`` with ``yum`` in the preceding for Red Hat 7 and lower.
+
+
+   On Manjaro or Arch Linux the package manager is ``pacman`` ::
+
+    sudo pacman -S git gcc make
+    
    For MacOS users, these packages will not come preinstalled, but can be easily obtained by installing the XCode Command Line Tools.
    These are a set of packages relevant for software development which have been bundled together by Apple. The easiest way
    to install this is to simply run one of the commands in the terminal, e.g. ``git``. The terminal will then prompt you on
@@ -47,8 +55,15 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     cd RMG-Py
     conda env create -f environment.yml
 
-   If the command errors due to being unable to find the `conda` command, try closing and re-opening your terminal
-   window in order for the Anaconda settings to take effect.
+   If the command errors due to being unable to find the `conda` command, try either close and reopen your terminal to refresh your environment variables, or type the following command.
+
+   If on Linux or pre-Catalina MacOS ::
+
+    source ~/.bashrc
+
+   If on MacOS Catalina or later ::
+
+    source ~/.zshrc
 
 #. Compile RMG-Py after activating the conda environment ::
 
@@ -64,7 +79,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    Also, add your RMG-Py folder to PATH to launch ``rmg.py`` from any folder.
 
    In general, these commands should be placed in the appropriate shell initialization file. For Linux users using
-   bash (the default on Ubuntu), these should be placed in ``~/.bashrc``. For MacOS users using bash (default before MacOS Catalina),
+   bash (the default on distributions mentioned here), these should be placed in ``~/.bashrc``. For MacOS users using bash (default before MacOS Catalina),
    these should be placed in ``~/.bash_profile``, which you should create if it doesn't exist. For MacOS users using zsh
    (default beginning in MacOS Catalina), these should be placed in ``~/.zshrc``. ::
 
@@ -73,9 +88,8 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    NOTE: Make sure to change ``YourFolder`` to the path leading to the ``RMG-Py`` code. Not doing so will lead to an error stating that python cannot find the module ``rmgpy``.
 
-   Be sure to either close and reopen your terminal to refresh your environment variables, or type the following command ::
+   Be sure to either close and reopen your terminal to refresh your environment variables (`source ~/.bashrc` or `source ~/.zshrc`).
 
-    source ~/.bashrc
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
