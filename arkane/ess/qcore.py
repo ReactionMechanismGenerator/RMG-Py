@@ -37,7 +37,13 @@ import json
 
 import numpy as np
 
-from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
+from rmgpy.statmech import (
+    IdealGasTranslation,
+    NonlinearRotor,
+    LinearRotor,
+    HarmonicOscillator,
+    Conformer,
+)
 
 from arkane.ess.adapter import ESSAdapter
 from arkane.ess.factory import register_ess_adapter
@@ -49,12 +55,12 @@ from typing import Any, Dict, Tuple, List, Union
 
 ################################################################################
 
-class QcoreJSON(ESSAdapter):
 
+class QcoreJSON(ESSAdapter):
     def __init__(self, path) -> None:
         self.path = path
 
-        with open(self.path,'r') as f:
+        with open(self.path, "r") as f:
             self.data = json.load(f)
 
     def get_number_of_atoms(self) -> int:
@@ -86,7 +92,7 @@ class QcoreJSON(ESSAdapter):
                 symmetry = _symmetry
 
         if spin_multiplicity == 0:
-            spin_multiplicity = int(self.data['multiplicity'])
+            spin_multiplicity = int(self.data["multiplicity"])
 
         vibration = HarmonicOscillator(frequencies=(self.data["frequencies"], "cm^-1"))
         translation = IdealGasTranslation(mass=(sum(self.data["masses"]), "amu"))
@@ -110,7 +116,7 @@ class QcoreJSON(ESSAdapter):
 
         return (
             Conformer(
-                E0=(self.data["E0"],"kJ/mol"),
+                E0=(self.data["E0"], "kJ/mol"),
                 modes=modes,
                 spin_multiplicity=spin_multiplicity,
                 optical_isomers=optical_isomers,
@@ -118,11 +124,11 @@ class QcoreJSON(ESSAdapter):
             self.data["frequencies"],
         )
 
-    def load_energy(self, zpe_scale_factor=1.) -> float:
-        return self.data["E0"] * 1000. # J/mol
+    def load_energy(self, zpe_scale_factor=1.0) -> float:
+        return self.data["E0"] * 1000.0  # J/mol
 
     def load_zero_point_energy(self) -> float:
-        return self.data["zero_point_energy"] * 1000. # J/mol
+        return self.data["zero_point_energy"] * 1000.0  # J/mol
 
     def load_scan_energies(self):
 
@@ -131,9 +137,8 @@ class QcoreJSON(ESSAdapter):
         )
 
     def load_negative_frequency(self):
-        raise NotImplementedError(
-            "The load_negative_frequency is not implemented for qcore"
-        )
+        frequencies = np.array(self.data["frequencies"])  # cm^-1
+        return frequencies[frequencies < 0][0]
 
     def load_scan_pivot_atoms(self):
         raise NotImplementedError(
@@ -144,5 +149,6 @@ class QcoreJSON(ESSAdapter):
         raise NotImplementedError(
             "The load_scan_frozen_atoms method is not implemented for qcore"
         )
+
 
 register_ess_adapter("QcoreJSON", QcoreJSON)
