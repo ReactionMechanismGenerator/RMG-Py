@@ -434,6 +434,15 @@ class KineticsLibrary(Database):
             # Create a new reaction per entry
             rxn = entry.item
             rxn_string = entry.label
+
+            # Convert coverage dependence label to species label
+            if hasattr(entry.data, 'coverage_dependence'):
+                if entry.data.coverage_dependence:
+                    coverage_dependence_update = {}
+                    for key, value in entry.data.coverage_dependence.items():
+                        coverage_dependence_update[species_dict[key]] = value
+                    entry.data.coverage_dependence = coverage_dependence_update
+
             # Convert the reactants and products to Species objects using the species_dict
             reactants, products = rxn_string.split('=>')
             reversible = True

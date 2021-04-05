@@ -68,7 +68,7 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public np.ndarray species_on_surface  # (catalyst surface, not core/edge surface)
 
     cdef public dict cov_dep
-    cdef public dict cov_dep_index_smiles
+    cdef public dict cov_dep_index_species
     cdef public dict current_surface_coverages
 
     def __init__(self,
@@ -84,7 +84,7 @@ cdef class SurfaceReactor(ReactionSystem):
                  sensitivity_threshold=1e-3,
                  sens_conditions=None,
                  cov_dep={},
-                 cov_dep_index_smiles={},
+                 cov_dep_index_species={},
                  current_surface_coverages={},
                  ):
         ReactionSystem.__init__(self,
@@ -109,7 +109,7 @@ cdef class SurfaceReactor(ReactionSystem):
         self.sens_conditions = sens_conditions
         self.n_sims = n_sims
         self.cov_dep = cov_dep
-        self.cov_dep_index_smiles = cov_dep_index_smiles
+        self.cov_dep_index_species = cov_dep_index_species
         self.current_surface_coverages = current_surface_coverages
 
     def convert_initial_keys_to_species_objects(self, species_dict):
@@ -171,20 +171,20 @@ cdef class SurfaceReactor(ReactionSystem):
         #: 1 if it's on a surface, 0 if it's in the gas phase
         reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), np.int)
         species_on_surface = np.zeros((self.num_core_species), np.int)
-        cov_dep_index_smiles = {}
+        cov_dep_index_species = {}
         for spec, index in self.species_index.items():
             if index >= self.num_core_species:
                 continue
             if spec.contains_surface_site():
                 species_on_surface[index] = 1
-                # map for species index to SMILES for coverage dependence
-                cov_dep_index_smiles[index] = spec.smiles
+                # map for species index to species for coverage dependence
+                cov_dep_index_species[index] = spec
         for rxn, index in self.reaction_index.items():
             if rxn.is_surface_reaction():
                 reactions_on_surface[index] = 1
         self.species_on_surface = species_on_surface
         self.reactions_on_surface = reactions_on_surface
-        self.cov_dep_index_smiles = cov_dep_index_smiles
+        self.cov_dep_index_species = cov_dep_index_species
 
         # Set initial conditions
         self.set_initial_conditions()
@@ -376,7 +376,7 @@ cdef class SurfaceReactor(ReactionSystem):
         kf = self.kf  # are already 'per m3 of reactor' even for surface reactions
         kr = self.kb  # are already 'per m3 of reactor' even for surface reactions
         cov_dep = self.cov_dep  # load in coverage dependent parameters
-        cov_dep_index_smiles = self.cov_dep_index_smiles  # load in species index to SMILES
+        cov_dep_index_species = self.cov_dep_index_species  # load in species index to species
 
         inet = self.network_indices
         knet = self.network_leak_coefficients
@@ -410,8 +410,8 @@ cdef class SurfaceReactor(ReactionSystem):
             if species_on_surface[j]:
                 C[j] = (N[j] / V) / surface_volume_ratio_si
                 surface_site_fraction = N[j] / total_sites
-                smiles = cov_dep_index_smiles[j]
-                current_surface_coverages[smiles] = surface_site_fraction
+                species = cov_dep_index_species[j]
+                current_surface_coverages[species] = surface_site_fraction
             else:
                 C[j] = N[j] / V
             #: surface species are in mol/m2, gas phase are in mol/m3
@@ -421,9 +421,9 @@ cdef class SurfaceReactor(ReactionSystem):
             k = kf[j]
             if j in cov_dep:
                 cov_dep_j = cov_dep[j]
-                for smiles, parameters in cov_dep_j.items():
-                    if smiles in current_surface_coverages:
-                        theta = current_surface_coverages[smiles]
+                for species, parameters in cov_dep_j.items():
+                    if species in current_surface_coverages:
+                        theta = current_surface_coverages[species]
                         if theta >= 0.1:
                             k *= 10. ** (parameters['a'] * theta) * theta ** parameters['m'] * np.exp(-1 * \
                                     parameters['E'].value_si * theta / (constants.R * self.T.value_si))
@@ -438,9 +438,9 @@ cdef class SurfaceReactor(ReactionSystem):
             k = kr[j]
             if j in cov_dep:
                 cov_dep_j = cov_dep[j]
-                for smiles, parameters in cov_dep_j.items():
-                    if smiles in current_surface_coverages:
-                        theta = current_surface_coverages[smiles]
+                for species, parameters in cov_dep_j.items():
+                    if species in current_surface_coverages:
+                        theta = current_surface_coverages[species]
                         if theta >= 0.1:
                             k *= 10. ** (parameters['a'] * theta) * theta ** parameters['m'] * np.exp(-1 * \
                                     parameters['E'].value_si * theta / (constants.R * self.T.value_si))

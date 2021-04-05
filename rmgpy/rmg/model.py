@@ -887,6 +887,12 @@ class CoreEdgeReactionModel:
                 reaction.reverse = None
         reaction.kinetics = kinetics
 
+        if hasattr(kinetics, 'coverage_dependence'):
+            if kinetics.coverage_dependence:
+                for species, values in kinetics.coverage_dependence.items():
+                    species_in_model = self.make_new_species(species)
+                    kinetics.coverage_dependence[species_in_model] = values
+
     def generate_kinetics(self, reaction):
         """
         Generate best possible kinetics for the given `reaction` using the kinetics database.
