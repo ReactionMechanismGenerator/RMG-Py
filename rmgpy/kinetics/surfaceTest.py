@@ -36,6 +36,7 @@ import unittest
 import numpy as np
 
 from rmgpy.kinetics.surface import StickingCoefficient, SurfaceArrhenius
+from rmgpy.species import Species
 
 ################################################################################
 
@@ -55,7 +56,7 @@ class TestStickingCoefficient(unittest.TestCase):
         self.T0 = 1.
         self.Tmin = 300.
         self.Tmax = 3000.
-        self.coverage_dependence = {'*': {'E': (0.0, 'J/mol'), 'm': -1.0, 'a': 0.0}}
+        self.coverage_dependence = {Species().from_adjacency_list('1 X u0 p0 c0'): {'E': (0.0, 'J/mol'), 'm': -1.0, 'a': 0.0}}
         self.comment = 'O2 dissociative'
         self.stick = StickingCoefficient(
             A=self.A,
@@ -227,7 +228,7 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.T0 = 1.
         self.Tmin = 300.
         self.Tmax = 3000.
-        self.coverage_dependence = {'*': {'E': (0.0, 'J/mol'), 'm': -1.0, 'a': 0.0}}
+        self.coverage_dependence = {Species().from_adjacency_list('1 X u0 p0 c0'): {'E': (0.0, 'J/mol'), 'm': -1.0, 'a': 0.0}}
         self.comment = 'CH3x + Hx <=> CH4 + x + x'
         self.surfarr = SurfaceArrhenius(
             A=(self.A, 'm^2/(mol*s)'),
