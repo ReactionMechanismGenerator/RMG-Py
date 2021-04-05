@@ -42,6 +42,9 @@ nbproject/*
 # PyCharm project files
 .idea/*
 
+# VS Code settings
+.vscode/*
+
 # Unit test files
 .coverage
 testing/*
