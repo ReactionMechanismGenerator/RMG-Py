@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
     <title>4. Creating Input Files for Automated Pressure Dependent Network Exploration &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -56,9 +57,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="creating-input-files-for-automated-pressure-dependent-network-exploration">
+  <section id="creating-input-files-for-automated-pressure-dependent-network-exploration">
 <h1><span class="section-number">4. </span>Creating Input Files for Automated Pressure Dependent Network Exploration<a class="headerlink" href="#creating-input-files-for-automated-pressure-dependent-network-exploration" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="syntax">
+<section id="syntax">
 <h2><span class="section-number">4.1. </span>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
 <p>Network exploration starts from a pressure dependent calculation job so naturally it requires an input file
 containing everything required for a pressure-dependent calculation input file.  In addition all species
@@ -74,8 +75,8 @@ pressure-dependent calculation input file you append an explorer block.  For exa
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> is a list containing either the label for a single isomer or the labels corresponding to a bimolecular
 source channel.  The network is expanded starting from this starting isomer/channel.</p>
-</div>
-<div class="section" id="network-exploration">
+</section>
+<section id="network-exploration">
 <h2><span class="section-number">4.2. </span>Network Exploration<a class="headerlink" href="#network-exploration" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">explore_tol</span></code> is a fraction of the flux from all net reactions from the source to the other channels in the network.  Network expansion is done starting from just the network source using
 values from the rest of the Arkane job when available, otherwise from RMG.  It cycles through all of the
@@ -84,8 +85,8 @@ leak rate at each one.  Whenever this rate is greater than <code class="docutils
 added to the network and reacted and the loop is flagged to cycle through all of the temperatures and pressures
 again.  Once this loop is finished a network_full.py file is generated in the pdep directory that has the full
 explored network.</p>
-</div>
-<div class="section" id="network-reduction">
+</section>
+<section id="network-reduction">
 <h2><span class="section-number">4.3. </span>Network Reduction<a class="headerlink" href="#network-reduction" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">energy_tol</span></code> and <code class="docutils literal notranslate"><span class="pre">flux_tol</span></code> control reduction of the full network.  This is highly recommended as the full model
 will often contain many unimportant reactions.  How strict you decide to set these parameters should be related
@@ -104,8 +105,8 @@ at that condition.</p>
 <p>Overall a reaction is removed from the network if it is deemed filterable by both methods (if both specified) at every
 temperature and pressure combination.  After reduction a network_reduced.py file is generated in the pdep directory
 containing the reduced network.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>

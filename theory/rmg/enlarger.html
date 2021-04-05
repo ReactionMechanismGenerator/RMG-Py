@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
     <title>1. Rate-based Model Enlarging Algorithm &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -57,11 +58,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rate-based-model-enlarging-algorithm">
+  <section id="rate-based-model-enlarging-algorithm">
 <span id="ratebasedmodelenlarger"></span><h1><span class="section-number">1. </span>Rate-based Model Enlarging Algorithm<a class="headerlink" href="#rate-based-model-enlarging-algorithm" title="Permalink to this headline">¶</a></h1>
-<div class="figure align-default">
+<figure class="align-default">
 <img alt="../../_images/fluxAlgorithm.png" src="../../_images/fluxAlgorithm.png" />
-</div>
+</figure>
 <p>To construct a mechanism, the user must specify an initial set of species and
 the initial conditions (temperature, pressure, species concentrations, etc.).
 RMG reacts the initial species in all possible ways according to its known
@@ -92,7 +93,7 @@ in the <a class="reference internal" href="../../users/rmg/input.html#input"><sp
 <dd><p>R. G. Susnow, A. M. Dean, W. H. Green, P. K. Peczak, and L. J. Broadbelt. “Rate-Based Construction of Kinetic Models for Complex Systems.” <em>J. Phys. Chem. A</em> <strong>101</strong>, p. 3731-3740 (1997).</p>
 </dd>
 </dl>
-<div class="section" id="filtering-reactions-within-the-rate-based-algorithm">
+<section id="filtering-reactions-within-the-rate-based-algorithm">
 <span id="filterreactionstheory"></span><h2><span class="section-number">1.1. </span>Filtering Reactions within the Rate-based Algorithm<a class="headerlink" href="#filtering-reactions-within-the-rate-based-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>Filtering reactions in the react step in the flux-based algorithm attempts to speed up model generation by attacking the pain point.  RMG has trouble
 converging when generating models for large molecules because it searches for reactions on the order of <span class="math notranslate nohighlight">\((n_{reaction\: sites})^{{n_{species}}}\)</span>.</p>
@@ -103,9 +104,9 @@ converging when generating models for large molecules because it searches for re
 </ol>
 <p>By filtering reactions we add a pre-filtering step before step 1 which prevents species from reacting together when the reactions are expected to be negligible
 throughout the simulation.</p>
-<div class="figure align-default">
+<figure class="align-default">
 <img alt="../../_images/fluxAlgorithmWithReactionFiltering.png" src="../../_images/fluxAlgorithmWithReactionFiltering.png" />
-</div>
+</figure>
 <p>Here, <code class="docutils literal notranslate"><span class="pre">unimolecularThreshold</span></code>, <code class="docutils literal notranslate"><span class="pre">bimolecularThreshold</span></code>, and <code class="docutils literal notranslate"><span class="pre">trimolecularThreshold</span></code> are binary arrays storing flags for whether a species or a pair of species are above a reaction threshold.
 For a unimolecular rate, this threshold is set to <code class="docutils literal notranslate"><span class="pre">True</span></code> if the unimolecular rate of <span class="math notranslate nohighlight">\(\textrm{reaction $k$}\)</span> for a species A</p>
 <p><span class="math notranslate nohighlight">\(R_{unimolecular} = k_{threshold}C_A &gt; \epsilon R_{char}\)</span></p>
@@ -136,8 +137,8 @@ liquid phase can be found in <a class="reference internal" href="../../users/rmg
 <p>Three additional binary arrays <code class="docutils literal notranslate"><span class="pre">unimolecularReact</span></code>, <code class="docutils literal notranslate"><span class="pre">bimolecularReact</span></code>, and <code class="docutils literal notranslate"><span class="pre">trimolecularReact</span></code> store flags for
 when the <code class="docutils literal notranslate"><span class="pre">unimolecularThreshold</span></code>, <code class="docutils literal notranslate"><span class="pre">bimolecularThreshold</span></code>, or <code class="docutils literal notranslate"><span class="pre">trimolecularThreshold</span></code> flag
 shifts from <code class="docutils literal notranslate"><span class="pre">False</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code>.  RMG reacts species when the flag is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>

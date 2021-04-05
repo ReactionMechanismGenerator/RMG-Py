@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
     <title>16. Heterogeneous Catalysis Systems and Surface Reactions &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -57,7 +58,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="heterogeneous-catalysis-systems-and-surface-reactions">
+  <section id="heterogeneous-catalysis-systems-and-surface-reactions">
 <span id="surfaces"></span><h1><span class="section-number">16. </span>Heterogeneous Catalysis Systems and Surface Reactions<a class="headerlink" href="#heterogeneous-catalysis-systems-and-surface-reactions" title="Permalink to this headline">¶</a></h1>
 <p>RMG can now be used to study heterogenous catalysis and surface reactions.
 Initially developed in a fork of RMG called RMG-Cat (<a class="reference internal" href="#goldsmith2017" id="id1"><span>[Goldsmith2017]</span></a>),
@@ -65,7 +66,7 @@ this is now a part of the main RMG software.
 Several surface specific features need to be considered when setting up an input file
 for surface reaction mechanism generation, as they cause certain aspects of it to
 deviate from the standard gas-phase RMG input file.</p>
-<div class="section" id="catalyst-properties">
+<section id="catalyst-properties">
 <h2><span class="section-number">16.1. </span>Catalyst properties<a class="headerlink" href="#catalyst-properties" title="Permalink to this headline">¶</a></h2>
 <p>A new block <code class="docutils literal notranslate"><span class="pre">catalystProperties()</span></code> should be added for specifying the catalyst
 surface to be used in the mechanism generation.
@@ -86,8 +87,8 @@ This block should also contain the reference adatom binding energies
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="reactor-specifications">
+</section>
+<section id="reactor-specifications">
 <h2><span class="section-number">16.2. </span>Reactor specifications<a class="headerlink" href="#reactor-specifications" title="Permalink to this headline">¶</a></h2>
 <p>For surface chemistry, RMG can model constant temperature and volume systems.
 The temperature, initial pressure, initial mole fractions of the reactant species,
@@ -120,7 +121,7 @@ and so may be different in each <code class="docutils literal notranslate"><span
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="section" id="adsorbate-representation">
+<section id="adsorbate-representation">
 <h3><span class="section-number">16.2.1. </span>Adsorbate representation<a class="headerlink" href="#adsorbate-representation" title="Permalink to this headline">¶</a></h3>
 <p>Adsorbates are represented using chemical graph theory (ChemGraph),
 such that atoms are represented by nodes and bonds between them by edges.
@@ -165,9 +166,9 @@ Following is an adjacency list for physisorbed methane:</p>
 <p>This implementation currently does not distinguish between different binding sites on a given facet.
 Instead, the lowest energy binding site for a given adsorbate is assumed,
 consistent with the mean-field approach of the kinetics (<a class="reference internal" href="#goldsmith2017" id="id2"><span>[Goldsmith2017]</span></a>).</p>
-</div>
-</div>
-<div class="section" id="thermochemistry">
+</section>
+</section>
+<section id="thermochemistry">
 <h2><span class="section-number">16.3. </span>Thermochemistry<a class="headerlink" href="#thermochemistry" title="Permalink to this headline">¶</a></h2>
 <p>RMG will first check thermochemistry libraries for adsorbates.
 Failing that, the gas phase thermochemistry will be used and an adsortion correction added.
@@ -177,7 +178,7 @@ and the adsorption correction estimated as described below.
 Finally, the adsorbed species will have its energy changed using linear scaling relationships,
 to allow for metals other than Platinum(111) to be simulated.
 These methods are all described below.</p>
-<div class="section" id="use-of-thermo-libraries-for-surface-systems">
+<section id="use-of-thermo-libraries-for-surface-systems">
 <h3><span class="section-number">16.3.1. </span>Use of thermo libraries for surface systems<a class="headerlink" href="#use-of-thermo-libraries-for-surface-systems" title="Permalink to this headline">¶</a></h3>
 <p>For surface species, thermo libraries provided in the input files are checked first
 for an exact match of a given adsorbate, and those thermodynamic properties are used.</p>
@@ -193,8 +194,8 @@ is provided in the input file database module:</p>
 of gas-phase and surface reactions.
 For a full list of libraries check <a class="reference external" href="https://rmg.mit.edu/database/thermo/libraries/">https://rmg.mit.edu/database/thermo/libraries/</a>
 or the folder <code class="docutils literal notranslate"><span class="pre">RMG-database/input/thermo/libraries/</span></code> in your RMG database.</p>
-</div>
-<div class="section" id="adsorption-correction-estimation">
+</section>
+<section id="adsorption-correction-estimation">
 <h3><span class="section-number">16.3.2. </span>Adsorption correction estimation<a class="headerlink" href="#adsorption-correction-estimation" title="Permalink to this headline">¶</a></h3>
 <p>The folder <code class="docutils literal notranslate"><span class="pre">RMG-database/input/thermo/groups/</span></code> contains the adsorption corrections
 for the change in thermodynamic properties of a species upon adsorption from the gas-phase.
@@ -260,8 +261,8 @@ This is defined at the bottom of the adsorption corrections files, e.g.:</p>
 <p>When RMG-Cat has found the closest match, it reads the corresponding adsorption correction
 from the database and uses it with the thermo of the original adsorbate’s
 gas-phase precursor to estimate its enthalpy, entropy and heat capacity.</p>
-</div>
-<div class="section" id="linear-scaling-relations">
+</section>
+<section id="linear-scaling-relations">
 <h3><span class="section-number">16.3.3. </span>Linear scaling relations<a class="headerlink" href="#linear-scaling-relations" title="Permalink to this headline">¶</a></h3>
 <p>In surface reaction mechanism generation with RMG-Cat,
 linear scaling relations are used to investigate surface reaction systems occurring on surfaces
@@ -300,11 +301,11 @@ even for species taken from the thermochemistry libraries:</p>
                    <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="reactions-and-kinetics">
+</section>
+</section>
+<section id="reactions-and-kinetics">
 <h2><span class="section-number">16.4. </span>Reactions and kinetics<a class="headerlink" href="#reactions-and-kinetics" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="reaction-families-and-libraries-for-surface-reaction-systems">
+<section id="reaction-families-and-libraries-for-surface-reaction-systems">
 <h3><span class="section-number">16.4.1. </span>Reaction families and libraries for surface reaction systems<a class="headerlink" href="#reaction-families-and-libraries-for-surface-reaction-systems" title="Permalink to this headline">¶</a></h3>
 <p>In the latest version of the RMG database, surface reaction families have been added.
 These include adsorption/desorption, bond fission and H abstraction (<a class="reference internal" href="#goldsmith2017" id="id7"><span>[Goldsmith2017]</span></a>).
@@ -354,11 +355,11 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 </tr>
 </tbody>
 </table>
-</div>
-</div>
-<div class="section" id="examples">
+</section>
+</section>
+<section id="examples">
 <h2><span class="section-number">16.5. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="example-input-file-methane-steam-reforming">
+<section id="example-input-file-methane-steam-reforming">
 <h3><span class="section-number">16.5.1. </span>Example input file: methane steam reforming<a class="headerlink" href="#example-input-file-methane-steam-reforming" title="Permalink to this headline">¶</a></h3>
 <p>This is a simple input file steam reforming of methane</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
@@ -565,8 +566,8 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="example-input-file-methane-oxidation">
+</section>
+<section id="example-input-file-methane-oxidation">
 <h3><span class="section-number">16.5.2. </span>Example input file: methane oxidation<a class="headerlink" href="#example-input-file-methane-oxidation" title="Permalink to this headline">¶</a></h3>
 <p>This is an input file for catalytic partial oxidation (CPOX) of methane</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
@@ -656,8 +657,8 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="additional-notes">
+</section>
+<section id="additional-notes">
 <h3><span class="section-number">16.5.3. </span>Additional Notes<a class="headerlink" href="#additional-notes" title="Permalink to this headline">¶</a></h3>
 <p>Other things to update:
 * table of atom types in users/rmg/database/introduction.rst
@@ -676,9 +677,9 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <dd><p>F. Abild-Pedersen, J. Greeley, F. Studt, J. Rossmeisl, T.R. Munter, P.G. Moses, E. Skúlason, T. Bligaard, and J.K. Nørskov. “Scaling Properties of Adsorption Energies for Hydrogen-Containing Molecules on Transition-Metal Surfaces.” <em>Phys. Rev. Lett.</em> <strong>99(1)</strong>, p. 4-7 (2007).</p>
 </dd>
 </dl>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
             <div class="clearer"></div>

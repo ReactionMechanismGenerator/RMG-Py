@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
     <title>3.3.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
@@ -57,7 +58,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="installation-by-source-using-anaconda-environment-for-unix-based-systems-linux-and-mac-osx">
+  <section id="installation-by-source-using-anaconda-environment-for-unix-based-systems-linux-and-mac-osx">
 <span id="anacondadeveloper"></span><h1><span class="section-number">3.3.1. </span>Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX<a class="headerlink" href="#installation-by-source-using-anaconda-environment-for-unix-based-systems-linux-and-mac-osx" title="Permalink to this headline">¶</a></h1>
 <ol class="arabic">
 <li><p>Download and install the <a class="reference external" href="https://www.anaconda.com/download/">Anaconda Python Platform</a> for Python 3.7.</p>
@@ -72,16 +73,21 @@ need to install Microsoft VSCode (but feel free to if you are looking for a ligh
 <p>Note that you should restart your terminal in order for the changes to take effect, as the installer will tell you.</p>
 </li>
 <li><p>There are a few system-level dependencies which are required and should not be installed via Anaconda. These include
-<a class="reference external" href="https://git-scm.com/">Git</a> for version control and GNU <code class="docutils literal notranslate"><span class="pre">make</span></code>, <code class="docutils literal notranslate"><span class="pre">gcc</span></code>, and <code class="docutils literal notranslate"><span class="pre">g++</span></code> for compiling RMG.</p>
+<a class="reference external" href="https://git-scm.com/">Git</a> for version control, <a class="reference external" href="https://www.gnu.org/software/make/">GNU Make</a>, and the C and C++ compilers from the <a class="reference external" href="https://gcc.gnu.org/">GNU Compiler Collection (GCC)</a> for compiling RMG.</p>
 <p>For Linux users, you can check whether these are already installed by simply calling them via the command line, which
 will let you know if they are missing. To install any missing packages, you should use the appropriate package manager
-for your system. For example, on Ubuntu you would use the <code class="docutils literal notranslate"><span class="pre">apt</span></code> package manager. For Ubuntu 16 and newer, the
-necessary command would be</p>
+for your system.</p>
+<p>On Ubuntu and Debian the package manager is <code class="docutils literal notranslate"><span class="pre">apt</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">git</span> <span class="n">gcc</span> <span class="n">g</span><span class="o">++</span> <span class="n">make</span>
 </pre></div>
 </div>
-<p>On Fedora the package manager is <code class="docutils literal notranslate"><span class="pre">dnf</span></code></p>
+<p>On Fedora and Red Hat derivatives (RHEL 8+) the package manager is <code class="docutils literal notranslate"><span class="pre">dnf</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="n">git</span> <span class="n">gcc</span> <span class="n">gcc</span><span class="o">-</span><span class="n">c</span><span class="o">++</span> <span class="n">make</span>
+</pre></div>
+</div>
+<p>Replace <code class="docutils literal notranslate"><span class="pre">dnf</span></code> with <code class="docutils literal notranslate"><span class="pre">yum</span></code> in the preceding for Red Hat 7 and lower.</p>
+<p>On Manjaro or Arch Linux the package manager is <code class="docutils literal notranslate"><span class="pre">pacman</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">pacman</span> <span class="o">-</span><span class="n">S</span> <span class="n">git</span> <span class="n">gcc</span> <span class="n">make</span>
 </pre></div>
 </div>
 <p>For MacOS users, these packages will not come preinstalled, but can be easily obtained by installing the XCode Command Line Tools.
@@ -101,8 +107,15 @@ appropriate local directory where you want both RMG-Py and RMG-database folders 
 <span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
-<p>If the command errors due to being unable to find the <cite>conda</cite> command, try closing and re-opening your terminal
-window in order for the Anaconda settings to take effect.</p>
+<p>If the command errors due to being unable to find the <cite>conda</cite> command, try either close and reopen your terminal to refresh your environment variables, or type the following command.</p>
+<p>If on Linux or pre-Catalina MacOS</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">~/.</span><span class="n">bashrc</span>
+</pre></div>
+</div>
+<p>If on MacOS Catalina or later</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">~/.</span><span class="n">zshrc</span>
+</pre></div>
+</div>
 </li>
 <li><p>Compile RMG-Py after activating the conda environment</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">rmg_env</span>
@@ -117,7 +130,7 @@ run the <code class="docutils literal notranslate"><span class="pre">conda</span
 <li><p>Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any folder.
 Also, add your RMG-Py folder to PATH to launch <code class="docutils literal notranslate"><span class="pre">rmg.py</span></code> from any folder.</p>
 <p>In general, these commands should be placed in the appropriate shell initialization file. For Linux users using
-bash (the default on Ubuntu), these should be placed in <code class="docutils literal notranslate"><span class="pre">~/.bashrc</span></code>. For MacOS users using bash (default before MacOS Catalina),
+bash (the default on distributions mentioned here), these should be placed in <code class="docutils literal notranslate"><span class="pre">~/.bashrc</span></code>. For MacOS users using bash (default before MacOS Catalina),
 these should be placed in <code class="docutils literal notranslate"><span class="pre">~/.bash_profile</span></code>, which you should create if it doesn’t exist. For MacOS users using zsh
 (default beginning in MacOS Catalina), these should be placed in <code class="docutils literal notranslate"><span class="pre">~/.zshrc</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export PYTHONPATH=YourFolder/RMG-Py/:$PYTHONPATH
@@ -125,10 +138,7 @@ export PATH=YourFolder/RMG-Py/:$PATH
 </pre></div>
 </div>
 <p>NOTE: Make sure to change <code class="docutils literal notranslate"><span class="pre">YourFolder</span></code> to the path leading to the <code class="docutils literal notranslate"><span class="pre">RMG-Py</span></code> code. Not doing so will lead to an error stating that python cannot find the module <code class="docutils literal notranslate"><span class="pre">rmgpy</span></code>.</p>
-<p>Be sure to either close and reopen your terminal to refresh your environment variables, or type the following command</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">~/.</span><span class="n">bashrc</span>
-</pre></div>
-</div>
+<p>Be sure to either close and reopen your terminal to refresh your environment variables (<cite>source ~/.bashrc</cite> or <cite>source ~/.zshrc</cite>).</p>
 </li>
 <li><p>Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as <code class="docutils literal notranslate"><span class="pre">input.py</span></code> in the current folder).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
@@ -142,7 +152,7 @@ export PATH=YourFolder/RMG-Py/:$PATH
 </li>
 </ol>
 <p>You may now use RMG-Py, Arkane, as well as any of the <a class="reference internal" href="../modules/index.html#modules"><span class="std std-ref">Standalone Modules</span></a> included in the RMG-Py package.</p>
-<div class="section" id="test-suite">
+<section id="test-suite">
 <h2><span class="section-number">3.3.1.1. </span>Test Suite<a class="headerlink" href="#test-suite" title="Permalink to this headline">¶</a></h2>
 <p>There are a number of basic tests you can run on the newly installed RMG.  It is recommended to run them regularly to ensure the code and databases are behaving normally.</p>
 <ol class="arabic">
@@ -165,8 +175,8 @@ export PATH=YourFolder/RMG-Py/:$PATH
 </div>
 </li>
 </ol>
-</div>
-<div class="section" id="running-examples">
+</section>
+<section id="running-examples">
 <h2><span class="section-number">3.3.1.2. </span>Running Examples<a class="headerlink" href="#running-examples" title="Permalink to this headline">¶</a></h2>
 <p>A number of basic examples can be run immediately.  Additional example input files can be found in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/examples</span></code> folder.  Please read more on <a class="reference internal" href="../examples.html#examples"><span class="std std-ref">Example Input Files</span></a> in the documentation.</p>
 <ol class="arabic">
@@ -195,8 +205,8 @@ export PATH=YourFolder/RMG-Py/:$PATH
 </div>
 </li>
 </ol>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>

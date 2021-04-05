@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
     <title>2. Prune Edge Species &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -57,13 +58,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="prune-edge-species">
+  <section id="prune-edge-species">
 <span id="prune"></span><h1><span class="section-number">2. </span>Prune Edge Species<a class="headerlink" href="#prune-edge-species" title="Permalink to this headline">¶</a></h1>
 <p>When dealing with complicated reaction systems, RMG calculation would easily hit the computer memory limitation. Memory profiling shows
 most memory especially during memory limitation stage is occupied by edge species. However, most edge species in fact wouldn’t
 be included in the core (or final model). Thus, it’s natural to get rid of some not “so useful” edge species during calculation
 in order to achieve both low memory consumption and mechanism accuracy. Pruning is such a way.</p>
-<div class="section" id="key-parameters-in-pruning">
+<section id="key-parameters-in-pruning">
 <h2><span class="section-number">2.1. </span>Key Parameters in Pruning<a class="headerlink" href="#key-parameters-in-pruning" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p>toleranceKeepInEdge</p>
@@ -88,18 +89,21 @@ toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> char
 <p>Set the number of iterations an edge species must stay in the job before it can be pruned.  The default value is 2 iterations.</p>
 </li>
 </ul>
-</div>
-<div class="section" id="how-pruning-works">
+</section>
+<section id="how-pruning-works">
 <h2><span class="section-number">2.2. </span>How Pruning Works<a class="headerlink" href="#how-pruning-works" title="Permalink to this headline">¶</a></h2>
-<div class="figure align-default" id="id1">
+<figure class="align-default" id="id1">
 <img alt="../../_images/fluxDiagram.png" src="../../_images/fluxDiagram.png" />
-<p class="caption"><span class="caption-text">The goal of pruning is to delete those “useless” edge species. So “usefulness” should be defined and it’s natural to have flux as a
+<figcaption>
+<p><span class="caption-text">The goal of pruning is to delete those “useless” edge species. So “usefulness” should be defined and it’s natural to have flux as a
 criterion for “usefulness”. Since flux changes with reactant conversion, peak flux is chosen here to make decision of pruning or not.
 Every time pruning is triggered, edge species with peak flux lower than toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux will be deleted.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</div>
-<div class="figure align-default" id="id2">
+</figcaption>
+</figure>
+<figure class="align-default" id="id2">
 <img alt="../../_images/fluxDiagramWithTolerance.png" src="../../_images/fluxDiagramWithTolerance.png" />
-<p class="caption"><span class="caption-text">However, pruning is not always triggered because of toleranceInterruptSimulation. As mentioned above, in order to prune, RMG needs to figure out
+<figcaption>
+<p><span class="caption-text">However, pruning is not always triggered because of toleranceInterruptSimulation. As mentioned above, in order to prune, RMG needs to figure out
 the peak flux of each edge species, which requires dynamic simulation to complete. If some run of dynamic simulation is terminated in half way
 by toleranceInterruptSimulation, pruning is rejected although there might be some edge species with peak fluxes lower than
 toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux. Since pruning requires to complete dynamic simulation, setting toleranceInterruptSimulation to be positive infinity,
@@ -110,9 +114,10 @@ no pruning occurs.</span><a class="headerlink" href="#id2" title="Permalink to t
 toleranceInterruptSimulation <span class="math notranslate nohighlight">\(*\)</span> characteristic flux.Following complete simulation is the pruning of edge species whose flux is not high enough be kept
 in the edge, which is followed by pruning of excessive amount of edge species to make sure total edge species number is no greater than maximumEdgeSpecies.</p>
 </div>
-</div>
-</div>
-</div>
+</figcaption>
+</figure>
+</section>
+</section>
 
 
             <div class="clearer"></div>
