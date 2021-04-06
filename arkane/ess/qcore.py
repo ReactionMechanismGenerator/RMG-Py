@@ -137,8 +137,7 @@ class QcoreJSON(ESSAdapter):
         )
 
     def load_negative_frequency(self):
-        frequencies = np.array(self.data["frequencies"])  # cm^-1
-        return frequencies[frequencies < 0][0]
+        return self.data["negative_frequency"]
 
     def load_scan_pivot_atoms(self):
         raise NotImplementedError(
