@@ -506,6 +506,21 @@ class TransportDatabase(object):
         Pc = 1 / (0.113 + 0.0032 * num_atoms + group_data.Pc) ** 2
         is_linear = (group_data.structureIndex == 0)
 
+        halogens = ('F','Cl','Br')
+        elements = molecule.get_element_count().keys()
+        if any(atom in elements for atom in halogens):
+            # apply corrections for halogenated compounds from https://doi.org/10.1021/ie00008a029
+            if 'H' in elements: #partially halogenated
+                if 'F' not in elements:
+                    Tb += 11.43 # partially halogenated without fluorine
+                else:
+                    Tb -= 25.00 # partially fluorinated with or without other halogens
+            else:
+                if 'Cl' not in elements and 'Br' not in elements:
+                    Tb -= 45.57 # perfluorinated
+                else:
+                    Tb -= 53.55 # perhalogenated with or without fluorine
+
         critical_point = CriticalPoint(
             Tc=Tc,
             Pc=Pc,
