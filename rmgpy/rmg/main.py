@@ -416,8 +416,8 @@ class RMG(util.Subject):
                 copy_species_constraints = copy.copy(self.species_constraints)
                 self.species_constraints = {}
                 for family in self.database.kinetics.families.values():
-                    if not family.auto_generated:
-                        family.add_rules_from_training(thermo_database=self.database.thermo)
+                   # if not family.auto_generated:
+                    family.add_rules_from_training(thermo_database=self.database.thermo)
 
                     # If requested by the user, write a text file for each kinetics family detailing the source of each entry
                     if self.kinetics_datastore:
