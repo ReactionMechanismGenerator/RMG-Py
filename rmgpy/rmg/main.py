@@ -438,8 +438,8 @@ class RMG(util.Subject):
                 logging.info('Training set explicitly not added to rate rules in kinetics families...')
             logging.info('Filling in rate rules in kinetics families by averaging...')
             for family in self.database.kinetics.families.values():
-                if not family.auto_generated:
-                    family.fill_rules_by_averaging_up(verbose=self.verbose_comments)
+                #if not family.auto_generated:
+                family.fill_rules_by_averaging_up(verbose=self.verbose_comments)
 
     def initialize(self, **kwargs):
         """
