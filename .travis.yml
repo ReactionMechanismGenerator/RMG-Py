@@ -9,8 +9,6 @@ env:
     - secure: "jIyBEzR10l5SWvY5ouEYzA8YzPHIZNMXMBdcXwuwte8NCU8GBYUqhHA1L67nTaBdLhWbrZ2NireVKPQWJp3ctcI0IB6xZzaYlVpgN/udGPO+1MZd9Xhp9TWuJWrGZ9EoWGB9L5H+O7RYwcDMVH5CUrCIBdsSJuyE8aDpky1/IVE="
 
 stages:
-  - name: documentation
-    if: branch = master AND type = push
   - name: deploy
     if: branch = stable AND type = push
 
@@ -33,21 +31,6 @@ before_install:
 
 jobs:
   include:
-    - stage: documentation
-      install:
-        - cd RMG-Py
-        - conda env create -q -f environment.yml
-        - source activate rmg_env
-        # Install sphinx for building documentation
-        - conda install -y sphinx
-        - conda list
-        # Modify setup.py
-        - sed -i '/embedsignature/s/# //g' setup.py
-        - make
-        - cd documentation
-        - export COMMITMESSAGE="Automatic documentation rebuild"
-      script:
-        - make travis_setup clean html publish
     - stage: deploy
       install:
         # Setup conda build
