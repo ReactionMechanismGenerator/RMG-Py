@@ -120,7 +120,7 @@ class TestSoluteDatabase(TestCase):
         """Test we can estimate Abraham solute parameters correctly using group contributions"""
 
         self.testCases = [
-            ['1,2-ethanediol', 'C(CO)O', 0.823, 0.685, 0.327, 2.572, 0.693, None],
+            ['1,2-ethanediol', 'C(CO)O', 0.809, 0.740, 0.393, 2.482, 0.584, 0.508]
         ]
 
         for name, smiles, S, B, E, L, A, V in self.testCases:
@@ -246,26 +246,27 @@ class TestSoluteDatabase(TestCase):
     def test_correction_generation(self):
         """Test we can estimate solvation thermochemistry."""
         self.testCases = [
-            # solventName, soluteName, soluteSMILES, Hsolv, Gsolv
-            ['water', 'acetic acid', 'C(C)(=O)O', -56500, -6700 * 4.184],
-            ['water', 'naphthalene', 'C1=CC=CC2=CC=CC=C12', -42800, -2390 * 4.184],
-            ['1-octanol', 'octane', 'CCCCCCCC', -40080, -4180 * 4.184],
-            ['1-octanol', 'tetrahydrofuran', 'C1CCOC1', -28320, -3930 * 4.184],
-            ['benzene', 'toluene', 'C1(=CC=CC=C1)C', -37660, -5320 * 4.184],
-            ['benzene', '1,4-dioxane', 'C1COCCO1', -39030, -5210 * 4.184]
+            # solventName, soluteName, soluteSMILES, Hsolv, Gsolv in kJ/mol
+            ['water', 'acetic acid', 'C(C)(=O)O', -58.30, -27.99],
+            ['water', 'naphthalene', 'C1=CC=CC2=CC=CC=C12', -41.57, -11.41],
+            ['1-octanol', 'octane', 'CCCCCCCC', -40.24, -19.02],
+            ['1-octanol', 'tetrahydrofuran', 'C1CCOC1', -32.24, -16.69],
+            ['benzene', 'toluene', 'C1(=CC=CC=C1)C', -40.01, -23.86],
+            ['benzene', '1,4-dioxane', 'C1COCCO1', -39.75, -21.98]
         ]
 
         for solventName, soluteName, smiles, H, G in self.testCases:
-            species = Species(molecule=[Molecule(smiles=smiles)])
+            species = Species().from_smiles(smiles)
+            species.generate_resonance_structures()
             solute_data = self.database.get_solute_data(species)
             solvent_data = self.database.get_solvent_data(solventName)
             solvation_correction = self.database.get_solvation_correction(solute_data, solvent_data)
-            self.assertAlmostEqual(solvation_correction.enthalpy / 10000., H / 10000., 0,  # 0 decimal place, in 10kJ.
-                                   msg="Solvation enthalpy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}"
-                                       "".format(soluteName, solventName, solvation_correction.enthalpy, H))
-            self.assertAlmostEqual(solvation_correction.gibbs / 10000., G / 10000., 0,
-                                   msg="Solvation Gibbs free energy discrepancy ({2:.0f}!={3:.0f}) for {0} in {1}"
-                                       "".format(soluteName, solventName, solvation_correction.gibbs, G))
+            self.assertAlmostEqual(solvation_correction.enthalpy / 1000, H, 2,  # 2 decimal places, in kJ.
+                                   msg="Solvation enthalpy discrepancy ({2:.2f}!={3:.2f}) for {0} in {1}"
+                                       "".format(soluteName, solventName, solvation_correction.enthalpy/1000, H))
+            self.assertAlmostEqual(solvation_correction.gibbs / 1000, G, 2,  # 2 decimal places, in kJ.
+                                   msg="Solvation Gibbs free energy discrepancy ({2:.2f}!={3:.2f}) for {0} in {1}"
+                                       "".format(soluteName, solventName, solvation_correction.gibbs/1000, G))
 
     def test_Kfactor_parameters(self):
         """Test we can calculate the parameters for K-factor relationships"""
@@ -291,8 +292,8 @@ class TestSoluteDatabase(TestCase):
         T = 500 # in K
         Kfactor = self.database.get_Kfactor(solute_data, solvent_data, T)
         delG = self.database.get_T_dep_solvation_energy(solute_data, solvent_data, T) / 1000 # in kJ/mol
-        self.assertAlmostEqual(Kfactor, 0.416, 3)
-        self.assertAlmostEqual(delG, -13.463, 3)
+        self.assertAlmostEqual(Kfactor, 0.405, 3)
+        self.assertAlmostEqual(delG, -13.57, 2)
         # For temperature greater than or equal to the critical temperature of the solvent,
         # it should raise InputError
         T = 1000
