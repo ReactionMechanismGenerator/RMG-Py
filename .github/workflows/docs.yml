@@ -20,7 +20,7 @@ jobs:
         echo $CONDA/bin >> $GITHUB_PATH
     - name: Install dependencies
       env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RMG_DEV_TOKEN }}
       run: |
         cd ..
         git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
