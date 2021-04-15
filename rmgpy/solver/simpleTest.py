@@ -363,6 +363,7 @@ class SimpleReactorCheck(unittest.TestCase):
                                        'species_dictionary.txt')
         species_list, reaction_list = load_chemkin_file(chem_file, dictionary_file)
 
+        # Note that H2O is in the corresponding Chemkin file, but intentionally not defined here to check the solver.
         smiles_dict = {'Ar': '[Ar]', 'N2(1)': 'N#N', 'O2': '[O][O]', 'H': '[H]', 'CH3': '[CH3]', 'CH4': 'C'}
         species_dict = {}
         for name, smiles in smiles_dict.items():
@@ -389,7 +390,7 @@ class SimpleReactorCheck(unittest.TestCase):
         rxn_system.advance(0.1)
         # Compare simulated mole fractions with expected mole fractions from CHEMKIN
         simulated_mole_fracs = rxn_system.y / np.sum(rxn_system.y)
-        expected_mole_fracs = np.array([0.540394532, 0.270197216, 0.135098608, 0.027019722, 0.027019722, 0.000270202])
+        expected_mole_fracs = np.array([0.540394532, 0.270197216, 0.135098608, 0.027019722, 0.027019722, 0.000270202, 0.0])
         # order: Ar, N2, O2, H, CH3, CH4
         for i in range(len(simulated_mole_fracs)):
             self.assertAlmostEqual(simulated_mole_fracs[i], expected_mole_fracs[i], 6)
@@ -397,7 +398,7 @@ class SimpleReactorCheck(unittest.TestCase):
         # Advance to time = 5 s
         rxn_system.advance(5)
         # Compare simulated mole fractions with expected mole fractions from CHEMKIN
-        expected_mole_fracs = np.array([0.540394573, 0.270197287, 0.135098693, 0.027019519, 0.027019519, 0.00027041])
+        expected_mole_fracs = np.array([0.540394573, 0.270197287, 0.135098693, 0.027019519, 0.027019519, 0.00027041, 0.0])
         # order: Ar, N2, O2, H, CH3, CH4
         for i in range(len(simulated_mole_fracs)):
             self.assertAlmostEqual(simulated_mole_fracs[i], expected_mole_fracs[i], 6)
@@ -420,7 +421,7 @@ class SimpleReactorCheck(unittest.TestCase):
         rxn_system.advance(5)
         # Compare simulated mole fractions with expected mole fractions from CHEMKIN
         simulated_mole_fracs = rxn_system.y / np.sum(rxn_system.y)
-        expected_mole_fracs = np.array([0.398247713, 0.199123907, 0.199123907, 0.000398169, 0.003982398, 0.199123907])
+        expected_mole_fracs = np.array([0.398247713, 0.199123907, 0.199123907, 0.000398169, 0.003982398, 0.199123907, 0.0])
         # order: Ar, N2, O2, H, CH3, CH4
         for i in range(len(simulated_mole_fracs)):
             self.assertAlmostEqual(simulated_mole_fracs[i], expected_mole_fracs[i], 6)
