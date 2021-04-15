@@ -98,7 +98,7 @@ def parse_cclib_data(cclib_data, ground_state_degeneracy):
             molecular_mass = None
         energy = (cclib_data.scfenergies[-1], 'eV/molecule')
         atomic_numbers = cclib_data.atomnos
-        rotational_constants = ([i * 1e9 for i in cclib_data.rotcons[-1]], 'hertz')
+        rotational_constants = (cclib_data.rotcons[-1], 'cm^-1')
         atom_coords = (cclib_data.atomcoords[-1], 'angstrom')
         frequencies = (cclib_data.vibfreqs, 'cm^-1')
 
