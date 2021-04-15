@@ -50,8 +50,8 @@ else # Prompt for a commit message
 	cd $(BUILDDIR)/html; git add -A .; git commit; git push official gh-pages
 endif
 
-travis_setup:
-# This target is intended to be used when automatically compiling documentation with Travis
+continous_integration_setup:
+# This target is intended to be used when automatically compiling documentation with Continous Integration
 	@rm -rf $(BUILDDIR)/html
 	@git clone --single-branch --branch gh-pages --origin official https://${GH_TOKEN}@github.com/ReactionMechanismGenerator/RMG-Py.git $(BUILDDIR)/html
 
