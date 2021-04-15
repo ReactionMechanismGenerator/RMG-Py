@@ -463,7 +463,12 @@ class QMMolecule(object):
         assert self.qm_data, "Need QM Data first in order to calculate thermo."
         assert self.point_group, "Need Point Group first in order to calculate thermo."
 
-        trans = rmgpy.statmech.IdealGasTranslation(mass=self.qm_data.molecularMass)
+        mass = getattr(self.qm_data, 'molecularMass', None)
+        if mass is None:
+            # If using a cclib that doesn't read molecular mass, for example
+            mass = sum(rmgpy.molecule.element.get_element(int(a)).mass for a in self.qm_data.atomicNumbers)
+            mass = rmgpy.quantity.Mass(mass, 'kg/mol')
+        trans = rmgpy.statmech.IdealGasTranslation(mass=mass)
         if self.point_group.linear:
             # there should only be one rotational constant for a linear rotor
             rotational_constant = rmgpy.quantity.Frequency(max(self.qm_data.rotationalConstants.value),
