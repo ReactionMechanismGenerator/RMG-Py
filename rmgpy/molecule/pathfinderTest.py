@@ -311,15 +311,14 @@ class FindButadieneEndWithChargeTest(unittest.TestCase):
         expected_idx_path = [3, 2, 4, 6]
         self.assertEquals(idx_path, expected_idx_path)
 
-    def test_c6h6o4(self):
-        inchi = "InChI=1S/C6H6O4/c1-2-4-9-6(7)3-5-10-8/h2-3H,1,5H2"
+    def test_c8h14o4(self):
+        inchi = "InChI=1S/C8H14O4S/c1-3-6-13(2,11)7-8(9)4-5-12-10/h3,6H,1,4-5,7H2,2H3,(H-,10,11)"
         mol = Molecule().from_inchi(inchi)
         start = mol.atoms[0]
         path = find_butadiene_end_with_charge(start)
         idx_path = [mol.atoms.index(atom) + 1 for atom in path[0::2]]
-
-        expected_idx_path = [1, 2, 4, 9]
-        self.assertEquals(idx_path, expected_idx_path)
+        expected_idx_path = [1, 3, 6, 13]
+        self.assertEqual(idx_path, expected_idx_path)
 
     def test_c6h6o6(self):
         inchi = "InChI=1S/C6H6O6/c7-6(2-5-12-9)10-3-1-4-11-8/h1,7H,4-5H2"
