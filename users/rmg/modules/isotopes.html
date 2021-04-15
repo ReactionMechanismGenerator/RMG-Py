@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>9.11. Isotopes &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
@@ -58,9 +57,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="isotopes">
+  <div class="section" id="isotopes">
 <span id="id1"></span><h1><span class="section-number">9.11. </span>Isotopes<a class="headerlink" href="#isotopes" title="Permalink to this headline">¶</a></h1>
-<section id="describing-isotopes-in-adjacency-lists">
+<div class="section" id="describing-isotopes-in-adjacency-lists">
 <h2><span class="section-number">9.11.1. </span>Describing isotopes in adjacency lists<a class="headerlink" href="#describing-isotopes-in-adjacency-lists" title="Permalink to this headline">¶</a></h2>
 <p>Isotopic enrichment can be indicated in a molecular structure’s adjacency list.
 The example below is methane with an isotopically labeled carbon of isotope
@@ -72,8 +71,8 @@ number 13, which is indicated with <code class="docutils literal notranslate"><s
 <span class="mi">5</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 </pre></div>
 </div>
-</section>
-<section id="running-the-rmg-isotopes-algorithm">
+</div>
+<div class="section" id="running-the-rmg-isotopes-algorithm">
 <h2><span class="section-number">9.11.2. </span>Running the RMG isotopes algorithm<a class="headerlink" href="#running-the-rmg-isotopes-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>The isotopes script is located in the folder scripts. To run the algorithm,
 ensure the RMG packages are loaded and type:</p>
@@ -123,8 +122,8 @@ labeling is checked to ensure it is consistent with the symmetry values of react
 If one of these checks throws a warning, the model will likely exhibit non-natural
 fluctuations in enrichment ten to one hundred times larger than from non-hydrogen
 kinetic isotope effects.</p>
-</section>
-<section id="output-from-script">
+</div>
+<div class="section" id="output-from-script">
 <h2><span class="section-number">9.11.3. </span>Output from script<a class="headerlink" href="#output-from-script" title="Permalink to this headline">¶</a></h2>
 <p>The isotope generation script will output two files inside the nested folders
 <code class="docutils literal notranslate"><span class="pre">iso/chemkin</span></code>, unless <code class="docutils literal notranslate"><span class="pre">--output</span></code> is specified. The file
@@ -132,16 +131,16 @@ kinetic isotope effects.</p>
 RMG adjacency list structure. The other file of importance <code class="docutils literal notranslate"><span class="pre">chem_annotated.inp</span></code>
 is a chemkin input file containing elements, species, thermo, and reactions of
 the entire system.</p>
-</section>
-<section id="further-reading-resources">
+</div>
+<div class="section" id="further-reading-resources">
 <h2><span class="section-number">9.11.4. </span>Further reading &amp; resources<a class="headerlink" href="#further-reading-resources" title="Permalink to this headline">¶</a></h2>
 <p>A description of mechanisms generated using this module and its application to
 obtaining intramolecular isotopic enrichment information is described in
 <a class="reference external" href="https://doi.org/10.1016/j.chemgeo.2019.02.036">Chemical Geology, Volume 514, page 1</a>.</p>
 <p>Code to replicate that work, as well as convert between experimental enrichments
 and the isotopologues used in RMG is deposited at <a class="reference external" href="https://doi.org/10.5281/zenodo.2567585">Zenodo</a>.</p>
-</section>
-</section>
+</div>
+</div>
 
 
             <div class="clearer"></div>
@@ -246,7 +245,7 @@ and the isotopologues used in RMG is deposited at <a class="reference external" 
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

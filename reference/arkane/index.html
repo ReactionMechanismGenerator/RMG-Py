@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Arkane (arkane) &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -57,12 +56,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="module-arkane">
+  <div class="section" id="module-arkane">
 <span id="arkane-arkane"></span><h1>Arkane (<a class="reference internal" href="#module-arkane" title="arkane"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code></a>)<a class="headerlink" href="#module-arkane" title="Permalink to this headline">¶</a></h1>
 <p>The <a class="reference internal" href="#module-arkane" title="arkane"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane</span></code></a> subpackage contains the main functionality for
 Arkane, a tool for computing thermodynamic and kinetic properties of chemical
 species and reactions.</p>
-<section id="reading-electronic-structure-software-log-files">
+<div class="section" id="reading-electronic-structure-software-log-files">
 <h2>Reading electronic structure software log files<a class="headerlink" href="#reading-electronic-structure-software-log-files" title="Permalink to this headline">¶</a></h2>
 <table class="docutils align-default">
 <colgroup>
@@ -78,25 +77,25 @@ species and reactions.</p>
 <tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Log</span></code></p></td>
 <td><p>Base class for generic log files</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianLog</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="gaussianlog.html#arkane.ess.GaussianLog" title="arkane.ess.GaussianLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianLog</span></code></a></p></td>
 <td><p>Extract chemical parameters from Gaussian log files</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">MolproLog</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="molprolog.html#arkane.ess.MolproLog" title="arkane.ess.MolproLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">MolproLog</span></code></a></p></td>
 <td><p>Extract chemical parameters from Molpro log files</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">OrcaLog</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="orcalog.html#arkane.ess.OrcaLog" title="arkane.ess.OrcaLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrcaLog</span></code></a></p></td>
 <td><p>Extract chemical parameters from Orca log files</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">QChemLog</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="qchemlog.html#arkane.ess.QChemLog" title="arkane.ess.QChemLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">QChemLog</span></code></a></p></td>
 <td><p>Extract chemical parameters from Q-Chem log files</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">TeraChemLog</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="terachemlog.html#arkane.ess.TeraChemLog" title="arkane.ess.TeraChemLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">TeraChemLog</span></code></a></p></td>
 <td><p>Extract chemical parameters from TeraChem log files</p></td>
 </tr>
 </tbody>
 </table>
-</section>
-<section id="input">
+</div>
+<div class="section" id="input">
 <h2>Input<a class="headerlink" href="#input" title="Permalink to this headline">¶</a></h2>
 <table class="docutils align-default">
 <colgroup>
@@ -109,13 +108,13 @@ species and reactions.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">load_input_file()</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="input.html#arkane.input.load_input_file" title="arkane.input.load_input_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_input_file()</span></code></a></p></td>
 <td><p>Load an Arkane job input file</p></td>
 </tr>
 </tbody>
 </table>
-</section>
-<section id="output">
+</div>
+<div class="section" id="output">
 <h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
 <table class="docutils align-default">
 <colgroup>
@@ -128,25 +127,25 @@ species and reactions.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">PrettifyVisitor</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="output.html#arkane.output.PrettifyVisitor" title="arkane.output.PrettifyVisitor"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrettifyVisitor</span></code></a></p></td>
 <td><p>Custom Abstract Syntax Tree (AST) visitor class</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">prettify()</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="output.html#arkane.output.prettify" title="arkane.output.prettify"><code class="xref py py-func docutils literal notranslate"><span class="pre">prettify()</span></code></a></p></td>
 <td><p>Pretty formatting for a Python syntax string</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">get_str_xyz()</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="output.html#arkane.output.get_str_xyz" title="arkane.output.get_str_xyz"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_str_xyz()</span></code></a></p></td>
 <td><p>Pretty formatting for XYZ coordinates</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">save_thermo_lib()</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="output.html#arkane.output.save_thermo_lib" title="arkane.output.save_thermo_lib"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_thermo_lib()</span></code></a></p></td>
 <td><p>Save an RMG thermo library</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">save_kinetics_lib()</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="output.html#arkane.output.save_kinetics_lib" title="arkane.output.save_kinetics_lib"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_kinetics_lib()</span></code></a></p></td>
 <td><p>Save an RMG kinetics library</p></td>
 </tr>
 </tbody>
 </table>
-</section>
-<section id="job-classes">
+</div>
+<div class="section" id="job-classes">
 <h2>Job classes<a class="headerlink" href="#job-classes" title="Permalink to this headline">¶</a></h2>
 <table class="docutils align-default">
 <colgroup>
@@ -159,28 +158,28 @@ species and reactions.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Arkane</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="main.html#arkane.Arkane" title="arkane.Arkane"><code class="xref py py-class docutils literal notranslate"><span class="pre">Arkane</span></code></a></p></td>
 <td><p>Main class for Arkane jobs</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">StatMechJob</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="statmech.html#arkane.StatMechJob" title="arkane.StatMechJob"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatMechJob</span></code></a></p></td>
 <td><p>Compute the molecular degrees of freedom for a molecular conformation</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ThermoJob</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="thermo.html#arkane.ThermoJob" title="arkane.ThermoJob"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThermoJob</span></code></a></p></td>
 <td><p>Compute the thermodynamic properties of a species</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">KineticsJob</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="kinetics.html#arkane.KineticsJob" title="arkane.KineticsJob"><code class="xref py py-class docutils literal notranslate"><span class="pre">KineticsJob</span></code></a></p></td>
 <td><p>Compute the high pressure-limit rate coefficient for a reaction using transition state theory</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">PressureDependenceJob</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="pdep.html#arkane.PressureDependenceJob" title="arkane.PressureDependenceJob"><code class="xref py py-class docutils literal notranslate"><span class="pre">PressureDependenceJob</span></code></a></p></td>
 <td><p>Compute the phenomenological pressure-dependent rate coefficients <span class="math notranslate nohighlight">\(k(T,P)\)</span> for a unimolecular reaction network</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ExplorerJob</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="explorer.html#arkane.ExplorerJob" title="arkane.ExplorerJob"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExplorerJob</span></code></a></p></td>
 <td><p>Explore a potential energy surface starting from a source</p></td>
 </tr>
 </tbody>
 </table>
-</section>
-<section id="sensitivity-analysis">
+</div>
+<div class="section" id="sensitivity-analysis">
 <h2>Sensitivity analysis<a class="headerlink" href="#sensitivity-analysis" title="Permalink to this headline">¶</a></h2>
 <table class="docutils align-default">
 <colgroup>
@@ -193,16 +192,16 @@ species and reactions.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">KineticsSensitivity</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="sensitivity.html#arkane.sensitivity.KineticsSensitivity" title="arkane.sensitivity.KineticsSensitivity"><code class="xref py py-class docutils literal notranslate"><span class="pre">KineticsSensitivity</span></code></a></p></td>
 <td><p>Perform sensitivity analysis for a kinetics job</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">PDepSensitivity</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="sensitivity.html#arkane.sensitivity.PDepSensitivity" title="arkane.sensitivity.PDepSensitivity"><code class="xref py py-class docutils literal notranslate"><span class="pre">PDepSensitivity</span></code></a></p></td>
 <td><p>Perform sensitivity analysis for a pressure dependence job</p></td>
 </tr>
 </tbody>
 </table>
-</section>
-<section id="utility-modules">
+</div>
+<div class="section" id="utility-modules">
 <h2>Utility modules<a class="headerlink" href="#utility-modules" title="Permalink to this headline">¶</a></h2>
 <table class="docutils align-default">
 <colgroup>
@@ -215,8 +214,8 @@ species and reactions.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane.common</span></code></p></td>
-<td><p>Contains <code class="xref py py-class docutils literal notranslate"><span class="pre">common.ArkaneSpecies</span></code> and other commonly used functions</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="common.html#module-arkane.common" title="arkane.common"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane.common</span></code></a></p></td>
+<td><p>Contains <a class="reference internal" href="common.html#arkane.common.ArkaneSpecies" title="arkane.common.ArkaneSpecies"><code class="xref py py-class docutils literal notranslate"><span class="pre">common.ArkaneSpecies</span></code></a> and other commonly used functions</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane.util</span></code></p></td>
 <td><p>Other utility functions</p></td>
@@ -225,8 +224,8 @@ species and reactions.</p>
 </table>
 <div class="toctree-wrapper compound">
 </div>
-</section>
-</section>
+</div>
+</div>
 
 
             <div class="clearer"></div>
@@ -331,7 +330,7 @@ species and reactions.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

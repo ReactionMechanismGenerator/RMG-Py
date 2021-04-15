@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>15. Liquid Phase Systems &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -58,7 +57,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="liquid-phase-systems">
+  <div class="section" id="liquid-phase-systems">
 <span id="liquids"></span><h1><span class="section-number">15. </span>Liquid Phase Systems<a class="headerlink" href="#liquid-phase-systems" title="Permalink to this headline">¶</a></h1>
 <p>To simulate liquids in RMG requires a module in your input file for liquid-phase:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">solvation</span><span class="p">(</span>
@@ -111,15 +110,15 @@ sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) 
 <p>Note that in the RMG job, after the model has been generated to completion, sensitivity analysis will be conducted
 in one final simulation (sensitivity is not performed in intermediate iterations of the job).</p>
 <p>Notes: sensitivity, sensitivityThreshold and constantSpecies are optionnal keywords.</p>
-<section id="equation-of-state">
+<div class="section" id="equation-of-state">
 <h2><span class="section-number">15.1. </span>Equation of state<a class="headerlink" href="#equation-of-state" title="Permalink to this headline">¶</a></h2>
 <p>Specifying a liquidReactor will have two effects:</p>
 <ol class="arabic simple">
 <li><p>disable the ideal gas law renormalization and instead rely on the concentrations you specified in the input file to initialize the system.</p></li>
 <li><p>prevent the volume from changing when there is a net stoichiometry change due to a chemical reaction (A = B + C).</p></li>
 </ol>
-</section>
-<section id="solvation-thermochemistry">
+</div>
+<div class="section" id="solvation-thermochemistry">
 <h2><span class="section-number">15.2. </span>Solvation thermochemistry<a class="headerlink" href="#solvation-thermochemistry" title="Permalink to this headline">¶</a></h2>
 <p>The next correction for liquids is solvation effects on the thermochemistry. By specifying a solvent in the input file, we load the solvent parameters to use.</p>
 <p>The free energy change associated with the process of transferring a
@@ -137,7 +136,7 @@ unreasonable results for certain solute-solvent pairs. CPU time and
 memory (RAM) requirements are also important considerations. A fairly
 accurate and fast method for computing <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span>, which is used in RMG, is the
 LSER approach described below.</p>
-<section id="use-of-thermo-libraries-in-liquid-phase-system">
+<div class="section" id="use-of-thermo-libraries-in-liquid-phase-system">
 <span id="useofthermolibrariesliquid"></span><h3><span class="section-number">15.2.1. </span>Use of thermo libraries in liquid phase system<a class="headerlink" href="#use-of-thermo-libraries-in-liquid-phase-system" title="Permalink to this headline">¶</a></h3>
 <p>As it is for gas phase simulation, thermo libraries listed in the input files are checked first to find thermo for a given species and return the first match.
 As it exists two types of thermo libraries, (more details on <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">thermo libraries</span></a>),
@@ -149,8 +148,8 @@ for this specific species-solvent system.</p>
 <p class="admonition-title">Note</p>
 <p>Gas phase libraries can be declared first, liquid thermo libraries will still be tested first but the order will be respected if several liquid libraries are provided.</p>
 </div>
-</section>
-<section id="use-of-abraham-lser-to-estimate-thermochemistry-at-298-k">
+</div>
+<div class="section" id="use-of-abraham-lser-to-estimate-thermochemistry-at-298-k">
 <span id="lsertoestimatethermo"></span><h3><span class="section-number">15.2.2. </span>Use of Abraham LSER to estimate thermochemistry at 298 K<a class="headerlink" href="#use-of-abraham-lser-to-estimate-thermochemistry-at-298-k" title="Permalink to this headline">¶</a></h3>
 <p>The Abraham LSER provides an estimate of the the partition coefficient (<span class="math notranslate nohighlight">\(K\)</span>)  of a solute (component 2)
 between the vapor phase and a particular solvent (component 1) at 298 K:</p>
@@ -213,8 +212,8 @@ Parameters are provided in RMG’s database for the following solvents:</p>
 <li><p>undecane</p></li>
 <li><p>water</p></li>
 </ol>
-</section>
-<section id="estimation-of-delta-g-rm-solv-at-other-temperatures-linear-extrapolation">
+</div>
+<div class="section" id="estimation-of-delta-g-rm-solv-at-other-temperatures-linear-extrapolation">
 <h3><span class="section-number">15.2.3. </span>Estimation of <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> at other temperatures: linear extrapolation<a class="headerlink" href="#estimation-of-delta-g-rm-solv-at-other-temperatures-linear-extrapolation" title="Permalink to this headline">¶</a></h3>
 <p>To estimate <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> at temperatures other than 298 K, a simple linear extrapolation can be employed.
 For this approach, the enthalpy and entropy of solvation are assumed to be independent of temperature.
@@ -228,8 +227,8 @@ The entropy of solvation, <span class="math notranslate nohighlight">\(\Delta S_
 <p>This method provides a rapid, first-order approximation of the temperature dependence of solvation free energy. However,
 since the actual solvation enthalpy and entropy vary with temperature, this approximation will deviate at temperatures
 far away from 298 K. Looking at several experimental data, this approximation seems reasonable up to ~ 400 K.</p>
-</section>
-<section id="estimation-of-delta-g-rm-solv-at-other-temperatures-temperature-dependent-model">
+</div>
+<div class="section" id="estimation-of-delta-g-rm-solv-at-other-temperatures-temperature-dependent-model">
 <h3><span class="section-number">15.2.4. </span>Estimation of <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> at other temperatures: temperature-dependent model<a class="headerlink" href="#estimation-of-delta-g-rm-solv-at-other-temperatures-temperature-dependent-model" title="Permalink to this headline">¶</a></h3>
 <p>This method uses a piecewise function of K-factor to estimate more accurate temperature dependent solvation free energy.
 The K-factor at infinite dilution (<span class="math notranslate nohighlight">\(K_{2,1}^{\infty}\)</span>), also known as the vapor-liquid equilibrium ratio, is
@@ -297,13 +296,13 @@ that are available in CoolProp and therefore are available for temperature depen
 <li><p>undecane</p></li>
 <li><p>water</p></li>
 </ol>
-</section>
-<section id="current-status-of-temperature-dependent-delta-g-rm-solv-in-rmg-liquid-reactor">
+</div>
+<div class="section" id="current-status-of-temperature-dependent-delta-g-rm-solv-in-rmg-liquid-reactor">
 <h3><span class="section-number">15.2.5. </span>Current status of temperature dependent <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> in RMG liquid reactor<a class="headerlink" href="#current-status-of-temperature-dependent-delta-g-rm-solv-in-rmg-liquid-reactor" title="Permalink to this headline">¶</a></h3>
 <p>Currently, RMG uses the linear extrapolation method to estimate solvation free energy at temperatures other than 298 K.
 The work is in progress to implement the temperature dependent solvation free energy estimation for available solvents.</p>
-</section>
-<section id="group-additivity-method-for-solute-descriptor-estimation">
+</div>
+<div class="section" id="group-additivity-method-for-solute-descriptor-estimation">
 <h3><span class="section-number">15.2.6. </span>Group additivity method for solute descriptor estimation<a class="headerlink" href="#group-additivity-method-for-solute-descriptor-estimation" title="Permalink to this headline">¶</a></h3>
 <p>Group additivity is a convenient way of estimating the thermochemistry for thousands of species sampled
 in a typical mechanism generation job. Use of the Abraham Model in RMG requires a similar approach
@@ -312,9 +311,9 @@ employing a set of 81 molecular fragments for estimating <cite>B, E, L, V</cite>
 the estimation of <cite>A</cite>. These fragments are implemented in RMG but are limited to the compounds containing H, C,
 O, N, and S. The value of a given descriptor for a molecule is obtained by summing the contributions from each
 fragment found in the molecule and the intercept associated with that descriptor.</p>
-</section>
-</section>
-<section id="diffusion-limited-kinetics">
+</div>
+</div>
+<div class="section" id="diffusion-limited-kinetics">
 <span id="diffusionlimited"></span><h2><span class="section-number">15.3. </span>Diffusion-limited kinetics<a class="headerlink" href="#diffusion-limited-kinetics" title="Permalink to this headline">¶</a></h2>
 <p>The next correction for liquid-phase reactions is to ensure that bimolecular reactions do not exceed their diffusion
 limits. The theory behind diffusive limits in the solution phase for bimolecular reactions is well established
@@ -354,8 +353,8 @@ and a correlation for the viscosity using parameters <span class="math notransla
 <div class="math notranslate nohighlight" id="equation-viscosity">
 <span class="eqno">(23)<a class="headerlink" href="#equation-viscosity" title="Permalink to this equation">¶</a></span>\[\ln \eta = A + \frac{B}{T} + C\log T + DT^E\]</div>
 <p>To build accurate models of liquid phase chemical reactions you will also want to modify your kinetics libraries or correct gas-phase rates for intrinsic barrier solvation corrections (coming soon).</p>
-</section>
-<section id="example-liquid-phase-input-file-no-constant-species">
+</div>
+<div class="section" id="example-liquid-phase-input-file-no-constant-species">
 <span id="exampleliquidphase"></span><h2><span class="section-number">15.4. </span>Example liquid-phase input file, no constant species<a class="headerlink" href="#example-liquid-phase-input-file-no-constant-species" title="Permalink to this headline">¶</a></h2>
 <p>This is an example of an input file for a liquid-phase system:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
@@ -415,8 +414,8 @@ and a correlation for the viscosity using parameters <span class="math notransla
 <span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="example-liquid-phase-input-file-with-constant-species">
+</div>
+<div class="section" id="example-liquid-phase-input-file-with-constant-species">
 <h2><span class="section-number">15.5. </span>Example liquid-phase input file, with constant species<a class="headerlink" href="#example-liquid-phase-input-file-with-constant-species" title="Permalink to this headline">¶</a></h2>
 <p>This is an example of an input file for a liquid-phase system with constant species:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
@@ -542,8 +541,8 @@ and a correlation for the viscosity using parameters <span class="math notransla
 <dd><p>M.B. Flegg. “Smoluchowski reaction kinetics for reactions of any order.” <em>SIAM J. Appl. Math.</em> <strong>76(4)</strong>, p. 1403-1432 (2016).</p>
 </dd>
 </dl>
-</section>
-</section>
+</div>
+</div>
 
 
             <div class="clearer"></div>
@@ -656,7 +655,7 @@ and a correlation for the viscosity using parameters <span class="math notransla
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

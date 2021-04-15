@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>2. The Master Equation &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -58,7 +57,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="the-master-equation">
+  <div class="section" id="the-master-equation">
 <h1><span class="section-number">2. </span>The Master Equation<a class="headerlink" href="#the-master-equation" title="Permalink to this headline">¶</a></h1>
 <p>A full treatment of the energy states of each molecule is unfeasible for
 molecules larger than diatomics, as there are simply too many states. To
@@ -67,7 +66,7 @@ molecule as a function of two quantities: the total energy <span class="math not
 angular momentum quantum number <span class="math notranslate nohighlight">\(J\)</span>. Frequently we will find that even
 this is too difficult, and will only keep the total energy <span class="math notranslate nohighlight">\(E\)</span> as an
 independent variable.</p>
-<section id="isomers-reactants-and-products">
+<div class="section" id="isomers-reactants-and-products">
 <h2><span class="section-number">2.1. </span>Isomers, Reactants, and Products<a class="headerlink" href="#isomers-reactants-and-products" title="Permalink to this headline">¶</a></h2>
 <p>Throughout this document we will utilize the following terminology:</p>
 <ul class="simple">
@@ -102,8 +101,8 @@ sinks, their populations do not need to be considered explicitly.)</p>
 <p>Finally, we will use <span class="math notranslate nohighlight">\(N_\mathrm{isom}\)</span>, <span class="math notranslate nohighlight">\(N_\mathrm{reac}\)</span>, and
 <span class="math notranslate nohighlight">\(N_\mathrm{prod}\)</span> as the numbers of isomers, reactant channels, and
 product channels, respectively, in the system.</p>
-</section>
-<section id="collision-models">
+</div>
+<div class="section" id="collision-models">
 <h2><span class="section-number">2.2. </span>Collision Models<a class="headerlink" href="#collision-models" title="Permalink to this headline">¶</a></h2>
 <p>Bimolecular collisions with an inert species <span class="math notranslate nohighlight">\(\ce{M}\)</span> are the primary
 means by which an isomer molecule changes its energy. A reasonable estimate –
@@ -170,8 +169,8 @@ temperature.</p>
 \[P(E, E^\prime) = C(E^\prime) \left[ (1 - f) \exp \left( -\frac{E^\prime - E}{\alpha_1} \right) + f \exp \left( -\frac{E^\prime - E}{\alpha_2} \right) \right] \hspace{40pt} E &lt; E^\prime\]</div>
 <p>The parameters for these simple models generally contain so much uncertainty
 that more complex functional forms are generally not used.</p>
-</section>
-<section id="reaction-models">
+</div>
+<div class="section" id="reaction-models">
 <h2><span class="section-number">2.3. </span>Reaction Models<a class="headerlink" href="#reaction-models" title="Permalink to this headline">¶</a></h2>
 <p>Chemical reaction events cause a change in molecular configuration at constant
 energy. The rate coefficient for this process must be determined as a function
@@ -224,7 +223,7 @@ constant of this active K-rotor cancels and is therefore arbitrary.</p></li>
 inverse Laplace transform method and RRKM theory. The latter requires detailed
 information about the transition state, while the former only requires the
 high-pressure limit rate coefficient <span class="math notranslate nohighlight">\(k_\infty(T)\)</span>.</p>
-<section id="inverse-laplace-transform">
+<div class="section" id="inverse-laplace-transform">
 <h3><span class="section-number">2.3.1. </span>Inverse Laplace Transform<a class="headerlink" href="#inverse-laplace-transform" title="Permalink to this headline">¶</a></h3>
 <p>The microcanonical rate coefficient <span class="math notranslate nohighlight">\(k(E)\)</span> is related to the canonical
 high-pressure limit rate coefficient <span class="math notranslate nohighlight">\(k_\infty(T)\)</span> via a Boltzmann
@@ -265,8 +264,8 @@ obtain a rough estimate by lumping these contributions into the preexponential
 at the temperature we are working at. By redoing this at each temperature being
 considered we minimize the error introduced, at the expense of not being able
 to identify a single <span class="math notranslate nohighlight">\(k(E)\)</span>.</p>
-</section>
-<section id="rrkm-theory">
+</div>
+<div class="section" id="rrkm-theory">
 <h3><span class="section-number">2.3.2. </span>RRKM Theory<a class="headerlink" href="#rrkm-theory" title="Permalink to this headline">¶</a></h3>
 <p>RRKM theory – named for Rice, Ramsperger, Kassel, and Marcus – is a
 microcanonical transition state theory. Like canonical transition state theory,
@@ -285,9 +284,9 @@ density of states via</p>
 <p>The angular momentum quantum number dependence can be removed via</p>
 <div class="math notranslate nohighlight">
 \[k(E) = \sum_J (2J+1) k(E, J)\]</div>
-</section>
-</section>
-<section id="the-full-master-equation">
+</div>
+</div>
+<div class="section" id="the-full-master-equation">
 <h2><span class="section-number">2.4. </span>The Full Master Equation<a class="headerlink" href="#the-full-master-equation" title="Permalink to this headline">¶</a></h2>
 <p>The governing equation for the population distributions <span class="math notranslate nohighlight">\(p_i(E, J, t)\)</span>
 of each isomer <span class="math notranslate nohighlight">\(i\)</span> and the reactant concentrations
@@ -366,8 +365,8 @@ situation where <span class="math notranslate nohighlight">\(y_{n\mathrm{A}}(t) 
 <span class="math notranslate nohighlight">\(y(t)\)</span> are negligible compared to the bath gas <span class="math notranslate nohighlight">\(\ce{M}\)</span>. From these
 assumptions the changes in <span class="math notranslate nohighlight">\(\omega_i\)</span>, <span class="math notranslate nohighlight">\(P_i(E, E^\prime)\)</span>, and all
 <span class="math notranslate nohighlight">\(y_{n\mathrm{B}}\)</span> can be neglected, which yields a linear equation system.</p>
-</section>
-<section id="the-energy-grained-master-equation">
+</div>
+<div class="section" id="the-energy-grained-master-equation">
 <h2><span class="section-number">2.5. </span>The Energy-Grained Master Equation<a class="headerlink" href="#the-energy-grained-master-equation" title="Permalink to this headline">¶</a></h2>
 <p>Except for the simplest of unimolecular reaction networks, both the
 one-dimensional and two-dimensional master equation must be solved numerically.
@@ -425,8 +424,8 @@ reactants and products:</p>
 reactant channel <span class="math notranslate nohighlight">\(n\)</span> due to chemical reactions:</p>
 <div class="math notranslate nohighlight">
 \[h_n = - \sum_{i=1}^{N_\mathrm{isom}} \sum_{r=1}^{N_\mathrm{grains}} y_{n\mathrm{B}} f_{in}(E_r) b_n(E_r)\]</div>
-</section>
-<section id="further-reading">
+</div>
+<div class="section" id="further-reading">
 <h2><span class="section-number">2.6. </span>Further Reading<a class="headerlink" href="#further-reading" title="Permalink to this headline">¶</a></h2>
 <p>The interested reader is referred to any of a variety of other sources for
 alternative presentations, of which an illustrative sampling is given here
@@ -454,8 +453,8 @@ Cambridge University Press (2003).</p>
 <a class="reference external" href="http://dx.doi.org/10.1146/annurev.physchem.54.011002.103822">doi:10.1146/annurev.physchem.54.011002.103822</a></p>
 </dd>
 </dl>
-</section>
-</section>
+</div>
+</div>
 
 
             <div class="clearer"></div>
@@ -565,7 +564,7 @@ Cambridge University Press (2003).</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

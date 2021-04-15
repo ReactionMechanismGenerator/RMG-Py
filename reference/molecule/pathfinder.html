@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>rmgpy.molecule.pathfinder &#8212; RMG-Py 3.0.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -57,7 +56,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="module-rmgpy.molecule.pathfinder">
+  <div class="section" id="module-rmgpy.molecule.pathfinder">
 <span id="rmgpy-molecule-pathfinder"></span><h1>rmgpy.molecule.pathfinder<a class="headerlink" href="#module-rmgpy.molecule.pathfinder" title="Permalink to this headline">¶</a></h1>
 <p>This module provides functions for searching paths within a molecule.
 The paths generally consist of alternating atoms and bonds.</p>
@@ -128,7 +127,7 @@ A “if atom1.atomtype.label == ‘N5dc’” check should be done before callin
 </ul>
 <p>Direction “1” is the direction &lt;increasing&gt; the bond order as in [::NH-]-[CH2+] &lt;=&gt; [:NH]=[CH2]
 Direction “2” is the direction &lt;decreasing&gt; the bond order as in [:NH]=[CH2] &lt;=&gt; [::NH-]-[CH2+]
-(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-’ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
+(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
 (In direction 1 atom1 &lt;losses&gt; a lone pair, in direction 2 atom1 &lt;gains&gt; a lone pair)</p>
 </dd></dl>
 
@@ -160,7 +159,7 @@ could have been generated as a resonance structure of R[::O][::O.].</p>
 <li><p><cite>S u0 p2</cite></p></li>
 <li><p><cite>S u0 p3</cite></p></li>
 </ul>
-<p>(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-’ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
+<p>(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
 The bond between the sites does not have to be single, e.g.: [:O.+]=[::N-] &lt;=&gt; [::O]=[:N.]</p>
 </dd></dl>
 
@@ -179,7 +178,7 @@ The bond between the sites does not have to be single, e.g.: [:O.+]=[::N-] &lt;=
 </ul>
 <p>Direction “1” is the direction &lt;increasing&gt; the bond order as in [::N]-[.CH2] &lt;=&gt; [:N.]=[CH2]
 Direction “2” is the direction &lt;decreasing&gt; the bond order as in [:N.]=[CH2] &lt;=&gt; [::N]-[.CH2]
-(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-’ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
+(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
 (In direction 1 atom1 &lt;losses&gt; a lone pair, gains a radical, and atom2 looses a radical.
 In direction 2 atom1 &lt;gains&gt; a lone pair, looses a radical, and atom2 gains a radical)</p>
 </dd></dl>
@@ -253,7 +252,7 @@ Returns True if atom is N/O/S and is able to &lt;loose&gt; a lone pair, False ot
 We don’t allow O to remain with no lone pairs</p>
 </dd></dl>
 
-</section>
+</div>
 
 
             <div class="clearer"></div>
@@ -346,7 +345,7 @@ We don’t allow O to remain with no lone pairs</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
