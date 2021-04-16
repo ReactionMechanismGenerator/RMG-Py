@@ -31,8 +31,10 @@
 This scripts runs tests on the database
 """
 
+import itertools
 import logging
 from copy import copy
+from collections import defaultdict
 
 import nose
 import nose.tools
@@ -48,6 +50,7 @@ from rmgpy.exceptions import ImplicitBenzeneError, UnexpectedChargeError
 from rmgpy.molecule import Group
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.pathfinder import find_shortest_path
+from rmgpy.quantity import ScalarQuantity
 
 
 class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want to use nose test generators
@@ -145,6 +148,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             if family_name not in difficult_families and family_name not in generated_trees:
                 test = lambda x: self.kinetics_check_sample_descends_to_group(family_name)
                 test_name = "Kinetics family {0}: Entry is accessible?".format(family_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
+
+                test = lambda x: self.kinetics_check_sample_can_react(family_name)
+                test_name = "Kinetics family {0}: Recipe applies to group entry?".format(family_name)
                 test.description = test_name
                 self.compat_func_name = test_name
                 yield test, family_name
@@ -357,11 +366,68 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             self.compat_func_name = test_name
             yield test, group_name
 
+    def test_metal_libraries(self):
+        for library_name, library in self.database.thermo.surface['metal'].libraries.items():
+            test = lambda x: self.general_check_metal_database_has_catalyst_properties(library)
+            test_name = "Metal library {0}: Entries have catalyst properties?".format(library_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, library_name
+
+            test = lambda x: self.general_check_metal_database_has_reasonable_labels(library)
+            test_name = "Metal library {0}: Entries have reasonable labels?".format(library_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, library_name
+
     # These are the actual tests, that don't start with a "test_" name:
     def kinetics_check_surface_training_reactions_can_be_used(self, family_name):
         """Test that surface training reactions can be averaged and used for generating rate rules"""
         family = self.database.kinetics.families[family_name]
         family.add_rules_from_training(thermo_database=self.database.thermo)
+
+    def general_check_metal_database_has_catalyst_properties(self, library):
+        """Test that each entry has catalyst properties"""
+        for entry in library.entries.values():
+            if not entry.binding_energies:
+                raise AttributeError('Entry {} has no binding energies'.format(entry.label))
+            assert isinstance(entry.binding_energies, dict)
+            for element in 'CHON':
+                if not entry.binding_energies[element]:
+                    raise KeyError('Entry {} has no {} binding energy'.format(entry.label, element))
+                if not isinstance(entry.binding_energies[element], ScalarQuantity):
+                    raise TypeError('Entry {} binding energy value for {} should be a ScalarQuantity, but is type {}'.format(
+                        entry.label, element, type(entry.binding_energies[element])))
+                if not isinstance(entry.binding_energies[element].value, float):
+                    raise TypeError('Entry {} binding energy for {} should be a float, but is type {}'.format(
+                        entry.label, element, type(entry.binding_energies[element].value)))
+                assert entry.binding_energies[element].value < 0.  # binding energies should all be negative... probably
+                assert entry.binding_energies[element].units == 'eV/molecule'
+
+            if not entry.surface_site_density:
+                raise AttributeError('Entry {} has no surface site density'.format(entry.label))
+            assert isinstance(entry.surface_site_density, ScalarQuantity)
+            if not isinstance(entry.surface_site_density.value, float):
+                raise TypeError('Entry {} should be a float, but is type {}'.format(entry.label, type(entry.surface_site_density.value)))
+            if not isinstance(entry.surface_site_density.units, str):
+                raise TypeError('Entry {} should be a str, but is type {}'.format(entry.label, type(entry.surface_site_density.units)))
+            assert 1e-4 > entry.surface_site_density.value_si > 1e-6  # values should be reasonable
+
+            assert isinstance(entry.metal, str)  # all entries should have a metal attribute, at minimum
+            if entry.facet:
+                assert isinstance(entry.facet, str)
+            if entry.site:
+                assert isinstance(entry.site, str)
+
+    def general_check_metal_database_has_reasonable_labels(self, library):
+        """Test that each entry has a reasonable label corresponding to its metal and facet"""
+        for entry in library.entries.values():
+            if entry.metal not in entry.label:
+                raise NameError('Entry {} with metal attribute {} does not have metal in its label'.format(entry.label, entry.metal))
+            if entry.facet not in entry.label:
+                raise NameError('Entry {} with facet attribute {} does not have facet in its label'.format(entry.label, entry.facet))
+            if not entry.label[0].isupper():
+                raise NameError('Entry {} should start with a capital letter'.format(entry.label))
 
     def kinetics_check_training_reactions_have_surface_attributes(self, family_name):
         """Test that each surface training reaction has surface attributes"""
@@ -372,6 +438,14 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             if not entry.metal:
                 logging.error(f'Expected a metal attribute for {entry} in {family} family but found {entry.metal!r}')
                 failed = True
+            else:
+                assert isinstance(entry.metal, str)
+
+            if entry.facet:
+                assert isinstance(entry.facet, str)
+            if entry.site:
+                assert isinstance(entry.site, str)
+
         if failed:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
@@ -391,7 +465,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                     failed = True
         for entry in entries:
             if isinstance(entry.metal, type(None)):
-                logginge.error(f'Expected a metal attribute in {library} library for {entry} but found None')
+                logging.error(f'Expected a metal attribute in {library} library for {entry} but found None')
                 failed = True
         if failed:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
@@ -1215,6 +1289,200 @@ Origin Group AdjList:
         if boo:
             raise ValueError("Error Occurred")
 
+    def kinetics_check_sample_can_react(self, family_name):
+        """
+        This test first creates a/some sample :class:Molecule(s) from a/some :class:Group(s). 
+        Then it checks that this/these molecule can react according to the recipe.
+
+        It doesn't do every combination of test molecules, but tries each test molecule 
+        at least once. Also note that the test molecules are often too small to detect
+        some problems, always being the simplest possible instance of a group.
+        So unfortunately, problems can still slip through this test.
+        """
+        family = self.database.kinetics.families[family_name]
+        test1 = []
+
+        # ignore any products
+        ignore = []
+        if not family.own_reverse:
+            for product in family.forward_template.products:
+                ignore.append(product)
+                ignore.extend(product.children)
+        else:
+            ignore = []
+
+        # If family is backbone archetype, then we need to merge groups before descending
+        roots = family.groups.top
+        if len(roots) > len(family.forward_template.reactants):
+            backbone_roots = family.get_backbone_roots()
+            all_backbone_groups = []
+            for backboneRoot in backbone_roots:
+                all_backbone_groups.extend(family.get_top_level_groups(backboneRoot))
+            # list of numbered of labelled atoms for all_backbone_groups
+            backbone_sizes = [len(backbone.item.get_all_labeled_atoms()) for backbone in all_backbone_groups]
+
+            # pick a backbone that is two labelled atoms larger than the smallest
+            if min(backbone_sizes) + 2 in backbone_sizes:
+                backbone_sample = all_backbone_groups[backbone_sizes.index(min(backbone_sizes) + 2)]
+            # or if it doesn't exist, pick the largest backbone
+            else:
+                backbone_sample = all_backbone_groups[backbone_sizes.index(max(backbone_sizes))]
+            merges_necessary = True
+        else:
+            merges_necessary = False
+
+        # If atom has too many benzene rings, we currently have trouble making sample atoms
+        skipped = []
+        sample_reactants = defaultdict(list) # the keys will be the root nodes, the values a list of samples
+        for entryName, entry in family.groups.entries.items():
+            if entry in ignore:
+                continue
+            elif isinstance(entry.item, Group):
+                ancestors = family.ancestors(entry)
+                if ancestors:
+                    root = ancestors[-1]  # top level root will be last one in ancestors
+                else:
+                    root = entry
+                try:
+                    if merges_necessary and root not in backbone_roots:  # we may need to merge
+                        merged_group = backbone_sample.item.merge_groups(entry.item)
+                        sample_molecule = merged_group.make_sample_molecule()
+                        # store the sample molecule for later testing
+                        if not family.is_molecule_forbidden(sample_molecule):
+                            sample_reactants[backboneRoot].append(sample_molecule)
+                    else:
+                        sample_molecule = entry.item.make_sample_molecule()
+                        # store the sample molecule for later testing
+                        if not family.is_molecule_forbidden(sample_molecule):
+                            sample_reactants[root].append(sample_molecule)
+                except UnexpectedChargeError as e:
+                    if merges_necessary and root not in backbone_roots:
+                        backbone_msg = "\n\nBackbone Group Adjlist:\n" + backbone_sample.label + '\n'
+                        backbone_msg += backbone_sample.item.to_adjacency_list()
+                    else:
+                        backbone_msg = ''
+                    tst3.append((False, """
+In family {0}, a sample molecule made from node {1} returns an unexpectedly charged molecule:
+Sample molecule AdjList:
+{2}
+
+Origin Group AdjList:
+{3}{4}""".format(family_name, entry.label, e.graph.to_adjacency_list(), entry.item.to_adjacency_list(), backbone_msg)))
+
+                except ImplicitBenzeneError:
+                    skipped.append(entryName)
+        def make_error_message(reactants, message=''):
+            "Give it the list of reactant Molecules and an optional message."
+            output = f"Error in family {family_name} when reacting "
+            output += ' + '.join(s.to_smiles() for s in reactants)
+            output += f". {message}\n"
+            for s in reactants:
+                output += "\n" + s.to_adjacency_list(label=s.to_smiles())
+            return output
+
+        if len(sample_reactants) == 1 == len(family.forward_template.reactants):
+            reactants = list(sample_reactants.values())[0]
+            for reactant in reactants:
+                try:
+                    products = family.apply_recipe([reactant])
+                except Exception as e:
+                    test1.append(make_error_message([reactant],
+                          message=f"During apply_recipe had an {type(e)!s}: {e!s}"))
+                    continue
+                if products is None:
+                    test1.append(make_error_message([reactant],
+                        message="apply_recipe returned None, indicating wrong number of products or a charged product."))
+                    continue
+                for molecule in products:
+                    # Just check none of this throws errors
+                    species = rmgpy.species.Species(index=1,molecule=[molecule])
+                    species.generate_resonance_structures()
+        elif len(sample_reactants) == 1 and len(family.forward_template.reactants) == 2:
+            # eg. Bimolec_Hydroperoxide_Decomposition and Peroxyl_Disproportionation
+            # use the same group twice.
+            reactant_lists = [sample_reactants[k] for k in family.forward_template.reactants ]
+            pairs = zip(*reactant_lists)
+            for reactant1, reactant2 in pairs:
+                try:
+                    products = family.apply_recipe([reactant1, reactant2])
+                except Exception as e:
+                    test1.append(make_error_message([reactant1, reactant2],
+                          message=f"During apply_recipe had an {type(e)!s}: {e!s}"))
+                    continue
+                if products is None:
+                    test1.append(make_error_message([reactant1, reactant2],
+                        message="apply_recipe returned None, indicating wrong number of products or a charged product."))
+                    continue
+                for molecule in products:
+                    # Just check none of this throws errors
+                    species = rmgpy.species.Species(index=1,molecule=[molecule])
+                    species.generate_resonance_structures()
+        elif len(sample_reactants) == 2:
+            sr = list(sample_reactants.values())
+            # Every combination may be prohibitively slow (N*M reactions),
+            # so we loop through to ensure at least each node is used once (max(N,M) reactions)
+            if len(sr[0]) > len(sr[1]):
+                pairs = zip(sr[0], itertools.cycle(sr[1]))
+            else:
+                pairs = zip(itertools.cycle(sr[0]), sr[1])
+            for reactant1, reactant2 in pairs:
+                try:
+                    products = family.apply_recipe([reactant1, reactant2])
+                except Exception as e:
+                    test1.append(make_error_message([reactant1, reactant2],
+                          message=f"During apply_recipe had an {type(e)!s}: {e!s}"))
+                    continue
+                if products is None:
+                    test1.append(make_error_message([reactant1, reactant2],
+                        message="apply_recipe returned None, indicating wrong number of products or a charged product."))
+                    continue
+                for molecule in products:
+                    # Just check none of this throws errors
+                    species = rmgpy.species.Species(index=1,molecule=[molecule])
+                    species.generate_resonance_structures()
+        elif len(sample_reactants) == 3:
+            sr = list(sample_reactants.values())
+            # Every combination may be prohibitively slow (N*M*L reactions),
+            # so we loop through to ensure at least each node is used once (max(N,M,L) reactions)
+            longest = np.argmax(map(len,sr))
+            if longest == 0:
+                triplets = zip(sr[0], itertools.cycle(sr[1]), itertools.cycle(sr[2]))
+            elif longest == 1:
+                triplets = zip(itertools.cycle(sr[0]), sr[1], itertools.cycle(sr[2]))
+            else:
+                assert longest == 2
+                triplets = zip(itertools.cycle(sr[0]), itertools.cycle(sr[1]), sr[2])
+            for reactant1, reactant2, reactant3 in triplets:
+                try:
+                    products = family.apply_recipe([reactant1, reactant2, reactant3])
+                except Exception as e:
+                    test1.append(make_error_message([reactant1, reactant2, reactant3],
+                          message=f"During apply_recipe had an {type(e)!s}: {e!s}"))
+                    continue
+                if products is None:
+                    test1.append(make_error_message([reactant1, reactant2, reactant3],
+                        message="apply_recipe returned None, indicating wrong number of products or a charged product."))
+                    continue
+                for molecule in products:
+                    # Just check none of this throws errors
+                    species = rmgpy.species.Species(index=1,molecule=[molecule])
+                    species.generate_resonance_structures()
+        else:
+            raise ValueError(f"Family had {len(sample_reactants)} reactants?: "
+                             f"{', '.join(map(str,sample_reactants.keys())) }")
+
+        # print out entries skipped from exception we can't currently handle
+        if skipped:
+            print("These entries were skipped because of an ImplicitBenzeneError:")
+            for entryName in skipped:
+                print(entryName)
+
+        boo = False
+        for err in test1:
+            logging.error(err)
+            boo = True
+        if boo:
+            raise ValueError("Error Occurred. See log for details.")
     def check_surface_thermo_groups_have_surface_attributes(self, group_name, group):
         """
         Tests that each entry in the surface thermo groups has a 'metal' and 'facet' attribute, 
@@ -1258,7 +1526,7 @@ Origin Group AdjList:
             if '111' in library_name:
                 if entry.facet is not '111':
                     logging.error(f'Expected {entry} facet attribute in {library_name} library to match 111, but was {entry.facet}')
-                    failed = true
+                    failed = True
             if not entry.metal:
                 logging.error(f'Expected a metal attribute for {entry} in {library} library but found {entry.metal!r}')
                 failed = True

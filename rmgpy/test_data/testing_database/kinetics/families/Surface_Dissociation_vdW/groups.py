@@ -21,7 +21,7 @@ template(reactants=["Combined", "VacantSite"], products=["Adsorbate1", "Adsorbat
 reverse = "Surface_Association_vdW"
 
 recipe(actions=[
-    ['FORM_BOND', '*1', 1, '*3'],
+    ['CHANGE_BOND', '*1', 1, '*3'],
     ['FORM_BOND', '*2', 1, '*4'],
     ['BREAK_BOND', '*1', 1, '*2'],
 ])

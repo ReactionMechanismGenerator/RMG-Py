@@ -1,0 +1,101 @@
+
+Ni
+1 X u0 p0 c0
+
+O2
+multiplicity 3
+1 O u1 p2 c0 {2,S}
+2 O u1 p2 c0 {1,S}
+
+
+CH4
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+
+
+H2
+1 H u0 p0 c0 {2,S}
+2 H u0 p0 c0 {1,S}
+
+
+
+H2O
+1 O u0 p2 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+
+
+
+CO
+1 C u0 p1 c-1 {2,T}
+2 O u0 p1 c+1 {1,T}
+
+
+CO2
+1 C u0 p0 c0 {2,D} {3,D}
+2 O u0 p2 c0 {1,D}
+3 O u0 p2 c0 {1,D}
+
+
+CH2O
+1 C u0 p0 c0 {2,D} {3,S} {4,S}
+2 O u0 p2 c0 {1,D}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+
+
+
+CH3OH
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 O u0 p2 c0 {1,S} {6,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+
+
+
+OX
+1 X u0 p0 c0 {2,D}
+2 O u0 p2 c0 {1,D}
+
+
+CH3X
+1 C u0 p0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 {1,S}
+3 H u0 p0 {1,S}
+4 H u0 p0 {1,S}
+5 X u0 p0 {1,S}
+
+
+HX
+1 H u0 p0 {2,S}
+2 X u0 p0 {1,S}
+
+
+O2X
+multiplicity 2
+1 O u0 p2 c0 {2,S} {3,S}
+2 O u1 p2 c0 {1,S}
+3 X u0 p0 c0 {1,S}
+
+HOX
+1 O u0 p2 {2,S} {3,S}
+2 H u0 p0 {1,S}
+3 X u0 p0 {1,S}
+
+
+OCX
+1 C u0 p0 {2,D} {3,D}
+2 O u0 p2 {1,D} 
+3 X u0 p0 {1,D} 
+
+
+
+
+
+
+

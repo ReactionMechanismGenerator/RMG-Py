@@ -298,6 +298,30 @@ class ReactionRecipe(object):
                 # Apply the action
                 if action[0] == 'CHANGE_BOND':
                     info = int(info)
+                    # Check first to see if we have a bond
+                    if not struct.has_bond(atom1, atom2):
+                        if info < 1:
+                            raise InvalidActionError('Attempted to change a nonexistent bond.')
+                        # If we do not have a bond, it might be because we are trying to change a vdW bond
+                        # Lets see if one of that atoms is a surface site, 
+                        # If we have a surface site, we will make a single bond, then change it by info - 1
+                        is_vdW_bond = False
+                        for atom in (atom1, atom2):
+                            if atom.is_surface_site():
+                                is_vdW_bond = True
+                                break
+                        if not is_vdW_bond: # no surface site, so no vdW bond
+                            raise InvalidActionError('Attempted to change a nonexistent bond.')
+                        else: # we found a surface site, so we will make a single bond
+                            bond = GroupBond(atom1, atom2, order=[1]) if pattern else Bond(atom1, atom2, order=1)
+                            struct.add_bond(bond)
+                            atom1.apply_action(['FORM_BOND', label1, 1, label2])
+                            atom2.apply_action(['FORM_BOND', label1, 1, label2])
+                            # Now subtract 1 from info
+                            info -= 1
+                            # If info is 0, then we can continue since we don't have to change the bond
+                            if info == 0:
+                                continue
                     bond = struct.get_bond(atom1, atom2)
                     if bond.is_benzene():
                         struct.props['validAromatic'] = False
@@ -305,10 +329,22 @@ class ReactionRecipe(object):
                         atom1.apply_action(['CHANGE_BOND', label1, info, label2])
                         atom2.apply_action(['CHANGE_BOND', label1, info, label2])
                         bond.apply_action(['CHANGE_BOND', label1, info, label2])
+                        if pattern:
+                            if bond.is_van_der_waals():
+                                if atom1.is_surface_site():
+                                    atom1.atomtype = [ATOMTYPES['Xv']]
+                                else:
+                                    atom2.atomtype = [ATOMTYPES['Xv']]
                     else:
                         atom1.apply_action(['CHANGE_BOND', label1, -info, label2])
                         atom2.apply_action(['CHANGE_BOND', label1, -info, label2])
                         bond.apply_action(['CHANGE_BOND', label1, -info, label2])
+                        if pattern:
+                            if bond.is_van_der_waals():
+                                if atom1.is_surface_site():
+                                    atom1.atomtype = [ATOMTYPES['Xv']]
+                                else:
+                                    atom2.atomtype = [ATOMTYPES['Xv']]
                 elif (action[0] == 'FORM_BOND' and forward) or (action[0] == 'BREAK_BOND' and not forward):
                     if struct.has_bond(atom1, atom2):
                         raise InvalidActionError('Attempted to create an existing bond.')
@@ -320,6 +356,13 @@ class ReactionRecipe(object):
                     atom2.apply_action(['FORM_BOND', label1, info, label2])
                 elif (action[0] == 'BREAK_BOND' and forward) or (action[0] == 'FORM_BOND' and not forward):
                     if not struct.has_bond(atom1, atom2):
+                        if info == 0:
+                            if atom1.is_surface_site() or atom2.is_surface_site():
+                                # We are trying to break a vdW bond, but the atoms are not connected in
+                                # the graph. The bond will break when we split the merged products
+                                # in the `apply_recipe()` functions. Thus, there is nothing to do here,
+                                # so we continue to the next action.
+                                continue
                         raise InvalidActionError('Attempted to remove a nonexistent bond.')
                     bond = struct.get_bond(atom1, atom2)
                     struct.remove_bond(bond)
@@ -1194,7 +1237,6 @@ class KineticsFamily(Database):
         # Process the entries that are stored in the reverse direction of the
         # family definition
         for entry in reverse_entries:
-
             tentries[entry.index].item.is_forward = False
 
             assert isinstance(entry.data, Arrhenius)
@@ -1215,15 +1257,20 @@ class KineticsFamily(Database):
                 if quantum_mechanics:
                     quantum_mechanics.run_jobs(item.reactants + item.products, procnum=procnum)
 
+            if entry.facet is None:
+                metal = entry.metal # could be None
+            else:
+                metal = entry.metal + entry.facet
+
             for reactant in item.reactants:
                 # Clear atom labels to avoid effects on thermo generation, ok because this is a deepcopy
                 reactant.molecule[0].clear_labeled_atoms()
                 reactant.generate_resonance_structures()
-                reactant.thermo = thermo_database.get_thermo_data(reactant, training_set=True)
+                reactant.thermo = thermo_database.get_thermo_data(reactant, training_set=True, metal_to_scale_to=metal)
             for product in item.products:
                 product.molecule[0].clear_labeled_atoms()
                 product.generate_resonance_structures()
-                product.thermo = thermo_database.get_thermo_data(product, training_set=True)
+                product.thermo = thermo_database.get_thermo_data(product, training_set=True, metal_to_scale_to=metal)
             # Now that we have the thermo, we can get the reverse k(T)
             item.kinetics = data
             data = item.generate_reverse_rate_coefficient()
@@ -1258,6 +1305,7 @@ class KineticsFamily(Database):
                 reference=entry.reference,
                 short_desc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.short_desc,
                 long_desc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.long_desc,
+                metal=entry.metal
             )
             new_entry.data.comment = "From training reaction {1} used for {0}".format(';'.join([g.label for g in template]), entry.index)
 
@@ -1926,6 +1974,10 @@ class KineticsFamily(Database):
             return []
 
         if len(reactants) > len(template.reactants):
+            # If the template contains a surface site, we do not want to split it because it will break vdw bonds
+            if isinstance(template.reactants[0].item, Group):
+                if template.reactants[0].item.contains_surface_site():
+                    return []
             # if the family has one template and is bimolecular split template into multiple reactants
             try:
                 grps = template.reactants[0].item.split()
@@ -2215,16 +2267,20 @@ class KineticsFamily(Database):
             # Desorption should have desorbed something (else it was probably bidentate)
             # so delete reactions that don't make a gas-phase desorbed product
             # Eley-Rideal reactions should have one gas-phase product in the reverse direction 
+
+            # Determine how many surf reactants we expect based on the template
+            n_surf_expected = len([r for r in self.forward_template.reactants if r.item.contains_surface_site()])
+
+            # Now iterate through the reactions and toss them out if the number of surface reactants
+            # does not match the expected number
             pruned_list = []
             for reaction in rxn_list:
-                for reactant in reaction.reactants:
-                    if not reactant.contains_surface_site():
-                        # found a desorbed species, we're ok
-                        pruned_list.append(reaction)
-                        break
-                else:  # didn't break, so all species still adsorbed
+                n_surf_reaction = len([r for r in reaction.reactants if r.contains_surface_site()])
+                if n_surf_expected != n_surf_reaction:
                     logging.debug("Removing {0} reaction {1!s} with no desorbed species".format(self.label, reaction))
-                    continue  # to next reaction immediately
+                    continue
+                else:
+                    pruned_list.append(reaction)
             rxn_list = pruned_list
 
         # If products is given, remove reactions from the reaction list that
@@ -3832,12 +3888,12 @@ class KineticsFamily(Database):
                 for j, react in enumerate(r.item.reactants):
                     if rxns[i].reactants[j].thermo is None:
                         react.generate_resonance_structures()
-                        rxns[i].reactants[j].thermo = tdb.get_thermo_data(react)
+                        rxns[i].reactants[j].thermo = tdb.get_thermo_data(react, metal_to_scale_to=r.metal)
 
                 for j, react in enumerate(r.item.products):
                     if rxns[i].products[j].thermo is None:
                         react.generate_resonance_structures()
-                        rxns[i].products[j].thermo = tdb.get_thermo_data(react)
+                        rxns[i].products[j].thermo = tdb.get_thermo_data(react, metal_to_scale_to=r.metal)
 
             rxns[i].kinetics = r.data
             rxns[i].rank = r.rank
@@ -3914,7 +3970,10 @@ class KineticsFamily(Database):
                             if r.thermo is None:
                                 therm_spc = deepcopy(r)
                                 therm_spc.generate_resonance_structures()
-                                r.thermo = tdb.get_thermo_data(therm_spc)
+                                if r.metal:
+                                    r.thermo = tdb.get_thermo_data(therm_spc, metal_to_scale_to=r.metal)
+                                else:
+                                    r.thermo = tdb.get_thermo_data(therm_spc)
 
                     rev_rxns.append(rrev)
 
@@ -3955,7 +4014,10 @@ class KineticsFamily(Database):
                         if r.thermo is None:
                             therm_spc = deepcopy(r)
                             therm_spc.generate_resonance_structures()
-                            r.thermo = tdb.get_thermo_data(therm_spc)
+                            if r.metal:
+                                r.thermo = tdb.get_thermo_data(therm_spc, metal_to_scale_to=r.metal)
+                            else:
+                                r.thermo = tdb.get_thermo_data(therm_spc)
                 rxns[i] = rrev
 
         if self.own_reverse and get_reverse:

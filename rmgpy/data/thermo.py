@@ -48,6 +48,8 @@ from rmgpy.ml.estimator import MLEstimator
 from rmgpy.molecule import Molecule, Bond, Group
 from rmgpy.species import Species
 from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
+from rmgpy.data.surface import MetalDatabase
+from rmgpy import settings
 
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1: 'S', 2: 'D', 3: 'T', 4: 'Q', 5: 'V'}
@@ -133,6 +135,13 @@ def save_entry(f, entry):
     f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
     if entry.rank:
         f.write("    rank = {0},\n".format(entry.rank))
+
+    if entry.metal:
+        f.write('    metal = "{0}",\n'.format(entry.metal))
+    if entry.facet:
+        f.write('    facet = "{0}",\n'.format(entry.facet))
+    if entry.site:
+        f.write('    site = "{0}",\n'.format(entry.site))
 
     f.write(')\n\n')
 
@@ -834,6 +843,7 @@ class ThermoDatabase(object):
     def __init__(self):
         self.depository = {}
         self.libraries = {}
+        self.surface = {}
         self.groups = {}
         self.library_order = []
         self.local_context = {
@@ -844,8 +854,13 @@ class ThermoDatabase(object):
         }
         self.global_context = {}
 
-        # Catalyst properties
-        self.set_delta_atomic_adsorption_energies()
+        # Use Pt111 binding energies as default
+        self.binding_energies = {
+            'H': rmgpy.quantity.Energy(-2.75368,'eV/molecule'),
+            'C': rmgpy.quantity.Energy(-7.02516,'eV/molecule'),
+            'N': rmgpy.quantity.Energy(-4.63225,'eV/molecule'),
+            'O': rmgpy.quantity.Energy(-3.81153,'eV/molecule'),
+        }
 
     def __reduce__(self):
         """
@@ -856,6 +871,7 @@ class ThermoDatabase(object):
             'libraries': self.libraries,
             'groups': self.groups,
             'library_order': self.library_order,
+            'surface' : self.surface,
         }
         return ThermoDatabase, (), d
 
@@ -867,8 +883,9 @@ class ThermoDatabase(object):
         self.libraries = d['libraries']
         self.groups = d['groups']
         self.library_order = d['library_order']
+        self.surface = d['surface']
 
-    def load(self, path, libraries=None, depository=True):
+    def load(self, path, libraries=None, depository=True, surface=False):
         """
         Load the thermo database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
@@ -879,6 +896,8 @@ class ThermoDatabase(object):
             self.depository = {}
         self.load_libraries(os.path.join(path, 'libraries'), libraries)
         self.load_groups(os.path.join(path, 'groups'))
+        if surface:
+            self.load_surface()
 
     def load_depository(self, path):
         """
@@ -931,6 +950,18 @@ class ThermoDatabase(object):
                     raise DatabaseError('Library {} not found in {}... Please check if your library is '
                                         'correctly placed'.format(libraryName, path))
 
+    def load_surface(self):
+        """
+        Load the metal database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
+        MetalDB = MetalDatabase()
+        MetalDB.load(os.path.join(settings['database.directory'], 'surface'))
+
+        self.surface = {
+            'metal': MetalDB
+        }
+
     def load_groups(self, path):
         """
         Load the thermo database from the given `path` on disk, where `path`
@@ -967,6 +998,7 @@ class ThermoDatabase(object):
         self.save_depository(os.path.join(path, 'depository'))
         self.save_libraries(os.path.join(path, 'libraries'))
         self.save_groups(os.path.join(path, 'groups'))
+        self.save_surface(os.path.join(path, 'surface'))
 
     def save_depository(self, path):
         """
@@ -997,6 +1029,17 @@ class ThermoDatabase(object):
             os.mkdir(path)
         for group in self.groups.keys():
             self.groups[group].save(os.path.join(path, group + '.py'))
+
+    def save_surface(self, path):
+        """
+        Save the metal library to the given `path` on disk, where `path`
+        points to the top-level folder of the metal library.
+        """
+
+        if not os.path.exists(path):
+            os.mkdir(path)
+        for library in self.surface.keys():
+            self.surface[library].save(os.path.join(path, library + '.py'))
 
     def load_old(self, path):
         """
@@ -1192,7 +1235,7 @@ class ThermoDatabase(object):
                 continue
             self.groups['ring'].generic_nodes.append(label)
 
-    def get_thermo_data(self, species, training_set=None):
+    def get_thermo_data(self, species, metal_to_scale_to=None, training_set=None):
         """
         Return the thermodynamic parameters for a given :class:`Species`
         object `species`. This function first searches the loaded libraries
@@ -1202,6 +1245,8 @@ class ThermoDatabase(object):
         The method corrects for symmetry when the molecule uses machine
         learning or group additivity. Libraries and direct QM calculations
         are already corrected.
+
+        If either metal to scale to or from is not specified, assume the binding energies given in the input file
         
         Returns: ThermoData
         """
@@ -1209,19 +1254,28 @@ class ThermoDatabase(object):
 
         thermo0 = self.get_thermo_data_from_libraries(species)
 
-        if thermo0 is not None:
+        if thermo0 is not None:  # was able to find thermodata in the loaded libraries
             if len(thermo0) != 3:
                 raise RuntimeError("thermo0 should be a tuple (thermo_data, library, entry), not {0}".format(thermo0))
+            entry = thermo0[2]
             thermo0 = thermo0[0]
 
             if species.contains_surface_site():
-                thermo0 = self.correct_binding_energy(thermo0, species)
+                if entry.metal is not None:
+                    if entry.facet is not None:
+                        db_label = entry.metal + entry.facet
+                        thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from=db_label,
+                                                              metal_to_scale_to=metal_to_scale_to)
+                    else:  # no facet was given
+                        thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from=entry.metal, metal_to_scale_to=metal_to_scale_to)
+                else:  # assume the thermo came from pt 111
+                    thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from=None, metal_to_scale_to=metal_to_scale_to)
             return thermo0
 
         if species.contains_surface_site():
             try:
                 thermo0 = self.get_thermo_data_for_surface_species(species)
-                thermo0 = self.correct_binding_energy(thermo0, species)
+                thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from="Pt111", metal_to_scale_to=metal_to_scale_to)  # group adsorption values come from Pt111
                 return thermo0
             except:
                 logging.error("Error attempting to get thermo for species %s with structure \n%s", 
@@ -1356,55 +1410,69 @@ class ThermoDatabase(object):
         # Return the resulting thermo parameters
         return thermo0
 
-    def set_delta_atomic_adsorption_energies(self, binding_energies=None):
+    def set_binding_energies(self, binding_energies='Pt111'):
         """
-        Sets and stores the change in atomic binding energy between
-        the desired and the Pt(111) default.
+        Sets and stores the atomic binding energies specified in the input file.
 
-        This depends on the two metal surfaces: the reference one used in
-        the database of adsorption energies, and the desired surface.
-
-        If binding_energies are not provided, resets the values to those
-        of the Pt(111) default.
+        All adsorbates will be scaled to use these elemental binding energies.
 
         Args:
             binding_energies (dict, optional): the desired binding energies with
-                elements as keys and binding energy/unit tuples as values
+                elements as keys and binding energy/unit tuples (or Energy 
+                quantities) as values
 
         Returns:
-            None, stores result in self.delta_atomic_adsorption_energy
+            None, stores result in self.binding_energies
         """
-        # If changing these, remember to update the example input files and documentation.
-        reference_binding_energies = {
-            'C': rmgpy.quantity.Energy(-7.025, 'eV/molecule'),
-            'H': rmgpy.quantity.Energy(-2.754, 'eV/molecule'),
-            'O': rmgpy.quantity.Energy(-3.811, 'eV/molecule'),
-            'N': rmgpy.quantity.Energy(-4.632, 'eV/molecule'),
-        }
+        
+        if isinstance(binding_energies, str):
+            if not self.surface:
+                self.load_surface()
+            binding_energies = self.surface['metal'].find_binding_energies(binding_energies)
 
-        # Use Pt(111) reference if no binding energies are provided
-        if binding_energies is None:
-            binding_energies = reference_binding_energies
+        for element, energy in binding_energies.items():
+            binding_energies[element] = rmgpy.quantity.Energy(energy)
 
-        self.delta_atomic_adsorption_energy = {
-            'C': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
-            'H': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
-            'O': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
-            'N': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
-        }
+        self.binding_energies = binding_energies
 
-        for element, deltaEnergy in self.delta_atomic_adsorption_energy.items():
-            deltaEnergy.value_si = binding_energies[element].value_si - reference_binding_energies[element].value_si
-
-    def correct_binding_energy(self, thermo, species):
+    def correct_binding_energy(self, thermo, species, metal_to_scale_from=None, metal_to_scale_to=None):
         """
         Changes the provided thermo, by applying a linear scaling relation
         to correct the adsorption energy.
 
         :param thermo: starting thermo data
         :param species: the species (which is an adsorbate)
+        :param metal_to_scale_from: the metal you want to scale from (string eg. 'Pt111' or None)
+        :param metal_to_scale_to: the metal you want to scale to (string e.g 'Pt111' or None)
         :return: corrected thermo
         """
+
+        if metal_to_scale_from == metal_to_scale_to:
+            return thermo
+
+        if metal_to_scale_to is None:
+            metal_to_scale_to_binding_energies = self.binding_energies
+        else:
+            metal_to_scale_to_binding_energies = self.surface['metal'].find_binding_energies(metal_to_scale_to)
+
+        if metal_to_scale_from is None:
+            metal_to_scale_from_binding_energies = self.binding_energies
+        else:
+            metal_to_scale_from_binding_energies = self.surface['metal'].find_binding_energies(metal_to_scale_from)
+
+        delta_atomic_adsorption_energy = {
+            'C': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
+            'H': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
+            'O': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
+            'N': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
+        }
+
+        for element, delta_energy in delta_atomic_adsorption_energy.items():
+            delta_energy.value_si = metal_to_scale_to_binding_energies[element].value_si - metal_to_scale_from_binding_energies[element].value_si
+
+        if all(-0.01 < v.value_si < 0.01 for v in delta_atomic_adsorption_energy.values()):
+            return thermo
+
         molecule = species.molecule[0]
         # only want/need to do one resonance structure
         surface_sites = []
@@ -1444,10 +1512,10 @@ class ThermoDatabase(object):
         comments = []
         for element in 'CHON':
             if normalized_bonds[element]:
-                change_in_binding_energy = self.delta_atomic_adsorption_energy[element].value_si * normalized_bonds[element]
+                change_in_binding_energy = delta_atomic_adsorption_energy[element].value_si * normalized_bonds[element]
                 thermo.H298.value_si += change_in_binding_energy
                 comments.append(f'{normalized_bonds[element]:.2f}{element}')
-        thermo.comment += " Binding energy corrected by LSR ({})".format('+'.join(comments))
+        thermo.comment += " Binding energy corrected by LSR ({}) from {}".format('+'.join(comments), metal_to_scale_from)
         return thermo
 
     def get_thermo_data_for_surface_species(self, species):
@@ -1503,6 +1571,7 @@ class ThermoDatabase(object):
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
             dummy_molecule.remove_atom(site)
 
+        dummy_molecules = [dummy_molecule.copy(deep=True)]
         if len(adsorbed_atoms) == 2:
             # Bidentate adsorption.
             # Try to turn adjacent biradical into a bond.
@@ -1515,6 +1584,7 @@ class ThermoDatabase(object):
                     bond.increment_order()
                     adsorbed_atoms[0].decrement_radical()
                     adsorbed_atoms[1].decrement_radical()
+                    dummy_molecules.append(dummy_molecule.copy(deep=True))
                     if (adsorbed_atoms[0].radical_electrons and
                             adsorbed_atoms[1].radical_electrons and
                             bond.order < 3):
@@ -1522,6 +1592,7 @@ class ThermoDatabase(object):
                         bond.increment_order()
                         adsorbed_atoms[0].decrement_radical()
                         adsorbed_atoms[1].decrement_radical()
+                        dummy_molecules.append(dummy_molecule.copy(deep=True))
                     if (adsorbed_atoms[0].lone_pairs and
                             adsorbed_atoms[1].lone_pairs and 
                             bond.order < 3):
@@ -1532,6 +1603,7 @@ class ThermoDatabase(object):
                         adsorbed_atoms[0].increment_radical()
                         adsorbed_atoms[1].decrement_lone_pairs()
                         adsorbed_atoms[1].increment_radical()
+                        dummy_molecules.append(dummy_molecule.copy(deep=True))
                 #For bidentate CO because we want C[-1]#O[+1] but not .C#O.
                 if (bond.order == 3 and adsorbed_atoms[0].radical_electrons and 
                     adsorbed_atoms[1].radical_electrons and 
@@ -1542,18 +1614,49 @@ class ThermoDatabase(object):
                         adsorbed_atoms[1].increment_lone_pairs()
                     else:
                         adsorbed_atoms[0].increment_lone_pairs()
+                    dummy_molecules.append(dummy_molecule.copy(deep=True))
 
-        dummy_molecule.update_connectivity_values()
-        dummy_molecule.update()
+        for dummy_molecule in dummy_molecules[:]:
+            try:
+                dummy_molecule.update_connectivity_values()
+                dummy_molecule.update()
+            except:
+                dummy_molecules.remove(dummy_molecule)
+                logging.debug(f"Removing {dummy_molecule} from possible structure list:\n{dummy_molecule.to_adjacency_list()}")
+            else:
+                logging.debug("After removing from surface:\n" + dummy_molecule.to_adjacency_list())
 
-        logging.debug("After removing from surface:\n" + dummy_molecule.to_adjacency_list())
+        if len(dummy_molecules) == 0:
+            raise RuntimeError(f"Cannot get thermo for gas-phase molecule. No valid dummy molecules from original molecule:\n{molecule.to_adjacency_list()}")
 
-        dummy_species = Species()
-        dummy_species.molecule.append(dummy_molecule)
-        dummy_species.generate_resonance_structures()
-        thermo = self.get_thermo_data(dummy_species)
+        
+        # if len(molecule) > 1, it will assume all resonance structures have already been generated when it tries to generate them, so evaluate each configuration separately and pick the lowest energy one by H298 value
+        gas_phase_species_from_libraries = []
+        gas_phase_species_estimates = []
+        for dummy_molecule in dummy_molecules:
+            dummy_species = Species()
+            dummy_species.molecule = [dummy_molecule]
+            dummy_species.generate_resonance_structures()
+            dummy_species.thermo = self.get_thermo_data(dummy_species)
+            if dummy_species.thermo.label:
+                gas_phase_species_from_libraries.append(dummy_species)
+            else:
+                gas_phase_species_estimates.append(dummy_species)
 
-        thermo.comment = "Gas phase thermo from {0}. Adsorption correction:".format(thermo.comment)
+        # define the comparison function to find the lowest energy
+        def lowest_energy(species):
+            if hasattr(species.thermo, 'H298'):
+                return species.thermo.H298.value_si
+            else:
+                return species.thermo.get_enthalpy(298.0)
+
+        if gas_phase_species_from_libraries:
+            species = min(gas_phase_species_from_libraries, key=lowest_energy)
+        else:
+            species = min(gas_phase_species_estimates, key=lowest_energy)
+
+        thermo = species.thermo
+        thermo.comment = f"Gas phase thermo for {thermo.label or species.molecule[0].to_smiles()} from {thermo.comment}. Adsorption correction:"
         logging.debug("Using thermo from gas phase for species {}\n".format(species.label) + repr(thermo))
 
         if not isinstance(thermo, ThermoData):
@@ -1580,7 +1683,7 @@ class ThermoDatabase(object):
         add_thermo_data(thermo, adsorption_thermo, group_additivity=True)
 
         if thermo.label:
-            thermo.label += 'X'
+            thermo.label += 'X' * len(adsorbed_atoms)
 
         find_cp0_and_cpinf(species, thermo)
         return thermo

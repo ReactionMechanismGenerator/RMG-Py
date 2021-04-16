@@ -55,8 +55,10 @@ def setUpModule():
     database = RMGDatabase()
     database.load_thermo(
         os.path.join(settings['database.directory'], 'thermo'),
-        thermo_libraries=['DFT_QCI_thermo', 'SABIC_aromatics', 'primaryThermoLibrary']
+        thermo_libraries=['DFT_QCI_thermo', 'SABIC_aromatics', 'primaryThermoLibrary'],
+        surface=True,
     )
+    database.load_surface(os.path.join(settings['database.directory'], 'surface'))
 
 
 def tearDownModule():
@@ -86,9 +88,11 @@ class TestThermoDatabase(unittest.TestCase):
         """A function that is run ONCE before all unit tests in this class."""
         global database
         cls.database = database.thermo
+        cls.database.set_binding_energies('Pt111')
 
         cls.databaseWithoutLibraries = ThermoDatabase()
-        cls.databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'), libraries=[])
+        cls.databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'), libraries=[], surface=True)
+        cls.databaseWithoutLibraries.set_binding_energies('Pt111')
 
         # Set up ML estimator
         models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', 'main')
@@ -726,7 +730,7 @@ multiplicity 2
         self.assertEqual(set(initial), set(spec.molecule))
         self.assertFalse('radical' in thermo.comment,
                          "Applied radical correction instead of finding C2(T) directly in library")
-        self.assertEqual(thermo.label, 'C2(T)X', 'Should have found triplet C2 in the gas phase library')
+        self.assertEqual(thermo.label, 'C2(T)XX', 'Should have found triplet C2 in the gas phase library')
         self.assertTrue('Adsorption correction' in thermo.comment,
                         'Adsorption correction not added to thermo.')
         # Now see what happens for X=C=C=X
@@ -742,7 +746,7 @@ multiplicity 2
         self.assertEqual(set(initial), set(spec.molecule))
         self.assertFalse('radical' in thermo.comment,
                          "Applied radical correction instead of finding C2(T) directly in library")
-        self.assertEqual(thermo.label, 'C2(T)X', 'Should have found triplet C2 in the gas phase library')
+        self.assertEqual(thermo.label, 'C2(T)XX', 'Should have found triplet C2 in the gas phase library')
         self.assertTrue('Adsorption correction' in thermo.comment,
                         'Adsorption correction not added to thermo.')
          # Now see what happens for X#C-C#X
@@ -758,7 +762,7 @@ multiplicity 2
         self.assertEqual(set(initial), set(spec.molecule))
         self.assertFalse('radical' in thermo.comment,
                          "Applied radical correction instead of finding C2(T) directly in library")
-        self.assertEqual(thermo.label, 'C2(T)X', 'Should have found triplet C2 in the gas phase library')
+        self.assertEqual(thermo.label, 'C2(T)XX', 'Should have found triplet C2 in the gas phase library')
         self.assertTrue('Adsorption correction' in thermo.comment,
                         'Adsorption correction not added to thermo.')
 
@@ -786,6 +790,78 @@ multiplicity 2
                          "Applied radical correction instead of finding C2H3 in the DFT library")
         self.assertTrue('Adsorption correction' in thermo.comment,
                         'Adsorption correction not added to thermo.')
+
+
+    def test_adsorbate_thermo_generation_bidentate_asymmetric_NNOH(self):
+        """Test thermo generation for a bidentate adsorbate, N(=X)N(X)OH
+
+        N--N--O-H
+        ‖  |
+        X  X
+        """
+        spec = Species(molecule=[Molecule().from_adjacency_list("""
+1 O u0 p2 c0 {2,S} {4,S}
+2 N u0 p1 c0 {1,S} {3,S} {5,S}
+3 N u0 p1 c0 {2,S} {6,D}
+4 H u0 p0 c0 {1,S}
+5 X u0 p0 c0 {2,S}
+6 X u0 p0 c0 {3,D}""")])
+        spec.generate_resonance_structures()
+        initial = list(spec.molecule)  # Make a copy of the list
+        thermo = self.database.get_thermo_data(spec)
+        self.assertEqual(len(initial), len(spec.molecule))
+        self.assertEqual(set(initial), set(spec.molecule))
+        self.assertTrue('Adsorption correction' in thermo.comment,
+                        'Adsorption correction not added to thermo.')
+        match_str = 'Gas phase thermo for ON=[N]'
+        self.assertEqual(thermo.comment[0:len(match_str)], match_str,
+                         'Gas phase species in thermo.comment should be ON=[N]')
+
+
+    def test_adsorbate_thermo_generation_bidentate_OO(self):
+        """Test thermo generation for a bidentate adsorbate, [X]OO[X]
+
+        O--O
+        |  |
+        X  X
+        """
+        spec = Species(molecule=[Molecule().from_adjacency_list("""
+1 O u0 p2 c0 {2,S} {3,S}
+2 O u0 p2 c0 {1,S} {4,S}
+3 X u0 p0 c0 {1,S}
+4 X u0 p0 c0 {2,S}""")])
+        spec.generate_resonance_structures()
+        initial = list(spec.molecule)  # Make a copy of the list
+        thermo = self.database.get_thermo_data(spec)
+        self.assertEqual(len(initial), len(spec.molecule))
+        self.assertEqual(set(initial), set(spec.molecule))
+        self.assertTrue('Adsorption correction' in thermo.comment,
+                        'Adsorption correction not added to thermo.')
+        self.assertEqual(thermo.label, 'O2XX', 'thermo.label should be O2XX')
+
+
+    def test_adsorbate_thermo_generation_bidentate_CO(self):
+        """Test thermo generation for a bidentate adsorbate, [X][C-]=[O+][X]
+
+        C- = O+
+        |    |
+        X    X
+        """
+        spec = Species(molecule=[Molecule().from_adjacency_list("""
+[Pt][C-]=[O+][Pt]
+1 O u0 p1 c+1 {2,D} {4,S}
+2 C u0 p1 c-1 {1,D} {3,S}
+3 X u0 p0 c0 {2,S}
+4 X u0 p0 c0 {1,S}""")])
+        spec.generate_resonance_structures()
+        initial = list(spec.molecule)  # Make a copy of the list
+        thermo = self.database.get_thermo_data(spec)
+        self.assertEqual(len(initial), len(spec.molecule))
+        self.assertEqual(set(initial), set(spec.molecule))
+        self.assertTrue('Adsorption correction' in thermo.comment,
+                        'Adsorption correction not added to thermo.')
+        self.assertEqual(thermo.label, 'COXX', 'thermo.label should be COXX')
+
 
     def test_adsorbate_thermo_raises_error(self):
         """Test thermo generation group tree error handling.

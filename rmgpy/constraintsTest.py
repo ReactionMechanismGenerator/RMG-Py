@@ -61,6 +61,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
             maximumNitrogenAtoms=1,
             maximumSiliconAtoms=1,
             maximumSulfurAtoms=1,
+            maximumSurfaceSites=2,
             maximumHeavyAtoms=3,
             maximumRadicalElectrons=2,
             maximumSingletCarbenes=1,
@@ -158,6 +159,57 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
 
         mol2 = Molecule(smiles='SCS')
         self.assertTrue(fails_species_constraints(mol2))
+
+    def test_surface_site_constraint(self):
+        """
+        Test that we can constrain the max number of surface sites.
+        """
+
+        mol_1site = Molecule().from_adjacency_list("""
+1 O u0 p2 c0 {2,D}
+2 C u0 p0 c0 {1,D} {3,D}
+3 X u0 p0 c0 {2,D}
+""")
+        mol_2site = Molecule().from_adjacency_list("""
+1 C u0 p0 c0 {2,D} {3,D}
+2 C u0 p0 c0 {1,D} {4,D}
+3 X u0 p0 c0 {1,D}
+4 X u0 p0 c0 {2,D}
+""")
+
+        mol_3site_vdW = Molecule().from_adjacency_list("""
+1 C u0 p0 c0 {2,D} {3,D}
+2 C u0 p0 c0 {1,D} {4,D}
+3 X u0 p0 c0 {1,D}
+4 X u0 p0 c0 {2,D}
+6 X u0 p0 c0
+""")
+
+        mol_3site = Molecule().from_adjacency_list("""
+1 C u0 p0 c0 {4,S} {2,D} {7,S}
+2 C u0 p0 c0 {1,D} {3,S} {8,S}
+3 C u0 p0 c0 {2,S} {5,S} {6,S} {9,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {3,S}
+6 H u0 p0 c0 {3,S}
+7 X u0 p0 c0 {1,S}
+8 X u0 p0 c0 {2,S}
+9 X u0 p0 c0 {3,S}
+""")
+        max_carbon = self.rmg.species_constraints['maximumCarbonAtoms']
+        max_heavy_atoms = self.rmg.species_constraints['maximumHeavyAtoms']
+
+        self.rmg.species_constraints['maximumCarbonAtoms'] = 3
+        self.rmg.species_constraints['maximumHeavyAtoms'] = 6
+
+        self.assertFalse(fails_species_constraints(mol_1site))
+        self.assertFalse(fails_species_constraints(mol_2site))
+
+        self.assertTrue(fails_species_constraints(mol_3site_vdW))
+        self.assertTrue(fails_species_constraints(mol_3site))
+
+        self.rmg.species_constraints['maximumCarbonAtoms'] = max_carbon
+        self.rmg.species_constraints['maximumHeavyAtoms'] = max_heavy_atoms
 
     def test_heavy_constraint(self):
         """
