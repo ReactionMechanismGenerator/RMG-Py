@@ -795,6 +795,24 @@ class SolvationDatabase(object):
                 continue
             self.groups['ring'].generic_nodes.append(label)
 
+    def replace_halogen_with_hydrogen(self, molecule):
+        """
+        Replace halogens in a molecule with hydrogens and returns a new molecule.
+        If a molecule doesn't contain any halogens, it returns the original molecule.
+        """
+        if molecule.has_halogen():
+            adjacency_list = molecule.to_adjacency_list()
+            replaced_adjacency_list = ''
+            for line in adjacency_list.split('\n')[:-1]: # don't include the last line because it's an empty string
+                element = line.split()[1]
+                if element in ['F', 'Cl', 'Br', 'I']:
+                    line = line.replace(element, 'H')
+                    line = line.replace('p3', 'p0')
+                replaced_adjacency_list += line + '\n'
+            replaced_struct = Molecule().from_adjacency_list(replaced_adjacency_list)
+            return replaced_struct
+        else:
+            return molecule
 
     def get_solute_data(self, species):
         """

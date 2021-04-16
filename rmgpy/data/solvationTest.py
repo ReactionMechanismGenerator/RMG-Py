@@ -210,6 +210,24 @@ class TestSoluteDatabase(TestCase):
         solute_data = self.database.get_solute_data_from_groups(species)
         self.assertIsNotNone(solute_data)
 
+    def test_replace_halogen_with_hydrogen(self):
+        """Test that we can replace halogens with hydrogens in a molecule by using
+         replace_halogen_with_hydrogen() method."""
+        self.testCases = [
+            # halogenated molecule SMILES, replaced molecule SMILES
+            ['[F]', '[H]'],
+            ['Cl', '[H][H]'],
+            ['[Br][Br]', '[H][H]'],
+            ['Fc1c(Cl)c(Br)c(I)cc1', 'c1ccccc1'],
+            ['F[CH]COC(Cl)(Cl)', '[CH2]COC']
+        ]
+
+        for smiles1, smiles2 in self.testCases:
+            mol_halogenated = Molecule().from_smiles(smiles1)
+            mol_replaced = self.database.replace_halogen_with_hydrogen(mol_halogenated)
+            mol_replaced_check = Molecule().from_smiles(smiles2)
+            self.assertTrue(mol_replaced.is_isomorphic(mol_replaced_check))
+
     def test_radical_and_lone_pair_generation(self):
         """
         Test we can obtain solute parameters via group additivity for a molecule with both lone 
