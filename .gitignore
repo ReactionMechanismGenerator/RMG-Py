@@ -78,3 +78,8 @@ external/Q2DTor
 
 # egg files (pip install -e)
 RMG_Py.egg-info/*
+
+# RMG tests 
+*.dot 
+*.dot.ps2
+simulate_backup.log

@@ -1,14 +1,15 @@
-name: rmg_env
+name: rmg_gnn_env
 channels:
   - defaults
   - rmg
   - conda-forge
+  - pytorch
+  - dglteam
 dependencies:
   - cairo
   - cairocffi
   - rmg::cantera >=2.3.0
   - conda-forge::cclib >=1.6.3
-  - rmg::chemprop
   - coolprop
   - coverage
   - cython >=0.25.2
@@ -46,3 +47,21 @@ dependencies:
   - rmg::symmetry
   - xlrd
   - xlwt
+  #ml
+  - pytorch
+  - cpuonly
+  - dgl
+  # utilities
+  - typer
+  - pydantic
+  - tqdm
+  # for gnns thermo tests
+  - pytest
+  # just in case
+  - make
+  - cmake
+  - pip:
+      - dgllife==0.2.6
+      # this will install numpy 1.20
+      # we need this to load trained model because of torch serialization
+      - pytorch-lightning==1.1.4

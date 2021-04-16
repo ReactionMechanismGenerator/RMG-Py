@@ -27,18 +27,17 @@
 #                                                                             #
 ###############################################################################
 
-import contextlib
-import os
-from argparse import Namespace
-from typing import Callable, Union
+from typing import Union
 
 try:
-    import chemprop
-except ImportError as e:
-    chemprop = None
-    chemprop_exception = e
-import numpy as np
+    # once gnns thermo is updated in upstream this will change
+    from gnns_thermo.inference import GNNCalculator
+    from gnns_thermo.testing import get_chkpt
 
+    e = None
+except ImportError:
+    gnns_thermo = None
+import numpy as np
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
@@ -61,11 +60,20 @@ class MLEstimator:
 
     # These should correspond to the temperatures that the ML model was
     # trained on for Cp.
-    temps = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0]
+    # we also train on cp0 and cpinf in 0,1 th index of prediction
+    temps = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0, 2000.0, 2400.0]
 
-    def __init__(self, hf298_path: str, s298_cp_path: str):
-        self.hf298_estimator = load_estimator(hf298_path)
-        self.s298_cp_estimator = load_estimator(s298_cp_path)
+    def __init__(self, model_type: str = "attn_mpn"):
+        # lazy import and raise the error in instantiation
+        if e:
+            raise e
+        self.model_type = model_type
+        h298_chkpt, h298_config = get_chkpt(model_type, "h298")
+        s298_chkpt, s298_config = get_chkpt(model_type, "s298")
+        cp_chkpt, cp_config = get_chkpt(model_type, "cp")
+        self.hf298_estimator = GNNCalculator(model_type, "cpu", h298_chkpt, h298_config)
+        self.s298_estimator = GNNCalculator(model_type, "cpu", s298_chkpt, s298_config)
+        self.cp_estimator = GNNCalculator(model_type, "cpu", cp_chkpt, cp_config)
 
     def get_thermo_data(self, molecule: Union[Molecule, str]) -> ThermoData:
         """
@@ -75,25 +83,27 @@ class MLEstimator:
         Returns: ThermoData
         """
         molecule = Molecule(smiles=molecule) if isinstance(molecule, str) else molecule
+        # convert to float from np.float64
+        hf298 = float(self.hf298_estimator.calculate([molecule.smiles]))
+        s298 = float(self.s298_estimator.calculate([molecule.smiles]))
+        cp = self.cp_estimator.calculate([molecule.smiles])
+        cp0, cpinf = cp[0], cp[1]
+        cp = cp[2:]
 
-        hf298 = self.hf298_estimator(molecule.smiles)[0][0]
-        s298_cp = self.s298_cp_estimator(molecule.smiles)[0]
-        s298, cp = s298_cp[0], s298_cp[1:]
-
-        cp0 = molecule.calculate_cp0()
-        cpinf = molecule.calculate_cpinf()
+        # cp0 = molecule.calculate_cp0()
+        # cpinf = molecule.calculate_cpinf()
 
         # Set uncertainties to 0 because the current model cannot estimate them
         thermo = ThermoData(
-            Tdata=(self.temps, 'K'),
-            Cpdata=(cp, 'cal/(mol*K)', np.zeros(len(self.temps))),
-            H298=(hf298, 'kcal/mol', 0),
-            S298=(s298, 'cal/(mol*K)', 0),
-            Cp0=(cp0, 'J/(mol*K)'),
-            CpInf=(cpinf, 'J/(mol*K)'),
-            Tmin=(300.0, 'K'),
-            Tmax=(2000.0, 'K'),
-            comment='ML Estimation'
+            Tdata=(self.temps, "K"),
+            Cpdata=(cp, "J/(mol*K)", np.zeros(len(self.temps))),
+            H298=(hf298, "kcal/mol", 0),
+            S298=(s298, "J/(mol*K)", 0),
+            Cp0=(cp0, "J/(mol*K)"),
+            CpInf=(cpinf, "J/(mol*K)"),
+            Tmin=(300.0, "K"),
+            Tmax=(2400.0, "K"),
+            comment=f"ML Estimation with model type {self.model_type}",
         )
 
         return thermo
@@ -109,64 +119,3 @@ class MLEstimator:
         Returns: ThermoData
         """
         return self.get_thermo_data(species.molecule[0])
-
-
-def load_estimator(model_dir: str) -> Callable[[str], np.ndarray]:
-    """
-    Load chemprop model and return function for evaluating it.
-    """
-    if chemprop is None:
-        # Delay chemprop ImportError until we actually try to use it
-        # so that RMG can load successfully without chemprop.
-        raise chemprop_exception
-
-    args = Namespace()  # Simple class to hold attributes
-
-    # Set up chemprop predict arguments
-    args.checkpoint_dir = model_dir
-    args.checkpoint_path = None
-    chemprop.parsing.update_checkpoint_args(args)
-    args.cuda = False
-
-    scaler, features_scaler = chemprop.utils.load_scalers(args.checkpoint_paths[0])
-    train_args = chemprop.utils.load_args(args.checkpoint_paths[0])
-
-    # Update args with training arguments
-    for key, value in vars(train_args).items():
-        if not hasattr(args, key):
-            setattr(args, key, value)
-
-    # Load models in ensemble
-    models = []
-    for checkpoint_path in args.checkpoint_paths:
-        models.append(chemprop.utils.load_checkpoint(checkpoint_path, cuda=args.cuda))
-
-    # Set up estimator
-    def estimator(smi: str):
-        # Make dataset
-        data = chemprop.data.MoleculeDataset(
-            [chemprop.data.MoleculeDatapoint(line=[smi], args=args)]
-        )
-
-        # Normalize features
-        if train_args.features_scaling:
-            data.normalize_features(features_scaler)
-
-        # Redirect chemprop stderr to null device so that it doesn't
-        # print progress bars every time a prediction is made
-        with open(os.devnull, 'w') as f, contextlib.redirect_stderr(f):
-            # Predict with each model individually and sum predictions
-            sum_preds = np.zeros((len(data), args.num_tasks))
-            for model in models:
-                model_preds = chemprop.train.predict(
-                    model=model,
-                    data=data,
-                    batch_size=1,  # We'll only predict one molecule at a time
-                    scaler=scaler
-                )
-                sum_preds += np.array(model_preds)
-
-        avg_preds = sum_preds / len(models)
-        return avg_preds
-
-    return estimator
