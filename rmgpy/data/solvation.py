@@ -188,12 +188,10 @@ def remove_solute_data(solute_data1, solute_data2, group_additivity=False, verbo
     return solute_data1
 
 
-def average_solute_data(solute_data_list=None):
+def average_solute_data(solute_data_list):
     """
     Average a list of solute_data values together.
     """
-    if solute_data_list is None:
-        solute_data_list = []
 
     num_values = len(solute_data_list)
 
@@ -661,6 +659,7 @@ class SolvationDatabase(object):
             'polycyclic',
             'longDistanceInteraction_cyclic',
             'longDistanceInteraction_noncyclic',
+            'halogen'
         ]
         self.groups = {
             category: SoluteGroups(label=category).load(os.path.join(path, category + '.py'),
@@ -810,16 +809,27 @@ class SolvationDatabase(object):
                     line = line.replace('p3', 'p0')
                 replaced_adjacency_list += line + '\n'
             replaced_struct = Molecule().from_adjacency_list(replaced_adjacency_list)
+            if "saturated" in molecule.props:
+                replaced_struct.props['saturated'] = molecule.props['saturated']
+            replaced_struct.props['halogen_replaced'] = True
             return replaced_struct
         else:
             return molecule
 
     def get_solute_data(self, species):
         """
-        Return the solute descriptors for a given :class:`Species`
-        object `species`. This function first searches the loaded libraries
-        in order, returning the first match found, before falling back to
+        For a given :class:`Species` object `species`, this function first searches
+        the loaded libraries in order, returning the first match found, before falling back to
         estimation via solute data group additivity.
+
+        Parameters
+        ----------
+        species : :class:`Species`
+
+        Returns
+        -------
+        solute_data: :class:`SoluteData` object
+
         """
 
         # Check the library first
@@ -830,14 +840,22 @@ class SolvationDatabase(object):
             solute_data = solute_data[0]
         else:
             # Solute not found in any loaded libraries, so estimate
-            # First try finding stable species in libraries and using HBI
+            # First try finding stable species in libraries and then use HBI / halogen solvation correction
             molecule = species.molecule[0]
-            if molecule.get_radical_count() > 0:
-                # If the molecule is a radical, check if any of the saturated forms are in the libraries
-                # first and perform an HBI correction on them
+            if molecule.is_radical():
+                # If the molecule is a radical, check if any of the saturated forms are in the libraries and
+                # perform a HBI correction on the original molecule.
+                # If the saturated form is not found in the libraries and the molecule has any halogen atoms, the
+                # halogen atoms in the molecule are replaced by the hydrogen atoms and the method will check if
+                # the saturated, replaced form is in the libraries. Then halogen corrections will be applied on the
+                # saturated form, and lastly a HBI correction will be applied on the original molecule.
                 molecule.clear_labeled_atoms()
                 # First see if the saturated molecule is in the libraries.
                 solute_data = self.estimate_radical_solute_data_via_hbi(molecule, self.get_solute_data_from_library)
+            elif molecule.has_halogen():
+                # If the molecule is halogenated, check if any of the replaced forms are in the libraries
+                # first and perform halogen correction on them
+                solute_data = self.estimate_halogen_solute_data(molecule, self.get_solute_data_from_library)
 
         if solute_data is None:
             # Solute or its saturated structure is not found in libraries. Use group additivty to determine solute data
@@ -907,26 +925,57 @@ class SolvationDatabase(object):
         """
         Return the set of Abraham solute parameters corresponding to a given
         :class:`Molecule` object `molecule` by estimation using the group
-        additivity values. If no group additivity values are loaded, a
-        :class:`DatabaseError` is raised.
+        additivity values.
+
+        Parameters
+        ----------
+        molecule : :class:`Molecule`
+
+        Returns
+        -------
+        solute_data: :class:`SoluteData` object
+            Contains the Abraham solute parameters estimated from the group additivity.
         """
-        # For thermo estimation we need the atoms to already be sorted because we
+        # For solute data estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
-        # will probably not visit the right atoms, and so will get the thermo wrong
+        # will probably not visit the right atoms, and so will get the solute data wrong
         molecule.sort_atoms()
 
         if molecule.is_radical():
+            # If the molecule is a radical, calculate the solute data for the saturated form using
+            # group additivity and then perform an HBI correction on the original molecule.
+            # If the molecule has any halogen atoms, estimate_halogen_solute_data method is used for the saturated
+            # form within the estimate_radical_solute_data_via_hbi method.
+            molecule.clear_labeled_atoms()
             solute_data = self.estimate_radical_solute_data_via_hbi(molecule, self.compute_group_additivity_solute)
+        elif molecule.has_halogen():
+            # If the molecule is halogenated, compute the solute data for the replaced form whose halogen atoms are
+            # replaced by hydrogen atoms first and perform halogen correction on it.
+            solute_data = self.estimate_halogen_solute_data(molecule, self.compute_group_additivity_solute)
         else:
             solute_data = self.compute_group_additivity_solute(molecule)
         return solute_data
 
     def estimate_radical_solute_data_via_hbi(self, molecule, stable_solute_data_estimator):
         """
-        Estimate the thermodynamics of a radical by saturating it,
+        Estimate the solute data of a radical by saturating it,
         applying the provided stable_solute_data_estimator method on the saturated species,
-        then applying hydrogen bond increment corrections for the radical
-        site(s).
+        then applying hydrogen bond increment corrections for the radical site(s).
+        If the radical molecule contains halogens and the solute data of the saturated species
+        are not found in the libraries, the solute data of the saturated species are found
+        using estimate_halogen_solute_data method.
+
+        Parameters
+        ----------
+        molecule : :class:`Molecule`
+        stable_solute_data_estimator : function
+            A solute_data estimator method for the saturated / halogen-replaced form.
+            It's either `get_solute_data_from_library` or `compute_group_additivity_solute`.
+
+        Returns
+        -------
+        solute_data: :class:`SoluteData` object
+            Contains the Abraham solute parameters estimated from the group additivity and HBI correction.
         """
         if not molecule.is_radical():
             raise ValueError("Method only valid for radicals.")
@@ -942,13 +991,21 @@ class SolvationDatabase(object):
             solute_data_sat = stable_solute_data_estimator(saturated_spec, library=self.libraries['solute'])
             if solute_data_sat:
                 if len(solute_data_sat) != 3:
-                    raise RuntimeError("solute_data should be a tuple (solute_data, library, entry), "
+                    raise ValueError("solute_data should be a tuple (solute_data, library, entry), "
                                        "not {0}".format(solute_data_sat))
                 sat_label = solute_data_sat[2].label
                 solute_data_sat = solute_data_sat[0]
                 solute_data_sat.comment += "Solute library: " + sat_label
+            else:
+                # If the molecule has any halogen atoms, check whether the solute data for the saturated, replaced form
+                # can be found from libraries.
+                if molecule.has_halogen():
+                    solute_data_sat = self.estimate_halogen_solute_data(saturated_struct, stable_solute_data_estimator)
         else:
-            solute_data_sat = stable_solute_data_estimator(saturated_struct)
+            if molecule.has_halogen():
+                solute_data_sat = self.estimate_halogen_solute_data(saturated_struct, stable_solute_data_estimator)
+            else:
+                solute_data_sat = stable_solute_data_estimator(saturated_struct)
 
         if solute_data_sat is None:
             # We couldn't get solute data for the saturated species from libraries.
@@ -1001,7 +1058,90 @@ class SolvationDatabase(object):
                     except KeyError:
                         pass
 
-        # prevents the original thermo species name being used for the HBI corrected radical in species generation
+        # prevents the original species name being used for the HBI corrected radical in species generation
+        solute_data.label = ''
+
+        return solute_data
+
+    def estimate_halogen_solute_data(self, molecule, stable_solute_data_estimator):
+        """
+        Estimate the solute data of a halogenated molecule by replacing halogens with hydrogen atoms,
+        applying the provided stable_solute_data_estimator method on the replaced_struct species,
+        then applying halogen corrections for the halogenated site(s).
+
+        Parameters
+        ----------
+        molecule : :class:`Molecule`
+        stable_solute_data_estimator : function
+            A solute_data estimator method for the halogen-replaced form.
+            It's either `get_solute_data_from_library` or `compute_group_additivity_solute`.
+
+        Returns
+        -------
+        solute_data: :class:`SoluteData` object
+            Contains the Abraham solute parameters estimated from the group additivity and halogen correction.
+        """
+        if not molecule.has_halogen():
+            raise ValueError("Method only valid for halogenated molecule.")
+
+        if molecule.is_radical():
+            raise ValueError("Method only valid for non-radical molecule.")
+
+        replaced_struct = self.replace_halogen_with_hydrogen(molecule)
+
+        # Get solute data estimate for replaced form of structure
+        if stable_solute_data_estimator == self.get_solute_data_from_library:
+            # Get data from libraries
+            replaced_spec = Species(molecule=[replaced_struct])
+            solute_data_replaced = stable_solute_data_estimator(replaced_spec, library=self.libraries['solute'])
+            if solute_data_replaced:
+                if len(solute_data_replaced) != 3:
+                    raise ValueError("solute_data should be a tuple (solute_data, library, entry), "
+                                       "not {0}".format(solute_data_replaced))
+                replaced_label = solute_data_replaced[2].label
+                solute_data_replaced = solute_data_replaced[0]
+                solute_data_replaced.comment += "Solute library: " + replaced_label
+        else:
+            solute_data_replaced = stable_solute_data_estimator(replaced_struct)
+
+        if solute_data_replaced is None:
+            # We couldn't get solute data for the replaced species from libraries.
+            # However, if we were trying group additivity, this could be a problem
+            if stable_solute_data_estimator == self.compute_group_additivity_solute:
+                logging.info("Solute data of halogen-replaced form {0} of molecule {1} is None.".format(replaced_struct, molecule))
+            return None
+
+        solute_data = solute_data_replaced
+
+        # For each halogenated site, get halogen correction
+        for atom in molecule.atoms:
+            if atom.is_halogen():
+                try:
+                    self._add_group_solute_data(solute_data, self.groups['halogen'], molecule, {'*': atom})
+                except KeyError:
+                    pass
+
+        # Remove all of the long distance interactions of the replaced structure. Then add the long interactions of the halogenated molecule.
+        if replaced_struct.is_cyclic():
+            sssr = replaced_struct.get_smallest_set_of_smallest_rings()
+            for ring in sssr:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self._remove_group_solute_data(solute_data, self.groups['longDistanceInteraction_cyclic'],
+                                                       replaced_struct, {'*1': atomPair[0], '*2': atomPair[1]})
+                    except KeyError:
+                        pass
+            sssr = molecule.get_smallest_set_of_smallest_rings()
+            for ring in sssr:
+                for atomPair in itertools.permutations(ring, 2):
+                    try:
+                        self._add_group_solute_data(solute_data, self.groups['longDistanceInteraction_cyclic'],
+                                                    molecule,
+                                                    {'*1': atomPair[0], '*2': atomPair[1]})
+                    except KeyError:
+                        pass
+
+        # prevents the original species name being used for the HBI corrected radical in species generation
         solute_data.label = ''
 
         return solute_data
@@ -1016,9 +1156,10 @@ class SolvationDatabase(object):
         """
 
         assert not molecule.is_radical(), "This method is only for saturated non-radical species."
-        # For thermo estimation we need the atoms to already be sorted because we
+        assert not molecule.has_halogen(), "This method is only for non-halogenated species."
+        # For solute data estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
-        # will probably not visit the right atoms, and so will get the thermo wrong
+        # will probably not visit the right atoms, and so will get the solute data wrong
         molecule.sort_atoms()
 
         # Create the SoluteData object

@@ -261,6 +261,38 @@ class TestSoluteDatabase(TestCase):
         sat_solvation_correction = self.database.get_solvation_correction(sat_solute_data, solvent_data)
         self.assertNotAlmostEqual(rad_solvation_correction.gibbs / 1000, sat_solvation_correction.gibbs / 1000)
 
+    def test_halogen_solute_group(self):
+        """Test that the correct halogen groups can be found for the halogenated species using get_solute_data method"""
+        # Check the species whose halogen-replaced form can be found from solute library
+        species = Species().from_smiles('CCCCCCl')
+        solute_data = self.database.get_solute_data(species)
+        self.assertTrue("Solute library: n-pentane + halogen(Cl-(Cs-CsHH))" in solute_data.comment)
+        # Check the species whose halogen-replaced form cannot be found from solute library
+        species = Species().from_smiles('FNC(=O)Cl')
+        solute_data = self.database.get_solute_data(species)
+        self.assertTrue("group(Cds-OdNH) + halogen(Cl-(Cd-O2d)) + halogen(F-N3s)" in solute_data.comment)
+
+    def test_radical_halogen_solute_group(self):
+        """Test that the correct halogen and radical groups can be found for the halogenated radical species
+         using get_solute_data method"""
+        # Check the species whose saturated and halogenated form can be found from solute library
+        species = Species().from_smiles('[O]CCCCl')
+        solute_data = self.database.get_solute_data(species)
+        self.assertTrue("Solute library: 3-Chloropropan-1-ol + radical(ROJ)" == solute_data.comment)
+        # Check the species whose saturated and halogen-replaced form can be found from solute library
+        species = Species().from_smiles('[O]CCCC(Br)(I)Cl')
+        solute_data = self.database.get_solute_data(species)
+        self.assertTrue("Solute library: butan-1-ol + halogen(I-(Cs-CsHH)) + halogen(Br-(Cs-CsFCl)) + halogen(Cl-(Cs-CsFBr)) + radical(ROJ)" \
+                        == solute_data.comment)
+        # Check the species whose saturated and halogen-replaced form cannot be found from solute library
+        species = Species().from_smiles('[NH]C(=O)Cl')
+        solute_data = self.database.get_solute_data(species)
+        self.assertTrue("group(Cds-OdNH) + halogen(Cl-(Cd-O2d)) + radical(N3_amide_pri)" in solute_data.comment)
+        # Check the species whose radical site is bonded to halogen
+        species = Species().from_smiles('F[N]C(=O)Cl')
+        solute_data = self.database.get_solute_data(species)
+        self.assertTrue("group(Cds-OdNH) + halogen(Cl-(Cd-O2d)) + halogen(F-N3s) + radical(N3_amide_sec)" in solute_data.comment)
+
     def test_correction_generation(self):
         """Test we can estimate solvation thermochemistry."""
         self.testCases = [
