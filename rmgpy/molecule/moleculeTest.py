@@ -2454,6 +2454,13 @@ multiplicity 2
         mol = Molecule(smiles='[c]1ccccc1')
         self.assertTrue(mol.is_aryl_radical())
 
+    def test_has_halogen(self):
+        """Test Molecule.has_halogen() method."""
+        mol1 = Molecule(smiles='CCCCl')
+        mol2 = Molecule(smiles='CCCCC')
+        self.assertTrue(mol1.has_halogen())
+        self.assertFalse(mol2.has_halogen())
+
     def test_aryl_radical_false(self):
         """Test aryl radical perception for benzyl radical."""
         mol = Molecule(smiles='[CH2]c1ccccc1')

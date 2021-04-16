@@ -2104,6 +2104,17 @@ class Molecule(Graph):
                 return True
         return False
 
+    def has_halogen(self):
+        """
+        Return ``True`` if the molecule contains at least one halogen (F, Cl, Br, or I),
+        or ``False`` otherwise.
+        """
+        cython.declare(atom=Atom)
+        for atom in self.vertices:
+            if atom.is_halogen():
+                return True
+        return False
+
     def is_aryl_radical(self, aromatic_rings=None):
         """
         Return ``True`` if the molecule only contains aryl radicals,

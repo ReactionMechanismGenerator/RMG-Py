@@ -77,7 +77,7 @@ cdef class Atom(Vertex):
     cpdef bint is_iodine(self)
 
     cpdef bint is_nos(self)
-    
+
     cpdef bint is_surface_site(self)
     
     cpdef increment_radical(self)
@@ -244,6 +244,8 @@ cdef class Molecule(Graph):
     cpdef bint is_radical(self) except -2
 
     cpdef bint has_lone_pairs(self) except -2
+
+    cpdef bint has_halogen(self) except -2
 
     cpdef bint is_aryl_radical(self, list aromatic_rings=?) except -2
 
