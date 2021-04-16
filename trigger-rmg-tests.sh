@@ -12,6 +12,7 @@ BRANCH=${GITHUB_REF#refs/heads/}
 
 echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
 echo "BRANCH: $BRANCH"
+echo "RMG_DATABASE_BRANCH: $RMG_DATABASE_BRANCH"
 
 # URL for the official RMG-tests repository
 REPO=https://${GH_TOKEN}@github.com/ReactionMechanismGenerator/RMG-tests.git
@@ -29,14 +30,24 @@ cd $TARGET_DIR
 
 # create a new branch in RMG-tests with the name equal to
 # the branch name of the tested RMG-Py branch:
-RMGTESTSBRANCH=rmgpy-$BRANCH
+if ["$RMG_DATABASE_BRANCH" == "master"]
+then
+  RMGTESTSBRANCH=rmgpy-$BRANCH
+else
+  RMGTESTSBRANCH=rmgpydb-$BRANCH
+fi
 
-git checkout -b $RMGTESTSBRANCH || true 
+git checkout -b $RMGTESTSBRANCH || true
 git checkout $RMGTESTSBRANCH
 
-# create an empty commit with the SHA-ID of the 
+# create an empty commit with the SHA-ID of the
 # tested commit of the RMG-Py branch:
-git commit --allow-empty -m rmgpy-$REV
+if ["$RMG_DATABASE_BRANCH" == "master"]
+then
+  git commit --allow-empty -m rmgpy-$REV
+else
+  git commit --allow-empty -m rmgpydb-$REV-${RMG_DATABASE_BRANCH}
+fi
 
 # push to the branch to the RMG/RMG-tests repo:
 git push -f $REPO $RMGTESTSBRANCH > /dev/null

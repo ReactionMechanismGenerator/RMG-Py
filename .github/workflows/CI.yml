@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 5
+    env: # update this if needed to match a pull request on the RMG-database
+      RMG_DATABASE_BRANCH: master
     defaults:
       run:
         shell: bash -l {0}
@@ -38,7 +40,7 @@ jobs:
       - name: Install and compile RMG
         run: |
           cd ..
-          git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+          git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
           cd RMG-Py
           git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
           make
