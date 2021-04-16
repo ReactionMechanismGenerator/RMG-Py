@@ -227,7 +227,7 @@ class Mopac(object):
         """
         Returns the appropriate cclib parser.
         """
-        return cclib.parser.Mopac(output_file)
+        return cclib.parser.MOPAC(output_file)
 
 
 class MopacMol(QMMolecule, Mopac):
