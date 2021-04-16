@@ -48,9 +48,11 @@ dependencies:
   - xlrd
   - xlwt
   #ml
-  - pytorch
+  # inbuilt SiLU
+  - pytorch=1.7
   - cpuonly
-  - dgl
+  #better kernels
+  - dgl=0.6
   # utilities
   - typer
   - pydantic
