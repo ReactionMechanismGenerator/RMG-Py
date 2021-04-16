@@ -38,7 +38,8 @@ dependencies:
   - pymongo
   - pyparsing
   - rmg::pyrdl
-  - python >=3.7
+  - python =3.7
+  - pip
   - pyyaml
   - rmg::quantities
   - rmg::rdkit >=2020.03.3.0
@@ -53,6 +54,7 @@ dependencies:
   - cpuonly
   #better kernels
   - dgl=0.6
+  - sympy
   # utilities
   - typer
   - pydantic

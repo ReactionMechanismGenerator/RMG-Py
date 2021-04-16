@@ -35,7 +35,7 @@ try:
     from gnns_thermo.testing import get_chkpt
 
     e = None
-except ImportError:
+except ImportError as e:
     gnns_thermo = None
 import numpy as np
 from rmgpy.molecule import Molecule
