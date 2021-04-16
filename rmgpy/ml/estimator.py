@@ -29,14 +29,6 @@
 
 from typing import Union
 
-try:
-    # once gnns thermo is updated in upstream this will change
-    from gnns_thermo.inference import GNNCalculator
-    from gnns_thermo.testing import get_chkpt
-
-    e = None
-except ImportError as e:
-    gnns_thermo = None
 import numpy as np
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
@@ -64,9 +56,11 @@ class MLEstimator:
     temps = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0, 2000.0, 2400.0]
 
     def __init__(self, model_type: str = "attn_mpn"):
-        # lazy import and raise the error in instantiation
-        if e:
-            raise e
+        # once gnns thermo is updated in upstream this will change
+        # lazy import here cause segfaults with torch
+        from gnns_thermo.inference import GNNCalculator
+        from gnns_thermo.testing import get_chkpt
+
         self.model_type = model_type
         h298_chkpt, h298_config = get_chkpt(model_type, "h298")
         s298_chkpt, s298_config = get_chkpt(model_type, "s298")
