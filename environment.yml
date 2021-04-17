@@ -8,7 +8,7 @@ channels:
 dependencies:
   - cairo
   - cairocffi
-  - rmg::cantera >=2.3.0
+  - cantera >=2.3.0
   - conda-forge::cclib >=1.6.3
   - coolprop
   - coverage
@@ -68,4 +68,5 @@ dependencies:
       - dgllife==0.2.6
       # this will install numpy 1.20
       # we need this to load trained model because of torch serialization
-      - pytorch-lightning==1.1.4
+      # segfaults with numpy mismatches
+      #- pytorch-lightning==1.1.4
