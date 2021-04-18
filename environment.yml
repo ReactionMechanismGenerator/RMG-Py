@@ -1,54 +1,57 @@
-name: rmg_gnn_env
+name: rmg_env
 channels:
+  - defaults
+  - rmg
   - conda-forge
-  - krsna
-  - pytorch
-  - dglteam
 dependencies:
-  - cairo #conda forge
-  - cairocffi #conda forge no arch
-  - cantera >=2.4.0 #conda forge
-  - cclib #conda forge
-  - coolprop #conda forge
-  - coverage #conda forge
-  - cython >=0.25.2 #conda forge
-  - ffmpeg #conda forge
-  - gprof2dot #conda forge
-  - graphviz #conda forge
-  - h5py #conda forge
-  - jinja2 #conda forge
-  - jupyter #conda forge
-  - lpsolve55 #conda forge
-  - markupsafe #conda forge
-  - matplotlib >=1.5 #conda forge
-  - mpmath #conda forge
-  - muq #needs rebuilding maybe
-  - networkx #conda forge
-  - nose #conda forge
-  - numdifftools #conda forge
-  - numpy #conda forge
-  - openbabel #conda forge
-  - pandas #conda forge
-  - psutil #conda forge
-  - pydot #conda forge
-  - pymongo #conda forge
-  - pyparsing #conda forge
-  - python =3.8
-  - pip
-  - pyyaml #conda forge
-  - quantities #conda forge
-  - rdkit=2020.03.4 #conda forge
-  - scikit-learn #conda forge
-  - scipy #conda forge
-  - xlrd #no arch
-  - xlwt #no arch
+  - cairo
+  - cairocffi
+  - rmg::cantera >=2.3.0
+  - conda-forge::cclib >=1.6.3
+  - rmg::chemprop
+  - coolprop
+  - coverage
+  - cython >=0.25.2
+  - ffmpeg
+  - rmg::gprof2dot
+  - graphviz
+  - h5py
+  - jinja2
+  - jupyter
+  - rmg::lpsolve55
+  - markupsafe
+  - matplotlib >=1.5
+  - rmg::mopac
+  - mpmath
+  - rmg::muq2
+  - networkx
+  - nose
+  - rmg::numdifftools
+  - numpy >=1.10.0
+  - conda-forge::openbabel >= 3
+  - pandas
+  - psutil
+  - rmg::pydas >=1.0.2
+  - pydot
+  - rmg::pydqed >=1.0.1
+  - pymongo
+  - pyparsing
+  - rmg::pyrdl
+  - python >=3.7
+  - pyyaml
+  - rmg::quantities
+  - rmg::rdkit >=2020.03.3.0
+  - scikit-learn
+  - scipy
+  - rmg::symmetry
+  - xlrd
+  - xlwt
   #ml
   # inbuilt SiLU
-  - pytorch=1.7
-  - pytorch-lightning=1.1
-  - cpuonly
+  - pytorch::pytorch=1.7
+  - pytorch::cpuonly
   #better kernels
-  - dgl=0.6
+  - dglteam::dgl=0.6
   - sympy
   # utilities
   - typer
