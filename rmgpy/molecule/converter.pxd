@@ -26,6 +26,7 @@
 ###############################################################################
 
 cimport rmgpy.molecule.molecule as mm
+cimport rmgpy.molecule.element as elements
 
 
 cpdef to_rdkit_mol(mm.Molecule mol, bint remove_h=*, bint return_mapping=*, bint sanitize=*)
