@@ -1,4 +1,4 @@
-name: rmg_env
+name: rmg_gnn_env
 channels:
   - defaults
   - rmg
@@ -8,7 +8,6 @@ dependencies:
   - cairocffi
   - rmg::cantera >=2.3.0
   - conda-forge::cclib >=1.6.3
-  - rmg::chemprop
   - coolprop
   - coverage
   - cython >=0.25.2
@@ -62,5 +61,6 @@ dependencies:
   # just in case
   - make
   - cmake
+  - gcc_linux-64=7.3
   - pip:
       - dgllife==0.2.6
