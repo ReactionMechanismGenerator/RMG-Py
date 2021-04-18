@@ -46,8 +46,8 @@ dependencies:
   - xlrd
   - xlwt
   #ml
-  # inbuilt SiLU
-  - pytorch::pytorch=1.7
+  #oldest version of torch compatible with dgl and doesn't result in segfaults or numpy errors
+  - pytorch::pytorch=1.5
   - pytorch::cpuonly
   #better kernels
   - dglteam::dgl=0.6

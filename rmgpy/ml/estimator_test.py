@@ -51,6 +51,6 @@ class TestMLEstimator(unittest.TestCase):
         smi = "C1C2C1C2"
         thermo = self.ml_estimator.get_thermo_data(smi)
         self.assertTrue(thermo.comment.startswith("ML Estimation"))
-        # self.assertAlmostEqual(thermo.Cp0.value_si, 33.3, 1)
-        # self.assertAlmostEqual(thermo.CpInf.value_si, 232.8, 1)
+        self.assertAlmostEqual(thermo.Cp0.value_si, 33.15302276611328, 1)
+        self.assertAlmostEqual(thermo.CpInf.value_si, 232.1982879638672, 1)
         self.assertEqual(len(thermo.Cpdata.value_si), 9)
