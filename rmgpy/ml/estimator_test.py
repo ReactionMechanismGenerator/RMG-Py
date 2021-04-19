@@ -54,3 +54,11 @@ class TestMLEstimator(unittest.TestCase):
         self.assertAlmostEqual(thermo.Cp0.value_si, 33.15302276611328, 1)
         self.assertAlmostEqual(thermo.CpInf.value_si, 232.1982879638672, 1)
         self.assertEqual(len(thermo.Cpdata.value_si), 9)
+
+    def test_convert_thermo_data(self):
+        """
+        Test that we can make a prediction using gnns_thermo and convert to wilholt.
+        """
+        smi = "C1C2C1C2"
+        thermo = self.ml_estimator.get_thermo_data(smi)
+        thermo.to_wilhoit(B=1000.0)
