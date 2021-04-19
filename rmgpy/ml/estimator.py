@@ -78,11 +78,11 @@ class MLEstimator:
         """
         molecule = Molecule(smiles=molecule) if isinstance(molecule, str) else molecule
         # convert to float from np.float64
-        hf298 = np.asscalar(self.hf298_estimator.calculate([molecule.smiles]))
-        s298 = np.asscalar(self.s298_estimator.calculate([molecule.smiles]))
+        hf298 = float(self.hf298_estimator.calculate([molecule.smiles]))
+        s298 = float(self.s298_estimator.calculate([molecule.smiles]))
         cp = self.cp_estimator.calculate([molecule.smiles])
-        cp0, cpinf = cp[0], cp[1]
-        cp = cp[2:]
+        cp0, cpinf = cp[0].astype(np.float64), cp[1].astype(np.float64)
+        cp = cp[2:].astype(np.float64)
 
         # cp0 = molecule.calculate_cp0()
         # cpinf = molecule.calculate_cpinf()

@@ -45,31 +45,25 @@ from rmgpy.rmgobject import RMGObject, expand_to_dict
 ################################################################################
 
 # Explicitly set the default units to SI
-pq.set_default_units('si')
+pq.set_default_units("si")
 
 # These units are not defined by the quantities package, but occur frequently
 # in data handled by RMG, so we define them manually
-pq.UnitQuantity('kilocalories', pq.cal * 1e3, symbol='kcal')
-pq.UnitQuantity('kilojoules', pq.J * 1e3, symbol='kJ')
-pq.UnitQuantity('kilomoles', pq.mol * 1e3, symbol='kmol')
-pq.UnitQuantity('molecule', pq.mol / 6.02214179e23, symbol='molecule')
-pq.UnitQuantity('molecules', pq.mol / 6.02214179e23, symbol='molecules')
-pq.UnitQuantity('debye', 1.0 / (constants.c * 1e21) * pq.C * pq.m, symbol='De')
+pq.UnitQuantity("kilocalories", pq.cal * 1e3, symbol="kcal")
+pq.UnitQuantity("kilojoules", pq.J * 1e3, symbol="kJ")
+pq.UnitQuantity("kilomoles", pq.mol * 1e3, symbol="kmol")
+pq.UnitQuantity("molecule", pq.mol / 6.02214179e23, symbol="molecule")
+pq.UnitQuantity("molecules", pq.mol / 6.02214179e23, symbol="molecules")
+pq.UnitQuantity("debye", 1.0 / (constants.c * 1e21) * pq.C * pq.m, symbol="De")
 
 ################################################################################
 
 # Units that should not be used in RMG-Py:
-NOT_IMPLEMENTED_UNITS = [
-    'degC',
-    'C',
-    'degF',
-    'F',
-    'degR',
-    'R'
-]
+NOT_IMPLEMENTED_UNITS = ["degC", "C", "degF", "F", "degR", "R"]
 
 
 ################################################################################
+
 
 class Units(RMGObject):
     """
@@ -88,12 +82,14 @@ class Units(RMGObject):
 
     # A dict of conversion factors (to SI) for each of the frequent units
     # Here we also define that cm^-1 is not to be converted to m^-1 (or Hz, J, K, etc.)
-    conversionFactors = {'cm^-1': 1.0}
+    conversionFactors = {"cm^-1": 1.0}
 
-    def __init__(self, units=''):
+    def __init__(self, units=""):
         if units in NOT_IMPLEMENTED_UNITS:
             raise NotImplementedError(
-                'The units {} are not yet supported. Please choose SI units.'.format(units)
+                "The units {} are not yet supported. Please choose SI units.".format(
+                    units
+                )
             )
         self.units = units
 
@@ -122,7 +118,7 @@ class Units(RMGObject):
 
     # A dict of conversion factors from SI (with same dimensionality as keys)
     # to combinations of cm/mol/s which is like SI except cm instead of m. Used as a cache.
-    conversion_factors_from_si_to_cm_mol_s = {'s^-1': 1.0}
+    conversion_factors_from_si_to_cm_mol_s = {"s^-1": 1.0}
 
     def get_conversion_factor_from_si_to_cm_mol_s(self):
         """
@@ -152,6 +148,7 @@ class Units(RMGObject):
 
 ################################################################################
 
+
 class ScalarQuantity(Units):
     """
     The :class:`ScalarQuantity` class provides a representation of a scalar
@@ -176,7 +173,7 @@ class ScalarQuantity(Units):
     speed.
     """
 
-    def __init__(self, value=0.0, units='', uncertainty=0.0, uncertainty_type='+|-'):
+    def __init__(self, value=0.0, units="", uncertainty=0.0, uncertainty_type="+|-"):
         if value is None:
             value = 0.0
         Units.__init__(self, units)
@@ -188,17 +185,20 @@ class ScalarQuantity(Units):
         """
         Return a tuple of information used to pickle the scalar quantity.
         """
-        return (ScalarQuantity, (self.value, self.units, self.uncertainty, self.uncertainty_type))
+        return (
+            ScalarQuantity,
+            (self.value, self.units, self.uncertainty, self.uncertainty_type),
+        )
 
     def __str__(self):
         """
         Return a string representation of the scalar quantity.
         """
-        result = '{0:g}'.format(self.value)
+        result = "{0:g}".format(self.value)
         if self.uncertainty != 0.0:
-            result += ' {0} {1:g}'.format(self.uncertainty_type, self.uncertainty)
-        if self.units != '':
-            result += ' {0}'.format(self.units)
+            result += " {0} {1:g}".format(self.uncertainty_type, self.uncertainty)
+        if self.units != "":
+            result += " {0}".format(self.units)
         return result
 
     def __repr__(self):
@@ -206,13 +206,13 @@ class ScalarQuantity(Units):
         Return a string representation that can be used to reconstruct the
         scalar quantity.
         """
-        if self.units == '' and self.uncertainty == 0.0:
-            return '{0:g}'.format(self.value)
+        if self.units == "" and self.uncertainty == 0.0:
+            return "{0:g}".format(self.value)
         else:
-            result = '({0:g},{1!r}'.format(self.value, self.units)
+            result = "({0:g},{1!r}".format(self.value, self.units)
             if self.uncertainty != 0.0:
-                result += ',{0!r},{1:g}'.format(self.uncertainty_type, self.uncertainty)
-            result += ')'
+                result += ",{0!r},{1:g}".format(self.uncertainty_type, self.uncertainty)
+            result += ")"
             return result
 
     def as_dict(self):
@@ -220,20 +220,22 @@ class ScalarQuantity(Units):
         A helper function for YAML dumping
         """
         output_dict = dict()
-        output_dict['class'] = self.__class__.__name__
-        output_dict['value'] = self.value
-        if self.units != '':
-            output_dict['units'] = self.units
+        output_dict["class"] = self.__class__.__name__
+        output_dict["value"] = self.value
+        if self.units != "":
+            output_dict["units"] = self.units
         if self.uncertainty != 0.0:
-            output_dict['uncertainty'] = self.uncertainty
-            output_dict['uncertainty_type'] = self.uncertainty_type
+            output_dict["uncertainty"] = self.uncertainty
+            output_dict["uncertainty_type"] = self.uncertainty_type
         return output_dict
 
     def copy(self):
         """
         Return a copy of the quantity.
         """
-        return ScalarQuantity(self.value, self.units, self.uncertainty, self.uncertainty_type)
+        return ScalarQuantity(
+            self.value, self.units, self.uncertainty, self.uncertainty_type
+        )
 
     @property
     def value(self):
@@ -275,8 +277,12 @@ class ScalarQuantity(Units):
         """
         Check the uncertainty type is valid, then set it.
         """
-        if v not in ['+|-', '*|/']:
-            raise QuantityError('Unexpected uncertainty type "{0}"; valid values are "+|-" and "*|/".'.format(v))
+        if v not in ["+|-", "*|/"]:
+            raise QuantityError(
+                'Unexpected uncertainty type "{0}"; valid values are "+|-" and "*|/".'.format(
+                    v
+                )
+            )
         self._uncertainty_type = v
 
     def equals(self, quantity):
@@ -290,25 +296,33 @@ class ScalarQuantity(Units):
         this will not be a problem.)
         """
 
-        def approx_equal(x, y, atol=.01):
+        def approx_equal(x, y, atol=0.01):
             """
             Returns true if two float/double values are approximately equal
             within a relative error of 1% or under a user specific absolute tolerance.
             """
-            return abs(x - y) <= 1e-2 * abs(x) or abs(x - y) <= 1e-2 * abs(y) or abs(x - y) <= atol
+            return (
+                abs(x - y) <= 1e-2 * abs(x)
+                or abs(x - y) <= 1e-2 * abs(y)
+                or abs(x - y) <= atol
+            )
 
         if isinstance(quantity, ScalarQuantity):
-            if (self.uncertainty_type == quantity.uncertainty_type and
-                    approx_equal(self.uncertainty * self.get_conversion_factor_to_si(),
-                                 quantity.uncertainty * quantity.get_conversion_factor_to_si()) and
-                    self.units == quantity.units):
+            if (
+                self.uncertainty_type == quantity.uncertainty_type
+                and approx_equal(
+                    self.uncertainty * self.get_conversion_factor_to_si(),
+                    quantity.uncertainty * quantity.get_conversion_factor_to_si(),
+                )
+                and self.units == quantity.units
+            ):
 
                 if self.units == "kcal/mol":
                     # set absolute tolerance to .01 kcal/mol = 42 J/mol
                     atol = 42
                 else:
                     # for other units, set it to .01
-                    atol = .01
+                    atol = 0.01
 
                 if not approx_equal(self.value_si, quantity.value_si, atol):
                     return False
@@ -322,14 +336,14 @@ class ScalarQuantity(Units):
         Return ``True`` if the uncertainty is specified in additive format
         and ``False`` otherwise.
         """
-        return self.uncertainty_type == '+|-'
+        return self.uncertainty_type == "+|-"
 
     def is_uncertainty_multiplicative(self):
         """
-        Return ``True`` if the uncertainty is specified in multiplicative 
+        Return ``True`` if the uncertainty is specified in multiplicative
         format and ``False`` otherwise.
         """
-        return self.uncertainty_type == '*|/'
+        return self.uncertainty_type == "*|/"
 
 
 ################################################################################
@@ -338,7 +352,7 @@ class ScalarQuantity(Units):
 class ArrayQuantity(Units):
     """
     The :class:`ArrayQuantity` class provides a representation of an array of
-    physical quantity values, with optional units and uncertainty information. 
+    physical quantity values, with optional units and uncertainty information.
     The attributes are:
 
     =================== ========================================================
@@ -355,11 +369,11 @@ class ArrayQuantity(Units):
     It is often more convenient to perform computations using SI units instead
     of the given units of the quantity. For this reason, the SI equivalent of
     the `value` attribute can be directly accessed using the `value_si`
-    attribute. This value is cached on the :class:`ArrayQuantity` object for 
+    attribute. This value is cached on the :class:`ArrayQuantity` object for
     speed.
     """
 
-    def __init__(self, value=None, units='', uncertainty=None, uncertainty_type='+|-'):
+    def __init__(self, value=None, units="", uncertainty=None, uncertainty_type="+|-"):
         Units.__init__(self, units)
         self.value = value if value is not None else np.array([0.0])
         self.uncertainty_type = uncertainty_type
@@ -370,12 +384,18 @@ class ArrayQuantity(Units):
         else:
             uncertainty = np.array(uncertainty)
             if uncertainty.ndim != self.value.ndim:
-                raise QuantityError('The given uncertainty has {0:d} dimensions, while the given value has {1:d}'
-                                    ' dimensions.'.format(uncertainty.ndim, self.value.ndim))
+                raise QuantityError(
+                    "The given uncertainty has {0:d} dimensions, while the given value has {1:d}"
+                    " dimensions.".format(uncertainty.ndim, self.value.ndim)
+                )
             for i in range(self.value.ndim):
                 if self.value.shape[i] != uncertainty.shape[i]:
-                    raise QuantityError('Dimension {0:d} has {1:d} elements for the given value, but {2:d} elements for'
-                                        ' the given uncertainty.'.format(i, self.value.shape[i], uncertainty.shape[i]))
+                    raise QuantityError(
+                        "Dimension {0:d} has {1:d} elements for the given value, but {2:d} elements for"
+                        " the given uncertainty.".format(
+                            i, self.value.shape[i], uncertainty.shape[i]
+                        )
+                    )
             else:
                 self.uncertainty = uncertainty
 
@@ -383,35 +403,58 @@ class ArrayQuantity(Units):
         """
         Return a tuple of information used to pickle the array quantity.
         """
-        return (ArrayQuantity, (self.value, self.units, self.uncertainty, self.uncertainty_type))
+        return (
+            ArrayQuantity,
+            (self.value, self.units, self.uncertainty, self.uncertainty_type),
+        )
 
     def __str__(self):
         """
         Return a string representation of the array quantity.
         """
         if self.value.ndim == 1:
-            value = '[{0}]'.format(','.join(['{0:g}'.format(float(v)) for v in self.value]))
+            value = "[{0}]".format(
+                ",".join(["{0:g}".format(float(v)) for v in self.value])
+            )
         elif self.value.ndim == 2:
             value = []
             for i in range(self.value.shape[0]):
-                value.append('[{0}]'.format(','.join(['{0:g}'.format(float(self.value[i, j])) for j in
-                                                      range(self.value.shape[1])])))
-            value = '[{0}]'.format(','.join(value))
+                value.append(
+                    "[{0}]".format(
+                        ",".join(
+                            [
+                                "{0:g}".format(float(self.value[i, j]))
+                                for j in range(self.value.shape[1])
+                            ]
+                        )
+                    )
+                )
+            value = "[{0}]".format(",".join(value))
 
         if self.uncertainty.ndim == 1:
-            uncertainty = '[{0}]'.format(','.join(['{0:g}'.format(float(v)) for v in self.uncertainty]))
+            uncertainty = "[{0}]".format(
+                ",".join(["{0:g}".format(float(v)) for v in self.uncertainty])
+            )
         elif self.uncertainty.ndim == 2:
             uncertainty = []
             for i in range(self.uncertainty.shape[0]):
-                uncertainty.append('[{0}]'.format(','.join(['{0:g}'.format(float(self.uncertainty[i, j])) for j in
-                                                            range(self.uncertainty.shape[1])])))
-            uncertainty = '[{0}]'.format(','.join(uncertainty))
+                uncertainty.append(
+                    "[{0}]".format(
+                        ",".join(
+                            [
+                                "{0:g}".format(float(self.uncertainty[i, j]))
+                                for j in range(self.uncertainty.shape[1])
+                            ]
+                        )
+                    )
+                )
+            uncertainty = "[{0}]".format(",".join(uncertainty))
 
-        result = '{0}'.format(value)
+        result = "{0}".format(value)
         if (self.uncertainty > 0).any():
-            result += ' {0} {1}'.format(self.uncertainty_type, uncertainty)
-        if self.units != '':
-            result += ' {0}'.format(self.units)
+            result += " {0} {1}".format(self.uncertainty_type, uncertainty)
+        if self.units != "":
+            result += " {0}".format(self.units)
         return result
 
     def __repr__(self):
@@ -420,30 +463,50 @@ class ArrayQuantity(Units):
         array quantity.
         """
         if self.value.ndim == 1:
-            value = '[{0}]'.format(','.join(['{0:g}'.format(float(v)) for v in self.value]))
+            value = "[{0}]".format(
+                ",".join(["{0:g}".format(float(v)) for v in self.value])
+            )
         elif self.value.ndim == 2:
             value = []
             for i in range(self.value.shape[0]):
-                value.append('[{0}]'.format(','.join(['{0:g}'.format(float(self.value[i, j])) for j in
-                                                      range(self.value.shape[1])])))
-            value = '[{0}]'.format(','.join(value))
+                value.append(
+                    "[{0}]".format(
+                        ",".join(
+                            [
+                                "{0:g}".format(float(self.value[i, j]))
+                                for j in range(self.value.shape[1])
+                            ]
+                        )
+                    )
+                )
+            value = "[{0}]".format(",".join(value))
 
         if self.uncertainty.ndim == 1:
-            uncertainty = '[{0}]'.format(','.join(['{0:g}'.format(float(v)) for v in self.uncertainty]))
+            uncertainty = "[{0}]".format(
+                ",".join(["{0:g}".format(float(v)) for v in self.uncertainty])
+            )
         elif self.uncertainty.ndim == 2:
             uncertainty = []
             for i in range(self.uncertainty.shape[0]):
-                uncertainty.append('[{0}]'.format(','.join(['{0:g}'.format(float(self.uncertainty[i, j])) for j in
-                                                            range(self.uncertainty.shape[1])])))
-            uncertainty = '[{0}]'.format(','.join(uncertainty))
+                uncertainty.append(
+                    "[{0}]".format(
+                        ",".join(
+                            [
+                                "{0:g}".format(float(self.uncertainty[i, j]))
+                                for j in range(self.uncertainty.shape[1])
+                            ]
+                        )
+                    )
+                )
+            uncertainty = "[{0}]".format(",".join(uncertainty))
 
-        if self.units == '' and not np.any(self.uncertainty != 0.0):
-            return '{0}'.format(value)
+        if self.units == "" and not np.any(self.uncertainty != 0.0):
+            return "{0}".format(value)
         else:
-            result = '({0},{1!r}'.format(value, self.units)
+            result = "({0},{1!r}".format(value, self.units)
             if np.any(self.uncertainty != 0.0):
-                result += ',{0!r},{1}'.format(self.uncertainty_type, uncertainty)
-            result += ')'
+                result += ",{0!r},{1}".format(self.uncertainty_type, uncertainty)
+            result += ")"
             return result
 
     def as_dict(self):
@@ -451,22 +514,29 @@ class ArrayQuantity(Units):
         A helper function for YAML dumping
         """
         output_dict = dict()
-        output_dict['class'] = self.__class__.__name__
-        output_dict['value'] = expand_to_dict(self.value)
-        if self.units != '':
-            output_dict['units'] = self.units
-        if self.uncertainty is not None and any([val != 0.0 for val in np.nditer(self.uncertainty)]):
+        output_dict["class"] = self.__class__.__name__
+        output_dict["value"] = expand_to_dict(self.value)
+        if self.units != "":
+            output_dict["units"] = self.units
+        if self.uncertainty is not None and any(
+            [val != 0.0 for val in np.nditer(self.uncertainty)]
+        ):
             logging.info(self.uncertainty)
             logging.info(type(self.uncertainty))
-            output_dict['uncertainty'] = expand_to_dict(self.uncertainty)
-            output_dict['uncertainty_type'] = self.uncertainty_type
+            output_dict["uncertainty"] = expand_to_dict(self.uncertainty)
+            output_dict["uncertainty_type"] = self.uncertainty_type
         return output_dict
 
     def copy(self):
         """
         Return a copy of the quantity.
         """
-        return ArrayQuantity(self.value.copy(), self.units, self.uncertainty.copy(), self.uncertainty_type)
+        return ArrayQuantity(
+            self.value.copy(),
+            self.units,
+            self.uncertainty.copy(),
+            self.uncertainty_type,
+        )
 
     @property
     def value(self):
@@ -478,7 +548,9 @@ class ArrayQuantity(Units):
     @value.setter
     def value(self, v):
         if isinstance(v, float):
-            self.value_si = np.array([v]) * self.get_conversion_factor_to_si()
+            self.value_si = (
+                np.array([v], dtype=np.float64) * self.get_conversion_factor_to_si()
+            )
         else:
             self.value_si = np.array(v) * self.get_conversion_factor_to_si()
 
@@ -510,12 +582,16 @@ class ArrayQuantity(Units):
     def uncertainty_type(self, v):
         """
         Check the uncertainty type is valid, then set it.
-        
-        If you set the uncertainty then change the type, we have no idea what to do with 
+
+        If you set the uncertainty then change the type, we have no idea what to do with
         the units. This ensures you set the type first.
         """
-        if v not in ['+|-', '*|/']:
-            raise QuantityError('Unexpected uncertainty type "{0}"; valid values are "+|-" and "*|/".'.format(v))
+        if v not in ["+|-", "*|/"]:
+            raise QuantityError(
+                'Unexpected uncertainty type "{0}"; valid values are "+|-" and "*|/".'.format(
+                    v
+                )
+            )
         self._uncertainty_type = v
 
     def equals(self, quantity):
@@ -529,22 +605,29 @@ class ArrayQuantity(Units):
         this will not be a problem.)
         """
 
-        def approx_equal(x, y, atol=.01):
+        def approx_equal(x, y, atol=0.01):
             """
             Returns true if two float/double values are approximately equal
             within a relative error of 1% or under a user specific absolute tolerance.
             """
-            return abs(x - y) <= 1e-2 * abs(x) or abs(x - y) <= 1e-2 * abs(y) or abs(x - y) <= atol
+            return (
+                abs(x - y) <= 1e-2 * abs(x)
+                or abs(x - y) <= 1e-2 * abs(y)
+                or abs(x - y) <= atol
+            )
 
         if isinstance(quantity, ArrayQuantity):
-            if (self.uncertainty_type == quantity.uncertainty_type and self.units == quantity.units):
+            if (
+                self.uncertainty_type == quantity.uncertainty_type
+                and self.units == quantity.units
+            ):
 
                 if self.units == "kcal/mol":
                     # set absolute tolerance to .01 kcal/mol = 42 J/mol
                     atol = 42
                 else:
                     # for other units, set it to .01
-                    atol = .01
+                    atol = 0.01
 
                 if self.value.ndim != quantity.value.ndim:
                     return False
@@ -573,41 +656,42 @@ class ArrayQuantity(Units):
         Return ``True`` if the uncertainty is specified in additive format
         and ``False`` otherwise.
         """
-        return self.uncertainty_type == '+|-'
+        return self.uncertainty_type == "+|-"
 
     def is_uncertainty_multiplicative(self):
         """
-        Return ``True`` if the uncertainty is specified in multiplicative 
+        Return ``True`` if the uncertainty is specified in multiplicative
         format and ``False`` otherwise.
         """
-        return self.uncertainty_type == '*|/'
+        return self.uncertainty_type == "*|/"
 
 
 ################################################################################
+
 
 def Quantity(*args, **kwargs):
     """
     Create a :class:`ScalarQuantity` or :class:`ArrayQuantity` object for a
     given physical quantity. The physical quantity can be specified in several
     ways:
-    
+
     * A scalar-like or array-like value (for a dimensionless quantity)
-    
+
     * An array of arguments (including keyword arguments) giving some or all of
       the `value`, `units`, `uncertainty`, and/or `uncertainty_type`.
-    
-    * A tuple of the form ``(value,)``, ``(value,units)``, 
-      ``(value,units,uncertainty)``, or 
+
+    * A tuple of the form ``(value,)``, ``(value,units)``,
+      ``(value,units,uncertainty)``, or
       ``(value,units,uncertainty_type,uncertainty)``
-    
+
     * An existing :class:`ScalarQuantity` or :class:`ArrayQuantity` object, for
       which a copy is made
-    
+
     """
     # Initialize attributes
     value = None
-    units = ''
-    uncertainty_type = '+|-'
+    units = ""
+    uncertainty_type = "+|-"
     uncertainty = None
 
     if len(args) == 1 and len(kwargs) == 0 and args[0] is None:
@@ -617,7 +701,7 @@ def Quantity(*args, **kwargs):
     if isinstance(args, tuple) and len(args) == 1 and isinstance(args[0], tuple):
         args = args[0]
 
-    # Process args    
+    # Process args
     n_args = len(args)
     if n_args == 1 and isinstance(args[0], (ScalarQuantity, ArrayQuantity)):
         # We were given another quantity object, so make a (shallow) copy of it
@@ -628,7 +712,7 @@ def Quantity(*args, **kwargs):
         uncertainty = other.uncertainty
     elif n_args == 1:
         # If one parameter is given, it should be a single value
-        value, = args
+        (value,) = args
     elif n_args == 2:
         # If two parameters are given, it should be a value and units
         value, units = args
@@ -639,36 +723,64 @@ def Quantity(*args, **kwargs):
         # If four parameters are given, it should be a value, units, uncertainty type, and uncertainty
         value, units, uncertainty_type, uncertainty = args
     elif n_args != 0:
-        raise QuantityError('Invalid parameters {0!r} passed to ArrayQuantity.__init__() method.'.format(args))
+        raise QuantityError(
+            "Invalid parameters {0!r} passed to ArrayQuantity.__init__() method.".format(
+                args
+            )
+        )
 
     # Process kwargs
     for k, v in kwargs.items():
-        if k == 'value':
+        if k == "value":
             if len(args) >= 1:
-                raise QuantityError('Multiple values for argument {0} passed to ArrayQuantity.__init__() method.'.format(k))
+                raise QuantityError(
+                    "Multiple values for argument {0} passed to ArrayQuantity.__init__() method.".format(
+                        k
+                    )
+                )
             else:
                 value = v
-        elif k == 'units':
+        elif k == "units":
             if len(args) >= 2:
-                raise QuantityError('Multiple values for argument {0} passed to ArrayQuantity.__init__() method.'.format(k))
+                raise QuantityError(
+                    "Multiple values for argument {0} passed to ArrayQuantity.__init__() method.".format(
+                        k
+                    )
+                )
             else:
                 units = v
-        elif k == 'uncertainty':
+        elif k == "uncertainty":
             if len(args) >= 3:
-                raise QuantityError('Multiple values for argument {0} passed to ArrayQuantity.__init__() method.'.format(k))
+                raise QuantityError(
+                    "Multiple values for argument {0} passed to ArrayQuantity.__init__() method.".format(
+                        k
+                    )
+                )
             else:
                 uncertainty = v
-        elif k == 'uncertainty_type':
+        elif k == "uncertainty_type":
             if len(args) >= 4:
-                raise QuantityError('Multiple values for argument {0} passed to ArrayQuantity.__init__() method.'.format(k))
+                raise QuantityError(
+                    "Multiple values for argument {0} passed to ArrayQuantity.__init__() method.".format(
+                        k
+                    )
+                )
             else:
                 uncertainty_type = v
         else:
-            raise QuantityError('Invalid keyword argument {0} passed to ArrayQuantity.__init__() method.'.format(k))
+            raise QuantityError(
+                "Invalid keyword argument {0} passed to ArrayQuantity.__init__() method.".format(
+                    k
+                )
+            )
 
     # Process units and uncertainty type parameters
-    if uncertainty_type not in ['+|-', '*|/']:
-        raise QuantityError('Unexpected uncertainty type "{0}"; valid values are "+|-" and "*|/".'.format(uncertainty_type))
+    if uncertainty_type not in ["+|-", "*|/"]:
+        raise QuantityError(
+            'Unexpected uncertainty type "{0}"; valid values are "+|-" and "*|/".'.format(
+                uncertainty_type
+            )
+        )
 
     if isinstance(value, (list, tuple, np.ndarray)):
         return ArrayQuantity(value, units, uncertainty, uncertainty_type)
@@ -684,6 +796,7 @@ def Quantity(*args, **kwargs):
 
 ################################################################################
 
+
 class UnitType(object):
     """
     The :class:`UnitType` class represents a factory for producing
@@ -698,7 +811,9 @@ class UnitType(object):
         self.extra_dimensionality = {}
         if extra_dimensionality:
             for unit, factor in extra_dimensionality.items():
-                self.extra_dimensionality[pq.Quantity(1.0, unit).simplified.dimensionality] = factor
+                self.extra_dimensionality[
+                    pq.Quantity(1.0, unit).simplified.dimensionality
+                ] = factor
 
     def __call__(self, *args, **kwargs):
         # Make a ScalarQuantity or ArrayQuantity object out of the given parameter
@@ -723,70 +838,83 @@ class UnitType(object):
             quantity.value_si *= self.extra_dimensionality[dimensionality]
             quantity.units = self.units
         else:
-            raise QuantityError('Invalid units {0!r}. Try common units: {1}'.format(quantity.units, self.common_units))
+            raise QuantityError(
+                "Invalid units {0!r}. Try common units: {1}".format(
+                    quantity.units, self.common_units
+                )
+            )
 
         # Return the Quantity or ArrayQuantity object object
         return quantity
 
 
-Acceleration = UnitType('m/s^2')
+Acceleration = UnitType("m/s^2")
 
-Area = UnitType('m^2')
+Area = UnitType("m^2")
 
-Concentration = UnitType('mol/m^3')
+Concentration = UnitType("mol/m^3")
 
-SurfaceConcentration = UnitType('mol/m^2')
+SurfaceConcentration = UnitType("mol/m^2")
 
-Dimensionless = UnitType('')
+Dimensionless = UnitType("")
 
-DipoleMoment = UnitType('C*m', extra_dimensionality={
-    'De': 1.0 / (1.0e21 * constants.c),
-})
+DipoleMoment = UnitType(
+    "C*m",
+    extra_dimensionality={
+        "De": 1.0 / (1.0e21 * constants.c),
+    },
+)
 
 "We have to allow 'energies' to be created in units of Kelvins, because Chemkin does so"
 Energy = Enthalpy = FreeEnergy = UnitType(
-    'J/mol',
-    common_units=['kJ/mol', 'cal/mol', 'kcal/mol', 'eV/molecule'],
-    extra_dimensionality={'K': constants.R,
-                         'cm^-1': constants.h * constants.c * 100 * constants.Na
-                         # the following hack also allows 'J' and 'kJ' etc. to be specified without /mol[ecule]
-                         # so is not advisable (and fails unit tests)
-                         # 'eV': constants.Na, # allow people to be lazy and neglect the "/molecule"
-                         },
+    "J/mol",
+    common_units=["kJ/mol", "cal/mol", "kcal/mol", "eV/molecule"],
+    extra_dimensionality={
+        "K": constants.R,
+        "cm^-1": constants.h * constants.c * 100 * constants.Na
+        # the following hack also allows 'J' and 'kJ' etc. to be specified without /mol[ecule]
+        # so is not advisable (and fails unit tests)
+        # 'eV': constants.Na, # allow people to be lazy and neglect the "/molecule"
+    },
 )
 
-Entropy = HeatCapacity = UnitType('J/(mol*K)', common_units=['kJ/(mol*K)', 'cal/(mol*K)', 'kcal/(mol*K)'])
+Entropy = HeatCapacity = UnitType(
+    "J/(mol*K)", common_units=["kJ/(mol*K)", "cal/(mol*K)", "kcal/(mol*K)"]
+)
 
-Flux = UnitType('mol/(m^2*s)')
+Flux = UnitType("mol/(m^2*s)")
 
-Frequency = UnitType('cm^-1', extra_dimensionality={
-    's^-1': 1.0 / (constants.c * 100.),
-    'Hz': 1.0 / (constants.c * 100.),
-    'J': 1.0 / (constants.h * constants.c * 100.),
-    'K': constants.kB / (constants.h * constants.c * 100.),
-})
+Frequency = UnitType(
+    "cm^-1",
+    extra_dimensionality={
+        "s^-1": 1.0 / (constants.c * 100.0),
+        "Hz": 1.0 / (constants.c * 100.0),
+        "J": 1.0 / (constants.h * constants.c * 100.0),
+        "K": constants.kB / (constants.h * constants.c * 100.0),
+    },
+)
 
-Force = UnitType('N')
+Force = UnitType("N")
 
-Inertia = UnitType('kg*m^2')
+Inertia = UnitType("kg*m^2")
 
-Length = UnitType('m')
+Length = UnitType("m")
 
-Mass = UnitType('amu', extra_dimensionality={'kg/mol': 1000. * constants.amu})
+Mass = UnitType("amu", extra_dimensionality={"kg/mol": 1000.0 * constants.amu})
 
-Momentum = UnitType('kg*m/s^2')
+Momentum = UnitType("kg*m/s^2")
 
-Power = UnitType('W')
+Power = UnitType("W")
 
-Pressure = UnitType('Pa', common_units=['bar', 'atm', 'torr', 'psi', 'mbar'])
+Pressure = UnitType("Pa", common_units=["bar", "atm", "torr", "psi", "mbar"])
 
-Temperature = UnitType('K', common_units=[])
+Temperature = UnitType("K", common_units=[])
 
-Time = UnitType('s')
+Time = UnitType("s")
 
-Velocity = UnitType('m/s')
+Velocity = UnitType("m/s")
 
-Volume = UnitType('m^3')
+Volume = UnitType("m^3")
 
 # Polarizability = UnitType('C*m^2*V^-1')
 """
@@ -807,7 +935,13 @@ RATECOEFFICIENT_CONVERSION_FACTORS = {
     (pq.m ** 6 / (pq.mol ** 2 * pq.s)).dimensionality: 1.0,
     (pq.m ** 9 / (pq.mol ** 3 * pq.s)).dimensionality: 1.0,
 }
-RATECOEFFICIENT_COMMON_UNITS = ['s^-1', 'm^3/(mol*s)', 'cm^3/(mol*s)', 'm^3/(molecule*s)', 'cm^3/(molecule*s)']
+RATECOEFFICIENT_COMMON_UNITS = [
+    "s^-1",
+    "m^3/(mol*s)",
+    "cm^3/(mol*s)",
+    "m^3/(molecule*s)",
+    "cm^3/(molecule*s)",
+]
 
 
 def RateCoefficient(*args, **kwargs):
@@ -828,8 +962,10 @@ def RateCoefficient(*args, **kwargs):
         factor = RATECOEFFICIENT_CONVERSION_FACTORS[dimensionality]
         quantity.value_si *= factor
     except KeyError:
-        raise QuantityError('Invalid units {0!r}. Common units: {1}'
-                            ''.format(quantity.units, RATECOEFFICIENT_COMMON_UNITS))
+        raise QuantityError(
+            "Invalid units {0!r}. Common units: {1}"
+            "".format(quantity.units, RATECOEFFICIENT_COMMON_UNITS)
+        )
 
     # Return the Quantity or ArrayQuantity object object
     return quantity
@@ -852,12 +988,24 @@ SURFACERATECOEFFICIENT_CONVERSION_FACTORS = {
     (pq.m ** 4 / (pq.mol ** 2 * pq.s)).dimensionality: 1.0,
 }
 SURFACERATECOEFFICIENT_COMMON_UNITS = [
-    's^-1',  # unimolecular
-    'm^3/(mol*s)', 'cm^3/(mol*s)', 'm^3/(molecule*s)', 'cm^3/(molecule*s)',  # single site adsorption
-    'm^2/(mol*s)', 'cm^2/(mol*s)', 'm^2/(molecule*s)', 'cm^2/(molecule*s)',
+    "s^-1",  # unimolecular
+    "m^3/(mol*s)",
+    "cm^3/(mol*s)",
+    "m^3/(molecule*s)",
+    "cm^3/(molecule*s)",  # single site adsorption
+    "m^2/(mol*s)",
+    "cm^2/(mol*s)",
+    "m^2/(molecule*s)",
+    "cm^2/(molecule*s)",
     # bimolecular surface (Langmuir-Hinshelwood)
-    'm^5/(mol^2*s)', 'cm^5/(mol^2*s)', 'm^5/(molecule^2*s)', 'cm^5/(molecule^2*s)',  # dissociative adsorption
-    'm^4/(mol^2*s)', 'cm^4/(mol^2*s)', 'm^4/(molecule^2*s)', 'cm^4/(molecule^2*s)',  # Surface_Bidentate_Dissociation
+    "m^5/(mol^2*s)",
+    "cm^5/(mol^2*s)",
+    "m^5/(molecule^2*s)",
+    "cm^5/(molecule^2*s)",  # dissociative adsorption
+    "m^4/(mol^2*s)",
+    "cm^4/(mol^2*s)",
+    "m^4/(molecule^2*s)",
+    "cm^4/(molecule^2*s)",  # Surface_Bidentate_Dissociation
 ]
 
 
@@ -879,7 +1027,7 @@ def SurfaceRateCoefficient(*args, **kwargs):
         factor = SURFACERATECOEFFICIENT_CONVERSION_FACTORS[dimensionality]
         quantity.value_si *= factor
     except KeyError:
-        raise QuantityError('Invalid units {0!r}.'.format(quantity.units))
+        raise QuantityError("Invalid units {0!r}.".format(quantity.units))
 
     # Return the Quantity or ArrayQuantity object object
     return quantity
