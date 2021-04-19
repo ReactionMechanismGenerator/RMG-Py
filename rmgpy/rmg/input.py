@@ -810,6 +810,7 @@ def ml_estimator(
     H298UncertaintyCutoff=(3.0, "kcal/mol"),
     S298UncertaintyCutoff=(2.0, "cal/(mol*K)"),
     CpUncertaintyCutoff=(2.0, "cal/(mol*K)"),
+    useHBIForRads=False,
 ):
     from rmgpy.ml.estimator import MLEstimator
 
@@ -832,6 +833,7 @@ def ml_estimator(
         min_heavy_atoms=minHeavyAtoms,
         max_heavy_atoms=maxHeavyAtoms,
         uncertainty_cutoffs=uncertainty_cutoffs,
+        use_hbi_for_rads=useHBIForRads,
     )
 
 

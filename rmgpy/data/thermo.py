@@ -1640,6 +1640,7 @@ class ThermoDatabase(object):
 
             if thermo0 is None:
                 # estimate using gnns_thermo
+                # trained on rings,radicals and stable species
                 # `self.get_thermo_data_from_ml`.
                 if ml_estimator is not None and all(
                     a.element.number in {1, 6, 7, 8, 9, 17, 35}
