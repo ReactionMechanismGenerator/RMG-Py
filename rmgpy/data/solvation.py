@@ -115,6 +115,19 @@ def save_entry(f, entry):
     else:
         raise DatabaseError("Not sure how to save {0!r}".format(entry.data))
 
+    if isinstance(entry.data_count, DataCountGAV):
+        f.write('    dataCount = DataCountGAV(\n')
+        f.write('        S = {0!r},\n'.format(entry.data_count.S))
+        f.write('        B = {0!r},\n'.format(entry.data_count.B))
+        f.write('        E = {0!r},\n'.format(entry.data_count.E))
+        f.write('        L = {0!r},\n'.format(entry.data_count.L))
+        f.write('        A = {0!r},\n'.format(entry.data_count.A))
+        f.write('    ),\n')
+    elif entry.data_count is None:
+        f.write('    dataCount = None,\n')
+    else:
+        raise DatabaseError("Not sure how to save {0!r}".format(entry.data_count))
+
     f.write(f'    shortDesc = """{entry.short_desc.strip()}""",\n')
     f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
 
@@ -375,6 +388,39 @@ class SoluteData(object):
 
         self.V = Vtot / 100  # division by 100 to get units correct.
 
+class DataCountGAV(object):
+    """
+    A class for storing the number of data used to fit each solute parameter group value in the solute group additivity.
+
+    ...
+
+    Attributes
+    ----------
+    S : int
+        The number of data used to fit S value of the solute GAV group.
+    B : int
+        The number of data used to fit B value of the solute GAV group.
+    E : int
+        The number of data used to fit E value of the solute GAV group.
+    L : int
+        The number of data used to fit L value of the solute GAV group.
+    A : int
+        The number of data used to fit A value of the solute GAV group.
+    comment: str
+        Comment with extra information.
+    """
+
+    def __init__(self, S=None, B=None, E=None, L=None, A=None, comment=""):
+        self.S = S
+        self.B = B
+        self.E = E
+        self.L = L
+        self.A = A
+        self.comment = comment
+
+    def __repr__(self):
+        return "DataCountGAV(S={0},B={1},E={2},L={3},A={4},comment={5!r})".format(
+            self.S, self.B, self.E, self.L, self.A, self.comment)
 
 ################################################################################
 
@@ -535,6 +581,7 @@ class SoluteGroups(Database):
                    label,
                    group,
                    solute,
+                   dataCount=None,
                    reference=None,
                    referenceType='',
                    shortDesc='',
@@ -556,6 +603,7 @@ class SoluteGroups(Database):
             label=label,
             item=item,
             data=solute,
+            data_count=dataCount,
             reference=reference,
             reference_type=referenceType,
             short_desc=shortDesc,
@@ -598,6 +646,7 @@ class SolvationDatabase(object):
         self.groups = {}
         self.local_context = {
             'SoluteData': SoluteData,
+            'DataCountGAV': DataCountGAV,
             'SolventData': SolventData
         }
         self.global_context = {}

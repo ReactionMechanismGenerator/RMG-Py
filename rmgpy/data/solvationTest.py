@@ -116,6 +116,15 @@ class TestSoluteDatabase(TestCase):
         solvent_data = self.database.get_solvent_data('dibutylether')
         self.assertRaises(DatabaseError, solvent_data.get_solvent_critical_temperature)
 
+    def test_solute_groups(self):
+        """Test we can correctly load the solute groups from the solvation group database"""
+        solute_group = self.database.groups['group'].entries['Cds-N3dCbCb']
+        self.assertEqual(solute_group.data_count.S, 28)
+        self.assertEqual(solute_group.data.B, 0.06652)
+        solute_group = self.database.groups['ring'].entries['FourMember']
+        self.assertIsNone(solute_group.data_count)
+        self.assertEqual(solute_group.data, 'Cyclobutane')
+
     def test_solute_generation(self):
         """Test we can estimate Abraham solute parameters correctly using group contributions"""
 
