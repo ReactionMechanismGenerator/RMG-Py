@@ -95,10 +95,7 @@ class TestThermoDatabase(unittest.TestCase):
         cls.databaseWithoutLibraries.set_binding_energies('Pt111')
 
         # Set up ML estimator
-        models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', 'main')
-        hf298_path = os.path.join(models_path, 'hf298')
-        s298_cp_path = os.path.join(models_path, 's298_cp')
-        cls.ml_estimator = MLEstimator(hf298_path, s298_cp_path)
+        cls.ml_estimator = MLEstimator("attn_mpn")
 
     def test_pickle(self):
         """
