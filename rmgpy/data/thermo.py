@@ -1646,9 +1646,14 @@ class ThermoDatabase(object):
                     a.element.number in {1, 6, 7, 8, 9, 17, 35}
                     for a in species.molecule[0].atoms
                 ):
-                    thermo0 = self.get_thermo_data_from_ml(
-                        species, ml_estimator, ml_settings
-                    )
+                    try:
+                        thermo0 = self.get_thermo_data_from_ml(
+                            species, ml_estimator, ml_settings
+                        )
+                    except Exception as exc:
+                        logging.info(f"Thermo estimation failed for {species.molecule[0].smiles} with error \n {str(exc)}")
+                        thermo0 = None
+                        # make it none so it can be estimated with group additivity
 
             if thermo0 is None:
                 # And lastly, resort back to group additivity to determine thermo for molecule
