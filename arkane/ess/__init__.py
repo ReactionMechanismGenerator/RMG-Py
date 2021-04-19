@@ -39,3 +39,4 @@ from arkane.ess.molpro import MolproLog
 from arkane.ess.orca import OrcaLog
 from arkane.ess.qchem import QChemLog
 from arkane.ess.terachem import TeraChemLog
+from arkane.ess.qcore import QcoreJSON

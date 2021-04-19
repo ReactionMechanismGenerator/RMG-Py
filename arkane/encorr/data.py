@@ -42,7 +42,7 @@ from dataclasses import dataclass
 from typing import Callable, Iterable, List, Sequence, Set, Union
 
 import numpy as np
-import pybel
+from openbabel import pybel
 
 from rmgpy import settings
 from rmgpy.molecule import Atom, Bond, get_element

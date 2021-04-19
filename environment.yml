@@ -1,4 +1,4 @@
-name: rmg_env
+name: rmg_gnn_env
 channels:
   - defaults
   - rmg
@@ -8,7 +8,6 @@ dependencies:
   - cairocffi
   - rmg::cantera >=2.3.0
   - conda-forge::cclib >=1.6.3
-  - rmg::chemprop
   - coolprop
   - coverage
   - cython >=0.25.2
@@ -28,7 +27,7 @@ dependencies:
   - nose
   - rmg::numdifftools
   - numpy >=1.10.0
-  - openbabel
+  - conda-forge::openbabel >= 3
   - pandas
   - psutil
   - rmg::pydas >=1.0.2
@@ -46,3 +45,22 @@ dependencies:
   - rmg::symmetry
   - xlrd
   - xlwt
+  #ml
+  #oldest version of torch compatible with dgl and doesn't result in segfaults or numpy errors
+  - pytorch::pytorch=1.5
+  - pytorch::cpuonly
+  #better kernels
+  - dglteam::dgl=0.6
+  - sympy
+  # utilities
+  - typer
+  - pydantic
+  - tqdm
+  # for gnns thermo tests
+  - pytest
+  # just in case
+  - make
+  - cmake
+  - gcc_linux-64=7.3
+  - pip:
+      - dgllife==0.2.6

@@ -39,7 +39,7 @@ import cython
 from rdkit import Chem
 # Test if openbabel is installed
 try:
-    import openbabel
+    from openbabel import openbabel
 except ImportError:
     openbabel = None
 
@@ -233,6 +233,7 @@ def to_ob_mol(mol, return_mapping=False):
         if atom.element.isotope != -1:
             a.SetIsotope(atom.element.isotope)
         a.SetFormalCharge(atom.charge)
+        # a.SetImplicitHCount(0) # the default is 0
         ob_atom_ids[atom] = a.GetId()
     orders = {1: 1, 2: 2, 3: 3, 4: 4, 1.5: 5}
     for atom1 in mol.vertices:
@@ -257,11 +258,21 @@ def from_ob_mol(mol, obmol, raise_atomtype_exception=True):
     """
     Convert a OpenBabel Mol object `obmol` to a molecular structure. Uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+
+    It estimates radical placement based on undervalence of atoms,
+    and assumes overall spin multiplicity is radical count + 1
     """
     # Below are the declared variables for cythonizing the module
-    # cython.declare(i=cython.int)
-    # cython.declare(radical_electrons=cython.int, charge=cython.int, lone_pairs=cython.int)
-    # cython.declare(atom=mm.Atom, atom1=mm.Atom, atom2=mm.Atom, bond=mm.Bond)
+    cython.declare(
+        number=cython.int,
+        isotope=cython.int,
+        element=elements.Element,
+        charge=cython.int,
+        valence=cython.int,
+        radical_electrons=cython.int,
+        atom=mm.Atom,
+        )
+
     if openbabel is None:
         raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')
 
@@ -279,8 +290,10 @@ def from_ob_mol(mol, obmol, raise_atomtype_exception=True):
         element = elements.get_element(number, isotope or -1)
         # Process charge
         charge = obatom.GetFormalCharge()
-        obatom_multiplicity = obatom.GetSpinMultiplicity()
-        radical_electrons = obatom_multiplicity - 1 if obatom_multiplicity != 0 else 0
+        # Calculate the radical electrons due to undervalence,
+        # ignoring whatever may be set on obatom.GetSpinMultiplicity()
+        valence = obatom.GetTotalValence()
+        radical_electrons = openbabel.GetTypicalValence(number, valence, charge) - valence
 
         atom = mm.Atom(element, radical_electrons, charge, '', 0)
         mol.vertices.append(atom)

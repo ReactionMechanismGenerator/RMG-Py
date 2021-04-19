@@ -35,6 +35,7 @@ A module for the abstract ESSAdapter class
 from abc import ABC, abstractmethod
 import logging
 import os
+import uuid
 import shutil
 
 from rmgpy.qm.qmdata import QMData
@@ -162,7 +163,7 @@ class ESSAdapter(ABC):
         coordinates, atom_numbers, _ = self.load_geometry()
         unique_id = '0'  # Just some name that the SYMMETRY code gives to one of its jobs
         # Scratch directory that the SYMMETRY code writes its files in:
-        scr_dir = os.path.join(os.path.abspath('.'), str('scratch'))
+        scr_dir = os.path.join(os.path.abspath('.'), str(f'scratch_{uuid.uuid4()}'))
         if not os.path.exists(scr_dir):
             os.makedirs(scr_dir)
         try:

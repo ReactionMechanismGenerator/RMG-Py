@@ -76,6 +76,8 @@ def ess_factory(fullpath: str) -> Type[ESSAdapter]:
     ess_name = None
     if os.path.splitext(fullpath)[-1] in ['.xyz', '.dat', '.geometry']:
         ess_name = 'TeraChemLog'
+    elif os.path.splitext(fullpath)[-1] in ['.json']:
+        ess_name = 'QcoreJSON'
     else:
         with open(fullpath, 'r') as f:
             line = f.readline()
