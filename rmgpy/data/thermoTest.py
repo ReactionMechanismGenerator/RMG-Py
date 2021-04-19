@@ -638,15 +638,6 @@ multiplicity 2
         ml_settings = dict(
             min_heavy_atoms=1,
             max_heavy_atoms=None,
-            min_carbon_atoms=0,
-            max_carbon_atoms=None,
-            min_oxygen_atoms=0,
-            max_oxygen_atoms=None,
-            min_nitrogen_atoms=0,
-            max_nitrogen_atoms=None,
-            only_cyclics=False,
-            only_heterocyclics=False,
-            min_cycle_overlap=0,
         )
 
         # Make these large so they don't influence estimation
