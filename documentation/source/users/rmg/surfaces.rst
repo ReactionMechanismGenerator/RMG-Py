@@ -22,7 +22,17 @@ It varies depending on the catalyst in question, but is held constant across sim
 This block should also contain the reference adatom binding energies 
 (see linear scaling section below).
 
+One can also specify a specific metal of interest, and RMG will load corresponding binding energies from the
+metal database by using ``metal``.
+
+
 Here is an example catalyst properties block for Pt(111)::
+
+    catalystProperties(
+        metal = Pt111
+    )
+
+Here is an example custom catalyst properties block for Pt(111)::
 
     catalystProperties(
         bindingEnergies = {
