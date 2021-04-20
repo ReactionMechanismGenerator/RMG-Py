@@ -43,27 +43,77 @@ class TestMLEstimator(unittest.TestCase):
         other unit tests.
         """
         self.ml_estimator = MLEstimator("attn_mpn")
+        self.ml_estimator_single_model = MLEstimator(
+            "attn_mpn", inference_type="single_model"
+        )
+        self.ml_estimator_mpnn = MLEstimator("mpnn")
 
-    def test_get_thermo_data_from_smiles(self):
+    def test_get_thermo_data_from_smiles_ensemble(self):
         """
-        Test that we can make a prediction using MLEstimator using gnns_thermo.
+        Test that we can make a prediction using MLEstimator using gnns_thermo ensemble models and smiles as input.
         """
         smi = "C1C2C1C2"
         thermo = self.ml_estimator.get_thermo_data(smi, mode="from_smiles")
-        self.assertTrue(thermo.comment.startswith("ML Estimation using from_smiles"))
-        self.assertAlmostEqual(thermo.Cp0.value_si, 33.15302276611328, 1)
-        self.assertAlmostEqual(thermo.CpInf.value_si, 232.1982879638672, 1)
+        thermo_mpnn = self.ml_estimator_mpnn.get_thermo_data(smi, mode="from_smiles")
+        self.assertTrue(
+            thermo.comment.startswith("ML Estimation using featurizer from_smiles")
+        )
+        # regression tests with qm9 all systematic datasets (april 20)
+        self.assertAlmostEqual(
+            thermo.Cp0.value_si, 33.15302276611328, 1, msg="Cp0 regression error"
+        )
+        self.assertAlmostEqual(
+            thermo.CpInf.value_si, 232.6637420654297, 1, msg="CpInf regression error"
+        )
         self.assertEqual(len(thermo.Cpdata.value_si), 9)
+        # check we get some uncertainty values
+        self.assertGreater(
+            abs(thermo.H298.uncertainty), 0.0, msg="No uncertainty values"
+        )
+        # only check uncertainty for other models
+        self.assertGreater(
+            abs(thermo_mpnn.H298.uncertainty), 0.0, msg="No uncertainty values"
+        )
 
-    def test_get_thermo_data_from_rdkit_mol(self):
+    def test_get_thermo_data_from_rdkit_mol_ensemble(self):
         """
-        Test that we can make a prediction using MLEstimator using gnns_thermo.
+        Test that we can make a prediction using MLEstimator using gnns_thermo ensemble models and rdkit mol as input.
         """
         smi = "C1C2C1C2"
         thermo = self.ml_estimator.get_thermo_data(smi, mode="from_rdkit_mol")
-        self.assertTrue(thermo.comment.startswith("ML Estimation using from_rdkit"))
-        self.assertAlmostEqual(thermo.Cp0.value_si, 33.15302276611328, 1)
-        self.assertAlmostEqual(thermo.CpInf.value_si, 232.1982879638672, 1)
+        thermo_mpnn = self.ml_estimator_mpnn.get_thermo_data(smi, mode="from_rdkit_mol")
+        self.assertTrue(
+            thermo.comment.startswith("ML Estimation using featurizer from_rdkit")
+        )
+
+        # regression tests with qm9 all systematic datasets (april 20)
+        self.assertAlmostEqual(
+            thermo.Cp0.value_si, 33.15302276611328, 1, msg="Cp0 regression error"
+        )
+        self.assertAlmostEqual(
+            thermo.CpInf.value_si, 232.6637420654297, 1, msg="CpInf regression error"
+        )
+        self.assertEqual(len(thermo.Cpdata.value_si), 9)
+        # check we get some uncertainty values
+        self.assertGreater(
+            abs(thermo.H298.uncertainty), 0.0, msg="No uncertainty values"
+        )
+        # only check uncertainty for other models
+        self.assertGreater(
+            abs(thermo_mpnn.H298.uncertainty), 0.0, msg="No uncertainty values"
+        )
+
+    def test_get_thermo_data_from_rdkit_mol_single_model(self):
+        """
+        Test that we can make a prediction using MLEstimator using gnns_thermo single model.
+        """
+        smi = "C1C2C1C2"
+        thermo = self.ml_estimator_single_model.get_thermo_data(
+            smi, mode="from_rdkit_mol"
+        )
+        self.assertTrue(
+            thermo.comment.startswith("ML Estimation using featurizer from_rdkit")
+        )
         self.assertEqual(len(thermo.Cpdata.value_si), 9)
 
     def test_convert_thermo_data(self):
@@ -72,4 +122,14 @@ class TestMLEstimator(unittest.TestCase):
         """
         smi = "C1C2C1C2"
         thermo = self.ml_estimator.get_thermo_data(smi)
-        thermo.to_wilhoit(B=1000.0)
+        wilhoit = thermo.to_wilhoit(B=1000.0)
+        s_nasa = thermo.get_entropy(1000.0)
+
+        s_nasa_to_wh = wilhoit.get_entropy(1000.0)
+
+        self.assertAlmostEqual(
+            s_nasa,
+            s_nasa_to_wh,
+            -1,
+            msg="this will break if there are any type issues with quantities",
+        )

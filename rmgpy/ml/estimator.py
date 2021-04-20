@@ -43,17 +43,7 @@ class FeatEnum(str, Enum):
 
 class MLEstimator:
     """
-    A machine learning based estimator for thermochemistry prediction.
-
-    The attributes are:
-
-    ==================== ======================= =======================
-    Attribute            Type                    Description
-    ==================== ======================= =======================
-    `hf298_estimator`    :class:`Predictor`      Hf298 estimator
-    `s298_cp_estimator`  :class:`Predictor`      S298 and Cp estimator
-    `temps`              ``list``                Cp temperatures
-    ==================== ======================= =======================
+    A machine learning based estimator for thermochemistry prediction.  
     """
 
     # These should correspond to the temperatures that the ML model was
@@ -61,19 +51,37 @@ class MLEstimator:
     # we also train on cp0 and cpinf in 0,1 th index of prediction
     temps = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0, 2000.0, 2400.0]
 
-    def __init__(self, model_type: str = "attn_mpn"):
+    def __init__(self, model_type: str = "attn_mpn", inference_type: str = "ensemble"):
         # once gnns thermo is updated in upstream this will change
-        # lazy import here cause segfaults with torch
-        from gnns_thermo.inference import GNNCalculator
+        # lazy import here
+        from gnns_thermo.inference import GNNCalculator, EnsembleGNNCalculator
         from gnns_thermo.testing import get_chkpt
+        from gnns_thermo.config import ModelInferenceEnum
 
-        self.model_type = model_type
-        h298_chkpt, h298_config = get_chkpt(model_type, "h298")
-        s298_chkpt, s298_config = get_chkpt(model_type, "s298")
-        cp_chkpt, cp_config = get_chkpt(model_type, "cp")
-        self.hf298_estimator = GNNCalculator(model_type, "cpu", h298_chkpt, h298_config)
-        self.s298_estimator = GNNCalculator(model_type, "cpu", s298_chkpt, s298_config)
-        self.cp_estimator = GNNCalculator(model_type, "cpu", cp_chkpt, cp_config)
+        self.model_type = model_type  # for logging
+        self.inference_type = inference_type
+        h298_chkpt, h298_config = get_chkpt(
+            model_type, "h298", inference_type=inference_type
+        )  # get a single checkpoint or folder full of checkpoints based on inference type
+        s298_chkpt, s298_config = get_chkpt(
+            model_type, "s298", inference_type=inference_type
+        )
+        cp_chkpt, cp_config = get_chkpt(model_type, "cp", inference_type=inference_type)
+        if inference_type == ModelInferenceEnum.ensemble:
+            calculator_type = EnsembleGNNCalculator
+        elif inference_type == ModelInferenceEnum.single_model:
+            calculator_type = GNNCalculator
+
+        else:
+            raise NotImplementedError(f"Given inference type is not supported")
+        # make calculator objects here
+        self.hf298_estimator = calculator_type(
+            model_type, "cpu", h298_chkpt, h298_config
+        )
+        self.s298_estimator = calculator_type(
+            model_type, "cpu", s298_chkpt, s298_config
+        )
+        self.cp_estimator = calculator_type(model_type, "cpu", cp_chkpt, cp_config)
 
     def get_thermo_data(
         self, molecule: Union[Molecule, str], mode: FeatEnum = FeatEnum.from_rdkit_mol
@@ -94,26 +102,39 @@ class MLEstimator:
             raise NotImplementedError(
                 f"Give mode {mode} is not implemented for ML stimation"
             )
-        # convert to float from np.float64 for quantiy errors
+        hf298_pred = self.hf298_estimator.calculate(input)
+        s298_pred = self.s298_estimator.calculate(input)
+        cp_pred = self.cp_estimator.calculate(input)
+        if self.inference_type == "ensemble":
+            hf298, hf298_std = hf298_pred.mean(0), hf298_pred.std(0)
+            s298, s298_std = s298_pred.mean(0), s298_pred.std(0)
+            cp, cp_std = cp_pred.mean(0), cp_pred.std(0)
+            # explcit cast for cp
+        elif self.inference_type == "single_model":
+            # some weird quantity errors and this is a hack
+            hf298, hf298_std = np.array([hf298_pred]).mean(), np.array([0.0]).mean()
+            s298, s298_std = np.array([s298_pred]).mean(), np.array([0.0]).mean()
+            cp, cp_std = cp_pred, 0.0
+        else:
+            raise NotImplementedError(f"Given {self.inference_type} is not supported")
+        # type conversion for quantity handling
+        hf298, hf298_std = hf298.astype(np.float64), hf298_std.astype(np.float64)
+        s298, s298_std = s298.astype(np.float64), s298_std.astype(np.float64)
 
-        hf298 = float(self.hf298_estimator.calculate(input))
-        s298 = float(self.s298_estimator.calculate(input))
-        cp = self.cp_estimator.calculate(input)
-        # explcit cast for cp
         cp0, cpinf = cp[0].astype(np.float64), cp[1].astype(np.float64)
         cp = cp[2:].astype(np.float64)
 
-        # Set uncertainties to 0 because the current model cannot estimate them
+        # Set uncertainties to std
         thermo = ThermoData(
             Tdata=(self.temps, "K"),
             Cpdata=(cp, "J/(mol*K)", np.zeros(len(self.temps))),
-            H298=(hf298, "kcal/mol", 0),
-            S298=(s298, "J/(mol*K)", 0),
+            H298=(hf298, "kcal/mol", hf298_std),
+            S298=(s298, "J/(mol*K)", s298_std),
             Cp0=(cp0, "J/(mol*K)"),
             CpInf=(cpinf, "J/(mol*K)"),
             Tmin=(300.0, "K"),
             Tmax=(2400.0, "K"),
-            comment=f"ML Estimation using {mode} with model type {self.model_type}",
+            comment=f"ML Estimation using featurizer {mode} with model type {self.model_type} in {self.inference_type} mode",
         )
 
         return thermo
