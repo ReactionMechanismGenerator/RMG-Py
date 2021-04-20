@@ -33,6 +33,12 @@ import numpy as np
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
+from enum import Enum
+
+
+class FeatEnum(str, Enum):
+    from_smiles = "from_smiles"
+    from_rdkit_mol = "from_rdkit_mol"
 
 
 class MLEstimator:
@@ -69,7 +75,9 @@ class MLEstimator:
         self.s298_estimator = GNNCalculator(model_type, "cpu", s298_chkpt, s298_config)
         self.cp_estimator = GNNCalculator(model_type, "cpu", cp_chkpt, cp_config)
 
-    def get_thermo_data(self, molecule: Union[Molecule, str]) -> ThermoData:
+    def get_thermo_data(
+        self, molecule: Union[Molecule, str], mode: FeatEnum = FeatEnum.from_rdkit_mol
+    ) -> ThermoData:
         """
         Return thermodynamic parameters corresponding to a given
         :class:`Molecule` object `molecule` or a SMILES string.
@@ -77,15 +85,23 @@ class MLEstimator:
         Returns: ThermoData
         """
         molecule = Molecule(smiles=molecule) if isinstance(molecule, str) else molecule
-        # convert to float from np.float64
-        hf298 = float(self.hf298_estimator.calculate([molecule.smiles]))
-        s298 = float(self.s298_estimator.calculate([molecule.smiles]))
-        cp = self.cp_estimator.calculate([molecule.smiles])
+        if mode == FeatEnum.from_smiles:
+            # calculator takes a list so we can batch if needed
+            input = [molecule.smiles]
+        elif mode == FeatEnum.from_rdkit_mol:
+            input = [molecule.to_rdkit_mol()]
+        else:
+            raise NotImplementedError(
+                f"Give mode {mode} is not implemented for ML stimation"
+            )
+        # convert to float from np.float64 for quantiy errors
+
+        hf298 = float(self.hf298_estimator.calculate(input))
+        s298 = float(self.s298_estimator.calculate(input))
+        cp = self.cp_estimator.calculate(input)
+        # explcit cast for cp
         cp0, cpinf = cp[0].astype(np.float64), cp[1].astype(np.float64)
         cp = cp[2:].astype(np.float64)
-
-        # cp0 = molecule.calculate_cp0()
-        # cpinf = molecule.calculate_cpinf()
 
         # Set uncertainties to 0 because the current model cannot estimate them
         thermo = ThermoData(
@@ -97,7 +113,7 @@ class MLEstimator:
             CpInf=(cpinf, "J/(mol*K)"),
             Tmin=(300.0, "K"),
             Tmax=(2400.0, "K"),
-            comment=f"ML Estimation with model type {self.model_type}",
+            comment=f"ML Estimation using {mode} with model type {self.model_type}",
         )
 
         return thermo

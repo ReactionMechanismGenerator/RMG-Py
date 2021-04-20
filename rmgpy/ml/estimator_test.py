@@ -44,13 +44,24 @@ class TestMLEstimator(unittest.TestCase):
         """
         self.ml_estimator = MLEstimator("attn_mpn")
 
-    def test_get_thermo_data(self):
+    def test_get_thermo_data_from_smiles(self):
         """
         Test that we can make a prediction using MLEstimator using gnns_thermo.
         """
         smi = "C1C2C1C2"
-        thermo = self.ml_estimator.get_thermo_data(smi)
-        self.assertTrue(thermo.comment.startswith("ML Estimation"))
+        thermo = self.ml_estimator.get_thermo_data(smi, mode="from_smiles")
+        self.assertTrue(thermo.comment.startswith("ML Estimation using from_smiles"))
+        self.assertAlmostEqual(thermo.Cp0.value_si, 33.15302276611328, 1)
+        self.assertAlmostEqual(thermo.CpInf.value_si, 232.1982879638672, 1)
+        self.assertEqual(len(thermo.Cpdata.value_si), 9)
+
+    def test_get_thermo_data_from_rdkit_mol(self):
+        """
+        Test that we can make a prediction using MLEstimator using gnns_thermo.
+        """
+        smi = "C1C2C1C2"
+        thermo = self.ml_estimator.get_thermo_data(smi, mode="from_rdkit_mol")
+        self.assertTrue(thermo.comment.startswith("ML Estimation using from_rdkit"))
         self.assertAlmostEqual(thermo.Cp0.value_si, 33.15302276611328, 1)
         self.assertAlmostEqual(thermo.CpInf.value_si, 232.1982879638672, 1)
         self.assertEqual(len(thermo.Cpdata.value_si), 9)
