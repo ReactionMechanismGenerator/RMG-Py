@@ -281,9 +281,9 @@ class TestSoluteDatabase(TestCase):
         solute_data = self.database.get_solute_data(species)
         self.assertTrue("Solute library: n-pentane + halogen(Cl-(Cs-CsHH))" in solute_data.comment)
         # Check the species whose halogen-replaced form cannot be found from solute library
-        species = Species().from_smiles('FNC(=O)Cl')
+        species = Species().from_smiles('OCCCCCCC(Br)CCCCCO')
         solute_data = self.database.get_solute_data(species)
-        self.assertTrue("group(Cds-OdNH) + halogen(Cl-(Cd-O2d)) + halogen(F-N3s)" in solute_data.comment)
+        self.assertTrue("+ group(Cs-Cs(Os-H)HH) + halogen(Br-(Cs-CsCsH))" in solute_data.comment)
 
     def test_radical_halogen_solute_group(self):
         """Test that the correct halogen and radical groups can be found for the halogenated radical species
@@ -298,13 +298,13 @@ class TestSoluteDatabase(TestCase):
         self.assertTrue("Solute library: butan-1-ol + halogen(I-(Cs-CsHH)) + halogen(Br-(Cs-CsFCl)) + halogen(Cl-(Cs-CsFBr)) + radical(ROJ)" \
                         == solute_data.comment)
         # Check the species whose saturated and halogen-replaced form cannot be found from solute library
-        species = Species().from_smiles('[NH]C(=O)Cl')
+        species = Species().from_smiles('[NH]C(=O)CCCl')
         solute_data = self.database.get_solute_data(species)
-        self.assertTrue("group(Cds-OdNH) + halogen(Cl-(Cd-O2d)) + radical(N3_amide_pri)" in solute_data.comment)
+        self.assertTrue("group(Cds-Od(N3s-HH)Cs) + halogen(Cl-(Cs-CsHH)) + radical(N3_amide_pri)" in solute_data.comment)
         # Check the species whose radical site is bonded to halogen
-        species = Species().from_smiles('F[N]C(=O)Cl')
+        species = Species().from_smiles('F[N]C(=O)CCCl')
         solute_data = self.database.get_solute_data(species)
-        self.assertTrue("group(Cds-OdNH) + halogen(Cl-(Cd-O2d)) + halogen(F-N3s) + radical(N3_amide_sec)" in solute_data.comment)
+        self.assertTrue("group(Cds-Od(N3s-HH)Cs) + halogen(Cl-(Cs-CsHH)) + halogen(F-N3s) + radical(N3_amide_sec)" in solute_data.comment)
 
     def test_correction_generation(self):
         """Test we can estimate solvation thermochemistry."""
