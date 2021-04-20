@@ -60,7 +60,37 @@ def save_entry(f, entry):
     f.write('    index = {0:d},\n'.format(entry.index))
     f.write('    label = "{0}",\n'.format(entry.label))
 
-    if isinstance(entry.item, Species):
+    if isinstance(entry.item, list):
+        if len(entry.item) == 1:
+            item = entry.item[0]
+            if isinstance(item, Species):
+                if Molecule(smiles=item.molecule[0].to_smiles()).is_isomorphic(item.molecule[0]):
+                    # The SMILES representation accurately describes the molecule, so we can save it that way.
+                    f.write('    molecule = "{0}",\n'.format(item.molecule[0].to_smiles()))
+                else:
+                    f.write('    molecule = \n')
+                    f.write('"""\n')
+                    f.write(item.to_adjacency_list(remove_h=False))
+                    f.write('""",\n')
+            else:
+                raise DatabaseError("Not sure how to save {0!r}".format(entry.item))
+        else:
+            f.write('    molecule = [')
+            for i in range(len(entry.item)):
+                item = entry.item[i]
+                if i > 0:
+                    f.write(', ')
+                if isinstance(item, Species):
+                    if Molecule(smiles=item.molecule[0].to_smiles()).is_isomorphic(item.molecule[0]):
+                        f.write('"{0}"'.format(item.molecule[0].to_smiles()))
+                    else:
+                        f.write('\n"""\n')
+                        f.write(item.molecule[0].to_adjacency_list())
+                        f.write('"""')
+                else:
+                    raise DatabaseError("Not sure how to save {0!r}".format(entry.item))
+            f.write('],\n')
+    elif isinstance(entry.item, Species):
         if Molecule(smiles=entry.item.molecule[0].to_smiles()).is_isomorphic(entry.item.molecule[0]):
             # The SMILES representation accurately describes the molecule, so we can save it that way.
             f.write('    molecule = "{0}",\n'.format(entry.item.molecule[0].to_smiles()))
@@ -131,7 +161,9 @@ def save_entry(f, entry):
         f.write('        dHsolvMAE = {0!r},\n'.format(entry.data_count.dHsolvMAE))
         f.write('    ),\n')
     elif entry.data_count is None:
-        f.write('    dataCount = None,\n')
+        # only write entry.data_count if this is not a solute library entry
+        if isinstance(entry.item, Group) or isinstance(entry.data, SolventData):
+            f.write('    dataCount = None,\n')
     else:
         raise DatabaseError("Not sure how to save {0!r}".format(entry.data_count))
 
