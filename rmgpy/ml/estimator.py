@@ -144,9 +144,21 @@ class MLEstimator:
         Return the set of thermodynamic parameters corresponding to a
         given :class:`Species` object `species`.
 
-        The current ML estimator treats each resonance isomer
-        identically, i.e., any of the resonance isomers can be chosen.
+        If the `species` contains resonance structures, thermo is estimated for
+        each `molecule` and the most stable thermodata (with the lowest H298)
+        is returned. The `species` molecule list is reorder by ascending H298.
 
         Returns: ThermoData
         """
-        return self.get_thermo_data(species.molecule[0])
+
+        if len(species.molecule) == 1:
+            return self.get_thermo_data(species.molecule[0])
+        else: # This species has resonance structures
+            thermo = []
+            for molecule in species.molecule:
+                tdata = self.get_thermo_data(molecule)
+                thermo.append((tdata.get_enthalpy(298.0), molecule, tdata))
+            thermo = sorted(thermo, key=lambda x: x[0]) # sort by ascending H298
+            species.molecule = [item[1] for item in thermo] # reorder molecules by ascending H298
+            return thermo[0][2] # return the thermodata of lowest energy resonance structure
+
