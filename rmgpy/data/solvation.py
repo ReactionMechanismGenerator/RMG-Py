@@ -123,6 +123,13 @@ def save_entry(f, entry):
         f.write('        L = {0!r},\n'.format(entry.data_count.L))
         f.write('        A = {0!r},\n'.format(entry.data_count.A))
         f.write('    ),\n')
+    elif isinstance(entry.data_count, DataCountSolvent):
+        f.write('    dataCount = DataCountSolvent(\n')
+        f.write('        dGsolvCount = {0!r},\n'.format(entry.data_count.dGsolvCount))
+        f.write('        dGsolvMAE = {0!r},\n'.format(entry.data_count.dGsolvMAE))
+        f.write('        dHsolvCount = {0!r},\n'.format(entry.data_count.dHsolvCount))
+        f.write('        dHsolvMAE = {0!r},\n'.format(entry.data_count.dHsolvMAE))
+        f.write('    ),\n')
     elif entry.data_count is None:
         f.write('    dataCount = None,\n')
     else:
@@ -422,6 +429,40 @@ class DataCountGAV(object):
         return "DataCountGAV(S={0},B={1},E={2},L={3},A={4},comment={5!r})".format(
             self.S, self.B, self.E, self.L, self.A, self.comment)
 
+class DataCountSolvent(object):
+        """
+        A class for storing the number of data used to fit the solvent parameters and the solvation energy
+        and enthalpy mean absolute error (MAE) associated with the fitted solvent parameters.
+
+        ...
+
+        Attributes
+        ----------
+        dGsolvCount : int
+            The number of solvation free energy data used to fit Abraham solvent parameters (s_g, b_g, e_g, l_g, a_g, c_g).
+        dGsolvMAE : (float, str)
+            The solvation free energy mean absolute error associated with the fitted Abraham solvent parameters.
+            The second element is the unit of the solvation free energy error.
+        dHsolvCount : int
+            The number of solvation enthalpy data used to fit Mintz solvent parameters (s_h, b_h, e_h, l_h, a_h, c_h).
+        dHsolvMAE : (float, str)
+            The solvation enthalpy mean absolute error associated with the fitted Mintz solvent parameters.
+            The second element is the unit of the solvation enthalpy error.
+        comment: str
+            Comment with extra information.
+        """
+
+        def __init__(self, dGsolvCount=None, dGsolvMAE=None, dHsolvCount=None, dHsolvMAE=None, comment=""):
+            self.dGsolvCount = dGsolvCount
+            self.dGsolvMAE = dGsolvMAE
+            self.dHsolvCount = dHsolvCount
+            self.dHsolvMAE = dHsolvMAE
+            self.comment = comment
+
+        def __repr__(self):
+            return "DataCountSolvent(dGsolvCount={0},dGsolvMAE={1!r},dHsolvCount={2},dHsolvMAE={3!r},comment={4!r})".format(
+                self.dGsolvCount, self.dGsolvMAE, self.dHsolvCount, self.dHsolvMAE, self.comment)
+
 ################################################################################
 
 
@@ -439,6 +480,7 @@ class SolventLibrary(Database):
                    index,
                    label,
                    solvent,
+                   dataCount=None,
                    molecule=None,
                    reference=None,
                    referenceType='',
@@ -465,6 +507,7 @@ class SolventLibrary(Database):
             label=label,
             item=spc_list,
             data=solvent,
+            data_count=dataCount,
             reference=reference,
             reference_type=referenceType,
             short_desc=shortDesc,
@@ -475,7 +518,7 @@ class SolventLibrary(Database):
         """
         Load the solvent library from the given path
         """
-        Database.load(self, path, local_context={'SolventData': SolventData}, global_context={})
+        Database.load(self, path, local_context={'SolventData': SolventData, 'DataCountSolvent': DataCountSolvent}, global_context={})
 
     def save_entry(self, f, entry):
         """
@@ -488,6 +531,12 @@ class SolventLibrary(Database):
         Get a solvent's data from its name
         """
         return self.entries[label].data
+
+    def get_solvent_data_count(self, label):
+        """
+        Get a solvent's data count information from its name
+        """
+        return self.entries[label].data_count
 
     def get_solvent_structure(self, label):
         """
@@ -647,7 +696,8 @@ class SolvationDatabase(object):
         self.local_context = {
             'SoluteData': SoluteData,
             'DataCountGAV': DataCountGAV,
-            'SolventData': SolventData
+            'SolventData': SolventData,
+            'DataCountSolvent': DataCountSolvent
         }
         self.global_context = {}
 
@@ -687,6 +737,13 @@ class SolvationDatabase(object):
         except:
             raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
         return solvent_data
+
+    def get_solvent_data_count(self, solvent_name):
+        try:
+            solvent_data_count = self.libraries['solvent'].get_solvent_data_count(solvent_name)
+        except:
+            raise DatabaseError('Solvent {0!r} not found in database'.format(solvent_name))
+        return solvent_data_count
 
     def get_solvent_structure(self, solvent_name):
         try:

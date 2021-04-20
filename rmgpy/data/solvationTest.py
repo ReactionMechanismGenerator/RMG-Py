@@ -93,13 +93,17 @@ class TestSoluteDatabase(TestCase):
         # self-diffusivity of water is about 2e-9 m2/s
 
     def test_solvent_library(self):
-        """Test we can obtain solvent parameters from a library"""
+        """Test we can obtain solvent parameters and data count from a library"""
         solvent_data = self.database.get_solvent_data('water')
         self.assertIsNotNone(solvent_data)
-        self.assertEqual(solvent_data.s_h, 2.836)
+        self.assertEqual(solvent_data.s_h, -0.75922)
         self.assertRaises(DatabaseError, self.database.get_solvent_data, 'orange_juice')
         solvent_data = self.database.get_solvent_data('cyclohexane')
         self.assertEqual(solvent_data.name_in_coolprop, 'CycloHexane')
+        solvent_data_count = self.database.get_solvent_data_count('dodecan-1-ol')
+        self.assertEqual(solvent_data_count.dGsolvCount, 11)
+        dHsolvMAE = (0.05, 'kcal/mol')
+        self.assertTrue(solvent_data_count.dHsolvMAE == dHsolvMAE)
 
     def test_viscosity(self):
         """Test we can calculate the solvent viscosity given a temperature and its A-E correlation parameters"""
@@ -306,12 +310,12 @@ class TestSoluteDatabase(TestCase):
         """Test we can estimate solvation thermochemistry."""
         self.testCases = [
             # solventName, soluteName, soluteSMILES, Hsolv, Gsolv in kJ/mol
-            ['water', 'acetic acid', 'C(C)(=O)O', -58.30, -27.99],
-            ['water', 'naphthalene', 'C1=CC=CC2=CC=CC=C12', -41.57, -11.41],
-            ['1-octanol', 'octane', 'CCCCCCCC', -40.24, -19.02],
-            ['1-octanol', 'tetrahydrofuran', 'C1CCOC1', -32.24, -16.69],
-            ['benzene', 'toluene', 'C1(=CC=CC=C1)C', -40.01, -23.86],
-            ['benzene', '1,4-dioxane', 'C1COCCO1', -39.75, -21.98]
+            ['water', 'acetic acid', 'C(C)(=O)O', -48.48, -28.12],
+            ['water', 'naphthalene', 'C1=CC=CC2=CC=CC=C12', -37.15, -11.21],
+            ['1-octanol', 'octane', 'CCCCCCCC', -39.44, -16.83],
+            ['1-octanol', 'tetrahydrofuran', 'C1CCOC1', -32.27, -17.81],
+            ['benzene', 'toluene', 'C1(=CC=CC=C1)C', -39.33, -23.81],
+            ['benzene', '1,4-dioxane', 'C1COCCO1', -39.15, -22.01]
         ]
 
         for solventName, soluteName, smiles, H, G in self.testCases:
@@ -333,10 +337,10 @@ class TestSoluteDatabase(TestCase):
         solute_data = self.database.get_solute_data(species)
         solvent_data = self.database.get_solvent_data('water')
         kfactor_parameters = self.database.get_Kfactor_parameters(solute_data, solvent_data)
-        self.assertAlmostEqual(kfactor_parameters.lower_T[0], -16.303, 3) # check up to 3 decimal places
-        self.assertAlmostEqual(kfactor_parameters.lower_T[1], -0.930, 3)
-        self.assertAlmostEqual(kfactor_parameters.lower_T[2], 17.550, 3)
-        self.assertAlmostEqual(kfactor_parameters.higher_T, 1.308, 3)
+        self.assertAlmostEqual(kfactor_parameters.lower_T[0], -9.780, 3) # check up to 3 decimal places
+        self.assertAlmostEqual(kfactor_parameters.lower_T[1], 0.492, 3)
+        self.assertAlmostEqual(kfactor_parameters.lower_T[2], 10.485, 3)
+        self.assertAlmostEqual(kfactor_parameters.higher_T, 1.147, 3)
         self.assertAlmostEqual(kfactor_parameters.T_transition, 485.3, 1)
         # check that DatabaseError is raised when the solvent's name_in_coolprop is None
         solvent_data = self.database.get_solvent_data('chloroform')
@@ -351,8 +355,8 @@ class TestSoluteDatabase(TestCase):
         T = 500 # in K
         Kfactor = self.database.get_Kfactor(solute_data, solvent_data, T)
         delG = self.database.get_T_dep_solvation_energy(solute_data, solvent_data, T) / 1000 # in kJ/mol
-        self.assertAlmostEqual(Kfactor, 0.405, 3)
-        self.assertAlmostEqual(delG, -13.57, 2)
+        self.assertAlmostEqual(Kfactor, 0.403, 3)
+        self.assertAlmostEqual(delG, -13.59, 2)
         # For temperature greater than or equal to the critical temperature of the solvent,
         # it should raise InputError
         T = 1000
