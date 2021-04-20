@@ -548,9 +548,7 @@ class ArrayQuantity(Units):
     @value.setter
     def value(self, v):
         if isinstance(v, float):
-            self.value_si = (
-                np.array([v], dtype=np.float64) * self.get_conversion_factor_to_si()
-            )
+            self.value_si = np.array([v]) * self.get_conversion_factor_to_si()
         else:
             self.value_si = np.array(v) * self.get_conversion_factor_to_si()
 
@@ -859,10 +857,7 @@ SurfaceConcentration = UnitType("mol/m^2")
 Dimensionless = UnitType("")
 
 DipoleMoment = UnitType(
-    "C*m",
-    extra_dimensionality={
-        "De": 1.0 / (1.0e21 * constants.c),
-    },
+    "C*m", extra_dimensionality={"De": 1.0 / (1.0e21 * constants.c),},
 )
 
 "We have to allow 'energies' to be created in units of Kelvins, because Chemkin does so"
