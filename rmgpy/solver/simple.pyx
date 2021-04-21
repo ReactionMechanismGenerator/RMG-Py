@@ -397,11 +397,14 @@ cdef class SimpleReactor(ReactionSystem):
             pdep_specific_collider_kinetics = self.pdep_specific_collider_kinetics
             specific_collider_species = self.specific_collider_species
             for i in range(pdep_specific_collider_reaction_indices.shape[0]):
-                # Calculate effective pressure
-                Peff = P * y[self.species_index[specific_collider_species[i]]] / np.sum(y_core_species)
-                j = pdep_specific_collider_reaction_indices[i]
-                kf[j] = pdep_specific_collider_kinetics[i].get_rate_coefficient(T, Peff)
-                kr[j] = kf[j] / equilibrium_constants[j]
+                if len(y) > self.species_index[specific_collider_species[i]]:
+                    # Calculate the effective pressure
+                    Peff = P * y[self.species_index[specific_collider_species[i]]] / np.sum(y_core_species)
+                    j = pdep_specific_collider_reaction_indices[i]
+                    kf[j] = pdep_specific_collider_kinetics[i].get_rate_coefficient(T, Peff)
+                else:
+                    kf[j] = 0
+            kr[j] = kf[j] / equilibrium_constants[j]
 
         inet = self.network_indices
         knet = self.network_leak_coefficients
