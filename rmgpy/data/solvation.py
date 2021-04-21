@@ -763,6 +763,42 @@ class SolvationDatabase(object):
 
         self.load_groups(os.path.join(path, 'groups'))
 
+    def find_solvent_from_smiles(self, smiles):
+        """
+        This function uses the given SMILES string to find matching solvents from the solvent library. It uses
+        the isomorphism check, which does not take stereochemistry into account, so it's possible that more than
+        one solvent is matched from the solvent library. For example, for a SMILES "Cl/C=C/Cl", both
+        "cis-1,2-dichloroethene" and "trans-1,2-dichloroethene" will be found as matching solvents.
+        If any solvent is matched, it returns a list of a tuple containing the solvent label and solvent entry.
+        If no solvent is matched, it returns an empty list.
+        This method only works for pure solvent search, and it will not work for mixture solvents.
+
+        Parameters
+        ----------
+        smiles : str
+            A SMILES string of a compound to search for
+
+        Returns
+        -------
+        match_list: list of tuple
+            A list of tuple. The tuple is (solvent_label, solvent_entry) for the matched solvent. `solvent_label` is
+            the label of the solvent and `solvent_entry` is a :class:`Entry` object containing solvent information
+            stored in the solvent library of RMG-database.
+
+        """
+
+        solvent_spc = Species().from_smiles(smiles)
+        solvent_spc.generate_resonance_structures()
+
+        match_list = []
+        for label, value in self.libraries['solvent'].entries.items():
+            spc_list = value.item
+            # this only works for pure solvents, with value.item with length 1.
+            if len(spc_list) == 1:
+                if solvent_spc.is_isomorphic(spc_list[0]):
+                    match_list.append((label, value))
+        return match_list
+
     def get_solvent_data(self, solvent_name):
         try:
             solvent_data = self.libraries['solvent'].get_solvent_data(solvent_name)

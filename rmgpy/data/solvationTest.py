@@ -120,6 +120,24 @@ class TestSoluteDatabase(TestCase):
         solvent_data = self.database.get_solvent_data('dibutylether')
         self.assertRaises(DatabaseError, solvent_data.get_solvent_critical_temperature)
 
+    def test_find_solvent(self):
+        """ Test we can find solvents from the solvent library using SMILES"""
+        # Case 1: one solvent is matched
+        solvent_smiles = "NC=O"
+        match_list = self.database.find_solvent_from_smiles(solvent_smiles)
+        self.assertEqual(len(match_list), 1)
+        self.assertTrue(match_list[0][0] == 'formamide')
+        # Case 2: two solvents are matched
+        solvent_smiles = "ClC=CCl"
+        match_list = self.database.find_solvent_from_smiles(solvent_smiles)
+        self.assertEqual(len(match_list), 2)
+        self.assertTrue(match_list[0][0] == 'cis-1,2-dichloroethene')
+        self.assertTrue(match_list[1][0] == 'trans-1,2-dichloroethene')
+        # Case 3: no solvent is matched
+        solvent_smiles = "C(CCl)O"
+        match_list = self.database.find_solvent_from_smiles(solvent_smiles)
+        self.assertEqual(len(match_list), 0)
+
     def test_solute_groups(self):
         """Test we can correctly load the solute groups from the solvation group database"""
         solute_group = self.database.groups['group'].entries['Cds-N3dCbCb']
