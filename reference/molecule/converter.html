@@ -73,6 +73,8 @@ Also returns the message as a string, should you want it for something.</p>
 <code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.converter.</span></code><code class="sig-name descname"><span class="pre">from_ob_mol</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">obmol</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Molecule</span><a class="headerlink" href="#rmgpy.molecule.converter.from_ob_mol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a OpenBabel Mol object <cite>obmol</cite> to a molecular structure. Uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
+<p>It estimates radical placement based on undervalence of atoms,
+and assumes overall spin multiplicity is radical count + 1</p>
 </dd></dl>
 
 <dl class="py function">
