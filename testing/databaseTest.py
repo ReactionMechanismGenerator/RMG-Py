@@ -1541,6 +1541,10 @@ Origin Group AdjList:
         This test checks whether nodes are found in the tree, with proper parents.
         """
         for node_name, node_group in group.entries.items():
+            # Pass this check for special solvation polycyclic groups. These groups are used to put similar polycyclic
+            # groups or polycyclic groups with resonance structures together under one entry.
+            if node_group.short_desc == 'special solvation polycyclic group':
+                continue
             ascend_parent = node_group
             # Check whether the node has proper parents unless it is the top reactant or product node
             tst1 = []
@@ -1583,8 +1587,15 @@ Origin Group AdjList:
         entries_copy = copy(group.entries)
         tst = []
         for node_name, node_group in group.entries.items():
+            # Pass this check for special solvation polycyclic groups. These groups are used to put similar polycyclic
+            # groups or polycyclic groups with resonance structures together under one entry.
+            if node_group.short_desc == 'special solvation polycyclic group':
+                continue
             del entries_copy[node_name]
             for node_name_other, node_group_other in entries_copy.items():
+                # Pass this check for special solvation polycyclic groups.
+                if node_group_other.short_desc == 'special solvation polycyclic group':
+                    continue
                 group.match_node_to_node(node_group, node_group_other)
                 tst.append((group.match_node_to_node(node_group, node_group_other),
                             "Node {node} in {group} group was found to be identical to node {node_other}".format(
@@ -1608,6 +1619,10 @@ Origin Group AdjList:
         for node_name, child_node in group.entries.items():
             # top nodes and product nodes don't have parents by definition, so they get an automatic pass:
             if child_node in group.top:
+                continue
+            # Pass this check for special solvation polycyclic groups. These groups are used to put similar polycyclic
+            # groups or polycyclic groups with resonance structures together under one entry.
+            if child_node.short_desc == 'special solvation polycyclic group':
                 continue
             parent_node = child_node.parent
             # Check whether the node has proper parents unless it is the top reactant or product node
@@ -1735,7 +1750,16 @@ The following adjList may have atoms in a different ordering than the input file
         tst1 = []
         tst2 = []
         tst3 = []
+
+        # Solvation groups have special groups that RMG cannot generate proper sample_molecules. Skip them.
+        skip_entry_list = ['Cds-CdsCS6dd', 'Cs-CS4dHH']
+        skip_short_desc_list = ['special solvation group with ring', 'special solvation polycyclic group']
+
         for entryName, entry in group.entries.items():
+            # Pass special cases
+            if entry.short_desc in skip_short_desc_list or entryName in skip_entry_list:
+                skipped.append(entryName)
+                continue
             try:
                 if isinstance(entry.item, Group):
                     try:
