@@ -74,7 +74,16 @@ which is the amount of active catalytic sites per unit surface area.
 It varies depending on the catalyst in question, but is held constant across simulations.
 This block should also contain the reference adatom binding energies
 (see linear scaling section below).</p>
+<p>One can also specify a specific metal of interest, and RMG will load corresponding binding energies from the
+metal database by using <code class="docutils literal notranslate"><span class="pre">metal</span></code>.
+The full database of available metals can be found in <code class="docutils literal notranslate"><span class="pre">input/surface/libraries/metal.py</span></code>.</p>
 <p>Here is an example catalyst properties block for Pt(111):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">catalystProperties</span><span class="p">(</span>
+    <span class="n">metal</span> <span class="o">=</span> <span class="n">Pt111</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is an example custom catalyst properties block for Pt(111):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">catalystProperties</span><span class="p">(</span>
     <span class="n">bindingEnergies</span> <span class="o">=</span> <span class="p">{</span>
                         <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.754</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
@@ -581,13 +590,7 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <span class="p">)</span>
 
 <span class="n">catalystProperties</span><span class="p">(</span>
-    <span class="n">bindingEnergies</span> <span class="o">=</span> <span class="p">{</span>  <span class="c1"># default values for Pt(111)    </span>
-                          <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.754</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                          <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.811</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                          <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">7.025</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                          <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">4.632</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                      <span class="p">},</span>
-    <span class="n">surfaceSiteDensity</span><span class="o">=</span><span class="p">(</span><span class="mf">2.483e-9</span><span class="p">,</span> <span class="s1">&#39;mol/cm^2&#39;</span><span class="p">),</span> <span class="c1"># Default for Pt(111)</span>
+    <span class="n">metal</span> <span class="o">=</span> <span class="s1">&#39;Pt111&#39;</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
