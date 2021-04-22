@@ -42,11 +42,18 @@ class TestMLEstimator(unittest.TestCase):
         Set up the MLEstimator class. This method is run once before all
         other unit tests.
         """
+        # ensemble attn_mpn (best for 2D SMILES -> prop)
         self.ml_estimator = MLEstimator("attn_mpn")
+        # single attn_mpn
         self.ml_estimator_single_model = MLEstimator(
             "attn_mpn", inference_type="single_model"
         )
+        # ensemble mpnn with sum pooling
         self.ml_estimator_mpnn = MLEstimator("mpnn")
+        # dimenetpp with xTB1 geometry optimization
+        self.ml_estimator_dimenetpp = MLEstimator(
+            "dimenetpp", inference_type="single_model"
+        )
 
     def test_get_thermo_data_from_smiles_ensemble(self):
         """
@@ -115,6 +122,28 @@ class TestMLEstimator(unittest.TestCase):
             thermo.comment.startswith("ML Estimation using featurizer from_rdkit")
         )
         self.assertEqual(len(thermo.Cpdata.value_si), 9)
+
+    def test_get_thermo_data_with_dimenetpp_from_smiles_single(self):
+        """
+        Test that we can make a prediction using MLEstimator using gnns_thermo dimenetpp single model and smiles as input.
+        """
+        smi = "C1C2C1C2"
+        thermo = self.ml_estimator_dimenetpp.get_thermo_data(smi, mode="from_smiles")
+        self.assertTrue(
+            thermo.comment.startswith("ML Estimation using featurizer from_smiles")
+        )
+        # regression tests with qm9 all systematic datasets (april 20)
+        self.assertAlmostEqual(
+            thermo.Cp0.value_si, 33.74019241333008, 1, msg="Cp0 regression error"
+        )
+        # self.assertAlmostEqual(
+        # thermo.CpInf.value_si, 232.6637420654297, 1, msg="CpInf regression error"
+        # )
+        self.assertEqual(len(thermo.Cpdata.value_si), 9)
+        # check we get some uncertainty values
+        # self.assertGreater(
+        # abs(thermo.H298.uncertainty), 0.0, msg="No uncertainty values"
+        # )
 
     def test_convert_thermo_data(self):
         """
