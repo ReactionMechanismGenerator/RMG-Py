@@ -1642,10 +1642,9 @@ class ThermoDatabase(object):
                 # estimate using gnns_thermo
                 # trained on rings,radicals and stable species
                 # `self.get_thermo_data_from_ml`.
-                if ml_estimator is not None and all(
-                    a.element.number in {1, 6, 7, 8, 9, 17, 35}
-                    for a in species.molecule[0].atoms
-                ):
+                if (ml_estimator is not None
+                    and all(a.element.number in {1, 6, 7, 8, 9, 17, 35} for a in species.molecule[0].atoms)
+                    and species.molecule[0].get_singlet_carbene_count() == 0):
                     try:
                         thermo0 = self.get_thermo_data_from_ml(
                             species, ml_estimator, ml_settings
