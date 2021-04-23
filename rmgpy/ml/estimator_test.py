@@ -51,9 +51,7 @@ class TestMLEstimator(unittest.TestCase):
         # ensemble mpnn with sum pooling
         self.ml_estimator_mpnn = MLEstimator("mpnn")
         # dimenetpp with xTB1 geometry optimization
-        self.ml_estimator_dimenetpp = MLEstimator(
-            "dimenetpp", inference_type="single_model"
-        )
+        self.ml_estimator_dimenetpp = MLEstimator("dimenetpp")
 
     def test_get_thermo_data_from_smiles_ensemble(self):
         """
@@ -132,9 +130,8 @@ class TestMLEstimator(unittest.TestCase):
         self.assertTrue(
             thermo.comment.startswith("ML Estimation using featurizer from_smiles")
         )
-        # regression tests with qm9 all systematic datasets (april 20)
         self.assertAlmostEqual(
-            thermo.Cp0.value_si, 33.74019241333008, 1, msg="Cp0 regression error"
+            thermo.Cp0.value_si, 33.989723205566406, 1, msg="Cp0 regression error"
         )
         # self.assertAlmostEqual(
         # thermo.CpInf.value_si, 232.6637420654297, 1, msg="CpInf regression error"

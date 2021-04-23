@@ -57,7 +57,6 @@ class MLEstimator:
         from gnns_thermo.inference import (
             GNNCalculator,
             EnsembleGNNCalculator,
-            DimeNetCalculator,
             EnsembleDimeNetPPCalculator,
         )
         from gnns_thermo.testing import get_chkpt
@@ -86,7 +85,9 @@ class MLEstimator:
             if model_type in ["attn_mpn", "mpnn", "dmpnn"]:
                 calculator_type = GNNCalculator
             elif model_type == "dimenetpp":
-                calculator_type = DimeNetCalculator
+                raise NotImplementedError(
+                    f"Single model inference is not implemented for dimenetpp"
+                )
             else:
                 raise NotImplementedError(
                     f"Given model type {model_type} is not implemented"
