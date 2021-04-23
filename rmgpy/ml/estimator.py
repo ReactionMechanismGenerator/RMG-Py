@@ -54,7 +54,11 @@ class MLEstimator:
     def __init__(self, model_type: str = "attn_mpn", inference_type: str = "ensemble"):
         # once gnns thermo is updated in upstream this will change
         # lazy import here
-        from gnns_thermo.inference import GNNCalculator, EnsembleGNNCalculator
+        from gnns_thermo.inference import (
+            GNNCalculator,
+            EnsembleGNNCalculator,
+            EnsembleDimeNetPPCalculator,
+        )
         from gnns_thermo.testing import get_chkpt
         from gnns_thermo.config import ModelInferenceEnum
 
@@ -67,14 +71,33 @@ class MLEstimator:
             model_type, "s298", inference_type=inference_type
         )
         cp_chkpt, cp_config = get_chkpt(model_type, "cp", inference_type=inference_type)
+        # can be offloaded to a method when everything is in upstream
         if inference_type == ModelInferenceEnum.ensemble:
-            calculator_type = EnsembleGNNCalculator
+            if model_type in ["attn_mpn", "mpnn", "dmpnn"]:
+                calculator_type = EnsembleGNNCalculator
+            elif model_type == "dimenetpp":
+                calculator_type = EnsembleDimeNetPPCalculator
+            else:
+                raise NotImplementedError(
+                    f"Given model type {model_type} is not implemented"
+                )
         elif inference_type == ModelInferenceEnum.single_model:
-            calculator_type = GNNCalculator
-
+            if model_type in ["attn_mpn", "mpnn", "dmpnn"]:
+                calculator_type = GNNCalculator
+            elif model_type == "dimenetpp":
+                raise NotImplementedError(
+                    f"Single model inference is not implemented for dimenetpp"
+                )
+            else:
+                raise NotImplementedError(
+                    f"Given model type {model_type} is not implemented"
+                )
         else:
-            raise NotImplementedError(f"Given inference type is not supported")
+            raise NotImplementedError(
+                f"Given inference type {inference_type} is not supported"
+            )
         # make calculator objects here
+        # ensemble calculators will raise an error here if a sinlge checkpoint is given
         self.hf298_estimator = calculator_type(
             model_type, "cpu", h298_chkpt, h298_config
         )
@@ -153,12 +176,16 @@ class MLEstimator:
 
         if len(species.molecule) == 1:
             return self.get_thermo_data(species.molecule[0])
-        else: # This species has resonance structures
+        else:  # This species has resonance structures
             thermo = []
             for molecule in species.molecule:
                 tdata = self.get_thermo_data(molecule)
                 thermo.append((tdata.get_enthalpy(298.0), molecule, tdata))
-            thermo = sorted(thermo, key=lambda x: x[0]) # sort by ascending H298
-            species.molecule = [item[1] for item in thermo] # reorder molecules by ascending H298
-            return thermo[0][2] # return the thermodata of lowest energy resonance structure
+            thermo = sorted(thermo, key=lambda x: x[0])  # sort by ascending H298
+            species.molecule = [
+                item[1] for item in thermo
+            ]  # reorder molecules by ascending H298
+            return thermo[0][
+                2
+            ]  # return the thermodata of lowest energy resonance structure
 

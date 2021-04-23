@@ -45,12 +45,17 @@ dependencies:
   - rmg::symmetry
   - xlrd
   - xlwt
+  #dimenetpp featurization 
+  - ase # to run geometry optimization
+  - xtb-python #to get forces and energies from xTB
   #ml
-  #oldest version of torch compatible with dgl and doesn't result in segfaults or numpy errors
+  #oldest version of torch compatible with dgl 
+  #and doesn't result in segfaults or numpy errors
   - pytorch::pytorch=1.5
   - pytorch::cpuonly
   #better kernels
   - dglteam::dgl=0.6
+  #for dimenetpp
   - sympy
   # utilities
   - typer
@@ -63,4 +68,5 @@ dependencies:
   - cmake
   - gcc_linux-64=7.3
   - pip:
+    #lots of cheminformatics utilities 
       - dgllife==0.2.6
