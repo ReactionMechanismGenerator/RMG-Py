@@ -73,7 +73,7 @@ cpdef generate_full_me_matrix(network, bint products=True):
     beta = 1. / (constants.R * temperature)
     
     # Construct accounting matrix
-    indices = -np.ones((n_isom,n_grains,n_j), np.int)
+    indices = -np.ones((n_isom, n_grains, n_j), np.int)
     n_rows = 0
     for r in range(n_grains):
         for s in range(n_j):
@@ -86,7 +86,7 @@ cpdef generate_full_me_matrix(network, bint products=True):
         n_rows += n_prod
     
     # Construct full ME matrix
-    me_mat = np.zeros([n_rows,n_rows], np.float64)
+    me_mat = np.zeros([n_rows, n_rows], np.float64)
     
     # Collision terms
     for i in range(n_isom):
@@ -95,18 +95,18 @@ cpdef generate_full_me_matrix(network, bint products=True):
                 if indices[i, r, s] > -1:
                     for u in range(r, n_grains):
                         for v in range(s, n_j):
-                            me_mat[indices[i, r, s], indices[i,u,v]] = m_coll[i, r, s, u, v]
-                            me_mat[indices[i, u, v], indices[i,r,s]] = m_coll[i, u, v, r, s]
+                            me_mat[indices[i, r, s], indices[i, u, v]] = m_coll[i, r, s, u, v]
+                            me_mat[indices[i, u, v], indices[i, r, s]] = m_coll[i, u, v, r, s]
     
     # Isomerization terms
     for i in range(n_isom):
         for j in range(i):
-            if k_ij[i, j, n_grains - 1,0] > 0 or k_ij[j, i, n_grains - 1,0] > 0:
+            if k_ij[i, j, n_grains - 1, 0] > 0 or k_ij[j, i, n_grains - 1, 0] > 0:
                 for r in range(n_grains):
                     for s in range(n_j):
                         u, v = indices[i, r, s], indices[j, r, s]
                         if u > -1 and v > -1:
-                            me_mat[u, v] = k_ij[j, i, r, s]
+                            me_mat[v, u] = k_ij[j, i, r, s]
                             me_mat[u, u] -= k_ij[j, i, r, s]
                             me_mat[u, v] = k_ij[i, j, r, s]
                             me_mat[v, v] -= k_ij[i, j, r, s]
@@ -114,7 +114,7 @@ cpdef generate_full_me_matrix(network, bint products=True):
     # Association/dissociation terms
     for i in range(n_isom):
         for n in range(n_reac + n_prod):
-            if g_nj[n, i, n_grains - 1,0] > 0:
+            if g_nj[n, i, n_grains - 1, 0] > 0:
                 for r in range(n_grains):
                     for s in range(n_j):
                         u = indices[i, r, s]
@@ -122,7 +122,7 @@ cpdef generate_full_me_matrix(network, bint products=True):
                         if u > -1:
                             me_mat[u, u] -= g_nj[n, i, r, s]
                             if n < n_reac or products:
-                                me_mat[u, v] = g_nj[n, i, r, s]
+                                me_mat[v, u] = g_nj[n, i, r, s]
                             if n < n_reac:
                                 val = f_im[i, n, r, s] * dens_states[n + n_isom, r, s] \
                                       * (2 * j_list[s] + 1) * exp(-e_list[r] * beta)

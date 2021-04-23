@@ -1338,7 +1338,17 @@ class InChIParsingTest(unittest.TestCase):
         u_indices = [4, 5]
         self.compare(inchi, u_indices)
 
+    @work_in_progress
     def test_c6h6o4(self):
+        """
+        This test used to pass with OpenBabel < 3.0, but I think the inchi is invalid?
+        or at least not standard.
+        OpenBabel reports:
+            Problems/mismatches: Mobile-H( Hydrogens: Locations or number, Number; Charge(s): Do not match)
+        and cactus.nci.nih.gov converts it to InChI=1S/C6H7O4/c1-2-4-9-6(7)3-5-10-8/h2-3,8H,1,5H2/q+1
+        which at least doesn't make OpenBabel complain. However, both have a net charge
+        and cause RMG to crash. I'm not sure what the molecule was ever supposed to represent.
+        """
         inchi = 'InChI=1S/C6H6O4/c1-2-4-9-6(7)3-5-10-8/h2-3H,1,5H2'
         u_indices = [1, 3, 4, 8]
         self.compare(inchi, u_indices)

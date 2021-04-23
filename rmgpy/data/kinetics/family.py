@@ -299,6 +299,30 @@ class ReactionRecipe(object):
                 # Apply the action
                 if action[0] == 'CHANGE_BOND':
                     info = int(info)
+                    # Check first to see if we have a bond
+                    if not struct.has_bond(atom1, atom2):
+                        if info < 1:
+                            raise InvalidActionError('Attempted to change a nonexistent bond.')
+                        # If we do not have a bond, it might be because we are trying to change a vdW bond
+                        # Lets see if one of that atoms is a surface site, 
+                        # If we have a surface site, we will make a single bond, then change it by info - 1
+                        is_vdW_bond = False
+                        for atom in (atom1, atom2):
+                            if atom.is_surface_site():
+                                is_vdW_bond = True
+                                break
+                        if not is_vdW_bond: # no surface site, so no vdW bond
+                            raise InvalidActionError('Attempted to change a nonexistent bond.')
+                        else: # we found a surface site, so we will make a single bond
+                            bond = GroupBond(atom1, atom2, order=[1]) if pattern else Bond(atom1, atom2, order=1)
+                            struct.add_bond(bond)
+                            atom1.apply_action(['FORM_BOND', label1, 1, label2])
+                            atom2.apply_action(['FORM_BOND', label1, 1, label2])
+                            # Now subtract 1 from info
+                            info -= 1
+                            # If info is 0, then we can continue since we don't have to change the bond
+                            if info == 0:
+                                continue
                     bond = struct.get_bond(atom1, atom2)
                     if bond.is_benzene():
                         struct.props['validAromatic'] = False
@@ -306,10 +330,22 @@ class ReactionRecipe(object):
                         atom1.apply_action(['CHANGE_BOND', label1, info, label2])
                         atom2.apply_action(['CHANGE_BOND', label1, info, label2])
                         bond.apply_action(['CHANGE_BOND', label1, info, label2])
+                        if pattern:
+                            if bond.is_van_der_waals():
+                                if atom1.is_surface_site():
+                                    atom1.atomtype = [ATOMTYPES['Xv']]
+                                else:
+                                    atom2.atomtype = [ATOMTYPES['Xv']]
                     else:
                         atom1.apply_action(['CHANGE_BOND', label1, -info, label2])
                         atom2.apply_action(['CHANGE_BOND', label1, -info, label2])
                         bond.apply_action(['CHANGE_BOND', label1, -info, label2])
+                        if pattern:
+                            if bond.is_van_der_waals():
+                                if atom1.is_surface_site():
+                                    atom1.atomtype = [ATOMTYPES['Xv']]
+                                else:
+                                    atom2.atomtype = [ATOMTYPES['Xv']]
                 elif (action[0] == 'FORM_BOND' and forward) or (action[0] == 'BREAK_BOND' and not forward):
                     if struct.has_bond(atom1, atom2):
                         raise InvalidActionError('Attempted to create an existing bond.')
@@ -321,6 +357,13 @@ class ReactionRecipe(object):
                     atom2.apply_action(['FORM_BOND', label1, info, label2])
                 elif (action[0] == 'BREAK_BOND' and forward) or (action[0] == 'FORM_BOND' and not forward):
                     if not struct.has_bond(atom1, atom2):
+                        if info == 0:
+                            if atom1.is_surface_site() or atom2.is_surface_site():
+                                # We are trying to break a vdW bond, but the atoms are not connected in
+                                # the graph. The bond will break when we split the merged products
+                                # in the `apply_recipe()` functions. Thus, there is nothing to do here,
+                                # so we continue to the next action.
+                                continue
                         raise InvalidActionError('Attempted to remove a nonexistent bond.')
                     bond = struct.get_bond(atom1, atom2)
                     struct.remove_bond(bond)
@@ -1946,6 +1989,10 @@ class KineticsFamily(Database):
             return []
 
         if len(reactants) > len(template.reactants):
+            # If the template contains a surface site, we do not want to split it because it will break vdw bonds
+            if isinstance(template.reactants[0].item, Group):
+                if template.reactants[0].item.contains_surface_site():
+                    return []
             # if the family has one template and is bimolecular split template into multiple reactants
             try:
                 grps = template.reactants[0].item.split()
@@ -2235,16 +2282,20 @@ class KineticsFamily(Database):
             # Desorption should have desorbed something (else it was probably bidentate)
             # so delete reactions that don't make a gas-phase desorbed product
             # Eley-Rideal reactions should have one gas-phase product in the reverse direction 
+
+            # Determine how many surf reactants we expect based on the template
+            n_surf_expected = len([r for r in self.forward_template.reactants if r.item.contains_surface_site()])
+
+            # Now iterate through the reactions and toss them out if the number of surface reactants
+            # does not match the expected number
             pruned_list = []
             for reaction in rxn_list:
-                for reactant in reaction.reactants:
-                    if not reactant.contains_surface_site():
-                        # found a desorbed species, we're ok
-                        pruned_list.append(reaction)
-                        break
-                else:  # didn't break, so all species still adsorbed
+                n_surf_reaction = len([r for r in reaction.reactants if r.contains_surface_site()])
+                if n_surf_expected != n_surf_reaction:
                     logging.debug("Removing {0} reaction {1!s} with no desorbed species".format(self.label, reaction))
-                    continue  # to next reaction immediately
+                    continue
+                else:
+                    pruned_list.append(reaction)
             rxn_list = pruned_list
 
         # If products is given, remove reactions from the reaction list that

@@ -859,6 +859,14 @@ class ThermoDatabase(object):
         }
         self.global_context = {}
 
+        # Use Pt111 binding energies as default
+        self.binding_energies = {
+            'H': rmgpy.quantity.Energy(-2.75368,'eV/molecule'),
+            'C': rmgpy.quantity.Energy(-7.02516,'eV/molecule'),
+            'N': rmgpy.quantity.Energy(-4.63225,'eV/molecule'),
+            'O': rmgpy.quantity.Energy(-3.81153,'eV/molecule'),
+        }
+
     def __reduce__(self):
         """
         A helper function used when pickling a ThermoDatabase object.
@@ -1423,6 +1431,8 @@ class ThermoDatabase(object):
         """
         
         if isinstance(binding_energies, str):
+            if not self.surface:
+                self.load_surface()
             binding_energies = self.surface['metal'].find_binding_energies(binding_energies)
 
         for element, energy in binding_energies.items():
@@ -1566,6 +1576,7 @@ class ThermoDatabase(object):
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
             dummy_molecule.remove_atom(site)
 
+        dummy_molecules = [dummy_molecule.copy(deep=True)]
         if len(adsorbed_atoms) == 2:
             # Bidentate adsorption.
             # Try to turn adjacent biradical into a bond.
@@ -1578,6 +1589,7 @@ class ThermoDatabase(object):
                     bond.increment_order()
                     adsorbed_atoms[0].decrement_radical()
                     adsorbed_atoms[1].decrement_radical()
+                    dummy_molecules.append(dummy_molecule.copy(deep=True))
                     if (adsorbed_atoms[0].radical_electrons and
                             adsorbed_atoms[1].radical_electrons and
                             bond.order < 3):
@@ -1585,6 +1597,7 @@ class ThermoDatabase(object):
                         bond.increment_order()
                         adsorbed_atoms[0].decrement_radical()
                         adsorbed_atoms[1].decrement_radical()
+                        dummy_molecules.append(dummy_molecule.copy(deep=True))
                     if (adsorbed_atoms[0].lone_pairs and
                             adsorbed_atoms[1].lone_pairs and 
                             bond.order < 3):
@@ -1595,6 +1608,7 @@ class ThermoDatabase(object):
                         adsorbed_atoms[0].increment_radical()
                         adsorbed_atoms[1].decrement_lone_pairs()
                         adsorbed_atoms[1].increment_radical()
+                        dummy_molecules.append(dummy_molecule.copy(deep=True))
                 #For bidentate CO because we want C[-1]#O[+1] but not .C#O.
                 if (bond.order == 3 and adsorbed_atoms[0].radical_electrons and 
                     adsorbed_atoms[1].radical_electrons and 
@@ -1605,18 +1619,49 @@ class ThermoDatabase(object):
                         adsorbed_atoms[1].increment_lone_pairs()
                     else:
                         adsorbed_atoms[0].increment_lone_pairs()
+                    dummy_molecules.append(dummy_molecule.copy(deep=True))
 
-        dummy_molecule.update_connectivity_values()
-        dummy_molecule.update()
+        for dummy_molecule in dummy_molecules[:]:
+            try:
+                dummy_molecule.update_connectivity_values()
+                dummy_molecule.update()
+            except:
+                dummy_molecules.remove(dummy_molecule)
+                logging.debug(f"Removing {dummy_molecule} from possible structure list:\n{dummy_molecule.to_adjacency_list()}")
+            else:
+                logging.debug("After removing from surface:\n" + dummy_molecule.to_adjacency_list())
 
-        logging.debug("After removing from surface:\n" + dummy_molecule.to_adjacency_list())
+        if len(dummy_molecules) == 0:
+            raise RuntimeError(f"Cannot get thermo for gas-phase molecule. No valid dummy molecules from original molecule:\n{molecule.to_adjacency_list()}")
 
-        dummy_species = Species()
-        dummy_species.molecule.append(dummy_molecule)
-        dummy_species.generate_resonance_structures()
-        thermo = self.get_thermo_data(dummy_species)
+        
+        # if len(molecule) > 1, it will assume all resonance structures have already been generated when it tries to generate them, so evaluate each configuration separately and pick the lowest energy one by H298 value
+        gas_phase_species_from_libraries = []
+        gas_phase_species_estimates = []
+        for dummy_molecule in dummy_molecules:
+            dummy_species = Species()
+            dummy_species.molecule = [dummy_molecule]
+            dummy_species.generate_resonance_structures()
+            dummy_species.thermo = self.get_thermo_data(dummy_species)
+            if dummy_species.thermo.label:
+                gas_phase_species_from_libraries.append(dummy_species)
+            else:
+                gas_phase_species_estimates.append(dummy_species)
 
-        thermo.comment = "Gas phase thermo from {0}. Adsorption correction:".format(thermo.comment)
+        # define the comparison function to find the lowest energy
+        def lowest_energy(species):
+            if hasattr(species.thermo, 'H298'):
+                return species.thermo.H298.value_si
+            else:
+                return species.thermo.get_enthalpy(298.0)
+
+        if gas_phase_species_from_libraries:
+            species = min(gas_phase_species_from_libraries, key=lowest_energy)
+        else:
+            species = min(gas_phase_species_estimates, key=lowest_energy)
+
+        thermo = species.thermo
+        thermo.comment = f"Gas phase thermo for {thermo.label or species.molecule[0].to_smiles()} from {thermo.comment}. Adsorption correction:"
         logging.debug("Using thermo from gas phase for species {}\n".format(species.label) + repr(thermo))
 
         if not isinstance(thermo, ThermoData):
@@ -1643,7 +1688,7 @@ class ThermoDatabase(object):
         add_thermo_data(thermo, adsorption_thermo, group_additivity=True)
 
         if thermo.label:
-            thermo.label += 'X'
+            thermo.label += 'X' * len(adsorbed_atoms)
 
         find_cp0_and_cpinf(species, thermo)
         return thermo

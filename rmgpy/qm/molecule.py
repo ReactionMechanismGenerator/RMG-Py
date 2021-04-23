@@ -331,8 +331,12 @@ class QMMolecule(object):
         """
         parser = self.get_parser(self.output_file_path)
         parser.logger.setLevel(logging.ERROR)  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        parser.rotcons = [] # give it an attribute and it won't delete it, leaving it on the parser object
+        parser.molmass = None # give it an attribute and it won't delete it, leaving it on the parser object
         cclib_data = parser.parse()
         radical_number = self.molecule.get_radical_count()
+        cclib_data.rotcons = parser.rotcons # this hack required because rotcons not part of a default cclib data object
+        cclib_data.molmass = parser.molmass # this hack required because rotcons not part of a default cclib data object
         qm_data = parse_cclib_data(cclib_data, radical_number + 1)  # Should `radical_number+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
         return qm_data
 
@@ -463,7 +467,12 @@ class QMMolecule(object):
         assert self.qm_data, "Need QM Data first in order to calculate thermo."
         assert self.point_group, "Need Point Group first in order to calculate thermo."
 
-        trans = rmgpy.statmech.IdealGasTranslation(mass=self.qm_data.molecularMass)
+        mass = getattr(self.qm_data, 'molecularMass', None)
+        if mass is None:
+            # If using a cclib that doesn't read molecular mass, for example
+            mass = sum(rmgpy.molecule.element.get_element(int(a)).mass for a in self.qm_data.atomicNumbers)
+            mass = rmgpy.quantity.Mass(mass, 'kg/mol')
+        trans = rmgpy.statmech.IdealGasTranslation(mass=mass)
         if self.point_group.linear:
             # there should only be one rotational constant for a linear rotor
             rotational_constant = rmgpy.quantity.Frequency(max(self.qm_data.rotationalConstants.value),

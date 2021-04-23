@@ -1,0 +1,61 @@
+name: CI Tests
+
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened, ready_for_review, review_requested]
+jobs:
+  build-and-test-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+    env: # update this if needed to match a pull request on the RMG-database
+      RMG_DATABASE_BRANCH: master
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: environment.yml
+          python-version: 3.7
+          activate-environment: rmg_env
+      - name: Install codecov
+        run: conda install -y -c conda-forge codecov
+      - name: Conda info
+        run: |
+          conda info
+          conda list
+      - name: Install MOPAC
+        env:
+          MOPACKEY: ${{ secrets.MOPACKEY }}
+        timeout-minutes: 1
+        continue-on-error: true # allowed to fail on pull request from a forked repository
+        run: |
+          set +o pipefail
+          yes 'Yes' | ${CONDA_PREFIX}/bin/mopac "$MOPACKEY"
+      - name: Install and compile RMG
+        run: |
+          cd ..
+          git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
+          cd RMG-Py
+          git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
+          make
+      - name: Trigger RMG-tests
+        if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/stable' }} # only push events to branches other than master and stable
+        env:
+          GH_TOKEN: ${{ secrets.RMG_DEV_TOKEN }}
+        run: ./trigger-rmg-tests.sh
+      - name: Unit tests
+        run: make test-unittests
+      - name: Functional tests
+        if: ${{ success() || failure() }} # Run even if the unit tests failed (but not if they were cancelled)
+        run: make test-functional
+      - name: Database tests
+        if: ${{ success() || failure() }} # Run even if the functional tests failed (but not if they were cancelled)
+        run: make test-database
+      - name: Code coverage
+        run: codecov

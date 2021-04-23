@@ -9,9 +9,6 @@ env:
     - secure: "jIyBEzR10l5SWvY5ouEYzA8YzPHIZNMXMBdcXwuwte8NCU8GBYUqhHA1L67nTaBdLhWbrZ2NireVKPQWJp3ctcI0IB6xZzaYlVpgN/udGPO+1MZd9Xhp9TWuJWrGZ9EoWGB9L5H+O7RYwcDMVH5CUrCIBdsSJuyE8aDpky1/IVE="
 
 stages:
-  - test
-  - name: documentation
-    if: branch = master AND type = push
   - name: deploy
     if: branch = stable AND type = push
 
@@ -34,45 +31,6 @@ before_install:
 
 jobs:
   include:
-    - stage: test
-      install:
-        # Clone RMG-database
-        - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
-        - cd RMG-Py
-        # Create and activate environment
-        - conda env create -q -f environment.yml
-        - source activate rmg_env
-        # Install codecov for coverage report
-        - conda install -y -c conda-forge codecov
-        - conda list
-        # Setup MOPAC license key
-        - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
-        # Install Q2DTor
-        - git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
-        # Compile RMG
-        - make
-      script:
-        - make test-unittests
-        - make test-functional
-        - make test-database
-      after_success:
-        - codecov
-        - bash ./deploy.sh
-    - stage: documentation
-      install:
-        - cd RMG-Py
-        - conda env create -q -f environment.yml
-        - source activate rmg_env
-        # Install sphinx for building documentation
-        - conda install -y sphinx
-        - conda list
-        # Modify setup.py
-        - sed -i '/embedsignature/s/# //g' setup.py
-        - make
-        - cd documentation
-        - export COMMITMESSAGE="Automatic documentation rebuild"
-      script:
-        - make travis_setup clean html publish
     - stage: deploy
       install:
         # Setup conda build

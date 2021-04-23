@@ -109,7 +109,7 @@ cdef class Chebyshev(PDepKineticsModel):
         def __set__(self, value):
             self._coeffs = quantity.Dimensionless(value)
 
-    cdef double chebyshev(self, int n, double x):
+    cpdef double chebyshev(self, int n, double x):
         """
         Return the value of the nth-order Chebyshev polynomial at the given
         value of `x`.
@@ -129,7 +129,7 @@ cdef class Chebyshev(PDepKineticsModel):
                 T1 = T
             return T
 
-    cdef double get_reduced_temperature(self, double T) except -1000:
+    cpdef double get_reduced_temperature(self, double T) except -1000:
         """
         Return the reduced temperature corresponding to the given temperature
         `T` in K. This maps the inverse of the temperature onto the domain 
@@ -140,7 +140,7 @@ cdef class Chebyshev(PDepKineticsModel):
         Tmax = self._Tmax.value_si
         return (2.0 / T - 1.0 / Tmin - 1.0 / Tmax) / (1.0 / Tmax - 1.0 / Tmin)
 
-    cdef double get_reduced_pressure(self, double P) except -1000:
+    cpdef double get_reduced_pressure(self, double P) except -1000:
         """
         Return the reduced pressure corresponding to the given pressure
         `P` in Pa. This maps the logarithm of the pressure onto the domain 
