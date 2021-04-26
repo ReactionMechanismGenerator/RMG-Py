@@ -16,7 +16,7 @@ requirements:
     - cython >=0.25.2
     - lpsolve55
     - numpy
-    - openbabel
+    - openbabel >=3
     - pydas >=1.0.2
     - pydqed >=1.0.1
     - pyrdl
@@ -29,7 +29,7 @@ requirements:
     - cairo
     - cairocffi
     - cantera >=2.3.0
-    - cclib
+    - cclib >=1.6.3
     - chemprop
     - coolprop
     - coverage
@@ -50,7 +50,7 @@ requirements:
     - nose
     - numdifftools
     - {{ pin_compatible('numpy') }}
-    - openbabel
+    - openbabel >=3
     - pandas
     - psutil
     - pydas >=1.0.2
@@ -64,7 +64,7 @@ requirements:
     - pyzmq
     - quantities
     - rdkit >=2018
-    - rmgdatabase >=3.0.0
+    - rmgdatabase >=3.1.0
     - scikit-learn
     - scipy
     - symmetry
