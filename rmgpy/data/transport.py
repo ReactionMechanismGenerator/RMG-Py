@@ -445,6 +445,12 @@ class TransportDatabase(object):
         
         Radicals are saturated with H atoms and the parent molecule properties
         are returned.
+
+        For halogenated hydrocarbons, a boiling point `Tb` correction is applied from the following source:
+        Sukumar Devotta and V. Rao Pendyala, 
+        "Modified Joback group contribution method for normal boiling point of aliphatic halogenated compounds"
+        Industrial & Engineering Chemistry Research 1992 31 (8), 2042-2046
+        DOI: 10.1021/ie00008a029
         """
         # For transport estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
