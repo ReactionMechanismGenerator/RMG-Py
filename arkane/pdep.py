@@ -38,6 +38,7 @@ import math
 import os.path
 
 import numpy as np
+import yaml
 
 import rmgpy.quantity as quantity
 from rmgpy.chemkin import write_kinetics_entry
@@ -453,6 +454,8 @@ class PressureDependenceJob(object):
         logging.info('Saving pressure dependence results for network {0}...'.format(self.network.label))
         f = open(output_file, 'a')
         f_chemkin = open(os.path.join(os.path.dirname(output_file), 'chem.inp'), 'a')
+        yml_path = os.path.join(os.path.dirname(output_file), 'pdep_k.yml')
+        yml_content = dict()
 
         n_reac = self.network.n_isom + self.network.n_reac
         n_prod = n_reac + self.network.n_prod
@@ -485,6 +488,13 @@ class PressureDependenceJob(object):
                 if reac == prod:
                     continue
                 reaction = self.network.net_reactions[count]
+                print([reactant.label for reactant in reaction.reactants])
+                print([product.label for product in reaction.products])
+                reaction_label = '<=>'.join(['+'.join([reactant.label for reactant in reaction.reactants]),
+                                            '+'.join([product.label for product in reaction.products])])
+                print(f'label: {reaction_label}')
+                yml_content[reaction_label] = dict()
+
                 count += 1
                 # make sure we aren't double counting any reactions
                 if not any([reaction.is_isomorphic(other_rxn, check_only_label=True)
@@ -522,6 +532,12 @@ class PressureDependenceJob(object):
                         f.write(' {0:11.3e}'.format(kdata[t, p]))
                     f.write('\n')
 
+                for pi, p in enumerate(Plist):
+                    b_bar = round(float(p * 1e-5), 3)
+                    yml_content[reaction_label][b_bar] = dict()
+                    for ti, t in enumerate(Tlist):
+                        yml_content[reaction_label][b_bar][float(t)] = float(kdata[ti, pi])
+
                 f.write('#   =========== ')
                 f.write('=========== ' * Pcount)
                 f.write('\n')
@@ -539,6 +555,11 @@ class PressureDependenceJob(object):
 
         f.close()
         f_chemkin.close()
+        print(Plist)
+        print(Tlist)
+        print(kdata[0][0])
+        print(f'saving yml file {yml_path}')
+        save_yaml_file(yml_path, yml_content)
 
     def plot(self, output_directory):
         """Plot pressure dependent rates"""
@@ -764,3 +785,20 @@ class PressureDependenceJob(object):
             if self.rmgmode:
                 f.write('    rmgmode = {0!r},\n'.format(self.rmgmode))
             f.write(')\n\n')
+
+
+def save_yaml_file(path: str,
+                   content: list or dict,
+                   ) -> None:
+    """
+    Save a YAML file (usually an input / restart file, but also conformers file)
+
+    Args:
+        path (str): The YAML file path to save.
+        content (list, dict): The content to save.
+    """
+    content = yaml.dump(data=content)
+    if os.path.dirname(path) and not os.path.exists(os.path.dirname(path)):
+        os.makedirs(os.path.dirname(path))
+    with open(path, 'w') as f:
+        f.write(content)
