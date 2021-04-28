@@ -1470,6 +1470,11 @@ class KineticsFamily(Database):
                 if atom.label != '':
                     atom_labels[atom.label] = atom
 
+            if label in ('1,2_xy_interchange'):
+                # Labels for nodes are swapped
+                atom_labels['*1'].label = '*4'
+                atom_labels['*4'].label = '*1'
+
             if label in ('h_abstraction','f_abstraction','cl_abstraction','br_abstraction'):
                 # '*2' is the H that migrates
                 # it moves from '*1' to '*3'
