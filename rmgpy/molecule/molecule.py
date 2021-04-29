@@ -335,6 +335,13 @@ class Atom(Vertex):
         """
         return self.element.number != 1
 
+    def is_halogen(self):
+        """
+        Return ``True`` if the atom represents a halogen atom (F, Cl, Br, I)
+        ``False`` if it does.
+        """
+        return self.element.number in [9, 17, 35, 53]
+
     def is_carbon(self):
         """
         Return ``True`` if the atom represents a carbon atom or ``False`` if
@@ -396,6 +403,13 @@ class Atom(Vertex):
         not.
         """
         return self.element.number == 17
+
+    def is_bromine(self):
+        """
+        Return ``True`` if the atom represents a bromine atom or ``False`` if
+        not.
+        """
+        return self.element.number == 35
 
     def is_iodine(self):
         """

@@ -1268,7 +1268,7 @@ Origin Group AdjList:
 
         # print out entries skipped from exception we can't currently handle
         if skipped:
-            print("These entries were skipped because too big benzene rings or has nitrogen sample atom:")
+            print("These entries were skipped because too big benzene rings:")
             for entryName in skipped:
                 print(entryName)
 
@@ -1744,14 +1744,6 @@ The following adjList may have atoms in a different ordering than the input file
                         logging.error("Problem making sample molecule for group {}\n{}".format(
                             entryName, entry.item.to_adjacency_list()))
                         raise
-                    # for now ignore sample atoms that use nitrogen types
-                    nitrogen = False
-                    for atom in sample_molecule.atoms:
-                        if atom.is_nitrogen():
-                            nitrogen = True
-                    if nitrogen:
-                        skipped.append(entryName)
-                        continue
 
                     atoms = sample_molecule.get_all_labeled_atoms()
                     match = group.descend_tree(sample_molecule, atoms, strict=True)
@@ -1787,7 +1779,7 @@ Origin Group AdjList:
 
         # print out entries skipped from exception we can't currently handle
         if skipped:
-            print("These entries were skipped because too big benzene rings or has nitrogen sample atom:")
+            print("These entries were skipped because too big benzene rings:")
             for entryName in skipped:
                 print(entryName)
 

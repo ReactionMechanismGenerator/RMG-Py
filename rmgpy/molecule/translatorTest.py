@@ -715,6 +715,33 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = '[O][O]'
         self.compare(adjlist, smiles)
 
+        # Test CF
+        adjlist = '''
+        multiplicity 2
+        1 C u1 p1 c0 {2,S}
+        2 F u0 p3 c0 {1,S}
+        '''
+        smiles = '[C]F'
+        self.compare(adjlist, smiles)
+
+        # Test CCl
+        adjlist = '''
+        multiplicity 2
+        1 C u1 p1 c0 {2,S}
+        2 Cl u0 p3 c0 {1,S}
+        '''
+        smiles = '[C]Cl'
+        self.compare(adjlist, smiles)
+
+        # Test CBr
+        adjlist = '''
+        multiplicity 2
+        1 C u1 p1 c0 {2,S}
+        2 Br u0 p3 c0 {1,S}
+        '''
+        smiles = '[C]Br'
+        self.compare(adjlist, smiles)
+
     def test_aromatics(self):
         """Test that different aromatics representations returns different SMILES."""
         mol1 = Molecule().from_adjacency_list("""

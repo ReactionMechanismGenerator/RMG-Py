@@ -23,6 +23,7 @@ Atom type       Description
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ``R``           any atom with any local bond structure
 ``R!H``         any non-hydrogen atom with any local bond structure
+``R!H!Val7``    any non-hydrogen and non-halogen atom (a non-terminal atom)
 *Hydrogen atom types*
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ``H``           hydrogen atom with up to one single bond
