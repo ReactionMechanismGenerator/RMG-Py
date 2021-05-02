@@ -331,10 +331,15 @@ class Configuration(object):
                     t = t_data[i]
                     for mode in modes:
                         q_data[i] = q_data[i] * mode.get_partition_function(t)
-                log_q = scipy.interpolate.InterpolatedUnivariateSpline(t_data, np.log(q_data))
+                log_q = scipy.interpolate.InterpolatedUnivariateSpline(t_data.astype(np.float64), np.log(q_data).astype(np.float64))
+                # print('\n\n\n\n')
+                # print('log Q:')
+                # print(log_q)
+                # print(type(log_q))
+                # print('\n\n\n\n')
                 # log_q = LinearInterpolator(t_data, np.log(q_data))
 
-                self.dens_states, self.sum_states = get_density_of_states_forst(self.e_list, log_q)
+                self.dens_states, self.sum_states = get_density_of_states_forst(self.e_list.astype(np.float64), log_q)
 
                 for spec in self.species:
                     self.dens_states *= spec.conformer.spin_multiplicity * spec.conformer.optical_isomers

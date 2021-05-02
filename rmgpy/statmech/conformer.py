@@ -512,7 +512,12 @@ def phi(beta, k, E, logQ):
     :returns:    The value of the objective function to minimize for the
                  method of steepest descents
     """
-    T = 1.0 / (constants.R * beta)
+    T = np.float128(1.0 / (constants.R * beta))
+    # print(f'logQ(T): {type(logQ(T))}')
+    # print(f'k: {type(k)}')
+    # print(f'log(beta): {type(log(beta))}')
+    # print(f'beta: {type(beta)}')
+    # print(f'E: {type(E)}')
     return logQ(T) - k * log(beta) + beta * E
 
 def get_density_of_states_forst(e_list, logQ, order=1):
@@ -526,8 +531,6 @@ def get_density_of_states_forst(e_list, logQ, order=1):
     approximation to apply (1 or 2); the first-order approximation is smoother,
     faster to compute, and generally accurate enough for most applications.
     """
-
-
     if order != 1 and order != 2:
         raise ValueError('Invalid value {0} for order parameter; valid values are 1 or 2.'.format(order))
 
@@ -549,11 +552,16 @@ def get_density_of_states_forst(e_list, logQ, order=1):
 
         # Find minimum of phi  func x0  arg     xtol  ftol maxi  maxf fullout  disp retall  callback
         try:
+            # print(f'phi, {type(phi)}')
+            # print(f'x, {type(x)}')
+            # print(f'k, {type(k)}')
+            # print(f'E, {type(E)}')
+            # print(f'logQ, {type(logQ)}')
             x = scipy.optimize.fmin(phi, x, (k, E, logQ), 1e-8, 1e-8, 100, 1000, False, False, False, None)
         except ValueError:
             break
-        x = float(x)
-        dx = 1e-2 * x
+        x = np.float128(x)
+        dx = np.float128(1e-2 * x)
 
         # Evaluate derivatives needed for steepest descents approximation numerically
         d2fdx2 = (phi(x + dx, k, E, logQ) - 2 * phi(x, k, E, logQ) + phi(x - dx, k, E, logQ)) / (dx * dx)
