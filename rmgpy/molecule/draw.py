@@ -198,7 +198,7 @@ class MoleculeDrawer(object):
             self.molecule.remove_atom(self.molecule.atoms[-1])
             self.symbols = ['CO']
             self.molecule.atoms[0].charge = 0  # don't label the C as - if you're not drawing the O with a +
-            self.coordinates = np.array([[0, 0]], np.float64)
+            self.coordinates = np.array([[0, 0]], np.float128)
         else:
             # Generate the coordinates to use to draw the molecule
             try:
@@ -233,34 +233,34 @@ class MoleculeDrawer(object):
             # Render as H2 instead of H-H
             self.molecule.remove_atom(self.molecule.atoms[-1])
             self.symbols = ['H2']
-            self.coordinates = np.array([[0, 0]], np.float64)
+            self.coordinates = np.array([[0, 0]], np.float128)
         elif molecule.is_isomorphic(Molecule(smiles='[O][O]')):
             # Render as O2 instead of O-O
             self.molecule.remove_atom(self.molecule.atoms[-1])
             self.molecule.atoms[0].radical_electrons = 0
             self.symbols = ['O2']
-            self.coordinates = np.array([[0, 0]], np.float64)
+            self.coordinates = np.array([[0, 0]], np.float128)
         elif self.symbols == ['OH', 'O'] or self.symbols == ['O', 'OH']:
             # Render as HO2 instead of HO-O or O-OH
             self.molecule.remove_atom(self.molecule.atoms[-1])
             self.symbols = ['O2H']
-            self.coordinates = np.array([[0, 0]], np.float64)
+            self.coordinates = np.array([[0, 0]], np.float128)
         elif self.symbols == ['OH', 'OH']:
             # Render as H2O2 instead of HO-OH or O-OH
             self.molecule.remove_atom(self.molecule.atoms[-1])
             self.symbols = ['O2H2']
-            self.coordinates = np.array([[0, 0]], np.float64)
+            self.coordinates = np.array([[0, 0]], np.float128)
         elif self.symbols == ['O', 'C', 'O']:
             # Render as CO2 instead of O=C=O
             self.molecule.remove_atom(self.molecule.atoms[0])
             self.molecule.remove_atom(self.molecule.atoms[-1])
             self.symbols = ['CO2']
-            self.coordinates = np.array([[0, 0]], np.float64)
+            self.coordinates = np.array([[0, 0]], np.float128)
         elif self.symbols == ['H', 'H', 'X']:
             # Render as H2::X instead of crashing on H-H::X (vdW bond)
             self.molecule.remove_atom(self.molecule.atoms[0])
             self.symbols = ['H2', 'X']
-            self.coordinates = np.array([[0, -0.5], [0, 0.5]], np.float64) * self.options['bondLength']
+            self.coordinates = np.array([[0, -0.5], [0, 0.5]], np.float128) * self.options['bondLength']
 
         # Create a dummy surface to draw to, since we don't know the bounding rect
         # We will copy this to another surface with the correct bounding rect
@@ -332,7 +332,7 @@ class MoleculeDrawer(object):
         natoms = len(atoms)
 
         # Initialize array of coordinates
-        self.coordinates = coordinates = np.zeros((natoms, 2))
+        self.coordinates = coordinates = np.zeros((natoms, 2), dtype=np.float128)
 
         # If there are only one or two atoms to draw, then determining the
         # coordinates is trivial
@@ -382,7 +382,7 @@ class MoleculeDrawer(object):
                 else:
                     angle = math.atan2(vector0[0], vector0[1]) - math.pi / 2
                     rot = np.array([[math.cos(angle), math.sin(angle)],
-                                    [-math.sin(angle), math.cos(angle)]], np.float64)
+                                    [-math.sin(angle), math.cos(angle)]], np.float128)
                     # need to keep self.coordinates and coordinates referring to the same object
                     self.coordinates = coordinates = np.dot(coordinates, rot)
             
@@ -469,7 +469,7 @@ class MoleculeDrawer(object):
                 adsorbate = next(iter(site.bonds))
                 vector0 = coordinates[atoms.index(site), :] - coordinates[atoms.index(adsorbate), :]
                 angle = math.atan2(vector0[0], vector0[1]) - math.pi
-                rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], np.float64)
+                rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], np.float128)
                 self.coordinates = coordinates = np.dot(coordinates, rot)
             else:
                 # van der waals
@@ -592,7 +592,7 @@ class MoleculeDrawer(object):
             found = False
             common_atoms = []
             count = 0
-            center0 = np.zeros(2, np.float64)
+            center0 = np.zeros(2, np.float128)
             for cycle1 in processed:
                 found = False
                 for atom in cycle1:
@@ -600,7 +600,7 @@ class MoleculeDrawer(object):
                         common_atoms.append(atom)
                         found = True
                 if found:
-                    center1 = np.zeros(2, np.float64)
+                    center1 = np.zeros(2, np.float128)
                     for atom in cycle1:
                         center1 += coordinates[cycle1.index(atom), :]
                     center1 /= len(cycle1)
@@ -623,7 +623,7 @@ class MoleculeDrawer(object):
             if len(common_atoms) == 1 or len(common_atoms) == 2:
                 # Center of new cycle is reflection of center of adjacent cycle
                 # across common atom or bond
-                center = np.zeros(2, np.float64)
+                center = np.zeros(2, np.float128)
                 for atom in common_atoms:
                     center += coordinates[self.molecule.atoms.index(atom), :]
                 center /= len(common_atoms)
@@ -637,8 +637,8 @@ class MoleculeDrawer(object):
                 index0 = self.molecule.atoms.index(common_atoms[0])
                 index1 = self.molecule.atoms.index(common_atoms[1])
                 index2 = self.molecule.atoms.index(common_atoms[2])
-                A = np.zeros((2, 2), np.float64)
-                b = np.zeros((2), np.float64)
+                A = np.zeros((2, 2), np.float128)
+                b = np.zeros((2), np.float128)
                 A[0, :] = 2 * (coordinates[index1, :] - coordinates[index0, :])
                 A[1, :] = 2 * (coordinates[index2, :] - coordinates[index0, :])
                 b[0] = coordinates[index1, 0] ** 2 + coordinates[index1, 1] ** 2 - coordinates[index0, 0] ** 2 - coordinates[index0, 1] ** 2
@@ -675,7 +675,7 @@ class MoleculeDrawer(object):
                 # This version assumes that no atoms belong at the origin, which is
                 # usually fine because the first ring is centered at the origin
                 if np.linalg.norm(coordinates[index, :]) < 1e-4:
-                    vector = np.array([math.cos(angle), math.sin(angle)], np.float64)
+                    vector = np.array([math.cos(angle), math.sin(angle)], np.float128)
                     coordinates[index, :] = center + radius * vector
                 count += 1
 
@@ -695,14 +695,14 @@ class MoleculeDrawer(object):
 
         # Second atom goes on x-axis (for now; this could be improved!)
         index1 = self.molecule.atoms.index(atoms[1])
-        vector = np.array([1.0, 0.0], np.float64)
+        vector = np.array([1.0, 0.0], np.float128)
         if atoms[0].bonds[atoms[1]].is_triple():
             rotate_positive = False
         else:
             rotate_positive = True
             rot = np.array([[math.cos(-math.pi / 6), math.sin(-math.pi / 6)],
-                            [-math.sin(-math.pi / 6), math.cos(-math.pi / 6)]], np.float64)
-            vector = np.array([1.0, 0.0], np.float64)
+                            [-math.sin(-math.pi / 6), math.cos(-math.pi / 6)]], np.float128)
+            vector = np.array([1.0, 0.0], np.float128)
             vector = np.dot(rot, vector)
         coordinates[index1, :] = coordinates[index0, :] + vector
 
@@ -739,7 +739,7 @@ class MoleculeDrawer(object):
             # Determine coordinates for atom
             if angle != 0:
                 if not rotate_positive: angle = -angle
-                rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], np.float64)
+                rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], np.float128)
                 vector = np.dot(rot, vector)
                 rotate_positive = not rotate_positive
             coordinates[index2, :] = coordinates[index1, :] + vector
@@ -779,7 +779,7 @@ class MoleculeDrawer(object):
 
                 # Determine rotation angle and matrix
                 rot = np.array([[math.cos(best_angle), -math.sin(best_angle)],
-                                [math.sin(best_angle), math.cos(best_angle)]], np.float64)
+                                [math.sin(best_angle), math.cos(best_angle)]], np.float128)
                 # Determine the vector of any currently-existing bond from this atom
                 vector = None
                 for atom1 in atom0.bonds:
@@ -823,7 +823,7 @@ class MoleculeDrawer(object):
                     if atom1 not in backbone and np.linalg.norm(coordinates[atoms.index(atom1), :]) < 1e-4:
                         angle = start_angle + index * d_angle
                         index += 1
-                        vector = np.array([math.cos(angle), math.sin(angle)], np.float64)
+                        vector = np.array([math.cos(angle), math.sin(angle)], np.float128)
                         vector /= np.linalg.norm(vector)
                         coordinates[atoms.index(atom1), :] = coordinates[index0, :] + vector
                         self._generate_functional_group_coordinates(atom0, atom1)
@@ -872,13 +872,13 @@ class MoleculeDrawer(object):
             # Rotate the ring system coordinates so that the line connecting atom1
             # and the center of mass of the ring is parallel to that between
             # atom0 and atom1
-            center = np.zeros(2, np.float64)
+            center = np.zeros(2, np.float128)
             for atom in cycle_atoms:
                 center += coordinates_cycle[atoms.index(atom), :]
             center /= len(cycle_atoms)
             vector0 = center - coordinates_cycle[atoms.index(atom1), :]
             angle = math.atan2(vector[1] - vector0[1], vector[0] - vector0[0])
-            rot = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], np.float64)
+            rot = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], np.float128)
             coordinates_cycle = np.dot(coordinates_cycle, rot)
 
             # Translate the ring system coordinates to the position of atom1
@@ -904,8 +904,8 @@ class MoleculeDrawer(object):
                     angle = 2 * math.pi / 3
                     # Make sure we're rotating such that we move away from the origin,
                     # to discourage overlap of functional groups
-                    rot1 = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], np.float64)
-                    rot2 = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], np.float64)
+                    rot1 = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], np.float128)
+                    rot2 = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], np.float128)
                     vector1 = coordinates[index1, :] + np.dot(rot1, vector)
                     vector2 = coordinates[index1, :] + np.dot(rot2, vector)
                     if bond_angle < -0.5 * math.pi or bond_angle > 0.5 * math.pi:
@@ -914,7 +914,7 @@ class MoleculeDrawer(object):
                         angle = -abs(angle)
             else:
                 angle = 2 * math.pi / num_bonds
-            rot = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], np.float64)
+            rot = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], np.float128)
 
             # Iterate through each neighboring atom to this backbone atom
             # If the neighbor is not in the backbone, then we need to determine
@@ -1023,7 +1023,7 @@ class MoleculeDrawer(object):
             cycle_bonds.append(cycle[0].bonds[cycle[-1]])
             if all([bond.is_benzene() for bond in cycle_bonds]):
                 # We've found an aromatic ring, so draw a circle in the center to represent the benzene bonds
-                center = np.zeros(2, np.float64)
+                center = np.zeros(2, np.float128)
                 for atom in cycle:
                     index = atoms.index(atom)
                     center += coordinates[index, :]
@@ -1045,7 +1045,7 @@ class MoleculeDrawer(object):
             symbol = symbols[i]
             index = atoms.index(atom)
             x0, y0 = coordinates[index, :]
-            vector = np.zeros(2, np.float64)
+            vector = np.zeros(2, np.float128)
             for atom2 in atom.bonds:
                 vector += coordinates[atoms.index(atom2), :] - coordinates[index, :]
             heavy_first = vector[0] <= 0
@@ -1385,7 +1385,7 @@ class MoleculeDrawer(object):
             # Internal atom
             # First try to see if there is a "preferred" side on which to place the
             # radical/charge data, i.e. if the bonds are unbalanced
-            vector = np.zeros(2, np.float64)
+            vector = np.zeros(2, np.float128)
             for atom1 in atom.bonds:
                 vector += self.coordinates[atoms.index(atom), :] - self.coordinates[atoms.index(atom1), :]
             if np.linalg.norm(vector) < 1e-4:

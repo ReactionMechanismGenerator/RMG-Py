@@ -75,7 +75,7 @@ class AEJob:
     """
 
     def __init__(self,
-                 species_energies: Dict[str, float],
+                 species_energies: Dict[str, np.float128],
                  level_of_theory: Union[LevelOfTheory, CompositeLevelOfTheory] = None,
                  write_to_database: bool = False,
                  overwrite: bool = False):
@@ -143,7 +143,7 @@ class AE:
     ref_data_src = 'CCCBDB'  # Use CCCBDB data
     ref_data = None  # Dictionary of reference data entries
 
-    def __init__(self, species_energies: Dict[str, float]):
+    def __init__(self, species_energies: Dict[str, np.float128]):
         self.species_energies = species_energies  # Hartree
         self.atom_energies = None
         self.confidence_intervals = None

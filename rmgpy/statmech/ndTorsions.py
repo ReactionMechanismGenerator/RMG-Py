@@ -167,8 +167,8 @@ D. Ferro-Costas, M. N. D. S. Cordeiro, D. G. Truhlar, A. Fernández-Ramos, Compu
             phi2, identifier = '.'.join(phi2.split('.')[:-1]), phi2.split('.')[-1]
             if identifier != 'out':
                 continue
-            phi1s.append(float(phi1))
-            phi2s.append(float(phi2.split(".")[0]))
+            phi1s.append(np.float128(phi1))
+            phi2s.append(np.float128(phi2.split(".")[0]))
 
             fpath = os.path.join(self.calc_path, f)
             lg = ess_factory(fpath)
@@ -194,7 +194,7 @@ D. Ferro-Costas, M. N. D. S. Cordeiro, D. G. Truhlar, A. Fernández-Ramos, Compu
                 continue
             s, name, phi1, phi2 = f.split('_')  # scangeom_r0_0.0_360.0.log
             phi2, identifier = phi2.split('.')
-            if identifier == 'gjf' and float(phi1) == 0.0 and float(phi2) == 0.0:
+            if identifier == 'gjf' and np.float128(phi1) == 0.0 and np.float128(phi2) == 0.0:
                 with open(os.path.join(self.calc_path, f), 'r') as fop:
                     lines = fop.readlines()
                     for i, line in enumerate(lines):
@@ -370,8 +370,8 @@ end_temperatures                   #
         """
         with open(os.path.join(self.q2dtor_dir, 'IOfiles', self.name + '.evals'), 'r') as f:
             out = f.readlines()
-            evals = [float(x.split()[1]) for x in out[2:]]  # cm^-1
-            self.evals = np.array(evals) * 10 ** 2 * constants.c * constants.h * constants.Na  # J/mol
+            evals = [np.float128(x.split()[1]) for x in out[2:]]  # cm^-1
+            self.evals = np.array(evals, dtype=np.float128) * 10 ** 2 * constants.c * constants.h * constants.Na  # J/mol
             self.energy = lambda x: self.evals[x]
 
     def get_partition_function(self, T):
@@ -447,7 +447,7 @@ class HinderedRotorClassicalND(Mode):
 
         self.pivots = pivots
         self.tops = tops
-        self.sigmas = np.array(sigmas)
+        self.sigmas = np.array(sigmas, dtype=np.float128)
         self.conformer = conformer
         self.hessian = F
         self.semiclassical = semiclassical
@@ -479,7 +479,7 @@ class HinderedRotorClassicalND(Mode):
                 if identifier != 'out':
                     continue
                 outs = name.split('_')
-                phivals = [float(x) for x in outs[-N:]]
+                phivals = [np.float128(x) for x in outs[-N:]]
                 phivals = fill360s(phivals)
 
                 fpath = os.path.join(self.calc_path, f)
@@ -488,7 +488,7 @@ class HinderedRotorClassicalND(Mode):
                 xyz, atnum, _ = lg.load_geometry()
 
                 for phival in phivals:
-                    phis.append(np.array(phival))
+                    phis.append(np.array(phival, dtype=np.float128))
                     Es.append(lg.load_energy())
                     xyzs.append(xyz)
                     if not self.atnums:
@@ -512,7 +512,7 @@ class HinderedRotorClassicalND(Mode):
                     xyzs.append(xyzs[j])
                     atnums.append(atnums[j])
 
-            self.xyzs = np.array(xyzs)
+            self.xyzs = np.array(xyzs, dtype=np.float128)
 
             self.Es = np.array(Es)
             self.E0 = self.Es.min()
@@ -584,7 +584,7 @@ class HinderedRotorClassicalND(Mode):
             self.V = interpolate.CubicSpline(self.phis, self.Es)
             self.rootD = interpolate.CubicSpline(self.phis, self.rootDs)
 
-        Tlist = np.linspace(10.0, 3001.0, num=20, dtype=np.float64)
+        Tlist = np.linspace(10.0, 3001.0, num=20, dtype=np.float128)
 
         Qs = []
         for T in Tlist:
@@ -602,7 +602,7 @@ class HinderedRotorClassicalND(Mode):
         def f(*phis):
             return self.rootD(*phis) * np.exp(-self.V(*phis) / (constants.R * T))
         
-        rphis = np.linspace(0, 2.0*np.pi, 30)
+        rphis = np.linspace(0, 2.0*np.pi, 30, dtype=np.float128)
         Imat = np.zeros([len(rphis) for i in range(len(self.pivots))])
         it = itertools.product(*[list(range(len(rphis))) for i in range(len(self.pivots))])
         
@@ -657,7 +657,7 @@ class HinderedRotorClassicalND(Mode):
         this is done by projecting their frequencies out of the force constant matrix
         """
         phis = self.phis
-        if isinstance(phis[0], float):
+        if isinstance(phis[0], np.float128):
             Ndims = 1
             phis = np.array([np.array([x]) for x in phis])
         else:

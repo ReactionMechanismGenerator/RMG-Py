@@ -96,7 +96,7 @@ class SurfaceReactorCheck(unittest.TestCase):
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-        tlist = np.logspace(-13, -5, 81, dtype=np.float64)
+        tlist = np.logspace(-13, -5, 81, dtype=np.float128)
 
         # Integrate to get the solution at each time point
         t = []
@@ -113,10 +113,10 @@ class SurfaceReactorCheck(unittest.TestCase):
             species_rates.append(rxn_system.core_species_rates.copy())
 
         # Convert the solution vectors to np arrays
-        t = np.array(t, np.float64)
-        y = np.array(y, np.float64)
-        reaction_rates = np.array(reaction_rates, np.float64)
-        species_rates = np.array(species_rates, np.float64)
+        t = np.array(t, np.float128)
+        y = np.array(y, np.float128)
+        reaction_rates = np.array(reaction_rates, np.float128)
+        species_rates = np.array(species_rates, np.float128)
         V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P_initial.value_si
 
         # Check that we're computing the species fluxes correctly
@@ -227,7 +227,7 @@ class SurfaceReactorCheck(unittest.TestCase):
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-        tlist = np.logspace(-13, -5, 81, dtype=np.float64)
+        tlist = np.logspace(-13, -5, 81, dtype=np.float128)
 
         print("Surface site density:", rxn_system.surface_site_density.value_si)
 
@@ -259,10 +259,10 @@ class SurfaceReactorCheck(unittest.TestCase):
             species_rates.append(rxn_system.core_species_rates.copy())
 
         # Convert the solution vectors to np arrays
-        t = np.array(t, np.float64)
-        y = np.array(y, np.float64)
-        reaction_rates = np.array(reaction_rates, np.float64)
-        species_rates = np.array(species_rates, np.float64)
+        t = np.array(t, np.float128)
+        y = np.array(y, np.float128)
+        reaction_rates = np.array(reaction_rates, np.float128)
+        species_rates = np.array(species_rates, np.float128)
         V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P_initial.value_si
 
         # Check that we're computing the species fluxes correctly

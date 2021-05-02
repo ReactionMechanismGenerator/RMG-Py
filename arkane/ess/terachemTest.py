@@ -258,7 +258,7 @@ class TeraChemLogTest(unittest.TestCase):
              0.15568929062312323, -0.15568929062312323, -0.6227571624924929, 0.46706787186936966, -1.7125821968543555,
              -0.9341357437387393, 0.31137858124624646, 0.31137858124624646, -11.676696796734241, -6.227571624924929,
              -7.628775240533038, 174.68338407914425, -78.15602389280787, 125.95263611410668]]
-        np.testing.assert_almost_equal(hessian, np.array(expected_hessian, np.float64))
+        np.testing.assert_almost_equal(hessian, np.array(expected_hessian, np.float128))
 
     def test_load_geometry(self):
         """Test loading the geometry from a TeraChem xyz output file"""
@@ -270,10 +270,10 @@ class TeraChemLogTest(unittest.TestCase):
                               [1.24675866, 0.88983869, -0.1613784],
                               [1.19483972, -0.8753068, 0.42244414],
                               [-1.19483975, 0.87530673, -0.42244421],
-                              [-1.24675868, -0.88983873, 0.16137844]], np.float64))
-        np.testing.assert_almost_equal(numbers, np.array([6, 6, 1, 1, 1, 1], np.float64))
+                              [-1.24675868, -0.88983873, 0.16137844]], np.float128))
+        np.testing.assert_almost_equal(numbers, np.array([6, 6, 1, 1, 1, 1], np.float128))
         np.testing.assert_almost_equal(masses, np.array(
-            [12., 12., 1.00782503, 1.00782503, 1.00782503, 1.00782503], np.float64))
+            [12., 12., 1.00782503, 1.00782503, 1.00782503, 1.00782503], np.float128))
 
         log_file = TeraChemLog(os.path.join(self.data_path, 'formaldehyde_coords.xyz'))
         coords, numbers, masses = log_file.load_geometry()
@@ -281,10 +281,10 @@ class TeraChemLogTest(unittest.TestCase):
             coords, np.array([[-4.23756410e-03, 4.24348000e-05, -5.28516700e-04],
                               [1.19165823e+00, -1.75471911e-02, 1.58030931e-01],
                               [-5.96146428e-01, 9.38505681e-01, 4.33255558e-02],
-                              [-5.91274235e-01, -9.21000915e-01, -2.00827970e-01]], np.float64))
-        np.testing.assert_almost_equal(numbers, np.array([6, 8, 1, 1], np.float64))
+                              [-5.91274235e-01, -9.21000915e-01, -2.00827970e-01]], np.float128))
+        np.testing.assert_almost_equal(numbers, np.array([6, 8, 1, 1], np.float128))
         np.testing.assert_almost_equal(
-            masses, np.array([12., 15.99491462, 1.00782503, 1.00782503], np.float64))
+            masses, np.array([12., 15.99491462, 1.00782503, 1.00782503], np.float128))
 
         log_file = TeraChemLog(os.path.join(self.data_path, 'ethane_output.geometry'))
         coords, numbers, masses = log_file.load_geometry()
@@ -294,10 +294,10 @@ class TeraChemLogTest(unittest.TestCase):
                               [1.24675866, 0.88983869, -0.1613784],
                               [1.19483972, -0.8753068, 0.42244414],
                               [-1.19483975, 0.87530673, -0.42244421],
-                              [-1.24675868, -0.88983873, 0.16137844]], np.float64))
-        np.testing.assert_almost_equal(numbers, np.array([6, 6, 1, 1, 1, 1], np.float64))
+                              [-1.24675868, -0.88983873, 0.16137844]], np.float128))
+        np.testing.assert_almost_equal(numbers, np.array([6, 6, 1, 1, 1, 1], np.float128))
         np.testing.assert_almost_equal(
-            masses, np.array([12., 12., 1.00782504, 1.00782504, 1.00782504, 1.00782504], np.float64))
+            masses, np.array([12., 12., 1.00782504, 1.00782504, 1.00782504, 1.00782504], np.float128))
 
         log_file = TeraChemLog(os.path.join(self.data_path, 'formaldehyde_output.geometry'))
         coords, numbers, masses = log_file.load_geometry()
@@ -305,10 +305,10 @@ class TeraChemLogTest(unittest.TestCase):
             coords, np.array([[-1.2224100e-02, 1.8041000e-04, -1.6211600e-03],
                               [1.2016482e+00, -1.7734170e-02, 1.5936241e-01],
                               [-5.9716440e-01, 9.3272817e-01, 4.2440100e-02],
-                              [-5.9225970e-01, -9.1517440e-01, -2.0018135e-01]], np.float64))
-        np.testing.assert_almost_equal(numbers, np.array([6, 8, 1, 1], np.float64))
+                              [-5.9225970e-01, -9.1517440e-01, -2.0018135e-01]], np.float128))
+        np.testing.assert_almost_equal(numbers, np.array([6, 8, 1, 1], np.float128))
         np.testing.assert_almost_equal(
-            masses, np.array([12., 15.99491464, 1.00782504, 1.00782504], np.float64))
+            masses, np.array([12., 15.99491464, 1.00782504, 1.00782504], np.float128))
 
         log_file = TeraChemLog(os.path.join(self.data_path, 'ethylamine_freq_output.out'))
         coords, numbers, masses = log_file.load_geometry()
@@ -322,11 +322,11 @@ class TeraChemLogTest(unittest.TestCase):
                               [2.705598, 0.43874, 4.141338],
                               [-0.600934, 0.336582, 4.672435],
                               [2.352825, 1.959707, -1.552162],
-                              [4.141389, -0.322693, -0.540207]], np.float64))
-        np.testing.assert_almost_equal(numbers, np.array([7, 6, 6, 1, 1, 1, 1, 1, 1, 1], np.float64))
+                              [4.141389, -0.322693, -0.540207]], np.float128))
+        np.testing.assert_almost_equal(numbers, np.array([7, 6, 6, 1, 1, 1, 1, 1, 1, 1], np.float128))
         np.testing.assert_almost_equal(
             masses, np.array([14.003074, 12., 12., 1.00782503, 1.00782503, 1.00782503, 1.00782503,
-                              1.00782503, 1.00782503, 1.00782503], np.float64))
+                              1.00782503, 1.00782503, 1.00782503], np.float128))
 
         log_file = TeraChemLog(os.path.join(self.data_path, 'formaldehyde_freq_output.out'))
         coords, numbers, masses = log_file.load_geometry()
@@ -334,10 +334,10 @@ class TeraChemLogTest(unittest.TestCase):
             coords, np.array([[2.261989e+00, -1.149050e-01, 1.783170e-01],
                               [-8.108000e-03, 2.710000e-04, -6.880000e-04],
                               [-1.038653e+00, 1.827038e+00, -6.398200e-02],
-                              [-1.215229e+00, -1.712404e+00, -1.136470e-01]], np.float64))
-        np.testing.assert_almost_equal(numbers, np.array([8, 6, 1, 1], np.float64))
+                              [-1.215229e+00, -1.712404e+00, -1.136470e-01]], np.float128))
+        np.testing.assert_almost_equal(numbers, np.array([8, 6, 1, 1], np.float128))
         np.testing.assert_almost_equal(
-            masses, np.array([15.99491462, 12., 1.00782503, 1.00782503], np.float64))
+            masses, np.array([15.99491462, 12., 1.00782503, 1.00782503], np.float128))
 
     def test_load_conformer(self):
         """

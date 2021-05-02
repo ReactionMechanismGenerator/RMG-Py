@@ -187,7 +187,7 @@ class Eckart(TunnelingModel):
 
         # Evaluate microcanonical tunneling function kappa(E)
         dE = 100.
-        Elist = np.arange(E0, E0 + 2. * (E0_TS - E0) + 40. * constants.R * T, dE)
+        Elist = np.arange(E0, E0 + 2. * (E0_TS - E0) + 40. * constants.R * T, dE, dtype=np.float128)
         kappaE = self.calculate_tunneling_function(Elist)
 
         # Integrate to get kappa(T)

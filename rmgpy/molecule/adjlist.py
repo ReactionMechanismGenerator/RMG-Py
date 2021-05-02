@@ -97,7 +97,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radical_electrons=0, charge=0, label='', lone_pairs=-100, coords=np.array([]),
+    def __init__(self, element=None, radical_electrons=0, charge=0, label='', lone_pairs=-100, coords=np.array([], dtype=np.float128),
                  id=-1, props=None):
         Vertex.__init__(self)
         if isinstance(element, str):

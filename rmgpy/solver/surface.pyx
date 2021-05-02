@@ -331,7 +331,7 @@ cdef class SurfaceReactor(ReactionSystem):
                  double t,
                  np.ndarray[np.float64_t, ndim=1] N,
                  np.ndarray[np.float64_t, ndim=1] dNdt,
-                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float64)
+                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float128)
                  ):
 
         """
@@ -365,7 +365,7 @@ cdef class SurfaceReactor(ReactionSystem):
         num_edge_reactions = len(self.edge_reaction_rates)
         num_pdep_networks = len(self.network_leak_rates)
 
-        res = np.zeros(num_core_species, np.float64)
+        res = np.zeros(num_core_species, np.float128)
 
         core_species_concentrations = np.zeros_like(self.core_species_concentrations)
         core_species_rates = np.zeros_like(self.core_species_rates)
@@ -484,7 +484,7 @@ cdef class SurfaceReactor(ReactionSystem):
         # mol/s
 
         if self.sensitivity and False:
-            delta = np.zeros(len(N), np.float64)
+            delta = np.zeros(len(N), np.float128)
             delta[:num_core_species] = res
             if self.jacobian_matrix is None:
                 jacobian = self.jacobian(t, N, dNdt, 0, senpar)

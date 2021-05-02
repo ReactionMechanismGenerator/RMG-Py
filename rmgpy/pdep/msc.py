@@ -62,8 +62,8 @@ def apply_modified_strong_collision_method(network, efficiency_model='default'):
         raise AttributeError('Network {0} has NaN in the density of states. '
                              'This will prevent adequate solution to the network'.format(network.label))
 
-    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float64)
-    pa = np.zeros((n_isom, n_isom + n_reac, n_grains, n_j), np.float64)
+    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float128)
+    pa = np.zeros((n_isom, n_isom + n_reac, n_grains, n_j), np.float128)
 
     beta = 1. / (constants.R * temperature)  # [=] mol/kJ
     
@@ -95,8 +95,8 @@ def apply_modified_strong_collision_method(network, efficiency_model='default'):
         raise ValueError('Unknown efficiency model "{0}".'.format(efficiency_model))
     
     # Zero LHS matrix and RHS vectors
-    a_mat = np.zeros((n_isom, n_isom), np.float64)
-    b = np.zeros((n_isom, n_isom + n_reac), np.float64)
+    a_mat = np.zeros((n_isom, n_isom), np.float128)
+    b = np.zeros((n_isom, n_isom + n_reac), np.float128)
 
     # Iterate over the grains, calculating the PSSA concentrations
     for r in range(start, n_grains):

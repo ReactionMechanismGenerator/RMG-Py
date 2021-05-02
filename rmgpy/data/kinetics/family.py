@@ -1168,7 +1168,7 @@ class KineticsFamily(Database):
         entries.sort(key=lambda x: x.index)
 
         if train_indices is not None:
-            entries = np.array(entries)
+            entries = np.array(entries, dtype=np.float128)
             entries = entries[train_indices]
 
         reverse_entries = []
@@ -3451,10 +3451,10 @@ class KineticsFamily(Database):
         inputs = np.array([(self.forward_recipe.actions, rxns, Tref, fmax, label, [r.rank for r in rxns])
                            for rxns, label in rxnlists])
 
-        inds = np.arange(len(inputs))
+        inds = np.arange(len(inputs), dtype=np.float128)
         np.random.shuffle(inds)  # want to parallelize in random order
         inds = inds.tolist()
-        revinds = [inds.index(x) for x in np.arange(len(inputs))]
+        revinds = [inds.index(x) for x in np.arange(len(inputs), dtype=np.float128)]
 
         pool = mp.Pool(nprocs)
 

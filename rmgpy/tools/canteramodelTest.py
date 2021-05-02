@@ -44,9 +44,9 @@ class CanteraTest(unittest.TestCase):
         Test that find_ignition_delay() works.
         """
 
-        t = np.arange(0, 5, 0.5)
-        P = np.array([0, 0.33, 0.5, 0.9, 2, 4, 15, 16, 16.1, 16.2])
-        OH = np.array([0, 0.33, 0.5, 0.9, 2, 4, 15, 16, 7, 2])
+        t = np.arange(0, 5, 0.5, dtype=np.float128)
+        P = np.array([0, 0.33, 0.5, 0.9, 2, 4, 15, 16, 16.1, 16.2], dtype=np.float128)
+        OH = np.array([0, 0.33, 0.5, 0.9, 2, 4, 15, 16, 7, 2], dtype=np.float128)
         CO = OH * 0.9
 
         t_ign = find_ignition_delay(t, P)

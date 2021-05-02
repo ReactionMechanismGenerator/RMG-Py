@@ -1205,7 +1205,7 @@ class CoreEdgeReactionModel:
 
         # Get the maximum species rates (and network leak rates)
         # across all reaction systems
-        max_edge_species_rate_ratios = np.zeros((num_prunable_species), np.float64)
+        max_edge_species_rate_ratios = np.zeros((num_prunable_species), np.float128)
         for reaction_system in reaction_systems:
             for i in range(num_prunable_species):
                 rate_ratio = reaction_system.max_edge_species_rate_ratios[i]

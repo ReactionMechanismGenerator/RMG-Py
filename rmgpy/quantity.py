@@ -363,7 +363,7 @@ class ArrayQuantity(Units):
         self.value = value if value is not None else np.array([0.0])
         self.uncertainty_type = uncertainty_type
         if uncertainty is None or np.array_equal(uncertainty, np.array([0.0])):
-            self.uncertainty = np.zeros_like(self.value)
+            self.uncertainty = np.zeros_like(self.value, dtype=np.float128)
         elif isinstance(uncertainty, (int, float)):
             self.uncertainty = np.ones_like(self.value) * uncertainty
         else:

@@ -364,7 +364,7 @@ class NASA(HeatCapacityModel):
         CpInf = self.CpInf.value_si
         dT = min(50.0, (Tmax - Tmin) / 100.)
         
-        Tdata = np.arange(Tmin, Tmax, dT)
+        Tdata = np.arange(Tmin, Tmax, dT, dtype=np.float128)
         Cpdata = np.zeros_like(Tdata)
         
         for i in range(Tdata.shape[0]):

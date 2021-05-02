@@ -128,7 +128,7 @@ class LiquidReactorCheck(unittest.TestCase):
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-        tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
+        tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float128)
 
         # Integrate to get the solution at each time point
         t, y, reaction_rates, species_rates = [], [], [], []
@@ -142,9 +142,9 @@ class LiquidReactorCheck(unittest.TestCase):
             species_rates.append(rxn_system.core_species_rates.copy())
 
         # Convert the solution vectors to np arrays
-        t = np.array(t, np.float64)
-        reaction_rates = np.array(reaction_rates, np.float64)
-        species_rates = np.array(species_rates, np.float64)
+        t = np.array(t, np.float128)
+        reaction_rates = np.array(reaction_rates, np.float128)
+        species_rates = np.array(species_rates, np.float128)
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
@@ -457,7 +457,7 @@ class LiquidReactorCheck(unittest.TestCase):
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-        tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
+        tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float128)
 
         # Integrate to get the solution at each time point
         t, y, reaction_rates, species_rates = [], [], [], []

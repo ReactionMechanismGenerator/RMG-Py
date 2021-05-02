@@ -192,7 +192,7 @@ class LibraryReaction(Reaction):
                     else:
                         kunits = ''
                     t_step = (self.kinetics.Tmax.value_si - self.kinetics.Tmin.value_si) / 20
-                    t_list = np.arange(int(self.kinetics.Tmin.value_si), int(self.kinetics.Tmax.value_si), int(t_step))
+                    t_list = np.arange(int(self.kinetics.Tmin.value_si), int(self.kinetics.Tmax.value_si), int(t_step), dtype=np.float128)
                     if t_list[-1] < int(self.kinetics.Tmax.value_si):
                         t_list = np.insert(t_list, -1, [int(self.kinetics.Tmax.value_si)])
                     k_list = []

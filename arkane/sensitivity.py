@@ -210,7 +210,7 @@ class KineticsSensitivity(object):
             r_values = [self.r_sa_coefficients[self.job.reaction.reactants[0]][i],
                         self.r_sa_coefficients[self.job.reaction.transition_state][i],
                         self.r_sa_coefficients[self.job.reaction.products[0]][i]]
-            y_pos = np.arange(3)
+            y_pos = np.arange(3, dtype=np.float128)
             ax[i][0].barh(y_pos, f_values, align='center', color='green')
             ax[i][0].set_yticks(y_pos)
             ax[i][0].set_yticklabels(labels)

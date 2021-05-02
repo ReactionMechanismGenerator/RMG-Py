@@ -95,7 +95,7 @@ class SimpleReactorCheck(unittest.TestCase):
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-        tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
+        tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float128)
 
         # Integrate to get the solution at each time point
         t = []
@@ -112,10 +112,10 @@ class SimpleReactorCheck(unittest.TestCase):
             species_rates.append(rxn_system.core_species_rates.copy())
 
         # Convert the solution vectors to np arrays
-        t = np.array(t, np.float64)
-        y = np.array(y, np.float64)
-        reaction_rates = np.array(reaction_rates, np.float64)
-        species_rates = np.array(species_rates, np.float64)
+        t = np.array(t, np.float128)
+        y = np.array(y, np.float128)
+        reaction_rates = np.array(reaction_rates, np.float128)
+        species_rates = np.array(species_rates, np.float128)
         V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P.value_si
 
         # Check that we're computing the species fluxes correctly
@@ -180,7 +180,7 @@ class SimpleReactorCheck(unittest.TestCase):
                                         initial_mole_fractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
                                         n_sims=1, termination=[])
             rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
-            dydt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
+            dydt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape, dtype=np.float128))[0]
             num_core_species = len(core_species)
             dN = .000001 * sum(rxn_system0.y)
             dN_array = dN * np.eye(num_core_species)
@@ -188,13 +188,13 @@ class SimpleReactorCheck(unittest.TestCase):
             dydt = []
             for i in range(num_core_species):
                 rxn_system0.y[i] += dN
-                dydt.append(rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0])
+                dydt.append(rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape, dtype=np.float128))[0])
                 rxn_system0.y[i] -= dN  # reset y to original y0
 
             # Let the solver compute the jacobian       
             solver_jacobian = rxn_system0.jacobian(0.0, rxn_system0.y, dydt0, 0.0)
             # Compute the jacobian using finite differences
-            jacobian = np.zeros((num_core_species, num_core_species))
+            jacobian = np.zeros((num_core_species, num_core_species), dtype=np.float128)
             for i in range(num_core_species):
                 for j in range(num_core_species):
                     jacobian[i, j] = (dydt[j][i] - dydt0[i]) / dN
@@ -225,7 +225,7 @@ class SimpleReactorCheck(unittest.TestCase):
         rxn_system0 = SimpleReactor(T, P, initial_mole_fractions={ch4: 0.2, ch3: 0.1, c2h6: 0.35, c2h5: 0.15, h2: 0.2},
                                     n_sims=1, termination=[])
         rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
-        dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
+        dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape, dtype=np.float128))[0]
         solver_dfdk = rxn_system0.compute_rate_derivative()
         # print 'Solver d(dy/dt)/dk'
         # print solver_dfdk
@@ -239,7 +239,7 @@ class SimpleReactorCheck(unittest.TestCase):
 
         y0 = rxn_system0.y
 
-        dfdk = np.zeros((num_core_species, len(rxn_list)))  # d(dy/dt)/dk
+        dfdk = np.zeros((num_core_species, len(rxn_list)), dtype=np.float128)  # d(dy/dt)/dk
 
         for i in range(len(rxn_list)):
             k0 = rxn_list[i].get_rate_coefficient(T, P)
@@ -250,7 +250,7 @@ class SimpleReactorCheck(unittest.TestCase):
                                        n_sims=1, termination=[])
             rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-            dfdt = rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))[0]
+            dfdt = rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape), dtype=np.float128)[0]
             dfdk[:, i] = (dfdt - dfdt0) / dk
 
             rxn_system.termination.append(TerminationTime((integration_time, 's')))

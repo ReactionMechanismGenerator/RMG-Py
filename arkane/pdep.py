@@ -315,7 +315,7 @@ class PressureDependenceJob(object):
         if self.Tlist is None:
             if self.interpolation_model[0].lower() == 'chebyshev':
                 # Distribute temperatures on a Gauss-Chebyshev grid
-                Tlist = np.zeros(Tcount, np.float64)
+                Tlist = np.zeros(Tcount, np.float128)
                 for i in range(Tcount):
                     T = -math.cos((2 * i + 1) * math.pi / (2 * self.Tcount))
                     T = 2.0 / ((1.0 / Tmax - 1.0 / Tmin) * T + 1.0 / Tmax + 1.0 / Tmin)
@@ -323,7 +323,7 @@ class PressureDependenceJob(object):
                 self.Tlist = (Tlist, "K")
             else:
                 # Distribute temperatures evenly on a T^-1 domain
-                Tlist = 1.0 / np.linspace(1.0 / Tmax, 1.0 / Tmin, Tcount)
+                Tlist = 1.0 / np.linspace(1.0 / Tmax, 1.0 / Tmin, Tcount, dtype=np.float128)
                 self.Tlist = (Tlist, "K")
         return self.Tlist.value_si
 
@@ -387,7 +387,7 @@ class PressureDependenceJob(object):
             pass
         elif self.interpolation_model[0].lower() == 'chebyshev':
             # Distribute pressures on a Gauss-Chebyshev grid
-            Plist = np.zeros(Pcount, np.float64)
+            Plist = np.zeros(Pcount, np.float128)
             for i in range(Pcount):
                 P = -math.cos((2 * i + 1) * math.pi / (2 * self.Pcount))
                 P = 10 ** (0.5 * ((math.log10(Pmax) - math.log10(Pmin)) * P + math.log10(Pmax) + math.log10(Pmin)))
@@ -395,7 +395,7 @@ class PressureDependenceJob(object):
             self.Plist = (Plist * 1e-5, "bar")
         else:
             # Distribute pressures evenly on a log domain
-            Plist = 10.0 ** np.linspace(math.log10(Pmin), math.log10(Pmax), Pcount)
+            Plist = 10.0 ** np.linspace(math.log10(Pmin), math.log10(Pmax), Pcount, dtype=np.float128)
             self.Plist = (Plist * 1e-5, "bar")
         return self.Plist.value_si
 
@@ -576,7 +576,7 @@ class PressureDependenceJob(object):
 
                 fig = plt.figure(figsize=(10, 6))
 
-                K2 = np.zeros((Tcount, Pcount))
+                K2 = np.zeros((Tcount, Pcount), dtype=np.float128)
                 if reaction.kinetics is not None:
                     for t in range(Tcount):
                         for p in range(Pcount):

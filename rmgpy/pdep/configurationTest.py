@@ -166,7 +166,7 @@ class TestConfiguration(unittest.TestCase):
         This test asserts that there shouldn't be any NaN in the density of
         states produced by calculateDensityofStates
         """
-        elist = np.linspace(0, 1e5)
+        elist = np.linspace(0, 1e5, dtype=np.float128)
         self.configuration.calculate_density_of_states(elist)
         self.assertFalse(np.isnan(self.configuration.dens_states).any())
 

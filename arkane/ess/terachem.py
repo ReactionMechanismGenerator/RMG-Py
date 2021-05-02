@@ -100,7 +100,7 @@ class TeraChemLog(ESSAdapter):
             while line != '':
                 # Read force constant matrix
                 if '*** Hessian Matrix (Hartree/Bohr^2) ***' in line:
-                    force = np.zeros((n_rows, n_rows), np.float64)
+                    force = np.zeros((n_rows, n_rows), np.float128)
                     for i in range(int(math.ceil(n_rows / 6.0))):
                         # Matrix element rows
                         for j in range(n_rows):
@@ -110,7 +110,7 @@ class TeraChemLog(ESSAdapter):
                                 line = f.readline()
                             data = line.split()
                             for k in range(len(data) - 1):
-                                force[j, i * 6 + k] = float(data[k + 1])
+                                force[j, i * 6 + k] = np.float128(data[k + 1])
                     # Convert from atomic units (Hartree/Bohr^2) to SI (J/m^2)
                     force *= 4.35974417e-18 / 5.291772108e-11 ** 2
                 line = f.readline()
@@ -138,7 +138,7 @@ class TeraChemLog(ESSAdapter):
                         skip_line = True  # the next line is just a comment, skip it
                         continue
                     splits = line.split()
-                    coords.append([float(c) for c in splits[1:]])
+                    coords.append([np.float128(c) for c in splits[1:]])
                     mass, num = get_element_mass(splits[0])
                     masses.append(mass)
                     numbers.append(num)
@@ -154,8 +154,8 @@ class TeraChemLog(ESSAdapter):
                         # example: '   C   0.6640965100   0.0039526500   0.0710079300  12.0000000000'
                         # or: ' C      0.512276     -0.516064      0.779232'
                         splits = lines[j].split()
-                        coords.append([float(c) for c in splits[1:-1]])
-                        masses.append(float(splits[-1]))
+                        coords.append([np.float128(c) for c in splits[1:-1]])
+                        masses.append(np.float128(splits[-1]))
                         numbers.append(list(symbol_by_number.keys())[list(symbol_by_number.values()).index(splits[0])])
                         j += 1
                     break
@@ -165,16 +165,16 @@ class TeraChemLog(ESSAdapter):
                     while lines[j].strip():
                         # example: ' C      0.512276     -0.516064      0.779232'
                         splits = lines[j].split()
-                        coords.append([float(c) for c in splits[1:]])
+                        coords.append([np.float128(c) for c in splits[1:]])
                         mass, num = get_element_mass(splits[0])
                         masses.append(mass)
                         numbers.append(num)
                         j += 1
                     break
 
-        coords = np.array(coords, np.float64)
+        coords = np.array(coords, np.float128)
         numbers = np.array(numbers, np.int)
-        masses = np.array(masses, np.float64)
+        masses = np.array(masses, np.float128)
         if len(coords) == 0 or len(numbers) == 0 or len(masses) == 0 \
                 or ((len(coords) != num_of_atoms or len(numbers) != num_of_atoms or len(masses) != num_of_atoms)
                     and num_of_atoms is not None):
@@ -204,7 +204,7 @@ class TeraChemLog(ESSAdapter):
             while line != '':
                 # Read spin multiplicity if not explicitly given
                 if 'Spin multiplicity' in line and spin_multiplicity == 0 and len(line.split()) == 3:
-                    spin_multiplicity = int(float(line.split()[-1]))
+                    spin_multiplicity = int(np.float128(line.split()[-1]))
                     logging.debug(f'Conformer {label} is assigned a spin multiplicity of {spin_multiplicity}')
                 # Read vibrational modes
                 elif 'Mode      Eigenvalue(AU)      Frequency(cm-1)' in line:
@@ -215,7 +215,7 @@ class TeraChemLog(ESSAdapter):
                         # '  1     0.0331810528   170.5666870932      52.2294230772  245.3982965841   0.0003885795 ...'
                         if 'i' not in line.split()[2]:
                             # only consider non-imaginary frequencies in this function
-                            unscaled_freqs.append(float(line.split()[2]))
+                            unscaled_freqs.append(np.float128(line.split()[2]))
                         line = f.readline()
                 if 'Vibrational Frequencies/Thermochemical Analysis' in line:
                     converged = True
@@ -243,12 +243,12 @@ class TeraChemLog(ESSAdapter):
             if 'FREQUENCY ANALYSIS' in line:
                 return_first = True
             if 'Ground state energy (a.u.):' in line:
-                e_elect = float(lines[i + 1].strip())
+                e_elect = np.float128(lines[i + 1].strip())
                 if return_first:
                     break
             if 'FINAL ENERGY:' in line:
                 # example: 'FINAL ENERGY: -114.5008455547 a.u.'
-                e_elect = float(line.split()[2])
+                e_elect = np.float128(line.split()[2])
                 if return_first:
                     break
         if e_elect is None:
@@ -265,7 +265,7 @@ class TeraChemLog(ESSAdapter):
                 if 'Vibrational zero-point energy (ZPE)' in line:
                     # example:
                     # 'Vibrational zero-point energy (ZPE) = 243113.467652369843563065 J/mol =     0.09259703 AU'
-                    zpe = float(line.split('J/mol')[0].split()[-1])
+                    zpe = np.float128(line.split('J/mol')[0].split()[-1])
                     logging.debug(f'ZPE is {zpe}')
         if zpe is not None:
             return zpe
@@ -288,7 +288,7 @@ class TeraChemLog(ESSAdapter):
                         expected_num_of_points = int(line.split()[3].split('/')[1])
                 if 'Optimized Energy:' in line:
                     # example: '-=#=- Optimized Energy:    -155.0315243910 a.u.'
-                    v = float(line.split()[3])
+                    v = np.float128(line.split()[3])
                     if len(v_list) == v_index - 1:
                         # append this point, it is in order
                         v_list.append(v)
@@ -301,7 +301,7 @@ class TeraChemLog(ESSAdapter):
                         raise LogError(f'Could not parse scan energies from {self.path}')
         logging.info('   Assuming {0} is the output from a TeraChem PES scan...'.format(os.path.basename(self.path)))
 
-        v_list = np.array(v_list, np.float64)
+        v_list = np.array(v_list, np.float128)
 
         # check to see if the scanlog indicates that one of the reacting species may not be the lowest energy conformer
         check_conformer_energy(v_list, self.path)
@@ -310,7 +310,7 @@ class TeraChemLog(ESSAdapter):
         # Also convert units from Hartree/particle to J/mol
         v_list -= np.min(v_list)
         v_list *= constants.E_h * constants.Na
-        angles = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), np.float64)
+        angles = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), np.float128)
 
         # remove None's:
         indices_to_pop = [v_list.index[entry] for entry in v_list if entry is None]
@@ -338,7 +338,7 @@ class TeraChemLog(ESSAdapter):
                     # example:
                     # 'Mode  Eigenvalue(AU)  Frequency(cm-1)  Intensity(km/mol)   Vib.Temp(K)      ZPE(AU) ...'
                     # '  1     0.0331810528   170.5666870932i     52.2294230772  245.3982965841   0.0003885795 ...'
-                    frequency = -1 * float(line.split()[2][:-1])  # remove 'i'
+                    frequency = -1 * np.float128(line.split()[2][:-1])  # remove 'i'
                     break
                 f.readline()
         if frequency is None:

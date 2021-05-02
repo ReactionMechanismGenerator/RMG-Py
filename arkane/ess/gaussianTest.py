@@ -76,7 +76,7 @@ class GaussianLogTest(unittest.TestCase):
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = np.array([298.15], np.float64)
+        t_list = np.array([298.15], np.float128)
         self.assertAlmostEqual(trans.get_partition_function(t_list), 5.83338e6, delta=1e1)
         self.assertAlmostEqual(rot.get_partition_function(t_list), 2.59622e3, delta=1e-2)
         self.assertAlmostEqual(vib.get_partition_function(t_list), 1.0481e0, delta=1e-4)
@@ -125,7 +125,7 @@ class GaussianLogTest(unittest.TestCase):
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, LinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = np.array([298.15], np.float64)
+        t_list = np.array([298.15], np.float128)
         self.assertAlmostEqual(trans.get_partition_function(t_list), 7.11169e6, delta=1e1)
         self.assertAlmostEqual(rot.get_partition_function(t_list), 7.13316e1, delta=1e-4)
         self.assertAlmostEqual(vib.get_partition_function(t_list), 1.00037e0, delta=1e-4)
@@ -153,7 +153,7 @@ class GaussianLogTest(unittest.TestCase):
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = np.array([298.15], np.float64)
+        t_list = np.array([298.15], np.float128)
 
         self.assertAlmostEqual(trans.get_partition_function(t_list), 5.83338e6, delta=1e1)
         self.assertAlmostEqual(rot.get_partition_function(t_list), 2.53410e3, delta=1e-2)

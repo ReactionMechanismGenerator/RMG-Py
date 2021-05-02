@@ -309,7 +309,7 @@ cdef class SimpleReactor(ReactionSystem):
                     self.specific_collider_species.append(rxn.specific_collider)
 
         self.pdep_collision_reaction_indices = np.array(pdep_collider_reaction_indices, np.int)
-        self.collider_efficiencies = np.array(collider_efficiencies, np.float64)
+        self.collider_efficiencies = np.array(collider_efficiencies, np.float128)
         self.pdep_specific_collider_reaction_indices = np.array(pdep_specific_collider_reaction_indices, np.int)
 
     def set_initial_conditions(self):
@@ -341,7 +341,7 @@ cdef class SimpleReactor(ReactionSystem):
 
     @cython.boundscheck(False)
     def residual(self, double t, np.ndarray[np.float64_t, ndim=1] y, np.ndarray[np.float64_t, ndim=1] dydt,
-                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float64)):
+                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float128)):
 
         """
         Return the residual function for the governing DAE system for the
@@ -407,7 +407,7 @@ cdef class SimpleReactor(ReactionSystem):
         inet = self.network_indices
         knet = self.network_leak_coefficients
 
-        res = np.zeros(num_core_species, np.float64)
+        res = np.zeros(num_core_species, np.float128)
 
         core_species_concentrations = np.zeros_like(self.core_species_concentrations)
         core_species_rates = np.zeros_like(self.core_species_rates)
@@ -541,7 +541,7 @@ cdef class SimpleReactor(ReactionSystem):
         res = core_species_rates * V
 
         if self.sensitivity:
-            delta = np.zeros(len(y), np.float64)
+            delta = np.zeros(len(y), np.float128)
             delta[:num_core_species] = res
             if self.jacobian_matrix is None:
                 jacobian = self.jacobian(t, y, dydt, 0, senpar)
@@ -563,7 +563,7 @@ cdef class SimpleReactor(ReactionSystem):
 
     @cython.boundscheck(False)
     def jacobian(self, double t, np.ndarray[np.float64_t, ndim=1] y, np.ndarray[np.float64_t, ndim=1] dydt,
-                 double cj, np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float64)):
+                 double cj, np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float128)):
         """
         Return the analytical Jacobian for the reaction system.
         """
@@ -581,7 +581,7 @@ cdef class SimpleReactor(ReactionSystem):
         num_core_reactions = len(self.core_reaction_rates)
         num_core_species = len(self.core_species_concentrations)
 
-        pd = -cj * np.identity(num_core_species, np.float64)
+        pd = -cj * np.identity(num_core_species, np.float128)
 
         V = constants.R * self.T.value_si * np.sum(y[:num_core_species]) / self.P.value_si
 
@@ -1047,5 +1047,5 @@ cdef class SimpleReactor(ReactionSystem):
                             for i in range(num_core_species):
                                 pd[ir[j, 2], i] += corr
 
-        self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float64)
+        self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float128)
         return pd

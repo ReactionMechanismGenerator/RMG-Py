@@ -259,7 +259,7 @@ cdef class MBSampledReactor(ReactionSystem):
                     self.specific_collider_species.append(rxn.specific_collider)
 
         self.pdep_collision_reaction_indices = np.array(pdep_collider_reaction_indices, np.int)
-        self.collider_efficiencies = np.array(collider_efficiencies, np.float64)
+        self.collider_efficiencies = np.array(collider_efficiencies, np.float128)
         self.pdep_specific_collider_reaction_indices = np.array(pdep_specific_collider_reaction_indices, np.int)
 
     def set_initial_conditions(self):

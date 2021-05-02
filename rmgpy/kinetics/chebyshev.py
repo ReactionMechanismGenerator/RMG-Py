@@ -205,8 +205,8 @@ class Chebyshev(PDepKineticsModel):
         K = quantity.RateCoefficient(K, kunits).value_si
 
         # Create matrix and vector for coefficient fit (linear least-squares)
-        A = np.zeros((nT * nP, degreeT * degreeP), np.float64)
-        b = np.zeros((nT * nP), np.float64)
+        A = np.zeros((nT * nP, degreeT * degreeP), np.float128)
+        b = np.zeros((nT * nP), np.float128)
         for t1, T in enumerate(Tred):
             for p1, P in enumerate(Pred):
                 for t2 in range(degreeT):
@@ -218,7 +218,7 @@ class Chebyshev(PDepKineticsModel):
         x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
 
         # Extract coefficients
-        coeffs = np.zeros((degreeT, degreeP), np.float64)
+        coeffs = np.zeros((degreeT, degreeP), np.float128)
         for t2 in range(degreeT):
             for p2 in range(degreeP):
                 coeffs[t2, p2] = x[p2 * degreeT + t2]

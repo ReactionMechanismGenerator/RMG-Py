@@ -392,8 +392,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         reactions are irreversible and the flux from/to the source
         configuration is 1.0
         """
-        A = np.zeros((len(self.isomers), len(self.isomers)))
-        b = np.zeros(len(self.isomers))
+        A = np.zeros((len(self.isomers), len(self.isomers)), dtype=np.float128)
+        b = np.zeros(len(self.isomers), dtype=np.float128)
         bimolecular = len(self.source) > 1
 
         isomer_spcs = [iso.species[0] for iso in self.isomers]
@@ -451,7 +451,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 if any(c <= 0.0):
                     c, rnorm = opt.nnls(A, b)
 
-                c = c.astype(np.float64)
+                c = c.astype(np.float128)
             except:  # fall back to raw flux analysis rather than solve steady state problem
                 return None
         

@@ -283,8 +283,8 @@ class TestWilhoit(unittest.TestCase):
         """
         h298 = self.wilhoit.get_enthalpy(298)
         s298 = self.wilhoit.get_entropy(298)
-        Tdata = np.array([300., 400., 500., 600., 800., 1000., 1500.])
-        cp_data = np.zeros_like(Tdata)
+        Tdata = np.array([300., 400., 500., 600., 800., 1000., 1500.], dtype=np.float128)
+        cp_data = np.zeros_like(Tdata, dtype=np.float128)
         for i in range(Tdata.shape[0]):
             cp_data[i] = self.wilhoit.get_heat_capacity(Tdata[i])
         cp_0 = self.Cp0 * constants.R

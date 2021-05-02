@@ -121,7 +121,7 @@ class OrcaLog(ESSAdapter):
                     if '---------------------------------' not in line:
                         data = line.split()
                         atoms.append(data[0])
-                        coords.append([float(c) for c in data[1:]])
+                        coords.append([np.float128(c) for c in data[1:]])
                         geometry_flag = True
 
                 if geometry_flag:
@@ -132,9 +132,9 @@ class OrcaLog(ESSAdapter):
             mass1, num1 = get_element_mass(atom1)
             mass.append(mass1)
             numbers.append(num1)
-        coord = numpy.array(coords, numpy.float64)
+        coord = numpy.array(coords, numpy.float128)
         number = numpy.array(numbers, numpy.int)
-        mass = numpy.array(mass, numpy.float64)
+        mass = numpy.array(mass, numpy.float128)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise LogError('Unable to read atoms from Orca geometry output file {0}'.format(self.path))
 
@@ -166,7 +166,7 @@ class OrcaLog(ESSAdapter):
         with open(self.path, 'r') as f:
             for line in f:
                 if 'FINAL SINGLE POINT ENERGY' in line:  # for all methods in Orca
-                    e_elect = float(line.split()[-1])
+                    e_elect = np.float128(line.split()[-1])
         if e_elect is None:
             raise LogError('Unable to find energy in Orca output file.')
         return e_elect * constants.E_h * constants.Na
@@ -179,7 +179,7 @@ class OrcaLog(ESSAdapter):
         with open(self.path, 'r') as f:
             for line in f:
                 if 'Zero point energy' in line:
-                    zpe = float(line.split()[-4]) * constants.E_h * constants.Na
+                    zpe = np.float128(line.split()[-4]) * constants.E_h * constants.Na
         if zpe is None:
             raise LogError('Unable to find zero-point energy in Orca output file.')
         return zpe
@@ -199,7 +199,7 @@ class OrcaLog(ESSAdapter):
             for line in f:
                 # Read imaginary frequency
                 if '***imaginary mode***' in line:
-                    frequency = float((line.split()[1]))
+                    frequency = np.float128((line.split()[1]))
                     break
         # Make sure the frequency is imaginary:
         if frequency < 0:
@@ -226,7 +226,7 @@ class OrcaLog(ESSAdapter):
         for line in reversed(log):
             if 'T1 diagnostic ' in line:
                 items = line.split()
-                return float(items[-1])
+                return np.float128(items[-1])
         raise LogError('Unable to find T1 diagnostic in energy file: {}'.format(self.path))
 
 register_ess_adapter("OrcaLog", OrcaLog)

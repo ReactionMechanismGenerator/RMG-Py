@@ -116,8 +116,8 @@ class ThermoJob(object):
             logging.info("Thermo already generated for species {}. Skipping thermo generation.".format(species))
             return None
 
-        Tlist = np.arange(10.0, 3001.0, 10.0, np.float64)
-        Cplist = np.zeros_like(Tlist)
+        Tlist = np.arange(10.0, 3001.0, 10.0, np.float128)
+        Cplist = np.zeros_like(Tlist, dtype=np.float128)
         H298 = 0.0
         S298 = 0.0
         conformer = self.species.conformer
@@ -259,15 +259,15 @@ class ThermoJob(object):
         except ImportError:
             return
 
-        Tlist = np.arange(10.0, 2501.0, 10.0)
-        Cplist = np.zeros_like(Tlist)
-        Cplist1 = np.zeros_like(Tlist)
-        Hlist = np.zeros_like(Tlist)
-        Hlist1 = np.zeros_like(Tlist)
-        Slist = np.zeros_like(Tlist)
-        Slist1 = np.zeros_like(Tlist)
-        Glist = np.zeros_like(Tlist)
-        Glist1 = np.zeros_like(Tlist)
+        Tlist = np.arange(10.0, 2501.0, 10.0, dtype=np.float128)
+        Cplist = np.zeros_like(Tlist, dtype=np.float128)
+        Cplist1 = np.zeros_like(Tlist, dtype=np.float128)
+        Hlist = np.zeros_like(Tlist, dtype=np.float128)
+        Hlist1 = np.zeros_like(Tlist, dtype=np.float128)
+        Slist = np.zeros_like(Tlist, dtype=np.float128)
+        Slist1 = np.zeros_like(Tlist, dtype=np.float128)
+        Glist = np.zeros_like(Tlist, dtype=np.float128)
+        Glist1 = np.zeros_like(Tlist, dtype=np.float128)
 
         conformer = self.species.conformer
         thermo = self.species.get_thermo_data()

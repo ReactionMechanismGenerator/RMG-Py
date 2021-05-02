@@ -76,7 +76,7 @@ class KineticsJob(object):
             self.Tmax = (max(self.Tlist.value_si), 'K')
             self.Tcount = len(self.Tlist.value_si)
         else:
-            self.Tlist = (1 / np.linspace(1 / self.Tmax.value_si, 1 / self.Tmin.value_si, self.Tcount), 'K')
+            self.Tlist = (1 / np.linspace(1 / self.Tmax.value_si, 1 / self.Tmin.value_si, self.Tcount, dtype=np.float128), 'K')
 
         self.reaction = reaction
         self.k_units = None
@@ -178,7 +178,7 @@ class KineticsJob(object):
             else:
                 raise ValueError('Unknown tunneling model {0!r} for reaction {1}.'.format(tunneling, self.reaction))
         logging.debug('Generating {0} kinetics model for {1}...'.format(kinetics_class, self.reaction))
-        klist = np.zeros_like(self.Tlist.value_si)
+        klist = np.zeros_like(self.Tlist.value_si, dtype=np.float128)
         for i, t in enumerate(self.Tlist.value_si):
             klist[i] = self.reaction.calculate_tst_rate_coefficient(t)
         order = len(self.reaction.reactants)
@@ -215,7 +215,7 @@ class KineticsJob(object):
             f.write('#   ======= =========== =========== =========== ===============\n')
 
             if self.Tlist is None:
-                t_list = np.array([300, 400, 500, 600, 800, 1000, 1500, 2000])
+                t_list = np.array([300, 400, 500, 600, 800, 1000, 1500, 2000], dtype=np.float128)
             else:
                 t_list = self.Tlist.value_si
 
@@ -267,9 +267,9 @@ class KineticsJob(object):
             f.write('#   ======= ============ =========== ============ ============= =========\n')
             f.write('\n\n')
 
-            kinetics_0_rev = Arrhenius().fit_to_data(t_list, np.array(k0_revs), kunits=self.k_r_units,
+            kinetics_0_rev = Arrhenius().fit_to_data(t_list, np.array(k0_revs, dtype=np.float128), kunits=self.k_r_units,
                                                      three_params=self.three_params)
-            kinetics_rev = Arrhenius().fit_to_data(t_list, np.array(k_revs), kunits=self.k_r_units,
+            kinetics_rev = Arrhenius().fit_to_data(t_list, np.array(k_revs, dtype=np.float128), kunits=self.k_r_units,
                                                    three_params=self.three_params)
 
             f.write('# k_rev (TST) = {0} \n'.format(kinetics_0_rev))
@@ -339,9 +339,9 @@ class KineticsJob(object):
         if self.Tlist is not None:
             t_list = [t for t in self.Tlist.value_si]
         else:
-            t_list = 1000.0 / np.arange(0.4, 3.35, 0.05)
-        klist = np.zeros_like(t_list)
-        klist2 = np.zeros_like(t_list)
+            t_list = 1000.0 / np.arange(0.4, 3.35, 0.05, dtype=np.float128)
+        klist = np.zeros_like(t_list, dtype=np.float128)
+        klist2 = np.zeros_like(t_list, dtype=np.float128)
         for i in range(len(t_list)):
             klist[i] = self.reaction.calculate_tst_rate_coefficient(t_list[i])
             klist2[i] = self.reaction.kinetics.get_rate_coefficient(t_list[i])
@@ -602,7 +602,7 @@ class KineticsDrawer(object):
                 break
 
         # Determine naive position of each well (one per column)
-        coordinates = np.zeros((len(self.wells), 2), np.float64)
+        coordinates = np.zeros((len(self.wells), 2), np.float128)
         x = padding
         for i in range(len(self.wells)):
             well = self.wells[i]

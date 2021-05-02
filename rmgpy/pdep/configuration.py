@@ -76,7 +76,7 @@ class Configuration(object):
     @property
     def E0(self):
         """The ground-state energy of the configuration in J/mol."""
-        return sum([float(spec.conformer.E0.value_si) for spec in self.species])
+        return sum([np.float128(spec.conformer.E0.value_si) for spec in self.species])
 
     def cleanup(self):
         """
@@ -324,7 +324,7 @@ class Configuration(object):
                 # interpolation in the steepest descents algorithm
                 import scipy.interpolate
 
-                log_t_data = np.linspace(log(10.), log(10000.), 250.)
+                log_t_data = np.linspace(log(10.), log(10000.), 250., dtype=np.float128)
                 t_data = np.exp(log_t_data)
                 q_data = np.ones_like(t_data)
                 for i in range(t_data.shape[0]):
@@ -361,12 +361,13 @@ class Configuration(object):
         d_e0 = self.e_list[1] - self.e_list[0]
 
         if self.active_j_rotor:
-            dens_states = np.zeros((n_grains,1))
+            dens_states = np.zeros((n_grains,1), dtype=np.float128)
             for r0 in range(n_grains):
-                if e_list[r0] >= E0: break
+                if e_list[r0] >= E0:
+                    break
             for r in range(r0, n_grains):
                 dens_states[r, 0] = f(e_list[r] - E0)
-            dens_states[r0:, 0] = np.exp(dens_states[r0:, 0])
+            dens_states[r0:, 0] = np.exp(dens_states[r0:, 0], dtype=np.float128)
         else:
             assert j_list is not None
             n_j = j_list.shape[0]
@@ -376,7 +377,7 @@ class Configuration(object):
             b_list = []
             for spec in self.species:
                 j_rotor, k_rotor = spec.conformer.get_symmetric_top_rotors()
-                b_list.append(float(j_rotor.rotationalConstant.value_si))
+                b_list.append(np.float128(j_rotor.rotationalConstant.value_si))
 
             for r0 in range(n_grains):
                 if e_list[r0] >= E0: break
@@ -438,7 +439,7 @@ class Configuration(object):
             b_list = []
             for spec in self.species:
                 j_rotor, k_rotor = spec.conformer.get_symmetric_top_rotors()
-                b_list.append(float(j_rotor.rotationalConstant.value_si))
+                b_list.append(np.float128(j_rotor.rotationalConstant.value_si))
 
             for r0 in range(n_grains):
                 if e_list[r0] >= E0:

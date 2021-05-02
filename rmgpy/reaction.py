@@ -611,21 +611,21 @@ class Reaction(object):
         Return the enthalpies of reaction in J/mol evaluated at temperatures
         `Tlist` in K.
         """
-        return np.array([self.get_enthalpy_of_reaction(T) for T in Tlist], np.float64)
+        return np.array([self.get_enthalpy_of_reaction(T) for T in Tlist], np.float128)
 
     def get_entropies_of_reaction(self, Tlist):
         """
         Return the entropies of reaction in J/mol*K evaluated at temperatures
         `Tlist` in K.
         """
-        return np.array([self.get_entropy_of_reaction(T) for T in Tlist], np.float64)
+        return np.array([self.get_entropy_of_reaction(T) for T in Tlist], np.float128)
 
     def get_free_energies_of_reaction(self, Tlist):
         """
         Return the Gibbs free energies of reaction in J/mol evaluated at
         temperatures `Tlist` in K.
         """
-        return np.array([self.get_free_energy_of_reaction(T) for T in Tlist], np.float64)
+        return np.array([self.get_free_energy_of_reaction(T) for T in Tlist], np.float128)
 
     def get_equilibrium_constants(self, Tlist, type='Kc'):
         """
@@ -635,7 +635,7 @@ class Reaction(object):
         ``Kc`` for concentrations (default), or ``Kp`` for pressures. Note that
         this function currently assumes an ideal gas mixture.
         """
-        return np.array([self.get_equilibrium_constant(T, type) for T in Tlist], np.float64)
+        return np.array([self.get_equilibrium_constant(T, type) for T in Tlist], np.float128)
 
     def get_stoichiometric_coefficient(self, spec):
         """
@@ -809,11 +809,11 @@ class Reaction(object):
         kf = k_forward
         assert isinstance(kf, Arrhenius), "Only reverses Arrhenius rates"
         if Tmin is not None and Tmax is not None:
-            Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
+            Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50, dtype=np.float128)
         else:
-            Tlist = 1.0 / np.arange(0.0005, 0.0034, 0.0001)
+            Tlist = 1.0 / np.arange(0.0005, 0.0034, 0.0001, dtype=np.float128)
         # Determine the values of the reverse rate coefficient k_r(T) at each temperature
-        klist = np.zeros_like(Tlist)
+        klist = np.zeros_like(Tlist, dtype=np.float128)
         for i in range(len(Tlist)):
             klist[i] = kf.get_rate_coefficient(Tlist[i]) / self.get_equilibrium_constant(Tlist[i])
         kr = Arrhenius()
@@ -830,11 +830,11 @@ class Reaction(object):
         if not isinstance(kf, SurfaceArrhenius): # Only reverse SurfaceArrhenius rates
             raise TypeError(f'Expected a SurfaceArrhenius object for k_forward but received {kf}')
         if Tmin is not None and Tmax is not None:
-            Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
+            Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50, dtype=np.float128)
         else:
-            Tlist = 1.0 / np.arange(0.0005, 0.0034, 0.0001)
+            Tlist = 1.0 / np.arange(0.0005, 0.0034, 0.0001, dtype=np.float128)
         # Determine the values of the reverse rate coefficient k_r(T) at each temperature
-        klist = np.zeros_like(Tlist)
+        klist = np.zeros_like(Tlist, dtype=np.float128)
         for i in range(len(Tlist)):
             klist[i] = kf.get_rate_coefficient(Tlist[i]) / self.get_equilibrium_constant(Tlist[i])
         kr = SurfaceArrhenius()
@@ -852,11 +852,11 @@ class Reaction(object):
             raise TypeError(f'Expected a StickingCoefficient object for k_forward but received {k_forward}')
         kf = k_forward
         if Tmin is not None and Tmax is not None:
-            Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
+            Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50, dtype=np.float128)
         else:
-            Tlist = 1.0 / np.arange(0.0005, 0.0034, 0.0001)
+            Tlist = 1.0 / np.arange(0.0005, 0.0034, 0.0001, dtype=np.float128)
         # Determine the values of the reverse rate coefficient k_r(T) at each temperature
-        klist = np.zeros_like(Tlist)
+        klist = np.zeros_like(Tlist, dtype=np.float128)
         for i in range(len(Tlist)):
             klist[i] = \
                 self.get_surface_rate_coefficient(Tlist[i], surface_site_density=surface_site_density) / \
@@ -905,7 +905,7 @@ class Reaction(object):
         if isinstance(kf, KineticsData):
 
             Tlist = kf.Tdata.value_si
-            klist = np.zeros_like(Tlist)
+            klist = np.zeros_like(Tlist, dtype=np.float128)
             for i in range(len(Tlist)):
                 klist[i] = kf.get_rate_coefficient(Tlist[i]) / self.get_equilibrium_constant(Tlist[i])
 
@@ -931,9 +931,9 @@ class Reaction(object):
             return self.reverse_arrhenius_rate(kf, kunits)
 
         elif isinstance(kf, Chebyshev):
-            Tlist = 1.0 / np.linspace(1.0 / kf.Tmax.value, 1.0 / kf.Tmin.value, 50)
-            Plist = np.linspace(kf.Pmin.value, kf.Pmax.value, 20)
-            K = np.zeros((len(Tlist), len(Plist)), np.float64)
+            Tlist = 1.0 / np.linspace(1.0 / kf.Tmax.value, 1.0 / kf.Tmin.value, 50, dtype=np.float128)
+            Plist = np.linspace(kf.Pmin.value, kf.Pmax.value, 20, dtype=np.float128)
+            K = np.zeros((len(Tlist), len(Plist)), np.float128)
             for Tindex, T in enumerate(Tlist):
                 for Pindex, P in enumerate(Plist):
                     K[Tindex, Pindex] = kf.get_rate_coefficient(T, P) / self.get_equilibrium_constant(T)
@@ -997,7 +997,7 @@ class Reaction(object):
                                 "should be one of {1}".format(self.kinetics.__class__, supported_types))
 
     def calculate_tst_rate_coefficients(self, Tlist):
-        return np.array([self.calculate_tst_rate_coefficient(T) for T in Tlist], np.float64)
+        return np.array([self.calculate_tst_rate_coefficient(T) for T in Tlist], np.float128)
 
     def calculate_tst_rate_coefficient(self, T):
         """

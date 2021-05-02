@@ -98,7 +98,7 @@ class QChemLog(ESSAdapter):
             while line != '':
                 # Read force constant matrix
                 if 'Final Hessian.' in line or 'Hessian of the SCF Energy' in line:
-                    force = np.zeros((n_rows, n_rows), np.float64)
+                    force = np.zeros((n_rows, n_rows), np.float128)
                     for i in range(int(math.ceil(n_rows / 6.0))):
                         # Header row
                         line = f.readline()
@@ -106,7 +106,7 @@ class QChemLog(ESSAdapter):
                         for j in range(n_rows):  # for j in range(i*6, Nrows):
                             data = f.readline().split()
                             for k in range(len(data) - 1):
-                                force[j, i * 6 + k] = float(data[k + 1])
+                                force[j, i * 6 + k] = np.float128(data[k + 1])
                                 # F[i*5+k,j] = F[j,i*5+k]
                     # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
                     force *= 4.35974417e-18 / 5.291772108e-11 ** 2
@@ -149,7 +149,7 @@ class QChemLog(ESSAdapter):
                     if '------------' not in line:
                         data = line.split()
                         atom.append(data[1])
-                        coord.append([float(c) for c in data[2:]])
+                        coord.append([np.float128(c) for c in data[2:]])
                         geometry_flag = True
                     else:
                         break
@@ -161,9 +161,9 @@ class QChemLog(ESSAdapter):
             mass1, num1 = get_element_mass(atom1)
             mass.append(mass1)
             number.append(num1)
-        coord = np.array(coord, np.float64)
+        coord = np.array(coord, np.float128)
         number = np.array(number, np.int)
-        mass = np.array(mass, np.float64)
+        mass = np.array(mass, np.float128)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise LogError('Unable to read atoms from QChem geometry output file {0}.'.format(self.path))
 
@@ -196,7 +196,7 @@ class QChemLog(ESSAdapter):
                 if '$molecule' in line and spin_multiplicity == 0:
                     line = f.readline()
                     if len(line.split()) == 2:
-                        spin_multiplicity = int(float(line.split()[1]))
+                        spin_multiplicity = int(np.float128(line.split()[1]))
                         logging.debug(
                             'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spin_multiplicity))
                 # The rest of the data we want is in the Thermochemistry section of the output
@@ -215,11 +215,11 @@ class QChemLog(ESSAdapter):
                             while 'STANDARD THERMODYNAMIC QUANTITIES AT' not in line:
                                 if ' Frequency:' in line:
                                     if len(line.split()) == 4:
-                                        frequencies.extend([float(d) for d in line.split()[-3:]])
+                                        frequencies.extend([np.float128(d) for d in line.split()[-3:]])
                                     elif len(line.split()) == 3:
-                                        frequencies.extend([float(d) for d in line.split()[-2:]])
+                                        frequencies.extend([np.float128(d) for d in line.split()[-2:]])
                                     elif len(line.split()) == 2:
-                                        frequencies.extend([float(d) for d in line.split()[-1:]])
+                                        frequencies.extend([np.float128(d) for d in line.split()[-1:]])
                                 line = f.readline()
                             line = f.readline()
                             # If there is an imaginary frequency, remove it
@@ -232,14 +232,14 @@ class QChemLog(ESSAdapter):
                             freq.append(vibration)
                         # Read molecular mass for external translational modes
                         elif 'Molecular Mass:' in line:
-                            mass = float(line.split()[2])
+                            mass = np.float128(line.split()[2])
                             translation = IdealGasTranslation(mass=(mass, "amu"))
                             # modes.append(translation)
                             mmass.append(translation)
 
                         # Read moments of inertia for external rotational modes, given in atomic units
                         elif 'Eigenvalues --' in line:
-                            inertia = [float(d) for d in line.split()[-3:]]
+                            inertia = [np.float128(d) for d in line.split()[-3:]]
 
                         # Read the next line in the file
                         line = f.readline()
@@ -281,9 +281,9 @@ class QChemLog(ESSAdapter):
             a = b = 0
             for line in f:
                 if 'Final energy is' in line:
-                    a = float(line.split()[3]) * constants.E_h * constants.Na
+                    a = np.float128(line.split()[3]) * constants.E_h * constants.Na
                 if 'Total energy in the final basis set' in line:
-                    b = float(line.split()[8]) * constants.E_h * constants.Na
+                    b = np.float128(line.split()[8]) * constants.E_h * constants.Na
                 e_elect = a or b
         if e_elect is None:
             raise LogError('Unable to find energy in QChem output file {0}.'.format(self.path))
@@ -297,7 +297,7 @@ class QChemLog(ESSAdapter):
         with open(self.path, 'r') as f:
             for line in f:
                 if 'Zero point vibrational energy' in line:
-                    zpe = float(line.split()[4]) * 4184  # QChem's ZPE is in kcal/mol, convert to J/mol
+                    zpe = np.float128(line.split()[4]) * 4184  # QChem's ZPE is in kcal/mol, convert to J/mol
                     logging.debug('ZPE is {}'.format(str(zpe)))
         if zpe is not None:
             return zpe
@@ -317,7 +317,7 @@ class QChemLog(ESSAdapter):
                 if '-----------------' in line:
                     read = False
                 if read:
-                    values = [float(item) for item in line.split()]
+                    values = [np.float128(item) for item in line.split()]
                     angle.append(values[0])
                     v_list.append(values[1])
                 if 'Summary of potential scan:' in line:
@@ -328,7 +328,7 @@ class QChemLog(ESSAdapter):
                                    'SCF failed to converge in file {0}.'.format(self.path))
         logging.info('   Assuming {0} is the output from a QChem PES scan...'.format(os.path.basename(self.path)))
 
-        v_list = np.array(v_list, np.float64)
+        v_list = np.array(v_list, np.float128)
         # check to see if the scanlog indicates that one of your reacting species may not be the lowest energy conformer
         check_conformer_energy(v_list, self.path)
 
@@ -336,7 +336,7 @@ class QChemLog(ESSAdapter):
         # Also convert units from Hartree/particle to J/mol
         v_list -= np.min(v_list)
         v_list *= constants.E_h * constants.Na
-        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), np.float64)
+        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), np.float128)
         return v_list, angle
 
     def load_negative_frequency(self):
@@ -349,7 +349,7 @@ class QChemLog(ESSAdapter):
             for line in f:
                 # Read imaginary frequency
                 if ' Frequency:' in line:
-                    frequency = float((line.split()[1]))
+                    frequency = np.float128((line.split()[1]))
                     break
         # Make sure the frequency is imaginary:
         if frequency < 0:

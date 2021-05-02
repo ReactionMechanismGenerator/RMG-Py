@@ -367,7 +367,7 @@ def check_conformer_energy(energies, path):
     is not 0.5 kcal/mol (or more) higher than any other energies in the scan. If so, print and 
     log a warning message.  
     """
-    energies = np.array(energies, np.float64)
+    energies = np.array(energies, np.float128)
     e_diff = (energies[0] - np.min(energies)) * constants.E_h * constants.Na / 1000
     if e_diff >= 2:  # we choose 2 kJ/mol to be the critical energy
         logging.warning(f'The species corresponding to {os.path.basename(path)} is different in energy from the '
@@ -623,7 +623,7 @@ def get_center_of_mass(coords, numbers=None, symbols=None):
         raise IndexError('Either symbols or numbers must be given.')
     if numbers is not None:
         symbols = [symbol_by_number[number] for number in numbers]
-    center, total_mass = np.zeros(3, np.float64), 0
+    center, total_mass = np.zeros(3, np.float128), 0
     for coord, symbol in zip(coords, symbols):
         mass = get_element_mass(symbol)[0]
         center += mass * coord
@@ -656,7 +656,7 @@ def get_moment_of_inertia_tensor(coords, numbers=None, symbols=None):
     if len(coords) != len(symbols):
         raise InputError(f'The number of atoms ({len(symbols)}) is not equal to the number of '
                          f'atomic coordinates ({len(list(coords))})')
-    tensor = np.zeros((3, 3), np.float64)
+    tensor = np.zeros((3, 3), np.float128)
     center_of_mass = get_center_of_mass(coords=coords, numbers=numbers, symbols=symbols)
     for symbol, coord in zip(symbols, coords):
         mass = get_element_mass(symbol)[0]

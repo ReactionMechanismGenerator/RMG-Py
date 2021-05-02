@@ -282,7 +282,7 @@ class HinderedRotor(Torsion):
             coeffs = self._fourier.value_si
             V0 = -np.sum(coeffs[0, :])
         else:
-            coeffs = np.zeros((2, self.symmetry), np.float64)
+            coeffs = np.zeros((2, self.symmetry), np.float128)
             V0 = 0.5 * self._barrier.value_si
             coeffs[0, self.symmetry - 1] = -V0
 
@@ -330,7 +330,7 @@ class HinderedRotor(Torsion):
             # Numerically evaluate the configuration integral
             dphi = constants.pi / 32.
             Q = 0.0
-            for phi in np.arange(0, 2 * constants.pi, dphi):
+            for phi in np.arange(0, 2 * constants.pi, dphi, dtype=np.float128):
                 Q += exp(-beta * self.get_potential(phi)) * dphi
             Q *= sqrt(constants.R * T / (4 * constants.pi * self.get_rotational_constant_energy())) / self.symmetry
         else:
@@ -505,8 +505,8 @@ class HinderedRotor(Torsion):
         while negative_barrier and numterms < maxterms:
             # Fit Fourier series potential
             N = V.shape[0]
-            A = np.zeros((N + 1, 2 * numterms), np.float64)
-            b = np.zeros(N + 1, np.float64)
+            A = np.zeros((N + 1, 2 * numterms), np.float128)
+            b = np.zeros(N + 1, np.float128)
             for i in range(N):
                 phi = angle[i]
                 for m in range(numterms):

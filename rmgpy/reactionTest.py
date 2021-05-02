@@ -263,7 +263,7 @@ class TestSurfaceReaction(unittest.TestCase):
         """
         Test the Reaction.get_equilibrium_constant() method for Kc of a surface reaction.
         """
-        Tlist = numpy.arange(400.0, 1600.0, 200.0, numpy.float64)
+        Tlist = numpy.arange(400.0, 1600.0, 200.0, numpy.float128)
         Kclist0 = [15375.20186, 1.566753, 0.017772, 0.0013485,
                    0.000263180, 8.73504e-05]
         Kclist = self.rxn1s.get_equilibrium_constants(Tlist, type='Kc')
@@ -286,7 +286,7 @@ class TestSurfaceReaction(unittest.TestCase):
         rxn_copy.kinetics = reverse_reverse_kinetics
 
         # check that reverting the reverse yields the original
-        Tlist = numpy.arange(original_kinetics.Tmin.value_si, original_kinetics.Tmax.value_si, 200.0, numpy.float64)
+        Tlist = numpy.arange(original_kinetics.Tmin.value_si, original_kinetics.Tmax.value_si, 200.0, numpy.float128)
         P = 0
         for T in Tlist:
             korig = self.rxn2sSC.get_rate_coefficient(T, P, surface_site_density=2.5e-5)
@@ -560,7 +560,7 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.get_enthalpy_of_reaction() method.
         """
-        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
+        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float128)
         Hlist0 = [float(v) for v in
                   ['-146007', '-145886', '-144195', '-141973', '-139633', '-137341', '-135155', '-133093', '-131150',
                    '-129316']]
@@ -572,7 +572,7 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.get_entropy_of_reaction() method.
         """
-        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
+        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float128)
         Slist0 = [float(v) for v in
                   ['-156.793', '-156.872', '-153.504', '-150.317', '-147.707', '-145.616', '-143.93', '-142.552',
                    '-141.407', '-140.441']]
@@ -584,7 +584,7 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.get_free_energy_of_reaction() method.
         """
-        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
+        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float128)
         Glist0 = [float(v) for v in
                   ['-114648', '-83137.2', '-52092.4', '-21719.3', '8073.53', '37398.1', '66346.8', '94990.6', '123383',
                    '151565']]
@@ -596,7 +596,7 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.get_equilibrium_constant() method.
         """
-        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
+        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float128)
         Kalist0 = [float(v) for v in
                    ['8.75951e+29', '7.1843e+10', '34272.7', '26.1877', '0.378696', '0.0235579', '0.00334673',
                     '0.000792389', '0.000262777', '0.000110053']]
@@ -608,7 +608,7 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.get_equilibrium_constant() method.
         """
-        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
+        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float128)
         Kclist0 = [float(v) for v in
                    ['1.45661e+28', '2.38935e+09', '1709.76', '1.74189', '0.0314866', '0.00235045', '0.000389568',
                     '0.000105413', '3.93273e-05', '1.83006e-05']]
@@ -626,7 +626,7 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.get_equilibrium_constant() method.
         """
-        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
+        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float128)
         Kplist0 = [float(v) for v in
                    ['8.75951e+24', '718430', '0.342727', '0.000261877', '3.78696e-06', '2.35579e-07', '3.34673e-08',
                     '7.92389e-09', '2.62777e-09', '1.10053e-09']]
@@ -651,7 +651,7 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.get_rate_coefficient() method.
         """
-        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
+        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float128)
         P = 1e5
         for T in Tlist:
             self.assertAlmostEqual(
@@ -661,7 +661,7 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.generate_reverse_rate_coefficient() method.
         """
-        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
+        Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float128)
         P = 1e5
         reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
         for T in Tlist:
@@ -747,7 +747,7 @@ class TestReaction(unittest.TestCase):
         reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
-        Tlist = numpy.arange(original_kinetics.Tmin.value_si, original_kinetics.Tmax.value_si, 200.0, numpy.float64)
+        Tlist = numpy.arange(original_kinetics.Tmin.value_si, original_kinetics.Tmax.value_si, 200.0, numpy.float128)
         P = 1e5
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
@@ -776,7 +776,7 @@ class TestReaction(unittest.TestCase):
         reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
-        Tlist = numpy.arange(original_kinetics.Tmin.value_si, original_kinetics.Tmax.value_si, 200.0, numpy.float64)
+        Tlist = numpy.arange(original_kinetics.Tmin.value_si, original_kinetics.Tmax.value_si, 200.0, numpy.float128)
         P = 1e5
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
@@ -807,7 +807,7 @@ class TestReaction(unittest.TestCase):
         reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
-        Tlist = numpy.arange(original_kinetics.Tmin, original_kinetics.Tmax, 200.0, numpy.float64)
+        Tlist = numpy.arange(original_kinetics.Tmin, original_kinetics.Tmax, 200.0, numpy.float128)
         P = 1e5
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
@@ -867,7 +867,7 @@ class TestReaction(unittest.TestCase):
         reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
-        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float128)
         P = 1e5
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
@@ -927,7 +927,7 @@ class TestReaction(unittest.TestCase):
         reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
-        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float128)
         P = 1e5
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
@@ -984,7 +984,7 @@ class TestReaction(unittest.TestCase):
         reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
-        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float128)
         P = 1e5
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
@@ -1080,7 +1080,7 @@ class TestReaction(unittest.TestCase):
         reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
-        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float128)
         P = 1e5
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
@@ -1126,7 +1126,7 @@ class TestReaction(unittest.TestCase):
         reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
-        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float128)
         P = 1e5
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
@@ -1179,7 +1179,7 @@ class TestReaction(unittest.TestCase):
         reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
-        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float128)
         P = 1e5
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
@@ -1240,7 +1240,7 @@ class TestReaction(unittest.TestCase):
         reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
-        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float128)
         P = 1e5
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)

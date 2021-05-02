@@ -456,8 +456,8 @@ class TestKRotor(unittest.TestCase):
         rotational_constant = self.mode.rotationalConstant.value_si * constants.h * constants.c * 100.
         rotational_constant *= constants.Na
         for j in range(0, 100):
-            e_exp = float(rotational_constant * j * j)
-            e_act = float(self.mode.get_level_energy(j))
+            e_exp = np.float128(rotational_constant * j * j)
+            e_act = np.float128(self.mode.get_level_energy(j))
             if j == 0:
                 self.assertEqual(e_act, 0)
             else:

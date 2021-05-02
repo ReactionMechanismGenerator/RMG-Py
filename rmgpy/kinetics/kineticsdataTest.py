@@ -50,10 +50,10 @@ class TestKineticsData(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float64)
+        self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float128)
         self.kdata = np.array(
             [4.73e-19, 3.93e-17, 6.51e-16, 4.60e-15, 2.03e-14, 6.28e-14, 1.58e-13, 3.31e-13, 3.72e-12, 1.49e-11],
-            np.float64)
+            np.float128)
         self.Tmin = 300.
         self.Tmax = 3000.
         self.comment = 'H + CH4 <=> H2 + CH3 (RPMD)'
@@ -178,13 +178,13 @@ class TestPDepKineticsData(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float64)
-        self.Pdata = np.array([1e-1, 1e0, 1e1], np.float64)
+        self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float128)
+        self.Pdata = np.array([1e-1, 1e0, 1e1], np.float128)
         self.kdata = np.array([
             [4.73e-21, 3.93e-19, 6.51e-18, 4.60e-17, 2.03e-16, 6.28e-16, 1.58e-15, 3.31e-15, 3.72e-14, 1.49e-13],
             [4.73e-20, 3.93e-18, 6.51e-17, 4.60e-16, 2.03e-15, 6.28e-15, 1.58e-14, 3.31e-14, 3.72e-13, 1.49e-12],
             [4.73e-19, 3.93e-17, 6.51e-16, 4.60e-15, 2.03e-14, 6.28e-14, 1.58e-13, 3.31e-13, 3.72e-12, 1.49e-11],
-        ], np.float64).T
+        ], np.float128).T
         self.Tmin = 300.
         self.Tmax = 3000.
         self.Pmin = 1e-1

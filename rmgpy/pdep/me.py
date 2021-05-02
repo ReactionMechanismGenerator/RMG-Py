@@ -73,7 +73,7 @@ def generate_full_me_matrix(network, products=True):
         n_rows += n_prod
     
     # Construct full ME matrix
-    me_mat = np.zeros([n_rows, n_rows], np.float64)
+    me_mat = np.zeros([n_rows, n_rows], np.float128)
     
     # Collision terms
     for i in range(n_isom):

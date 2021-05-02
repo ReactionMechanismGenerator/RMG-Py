@@ -149,7 +149,7 @@ class TestConformer(unittest.TestCase):
         """
         Test the StatMech.get_sum_of_states() method for ethylene.
         """
-        e_list = np.arange(0, 5000 * 11.96, 2 * 11.96)
+        e_list = np.arange(0, 5000 * 11.96, 2 * 11.96, dtype=np.float128)
         sum_states = self.ethylene.get_sum_of_states(e_list)
         dens_states = self.ethylene.get_density_of_states(e_list)
         for n in range(10, len(e_list)):

@@ -209,7 +209,7 @@ class TestHarmonicOscillator(unittest.TestCase):
         for n in range(len(e_list)):
             if dens_states[n] != 0:
                 # The peaks should occur near a multiple of 500 cm^-1
-                energy = float(e_list[n]) / factor
+                energy = np.float128(e_list[n]) / factor
                 self.assertTrue(energy % 500 < 5 or energy % 500 > 495)
 
     def test_repr(self):

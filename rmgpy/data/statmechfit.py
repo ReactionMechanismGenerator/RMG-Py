@@ -156,11 +156,11 @@ def fit_statmech_direct(Tlist, Cvlist, n_vib, n_rot, molecule=None):
     # Construct the initial guess
     # Initial guesses within each mode type must be distinct or else the
     # optimization will fail
-    x0 = np.zeros(n_vib + 2 * n_rot, np.float64)
+    x0 = np.zeros(n_vib + 2 * n_rot, np.float128)
     # Initial guess for harmonic oscillator frequencies
     if n_vib > 0:
         x0[0] = 200.0
-        x0[1:n_vib] = np.linspace(800.0, 1600.0, n_vib - 1)
+        x0[1:n_vib] = np.linspace(800.0, 1600.0, n_vib - 1, dtype=np.float128)
     # Initial guess for hindered rotor frequencies and barrier heights
     if n_rot > 0:
         x0[n_vib] = 100.0
@@ -217,11 +217,11 @@ def fit_statmech_pseudo_rotors(Tlist, Cvlist, n_vib, n_rot, molecule=None):
     # Construct the initial guess
     # Initial guesses within each mode type must be distinct or else the
     # optimization will fail
-    x0 = np.zeros(n_vib + 2, np.float64)
+    x0 = np.zeros(n_vib + 2, np.float128)
     # Initial guess for harmonic oscillator frequencies
     if n_vib > 0:
         x0[0] = 200.0
-        x0[1:n_vib] = np.linspace(800.0, 1600.0, n_vib - 1)
+        x0[1:n_vib] = np.linspace(800.0, 1600.0, n_vib - 1, dtype=np.float128)
     # Initial guess for hindered rotor frequencies and barrier heights
     x0[n_vib] = 100.0
     x0[n_vib + 1] = 300.0
@@ -279,7 +279,7 @@ def fit_statmech_pseudo(Tlist, Cvlist, n_vib, n_rot, molecule=None):
     bounds.append((hr_barr_lower_bound, hr_barr_upper_bound))
 
     # Construct the initial guess
-    x0 = np.zeros(6, np.float64)  # Initial guess
+    x0 = np.zeros(6, np.float128)  # Initial guess
     x0[0] = 300.0
     x0[1] = float(math.floor((n_vib - 1) / 2.0))
     x0[2] = 800.0
@@ -405,10 +405,10 @@ class DirectFit(DQED):
         n_eq = self.Neq
         n_vars = self.Nvars
         n_cons = self.Ncons
-        f = np.zeros((n_eq), np.float64)
-        J = np.zeros((n_eq, n_vars), np.float64)
-        f_cons = np.zeros((n_cons), np.float64)
-        J_cons = np.zeros((n_cons, n_vars), np.float64)
+        f = np.zeros((n_eq), np.float128)
+        J = np.zeros((n_eq, n_vars), np.float128)
+        f_cons = np.zeros((n_cons), np.float128)
+        J_cons = np.zeros((n_cons, n_vars), np.float128)
 
         n_vib = self.n_vib
         n_rot = self.n_rot
@@ -451,16 +451,16 @@ class PseudoRotorFit(DQED):
         n_eq = self.Neq
         n_vars = self.Nvars
         n_cons = self.Ncons
-        f = np.zeros((n_eq), np.float64)
-        J = np.zeros((n_eq, n_vars), np.float64)
-        f_cons = np.zeros((n_cons), np.float64)
-        J_cons = np.zeros((n_cons, n_vars), np.float64)
+        f = np.zeros((n_eq), np.float128)
+        J = np.zeros((n_eq, n_vars), np.float128)
+        f_cons = np.zeros((n_cons), np.float128)
+        J_cons = np.zeros((n_cons, n_vars), np.float128)
 
         n_vib = self.n_vib
         n_rot = self.n_rot
 
-        cv = np.zeros((len(self.Tdata), n_vib + 1), np.float64)
-        d_cv = np.zeros((len(self.Tdata), n_vib + 2), np.float64)
+        cv = np.zeros((len(self.Tdata), n_vib + 1), np.float128)
+        d_cv = np.zeros((len(self.Tdata), n_vib + 2), np.float128)
 
         for i in range(len(self.Tdata)):
             for j in range(n_vib):
@@ -504,10 +504,10 @@ class PseudoFit(DQED):
         n_eq = self.Neq
         n_vars = self.Nvars
         n_cons = self.Ncons
-        f = np.zeros((n_eq), np.float64)
-        J = np.zeros((n_eq, n_vars), np.float64)
-        f_cons = np.zeros((n_cons), np.float64)
-        J_cons = np.zeros((n_cons, n_vars), np.float64)
+        f = np.zeros((n_eq), np.float128)
+        J = np.zeros((n_eq, n_vars), np.float128)
+        f_cons = np.zeros((n_cons), np.float128)
+        J_cons = np.zeros((n_cons, n_vars), np.float128)
 
         n_vib = self.n_vib
         n_rot = self.n_rot

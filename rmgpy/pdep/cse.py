@@ -122,8 +122,8 @@ def apply_chemically_significant_eigenvalues_method(network, lumping_order=None)
         if abs(omega0[ind[-n_chem - 1]] / omega0[ind[-1 - i]]) > 3.0:
             n_cse += 1
 
-    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float64)
-    pa = np.zeros((n_isom, n_isom + n_reac, n_grains, n_j), np.float64)
+    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float128)
+    pa = np.zeros((n_isom, n_isom + n_reac, n_grains, n_j), np.float128)
 
     # Check that we have the correct number of distinct eigenvalues and that
     # there is a zero eigenvalue if there should be (i.e. no product channels)
@@ -158,9 +158,9 @@ def apply_chemically_significant_eigenvalues_method(network, lumping_order=None)
     # This method is more numerically robust
     # It also doesn't require finagling with various initial conditions
     # Source: Robertson, Pilling, Jitariu, and Hillier, Phys. Chem. Chem. Phys 9, p. 4085-4097 (2007).
-    z_mat = np.zeros((n_cse, n_cse), np.float64)
-    z_mat_inv = np.zeros((n_cse, n_cse), np.float64)
-    y = np.zeros((n_prod, n_cse), np.float64)
+    z_mat = np.zeros((n_cse, n_cse), np.float128)
+    z_mat_inv = np.zeros((n_cse, n_cse), np.float128)
+    y = np.zeros((n_prod, n_cse), np.float128)
     for j in range(n_cse):
         for i in range(n_isom):
             if i in lumping:

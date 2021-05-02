@@ -79,8 +79,8 @@ def calculate_microcanonical_rate_coefficient(reaction,
 
     n_grains = e_list.shape[0]
     n_j = j_list.shape[0]
-    kf = np.zeros((n_grains,n_j))
-    kr = np.zeros_like(kf)
+    kf = np.zeros((n_grains,n_j), dtype=np.float128)
+    kr = np.zeros_like(kf, dtype=np.float128)
     active_j_rotor = j_list is None
     active_k_rotor = False
 
@@ -145,7 +145,7 @@ def calculate_microcanonical_rate_coefficient(reaction,
     if forward and product_states_known:
         # We computed the forward rate coefficient above
         # Thus we need to compute the reverse rate coefficient here
-        kr = np.zeros_like(kf)        
+        kr = np.zeros_like(kf, dtype=np.float128)
         for s in range(n_j):
             for r in range(n_grains):
                 if prod_dens_states[r, s] != 0:
@@ -291,7 +291,7 @@ def apply_inverse_laplace_transform_method(transition_state,
         elif n >= n_crit:
             import scipy.special
             # Evaluate the inverse Laplace transform of the T**n exp(-Ea/RT) piece, which only exists for n >= 0
-            phi0 = np.zeros(n_grains, np.float64)
+            phi0 = np.zeros(n_grains, np.float128)
             for r in range(n_grains):
                 energy = e_list[r] - e_list[0] - e_a
                 if energy > 1:

@@ -430,8 +430,8 @@ class StatmechGroups(Database):
                         frequencies.extend(entry.data.generate_frequencies(count))
 
         # Subtract out contributions to heat capacity from the group frequencies
-        Tlist = np.arange(300.0, 1501.0, 100.0, np.float64)
-        Cv = np.array([thermo_model.get_heat_capacity(T) / constants.R for T in Tlist], np.float64)
+        Tlist = np.arange(300.0, 1501.0, 100.0, np.float128)
+        Cv = np.array([thermo_model.get_heat_capacity(T) / constants.R for T in Tlist], np.float128)
         logging.debug('Fitting statmech with heat capacities {0}'.format(Cv))
         ho = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
         for i in range(Tlist.shape[0]):
@@ -737,5 +737,5 @@ class GroupFrequencies(object):
             if number == 1:
                 frequencies.append((lower + upper) / 2.0)
             else:
-                frequencies.extend(list(np.linspace(lower, upper, number, endpoint=True)))
+                frequencies.extend(list(np.linspace(lower, upper, number, endpoint=True, dtype=np.float128)))
         return frequencies

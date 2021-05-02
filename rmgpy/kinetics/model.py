@@ -398,7 +398,7 @@ class PDepKineticsModel(KineticsModel):
         a numpy array.  This function helps assist rapid effective pressure calculations in the solver.
         """
 
-        all_efficiencies = np.ones(len(species), np.float64)
+        all_efficiencies = np.ones(len(species), np.float128)
         for mol, eff in self.efficiencies.iteritems():
             for spec in species:
                 if spec.is_isomorphic(mol):

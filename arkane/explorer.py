@@ -192,12 +192,12 @@ class ExplorerJob(object):
         if self.pdepjob.Tlist:
             t_list = self.pdepjob.Tlist.value_si
         else:
-            t_list = np.linspace(self.pdepjob.Tmin.value_si, self.pdepjob.Tmax.value_si, self.pdepjob.Tcount)
+            t_list = np.linspace(self.pdepjob.Tmin.value_si, self.pdepjob.Tmax.value_si, self.pdepjob.Tcount, dtype=np.float128)
 
         if self.pdepjob.Plist:
             p_list = self.pdepjob.Plist.value_si
         else:
-            p_list = np.linspace(self.pdepjob.Pmin.value_si, self.pdepjob.Pmax.value_si, self.pdepjob.Pcount)
+            p_list = np.linspace(self.pdepjob.Pmin.value_si, self.pdepjob.Pmax.value_si, self.pdepjob.Pcount, dtype=np.float128)
 
         # generate the network
 

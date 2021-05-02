@@ -224,7 +224,7 @@ class Network(object):
         self.n_j = 0
 
         # Calculate ground-state energies
-        self.E0 = np.zeros((self.n_isom + self.n_reac + self.n_prod), np.float64)
+        self.E0 = np.zeros((self.n_isom + self.n_reac + self.n_prod), np.float128)
         for i in range(self.n_isom):
             self.E0[i] = self.isomers[i].E0
         for n in range(self.n_reac):
@@ -255,7 +255,7 @@ class Network(object):
         logging.debug('')
 
         logging.info('Calculating phenomenological rate coefficients for {0}...'.format(rxn))
-        K = np.zeros((len(Tlist), len(Plist), n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float64)
+        K = np.zeros((len(Tlist), len(Plist), n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float128)
 
         for t, T in enumerate(Tlist):
             for p, P in enumerate(Plist):
@@ -357,10 +357,10 @@ class Network(object):
                 # Choose the angular momenta to use to compute k(T,P) values at this temperature
                 # (This only applies if the J-rotor is adiabatic
                 if not self.active_j_rotor:
-                    j_list = self.j_list = np.arange(0, 20, 1, np.int)
+                    j_list = self.j_list = np.arange(0, 20, 1, dtype=np.float128)
                     n_j = self.n_j = len(j_list)
                 else:
-                    j_list = self.j_list = np.array([0], np.int)
+                    j_list = self.j_list = np.array([0], dtype=np.float128)
                     n_j = self.n_j = 1
 
                 # Map the densities of states onto this set of energies
@@ -452,9 +452,9 @@ class Network(object):
 
         # Generate the array of energies
         if use_grain_size:
-            e_list = np.arange(Emin, Emax + grain_size, grain_size, dtype=np.float64)
+            e_list = np.arange(Emin, Emax + grain_size, grain_size, dtype=np.float128)
         else:
-            e_list = np.linspace(Emin, Emax, grain_count, dtype=np.float64)
+            e_list = np.linspace(Emin, Emax, grain_count, dtype=np.float128)
 
         return e_list
 
@@ -484,7 +484,7 @@ class Network(object):
         # Use the highest energy on the PES as the initial guess for Emax0
         e_max = np.max(self.E0)
         for rxn in self.path_reactions:
-            E0 = float(rxn.transition_state.conformer.E0.value_si)
+            E0 = np.float128(rxn.transition_state.conformer.E0.value_si)
             if E0 > e_max: e_max = E0
 
         # Choose the actual e_max as many kB * T above the maximum energy on the PES
@@ -530,7 +530,7 @@ class Network(object):
         # Shift the energy grains so that the minimum grain is zero
         e_list -= e_list[0]
 
-        dens_states = np.zeros((n_isom + n_reac + n_prod, n_grains), np.float64)
+        dens_states = np.zeros((n_isom + n_reac + n_prod, n_grains), np.float128)
 
         # Densities of states for isomers
         for i in range(n_isom):
@@ -623,9 +623,9 @@ class Network(object):
         n_prod = len(self.products)
         n_j = 1 if self.active_j_rotor else len(j_list)
 
-        self.Kij = np.zeros([n_isom, n_isom, n_grains, n_j], np.float64)
-        self.Gnj = np.zeros([n_reac + n_prod, n_isom, n_grains, n_j], np.float64)
-        self.Fim = np.zeros([n_isom, n_reac, n_grains, n_j], np.float64)
+        self.Kij = np.zeros([n_isom, n_isom, n_grains, n_j], np.float128)
+        self.Gnj = np.zeros([n_reac + n_prod, n_isom, n_grains, n_j], np.float128)
+        self.Fim = np.zeros([n_isom, n_reac, n_grains, n_j], np.float128)
 
         isomers = [isomer.species[0] for isomer in self.isomers]
         reactants = [reactant.species for reactant in self.reactants]
@@ -838,7 +838,7 @@ class Network(object):
         n_isom = len(self.isomers)
         n_reac = len(self.reactants)
         n_prod = len(self.products)
-        eq_ratios = np.zeros(n_isom + n_reac + n_prod, np.float64)
+        eq_ratios = np.zeros(n_isom + n_reac + n_prod, np.float128)
         conc = (1e5 / constants.R / temperature)  # [=] mol/m^3
         for i in range(n_isom):
             G = self.isomers[i].get_free_energy(temperature)
@@ -865,8 +865,8 @@ class Network(object):
         n_j = 1 if self.j_list is None else len(self.j_list)
 
         try:
-            coll_freq = np.zeros(n_isom, np.float64)
-            m_coll = np.zeros((n_isom, n_grains, n_j, n_grains, n_j), np.float64)
+            coll_freq = np.zeros(n_isom, np.float128)
+            m_coll = np.zeros((n_isom, n_grains, n_j, n_grains, n_j), np.float128)
         except MemoryError:
             logging.warning('Collision matrix too large to manage')
             new_n_grains = int(n_grains / 2.0)
@@ -959,7 +959,7 @@ class Network(object):
         M[:, n_rows - n_reac - n_prod:] *= ymB
 
         if self.ymB is not None:
-            if isinstance(self.ymB, float):
+            if isinstance(self.ymB, np.float128):
                 assert n_reac <= 1
                 M[:, n_rows - n_reac - n_prod:] *= self.ymB
             else:
@@ -974,7 +974,7 @@ class Network(object):
             eq_dist[i, :, :] /= sum(eq_dist[i, :, :])
 
         # Set initial conditions
-        p0 = np.zeros([M.shape[0]], float)
+        p0 = np.zeros([M.shape[0]], np.float128)
         for i in range(n_isom):
             for r in range(n_grains):
                 for s in range(n_j):
@@ -990,9 +990,9 @@ class Network(object):
         ode.set_initial_value(p0, 0.0).set_f_params(M).set_jac_params(M)
 
         # Generate solution
-        t = np.zeros([n_time], float)
-        p = np.zeros([n_time, n_isom, n_grains, n_j], float)
-        x = np.zeros([n_time, n_isom + n_reac + n_prod], float)
+        t = np.zeros([n_time], np.float128)
+        p = np.zeros([n_time, n_isom, n_grains, n_j], np.float128)
+        x = np.zeros([n_time, n_isom + n_reac + n_prod], np.float128)
         for m in range(n_time):
             ode.integrate(tlist[m])
             t[m] = ode.t
@@ -1040,7 +1040,7 @@ class Network(object):
         K[:, n_isom:] *= ymB
 
         if self.ymB is not None:
-            if isinstance(self.ymB, float):
+            if isinstance(self.ymB, np.float128):
                 assert n_reac <= 1
                 K[:, n_isom:] *= self.ymB
             else:
@@ -1053,9 +1053,9 @@ class Network(object):
         ode.set_initial_value(x0, 0.0).set_f_params(K).set_jac_params(K)
 
         # Generate solution
-        t = np.zeros([n_time], float)
-        p = np.zeros([n_time, n_isom, n_grains, n_j], float)
-        x = np.zeros([n_time, n_isom + n_reac + n_prod], float)
+        t = np.zeros([n_time], np.float128)
+        p = np.zeros([n_time, n_isom, n_grains, n_j], np.float128)
+        x = np.zeros([n_time, n_isom + n_reac + n_prod], np.float128)
         for m in range(n_time):
             ode.integrate(tlist[m])
             t[m] = ode.t

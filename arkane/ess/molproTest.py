@@ -106,7 +106,7 @@ class MolproLogTest(unittest.TestCase):
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = np.array([298.15], np.float64)
+        t_list = np.array([298.15], np.float128)
 
         self.assertAlmostEqual(trans.get_partition_function(t_list), 9.175364e7, delta=1e1)
         self.assertAlmostEqual(rot.get_partition_function(t_list), 1.00005557e5, delta=1e-2)

@@ -101,7 +101,7 @@ class GaussianLog(ESSAdapter):
             while line != '':
                 # Read force constant matrix
                 if 'Force constants in Cartesian coordinates:' in line:
-                    force = np.zeros((n_rows, n_rows), np.float64)
+                    force = np.zeros((n_rows, n_rows), np.float128)
                     for i in range(int(math.ceil(n_rows / 5.0))):
                         # Header row
                         line = f.readline()
@@ -109,8 +109,8 @@ class GaussianLog(ESSAdapter):
                         for j in range(i * 5, n_rows):
                             data = f.readline().split()
                             for k in range(len(data) - 1):
-                                force[j, i * 5 + k] = float(data[k + 1].replace('D', 'E'))
-                                force[i * 5 + k, j] = force[j, i * 5 + k]
+                                force[j, i * 5 + k] = np.float128(data[k + 1].replace('D', 'E'))
+                                force[i * 5 + k, j] = np.float128[j, i * 5 + k]
                     # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
                     force *= 4.35974417e-18 / 5.291772108e-11 ** 2
                 line = f.readline()
@@ -136,7 +136,7 @@ class GaussianLog(ESSAdapter):
                     while '---------------------------------------------------------------------' not in line:
                         data = line.split()
                         number.append(int(data[1]))
-                        coord.append([float(data[3]), float(data[4]), float(data[5])])
+                        coord.append([np.float128(data[3]), np.float128(data[4]), np.float128(data[5])])
                         line = f.readline()
                 line = f.readline()
 
@@ -145,9 +145,9 @@ class GaussianLog(ESSAdapter):
         for num in number:
             mass1, _ = get_element_mass(num)
             mass.append(mass1)
-        coord = np.array(coord, np.float64)
+        coord = np.array(coord, np.float128)
         number = np.array(number, np.int)
-        mass = np.array(mass, np.float64)
+        mass = np.array(mass, np.float128)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise LogError('Unable to read atoms from Gaussian geometry output file {0}. '
                            'Make sure the output file is not corrupt.\nNote: if your species has '
@@ -198,20 +198,20 @@ class GaussianLog(ESSAdapter):
 
                         # Read molecular mass for external translational modes
                         elif 'Molecular mass:' in line:
-                            mass = float(line.split()[2])
+                            mass = np.float128(line.split()[2])
                             translation = IdealGasTranslation(mass=(mass, "amu"))
                             modes.append(translation)
 
                         # Read moments of inertia for external rotational modes
                         elif 'Rotational constants (GHZ):' in line:
-                            inertia = [float(d) for d in line.split()[-3:]]
+                            inertia = [np.float128(d) for d in line.split()[-3:]]
                             for i in range(3):
                                 inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) \
                                              * constants.Na * 1e23
                             rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
                         elif 'Rotational constant (GHZ):' in line:
-                            inertia = [float(line.split()[3])]
+                            inertia = [np.float128(line.split()[3])]
                             inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9) \
                                          * constants.Na * 1e23
                             rotation = LinearRotor(inertia=(inertia[0], "amu*angstrom^2"), symmetry=symmetry)
@@ -220,12 +220,12 @@ class GaussianLog(ESSAdapter):
                         # Read vibrational modes
                         elif 'Vibrational temperatures:' in line:
                             frequencies = []
-                            frequencies.extend([float(d) for d in line.split()[2:]])
+                            frequencies.extend([np.float128(d) for d in line.split()[2:]])
                             line = f.readline()
-                            frequencies.extend([float(d) for d in line.split()[1:]])
+                            frequencies.extend([np.float128(d) for d in line.split()[1:]])
                             line = f.readline()
                             while line.strip() != '':
-                                frequencies.extend([float(d) for d in line.split()])
+                                frequencies.extend([np.float128(d) for d in line.split()])
                                 line = f.readline()
                             # Convert from K to cm^-1
                             if len(frequencies) > 0:
@@ -236,11 +236,11 @@ class GaussianLog(ESSAdapter):
 
                         # Read ground-state energy
                         elif 'Sum of electronic and zero-point Energies=' in line:
-                            e0 = float(line.split()[6]) * 4.35974394e-18 * constants.Na
+                            e0 = np.float128(line.split()[6]) * 4.35974394e-18 * constants.Na
 
                         # Read spin multiplicity if above method was unsuccessful
                         elif 'Electronic' in line and in_partition_functions and spin_multiplicity == 0:
-                            spin_multiplicity = int(float(line.split()[1].replace('D', 'E')))
+                            spin_multiplicity = int(np.float128(line.split()[1].replace('D', 'E')))
 
                         elif 'Log10(Q)' in line:
                             in_partition_functions = True
@@ -272,24 +272,24 @@ class GaussianLog(ESSAdapter):
             while line != '':
 
                 if 'SCF Done:' in line:
-                    e_elect = float(line.split()[4]) * constants.E_h * constants.Na
+                    e_elect = np.float128(line.split()[4]) * constants.E_h * constants.Na
                     elect_energy_source = 'SCF'
                 elif ' E2(' in line and ' E(' in line:
-                    e_elect = float(line.split()[-1].replace('D', 'E')) * constants.E_h * constants.Na
+                    e_elect = np.float128(line.split()[-1].replace('D', 'E')) * constants.E_h * constants.Na
                     elect_energy_source = 'doublehybrd or MP2'
                 elif 'MP2 =' in line:
-                    e_elect = float(line.split()[-1].replace('D', 'E')) * constants.E_h * constants.Na
+                    e_elect = np.float128(line.split()[-1].replace('D', 'E')) * constants.E_h * constants.Na
                     elect_energy_source = 'MP2'
                 elif 'E(CORR)=' in line:
-                    e_elect = float(line.split()[3]) * constants.E_h * constants.Na
+                    e_elect = np.float128(line.split()[3]) * constants.E_h * constants.Na
                     elect_energy_source = 'CCSD'
                 elif 'CCSD(T)= ' in line:
-                    e_elect = float(line.split()[1].replace('D', 'E')) * constants.E_h * constants.Na
+                    e_elect = np.float128(line.split()[1].replace('D', 'E')) * constants.E_h * constants.Na
                     elect_energy_source = 'CCSD(T)'
                 elif 'CBS-QB3 (0 K)' in line:
-                    e0_composite = float(line.split()[3]) * constants.E_h * constants.Na
+                    e0_composite = np.float128(line.split()[3]) * constants.E_h * constants.Na
                 elif 'G3(0 K)' in line:
-                    e0_composite = float(line.split()[2]) * constants.E_h * constants.Na
+                    e0_composite = np.float128(line.split()[2]) * constants.E_h * constants.Na
 
                 # Read the ZPE from the "E(ZPE)=" line, as this is the scaled version.
                 # Gaussian defines the following as
@@ -298,12 +298,12 @@ class GaussianLog(ESSAdapter):
                 # hence to get the correct Elec from E (0 K) we need to subtract the scaled ZPE
 
                 elif 'E(ZPE)' in line:
-                    scaled_zpe = float(line.split()[1]) * constants.E_h * constants.Na
+                    scaled_zpe = np.float128(line.split()[1]) * constants.E_h * constants.Na
                 elif '\\ZeroPoint=' in line:
                     line = line.strip() + f.readline().strip()
                     start = line.find('\\ZeroPoint=') + 11
                     end = line.find('\\', start)
-                    scaled_zpe = float(line[start:end]) * constants.E_h * constants.Na * zpe_scale_factor
+                    scaled_zpe = np.float128(line[start:end]) * constants.E_h * constants.Na * zpe_scale_factor
                 # Read the next line in the file
                 line = f.readline()
 
@@ -331,12 +331,12 @@ class GaussianLog(ESSAdapter):
                 # We will read in the unscaled ZPE and later multiply the scaling factor
                 # from the input file
                 if 'Zero-point correction=' in line:
-                    zpe = float(line.split()[2]) * constants.E_h * constants.Na
+                    zpe = np.float128(line.split()[2]) * constants.E_h * constants.Na
                 elif '\\ZeroPoint=' in line:
                     line = line.strip() + f.readline().strip()
                     start = line.find('\\ZeroPoint=') + 11
                     end = line.find('\\', start)
-                    zpe = float(line[start:end]) * constants.E_h * constants.Na
+                    zpe = np.float128(line[start:end]) * constants.E_h * constants.Na
                 line = f.readline()
 
         if zpe is not None:
@@ -369,7 +369,7 @@ class GaussianLog(ESSAdapter):
                 # The lines containing "SCF Done" give the energy at each
                 # iteration (even the intermediate ones)
                 if 'SCF Done:' in line:
-                    energy = float(line.split()[4])
+                    energy = np.float128(line.split()[4])
                     # rigid scans will only not optimize, so just append every time it finds an energy.
                     if rigid_scan:
                         vlist.append(energy)
@@ -384,7 +384,7 @@ class GaussianLog(ESSAdapter):
         if rigid_scan:
             print('   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...')
 
-        vlist = np.array(vlist, np.float64)
+        vlist = np.array(vlist, np.float128)
         # check to see if the scanlog indicates that a one of your reacting species may not be
         # the lowest energy conformer
         check_conformer_energy(vlist, self.path)
@@ -400,7 +400,7 @@ class GaussianLog(ESSAdapter):
         # Determine the set of dihedral angles corresponding to the loaded energies
         # This assumes that you start at 0.0, finish at 360.0, and take
         # constant step sizes in between
-        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(vlist) - 1), np.float64)
+        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(vlist) - 1), np.float128)
 
         return vlist, angle
 
@@ -478,7 +478,7 @@ class GaussianLog(ESSAdapter):
         Return the angle difference (degrees) for a gaussian scan.
         """
         output = self._load_scan_specs('S', get_after_letter_spec=True)
-        return float(output[0][1])
+        return np.float128(output[0][1])
 
     def _load_number_scans(self):
         """
@@ -502,7 +502,7 @@ class GaussianLog(ESSAdapter):
                     frequencies.extend(line.split()[2:])
                 line = f.readline()
 
-        frequencies = [float(freq) for freq in frequencies]
+        frequencies = [np.float128(freq) for freq in frequencies]
         frequencies.sort()
         try:
             frequency = [freq for freq in frequencies if freq < 0][0]

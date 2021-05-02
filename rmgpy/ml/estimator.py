@@ -86,7 +86,7 @@ class MLEstimator:
         # Set uncertainties to 0 because the current model cannot estimate them
         thermo = ThermoData(
             Tdata=(self.temps, 'K'),
-            Cpdata=(cp, 'cal/(mol*K)', np.zeros(len(self.temps))),
+            Cpdata=(cp, 'cal/(mol*K)', np.zeros(len(self.temps), dtype=np.float128)),
             H298=(hf298, 'kcal/mol', 0),
             S298=(s298, 'cal/(mol*K)', 0),
             Cp0=(cp0, 'J/(mol*K)'),
@@ -156,7 +156,7 @@ def load_estimator(model_dir: str) -> Callable[[str], np.ndarray]:
         # print progress bars every time a prediction is made
         with open(os.devnull, 'w') as f, contextlib.redirect_stderr(f):
             # Predict with each model individually and sum predictions
-            sum_preds = np.zeros((len(data), args.num_tasks))
+            sum_preds = np.zeros((len(data), args.num_tasks), dtype=np.float128)
             for model in models:
                 model_preds = chemprop.train.predict(
                     model=model,

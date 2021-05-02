@@ -108,7 +108,7 @@ def parse_csv_data(csv_file):
 
     columns = list(zip(*f))
     time = GenericData(label=columns[0][0],
-                       data=np.array(columns[0][1:], dtype=np.float64),
+                       data=np.array(columns[0][1:], dtype=np.float128),
                        )
 
     # Parse the units from the Time header
@@ -120,7 +120,7 @@ def parse_csv_data(csv_file):
     data_list = []
     for col in columns[1:]:
         header = col[0]
-        values = np.array(col[1:], dtype=np.float64)
+        values = np.array(col[1:], dtype=np.float128)
         data = GenericData(label=header, data=values)
 
         # Parse the index or the label from the header
@@ -264,7 +264,7 @@ class GenericPlot(object):
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
-        position = np.arange(len(self.y_var), 0, -1)
+        position = np.arange(len(self.y_var), 0, -1, dtype=np.float128)
         # Reverse in order to go front top to bottom
         if not idx:
             idx = -1

@@ -129,12 +129,12 @@ class TestThirdBody(unittest.TestCase):
                 if spec.is_isomorphic(mol):
                     i = species.index(spec)
                     break
-            fractions = np.zeros(len(species))
+            fractions = np.zeros(len(species), dtype=np.float128)
             fractions[i] = 1.0
             Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
             self.assertAlmostEqual(P * eff, Peff)
         # Also test a mixture of bath gases
-        fractions = np.zeros(len(species))
+        fractions = np.zeros(len(species), dtype=np.float128)
         fractions[0] = 0.5
         fractions[1] = 0.5
         eff = 0
@@ -153,7 +153,7 @@ class TestThirdBody(unittest.TestCase):
                 if spec.is_isomorphic(mol):
                     i = species.index(spec)
                     break
-            fractions = np.zeros(len(species))
+            fractions = np.zeros(len(species), dtype=np.float128)
             fractions[i] = 1.0
             Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
             self.assertAlmostEqual(P * eff, Peff)
@@ -165,14 +165,14 @@ class TestThirdBody(unittest.TestCase):
             if species[1].is_isomorphic(mol):
                 eff += 0.5 * self.thirdBody.efficiencies[mol]
 
-        fractions = np.zeros(len(species))
+        fractions = np.zeros(len(species), dtype=np.float128)
         fractions[0] = 0.5
         fractions[1] = 0.5
         Peff = self.thirdBody.get_effective_pressure(P, species, fractions)
         self.assertAlmostEqual(P * eff, Peff)
 
         # Here, test a non-normalized set of fractions (they are still 50% of each)
-        fractions = np.zeros(len(species))
+        fractions = np.zeros(len(species), dtype=np.float128)
         fractions[0] = 0.7
         fractions[1] = 0.7
         Peff = self.thirdBody.get_effective_pressure(P, species, fractions)

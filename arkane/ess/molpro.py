@@ -94,7 +94,7 @@ class MolproLog(ESSAdapter):
             while line != '':
                 # Read force constant matrix
                 if 'Force Constants (Second Derivatives of the Energy) in [a.u.]' in line:
-                    fc = np.zeros((n_rows, n_rows), np.float64)
+                    fc = np.zeros((n_rows, n_rows), np.float128)
                     for i in range(int(math.ceil(n_rows / 5.0))):
                         # Header row
                         line = f.readline()
@@ -102,7 +102,7 @@ class MolproLog(ESSAdapter):
                         for j in range(i * 5, n_rows):
                             data = f.readline().split()
                             for k in range(len(data) - 1):
-                                fc[j, i * 5 + k] = float(data[k + 1].replace('D', 'E'))
+                                fc[j, i * 5 + k] = np.float128(data[k + 1].replace('D', 'E'))
                                 fc[i * 5 + k, j] = fc[j, i * 5 + k]
                     # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
                     fc *= 4.35974417e-18 / 5.291772108e-11 ** 2
@@ -131,7 +131,7 @@ class MolproLog(ESSAdapter):
                     while line != '\n':
                         data = line.split()
                         symbol.append(str(data[0]))
-                        coord.append([float(data[1]), float(data[2]), float(data[3])])
+                        coord.append([np.float128(data[1]), np.float128(data[2]), np.float128(data[3])])
                         line = f.readline()
                     line = f.readline()
                 line = f.readline()
@@ -149,7 +149,7 @@ class MolproLog(ESSAdapter):
                         while line != '\n':
                             data = line.split()
                             symbol.append(str(data[1]))
-                            coord.append([float(data[3]), float(data[4]), float(data[5])])
+                            coord.append([np.float128(data[3]), np.float128(data[4]), np.float128(data[5])])
                             line = f.readline()
                     line = f.readline()
 
@@ -159,8 +159,8 @@ class MolproLog(ESSAdapter):
             mass.append(mass1)
             number.append(num1)
         number = np.array(number, np.int)
-        mass = np.array(mass, np.float64)
-        coord = np.array(coord, np.float64)
+        mass = np.array(mass, np.float128)
+        coord = np.array(coord, np.float128)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise LogError('Unable to read atoms from Molpro geometry output file {0}'.format(self.path))
 
@@ -225,13 +225,13 @@ class MolproLog(ESSAdapter):
 
                         # Read molecular mass for external translational modes
                         elif 'Molecular Mass:' in line:
-                            mass = float(line.split()[2])
+                            mass = np.float128(line.split()[2])
                             translation = IdealGasTranslation(mass=(mass, "amu"))
                             modes.append(translation)
 
                         # Read moments of inertia for external rotational modes
                         elif 'Rotational Constants' in line and line.split()[-1] == '[GHz]':
-                            inertia = [float(d) for d in line.split()[-4:-1]]
+                            inertia = [np.float128(d) for d in line.split()[-4:-1]]
                             for i in range(3):
                                 inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) \
                                              * constants.Na * 1e23

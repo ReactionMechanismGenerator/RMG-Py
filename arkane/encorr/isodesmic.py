@@ -218,7 +218,7 @@ class SpeciesConstraints:
         Returns:
             np.ndarray: vector of the number of instances of each constraining feature e.g. number of carbon atoms
         """
-        constraint_vector = np.zeros(len(self.constraint_map))
+        constraint_vector = np.zeros(len(self.constraint_map), dtype=np.float128)
         molecule = species.molecule
 
         try:
@@ -422,7 +422,7 @@ class ErrorCancelingScheme:
             list: A list of the found error canceling reactions
         """
         subset_queue = deque()
-        subset_queue.append(np.arange(0, len(self.reference_species)))
+        subset_queue.append(np.arange(0, len(self.reference_species)), dtype=np.float128)
         reaction_list = []
 
         while (len(subset_queue) != 0) and (len(reaction_list) < n_reactions_max):
@@ -457,7 +457,7 @@ class ErrorCancelingScheme:
             - reaction list containing all error canceling reactions found
         """
         reaction_list = self.multiple_error_canceling_reaction_search(n_reactions_max, milp_software)
-        h298_list = np.zeros(len(reaction_list))
+        h298_list = np.zeros(len(reaction_list), dtype=np.float128)
 
         for i, rxn in enumerate(reaction_list):
             h298_list[i] = rxn.calculate_target_thermo().value_si
