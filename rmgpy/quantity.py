@@ -34,7 +34,6 @@ particularly the :class:`Quantity` class for representing physical quantities.
 
 import logging
 
-import cython
 import numpy as np
 import quantities as pq
 
@@ -91,6 +90,7 @@ class Units(RMGObject):
     conversionFactors = {'cm^-1': 1.0}
 
     def __init__(self, units=''):
+        super().__init__()
         if units in NOT_IMPLEMENTED_UNITS:
             raise NotImplementedError(
                 'The units {} are not yet supported. Please choose SI units.'.format(units)
@@ -135,7 +135,6 @@ class Units(RMGObject):
         Only lengths are changed. Everything else is in SI, i.e.
         moles (not molecules) and seconds (not minutes).
         """
-        cython.declare(factor=cython.double, metres=cython.int)
         try:
             factor = Units.conversion_factors_from_si_to_cm_mol_s[self.units]
         except KeyError:

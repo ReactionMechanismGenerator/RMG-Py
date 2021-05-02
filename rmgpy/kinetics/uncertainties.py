@@ -30,12 +30,11 @@ This module contains information related to kinetic uncertainties
 """
 
 import numpy as np
-cimport numpy as np
 
 from rmgpy.quantity import Quantity
 
 
-cdef class RateUncertainty(object):
+class RateUncertainty(object):
     """
     Class for storing kinetic uncertainty information describes identically a normal distribution 
     on Log(k) and a lognormal distribution on k by mu and var at a single temperature Tref also 
@@ -61,7 +60,7 @@ cdef class RateUncertainty(object):
         s += ")"
         return s
 
-    cpdef double get_expected_log_uncertainty(self):
+    def get_expected_log_uncertainty(self):
         """
         The expected uncertainty in Log(k) at Tref
         """

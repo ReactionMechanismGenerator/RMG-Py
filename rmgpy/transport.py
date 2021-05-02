@@ -59,6 +59,7 @@ class TransportData(RMGObject):
 
     def __init__(self, shapeIndex=None, epsilon=None, sigma=None, dipoleMoment=None, polarizability=None,
                  rotrelaxcollnum=None, comment=''):
+        super().__init__()
         self.shapeIndex = shapeIndex
         try:
             self.epsilon = Energy(epsilon)

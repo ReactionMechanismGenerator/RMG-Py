@@ -28,10 +28,10 @@
 ###############################################################################
 
 import numpy as np
-cimport numpy as np
-from libc.math cimport log
+from math import log
 
 import rmgpy.quantity as quantity
+from rmgpy.kinetics.model import PDepKineticsModel, KineticsModel
 
 ################################################################################
 
@@ -79,29 +79,29 @@ cdef class KineticsData(KineticsModel):
         """
         return (KineticsData, (self.Tdata, self.kdata, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
-    property Tdata:
+    @property
+    def Tdata(self):
         """An array of temperatures at which rate coefficient values are known."""
-        def __get__(self):
-            return self._Tdata
-        def __set__(self, value):
-            self._Tdata = quantity.Temperature(value)
+        return self._Tdata
 
-    property kdata:
+    @Tdata.setter
+    def Tdata(self, value):
+        self._Tdata = quantity.Temperature(value)
+
+    @property
+    def kdata(self):
         """An array of rate coefficient values."""
-        def __get__(self):
-            return self._kdata
-        def __set__(self, value):
-            self._kdata = quantity.RateCoefficient(value)
+        return self._kdata
 
-    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
+    @kdata.setter
+    def kdata(self, value):
+        self._kdata = quantity.RateCoefficient(value)
+
+    def get_rate_coefficient(self, T, P=0.0):
         """
         Return the rate coefficient in the appropriate combination of m^3, 
         mol, and s at temperature `T` in K. 
         """
-        cdef np.ndarray[np.float64_t, ndim=1] Tdata, kdata
-        cdef double Tlow, Thigh, klow, khigh
-        cdef double k
-        cdef int i, N
 
         Tdata = self._Tdata.value_si
         kdata = self._kdata.value_si
@@ -124,7 +124,7 @@ cdef class KineticsData(KineticsModel):
                     break
         return k
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Returns ``True`` if the kdata and Tdata match. Returns ``False`` otherwise.
         """
@@ -138,7 +138,7 @@ cdef class KineticsData(KineticsModel):
 
 ################################################################################
 
-cdef class PDepKineticsData(PDepKineticsModel):
+class PDepKineticsData(PDepKineticsModel):
     """
     A kinetics model based on an array of rate coefficient data vs. temperature
     and pressure. The attributes are:
@@ -185,37 +185,38 @@ cdef class PDepKineticsData(PDepKineticsModel):
         return (PDepKineticsData, (self.Tdata, self.Pdata, self.kdata, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                                    self.comment))
 
-    property Tdata:
+    @property
+    def Tdata(self):
         """An array of temperatures at which rate coefficient values are known."""
-        def __get__(self):
-            return self._Tdata
-        def __set__(self, value):
-            self._Tdata = quantity.Temperature(value)
+        return self._Tdata
 
-    property Pdata:
+    @Tdata.setter
+    def Tdata(self, value):
+        self._Tdata = quantity.Temperature(value)
+
+    @property
+    def Pdata(self):
         """An array of pressures at which rate coefficient values are known."""
-        def __get__(self):
-            return self._Pdata
-        def __set__(self, value):
-            self._Pdata = quantity.Pressure(value)
+        return self._Pdata
 
-    property kdata:
-        """An array of rate coefficient values at each temperature and pressure."""
-        def __get__(self):
-            return self._kdata
-        def __set__(self, value):
-            self._kdata = quantity.RateCoefficient(value)
+    @Pdata.setter
+    def Pdata(self, value):
+        self._Pdata = quantity.Pressure(value)
 
-    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
+    @property
+    def kdata(self):
+        """An array of rate coefficient values."""
+        return self._kdata
+
+    @kdata.setter
+    def kdata(self, value):
+        self._kdata = quantity.RateCoefficient(value)
+
+    def get_rate_coefficient(self, T, P=0.0):
         """
         Return the rate coefficient in the appropriate combination of m^3, 
         mol, and s at temperature `T` in K and pressure `P` in Pa. 
         """
-        cdef np.ndarray[np.float64_t, ndim=1] Tdata, Pdata
-        cdef np.ndarray[np.float64_t, ndim=2] kdata
-        cdef double Tlow, Thigh, Plow, Phigh, klow, khigh
-        cdef double k
-        cdef int i, j, M, N
 
         if P == 0:
             raise ValueError('No pressure specified to pressure-dependent PDepKineticsData.get_rate_coefficient().')
@@ -257,7 +258,7 @@ cdef class PDepKineticsData(PDepKineticsModel):
 
         return k
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Returns ``True`` if the kdata and Tdata match. Returns ``False`` otherwise.
         """

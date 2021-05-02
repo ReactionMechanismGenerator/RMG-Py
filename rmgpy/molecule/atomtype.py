@@ -38,7 +38,6 @@ If you want to change which atom types are available in RMG and/or what they
 represent, this should be the only module you need to change to do so.
 """
 
-import cython
 from rmgpy.exceptions import AtomTypeError
 
 ################################################################################
@@ -789,10 +788,6 @@ def get_features(atom, bonds):
     or :class:'GroupAtom' object 'atom and with local bond structure `bonds`,
     a ``dict`` containing atom-bond pairs.
     """
-    cython.declare(single=cython.int, all_double=cython.int, r_double=cython.int,
-                   s_double=cython.int, o_double=cython.int, triple=cython.int,
-                   benzene=cython.int, quadruple=cython.int)
-    cython.declare(features=cython.list)
 
     # Count numbers of each higher-order bond type
     single = r_double = o_double = s_double = triple = benzene = quadruple = 0
@@ -829,8 +824,6 @@ def get_atomtype(atom, bonds):
     with local bond structure `bonds`, a ``dict`` containing atom-bond pairs.
     """
 
-    cython.declare(atom_symbol=str)
-    cython.declare(mol_feature_list=cython.list, atomtype_feature_list=cython.list)
 
     # Use element and counts to determine proper atom type
     atom_symbol = atom.symbol

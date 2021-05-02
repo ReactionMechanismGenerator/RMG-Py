@@ -46,7 +46,6 @@ from copy import deepcopy
 from functools import reduce
 from urllib.parse import quote
 
-import cython
 import numpy as np
 
 import rmgpy.constants as constants
@@ -65,7 +64,7 @@ from rmgpy.species import Species
 ################################################################################
 
 
-class Reaction:
+class Reaction(object):
     """
     A chemical reaction. The attributes are:
     
@@ -513,7 +512,6 @@ class Reaction:
         Return the enthalpy of reaction in J/mol evaluated at temperature
         `T` in K.
         """
-        cython.declare(dHrxn=cython.double, reactant=Species, product=Species)
         dHrxn = 0.0
         for reactant in self.reactants:
             dHrxn -= reactant.get_enthalpy(T)
@@ -526,7 +524,6 @@ class Reaction:
         Return the entropy of reaction in J/mol*K evaluated at temperature `T`
         in K.
         """
-        cython.declare(dSrxn=cython.double, reactant=Species, product=Species)
         dSrxn = 0.0
         for reactant in self.reactants:
             dSrxn -= reactant.get_entropy(T)
@@ -539,7 +536,6 @@ class Reaction:
         Return the Gibbs free energy of reaction in J/mol evaluated at
         temperature `T` in K.
         """
-        cython.declare(dGrxn=cython.double, reactant=Species, product=Species)
         dGrxn = 0.0
         for reactant in self.reactants:
             try:
@@ -566,7 +562,6 @@ class Reaction:
         and uses the ideal gas law to determine reference concentrations. For
         surface species, the `surface_site_density` is the assumed reference.
         """
-        cython.declare(dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
         # Use free energy of reaction to calculate Ka
         dGrxn = self.get_free_energy_of_reaction(T)
         K = np.exp(-dGrxn / constants.R / T)
@@ -649,7 +644,6 @@ class Reaction:
         appears as a product and decreased by one for each time `spec` appears
         as a reactant.
         """
-        cython.declare(stoich=cython.int, reactant=Species, product=Species)
         stoich = 0
         for reactant in self.reactants:
             if reactant is spec: stoich -= 1
@@ -692,8 +686,6 @@ class Reaction:
         temperature `T` in K with surface site density `surface_site_density` in mol/m2.
         Value is returned in combination of [m,mol,s]
         """
-        cython.declare(rateCoefficient=cython.double,
-                       molecularWeight_kg=cython.double, )
 
         if diffusion_limiter.enabled:
             raise NotImplementedError()
@@ -762,7 +754,6 @@ class Reaction:
         If `force_positive` is True, then all reactions
         are forced to have a non-negative barrier.
         """
-        cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
 
         if self.kinetics is None:
             raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
@@ -815,8 +806,6 @@ class Reaction:
         You must supply the correct units for the reverse rate.
         The equilibrium constant is evaluated from the current reaction instance (self).
         """
-        cython.declare(kf=Arrhenius, kr=Arrhenius)
-        cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int)
         kf = k_forward
         assert isinstance(kf, Arrhenius), "Only reverses Arrhenius rates"
         if Tmin is not None and Tmax is not None:
@@ -837,8 +826,6 @@ class Reaction:
         You must supply the correct units for the reverse rate.
         The equilibrium constant is evaluated from the current reaction instance (self).
         """
-        cython.declare(kf=SurfaceArrhenius, kr=SurfaceArrhenius)
-        cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int)
         kf = k_forward
         if not isinstance(kf, SurfaceArrhenius): # Only reverse SurfaceArrhenius rates
             raise TypeError(f'Expected a SurfaceArrhenius object for k_forward but received {kf}')
@@ -861,8 +848,6 @@ class Reaction:
         The equilibrium constant is evaluated from the current reaction instance (self).
         The surface_site_density in `mol/m^2` is used to evalaute the forward rate constant.
         """
-        cython.declare(kf=StickingCoefficient, kr=SurfaceArrhenius)
-        cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int)
         if not isinstance(k_forward, StickingCoefficient): # Only reverse StickingCoefficient rates
             raise TypeError(f'Expected a StickingCoefficient object for k_forward but received {k_forward}')
         kf = k_forward
@@ -889,9 +874,6 @@ class Reaction:
         If the reaction kinetics model is Sticking Coefficient, please provide a nonzero
         surface site density in `mol/m^2` which is required to evaluate the rate coefficient.
         """
-        cython.declare(Tlist=np.ndarray, Plist=np.ndarray, K=np.ndarray,
-                       rxn=Reaction, klist=np.ndarray, i=cython.size_t,
-                       Tindex=cython.size_t, Pindex=cython.size_t)
 
         supported_types = (
             KineticsData.__name__,
@@ -1090,7 +1072,6 @@ class Reaction:
         Return ``True`` if the reaction has the same number of each atom on
         each side of the reaction equation, or ``False`` if not.
         """
-        cython.declare(reactantElements=dict, productElements=dict, molecule=Molecule, atom=Atom, element=Element)
 
         reactant_elements = {}
         product_elements = {}
@@ -1260,8 +1241,6 @@ class Reaction:
         """
         Create a deep copy of the current reaction.
         """
-
-        cython.declare(other=Reaction)
 
         other = Reaction.__new__(Reaction)
         other.index = self.index

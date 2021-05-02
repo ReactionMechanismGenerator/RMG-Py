@@ -28,19 +28,21 @@
 ###############################################################################
 
 import numpy as np
-cimport numpy as np
-from libc.math cimport exp, sqrt
+from math import exp, sqrt
 
-cimport rmgpy.constants as constants
+import rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import KineticsError
+from rmgpy.kinetics.model import KineticsModel
+from rmgpy.kinetics.arrhenius import ArrheniusEP, Arrhenius
 
 # Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
 RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
 
 ################################################################################
 
-cdef class StickingCoefficient(KineticsModel):
+
+class StickingCoefficient(KineticsModel):
     """
     A kinetics model to give Sticking Coefficients for surface adsorption,
     following Arrhenius form. 
@@ -91,39 +93,46 @@ cdef class StickingCoefficient(KineticsModel):
         return (StickingCoefficient, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                                       self.comment))
 
-    property A:
+    @property
+    def A(self):
         """The preexponential factor."""
-        def __get__(self):
-            return self._A
-        def __set__(self, value):
-            self._A = quantity.Dimensionless(value)
+        return self._A
 
-    property n:
+    @A.setter
+    def A(self, value):
+        self._A = quantity.Dimensionless(value)
+
+    @property
+    def n(self):
         """The temperature exponent."""
-        def __get__(self):
-            return self._n
-        def __set__(self, value):
-            self._n = quantity.Dimensionless(value)
+        return self._n
 
-    property Ea:
+    @n.setter
+    def n(self, value):
+        self._n = quantity.Dimensionless(value)
+
+    @property
+    def Ea(self):
         """The activation energy."""
-        def __get__(self):
-            return self._Ea
-        def __set__(self, value):
-            self._Ea = quantity.Energy(value)
+        return self._Ea
 
-    property T0:
+    @Ea.setter
+    def Ea(self, value):
+        self._Ea = quantity.Energy(value)
+
+    @property
+    def T0(self):
         """The reference temperature."""
-        def __get__(self):
-            return self._T0
-        def __set__(self, value):
-            self._T0 = quantity.Temperature(value)
+        return self._T0
 
-    cpdef double get_sticking_coefficient(self, double T) except -1:
+    @T0.setter
+    def T0(self, value):
+        self._T0 = quantity.Temperature(value)
+
+    def get_sticking_coefficient(self, T):
         """
         Return the sticking coefficient (dimensionless) at temperature `T` in K. 
         """
-        cdef double A, n, Ea, T0, stickingCoefficient
         A = self._A.value_si
         n = self._n.value_si
         Ea = self._Ea.value_si
@@ -133,8 +142,8 @@ cdef class StickingCoefficient(KineticsModel):
             raise ValueError("Sticking coefficients cannot be negative, check your preexponential factor.")
         return min(stickingCoefficient, 1.0)
 
-    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1,
-                    np.ndarray weights=None, bint three_params=True):
+    def fit_to_data(self, Tlist, klist, kunits, T0=1,
+                    weights=None, three_params=True):
         """
         Fit Arrhenius parameters to a set of sticking coefficient data `klist`
         in units of `kunits` corresponding to a set of temperatures `Tlist` in
@@ -187,7 +196,7 @@ cdef class StickingCoefficient(KineticsModel):
 
         return self
 
-    cpdef change_t0(self, double T0):
+    def change_t0(self, T0):
         """
         Changes the reference temperature used in the exponent to `T0` in K, 
         and adjusts the preexponential factor accordingly.
@@ -195,7 +204,7 @@ cdef class StickingCoefficient(KineticsModel):
         self._A.value_si /= (self._T0.value_si / T0) ** self._n.value_si
         self._T0.value_si = T0
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
@@ -211,14 +220,14 @@ cdef class StickingCoefficient(KineticsModel):
 
         return True
 
-    cpdef change_rate(self, double factor):
+    def change_rate(self, factor):
         """
         Changes A factor in Arrhenius expression by multiplying it by a ``factor``.
         """
         self._A.value_si *= factor
 
 ################################################################################
-cdef class StickingCoefficientBEP(KineticsModel):
+class StickingCoefficientBEP(KineticsModel):
     """
     A kinetics model based on the Arrhenius expression, to give 
     Sticking Coefficient for surface adsorption, using the
@@ -272,40 +281,47 @@ cdef class StickingCoefficientBEP(KineticsModel):
         return (StickingCoefficientBEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax,
                                          self.Pmin, self.Pmax, self.comment))
 
-    property A:
+    @property
+    def A(self):
         """The preexponential factor."""
-        def __get__(self):
-            return self._A
-        def __set__(self, value):
-            self._A = quantity.Dimensionless(value)
+        return self._A
 
-    property n:
+    @A.setter
+    def A(self, value):
+        self._A = quantity.Dimensionless(value)
+
+    @property
+    def n(self):
         """The temperature exponent."""
-        def __get__(self):
-            return self._n
-        def __set__(self, value):
-            self._n = quantity.Dimensionless(value)
+        return self._n
 
-    property alpha:
+    @n.setter
+    def n(self, value):
+        self._n = quantity.Dimensionless(value)
+
+    @property
+    def alpha(self):
         """The Bronsted-Evans-Polanyi slope."""
-        def __get__(self):
-            return self._alpha
-        def __set__(self, value):
-            self._alpha = quantity.Dimensionless(value)
+        return self._alpha
 
-    property E0:
+    @alpha.setter
+    def alpha(self, value):
+        self._alpha = quantity.Dimensionless(value)
+
+    @property
+    def E0(self):
         """The activation energy for a thermoneutral reaction."""
-        def __get__(self):
-            return self._E0
-        def __set__(self, value):
-            self._E0 = quantity.Energy(value)
+        return self._E0
 
-    cpdef double get_sticking_coefficient(self, double T, double dHrxn=0.0) except -1:
+    @E0.setter
+    def E0(self, value):
+        self._E0 = quantity.Energy(value)
+
+    def get_sticking_coefficient(self, T, dHrxn=0.0):
         """
         Return the sticking coefficient (dimensionless) at
         temperature `T` in K and enthalpy of reaction `dHrxn` in J/mol. 
         """
-        cdef double A, n, Ea, stickingCoefficient
         Ea = self.get_activation_energy(dHrxn)
         A = self._A.value_si
         n = self._n.value_si
@@ -313,12 +329,11 @@ cdef class StickingCoefficientBEP(KineticsModel):
         assert 0 <= stickingCoefficient
         return min(stickingCoefficient, 1.0)
 
-    cpdef double get_activation_energy(self, double dHrxn) except -1:
+    def get_activation_energy(self, dHrxn):
         """
         Return the activation energy in J/mol corresponding to the given
         enthalpy of reaction `dHrxn` in J/mol.
         """
-        cdef double Ea
         Ea = self._alpha.value_si * dHrxn + self._E0.value_si
         if self._E0.value_si > 0:
             if dHrxn < 0.0 and Ea < 0.0:
@@ -327,7 +342,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
                 Ea = dHrxn
         return Ea
 
-    cpdef StickingCoefficient to_arrhenius(self, double dHrxn):
+    def to_arrhenius(self, dHrxn):
         """
         Return an :class:`StickingCoefficient` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.
@@ -344,7 +359,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
             comment=self.comment,
         )
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match type, temperature
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
@@ -360,13 +375,13 @@ cdef class StickingCoefficientBEP(KineticsModel):
 
         return True
 
-    cpdef change_rate(self, double factor):
+    def change_rate(self, factor):
         """
         Changes A factor by multiplying it by a ``factor``.
         """
         self._A.value_si *= factor
 
-    def set_cantera_kinetics(self, ct_reaction, species_list=[]):
+    def set_cantera_kinetics(self, ct_reaction, species_list=list()):
         """
         Sets a cantera ElementaryReaction() object in an Arrhenius form.
         """
@@ -374,7 +389,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
 
 ################################################################################
 
-cdef class SurfaceArrhenius(Arrhenius):
+class SurfaceArrhenius(Arrhenius):
     """
     A kinetics model based on (modified) Arrhenius for surface reactions.
     
@@ -397,14 +412,15 @@ cdef class SurfaceArrhenius(Arrhenius):
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
     """
-    property A:
-        """The preexponential factor. 
-    
-        This is the only thing different from a normal Arrhenius class."""
-        def __get__(self):
-            return self._A
-        def __set__(self, value):
-            self._A = quantity.SurfaceRateCoefficient(value)
+
+    @property
+    def A(self):
+        """The preexponential factor."""
+        return self._A
+
+    @A.setter
+    def A(self, value):
+        self._A = quantity.SurfaceRateCoefficient(value)
 
     def __repr__(self):
         """
@@ -431,7 +447,7 @@ cdef class SurfaceArrhenius(Arrhenius):
 
 ################################################################################
 
-cdef class SurfaceArrheniusBEP(ArrheniusEP):
+class SurfaceArrheniusBEP(ArrheniusEP):
     """
     A kinetics model based on the (modified) Arrhenius equation, using the
     Bronsted-Evans-Polanyi equation to determine the activation energy. 
@@ -458,14 +474,15 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
     =============== =============================================================
     
     """
-    property A:
-        """The preexponential factor. 
-    
-        This is the only thing different from a normal ArrheniusEP class."""
-        def __get__(self):
-            return self._A
-        def __set__(self, value):
-            self._A = quantity.SurfaceRateCoefficient(value)
+
+    @property
+    def A(self):
+        """The preexponential factor."""
+        return self._A
+
+    @A.setter
+    def A(self, value):
+        self._A = quantity.SurfaceRateCoefficient(value)
 
     def __repr__(self):
         """
@@ -490,7 +507,7 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
         return (SurfaceArrheniusBEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                                       self.uncertainty, self.comment))
 
-    cpdef SurfaceArrhenius to_arrhenius(self, double dHrxn):
+    def to_arrhenius(self, dHrxn):
         """
         Return an :class:`SurfaceArrhenius` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.

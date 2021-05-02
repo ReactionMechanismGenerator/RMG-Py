@@ -46,7 +46,6 @@ import logging
 from copy import deepcopy
 from operator import itemgetter
 
-import cython
 import numpy as np
 
 import rmgpy.quantity as quantity
@@ -456,7 +455,6 @@ class Species(object):
         Return the partition function for the species at the specified
         temperature `T` in K.
         """
-        cython.declare(Q=cython.double)
         if self.has_statmech():
             Q = self.conformer.get_partition_function(T)
         else:
@@ -469,7 +467,6 @@ class Species(object):
         Return the heat capacity in J/mol*K for the species at the specified
         temperature `T` in K.
         """
-        cython.declare(Cp=cython.double)
         Cp = 0.0
         if self.has_thermo():
             Cp = self.get_thermo_data().get_heat_capacity(T)
@@ -485,7 +482,6 @@ class Species(object):
         Return the enthalpy in J/mol for the species at the specified
         temperature `T` in K.
         """
-        cython.declare(H=cython.double)
         H = 0.0
         if self.has_thermo():
             H = self.get_thermo_data().get_enthalpy(T)
@@ -501,7 +497,6 @@ class Species(object):
         Return the entropy in J/mol*K for the species at the specified
         temperature `T` in K.
         """
-        cython.declare(S=cython.double)
         S = 0.0
         if self.has_thermo():
             S = self.get_thermo_data().get_entropy(T)
@@ -517,7 +512,6 @@ class Species(object):
         Return the Gibbs free energy in J/mol for the species at the specified
         temperature `T` in K.
         """
-        cython.declare(G=cython.double)
         G = 0.0
         if self.has_thermo():
             G = self.get_thermo_data().get_free_energy(T)
@@ -562,7 +556,6 @@ class Species(object):
         requires additional calculate_symmetry_number calls.
         """
         if self.symmetry_number < 1:
-            cython.declare(resonanceHybrid=Molecule, maxSymmetryNum=cython.short)
             resonance_hybrid = self.get_resonance_hybrid()
             try:
                 self.symmetry_number = resonance_hybrid.get_symmetry_number()
@@ -590,14 +583,6 @@ class Species(object):
             return molecules[0]
 
         # create a sorted list of atom objects for each resonance structure
-        cython.declare(atomsFromStructures=list, oldAtoms=list, newAtoms=list,
-                       numResonanceStructures=cython.short, structureNum=cython.short,
-                       oldBondOrder=cython.float,
-                       index1=cython.short, index2=cython.short,
-                       newMol=Molecule, oldMol=Molecule,
-                       atom1=Atom, atom2=Atom,
-                       bond=Bond,
-                       atoms=list, )
 
         atoms_from_structures = []
         for new_mol in molecules:
@@ -657,7 +642,6 @@ class Species(object):
         """
         `True` if the species has at least one reactive molecule, `False` otherwise
         """
-        cython.declare(molecule=Molecule)
         return any([molecule.reactive for molecule in self.molecule])
 
     def copy(self, deep=False):
@@ -668,7 +652,6 @@ class Species(object):
 
         For other complex attributes, a deep copy will always be made.
         """
-        cython.declare(other=Species)
 
         other = Species.__new__(Species)
 
@@ -897,7 +880,6 @@ class TransitionState(object):
         Return the partition function for the transition state at the
         specified temperature `T` in K.
         """
-        cython.declare(Q=cython.double)
         if self.conformer is not None and len(self.conformer.modes) > 0:
             Q = self.conformer.get_partition_function(T)
         else:
@@ -910,7 +892,6 @@ class TransitionState(object):
         Return the heat capacity in J/mol*K for the transition state at the
         specified temperature `T` in K.
         """
-        cython.declare(Cp=cython.double)
         Cp = 0.0
 
         if self.get_thermo_data() is not None:
@@ -927,7 +908,6 @@ class TransitionState(object):
         Return the enthalpy in J/mol for the transition state at the
         specified temperature `T` in K.
         """
-        cython.declare(H=cython.double)
         H = 0.0
 
         if self.get_thermo_data() is not None:
@@ -944,7 +924,6 @@ class TransitionState(object):
         Return the entropy in J/mol*K for the transition state at the
         specified temperature `T` in K.
         """
-        cython.declare(S=cython.double)
         S = 0.0
 
         if self.get_thermo_data() is not None:
@@ -961,7 +940,6 @@ class TransitionState(object):
         Return the Gibbs free energy in J/mol for the transition state at the
         specified temperature `T` in K.
         """
-        cython.declare(G=cython.double)
         G = 0.0
 
         if self.get_thermo_data() is not None:

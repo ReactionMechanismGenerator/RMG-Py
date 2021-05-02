@@ -34,12 +34,13 @@ of "standard" falloff.
 
 from libc.math cimport exp, log, log10
 
-cimport rmgpy.constants as constants
+import rmgpy.constants as constants
 import rmgpy.quantity as quantity
+from rmgpy.kinetics.model import PDepKineticsModel, KineticsModel
 
 ################################################################################
 
-cdef class ThirdBody(PDepKineticsModel):
+class ThirdBody(PDepKineticsModel):
     """
     A kinetic model of a phenomenological rate coefficient :math:`k(T, P)`
     using third-body kinetics. The attributes are:
@@ -85,7 +86,7 @@ cdef class ThirdBody(PDepKineticsModel):
         return (ThirdBody, (self.arrheniusLow, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                             self.efficiencies, self.comment))
 
-    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
+    def get_rate_coefficient(self, T, P=0.0):
         """
         Return the value of the rate coefficient :math:`k(T)` in units of m^3,
         mol, and s at the specified temperature `T` in K and pressure `P` in
@@ -93,14 +94,13 @@ cdef class ThirdBody(PDepKineticsModel):
         first use :meth:`get_effective_pressure()` to compute the effective
         pressure, and pass that value as the pressure to this method.
         """
-        cdef double C, k0
 
         C = P / constants.R / T  # bath gas concentration in mol/m^3
         k0 = self.arrheniusLow.get_rate_coefficient(T)
 
         return k0 * C
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Checks to see if kinetics matches that of other kinetics and returns ``True``
         if coeffs, kunits, Tmin,
@@ -131,7 +131,7 @@ cdef class ThirdBody(PDepKineticsModel):
 
 ################################################################################
 
-cdef class Lindemann(PDepKineticsModel):
+class Lindemann(PDepKineticsModel):
     """
     A kinetic model of a phenomenological rate coefficient :math:`k(T, P)`
     using the Lindemann formulation. The attributes are:
@@ -180,7 +180,7 @@ cdef class Lindemann(PDepKineticsModel):
         return (Lindemann, (self.arrheniusHigh, self.arrheniusLow, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                             self.efficiencies, self.comment))
 
-    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
+    def get_rate_coefficient(self, T, P=0.0):
         """
         Return the value of the rate coefficient :math:`k(T)` in units of m^3,
         mol, and s at the specified temperature `T` in K and pressure `P` in
@@ -197,7 +197,7 @@ cdef class Lindemann(PDepKineticsModel):
 
         return kinf * (Pr / (1 + Pr))
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Checks to see if kinetics matches that of other kinetics and returns ``True``
         if coeffs, kunits, Tmin,
@@ -213,7 +213,7 @@ cdef class Lindemann(PDepKineticsModel):
 
         return True
 
-    cpdef change_rate(self, double factor):
+    def change_rate(self, factor):
         """
         Changes kinetics rate by a multiple ``factor``.
         """
@@ -234,7 +234,7 @@ cdef class Lindemann(PDepKineticsModel):
 
 ################################################################################
 
-cdef class Troe(PDepKineticsModel):
+class Troe(PDepKineticsModel):
     """
     A kinetic model of a phenomenological rate coefficient :math:`k(T, P)`
     using the Troe formulation. The attributes are:
@@ -296,28 +296,34 @@ cdef class Troe(PDepKineticsModel):
         self.arrheniusHigh, self.arrheniusLow, self.alpha, self.T3, self.T1, self.T2, self.Tmin, self.Tmax, self.Pmin,
         self.Pmax, self.efficiencies, self.comment))
 
-    property T1:
+    @property
+    def T1(self):
         """The Troe :math:`T_1` parameter."""
-        def __get__(self):
-            return self._T1
-        def __set__(self, value):
-            self._T1 = quantity.Temperature(value)
+        return self._T1
 
-    property T2:
+    @T1.setter
+    def T1(self, value):
+        self._T1 = quantity.Temperature(value)
+
+    @property
+    def T2(self):
         """The Troe :math:`T_2` parameter."""
-        def __get__(self):
-            return self._T2
-        def __set__(self, value):
-            self._T2 = quantity.Temperature(value)
+        return self._T2
 
-    property T3:
+    @T2.setter
+    def T2(self, value):
+        self._T2 = quantity.Temperature(value)
+
+    @property
+    def T3(self):
         """The Troe :math:`T_3` parameter."""
-        def __get__(self):
-            return self._T3
-        def __set__(self, value):
-            self._T3 = quantity.Temperature(value)
+        return self._T3
 
-    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
+    @T3.setter
+    def T3(self, value):
+        self._T3 = quantity.Temperature(value)
+
+    def get_rate_coefficient(self, T, P=0.0):
         """
         Return the value of the rate coefficient :math:`k(T)` in units of m^3,
         mol, and s at the specified temperature `T` in K and pressure `P` in
@@ -325,9 +331,6 @@ cdef class Troe(PDepKineticsModel):
         first use :meth:`get_effective_pressure()` to compute the effective
         pressure, and pass that value as the pressure to this method.
         """
-        cdef double C, k0, kinf, Pr
-        cdef double d, n, c, Fcent, F
-        cdef double alpha, T1, T2, T3
 
         C = P / constants.R / T  # bath gas concentration in mol/m^3
         k0 = self.arrheniusLow.get_rate_coefficient(T)
@@ -351,7 +354,7 @@ cdef class Troe(PDepKineticsModel):
 
         return kinf * (Pr / (1 + Pr)) * F
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Checks to see if kinetics matches that of other kinetics and returns ``True``
         if coeffs, kunits, Tmin,
@@ -375,7 +378,7 @@ cdef class Troe(PDepKineticsModel):
 
         return True
 
-    cpdef change_rate(self, double factor):
+    def change_rate(self, factor):
         """
         Changes kinetics rate by a multiple ``factor``.
         """

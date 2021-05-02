@@ -991,17 +991,14 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
     return species_list, reaction_list
 
 
-cpdef _process_duplicate_reactions(list reaction_list):
+def _process_duplicate_reactions(reaction_list):
     """
     Check for marked (and unmarked!) duplicate reactions
     Combine marked duplicate reactions into a single reaction using MultiKinetics
     Raise exception for unmarked duplicate reactions
     """
-    cdef list duplicate_reactions_to_remove = []
-    cdef list duplicate_reactions_to_add = []
-    cdef int index1, index2
-    cdef Reaction reaction, reaction1, reaction2
-    cdef KineticsModel kinetics
+    duplicate_reactions_to_remove = []
+    duplicate_reactions_to_add = []
 
     for index1 in range(len(reaction_list)):
         reaction1 = reaction_list[index1]
@@ -2178,7 +2175,7 @@ def save_java_kinetics_library(path, species, reactions):
     and reactions.txt given a list of reactions, with species.txt containing the
     RMG-Java formatted dictionary.
     """
-    warnings.warn("Java kinetics libararies are no longer supported and may be" \
+    warnings.warn("Java kinetics libararies are no longer supported and may be"
                   "removed in version 2.3.", DeprecationWarning)
     # Check for duplicate
     mark_duplicate_reactions(reactions)

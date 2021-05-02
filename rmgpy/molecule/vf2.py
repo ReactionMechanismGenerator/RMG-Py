@@ -31,11 +31,11 @@ algorithm of Vento and Foggia.  http://dx.doi.org/10.1109/TPAMI.2004.75
 """
 
 from rmgpy.exceptions import VF2Error
-from rmgpy.molecule.graph cimport Graph
+from rmgpy.molecule.graph import Graph
 
 ################################################################################
 
-cdef class VF2:
+class VF2:
     """
     An implementation of the second version of the Vento-Foggia (VF2) algorithm
     for graph and subgraph isomorphism.
@@ -62,8 +62,8 @@ cdef class VF2:
         self.graph2 = value
         self.graph2.sort_vertices()
 
-    cpdef bint is_isomorphic(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=False,
-                             bint strict=True) except -2:
+    def is_isomorphic(self, graph1, graph2, initial_mapping, save_order=False,
+                             strict=True):
         """
         Return ``True`` if graph `graph1` is isomorphic to graph `graph2` with
         the optional initial mapping `initial_mapping`, or ``False`` otherwise.
@@ -71,8 +71,8 @@ cdef class VF2:
         self.isomorphism(graph1, graph2, initial_mapping, False, False, save_order=save_order, strict=strict)
         return self.is_match
 
-    cpdef list find_isomorphism(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=False,
-                                bint strict=True):
+    def find_isomorphism(self, graph1, graph2, initial_mapping, save_order=False,
+                                strict=True):
         """
         Return a list of dicts of all valid isomorphism mappings from graph
         `graph1` to graph `graph2` with the optional initial mapping 
@@ -82,8 +82,8 @@ cdef class VF2:
         self.isomorphism(graph1, graph2, initial_mapping, False, True, save_order=save_order, strict=strict)
         return self.mapping_list
 
-    cpdef bint is_subgraph_isomorphic(self, Graph graph1, Graph graph2, dict initial_mapping,
-                                      bint save_order=False) except -2:
+    def is_subgraph_isomorphic(self, graph1, graph2, initial_mapping,
+                                      save_order=False):
         """
         Return ``True`` if graph `graph1` is subgraph isomorphic to subgraph
         `graph2` with the optional initial mapping `initial_mapping`, or
@@ -92,7 +92,7 @@ cdef class VF2:
         self.isomorphism(graph1, graph2, initial_mapping, True, False, save_order)
         return self.is_match
 
-    cpdef list find_subgraph_isomorphisms(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=False):
+    def find_subgraph_isomorphisms(self, graph1, graph2, initial_mapping, save_order=False):
         """
         Return a list of dicts of all valid subgraph isomorphism mappings from
         graph `graph1` to subgraph `graph2` with the optional initial mapping 
@@ -102,8 +102,8 @@ cdef class VF2:
         self.isomorphism(graph1, graph2, initial_mapping, True, True, save_order)
         return self.mapping_list
 
-    cdef isomorphism(self, Graph graph1, Graph graph2, dict initial_mapping, bint subgraph, bint find_all,
-                     bint save_order=False, bint strict=True):
+    def isomorphism(self, graph1, graph2, initial_mapping, subgraph, find_all,
+                     save_order=False, strict=True):
         """
         Evaluate the isomorphism relationship between graphs `graph1` and
         `graph2` with optional initial mapping `initial_mapping`. If `subgraph`
@@ -111,7 +111,6 @@ cdef class VF2:
         If `find_all` is ``True``, all isomorphisms are found; otherwise only
         the first is found.
         """
-        cdef int call_depth, index1, index2
 
         if self.graph1 is not graph1:
             self.graph1 = graph1
@@ -178,15 +177,12 @@ cdef class VF2:
             vertex2.mapping = None
             vertex2.terminal = False
 
-    cdef bint match(self, int call_depth) except -2:
+    def match(self, call_depth):
         """
         Recursively search for pairs of vertices to match, until all vertices
         are matched or the viable set of matches is exhausted. The `call_depth`
         parameter helps ensure we never enter an infinite loop.
         """
-        cdef Vertex vertex1, vertex2
-        cdef dict mapping
-        cdef bint has_terminals
 
         # The call depth should never be negative!
         if call_depth < 0:
@@ -267,7 +263,7 @@ cdef class VF2:
         # None of the proposed matches led to a complete isomorphism, so return False
         return False
 
-    cpdef bint feasible(self, Vertex vertex1, Vertex vertex2) except -2:
+    def feasible(self, vertex1, vertex2):
         """
         Return ``True`` if vertex `vertex1` from the first graph is a feasible
         match for vertex `vertex2` from the second graph, or ``False`` if not.
@@ -275,10 +271,6 @@ cdef class VF2:
         including several structural "look-aheads" that cheaply eliminate many
         otherwise feasible pairs.
         """
-        cdef Vertex vert1, vert2
-        cdef Edge edge1, edge2
-        cdef int term1_count, term2_count, neither1_count, neither2_count
-
         if not self.subgraph:
             # To be feasible the connectivity values must be an exact match
             if vertex1.connectivity1 != vertex2.connectivity1: return False
@@ -360,13 +352,12 @@ cdef class VF2:
         # All of our tests have been passed, so the two vertices are a feasible pair
         return True
 
-    cdef add_to_mapping(self, Vertex vertex1, Vertex vertex2):
+    def add_to_mapping(self, vertex1, vertex2):
         """
         Add as valid a mapping of vertex `vertex1` from the first graph to
         vertex `vertex2` from the second graph, and update the terminals
         status accordingly.        
         """
-        cdef Vertex v
 
         # Map the vertices to one another
         vertex1.mapping = vertex2
@@ -382,13 +373,12 @@ cdef class VF2:
         for v in vertex2.edges:
             v.terminal = v.mapping is None
 
-    cdef remove_from_mapping(self, Vertex vertex1, Vertex vertex2):
+    def remove_from_mapping(self, vertex1, vertex2):
         """
         Remove as valid a mapping of vertex `vertex1` from the first graph to
         vertex `vertex2` from the second graph, and update the terminals
         status accordingly.        
         """
-        cdef Vertex v, v2
 
         # Unmap the vertices from one another
         vertex1.mapping = None

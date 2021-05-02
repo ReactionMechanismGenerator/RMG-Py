@@ -34,7 +34,6 @@ This module provides methods for converting molecules between RMG, RDKit, and Op
 import logging
 import sys
 
-import cython
 # Assume that rdkit is installed
 from rdkit import Chem
 # Test if openbabel is installed
@@ -113,16 +112,6 @@ def from_rdkit_mol(mol, rdkitmol, raise_atomtype_exception=True):
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
     """
-    cython.declare(i=cython.int,
-                   radical_electrons=cython.int,
-                   charge=cython.int,
-                   lone_pairs=cython.int,
-                   number=cython.int,
-                   order=cython.float,
-                   atom=mm.Atom,
-                   atom1=mm.Atom,
-                   atom2=mm.Atom,
-                   bond=mm.Bond)
 
     mol.vertices = []
 
@@ -262,16 +251,6 @@ def from_ob_mol(mol, obmol, raise_atomtype_exception=True):
     It estimates radical placement based on undervalence of atoms,
     and assumes overall spin multiplicity is radical count + 1
     """
-    # Below are the declared variables for cythonizing the module
-    cython.declare(
-        number=cython.int,
-        isotope=cython.int,
-        element=elements.Element,
-        charge=cython.int,
-        valence=cython.int,
-        radical_electrons=cython.int,
-        atom=mm.Atom,
-        )
 
     if openbabel is None:
         raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')

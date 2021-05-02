@@ -34,7 +34,6 @@ representation formats, e.g. SMILES, InChI, SMARTS.
 
 import logging
 
-import cython
 # Assume that rdkit is installed
 from rdkit import Chem
 # Test if openbabel is installed
@@ -172,7 +171,6 @@ def to_inchi(mol, backend='rdkit-first', aug_level=0):
         backend     choice of backend, 'try-all', 'rdkit', or 'openbabel'
         aug_level   level of augmentation, 0, 1, or 2
     """
-    cython.declare(inchi=str, ulayer=str, player=str, mlayer=str)
 
     if aug_level == 0:
         return _write(mol, 'inchi', backend)
@@ -208,7 +206,6 @@ def to_inchi_key(mol, backend='rdkit-first', aug_level=0):
         backend     choice of backend, 'try-all', 'rdkit', or 'openbabel'
         aug_level   level of augmentation, 0, 1, or 2
     """
-    cython.declare(key=str, ulayer=str, player=str, mlayer=str)
 
     if aug_level == 0:
         return _write(mol, 'inchikey', backend)

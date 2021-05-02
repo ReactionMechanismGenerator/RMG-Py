@@ -36,7 +36,6 @@ reaction sites).
 import itertools
 from copy import deepcopy, copy
 
-import cython
 
 import rmgpy.molecule.element as elements
 import rmgpy.molecule.molecule as mol
@@ -348,7 +347,6 @@ class GroupAtom(Vertex):
         respects wildcards, e.g. ``R!H`` is equivalent to ``C``.
         
         """
-        cython.declare(group=GroupAtom)
         if not strict:
             raise NotImplementedError('There is currently no implementation of the strict argument for Group objects.')
         if not isinstance(other, GroupAtom):
@@ -358,8 +356,6 @@ class GroupAtom(Vertex):
             return other.equivalent(self)
         group = other
 
-        cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short,
-                       lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short)
         # Compare two atom groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for atomType1 in self.atomtype:
@@ -418,7 +414,6 @@ class GroupAtom(Vertex):
         specific case of `other`. Returns ``False`` if some of `self` is not
         included in `other` or they are mutually exclusive. 
         """
-        cython.declare(group=GroupAtom)
         if not isinstance(other, GroupAtom):
             # Let the is_specific_case_of method of other handle it
             # We expect self to be an Atom object, but can't test for it here
@@ -426,8 +421,6 @@ class GroupAtom(Vertex):
             return other.is_specific_case_of(self)
         group = other
 
-        cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short,
-                       lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short)
         # Compare two atom groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for atomType1 in self.atomtype:  # all these must match
@@ -941,7 +934,6 @@ class GroupBond(Edge):
         where `other` can be either an :class:`Bond` or an :class:`GroupBond`
         object.
         """
-        cython.declare(gb=GroupBond)
         if not isinstance(other, GroupBond):
             # Let the equivalent method of other handle it
             # We expect self to be a Bond object, but can't test for it here
@@ -949,7 +941,6 @@ class GroupBond(Edge):
             return other.equivalent(self)
         gb = other
 
-        cython.declare(order1=float, order2=float)
         # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for order1 in self.order:
@@ -971,7 +962,6 @@ class GroupBond(Edge):
         specific case of `self`. Returns ``False`` if some of `self` is not
         included in `other` or they are mutually exclusive.
         """
-        cython.declare(gb=GroupBond)
         if not isinstance(other, GroupBond):
             # Let the is_specific_case_of method of other handle it
             # We expect self to be a Bond object, but can't test for it here
@@ -979,7 +969,6 @@ class GroupBond(Edge):
             return other.is_specific_case_of(self)
         gb = other
 
-        cython.declare(order1=float, order2=float)
         # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other
         for order1 in self.order:  # all these must match
@@ -1126,7 +1115,6 @@ class Group(Graph):
         """
         Returns ``True`` iff the group contains an 'X' surface site.
         """
-        cython.declare(atom=GroupAtom)
         for atom in self.atoms:
             if atom.is_surface_site():
                 return True
@@ -1202,7 +1190,6 @@ class Group(Graph):
         If `deep` is ``False`` or not specified, a shallow copy is made: the
         original vertices and edges are used in the new graph.
         """
-        other = cython.declare(Group)
         g = Graph.copy(self, deep)
         other = Group(g.vertices)
         return other
@@ -1268,7 +1255,6 @@ class Group(Graph):
         """
         clear regularization dimensions
         """
-        cython.declare(atm=GroupAtom)
         for atm in self.atoms:
             atm.reg_dim_atm = [[], []]
             atm.reg_dim_u = [[], []]
@@ -1281,8 +1267,6 @@ class Group(Graph):
         generate all allowed group extensions and their complements
         note all atomtypes except for elements and r/r!H's must be removed
         """
-        cython.declare(atoms=list, atm=GroupAtom, atm2=GroupAtom, bd=GroupBond, i=int, j=int,
-                       extents=list, RnH=list, typ=list)
 
         extents = []
 
@@ -1422,7 +1406,6 @@ class Group(Graph):
         generates extensions for specification of the type of atom defined by a given atomtype
         or set of atomtypes
         """
-        cython.declare(grps=list, labelList=list, Rset=set, item=AtomType, grp=Group, grpc=Group, k=AtomType, p=str)
 
         grps = []
         Rset = set(r)
@@ -1452,8 +1435,6 @@ class Group(Graph):
         """
         generates extensions for specifying if an atom is in a ring
         """
-        cython.declare(grps=list, label_list=list, grp=Group, grpc=Group, atom_type=list, atom_type_str=str, k=AtomType,
-                       p=str)
 
         grps = []
         label_list = []
@@ -1513,7 +1494,6 @@ class Group(Graph):
         generates extensions for creation of a bond (of undefined order)
         between two atoms indexed i,j that already exist in the group and are unbonded
         """
-        cython.declare(newgrp=Group)
 
         label_list = []
 
@@ -1552,7 +1532,6 @@ class Group(Graph):
         generates extensions for the creation of a bond (of undefined order) between
         an atom and a new atom that is not H
         """
-        cython.declare(ga=GroupAtom, newgrp=Group, j=int)
 
         label_list = []
 
@@ -1578,7 +1557,6 @@ class Group(Graph):
         """
         generates extensions for the specification of bond order for a given bond
         """
-        cython.declare(grps=list, label_list=list, Rbset=set, bd=float, grp=Group, grpc=Group)
         grps = []
         label_list = []
         Rbset = set(r_bonds)
@@ -1621,7 +1599,6 @@ class Group(Graph):
         """
         Remove the labels from all atoms in the molecular group.
         """
-        cython.declare(atom=GroupAtom)
         for atom in self.vertices:
             atom.label = ''
 
@@ -1630,7 +1607,6 @@ class Group(Graph):
         Return ``True`` if the group contains an atom with the label
         `label` and ``False`` otherwise.
         """
-        cython.declare(atom=GroupAtom)
         for atom in self.vertices:
             if atom.label == label: return True
         return False
@@ -1640,7 +1616,6 @@ class Group(Graph):
         Return the atom in the group that is labeled with the given `label`.
         Raises :class:`ValueError` if no atom in the group has that label.
         """
-        cython.declare(atom=GroupAtom, alist=list)
         alist = [atom for atom in self.vertices if atom.label == label]
         if alist == []:
             raise ValueError('No atom in the functional group \n{1}\n has the label '
@@ -1653,7 +1628,6 @@ class Group(Graph):
         and the values the atoms themselves. If two or more atoms have the
         same label, the value is converted to a list of these atoms.
         """
-        cython.declare(atom=GroupAtom)
         labeled = {}
         for atom in self.vertices:
             if atom.label != '':
@@ -1724,7 +1698,6 @@ class Group(Graph):
         Update the molecular fingerprint used to accelerate the subgraph
         isomorphism checks.
         """
-        cython.declare(atom=GroupAtom)
 
         self.elementCount = self.get_element_count()
         self.radicalCount = 0
@@ -1779,9 +1752,6 @@ class Group(Graph):
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
-        cython.declare(group=Group)
-        cython.declare(mult1=cython.short, mult2=cython.short)
-        cython.declare(a=GroupAtom, L=list)
         # It only makes sense to compare a Group to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
@@ -1844,8 +1814,6 @@ class Group(Graph):
         The `other` parameter must be a :class:`Group` object, or a
         :class:`TypeError` is raised.
         """
-        cython.declare(group=Group)
-        cython.declare(mult1=cython.short, mult2=cython.short)
 
         # It only makes sense to compare a Group to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
@@ -2798,7 +2766,6 @@ class Group(Graph):
         """
         Resets ring membership information in the GroupAtom.props attribute.
         """
-        cython.declare(atom=GroupAtom)
 
         for atom in self.atoms:
             if 'inRing' in atom.props:

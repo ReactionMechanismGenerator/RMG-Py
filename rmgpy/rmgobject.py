@@ -32,7 +32,7 @@ import numpy as np
 ################################################################################
 
 
-cdef class RMGObject(object):
+class RMGObject(object):
     """
     This class provides a general `as_dict` method to help with yml file construction.
     Used as a parent class for other classes in RMG to inherit from.
@@ -40,16 +40,13 @@ cdef class RMGObject(object):
     def __init__(self):
         pass
 
-    cpdef dict as_dict(self):
+    def as_dict(self):
         """
         A helper function for dumping objects as dictionaries for YAML files
         
         Returns: 
             dict: A dictionary representation of the object
         """
-        cdef dict output_dict
-        cdef list all_attributes
-        cdef str attr
 
         output_dict = dict()
         output_dict['class'] = self.__class__.__name__
@@ -63,7 +60,7 @@ cdef class RMGObject(object):
 
         return output_dict
 
-    cpdef make_object(self, dict data, dict class_dict):
+    def make_object(self, data, class_dict):
         """
         A helper function for constructing objects from a dictionary (used when loading YAML files)
         
@@ -77,7 +74,8 @@ cdef class RMGObject(object):
         kwargs = recursive_make_object(data, class_dict, make_final_object=False)
         self.__init__(**kwargs)
 
-cpdef expand_to_dict(obj):
+
+def expand_to_dict(obj):
     """
     Takes an object of any type (list, dict, str, int, float, RMGObject, etc.) and returns a dictionary representation 
     of the object (useful for __repr__ methods and outputting to YAML). The function works recursively to all objects
@@ -121,7 +119,8 @@ cpdef expand_to_dict(obj):
         else:
             return obj
 
-cpdef recursive_make_object(obj, class_dictionary, make_final_object=True):
+
+def recursive_make_object(obj, class_dictionary, make_final_object=True):
     """
     Takes a dictionary representation of an object and recreates the object from the mapping of class strings to classes
     provided in class_dictionary. This operates recursively to recreate objects that were nested inside other objects.

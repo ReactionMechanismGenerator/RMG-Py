@@ -42,7 +42,6 @@ from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from urllib.parse import quote
 
-import cython
 import numpy as np
 
 import rmgpy.constants as constants
@@ -214,7 +213,6 @@ class Atom(Vertex):
         combinations in the atom pattern. If ``strict`` is ``False``, then only
         the element is compared and electrons are ignored.
         """
-        cython.declare(atom=Atom, ap=gr.GroupAtom)
         if isinstance(other, Atom):
             atom = other
             if strict:
@@ -226,7 +224,6 @@ class Atom(Vertex):
             else:
                 return self.element is atom.element
         elif isinstance(other, gr.GroupAtom):
-            cython.declare(a=AtomType, radical=cython.short, lp=cython.short, charge=cython.short)
             if not strict:
                 raise NotImplementedError('There is currently no implementation of '
                                           'the strict argument for Group objects.')
@@ -266,7 +263,6 @@ class Atom(Vertex):
         if isinstance(other, Atom):
             return self.equivalent(other)
         elif isinstance(other, gr.GroupAtom):
-            cython.declare(atom=gr.GroupAtom, a=AtomType, radical=cython.short, lp=cython.short, charge=cython.short)
             atom = other
             if self.atomtype is None:
                 return False
@@ -305,7 +301,6 @@ class Atom(Vertex):
         Generate a deep copy of the current atom. Modifying the
         attributes of the copy will not affect the original.
         """
-        cython.declare(a=Atom)
         # a = Atom(self.element, self.radical_electrons, self.spin_multiplicity, self.charge, self.label)
         a = Atom.__new__(Atom)
         a.edges = {}
@@ -441,7 +436,6 @@ class Atom(Vertex):
         Update the atom pattern as a result of applying a LOSE_RADICAL action,
         where `radical` specifies the number of radical electrons to remove.
         """
-        cython.declare(radical_electrons=cython.short)
         # Set the new radical electron count
         radical_electrons = self.radical_electrons = self.radical_electrons - 1
         if radical_electrons < 0:
@@ -644,7 +638,6 @@ class Bond(Edge):
         ``False`` otherwise. `other` can be either a :class:`Bond` or a
         :class:`GroupBond` object.
         """
-        cython.declare(bond=Bond, bp=gr.GroupBond)
         if isinstance(other, Bond):
             bond = other
             return self.is_order(bond.get_order_num())
@@ -727,7 +720,6 @@ class Bond(Edge):
         attributes of the copy will not affect the original.
         """
         # return Bond(self.vertex1, self.vertex2, self.order)
-        cython.declare(b=Bond)
         b = Bond.__new__(Bond)
         b.vertex1 = self.vertex1
         b.vertex2 = self.vertex2
@@ -963,7 +955,6 @@ class Molecule(Graph):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        cython.declare(multiplicity=cython.int)
         multiplicity = self.multiplicity
         try:
             if multiplicity != self.get_radical_count() + 1:
@@ -1081,7 +1072,6 @@ class Molecule(Graph):
         """
         Returns ``True`` iff the molecule contains an 'X' surface site.
         """
-        cython.declare(atom=Atom)
         for atom in self.atoms:
             if atom.symbol == 'X':
                 return True
@@ -1113,7 +1103,6 @@ class Molecule(Graph):
         """
         Remove all van der Waals bonds.
         """
-        cython.declare(bond=Bond)
         for bond in self.get_all_edges():
             if bond.is_van_der_waals():
                 self.remove_bond(bond)
@@ -1128,7 +1117,6 @@ class Molecule(Graph):
         Placing hydrogens last during sorting ensures that functions with hydrogen
         removal work properly.
         """
-        cython.declare(vertex=Vertex, a=Atom, index=int)
         for vertex in self.vertices:
             if vertex.sorting_label < 0:
                 self.update_connectivity_values()
@@ -1158,8 +1146,6 @@ class Molecule(Graph):
         """
         Return the molecular formula for the molecule.
         """
-        cython.declare(atom=Atom, symbol=str, elements=dict, keys=list, formula=str)
-        cython.declare(hasCarbon=cython.bint, hasHydrogen=cython.bint)
 
         # Count the number of each element in the molecule
         element_dict = {}
@@ -1195,7 +1181,6 @@ class Molecule(Graph):
         """
         Return the molecular weight of the molecule in kg/mol.
         """
-        cython.declare(atom=Atom, mass=cython.double)
         mass = 0
         for atom in self.vertices:
             mass += atom.element.mass
@@ -1207,7 +1192,6 @@ class Molecule(Graph):
         molecule. In this function, monoradical atoms count as one, biradicals
         count as two, etc.
         """
-        cython.declare(atom=Atom, radicals=cython.short)
         radicals = 0
         for atom in self.vertices:
             radicals += atom.radical_electrons
@@ -1219,7 +1203,6 @@ class Molecule(Graph):
         in the molecule. Counts the number of carbon atoms with a lone pair.
         In the case of [C] with two lone pairs, this method will return 1.
         """
-        cython.declare(atom=Atom, carbenes=cython.short)
         carbenes = 0
         for atom in self.vertices:
             if atom.is_carbon() and atom.lone_pairs > 0:
@@ -1231,7 +1214,6 @@ class Molecule(Graph):
         Return the number of atoms in molecule.  If element is given, ie. "H" or "C",
         the number of atoms of that element is returned.
         """
-        cython.declare(numAtoms=cython.int, atom=Atom)
         if element is None:
             return len(self.vertices)
         else:
@@ -1248,7 +1230,6 @@ class Molecule(Graph):
         If `deep` is ``False`` or not specified, a shallow copy is made: the
         original vertices and edges are used in the new graph.
         """
-        cython.declare(g=Graph, other=Molecule, i=int, v1=Vertex, v2=Vertex)
         g = Graph.copy(self, deep)
         other = Molecule(g.vertices)
         # Copy connectivity values and sorting labels
@@ -1290,7 +1271,6 @@ class Molecule(Graph):
         connectivity values. If there's nothing but hydrogens, it does nothing.
         It destroys information; be careful with it.
         """
-        cython.declare(atom=Atom, hydrogens=list)
         # Check that the structure contains at least one heavy atom
         for atom in self.vertices:
             if not atom.is_hydrogen():
@@ -1311,8 +1291,6 @@ class Molecule(Graph):
         Delete all bonds, and set them again based on the Atoms' coords.
         Does not detect bond type.
         """
-        cython.declare(criticalDistance=float, i=int, atom1=Atom, atom2=Atom,
-                       bond=Bond, atoms=list, zBoundary=float)
         # groupBond=GroupBond,
         self._fingerprint = None
 
@@ -1538,10 +1516,6 @@ class Molecule(Graph):
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
-        cython.declare(group=gr.Group, atom=Atom)
-        cython.declare(carbonCount=cython.short, nitrogenCount=cython.short, oxygenCount=cython.short,
-                       sulfurCount=cython.short, radicalCount=cython.short)
-        cython.declare(L=list)
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, gr.Group):
@@ -1609,9 +1583,6 @@ class Molecule(Graph):
         The `other` parameter must be a :class:`Group` object, or a
         :class:`TypeError` is raised.
         """
-        cython.declare(group=gr.Group, atom=Atom)
-        cython.declare(carbonCount=cython.short, nitrogenCount=cython.short, oxygenCount=cython.short,
-                       sulfurCount=cython.short, radicalCount=cython.short)
 
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
@@ -1756,7 +1727,6 @@ class Molecule(Graph):
         This is useful for isomorphism comparison against something that was made
         via from_xyz, which does not attempt to perceive bond orders
         """
-        cython.declare(atom1=Atom, atom2=Atom, bond=Bond, newMol=Molecule, atoms=list, mapping=dict)
 
         new_mol = Molecule()
         atoms = self.atoms
@@ -1984,7 +1954,6 @@ class Molecule(Graph):
         there will be at least one 6 membered aromatic ring so this algorithm
         will not fail for fused aromatic rings.
         """
-        cython.declare(rc=list, cycle=list, atom=Atom)
         rc = self.get_relevant_cycles()
         if rc:
             for cycle in rc:
@@ -2040,7 +2009,6 @@ class Molecule(Graph):
         """
         Return the value of the heat capacity at infinite temperature in J/mol*K.
         """
-        cython.declare(n_atoms=cython.int, n_vib=cython.int, n_rotors=cython.int)
 
         if self.contains_surface_site():
             # ToDo: internal rotors could still act as rotors
@@ -2081,7 +2049,6 @@ class Molecule(Graph):
         Return ``True`` if the molecule contains at least one radical electron,
         or ``False`` otherwise.
         """
-        cython.declare(atom=Atom)
         for atom in self.vertices:
             if atom.radical_electrons > 0:
                 return True
@@ -2092,7 +2059,6 @@ class Molecule(Graph):
         Return ``True`` if the molecule contains at least one lone electron pair,
         or ``False`` otherwise.
         """
-        cython.declare(atom=Atom)
         for atom in self.vertices:
             if atom.lone_pairs > 0:
                 return True
@@ -2109,7 +2075,6 @@ class Molecule(Graph):
         Return ``True`` if the molecule only contains aryl radicals,
         ie. radical on an aromatic ring, or ``False`` otherwise.
         """
-        cython.declare(atom=Atom, total=int, aromatic_atoms=set, aryl=int)
         if aromatic_rings is None:
             aromatic_rings = self.get_aromatic_rings()[0]
 
@@ -2150,7 +2115,6 @@ class Molecule(Graph):
         Iterate through the atoms in the structure and calculate the
         number of lone electron pairs, assuming a neutral molecule.
         """
-        cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=float)
         for atom1 in self.vertices:
             if atom1.is_hydrogen() or atom1.is_surface_site():
                 atom1.lone_pairs = 0
@@ -2192,7 +2156,6 @@ class Molecule(Graph):
         """
         Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
         """
-        cython.declare(added=dict, atom=Atom, i=int, H=Atom, bond=Bond)
         added = {}
         for atom in self.atoms:
             for i in range(atom.radical_electrons):
@@ -2244,7 +2207,6 @@ class Molecule(Graph):
         """
         Performs ring perception and saves ring membership information to the Atom.props attribute.
         """
-        cython.declare(rc=list, atom=Atom, ring=list)
 
         # Get the set of relevant cycles
         rc = self.get_relevant_cycles()
@@ -2263,7 +2225,6 @@ class Molecule(Graph):
 
         Returns an integer corresponding to the number or aromatic rings.
         """
-        cython.declare(rings=list, count=int, ring=list, bonds=list, bond=Bond)
         rings = self.get_relevant_cycles()
         count = 0
         for ring in rings:
@@ -2288,8 +2249,6 @@ class Molecule(Graph):
         The method currently restricts aromaticity to six-membered carbon-only rings. This is a limitation imposed
         by RMG, and not by RDKit.
         """
-        cython.declare(rd_atom_indices=dict, ob_atom_ids=dict, aromatic_rings=list, aromatic_bonds=list)
-        cython.declare(ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
 
         from rdkit.Chem.rdchem import BondType
         AROMATIC = BondType.AROMATIC
@@ -2374,10 +2333,6 @@ class Molecule(Graph):
         In future development, this method should ideally be replaced by some method to select a deterministic
         set of SSSR from the set of Relevant Cycles, as that would be a more robust solution.
         """
-        cython.declare(vertices=list, vertices_to_remove=list, root_candidates_tups=list, graphs=list)
-        cython.declare(cycle_list=list, cycle_candidate_tups=list, cycles=list, cycle0=list, origin_conn_dict=dict)
-
-        cython.declare(graph=Molecule, graph0=Molecule, vertex=Atom, root_vertex=Atom)
 
         # Make a copy of the graph so we don't modify the original
         graph = self.copy(deep=True)
@@ -2515,7 +2470,6 @@ class Molecule(Graph):
 
         If ``strict=False``, performs the check ignoring electrons and resonance structures.
         """
-        cython.declare(atom_ids=set, other_ids=set, atom_list=list, other_list=list, mapping=dict)
 
         if not isinstance(other, Molecule):
             raise TypeError(

@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy as np
+import numpy as np
 
 from rmgpy.kinetics.model cimport KineticsModel
 from rmgpy.kinetics.arrhenius cimport Arrhenius, ArrheniusEP
@@ -33,7 +33,7 @@ from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
 ################################################################################
 
-cdef class StickingCoefficient(KineticsModel):
+class StickingCoefficient(KineticsModel):
     
     cdef public ScalarQuantity _A
     cdef public ScalarQuantity _n

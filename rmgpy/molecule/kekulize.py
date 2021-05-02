@@ -54,10 +54,10 @@ import logging
 
 from rmgpy.exceptions import KekulizationError, AtomTypeError
 from rmgpy.molecule.element import PeriodicSystem
-from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
+from rmgpy.molecule.molecule import Atom, Bond, Molecule
 
 
-cpdef kekulize(Molecule mol):
+def kekulize(mol):
     """
     Kekulize an aromatic molecule in place. If the molecule cannot be kekulized,
     a KekulizationError will be raised. However, the molecule will be left in
@@ -66,13 +66,6 @@ cpdef kekulize(Molecule mol):
 
     Args: :class:`Molecule` object to be kekulized
     """
-    cdef list ring, rings, aromatic_rings, resolved_rings
-    cdef set endo_bonds, exo_bonds
-    cdef Atom atom1, atom2, atom
-    cdef Bond bond
-    cdef bint aromatic, successful, bridged
-    cdef int itercount, maxiter
-    cdef AromaticRing aromatic_ring
 
     # Get all potentially aromatic rings
     rings = mol.get_all_cycles_of_size(6)
@@ -130,29 +123,24 @@ cpdef kekulize(Molecule mol):
         logging.debug('Unable to kekulize molecule, final result was invalid:/n{0}'.format(mol.to_adjacency_list()))
         raise KekulizationError('Unable to kekulize molecule, final result was invalid.')
 
-cdef list prioritize_rings(list item_list):
+def prioritize_rings(item_list):
     """Update list of AromaticRing objects, then sort by DOF."""
-    cdef AromaticRing item, x
     for item in item_list:
         item.update()
     return item_list.sort(key=lambda x: (x.endo_dof, x.exo_dof), reverse=True)
 
-cdef list prioritize_bonds(list item_list):
+def prioritize_bonds(item_list):
     """Update list of Aromatic Bond objects, then sort by DOF."""
-    cdef AromaticBond item, x
     for item in item_list:
         item.update()
     return item_list.sort(key=lambda x: (x.double_possible, not x.double_required, x.endo_dof, x.exo_dof), reverse=True)
 
-cdef class AromaticRing(object):
+class AromaticRing(object):
     """
     Helper class containing information about a single aromatic ring in a molecule.
 
     DO NOT use outside of this module. This class does not do any aromaticity perception.
     """
-    cdef public list atoms, resolved, unresolved
-    cdef set endo_bonds, exo_bonds
-    cdef public int endo_dof, exo_dof
 
     def __init__(self, atoms=None, endo_bonds=None, exo_bonds=None, endo_dof=-1, exo_dof=-1):
         self.atoms = atoms
@@ -163,15 +151,13 @@ cdef class AromaticRing(object):
         self.resolved = []
         self.unresolved = []
 
-    cpdef update(self):
+    def update(self):
         """
         Update the degree of freedom information for this aromatic ring.
 
         `endo_dof` refers to the number of bonds in the ring without fixed bond orders.
         `exo_dof`  refers to the number of bonds outside the ring without fixed bond orders.
         """
-        cdef int endo_dof, exo_dof
-        cdef Bond bond
 
         endo_dof = 0
         for bond in self.endo_bonds:
@@ -188,10 +174,8 @@ cdef class AromaticRing(object):
 
         self.process_bonds()
 
-    cpdef tuple process_bonds(self):
+    def process_bonds(self):
         """Create AromaticBond objects for each endocyclic bond."""
-        cdef Bond bond0
-        cdef int i
 
         if not self.unresolved and not self.resolved:
             # We just started on this ring
@@ -217,15 +201,12 @@ cdef class AromaticRing(object):
 
         assert len(self.resolved) + len(self.unresolved) == len(self.endo_bonds)
 
-    cpdef bint kekulize(self) except -2:
+    def kekulize(self):
         """
         Attempts to kekulize a single aromatic ring in a molecule.
 
         Returns True if successful, and False otherwise.
         """
-        cdef list resolved, unresolved
-        cdef int itercount, maxiter
-        cdef AromaticBond bond
 
         # Check status
         if len(self.unresolved) == 0:
@@ -276,16 +257,12 @@ cdef class AromaticRing(object):
 
         return True
 
-cdef class AromaticBond(object):
+class AromaticBond(object):
     """
     Helper class containing information about a single aromatic bond in a molecule.
 
     DO NOT use outside of this module. This class does not do any aromaticity perception.
     """
-    cdef public Bond bond
-    cdef public set ring_bonds
-    cdef public int endo_dof, exo_dof
-    cdef public bint double_possible, double_required
 
     def __init__(self, bond=None, ring_bonds=None, endo_dof=-1, exo_dof=-1, double_possible=True, double_required=False):
         self.bond = bond
@@ -295,7 +272,7 @@ cdef class AromaticBond(object):
         self.double_possible = double_possible
         self.double_required = double_required
 
-    cpdef update(self):
+    def update(self):
         """
         Update the local degree of freedom information for this aromatic bond.
         The DOF counts do not include the bond itself, only its adjacent bonds.
@@ -303,10 +280,6 @@ cdef class AromaticBond(object):
         `endo_dof` refers to the number of adjacent bonds in the ring without fixed bond orders.
         `exo_dof`  refers to the number of adjacent bonds outside the ring without fixed bond orders.
         """
-        cdef dict valences
-        cdef Atom atom
-        cdef Bond bond
-        cdef int endo_dof, exo_dof, occupied, uncertain, available
 
         valences = PeriodicSystem.valences
 

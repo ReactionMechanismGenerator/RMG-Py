@@ -40,7 +40,6 @@ want to use these objects, both to conserve memory and to make for easy
 comparisons.
 """
 
-import cython
 from rdkit.Chem import GetPeriodicTable
 
 from rmgpy.exceptions import ElementError
@@ -142,7 +141,6 @@ def get_element(value, isotope=-1):
     number. If a string is provided, the value is treated as the symbol. An
     :class:`ElementError` is raised if no matching element is found.
     """
-    cython.declare(element=Element, number=cython.int, symbol=str)
     if isinstance(value, int):
         # The parameter is an integer; assume this is the atomic number
         number = value

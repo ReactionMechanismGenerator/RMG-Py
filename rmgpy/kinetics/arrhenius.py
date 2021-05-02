@@ -28,15 +28,15 @@
 ###############################################################################
 
 import numpy as np
-cimport numpy as np
-from libc.math cimport exp, sqrt, log10
+from math import exp, sqrt, log10
 from scipy.optimize import curve_fit, fsolve
 
-cimport rmgpy.constants as constants
+import rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import KineticsError
 from rmgpy.kinetics.uncertainties import rank_accuracy_map
 from rmgpy.molecule.molecule import Bond
+from rmgpy.kinetics.model import KineticsModel, PDepKineticsModel
 
 # Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
 RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
@@ -94,35 +94,43 @@ cdef class Arrhenius(KineticsModel):
         return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                             self.uncertainty, self.comment))
 
-    property A:
+    @property
+    def A(self):
         """The preexponential factor."""
-        def __get__(self):
-            return self._A
-        def __set__(self, value):
-            self._A = quantity.RateCoefficient(value)
+        return self._A
 
-    property n:
+    @A.setter
+    def A(self, value):
+        self._A = quantity.RateCoefficient(value)
+
+    @property
+    def n(self):
         """The temperature exponent."""
-        def __get__(self):
-            return self._n
-        def __set__(self, value):
-            self._n = quantity.Dimensionless(value)
+        return self._n
 
-    property Ea:
+    @n.setter
+    def n(self, value):
+        self._n = quantity.Dimensionless(value)
+
+    @property
+    def Ea(self):
         """The activation energy."""
-        def __get__(self):
-            return self._Ea
-        def __set__(self, value):
-            self._Ea = quantity.Energy(value)
+        return self._Ea
 
-    property T0:
+    @Ea.setter
+    def Ea(self, value):
+        self._Ea = quantity.Energy(value)
+
+    @property
+    def T0(self):
         """The reference temperature."""
-        def __get__(self):
-            return self._T0
-        def __set__(self, value):
-            self._T0 = quantity.Temperature(value)
+        return self._T0
 
-    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
+    @T0.setter
+    def T0(self, value):
+        self._T0 = quantity.Temperature(value)
+
+    def get_rate_coefficient(self, T, P=0.0):
         """
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K.
@@ -134,7 +142,7 @@ cdef class Arrhenius(KineticsModel):
         T0 = self._T0.value_si
         return A * (T / T0) ** n * exp(-Ea / (constants.R * T))
 
-    cpdef change_t0(self, double T0):
+    def change_t0(self, T0):
         """
         Changes the reference temperature used in the exponent to `T0` in K,
         and adjusts the preexponential factor accordingly.
@@ -142,8 +150,8 @@ cdef class Arrhenius(KineticsModel):
         self._A.value_si /= (self._T0.value_si / T0) ** self._n.value_si
         self._T0.value_si = T0
 
-    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1, np.ndarray weights=None,
-                      bint three_params=True):
+    def fit_to_data(self, Tlist, klist, kunits, T0=1, weights=None,
+                      three_params=True):
         """
         Fit the Arrhenius parameters to a set of rate coefficient data `klist`
         in units of `kunits` corresponding to a set of temperatures `Tlist` in
@@ -205,7 +213,7 @@ cdef class Arrhenius(KineticsModel):
 
         return self
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
@@ -274,7 +282,7 @@ cdef class Arrhenius(KineticsModel):
         # Set the rate parameter to a cantera Arrhenius object
         ct_reaction.rate = self.to_cantera_kinetics()
 
-    cpdef ArrheniusEP to_arrhenius_ep(self, double alpha=0.0, double dHrxn=0.0):
+    def to_arrhenius_ep(self, alpha=0.0, dHrxn=0.0):
         """
         Converts an Arrhenius object to ArrheniusEP
 
@@ -300,7 +308,7 @@ cdef class Arrhenius(KineticsModel):
 ################################################################################
 
 
-cdef class ArrheniusEP(KineticsModel):
+class ArrheniusEP(KineticsModel):
     """
     A kinetics model based on the (modified) Arrhenius equation, using the
     Evans-Polanyi equation to determine the activation energy. The attributes
@@ -353,52 +361,58 @@ cdef class ArrheniusEP(KineticsModel):
         return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                               self.uncertainty, self.comment))
 
-    property A:
+    @property
+    def A(self):
         """The preexponential factor."""
-        def __get__(self):
-            return self._A
-        def __set__(self, value):
-            self._A = quantity.RateCoefficient(value)
+        return self._A
 
-    property n:
+    @A.setter
+    def A(self, value):
+        self._A = quantity.RateCoefficient(value)
+
+    @property
+    def n(self):
         """The temperature exponent."""
-        def __get__(self):
-            return self._n
-        def __set__(self, value):
-            self._n = quantity.Dimensionless(value)
+        return self._n
 
-    property alpha:
+    @n.setter
+    def n(self, value):
+        self._n = quantity.Dimensionless(value)
+
+    @property
+    def alpha(self):
         """The Evans-Polanyi slope."""
-        def __get__(self):
-            return self._alpha
-        def __set__(self, value):
-            self._alpha = quantity.Dimensionless(value)
+        return self._alpha
 
-    property E0:
+    @alpha.setter
+    def alpha(self, value):
+        self._alpha = quantity.Dimensionless(value)
+
+    @property
+    def E0(self):
         """The activation energy for a thermoneutral reaction."""
-        def __get__(self):
-            return self._E0
-        def __set__(self, value):
-            self._E0 = quantity.Energy(value)
+        return self._E0
 
-    cpdef double get_rate_coefficient(self, double T, double dHrxn=0.0) except -1:
+    @E0.setter
+    def E0(self, value):
+        self._E0 = quantity.Energy(value)
+
+    def get_rate_coefficient(self, T, dHrxn=0.0):
         """
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K and enthalpy of reaction `dHrxn`
         in J/mol.
         """
-        cdef double A, n, Ea
         Ea = self.get_activation_energy(dHrxn)
         A = self._A.value_si
         n = self._n.value_si
         return A * T ** n * exp(-Ea / (constants.R * T))
 
-    cpdef double get_activation_energy(self, double dHrxn) except -1:
+    def get_activation_energy(self, dHrxn):
         """
         Return the activation energy in J/mol corresponding to the given
         enthalpy of reaction `dHrxn` in J/mol.
         """
-        cdef double Ea
         Ea = self._alpha.value_si * dHrxn + self._E0.value_si
         if self._E0.value_si > 0:
             if dHrxn < 0.0 and Ea < 0.0:
@@ -407,7 +421,7 @@ cdef class ArrheniusEP(KineticsModel):
                 Ea = dHrxn
         return Ea
 
-    cpdef Arrhenius to_arrhenius(self, double dHrxn):
+    def to_arrhenius(self, dHrxn):
         """
         Return an :class:`Arrhenius` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.
@@ -425,7 +439,7 @@ cdef class ArrheniusEP(KineticsModel):
             comment=self.comment,
         )
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
@@ -456,7 +470,7 @@ cdef class ArrheniusEP(KineticsModel):
 
 ################################################################################
 
-cdef class ArrheniusBM(KineticsModel):
+class ArrheniusBM(KineticsModel):
     """
     A kinetics model based on the (modified) Arrhenius equation, using the
     Blowers-Masel equation to determine the activation energy.
@@ -511,52 +525,58 @@ cdef class ArrheniusBM(KineticsModel):
         return (ArrheniusBM, (self.A, self.n, self.w0, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                               self.uncertainty, self.comment))
 
-    property A:
+    @property
+    def A(self):
         """The preexponential factor."""
-        def __get__(self):
-            return self._A
-        def __set__(self, value):
-            self._A = quantity.RateCoefficient(value)
+        return self._A
 
-    property n:
+    @A.setter
+    def A(self, value):
+        self._A = quantity.RateCoefficient(value)
+
+    @property
+    def n(self):
         """The temperature exponent."""
-        def __get__(self):
-            return self._n
-        def __set__(self, value):
-            self._n = quantity.Dimensionless(value)
+        return self._n
 
-    property w0:
-        """The average of the bond dissociation energies of the bond formed and the bond broken."""
-        def __get__(self):
-            return self._w0
-        def __set__(self, value):
-            self._w0 = quantity.Energy(value)
+    @n.setter
+    def n(self, value):
+        self._n = quantity.Dimensionless(value)
 
-    property E0:
-        """The activation energy for a thermoneutral reaction."""
-        def __get__(self):
-            return self._E0
-        def __set__(self, value):
-            self._E0 = quantity.Energy(value)
+    @property
+    def w0(self):
+        """The temperature exponent."""
+        return self._w0
 
-    cpdef double get_rate_coefficient(self, double T, double dHrxn=0.0) except -1:
+    @w0.setter
+    def w0(self, value):
+        self._w0 = quantity.Energy(value)
+
+    @property
+    def E0(self):
+        """The temperature exponent."""
+        return self._E0
+
+    @E0.setter
+    def E0(self, value):
+        self._E0 = quantity.Energy(value)
+
+    def get_rate_coefficient(self, T, dHrxn=0.0):
         """
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K and enthalpy of reaction `dHrxn`
         in J/mol.
         """
-        cdef double A, n, Ea
         Ea = self.get_activation_energy(dHrxn)
         A = self._A.value_si
         n = self._n.value_si
         return A * T ** n * exp(-Ea / (constants.R * T))
 
-    cpdef double get_activation_energy(self, double dHrxn) except -1:
+    def get_activation_energy(self, dHrxn):
         """
         Return the activation energy in J/mol corresponding to the given
         enthalpy of reaction `dHrxn` in J/mol.
         """
-        cdef double w0, E0
         E0 = self._E0.value_si
         if dHrxn < -4 * self._E0.value_si:
             return 0.0
@@ -567,7 +587,7 @@ cdef class ArrheniusBM(KineticsModel):
             Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
             return (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) ** 2 / (Vp ** 2 - (2 * w0) ** 2 + dHrxn ** 2)
 
-    cpdef Arrhenius to_arrhenius(self, double dHrxn):
+    def to_arrhenius(self, dHrxn):
         """
         Return an :class:`Arrhenius` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.
@@ -686,7 +706,7 @@ cdef class ArrheniusBM(KineticsModel):
 
         return self
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
         and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
@@ -702,7 +722,7 @@ cdef class ArrheniusBM(KineticsModel):
 
         return True
 
-    cpdef change_rate(self, double factor):
+    def change_rate(self, factor):
         """
         Changes A factor by multiplying it by a ``factor``.
         """
@@ -717,7 +737,7 @@ cdef class ArrheniusBM(KineticsModel):
 
 ################################################################################
 
-cdef class PDepArrhenius(PDepKineticsModel):
+class PDepArrhenius(PDepKineticsModel):
     """
     A kinetic model of a phenomenological rate coefficient :math:`k(T,P)` where
     a set of Arrhenius kinetics are stored at a variety of pressures and
@@ -775,7 +795,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
         def __set__(self, value):
             self._pressures = quantity.Pressure(value)
 
-    cdef get_adjacent_expressions(self, double P):
+    def get_adjacent_expressions(self, P):
         """
         Returns the pressures and Arrhenius expressions for the pressures that
         most closely bound the specified pressure `P` in Pa.
@@ -794,14 +814,11 @@ cdef class PDepArrhenius(PDepKineticsModel):
                 ihigh = i
         return pressures[ilow], pressures[ihigh], self.arrhenius[ilow], self.arrhenius[ihigh]
 
-    cpdef double get_rate_coefficient(self, double T, double P=0) except -1:
+    def get_rate_coefficient(self, T, P=0):
         """
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K and pressure `P` in Pa.
         """
-        cdef double Plow, Phigh, klow, khigh, k
-        cdef KineticsModel alow, ahigh
-        cdef int j
 
         if P == 0:
             raise ValueError('No pressure specified to pressure-dependent PDepArrhenius.get_rate_coefficient().')
@@ -817,14 +834,13 @@ cdef class PDepArrhenius(PDepKineticsModel):
             k = klow * 10 ** (log10(P / Plow) / log10(Phigh / Plow) * log10(khigh / klow))
         return k
 
-    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K, str kunits, double T0=1):
+    def fit_to_data(self, Tlist, Plist, K, kunits, T0=1):
         """
         Fit the pressure-dependent Arrhenius model to a matrix of rate
         coefficient data `K` with units of `kunits` corresponding to a set of
         temperatures `Tlist` in K and pressures `Plist` in Pa. An Arrhenius
         model is fit cpdef change_rate(self, double factor)at each pressure.
         """
-        cdef int i
         self.pressures = (Plist * 1e-5, "bar")
         self.arrhenius = []
         for i in range(len(Plist)):
@@ -832,7 +848,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
             self.arrhenius.append(arrhenius)
         return self
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Each duplicate
         reaction must be matched and equal to that in the other PDepArrhenius model
@@ -854,7 +870,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
 
         return True
 
-    cpdef change_rate(self, double factor):
+    def change_rate(self, double factor):
         """
         Changes kinetics rate by a multiple ``factor``.
         """
@@ -879,7 +895,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
 
 ################################################################################
 
-cdef class MultiArrhenius(KineticsModel):
+class MultiArrhenius(KineticsModel):
     """
     A kinetics model based on a set of (modified) Arrhenius equations, which
     are summed to obtain the overall rate. The attributes are:
@@ -921,19 +937,17 @@ cdef class MultiArrhenius(KineticsModel):
         """
         return (MultiArrhenius, (self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
-    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
+    def get_rate_coefficient(self, T, P=0.0):
         """
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K.
         """
-        cdef double k
-        cdef Arrhenius arrh
         k = 0.0
         for arrh in self.arrhenius:
             k += arrh.get_rate_coefficient(T)
         return k
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Each duplicate
         reaction must be matched and equal to that in the other MultiArrhenius model
@@ -952,7 +966,7 @@ cdef class MultiArrhenius(KineticsModel):
 
         return True
 
-    cpdef Arrhenius to_arrhenius(self, double Tmin=-1, double Tmax=-1):
+    def to_arrhenius(self, Tmin=-1, Tmax=-1):
         """
         Return an :class:`Arrhenius` instance of the kinetics model
 
@@ -964,9 +978,6 @@ cdef class MultiArrhenius(KineticsModel):
         resulting parameters provide the best possible approximation to the
         data.
         """
-        cdef Arrhenius arrh
-        cdef np.ndarray Tlist, klist
-        cdef str kunits
         if Tmin == -1: Tmin = self.Tmin.value_si
         if Tmax == -1: Tmax = self.Tmax.value_si
         kunits = str(quantity.pq.Quantity(1.0, self.arrhenius[0].A.units).simplified).split()[-1]  # is this the best way to get the units returned by k??
@@ -977,7 +988,7 @@ cdef class MultiArrhenius(KineticsModel):
             Tmin=Tmin, Tmax=Tmax, comment=self.comment)
         return arrh
 
-    cpdef change_rate(self, double factor):
+    def change_rate(self, factor):
         """
         Change kinetics rate by a multiple ``factor``.
         """
@@ -997,7 +1008,7 @@ cdef class MultiArrhenius(KineticsModel):
 
 ################################################################################
 
-cdef class MultiPDepArrhenius(PDepKineticsModel):
+class MultiPDepArrhenius(PDepKineticsModel):
     """
     A kinetic model of a phenomenological rate coefficient :math:`k(T,P)` where
     sets of Arrhenius kinetics are stored at a variety of pressures and
@@ -1040,7 +1051,7 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
         """
         return (MultiPDepArrhenius, (self.arrhenius, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
-    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
+    def get_rate_coefficient(self, T, P=0.0):
         """
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K and pressure `P` in Pa.
@@ -1060,7 +1071,7 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
 
         return k
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Each duplicate
         reaction must be matched and equal to that in the other MultiArrhenius model
@@ -1079,7 +1090,7 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
 
         return True
 
-    cpdef change_rate(self, double factor):
+    def change_rate(self, factor):
         """
         Change kinetic rate by a multiple ``factor``.
         """

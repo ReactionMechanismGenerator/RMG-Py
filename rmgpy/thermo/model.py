@@ -28,7 +28,7 @@
 ###############################################################################
 
 import rmgpy.quantity as quantity
-from rmgpy.rmgobject cimport RMGObject
+from rmgpy.rmgobject import RMGObject
 
 """
 This module contains base classes that represent various thermodynamic
@@ -38,7 +38,7 @@ property calculation methods.
 
 ################################################################################
 
-cdef class HeatCapacityModel(RMGObject):
+class HeatCapacityModel(RMGObject):
     """
     A base class for heat capacity models, containing several attributes
     common to all models:
@@ -57,6 +57,7 @@ cdef class HeatCapacityModel(RMGObject):
     """
     
     def __init__(self, Tmin=None, Tmax=None, E0=None, Cp0=None, CpInf=None, label='', comment=''):
+        super().__init__()
         self.Tmin = Tmin
         self.Tmax = Tmax
         self.E0 = E0
@@ -79,42 +80,52 @@ cdef class HeatCapacityModel(RMGObject):
         """
         return (HeatCapacityModel, (self.Tmin, self.Tmax, self.E0, self.Cp0, self.CpInf, self.label, self.comment))
 
-    property E0:
+    @property
+    def E0(self):
         """The ground state energy (J/mol) at zero Kelvin, including zero point energy, or ``None`` if not yet specified."""
-        def __get__(self):
-            return self._E0
-        def __set__(self, value):
-            self._E0 = quantity.Enthalpy(value)
+        return self._E0
 
-    property Tmin:
-        """The minimum temperature at which the model is valid, or ``None`` if not defined."""
-        def __get__(self):
-            return self._Tmin
-        def __set__(self, value):
-            self._Tmin = quantity.Temperature(value)
+    @E0.setter
+    def E0(self, value):
+        self._E0 = quantity.Enthalpy(value)
 
-    property Tmax:
+    @property
+    def Tmin(self):
+        """The ground state energy (J/mol) at zero Kelvin, including zero point energy, or ``None`` if not yet specified."""
+        return self._Tmin
+
+    @Tmin.setter
+    def Tmin(self, value):
+        self._Tmin = quantity.Temperature(value)
+
+    @property
+    def Tmax(self):
         """The maximum temperature at which the model is valid, or ``None`` if not defined."""
-        def __get__(self):
-            return self._Tmax
-        def __set__(self, value):
-            self._Tmax = quantity.Temperature(value)
+        return self._Tmax
 
-    property Cp0:
+    @Tmax.setter
+    def Tmax(self, value):
+        self._Tmax = quantity.Temperature(value)
+
+    @property
+    def Cp0(self):
         """The heat capacity at zero temperature."""
-        def __get__(self):
-            return self._Cp0
-        def __set__(self, value):
-            self._Cp0 = quantity.HeatCapacity(value)
+        return self._Cp0
 
-    property CpInf:
+    @Cp0.setter
+    def Cp0(self, value):
+        self._Cp0 = quantity.HeatCapacity(value)
+
+    @property
+    def CpInf(self):
         """The heat capacity at infinite temperature."""
-        def __get__(self):
-            return self._CpInf
-        def __set__(self, value):
-            self._CpInf = quantity.HeatCapacity(value)
+        return self._CpInf
 
-    cpdef bint is_temperature_valid(self, double T) except -2:
+    @CpInf.setter
+    def CpInf(self, value):
+        self._CpInf = quantity.HeatCapacity(value)
+
+    def is_temperature_valid(self, T):
         """
         Return ``True`` if the temperature `T` in K is within the valid
         temperature range of the thermodynamic data, or ``False`` if not. If
@@ -123,7 +134,7 @@ cdef class HeatCapacityModel(RMGObject):
         """
         return (self._Tmin is None or self._Tmin.value_si <= T) and (self.Tmax is None or T <= self._Tmax.value_si)
 
-    cpdef double get_heat_capacity(self, double T) except -1000000000:
+    def get_heat_capacity(self, T):
         """
         Return the constant-pressure heat capacity in J/mol*K at the specified
         temperature `T` in K. This method must be overloaded in the derived
@@ -131,35 +142,33 @@ cdef class HeatCapacityModel(RMGObject):
         """
         raise NotImplementedError('Unexpected call to HeatCapacityModel.get_heat_capacity(); you should be using a class derived from HeatCapacityModel.')
 
-    cpdef double get_enthalpy(self, double T) except 1000000000:
+    def get_enthalpy(self, T):
         """
         Return the enthalpy in J/mol at the specified temperature `T` in K.
         This method must be overloaded in the derived class.
         """
         raise NotImplementedError('Unexpected call to HeatCapacityModel.get_enthalpy(); you should be using a class derived from HeatCapacityModel.')
 
-    cpdef double get_entropy(self, double T) except -1000000000:
+    def get_entropy(self, T):
         """
         Return the entropy in J/mol*K at the specified temperature `T` in K.
         This method must be overloaded in the derived class.
         """
         raise NotImplementedError('Unexpected call to HeatCapacityModel.get_entropy(); you should be using a class derived from HeatCapacityModel.')
 
-    cpdef double get_free_energy(self, double T) except 1000000000:
+    def get_free_energy(self, T):
         """
         Return the Gibbs free energy in J/mol at the specified temperature `T`
         in K. This method must be overloaded in the derived class.
         """
         raise NotImplementedError('Unexpected call to HeatCapacityModel.get_free_energy(); you should be using a class derived from HeatCapacityModel.')
 
-    cpdef bint is_similar_to(self, HeatCapacityModel other) except -2:
+    def is_similar_to(self, other):
         """
         Returns ``True`` if `self` and `other` report similar thermo values
         for heat capacity, enthalpy, entropy, and free energy over a wide
         range of temperatures, or ``False`` otherwise.
         """
-        cdef double T
-        cdef list Tdata
         
         Tdata = [300,400,500,600,800,1000,1500,2000]
         for T in Tdata:
@@ -174,14 +183,12 @@ cdef class HeatCapacityModel(RMGObject):
 
         return True
 
-    cpdef bint is_identical_to(self, HeatCapacityModel other) except -2:
+    def is_identical_to(self, other):
         """
         Returns ``True`` if `self` and `other` report very similar thermo values
         for heat capacity, enthalpy, entropy, and free energy over a wide
         range of temperatures, or ``False`` otherwise.
         """
-        cdef double T
-        cdef list Tdata
         
         Tdata = [300,400,500,600,800,1000,1500,2000]
         for T in Tdata:
@@ -196,22 +203,18 @@ cdef class HeatCapacityModel(RMGObject):
 
         return True
     
-    cpdef double discrepancy(self, HeatCapacityModel other) except -2:
+    def discrepancy(self, other):
         """
         Return some measure of how dissimilar `self` is from `other`.
         
         The measure is arbitrary, but hopefully useful for sorting purposes.
         Discrepancy of 0 means they are identical
         """
-        cdef double T
-        cdef double discrepancy
-        cdef list Tdata
-        
         Tdata = [300,400,500,600,800,1000,1500,2000]
         discrepancy = 0.0
         for T in Tdata:
             #discrepancy += abs(self.get_heat_capacity(T) / other.get_heat_capacity(T) - 1.0)
             #discrepancy += abs(self.get_enthalpy(T) - other.get_enthalpy(T) )/1000
             #discrepancy += abs(self.get_entropy(T) - other.get_entropy(T) )
-            discrepancy += abs(self.get_free_energy(T) - other.get_free_energy(T) )/1000
+            discrepancy += abs(self.get_free_energy(T) - other.get_free_energy(T) ) / 1000
         return discrepancy

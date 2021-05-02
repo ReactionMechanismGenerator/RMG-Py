@@ -33,15 +33,14 @@ models.
 """
 
 import numpy as np
-cimport numpy as np
-from libc.math cimport log10
+from math import log10
 
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
 
 ################################################################################
 
-cpdef str get_rate_coefficient_units_from_reaction_order(n_gas, n_surf=0):
+def get_rate_coefficient_units_from_reaction_order(n_gas, n_surf=0):
     """
     Given a reaction `order` with `n_gas` and `n_surf` species, 
     return the corresponding SI units of the rate
@@ -78,7 +77,7 @@ cpdef str get_rate_coefficient_units_from_reaction_order(n_gas, n_surf=0):
     
     return kunits
 
-cpdef int get_reaction_order_from_rate_coefficient_units(kunits) except -1:
+def get_reaction_order_from_rate_coefficient_units(kunits):
     """
     Given a set of rate coefficient units `kunits`, return the corresponding
     reaction order. Raises a :class:`ValueError` if the reaction order could 
@@ -105,7 +104,7 @@ cpdef int get_reaction_order_from_rate_coefficient_units(kunits) except -1:
 
 ################################################################################
 
-cdef class KineticsModel:
+class KineticsModel(object):
     """
     A base class for chemical kinetics models, containing several attributes
     common to all models:
@@ -144,42 +143,50 @@ cdef class KineticsModel:
         """
         return (KineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment))
 
-    property Tmin:
+    @property
+    def Tmin(self):
         """The minimum temperature at which the model is valid, or ``None`` if not defined."""
-        def __get__(self):
-            return self._Tmin
-        def __set__(self, value):
-            self._Tmin = quantity.Temperature(value)
+        return self._Tmin
 
-    property Tmax:
+    @Tmin.setter
+    def Tmin(self, value):
+        self._Tmin = quantity.Temperature(value)
+
+    @property
+    def Tmax(self):
         """The maximum temperature at which the model is valid, or ``None`` if not defined."""
-        def __get__(self):
-            return self._Tmax
-        def __set__(self, value):
-            self._Tmax = quantity.Temperature(value)
+        return self._Tmax
 
-    property Pmin:
+    @Tmax.setter
+    def Tmax(self, value):
+        self._Tmax = quantity.Temperature(value)
+
+    @property
+    def Pmin(self):
         """The minimum pressure at which the model is valid, or ``None`` if not defined."""
-        def __get__(self):
-            return self._Pmin
-        def __set__(self, value):
-            self._Pmin = quantity.Pressure(value)
+        return self._Pmin
 
-    property Pmax:
+    @Pmin.setter
+    def Pmin(self, value):
+        self._Pmin = quantity.Pressure(value)
+
+    @property
+    def Pmax(self):
         """The maximum pressure at which the model is valid, or ``None`` if not defined."""
-        def __get__(self):
-            return self._Pmax
-        def __set__(self, value):
-            self._Pmax = quantity.Pressure(value)
+        return self._Pmax
 
-    cpdef bint is_pressure_dependent(self) except -2:
+    @Pmax.setter
+    def Pmax(self, value):
+        self._Pmax = quantity.Pressure(value)
+
+    def is_pressure_dependent(self):
         """
         Return ``False`` since, by default, all objects derived from KineticsModel
         represent pressure-independent kinetics.
         """
         return False
 
-    cpdef bint is_temperature_valid(self, double T) except -2:
+    def is_temperature_valid(self, T):
         """
         Return ``True`` if the temperature `T` in K is within the valid
         temperature range of the kinetic data, or ``False`` if not. If
@@ -188,7 +195,7 @@ cdef class KineticsModel:
         """
         return (self.Tmin is None or self._Tmin.value_si <= T) and (self.Tmax is None or T <= self._Tmax.value_si)
 
-    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
+    def get_rate_coefficient(self, T, P=0.0):
         """
         Return the value of the rate coefficient :math:`k(T)` in units of m^3,
         mol, and s at the specified temperature `T` in K. This method must be
@@ -197,13 +204,10 @@ cdef class KineticsModel:
         raise NotImplementedError('Unexpected call to KineticsModel.get_rate_coefficient(); '
                                   'you should be using a class derived from KineticsModel.')
 
-    cpdef to_html(self):
+    def to_html(self):
         """
         Return an HTML rendering.
         """
-        cdef double T
-        cdef str string
-        cdef list Tdata
 
         Tdata = [500, 1000, 1500, 2000]
 
@@ -224,12 +228,11 @@ cdef class KineticsModel:
 
         return string
 
-    cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2:
+    def is_similar_to(self, other_kinetics):
         """
         Returns ``True`` if rates of reaction at temperatures 500,1000,1500,2000 K
         and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.
         """
-        cdef double T
 
         if other_kinetics.is_pressure_dependent():
             return False
@@ -239,7 +242,7 @@ cdef class KineticsModel:
                 return False
         return True
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Returns ``True`` if Tmin, Tmax for both objects match.
         Otherwise returns ``False``
@@ -260,12 +263,10 @@ cdef class KineticsModel:
 
         return True
 
-    cpdef double discrepancy(self, KineticsModel other_kinetics) except -2:
+    def discrepancy(self, other_kinetics):
         """
         Returns some measure of the discrepancy based on two different reaction models.
         """
-        cdef double T
-        cdef double discrepancy
 
         discrepancy = 0.0
         if other_kinetics.is_pressure_dependent():
@@ -285,7 +286,7 @@ cdef class KineticsModel:
 
 ################################################################################
 
-cdef class PDepKineticsModel(KineticsModel):
+class PDepKineticsModel(KineticsModel):
     """
     A base class for chemical kinetics models that depend on both temperature
     and pressure, containing several attributes common to all such models:
@@ -337,14 +338,14 @@ cdef class PDepKineticsModel(KineticsModel):
         return (PDepKineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.efficiencies, self.highPlimit,
                                     self.comment))
 
-    cpdef bint is_pressure_dependent(self) except -2:
+    def is_pressure_dependent(self):
         """
         Return ``True`` since all objects derived from PDepKineticsModel
         represent pressure-dependent kinetics.
         """
         return True
 
-    cpdef bint is_pressure_valid(self, double P) except -2:
+    def is_pressure_valid(self, P):
         """
         Return ``True`` if the pressure `P` in Pa is within the valid
         pressure range of the kinetic data, or ``False`` if not. If
@@ -353,15 +354,12 @@ cdef class PDepKineticsModel(KineticsModel):
         """
         return (self.Pmin is None or self._Pmin.value_si <= P) and (self.Pmax is None or P <= self._Pmax.value_si)
 
-    cpdef double get_effective_pressure(self, double P, list species, np.ndarray fractions) except -1:
+    def get_effective_pressure(self, P, species, fractions):
         """
         Return the effective pressure in Pa for a system at a given pressure
         `P` in Pa composed of the given list of `species` (Species or Molecule objects) with the given
         `fractions`.  
         """
-        cdef np.ndarray[np.float64_t, ndim=1] _fractions
-        cdef double Peff, frac, eff, total_frac, eff_frac
-        cdef int i
 
         assert len(species) == len(fractions)
 
@@ -394,14 +392,11 @@ cdef class PDepKineticsModel(KineticsModel):
 
         return Peff
 
-    cpdef np.ndarray get_effective_collider_efficiencies(self, list species):
+    def get_effective_collider_efficiencies(self, species):
         """
         Return the effective collider efficiencies for all species in the form of
         a numpy array.  This function helps assist rapid effective pressure calculations in the solver.
         """
-        cdef np.ndarray[np.float64_t, ndim=1] all_efficiencies
-        cdef double eff
-        cdef int i
 
         all_efficiencies = np.ones(len(species), np.float64)
         for mol, eff in self.efficiencies.iteritems():
@@ -414,7 +409,7 @@ cdef class PDepKineticsModel(KineticsModel):
 
         return all_efficiencies
 
-    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
+    def get_rate_coefficient(self, T, P=0.0):
         """
         Return the value of the rate coefficient :math:`k(T)` in units of m^3,
         mol, and s at the specified temperature `T` in K and pressure `P` in
@@ -426,13 +421,10 @@ cdef class PDepKineticsModel(KineticsModel):
         raise NotImplementedError('Unexpected call to PDepKineticsModel.get_rate_coefficient(); '
                                   'you should be using a class derived from PDepKineticsModel.')
 
-    cpdef to_html(self):
+    def to_html(self):
         """
         Return an HTML rendering.
         """
-        cdef double T, P
-        cdef str string
-        cdef list Tdata, Pdata
 
         Tdata = [500, 1000, 1500, 2000]
         Pdata = [1e5, 1e6]
@@ -456,12 +448,11 @@ cdef class PDepKineticsModel(KineticsModel):
 
         return string
 
-    cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2:
+    def is_similar_to(self, other_kinetics):
         """
         Returns ``True`` if rates of reaction at temperatures 500,1000,1500,2000 K
         and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.
         """
-        cdef double T, P
 
         if not other_kinetics.is_pressure_dependent():
             return False
@@ -472,7 +463,7 @@ cdef class PDepKineticsModel(KineticsModel):
                     return False
         return True
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Returns ``True`` if Tmin, Tmax, Pmin, Pmax for both objects match.
         Otherwise returns ``False``
@@ -530,7 +521,7 @@ cdef class PDepKineticsModel(KineticsModel):
 
 ################################################################################
 
-cdef class TunnelingModel:
+class TunnelingModel:
     """
     A base class for models of quantum mechanical tunneling through a reaction
     barrier. The attributes are:
@@ -546,14 +537,16 @@ cdef class TunnelingModel:
     def __init__(self, frequency=None):
         self.frequency = frequency
 
-    property frequency:
+    @property
+    def frequency(self):
         """The negative frequency along the reaction coordinate."""
-        def __get__(self):
-            return self._frequency
-        def __set__(self, value):
-            self._frequency = quantity.Frequency(value)
+        return self._frequency
 
-    cpdef double calculate_tunneling_factor(self, double T) except -100000000:
+    @frequency.setter
+    def frequency(self, value):
+        self._frequency = quantity.Frequency(value)
+
+    def calculate_tunneling_factor(self, T):
         """
         Calculate and return the value of the tunneling correction for
         the reaction at the temperature `T` in K.
@@ -561,7 +554,7 @@ cdef class TunnelingModel:
         raise NotImplementedError('Unexpected call to Tunneling.calculate_tunneling_factor(); '
                                   'you should be using a class derived from TunnelingModel.')
 
-    cpdef np.ndarray calculate_tunneling_function(self, np.ndarray Elist):
+    def calculate_tunneling_function(self, Elist):
         """
         Calculate and return the value of the tunneling correction for
         the reaction at the energies `e_list` in J/mol.

@@ -30,18 +30,18 @@
 import logging
 
 import numpy as np
-cimport numpy as np
-from libc.math cimport log10
+from math import log10
 
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import KineticsError
+from rmgpy.kinetics.model import PDepKineticsModel, KineticsModel
 
 # Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
 RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
 
 ################################################################################
 
-cdef class Chebyshev(PDepKineticsModel):
+class Chebyshev(PDepKineticsModel):
     """
     A model of a phenomenological rate coefficient :math:`k(T,P)` using a
     set of Chebyshev polynomials in temperature and pressure. The attributes
@@ -102,20 +102,20 @@ cdef class Chebyshev(PDepKineticsModel):
         return (Chebyshev, (coeffs, self.kunits, self.highPlimit, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                             self.comment))
 
-    property coeffs:
+    @property
+    def coeffs(self):
         """The Chebyshev coefficients."""
-        def __get__(self):
-            return self._coeffs
-        def __set__(self, value):
-            self._coeffs = quantity.Dimensionless(value)
+        return self._coeffs
 
-    cpdef double chebyshev(self, int n, double x):
+    @coeffs.setter
+    def coeffs(self, value):
+        self._coeffs = quantity.Dimensionless(value)
+
+    def chebyshev(self, n, x):
         """
         Return the value of the nth-order Chebyshev polynomial at the given
         value of `x`.
         """
-        cdef double T0, T1, T
-        cdef int i
         if n == 0:
             return 1
         elif n == 1:
@@ -129,37 +129,32 @@ cdef class Chebyshev(PDepKineticsModel):
                 T1 = T
             return T
 
-    cpdef double get_reduced_temperature(self, double T) except -1000:
+    def get_reduced_temperature(self, T):
         """
         Return the reduced temperature corresponding to the given temperature
         `T` in K. This maps the inverse of the temperature onto the domain 
         [-1, 1] using the `Tmin` and `Tmax` attributes as the limits.
         """
-        cdef double Tmin, Tmax
         Tmin = self._Tmin.value_si
         Tmax = self._Tmax.value_si
         return (2.0 / T - 1.0 / Tmin - 1.0 / Tmax) / (1.0 / Tmax - 1.0 / Tmin)
 
-    cpdef double get_reduced_pressure(self, double P) except -1000:
+    def get_reduced_pressure(self, P):
         """
         Return the reduced pressure corresponding to the given pressure
         `P` in Pa. This maps the logarithm of the pressure onto the domain 
         [-1, 1] using the `Pmin` and `Pmax` attributes as the limits.
         """
-        cdef double Pmin, Pmax
         Pmin = self._Pmin.value_si
         Pmax = self._Pmax.value_si
         return (2.0 * log10(P) - log10(Pmin) - log10(Pmax)) / (log10(Pmax) - log10(Pmin))
 
-    cpdef double get_rate_coefficient(self, double T, double P=0) except -1:
+    def get_rate_coefficient(self, T, P=0):
         """
         Return the rate coefficient in the appropriate combination of m^3, 
         mol, and s at temperature `T` in K and pressure `P` in Pa by 
         evaluating the Chebyshev expression.
         """
-        cdef np.ndarray[np.float64_t, ndim=2] coeffs
-        cdef double Tred, Pred, k
-        cdef int i, j, t, p
 
         if P == 0:
             raise ValueError('No pressure specified to pressure-dependent Chebyshev.get_rate_coefficient().')
@@ -174,8 +169,8 @@ cdef class Chebyshev(PDepKineticsModel):
                 k += coeffs[t, p] * self.chebyshev(t, Tred) * self.chebyshev(p, Pred)
         return 10.0 ** k
 
-    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K,
-                    str kunits, int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax):
+    def fit_to_data(self, Tlist, Plist, K,
+                    kunits, degreeT, degreeP, Tmin, Tmax, Pmin, Pmax):
         """
         Fit a Chebyshev kinetic model to a set of rate coefficients `K`, which
         is a matrix corresponding to the temperatures `Tlist` in K and pressures
@@ -184,10 +179,8 @@ cdef class Chebyshev(PDepKineticsModel):
         and `Pmax` set the edges of the valid temperature and pressure ranges
         in K and bar, respectively.
         """
-        cdef int nT = len(Tlist), nP = len(Plist)
-        cdef list Tred, Pred
-        cdef int t1, p1, t2, p2
-        cdef double T, P
+        nT = len(Tlist)
+        nP = len(Plist)
 
         if nT <= degreeT or nP <= degreeP:
             raise KineticsError("The master equation data needs more temperature and pressure data "
@@ -238,7 +231,7 @@ cdef class Chebyshev(PDepKineticsModel):
 
         return self
 
-    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+    def is_identical_to(self, other_kinetics):
         """
         Checks to see if kinetics matches that of other kinetics and returns ``True``
         if coeffs, kunits, Tmin,
@@ -254,7 +247,7 @@ cdef class Chebyshev(PDepKineticsModel):
 
         return True
 
-    cpdef change_rate(self, double factor):
+    def change_rate(self, factor):
         """ 
         Changes kinetics rates by a multiple ``factor``.
         """

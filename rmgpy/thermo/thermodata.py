@@ -29,16 +29,15 @@
 
 import logging
 
-import cython
 import numpy as np
-cimport numpy as np
-from libc.math cimport log
+from math import log
 
 import rmgpy.quantity as quantity
+from rmgpy.thermo.model import HeatCapacityModel
 
 ################################################################################
 
-cdef class ThermoData(HeatCapacityModel):
+class ThermoData(HeatCapacityModel):
     """
     A heat capacity model based on a set of discrete heat capacity data points.
     The attributes are:
@@ -87,46 +86,47 @@ cdef class ThermoData(HeatCapacityModel):
         """
         return (ThermoData, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Cp0, self.CpInf, self.Tmin, self.Tmax, self.E0, self.label, self.comment))
 
-    property Tdata:
+    @property
+    def Tdata(self):
         """An array of temperatures at which the heat capacity is known."""
-        def __get__(self):
-            return self._Tdata
-        def __set__(self, value):
-            self._Tdata = quantity.Temperature(value)
+        return self._Tdata
 
-    property Cpdata:
-        """An array of heat capacities at the given temperatures."""
-        def __get__(self):
-            return self._Cpdata
-        def __set__(self, value):
-            self._Cpdata = quantity.HeatCapacity(value)
+    @Tdata.setter
+    def Tdata(self, value):
+        self._Tdata = quantity.Temperature(value)
 
-    property H298:
-        """The standard enthalpy of formation at 298 K."""
-        def __get__(self):
-            return self._H298
-        def __set__(self, value):
-            self._H298 = quantity.Enthalpy(value)
+    @property
+    def Cpdata(self):
+        """An array of temperatures at which the heat capacity is known."""
+        return self._Cpdata
 
-    property S298:
-        """The standard entropy of formation at 298 K."""
-        def __get__(self):
-            return self._S298
-        def __set__(self, value):
-            self._S298 = quantity.Entropy(value)
+    @Cpdata.setter
+    def Cpdata(self, value):
+        self._Cpdata = quantity.HeatCapacity(value)
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    cpdef double get_heat_capacity(self, double T) except -1000000000:
+    @property
+    def H298(self):
+        """An array of temperatures at which the heat capacity is known."""
+        return self._H298
+
+    @H298.setter
+    def H298(self, value):
+        self._H298 = quantity.Enthalpy(value)
+
+    @property
+    def S298(self):
+        """An array of temperatures at which the heat capacity is known."""
+        return self._S298
+
+    @S298.setter
+    def S298(self, value):
+        self._S298 = quantity.Entropy(value)
+
+    def get_heat_capacity(self, T):
         """
         Return the constant-pressure heat capacity in J/mol*K at the specified
         temperature `T` in K.
         """
-        cdef np.ndarray[np.float64_t,ndim=1] Tdata, Cpdata
-        cdef double Cp0, CpInf
-        cdef double Tlow, Thigh, Cplow, Cphigh
-        cdef double Cp
-        cdef int i, N
         
         Tdata = self._Tdata.value_si
         Cpdata = self._Cpdata.value_si
@@ -166,18 +166,11 @@ cdef class ThermoData(HeatCapacityModel):
                     break
                 
         return Cp
-    
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    cpdef double get_enthalpy(self, double T) except 1000000000:
+
+    def get_enthalpy(self, T):
         """
         Return the enthalpy in J/mol at the specified temperature `T` in K.
         """
-        cdef np.ndarray[np.float64_t,ndim=1] Tdata, Cpdata
-        cdef double Cp0, CpInf
-        cdef double Tlow, Thigh, Cplow, Cphigh
-        cdef double H, slope, intercept, T0
-        cdef int i, N
 
         Tdata = self._Tdata.value_si
         Cpdata = self._Cpdata.value_si
@@ -239,18 +232,11 @@ cdef class ThermoData(HeatCapacityModel):
                 H += 0.5 * slope * (T0*T0 - Thigh*Thigh) + intercept * (T0 - Thigh) + CpInf * (T - T0)
         
         return H
-        
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    cpdef double get_entropy(self, double T) except -1000000000:
+
+    def get_entropy(self, T):
         """
         Return the entropy in J/mol*K at the specified temperature `T` in K.
         """
-        cdef np.ndarray[np.float64_t,ndim=1] Tdata, Cpdata
-        cdef double Cp0, CpInf
-        cdef double Tlow, Thigh, Cplow, Cphigh
-        cdef double S, slope, intercept, T0
-        cdef int i, N
 
         Tdata = self._Tdata.value_si
         Cpdata = self._Cpdata.value_si
@@ -318,14 +304,11 @@ cdef class ThermoData(HeatCapacityModel):
 
         return S
     
-    cpdef double get_free_energy(self, double T) except 1000000000:
+    def get_free_energy(self, T):
         """
         Return the Gibbs free energy in J/mol at the specified temperature
         `T` in K.
         """
-        cdef np.ndarray[np.float64_t,ndim=1] Tdata
-        cdef double Cp0, CpInf
-        cdef int N
 
         Tdata = self._Tdata.value_si
         Cp0 = self._Cp0.value_si if self._Cp0 is not None else 0.0
@@ -343,7 +326,7 @@ cdef class ThermoData(HeatCapacityModel):
 
         return self.get_enthalpy(T) - T * self.get_entropy(T)
 
-    cpdef Wilhoit to_wilhoit(self, B=None):
+    def to_wilhoit(self, B=None):
         """
         Convert the Benson model to a Wilhoit model. For the conversion to
         succeed, you must have set the `Cp0` and `CpInf` attributes of the
@@ -368,7 +351,7 @@ cdef class ThermoData(HeatCapacityModel):
         else:
             return Wilhoit(label=self.label,comment=self.comment).fit_to_data(Tdata, Cpdata, Cp0, CpInf, H298, S298)
 
-    cpdef NASA to_nasa(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
+    def to_nasa(self, Tmin, Tmax, Tint, fixedTint=False, weighting=True, continuity=3):
         """
         Convert the object to a :class:`NASA` object. You must specify the
         minimum and maximum temperatures of the fit `Tmin` and `Tmax` in K, as
@@ -403,7 +386,7 @@ cdef class ThermoData(HeatCapacityModel):
         """
         return self.to_wilhoit().to_nasa(Tmin, Tmax, Tint, fixedTint, weighting, continuity)
 
-    cpdef bint is_all_zeros(self):
+    def is_all_zeros(self):
         """
         Check whether a ThermoData object has all zero values, e.g.: 
         

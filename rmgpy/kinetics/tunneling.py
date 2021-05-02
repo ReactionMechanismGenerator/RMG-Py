@@ -34,17 +34,16 @@ a reaction barrier.
 
 import logging
 
-import cython
 import numpy as np
-cimport numpy as np
-from libc.math cimport abs, exp, sqrt
+from math import exp, sqrt
 
-cimport rmgpy.constants as constants
+import rmgpy.constants as constants
 import rmgpy.quantity as quantity
+from rmgpy.kinetics import TunnelingModel
 
 ################################################################################
 
-cdef class Wigner(TunnelingModel):
+class Wigner(TunnelingModel):
     """
     A tunneling model based on the Wigner formula. The attributes are:
 
@@ -71,17 +70,16 @@ cdef class Wigner(TunnelingModel):
         """
         return (Wigner, (self.frequency,))
 
-    cpdef double calculate_tunneling_factor(self, double T) except -100000000:
+    def calculate_tunneling_factor(self, T):
         """
         Calculate and return the value of the Wigner tunneling correction for
         the reaction at the temperature `T` in K.
         """
-        cdef double factor, frequency
         frequency = abs(self._frequency.value_si) * constants.c * 100.0
         factor = constants.h * frequency / (constants.kB * T)
         return 1.0 + factor * factor / 24.0
 
-    cpdef np.ndarray calculate_tunneling_function(self, np.ndarray Elist):
+    def calculate_tunneling_function(self, Elist):
         """
         Raises :class:`NotImplementedError`, as the Wigner tunneling model
         does not have a well-defined energy-dependent tunneling function. 
@@ -90,7 +88,7 @@ cdef class Wigner(TunnelingModel):
 
 ################################################################################
 
-cdef class Eckart(TunnelingModel):
+class Eckart(TunnelingModel):
     """
     A tunneling model based on the Eckart model. The attributes are:
 
@@ -128,35 +126,38 @@ cdef class Eckart(TunnelingModel):
         """
         return (Eckart, (self.frequency, self.E0_reac, self.E0_TS, self.E0_prod))
 
-    property E0_reac:
+    @property
+    def E0_reac(self):
         """The ground-state energy of the reactants."""
-        def __get__(self):
-            return self._E0_reac
-        def __set__(self, value):
-            self._E0_reac = quantity.Energy(value)
+        return self._E0_reac
 
-    property E0_TS:
-        """The ground-state energy of the transition state."""
-        def __get__(self):
-            return self._E0_TS
-        def __set__(self, value):
-            self._E0_TS = quantity.Energy(value)
+    @E0_reac.setter
+    def E0_reac(self, value):
+        self._E0_reac = quantity.Energy(value)
 
-    property E0_prod:
-        """The ground-state energy of the products."""
-        def __get__(self):
-            return self._E0_prod
-        def __set__(self, value):
-            self._E0_prod = quantity.Energy(value)
+    @property
+    def E0_TS(self):
+        """The ground-state energy of the reactants."""
+        return self._E0_TS
 
-    cpdef double calculate_tunneling_factor(self, double T) except -100000000:
+    @E0_TS.setter
+    def E0_TS(self, value):
+        self._E0_TS = quantity.Energy(value)
+
+    @property
+    def E0_prod(self):
+        """The ground-state energy of the reactants."""
+        return self._E0_prod
+
+    @E0_prod.setter
+    def E0_prod(self, value):
+        self._E0_prod = quantity.Energy(value)
+
+    def calculate_tunneling_factor(self, T):
         """
         Calculate and return the value of the Eckart tunneling correction for
         the reaction at the temperature `T` in K.
         """
-        cdef double E0_reac, E0_prod, E0_TS
-        cdef double E0, dE, beta, dV1, dV2
-        cdef np.ndarray Elist, kappaE
 
         beta = 1. / (constants.R * T)  # [=] mol/J
 
@@ -195,17 +196,11 @@ cdef class Eckart(TunnelingModel):
         # Return the calculated Eckart correction
         return kappa
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    cpdef np.ndarray calculate_tunneling_function(self, np.ndarray Elist):
+    def calculate_tunneling_function(self, Elist):
         """
         Calculate and return the value of the Eckart tunneling function for
         the reaction at the energies `e_list` in J/mol.
         """
-        cdef double frequency, E0_reac, E0_prod, E0_TS
-        cdef np.ndarray[np.float64_t, ndim=1] kappa, _Elist
-        cdef double E0, dV1, dV2, alpha1, alpha2, E, xi, twopia, twopib, twopid
-        cdef int r, r0
 
         frequency = abs(self._frequency.value_si) * constants.h * constants.c * 100. * constants.Na
         E0_reac = self._E0_reac.value_si
