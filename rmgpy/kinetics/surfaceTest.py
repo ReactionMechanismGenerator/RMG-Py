@@ -37,6 +37,7 @@ import numpy as np
 
 from rmgpy.kinetics.surface import StickingCoefficient, SurfaceArrhenius
 from rmgpy.species import Species
+from rmgpy.molecule import Molecule
 
 ################################################################################
 
@@ -146,10 +147,20 @@ class TestStickingCoefficient(unittest.TestCase):
         self.assertAlmostEqual(self.stick.Tmax.value, stick.Tmax.value, 4)
         self.assertEqual(self.stick.Tmax.units, stick.Tmax.units)
         self.assertEqual(self.stick.comment, stick.comment)
-        self.assertEqual(self.stick.coverage_dependence.keys(), stick.coverage_dependence.keys())
+        for key in self.stick.coverage_dependence.keys():
+            match = False
+            for key2 in stick.coverage_dependence.keys():
+                if key.is_identical(key2):
+                    match = True
+            self.assertTrue(match)
         for species, parameters in self.stick.coverage_dependence.items():
-            for key, value in parameters.items():
-                self.assertEqual(value.value_si, stick.coverage_dependence[species][key].value_si)
+            match = False
+            for species2 in stick.coverage_dependence.keys():
+                if species.is_identical(species2):
+                    match = True
+                    for key, value in parameters.items():
+                        self.assertEqual(value.value_si, stick.coverage_dependence[species2][key].value_si)
+            self.assertTrue(match)
         self.assertEqual(dir(self.stick), dir(stick))
 
     def test_repr(self):
@@ -158,7 +169,7 @@ class TestStickingCoefficient(unittest.TestCase):
         output with no loss of information.
         """
         namespace = {}
-        exec('stick = {0!r}'.format(self.stick), globals(), namespace)
+        exec(f'stick = {self.stick!r}', globals(), namespace)
         self.assertIn('stick', namespace)
         stick = namespace['stick']
         self.assertAlmostEqual(self.stick.A.value, stick.A.value, delta=1e0)
@@ -173,10 +184,10 @@ class TestStickingCoefficient(unittest.TestCase):
         self.assertAlmostEqual(self.stick.Tmax.value, stick.Tmax.value, 4)
         self.assertEqual(self.stick.Tmax.units, stick.Tmax.units)
         self.assertEqual(self.stick.comment, stick.comment)
-        self.assertEqual(self.stick.coverage_dependence.keys(), stick.coverage_dependence.keys())
+        self.assertEqual([m.label for m in self.stick.coverage_dependence.keys()], list(stick.coverage_dependence.keys()))
         for species, parameters in self.stick.coverage_dependence.items():
             for key, value in parameters.items():
-                self.assertEqual(value.value_si, stick.coverage_dependence[species][key].value_si)
+                self.assertEqual(value.value_si, stick.coverage_dependence[species.label][key].value_si)
         self.assertEqual(dir(self.stick), dir(stick))
 
     def test_copy(self):
@@ -198,10 +209,20 @@ class TestStickingCoefficient(unittest.TestCase):
         self.assertAlmostEqual(self.stick.Tmax.value, stick.Tmax.value, 4)
         self.assertEqual(self.stick.Tmax.units, stick.Tmax.units)
         self.assertEqual(self.stick.comment, stick.comment)
-        self.assertEqual(self.stick.coverage_dependence.keys(), stick.coverage_dependence.keys())
+        for key in self.stick.coverage_dependence.keys():
+            match = False
+            for key2 in stick.coverage_dependence.keys():
+                if key.is_identical(key2):
+                    match = True
+            self.assertTrue(match)
         for species, parameters in self.stick.coverage_dependence.items():
-            for key, value in parameters.items():
-                self.assertEqual(value.value_si, stick.coverage_dependence[species][key].value_si)
+            match = False
+            for species2 in stick.coverage_dependence.keys():
+                if species.is_identical(species2):
+                    match = True
+                    for key, value in parameters.items():
+                        self.assertEqual(value.value_si, stick.coverage_dependence[species2][key].value_si)
+            self.assertTrue(match)
         self.assertEqual(dir(self.stick), dir(stick))
 
     def test_is_identical_to(self):
@@ -318,9 +339,20 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.assertAlmostEqual(self.surfarr.Tmax.value, surfarr.Tmax.value, 4)
         self.assertEqual(self.surfarr.Tmax.units, surfarr.Tmax.units)
         self.assertEqual(self.surfarr.comment, surfarr.comment)
+        for key in self.surfarr.coverage_dependence.keys():
+            match = False
+            for key2 in surfarr.coverage_dependence.keys():
+                if key.is_identical(key2):
+                    match = True
+            self.assertTrue(match)
         for species, parameters in self.surfarr.coverage_dependence.items():
-            for key, value in parameters.items():
-                self.assertEqual(value.value_si, surfarr.coverage_dependence[species][key].value_si)
+            match = False
+            for species2 in surfarr.coverage_dependence.keys():
+                if species.is_identical(species2):
+                    match = True
+                    for key, value in parameters.items():
+                        self.assertEqual(value.value_si, surfarr.coverage_dependence[species2][key].value_si)
+            self.assertTrue(match)
         self.assertEqual(dir(self.surfarr), dir(surfarr))
 
     def test_repr(self):
@@ -344,10 +376,10 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.assertAlmostEqual(self.surfarr.Tmax.value, surfarr.Tmax.value, 4)
         self.assertEqual(self.surfarr.Tmax.units, surfarr.Tmax.units)
         self.assertEqual(self.surfarr.comment, surfarr.comment)
-        self.assertEqual(self.surfarr.coverage_dependence.keys(), surfarr.coverage_dependence.keys())
+        self.assertEqual([m.label for m in self.surfarr.coverage_dependence.keys()], list(surfarr.coverage_dependence.keys()))
         for species, parameters in self.surfarr.coverage_dependence.items():
             for key, value in parameters.items():
-                self.assertEqual(value.value_si, surfarr.coverage_dependence[species][key].value_si)
+                self.assertEqual(value.value_si, surfarr.coverage_dependence[species.label][key].value_si)
         self.assertEqual(dir(self.surfarr), dir(surfarr))
 
     def test_copy(self):
@@ -369,10 +401,20 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.assertAlmostEqual(self.surfarr.Tmax.value, surfarr.Tmax.value, 4)
         self.assertEqual(self.surfarr.Tmax.units, surfarr.Tmax.units)
         self.assertEqual(self.surfarr.comment, surfarr.comment)
-        self.assertEqual(self.surfarr.coverage_dependence.keys(), surfarr.coverage_dependence.keys())
+        for key in self.surfarr.coverage_dependence.keys():
+            match = False
+            for key2 in surfarr.coverage_dependence.keys():
+                if key.is_identical(key2):
+                    match = True
+            self.assertTrue(match)
         for species, parameters in self.surfarr.coverage_dependence.items():
-            for key, value in parameters.items():
-                self.assertEqual(value.value_si, surfarr.coverage_dependence[species][key].value_si)
+            match = False
+            for species2 in surfarr.coverage_dependence.keys():
+                if species.is_identical(species2):
+                    match = True
+                    for key, value in parameters.items():
+                        self.assertEqual(value.value_si, surfarr.coverage_dependence[species2][key].value_si)
+            self.assertTrue(match)
         self.assertEqual(dir(self.surfarr), dir(surfarr))
 
     def test_is_identical_to(self):
