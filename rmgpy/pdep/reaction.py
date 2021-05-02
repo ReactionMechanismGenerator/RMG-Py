@@ -36,27 +36,23 @@ but requires detailed information about the transition state and reactants.
 
 import logging
 
-cimport cython
 import numpy as np
-cimport numpy as np
-from libc.math cimport abs, exp, sqrt, log
+from math import exp, sqrt, log
 
-cimport rmgpy.constants as constants
+import rmgpy.constants as constants
 from rmgpy.exceptions import PressureDependenceError
-from rmgpy.kinetics.arrhenius cimport Arrhenius
+from rmgpy.kinetics.arrhenius import Arrhenius
 from rmgpy.statmech.schrodinger import convolve
 
 ################################################################################
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def calculate_microcanonical_rate_coefficient(reaction,
-                                              np.ndarray[np.float64_t,ndim=1] e_list,
-                                              np.ndarray[np.int_t,ndim=1] j_list,
-                                              np.ndarray[np.float64_t,ndim=2] reac_dens_states,
-                                              np.ndarray[np.float64_t,ndim=2] prod_dens_states=None,
-                                              double T=0.0):
+                                              e_list,
+                                              j_list,
+                                              reac_dens_states,
+                                              prod_dens_states=None,
+                                              T=0.0):
     """
     Calculate the microcanonical rate coefficient :math:`k(E)` for the reaction
     `reaction` at the energies `e_list` in J/mol. `reac_dens_states` and
@@ -79,12 +75,7 @@ def calculate_microcanonical_rate_coefficient(reaction,
     optional. The temperature is used if provided in the detailed balance
     expression to determine the reverse kinetics, and in certain cases in the
     inverse Laplace transform method.
-    """        
-    cdef int n_grains, n_j, r, s
-    cdef np.ndarray[np.float64_t,ndim=2] kf, kr
-    cdef double c0_inv
-    cdef list modes
-    cdef bint reactant_states_known, product_states_known, forward
+    """
 
     n_grains = e_list.shape[0]
     n_j = j_list.shape[0]
@@ -174,12 +165,10 @@ def calculate_microcanonical_rate_coefficient(reaction,
 
     return kf, kr
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
 def apply_rrkm_theory(transition_state,
-                      np.ndarray[np.float64_t,ndim=1] e_list,
-                      np.ndarray[np.int_t,ndim=1] j_list,
-                      np.ndarray[np.float64_t,ndim=2] dens_states):
+                      e_list,
+                      j_list,
+                      dens_states):
     """
     Calculate the microcanonical rate coefficient for a reaction using RRKM
     theory, where `transition_state` is the transition state of the reaction,
@@ -187,11 +176,6 @@ def apply_rrkm_theory(transition_state,
     microcanonial rate, and `dens_states` is the density of states of the
     reactant.
     """
-    cdef np.ndarray[np.float64_t,ndim=2] k0, k, sum_states
-    cdef int n_grains, n_j
-    cdef bint active_j_rotor
-    cdef double d_e, e0_ts
-    cdef int r, s
 
     from rmgpy.pdep import Configuration
 
@@ -220,7 +204,7 @@ def apply_rrkm_theory(transition_state,
             E0 = conf.e_list[r]
             break
     if E0 is None:
-        raise ValueError, "Could not find a positive sum of states for {0}".format(conf)
+        raise ValueError("Could not find a positive sum of states for {0}".format(conf))
     conf.e_list -= E0
 
     sum_states = conf.map_sum_of_states(e_list - E0, j_list)
@@ -235,14 +219,13 @@ def apply_rrkm_theory(transition_state,
     logging.debug('The rate constant is found to be %s', k)
     return k
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
+
 def apply_inverse_laplace_transform_method(transition_state,
-                                           Arrhenius kinetics,
-                                           np.ndarray[np.float64_t,ndim=1] e_list,
-                                           np.ndarray[np.int_t,ndim=1] j_list,
-                                           np.ndarray[np.float64_t,ndim=2] dens_states,
-                                           double T=0.0):
+                                           kinetics,
+                                           e_list,
+                                           j_list,
+                                           dens_states,
+                                           T=0.0):
     """
     Calculate the microcanonical rate coefficient for a reaction using the
     inverse Laplace transform method, where `kinetics` is the high pressure 
@@ -253,12 +236,6 @@ def apply_inverse_laplace_transform_method(transition_state,
     the temperature exponent of the Arrhenius expression is negative (for which
     the inverse transform is undefined).
     """
-    cdef np.ndarray[np.float64_t,ndim=2] k
-    cdef np.ndarray[np.float64_t,ndim=1] phi0, phi
-    cdef int n_grains, n_j
-    cdef bint active_j_rotor
-    cdef double d_e, gas_constant, freq_factor, n, e_a, m0, rem, E0, num, energy, n_crit
-    cdef int r, s, m
 
     n_grains = e_list.shape[0]
     n_j = j_list.shape[0]
@@ -334,6 +311,7 @@ def apply_inverse_laplace_transform_method(transition_state,
     logging.debug('The rate constant is found to be %s', k)
 
     return k
+
 
 def fit_interpolation_model(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pmax, error_check=False):
     """

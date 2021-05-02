@@ -33,19 +33,18 @@ This module contains classes and functions for working with collision models.
 
 import logging
 
-cimport cython
 import numpy as np
-cimport numpy as np
-from libc.math cimport exp
+from math import exp
 
-cimport rmgpy.constants as constants
+import rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import CollisionError
+from rmgpy.rmgobject import RMGObject
 
 ################################################################################
 
 
-cdef class SingleExponentialDown(RMGObject):
+class SingleExponentialDown(RMGObject):
     """
     A representation of a single exponential down model of collisional energy
     transfer. The attributes are:
@@ -76,6 +75,7 @@ cdef class SingleExponentialDown(RMGObject):
     """
 
     def __init__(self, alpha0=None, T0=None, n=0.0):
+        super().__init__()
         self.alpha0 = alpha0
         self.T0 = T0
         self.n = n
@@ -93,33 +93,36 @@ cdef class SingleExponentialDown(RMGObject):
         """
         return SingleExponentialDown, (self.alpha0, self.T0, self.n)
 
-    property alpha0:
+    @property
+    def alpha0(self):
         """The average energy transferred in a deactivating collision at the reference temperature."""
-        def __get__(self):
-            return self._alpha0
-        def __set__(self, value):
-            if value is not None:
-                try:
-                    self._alpha0 = quantity.Frequency(value)
-                    self._alpha0.value_si *= constants.h * constants.c * 100. * constants.Na
-                    self._alpha0.units = 'kJ/mol'
-                except quantity.QuantityError:
-                    self._alpha0 = quantity.Energy(value)
+        return self._alpha0
 
-    property T0:
+    @alpha0.setter
+    def alpha0(self, value):
+        if value is not None:
+            try:
+                self._alpha0 = quantity.Frequency(value)
+                self._alpha0.value_si *= constants.h * constants.c * 100. * constants.Na
+                self._alpha0.units = 'kJ/mol'
+            except quantity.QuantityError:
+                self._alpha0 = quantity.Energy(value)
+
+    @property
+    def T0(self):
         """The reference temperature."""
-        def __get__(self):
-            return self._t0
-        def __set__(self, value):
-            self._t0 = quantity.Temperature(value)
+        return self._t0
 
-    cpdef double get_alpha(self, double T) except -1000000000:
+    @T0.setter
+    def T0(self, value):
+        self._t0 = quantity.Temperature(value)
+
+    def get_alpha(self, T):
         """
         Return the value of the :math:`\\alpha` parameter - the average energy
         transferred in a deactivating collision - in J/mol at temperature `T`
         in K.
         """
-        cdef double alpha0, t0
         alpha0 = self._alpha0.value_si
         if self._t0 is None:
             return alpha0
@@ -127,12 +130,10 @@ cdef class SingleExponentialDown(RMGObject):
             t0 = self._t0.value_si
             return alpha0 * (T / t0) ** self.n
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    def generate_collision_matrix(self, double T,
-                                  np.ndarray[np.float64_t,ndim=2] dens_states,
-                                  np.ndarray[np.float64_t,ndim=1] e_list,
-                                  np.ndarray[np.int_t,ndim=1] j_list=None):
+    def generate_collision_matrix(self, T,
+                                  dens_states,
+                                  e_list,
+                                  j_list=None):
         """
         Generate and return the collision matrix
         :math:`\\matrix{M}_\\mathrm{coll} / \\omega = \\matrix{P} - \\matrix{I}`
@@ -140,14 +141,6 @@ cdef class SingleExponentialDown(RMGObject):
         `e_list` in J/mol, temperature `T` in K, and isomer density of states
         `dens_states`.
         """
-
-        cdef double alpha, beta
-        cdef double c, left, right
-        cdef int n_grains, start, i, r, s, u, v
-        cdef np.ndarray[np.float64_t,ndim=1] rho
-        cdef np.ndarray[np.float64_t,ndim=2] phi, p0
-        cdef np.ndarray[np.float64_t,ndim=4] p
-
         n_grains = e_list.shape[0]
         n_j = j_list.shape[0] if j_list is not None else 1
         p = np.zeros((n_grains, n_j, n_grains, n_j), np.float64)
@@ -233,11 +226,11 @@ cdef class SingleExponentialDown(RMGObject):
         return p
 
     def calculate_collision_efficiency(self,
-                                       double T,
-                                       np.ndarray[np.float64_t,ndim=1] e_list,
-                                       np.ndarray[np.int_t,ndim=1] j_list,
-                                       np.ndarray[np.float64_t,ndim=2] dens_states,
-                                       double E0, double e_reac):
+                                       T,
+                                       e_list,
+                                       j_list,
+                                       dens_states,
+                                       E0, e_reac):
         """
         Calculate an efficiency factor for collisions, particularly useful for the
         modified strong collision method. The collisions involve the given 
@@ -253,10 +246,7 @@ cdef class SingleExponentialDown(RMGObject):
            `doi: 10.1524/zpch.2000.214.11.1533 <http://dx.doi.org/10.1524/zpch.2000.214.11.1533>`_
     
         """
-    
-        cdef double d_e_down, d_e, fe, fe_num, fe_den, delta1, delta2, delta_n, delta, value, beta
-        cdef double gas_constant = constants.R
-        cdef int n_grains, n_j, r
+        gas_constant = constants.R
     
         # Ensure that the barrier height is sufficiently above the ground state
         # Otherwise invalid efficiencies are observed

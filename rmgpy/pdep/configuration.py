@@ -34,10 +34,8 @@ states).
 
 import logging
 
-import cython
 import numpy as np
-cimport numpy as np
-from libc.math cimport log, exp, sqrt
+from math import log, exp, sqrt
 
 import rmgpy.constants as constants
 from rmgpy.statmech import LinearRotor, NonlinearRotor, IdealGasTranslation, HarmonicOscillator
@@ -48,7 +46,7 @@ from rmgpy.transport import TransportData
 ################################################################################
 
 
-cdef class Configuration(object):
+class Configuration(object):
     """
     A representation of a molecular configuration on a potential energy surface.
     """
@@ -75,12 +73,12 @@ cdef class Configuration(object):
         string += ')'
         return string
 
-    property E0:
+    @property
+    def E0(self):
         """The ground-state energy of the configuration in J/mol."""
-        def __get__(self):
-            return sum([float(spec.conformer.E0.value_si) for spec in self.species])
+        return sum([float(spec.conformer.E0.value_si) for spec in self.species])
 
-    cpdef cleanup(self):
+    def cleanup(self):
         """
         Delete intermediate arrays used in computing k(T,P) values.
         """
@@ -88,87 +86,87 @@ cdef class Configuration(object):
         self.dens_states = None
         self.sum_states = None
 
-    cpdef bint is_unimolecular(self) except -2:
+    def is_unimolecular(self):
         """
         Return ``True`` if the configuration represents a unimolecular isomer,
         or ``False`` otherwise.
         """
         return len(self.species) == 1 and isinstance(self.species[0], Species)
 
-    cpdef bint is_bimolecular(self) except -2:
+    def is_bimolecular(self):
         """
         Return ``True`` if the configuration represents a bimolecular reactant
         or product channel, or ``False`` otherwise.
         """
         return len(self.species) == 2
 
-    cpdef bint is_termolecular(self) except -2:
+    def is_termolecular(self):
         """
         Return ``True`` if the configuration represents a termolecular reactant
         or product channel, or ``False`` otherwise.
         """
         return len(self.species) == 3
 
-    cpdef bint is_transition_state(self) except -2:
+    def is_transition_state(self):
         """
         Return ``True`` if the configuration represents a transition state,
         or ``False`` otherwise.
         """
         return len(self.species) == 1 and isinstance(self.species[0], TransitionState)
 
-    cpdef bint has_statmech(self) except -2:
+    def has_statmech(self):
         """
         Return ``True`` if all species in the configuration have statistical
         mechanics parameters, or ``False`` otherwise.
         """
         return all([spec.has_statmech() for spec in self.species])
 
-    cpdef bint has_thermo(self) except -2:
+    def has_thermo(self):
         """
         Return ``True`` if all species in the configuration have thermodynamics
         parameters, or ``False`` otherwise.
         """
         return all([spec.has_thermo() for spec in self.species])
     
-    cpdef double get_heat_capacity(self, double T) except -100000000:
+    def get_heat_capacity(self, T):
         """
         Return the constant-pressure heat capacity in J/mol*K at the
         specified temperature `T` in K.
         """
-        cdef double cp = 0.0
+        cp = 0.0
         for spec in self.species:
             cp += spec.get_heat_capacity(T)
         return cp
 
-    cpdef double get_enthalpy(self, double T) except 100000000:
+    def get_enthalpy(self, T):
         """
         Return the enthalpy in kJ/mol at the specified temperature `T` in K.
         """
-        cdef double h = 0.0
+        h = 0.0
         for spec in self.species:
             h += spec.get_enthalpy(T)
         return h
 
-    cpdef double get_entropy(self, double T) except -100000000:
+    def get_entropy(self, T):
         """
         Return the entropy in J/mol*K at the specified temperature `T` in K.
         """
-        cdef double s = 0.0
+        s = 0.0
         for spec in self.species:
             s += spec.get_entropy(T)
         return s
 
-    cpdef double get_free_energy(self, double T) except 100000000:
+    def get_free_energy(self, T):
         """
         Return the Gibbs free energy in kJ/mol at the specified temperature
         `T` in K.
         """
-        cdef double g = 0.0
+        g = 0.0
         for spec in self.species:
             g += spec.get_free_energy(T)
         return g
 
-    cpdef double calculate_collision_frequency(self, double T, double P, dict bath_gas) except -1:
+    def calculate_collision_frequency(self, T, P, bath_gas):
         """
         Return the value of the collision frequency in Hz at the given 
         temperature `T` in K and pressure `P` in Pa. If a dictionary `bath_gas`
@@ -178,9 +176,6 @@ cdef class Configuration(object):
         
         Only the Lennard-Jones collision model is currently supported.
         """
-        cdef double bath_gas_sigma, bath_gas_epsilon, bath_gas_mw
-        cdef double sigma, epsilon, mu, gas_concentration, frac, tred, omega22
-
         assert self.is_unimolecular()
         assert isinstance(self.species[0].get_transport_data(), TransportData)
         for spec, frac in bath_gas.items():
@@ -207,8 +202,8 @@ cdef class Configuration(object):
 
         return collision_freq
 
-    cpdef np.ndarray generate_collision_matrix(self, double T, np.ndarray dens_states, np.ndarray e_list,
-                                               np.ndarray j_list=None):
+    def generate_collision_matrix(self, T, dens_states, e_list,
+                                               j_list=None):
         """
         Return the collisional energy transfer probabilities matrix for the
         configuration at the given temperature `T` in K using the given
@@ -220,8 +215,8 @@ cdef class Configuration(object):
         assert self.species[0].energy_transfer_model is not None
         return self.species[0].energy_transfer_model.generate_collision_matrix(T, dens_states, e_list, j_list)
 
-    cpdef calculate_density_of_states(self, np.ndarray e_list, bint active_j_rotor=True, bint active_k_rotor=True,
-                                      bint rmgmode=False):
+    def calculate_density_of_states(self, e_list, active_j_rotor=True, active_k_rotor=True,
+                                      rmgmode=False):
         """
         Calculate the density (and sum) of states for the configuration at the
         given energies above the ground state `e_list` in J/mol. The
@@ -230,8 +225,6 @@ cdef class Configuration(object):
         density and sum of states). The computed density and sum of states
         arrays are stored on the object for future use.
         """
-        cdef list modes
-        cdef int i
 
         logging.debug('calculating density of states for {}'.format(self.__str__()))
 
@@ -349,18 +342,12 @@ cdef class Configuration(object):
         if self.dens_states is None:
             raise ValueError("Species {} has no active modes".format(species.label))
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    def map_density_of_states(self, np.ndarray[np.float64_t, ndim=1] e_list, np.ndarray[np.int_t, ndim=1] j_list=None):
+    def map_density_of_states(self, e_list, j_list=None):
         """
         Return a mapping of the density of states for the configuration to the
         given energies `e_list` in J/mol and, if the J-rotor is not active, the
         total angular momentum quantum numbers `j_list`.
         """
-        cdef np.ndarray[np.float64_t,ndim=2] dens_states
-        cdef double E0, de0, b1, b2, e, d_j
-        cdef int r0, r, s, t, n_grains, n_j, j, j1, j2
-        cdef list b_list
 
         import scipy.interpolate
         for r in range(self.e_list.shape[0]):
@@ -418,17 +405,12 @@ cdef class Configuration(object):
 
         return dens_states * d_e / d_e0
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    def map_sum_of_states(self, np.ndarray[np.float64_t, ndim=1] e_list, np.ndarray[np.int_t, ndim=1] j_list=None):
+    def map_sum_of_states(self, e_list, j_list=None):
         """
         Return a mapping of the density of states for the configuration to the
         given energies `e_list` in J/mol and, if the J-rotor is not active, the
         total angular momentum quantum numbers `j_list`.
         """
-        cdef np.ndarray[np.float64_t,ndim=2] sum_states
-        cdef double E0, b1, b2, d_j
-        cdef int r0, r, s, n_grains, n_j, j1, j2
 
         import scipy.interpolate
         for r in range(self.e_list.shape[0]):

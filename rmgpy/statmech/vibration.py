@@ -35,18 +35,17 @@ is required since typical vibrational energies are of similar magnitude to
 """
 
 import numpy as np
-cimport numpy as np
-from libc.math cimport log, exp
+from math import log, exp
 from scipy.special import factorial
 
-cimport rmgpy.constants as constants
+import rmgpy.constants as constants
 import rmgpy.quantity as quantity
 import rmgpy.statmech.schrodinger as schrodinger
-cimport rmgpy.statmech.schrodinger as schrodinger
+from rmgpy.statmech.mode import Mode
 
 ################################################################################
 
-cdef class Vibration(Mode):
+class Vibration(Mode):
     """
     A base class for all vibrational degrees of freedom. The attributes are:
     
@@ -66,7 +65,7 @@ cdef class Vibration(Mode):
 
 ################################################################################
 
-cdef class HarmonicOscillator(Vibration):
+class HarmonicOscillator(Vibration):
     """
     A statistical mechanical model of a set of one-dimensional independent
     harmonic oscillators. The attributes are:
@@ -106,21 +105,22 @@ cdef class HarmonicOscillator(Vibration):
         """
         return (HarmonicOscillator, (self.frequencies, self.quantum))
 
-    property frequencies:
+    @property
+    def frequencies(self):
         """The vibrational frequencies of the oscillators."""
-        def __get__(self):
-            return self._frequencies
-        def __set__(self, value):
-            self._frequencies = quantity.Frequency(value)
+        return self._frequencies
 
-    cpdef double get_partition_function(self, double T) except -1:
+    @frequencies.setter
+    def frequencies(self, value):
+        self._frequencies = quantity.Frequency(value)
+
+    def get_partition_function(self, T):
         """
         Return the value of the partition function :math:`Q(T)` at the
         specified temperature `T` in K.
         """
-        cdef double Q = 1.0, beta = 1.0 / (constants.kB * T), freq
-        cdef int i
-        cdef np.ndarray[np.float64_t, ndim=1] frequencies
+        Q = 1.0
+        beta = 1.0 / (constants.kB * T)
         frequencies = self._frequencies.value_si
         if self.quantum:
             for i in range(frequencies.shape[0]):
@@ -132,14 +132,13 @@ cdef class HarmonicOscillator(Vibration):
                 Q *= 1.0 / (beta * constants.h * freq)
         return Q
 
-    cpdef double get_heat_capacity(self, double T) except -100000000:
+    def get_heat_capacity(self, T):
         """
         Return the heat capacity in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
         """
-        cdef double Cv = 0.0, beta = 1.0 / (constants.kB * T), freq, x, exp_x
-        cdef int i
-        cdef np.ndarray[np.float64_t, ndim=1] frequencies
+        Cv = 0.0
+        beta = 1.0 / (constants.kB * T)
         frequencies = self._frequencies.value_si
         if self.quantum:
             for i in range(frequencies.shape[0]):
@@ -155,14 +154,13 @@ cdef class HarmonicOscillator(Vibration):
             Cv = frequencies.shape[0]
         return Cv * constants.R
 
-    cpdef double get_enthalpy(self, double T) except 100000000:
+    def get_enthalpy(self, T):
         """
         Return the enthalpy in J/mol for the degree of freedom at the
         specified temperature `T` in K.
         """
-        cdef double H = 0.0, beta = 1.0 / (constants.kB * T), freq, x
-        cdef int i
-        cdef np.ndarray[np.float64_t, ndim=1] frequencies
+        H = 0.0
+        beta = 1.0 / (constants.kB * T)
         frequencies = self._frequencies.value_si
         if self.quantum:
             for i in range(frequencies.shape[0]):
@@ -173,14 +171,13 @@ cdef class HarmonicOscillator(Vibration):
             H = frequencies.shape[0]
         return H * constants.R * T
 
-    cpdef double get_entropy(self, double T) except -100000000:
+    def get_entropy(self, T):
         """
         Return the entropy in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
         """
-        cdef double S = 0.0, beta = 1.0 / (constants.kB * T), freq, x
-        cdef int i
-        cdef np.ndarray[np.float64_t, ndim=1] frequencies
+        S = 0.0
+        beta = 1.0 / (constants.kB * T)
         S = log(self.get_partition_function(T))
         frequencies = self._frequencies.value_si
         if self.quantum:
@@ -192,17 +189,13 @@ cdef class HarmonicOscillator(Vibration):
             S += frequencies.shape[0]
         return S * constants.R
 
-    cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list, np.ndarray sum_states_0=None):
+    def get_sum_of_states(self, e_list, sum_states_0=None):
         """
         Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol above the ground state. If an initial sum of states 
         `sum_states_0` is given, the rotor sum of states will be convoluted into
         these states.
         """
-        cdef double freq
-        cdef int i, Nfreq
-        cdef np.ndarray[np.float64_t, ndim=1] frequencies
-        cdef np.ndarray sum_states
         frequencies = self._frequencies.value_si
         if self.quantum:
             if sum_states_0 is None:
@@ -222,17 +215,13 @@ cdef class HarmonicOscillator(Vibration):
                 sum_states /= constants.h * freq * constants.Na
         return sum_states
 
-    cpdef np.ndarray get_density_of_states(self, np.ndarray e_list, np.ndarray dens_states_0=None):
+    def get_density_of_states(self, e_list, dens_states_0=None):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `e_list` in J/mol above the ground state. If an initial density
         of states `dens_states_0` is given, the rotor density of states will be
         convoluted into these states.
         """
-        cdef double freq, dE
-        cdef int i, Nfreq
-        cdef np.ndarray[np.float64_t, ndim=1] frequencies
-        cdef np.ndarray dens_states
         frequencies = self._frequencies.value_si
         if self.quantum:
             if dens_states_0 is None:

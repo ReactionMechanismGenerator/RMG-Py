@@ -33,11 +33,11 @@ degrees of freedom.
 """
 
 import numpy as np
-cimport numpy as np
+from rmgpy.rmgobject import RMGObject
 
 ################################################################################
 
-cdef class Mode(RMGObject):
+class Mode(RMGObject):
     """
     A base class for representing molecular degrees of freedom. The attributes
     are:
@@ -58,6 +58,7 @@ cdef class Mode(RMGObject):
     """
 
     def __init__(self, quantum):
+        super().__init__()
         self.quantum = quantum
 
     def __repr__(self):
@@ -73,7 +74,7 @@ cdef class Mode(RMGObject):
         """
         return (Mode, (self.quantum,))
 
-    cpdef double get_partition_function(self, double T) except -1:
+    def get_partition_function(self, T):
         """
         Return the value of the partition function at the specified temperature
         `T` in K.
@@ -81,7 +82,7 @@ cdef class Mode(RMGObject):
         raise NotImplementedError('Unexpected call to Mode.get_partition_function(); '
                                   'you should be using a class derived from Mode.')
 
-    cpdef double get_heat_capacity(self, double T) except -100000000:
+    def get_heat_capacity(self, T):
         """
         Return the heat capacity in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
@@ -89,7 +90,7 @@ cdef class Mode(RMGObject):
         raise NotImplementedError('Unexpected call to Mode.get_heat_capacity(); '
                                   'you should be using a class derived from Mode.')
 
-    cpdef double get_enthalpy(self, double T) except 100000000:
+    def get_enthalpy(self, T):
         """
         Return the enthalpy in J/mol for the degree of freedom at the
         specified temperature `T` in K.
@@ -97,7 +98,7 @@ cdef class Mode(RMGObject):
         raise NotImplementedError('Unexpected call to Mode.get_enthalpy(); '
                                   'you should be using a class derived from Mode.')
 
-    cpdef double get_entropy(self, double T) except -100000000:
+    def get_entropy(self, T):
         """
         Return the entropy in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
@@ -105,7 +106,7 @@ cdef class Mode(RMGObject):
         raise NotImplementedError('Unexpected call to Mode.get_entropy(); '
                                   'you should be using a class derived from Mode.')
 
-    cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list, np.ndarray sum_states_0=None):
+    def get_sum_of_states(self, e_list, sum_states_0=None):
         """
         Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol above the ground state. If an initial sum of states 
@@ -115,7 +116,7 @@ cdef class Mode(RMGObject):
         raise NotImplementedError('Unexpected call to Mode.get_sum_of_states(); '
                                   'you should be using a class derived from Mode.')
 
-    cpdef np.ndarray get_density_of_states(self, np.ndarray e_list, np.ndarray dens_states_0=None):
+    def get_density_of_states(self, e_list, dens_states_0=None):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `e_list` in J/mol above the ground state. If an initial density

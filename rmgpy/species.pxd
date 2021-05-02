@@ -30,7 +30,7 @@ cimport numpy as np
 cimport rmgpy.constants as constants
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 from rmgpy.thermo.model cimport HeatCapacityModel
-from rmgpy.statmech.conformer cimport Conformer
+from rmgpy.statmech.conformer import Conformer
 from rmgpy.kinetics.model cimport TunnelingModel
 from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
 
@@ -41,7 +41,6 @@ cdef class Species:
     cdef public int index
     cdef public str label
     cdef public object thermo
-    cdef public Conformer conformer
     cdef public object transport_data
     cdef public list molecule
     cdef public ScalarQuantity _molecular_weight
@@ -108,7 +107,6 @@ cdef class Species:
 cdef class TransitionState:
     
     cdef public str label
-    cdef public Conformer conformer
     cdef public ScalarQuantity _frequency
     cdef public int degeneracy
     cdef public TunnelingModel tunneling

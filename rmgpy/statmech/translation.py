@@ -35,17 +35,16 @@ translation is more than adequate.
 """
 
 import numpy as np
-cimport numpy as np
-from libc.math cimport log, sqrt
+from math import log, sqrt
 
-cimport rmgpy.constants as constants
+import rmgpy.constants as constants
 import rmgpy.quantity as quantity
 import rmgpy.statmech.schrodinger as schrodinger
-cimport rmgpy.statmech.schrodinger as schrodinger
+from rmgpy.statmech.mode import Mode
 
 ################################################################################
 
-cdef class Translation(Mode):
+class Translation(Mode):
     """
     A base class for all vibrational degrees of freedom. The attributes are:
     
@@ -65,7 +64,7 @@ cdef class Translation(Mode):
 
 ################################################################################
 
-cdef class IdealGasTranslation(Translation):
+class IdealGasTranslation(Translation):
     """
     A statistical mechanical model of translation in an 3-dimensional infinite
     square well by an ideal gas. The attributes are:
@@ -103,22 +102,22 @@ cdef class IdealGasTranslation(Translation):
         """
         return (IdealGasTranslation, (self.mass, self.quantum))
 
-    property mass:
-        """The mass of the translating object."""
-        def __get__(self):
-            return self._mass
-        def __set__(self, value):
-            if isinstance(value, quantity.ScalarQuantity):
-                self._mass = value
-            else:
-                self._mass = quantity.Mass(value)
+    @property
+    def mass(self):
+        return self._mass
 
-    cpdef double get_partition_function(self, double T) except -1:
+    @mass.setter
+    def mass(self, value):
+        if isinstance(value, quantity.ScalarQuantity):
+            self._mass = value
+        else:
+            self._mass = quantity.Mass(value)
+
+    def get_partition_function(self, T):
         """
         Return the value of the partition function :math:`Q(T)` at the
         specified temperature `T` in K.
         """
-        cdef double Q, qt, mass
         if self.quantum:
             raise NotImplementedError('Quantum mechanical model not yet implemented for IdealGasTranslation.')
         else:
@@ -127,51 +126,46 @@ cdef class IdealGasTranslation(Translation):
             Q = qt * (constants.kB * T) ** 2.5
         return Q
 
-    cpdef double get_heat_capacity(self, double T) except -100000000:
+    def get_heat_capacity(self, T):
         """
         Return the heat capacity in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
         """
-        cdef double Cv
         if self.quantum:
             raise NotImplementedError('Quantum mechanical model not yet implemented for IdealGasTranslation.')
         else:
             Cv = 2.5
         return Cv * constants.R
 
-    cpdef double get_enthalpy(self, double T) except 100000000:
+    def get_enthalpy(self, T):
         """
         Return the enthalpy in J/mol for the degree of freedom at the
         specified temperature `T` in K.
         """
-        cdef double H
         if self.quantum:
             raise NotImplementedError('Quantum mechanical model not yet implemented for IdealGasTranslation.')
         else:
             H = 2.5
         return H * constants.R * T
 
-    cpdef double get_entropy(self, double T) except -100000000:
+    def get_entropy(self, T):
         """
         Return the entropy in J/mol*K for the degree of freedom at the
         specified temperature `T` in K.
         """
-        cdef double S
         if self.quantum:
             raise NotImplementedError('Quantum mechanical model not yet implemented for IdealGasTranslation.')
         else:
             S = log(self.get_partition_function(T)) + 2.5
         return S * constants.R
 
-    cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list, np.ndarray sum_states_0=None):
+    def get_sum_of_states(self, e_list, sum_states_0=None):
         """
         Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol above the ground state. If an initial sum of states 
         `sum_states_0` is given, the rotor sum of states will be convoluted into
         these states.
         """
-        cdef double qt, mass
-        cdef np.ndarray sum_states
         if self.quantum:
             raise NotImplementedError('Quantum mechanical model not yet implemented for IdealGasTranslation.')
         elif sum_states_0 is not None:
@@ -183,15 +177,13 @@ cdef class IdealGasTranslation(Translation):
             sum_states = qt * e_list ** 2.5 / (sqrt(constants.pi) * 15.0 / 8.0)
         return sum_states
 
-    cpdef np.ndarray get_density_of_states(self, np.ndarray e_list, np.ndarray dens_states_0=None):
+    def get_density_of_states(self, e_list, dens_states_0=None):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `e_list` in J/mol above the ground state. If an initial density
         of states `dens_states_0` is given, the rotor density of states will be
         convoluted into these states.
         """
-        cdef double qt, dE, mass
-        cdef np.ndarray dens_states
         if self.quantum:
             raise NotImplementedError('Quantum mechanical model not yet implemented for IdealGasTranslation.')
         else:

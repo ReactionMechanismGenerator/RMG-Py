@@ -33,7 +33,6 @@ rate coefficients :math:`k(T,P)` using the reservoir state method.
 import scipy.linalg
 
 import numpy as np
-cimport numpy as np
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import ReservoirStateError
@@ -41,20 +40,8 @@ from rmgpy.exceptions import ReservoirStateError
 ################################################################################
 
 
-cpdef apply_reservoir_state_method(network):
+def apply_reservoir_state_method(network):
     """A method for applying the Reservoir State approach for solving the master equation."""
-    cdef np.ndarray[np.int_t,ndim=1] j_list
-    cdef np.ndarray[np.int_t,ndim=2] n_res, n_act
-    cdef np.ndarray[np.int_t,ndim=3] indices
-    cdef np.ndarray[np.float64_t,ndim=1] e_list
-    cdef np.ndarray[np.float64_t,ndim=2] active_state_mat, source_vectors, pss_active_state, k
-    cdef np.ndarray[np.float64_t,ndim=3] dens_states, eq_dist
-    cdef np.ndarray[np.float64_t,ndim=4] k_ij, g_nj, f_im, pa
-    cdef np.ndarray[np.float64_t,ndim=5] m_coll
-    cdef list ind
-    cdef double temperature, tol, y, beta
-    cdef int n_isom, n_reac, n_prod, n_grains, n_j, bandwidth, halfbandwidth, width, width0
-    cdef int i, j, n, r, s, u, v, row, iter
 
     temperature = network.T
     e_list = network.e_list

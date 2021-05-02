@@ -31,30 +31,17 @@ pressure-dependent reaction network.
 """
 
 import numpy as np
-cimport numpy as np
-from libc.math cimport exp
+from math import exp
 
 import rmgpy.constants as constants
 
 ################################################################################
 
 
-cpdef generate_full_me_matrix(network, bint products=True):
+def generate_full_me_matrix(network, products=True):
     """
     Generate the full master equation matrix for the network.
     """
-    
-    cdef np.ndarray[np.int_t,ndim=1] j_list
-    cdef np.ndarray[np.int_t,ndim=3] indices
-    cdef np.ndarray[np.float64_t,ndim=1] e_list
-    cdef np.ndarray[np.float64_t,ndim=2] me_mat
-    cdef np.ndarray[np.float64_t,ndim=3] dens_states
-    cdef np.ndarray[np.float64_t,ndim=4] k_ij, g_nj, f_im
-    cdef np.ndarray[np.float64_t,ndim=5] m_coll
-    cdef double temperature, pressure, beta, val
-    cdef int n_isom, n_reac, n_prod, n_grains, n_j
-    cdef int i, n, r, s, u, v
-
     temperature = network.T
     # pressure = network.P  # not used in this module
     e_list = network.e_list

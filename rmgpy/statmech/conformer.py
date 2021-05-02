@@ -35,22 +35,21 @@ of freedom.
 
 import logging
 
-import cython
 import numpy as np
-cimport numpy as np
-from libc.math cimport log, exp, sqrt
+from math import log, exp, sqrt
 
-cimport rmgpy.constants as constants
+import rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import StatmechError
-from rmgpy.statmech.mode cimport Mode
-from rmgpy.statmech.rotation cimport LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
-from rmgpy.statmech.torsion cimport HinderedRotor
-from rmgpy.statmech.translation cimport IdealGasTranslation
+from rmgpy.statmech.mode import Mode
+from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
+from rmgpy.statmech.torsion import HinderedRotor
+from rmgpy.statmech.translation import IdealGasTranslation
+from rmgpy.rmgobject import RMGObject
 
 ################################################################################
 
-cdef class Conformer(RMGObject):
+class Conformer(RMGObject):
     """
     A representation of an individual molecular conformation. The attributes 
     are:
@@ -73,6 +72,7 @@ cdef class Conformer(RMGObject):
 
     def __init__(self, E0=None, modes=None, spin_multiplicity=1, optical_isomers=1, number=None, mass=None,
                  coordinates=None):
+        super().__init__()
         self.E0 = E0
         self.modes = modes or []
         self.spin_multiplicity = spin_multiplicity
@@ -101,134 +101,130 @@ cdef class Conformer(RMGObject):
         return (Conformer, (self.E0, self.modes, self.spin_multiplicity, self.optical_isomers, self.number, self.mass,
                             self.coordinates))
 
-    property E0:
+    @property
+    def E0(self):
         """The ground-state energy (including zero-point energy) of the conformer."""
-        def __get__(self):
-            return self._E0
-        def __set__(self, value):
-            self._E0 = quantity.Energy(value)
+        return self._E0
 
-    property number:
+    @E0.setter
+    def E0(self, value):
+        self._E0 = quantity.Energy(value)
+
+    @property
+    def number(self):
         """An array of atomic numbers of each atom in the conformer."""
-        def __get__(self):
-            return self._number
-        def __set__(self, value):
-            self._number = quantity.Dimensionless(value)
+        return self._number
 
-    property mass:
+    @number.setter
+    def number(self, value):
+        self._number = quantity.Dimensionless(value)
+
+    @property
+    def mass(self):
         """An array of masses of each atom in the conformer."""
-        def __get__(self):
-            return self._mass
-        def __set__(self, value):
-            self._mass = quantity.Mass(value)
+        return self._mass
 
-    property coordinates:
+    @mass.setter
+    def mass(self, value):
+        self._mass = quantity.Mass(value)
+
+    @property
+    def coordinates(self):
         """An array of 3D coordinates of each atom in the conformer."""
-        def __get__(self):
-            return self._coordinates
-        def __set__(self, value):
-            self._coordinates = quantity.Length(value)
+        return self._coordinates
 
-    cpdef double get_partition_function(self, double T) except -1:
+    @coordinates.setter
+    def coordinates(self, value):
+        self._coordinates = quantity.Length(value)
+
+    def get_partition_function(self, T):
         """
         Return the partition function :math:`Q(T)` for the system at the
         specified temperature `T` in K.
         """
-        cdef double Q = 1.0
-        cdef Mode mode
+        Q = 1.0
         for mode in self.modes:
             logging.debug('        Calculating Partition Function for ' + mode.__class__.__name__)
             Q *= mode.get_partition_function(T)
         return Q * self.spin_multiplicity * self.optical_isomers
 
-    cpdef double get_heat_capacity(self, double T) except -100000000:
+    def get_heat_capacity(self, T):
         """
         Return the heat capacity in J/mol*K for the system at the specified
         temperature `T` in K.
         """
-        cdef double Cp = 0.0
-        cdef Mode mode
+        Cp = 0.0
         for mode in self.modes:
             Cp += mode.get_heat_capacity(T)
         return Cp
 
-    cpdef double get_enthalpy(self, double T) except 100000000:
+    def get_enthalpy(self, T):
         """
         Return the enthalpy in J/mol for the system at the specified
         temperature `T` in K.
         """
-        cdef double H = 0.0
-        cdef Mode mode
+        H = 0.0
         for mode in self.modes:
             H += mode.get_enthalpy(T)
         return H
 
-    cpdef double get_entropy(self, double T) except -100000000:
+    def get_entropy(self, T):
         """
         Return the entropy in J/mol*K for the system at the specified
         temperature `T` in K.
         """
-        cdef double S = log(self.spin_multiplicity * self.optical_isomers) * constants.R
-        cdef Mode mode
+        S = log(self.spin_multiplicity * self.optical_isomers) * constants.R
         for mode in self.modes:
             S += mode.get_entropy(T)
         return S
 
-    cpdef double get_free_energy(self, double T) except 100000000:
+    def get_free_energy(self, T):
         """
         Return the Gibbs free energy in J/mol for the system at the specified
         temperature `T` in K.
         """
         return self.get_enthalpy(T) - T * self.get_entropy(T)
 
-    cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list):
+    def get_sum_of_states(self, e_list):
         """
         Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in kJ/mol above the ground state.
         """
-        cdef np.ndarray sum_states = None
-        cdef Mode mode
+        sum_states = None
         for mode in self.modes:
             sum_states = mode.get_sum_of_states(e_list, sum_states)
         return sum_states * self.spin_multiplicity * self.optical_isomers
 
-    cpdef np.ndarray get_density_of_states(self, np.ndarray e_list):
+    def get_density_of_states(self, e_list):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `e_list` above the ground state.
         """
-        cdef np.ndarray dens_states = None
-        cdef Mode mode
+        dens_states = None
         for mode in self.modes:
             dens_states = mode.get_density_of_states(e_list, dens_states)
         if any(np.isnan(dens_states)):
             raise StatmechError("Obtained NaN for some of the density of states")
         return dens_states * self.spin_multiplicity * self.optical_isomers
 
-    cpdef double get_total_mass(self, atoms=None) except -1:
+    def get_total_mass(self, atoms=None):
         """
         Calculate and return the total mass of the atoms in the conformer in 
         kg. If a list `atoms` of atoms is specified, only those atoms will
         be used to calculate the center of mass. Otherwise, all atoms will be
         used.
         """
-        cdef np.ndarray[np.float64_t, ndim=1] mass
-        cdef int atom
         mass = self._mass.value_si
         if atoms is None: atoms = range(1, mass.shape[0] + 1)
         return sum([mass[atom - 1] for atom in atoms])
 
-    cpdef np.ndarray get_center_of_mass(self, atoms=None):
+    def get_center_of_mass(self, atoms=None):
         """
         Calculate and return the [three-dimensional] position of the center of
         mass of the conformer in m. If a list `atoms` of atoms is specified, 
         only those atoms will be used to calculate the center of mass. 
         Otherwise, all atoms will be used.
         """
-        cdef np.ndarray[np.float64_t, ndim=1] mass
-        cdef np.ndarray[np.float64_t, ndim=2] coordinates
-        cdef double total_mass
-        cdef int atom
 
         mass = self._mass.value_si
         coordinates = self._coordinates.value_si
@@ -243,13 +239,11 @@ cdef class Conformer(RMGObject):
 
         return center
 
-    cpdef get_number_degrees_of_freedom(self):
+    def get_number_degrees_of_freedom(self):
         """
         Return the number of degrees of freedom in a species object, which should be 3N,
         and raises an exception if it is not.
         """
-        cdef int n, n_atoms, expected_degrees_of_freedom
-        cdef Mode mode
         n = 0
         for mode in self.modes:
             if isinstance(mode, HinderedRotor):
@@ -282,20 +276,12 @@ cdef class Conformer(RMGObject):
 
         return n
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    cpdef np.ndarray get_moment_of_inertia_tensor(self):
+    def get_moment_of_inertia_tensor(self):
         """
         Calculate and return the moment of inertia tensor for the conformer 
         in kg*m^2. If the coordinates are not at the center of mass, they are
         temporarily shifted there for the purposes of this calculation.
         """
-        cdef np.ndarray[np.float64_t, ndim=1] mass
-        cdef np.ndarray[np.float64_t, ndim=2] coordinates
-        cdef np.ndarray[np.float64_t, ndim=1] coord, center_of_mass
-        cdef np.ndarray[np.float64_t, ndim=2] I
-        cdef double m
-        cdef int atom
 
         mass = self._mass.value_si
         coordinates = self._coordinates.value_si
@@ -319,7 +305,7 @@ cdef class Conformer(RMGObject):
 
         return I
 
-    cpdef get_principal_moments_of_inertia(self):
+    def get_principal_moments_of_inertia(self):
         """
         Calculate and return the principal moments of inertia and corresponding 
         principal axes for the conformer. The moments of inertia are in 
@@ -330,9 +316,7 @@ cdef class Conformer(RMGObject):
         I, V = np.linalg.eig(I0)
         return I, V
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    cpdef double get_internal_reduced_moment_of_inertia(self, pivots, top1, option=3) except -1:
+    def get_internal_reduced_moment_of_inertia(self, pivots, top1, option=3):
         """
         Calculate and return the reduced moment of inertia for an internal
         torsional rotation around the axis defined by the two atoms in 
@@ -365,11 +349,6 @@ cdef class Conformer(RMGObject):
         
         .. [2] East, A. L. L. and Radom, L. *J. Chem. Phys.* **106**, p. 6655-6674 (1997).
         """
-        cdef np.ndarray[np.float64_t, ndim=1] mass, top1_center_of_mass, top2_center_of_mass
-        cdef np.ndarray[np.float64_t, ndim=2] coordinates
-        cdef np.ndarray[np.float64_t, ndim=1] coord_pivot1, coord_pivot2, axis
-        cdef double I1, I2
-        cdef int n_atoms, atom
 
         mass = self._mass.value_si
         coordinates = self._coordinates.value_si
@@ -457,9 +436,7 @@ cdef class Conformer(RMGObject):
 
         return I1 * I2 / (I1 + I2)
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    cpdef get_symmetric_top_rotors(self):
+    def get_symmetric_top_rotors(self):
         """
         Return objects representing the external J-rotor and K-rotor under the
         symmetric top approximation. For nonlinear molecules, the J-rotor is
@@ -469,8 +446,6 @@ cdef class Conformer(RMGObject):
         determined by the difference between the remaining molecular rotational
         constant and the J-rotor rotational constant.
         """
-        cdef double A, B
-        cdef np.ndarray[np.float64_t, ndim=1] Blist
 
         Jrotor = None
         Krotor = None
@@ -492,12 +467,12 @@ cdef class Conformer(RMGObject):
 
         return Jrotor, Krotor
 
-    cpdef list get_active_modes(self, bint active_j_rotor=False, bint active_k_rotor=True):
+    def get_active_modes(self, active_j_rotor=False, active_k_rotor=True):
         """
         Return a list of the active molecular degrees of freedom of the
         molecular system.
         """
-        cdef list modes = []
+        modes = []
 
         for mode in self.modes:
             if isinstance(mode, IdealGasTranslation):
@@ -519,7 +494,7 @@ cdef class Conformer(RMGObject):
 
 ################################################################################
 
-cpdef double phi(double beta, int k, double E, logQ) except -10000000:
+def phi(beta, k, E, logQ):
     """
     Evaluate the value of the objective function used in the method of
     steepest descents to compute the sum and/or density of states from the
@@ -537,13 +512,10 @@ cpdef double phi(double beta, int k, double E, logQ) except -10000000:
     :returns:    The value of the objective function to minimize for the
                  method of steepest descents
     """
-    cdef double T
     T = 1.0 / (constants.R * beta)
     return logQ(T) - k * log(beta) + beta * E
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-def get_density_of_states_forst(np.ndarray[np.float64_t, ndim=1] e_list, logQ, int order=1):
+def get_density_of_states_forst(e_list, logQ, order=1):
     """
     Return the density of states :math:`\\rho(E) \\ dE` and sum of states
     :math:`N(E)` at the specified total energies `e_list` in J/mol above the
@@ -555,9 +527,6 @@ def get_density_of_states_forst(np.ndarray[np.float64_t, ndim=1] e_list, logQ, i
     faster to compute, and generally accurate enough for most applications.
     """
 
-    cdef np.ndarray[np.float64_t, ndim=1] dens_states, sum_states
-    cdef double x, dx, v, E, dE
-    cdef int i, k
 
     if order != 1 and order != 2:
         raise ValueError('Invalid value {0} for order parameter; valid values are 1 or 2.'.format(order))

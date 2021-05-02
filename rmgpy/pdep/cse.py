@@ -34,9 +34,8 @@ method.
 import logging
 
 import numpy as np
-cimport numpy as np
 import scipy.linalg
-from libc.math cimport exp, sqrt
+from math import exp, sqrt
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import ChemicallySignificantEigenvaluesError
@@ -45,18 +44,8 @@ from rmgpy.pdep.me import generate_full_me_matrix
 ################################################################################
 
 
-def apply_chemically_significant_eigenvalues_method(network, list lumping_order=None):
+def apply_chemically_significant_eigenvalues_method(network, lumping_order=None):
     """A method for applying the Chemically Significant Eigenvalues approach for solving the master equation."""
-    cdef np.ndarray[np.int_t, ndim=1] j_list
-    cdef np.ndarray[np.int_t, ndim=3] indices
-    cdef np.ndarray[np.float64_t, ndim=1] e_list, s_mat, s_mat_inv, omega0, omega, eq_ratios
-    cdef np.ndarray[np.float64_t, ndim=2] me_mat, k, eigen_vectors0, eigen_vectors, z_mat, z_mat_inv, y, x
-    cdef np.ndarray[np.float64_t, ndim=3] dens_states
-    cdef np.ndarray[np.float64_t, ndim=4] g_nj, pa
-    cdef list lumping, unlumping
-    cdef double temperature, pressure, ym_b
-    cdef int n_isom, n_reac, n_prod, n_grains, n_j, n_chem, n_cse, n_rows
-    cdef int i, n, r, s, index
 
     temperature = network.T
     pressure = network.P
@@ -82,7 +71,7 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
     me_mat[:, n_rows-n_reac:] *= ym_b
     
     # Generate symmetrization matrix and its inverse
-    s_mat = np.zeros(n_rows, np.float64)
+    s_mat = np.zeros(n_rows, np.float128)
     s_mat_inv = np.zeros_like(s_mat)
     for i in range(n_isom):
         for r in range(n_grains):
