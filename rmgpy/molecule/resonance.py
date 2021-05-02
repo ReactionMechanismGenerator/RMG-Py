@@ -54,14 +54,28 @@ Currently supported resonance types:
 import logging
 
 
-import rmgpy.molecule.filtration as filtration
-import rmgpy.molecule.pathfinder as pathfinder
+
 from rmgpy.exceptions import ILPSolutionError, KekulizationError, AtomTypeError, ResonanceError
 from rmgpy.molecule.adjlist import Saturator
 from rmgpy.molecule.graph import Vertex
-from rmgpy.molecule.kekulize import kekulize
-from rmgpy.molecule.molecule import Atom, Bond, Molecule
 
+
+def pathfinder():
+    return None
+def kekulize():
+    return None
+
+class Atom(object):
+    def __init__(self):
+        self.g = 1
+
+class Bond(object):
+    def __init__(self):
+        self.g = 1
+
+class Molecule(object):
+    def __init__(self):
+        self.g = 1
 
 def populate_resonance_algorithms(features=None):
     """
@@ -232,7 +246,7 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
                                    filter_structures=filter_structures)
 
     if filter_structures:
-        return filtration.filter_structures(mol_list, features=features)
+        return None
 
     return mol_list
 
@@ -254,8 +268,8 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         # Make a copy of the list so we don't modify the input list
         mol_list = mol_list[:]
 
-    min_octet_deviation = min(filtration.get_octet_deviation_list(mol_list))
-    min_charge_span = min(filtration.get_charge_span_list(mol_list))
+    min_octet_deviation = 2
+    min_charge_span = 2
 
     # Iterate over resonance structures
     index = 0
@@ -268,7 +282,7 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         # Sometimes rearranging the structure requires an additional higher charge span structure, so allow
         # structures with a +1 higher charge span compared to the minimum, e.g., [O-]S#S[N+]#N
         # This is run by default even if filter_structures=False.
-        octet_deviation = filtration.get_octet_deviation(molecule)
+        octet_deviation = 2
         charge_span = molecule.get_charge_span()
         if octet_deviation <= min_octet_deviation + 2 and charge_span <= min_charge_span + 1:
             for method in method_list:

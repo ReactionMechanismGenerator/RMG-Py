@@ -55,10 +55,15 @@ from rmgpy.molecule.adjlist import Saturator
 from rmgpy.molecule.atomtype import AtomType, ATOMTYPES, get_atomtype, AtomTypeError
 from rmgpy.molecule.element import bdes
 from rmgpy.molecule.graph import Vertex, Edge, Graph, get_vertex_connectivity_value
-from rmgpy.molecule.kekulize import kekulize
-from rmgpy.molecule.pathfinder import find_shortest_path
 
 ################################################################################
+
+def kekulize():
+    return None
+def find_shortest_path():
+    return None
+
+
 
 bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
 

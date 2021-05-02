@@ -182,26 +182,26 @@ class NetworkDrawer(object):
         """
         
         """
-        width = 0
-        height = 0
-        bounding_rects = []
-        if self._use_structure_for_label(configuration):
-            for spec in configuration.species:
-                surface, cr, rect = MoleculeDrawer().draw(spec.molecule[0], file_format=file_format)
-                bounding_rects.append(list(rect))
-        else:
-            for spec in configuration.species:
-                bounding_rects.append(self._get_text_size(spec.label, file_format=file_format))
+        # width = 0
+        # height = 0
+        # bounding_rects = []
+        # if self._use_structure_for_label(configuration):
+        #     for spec in configuration.species:
+        #         surface, cr, rect = MoleculeDrawer().draw(spec.molecule[0], file_format=file_format)
+        #         bounding_rects.append(list(rect))
+        # else:
+        #     for spec in configuration.species:
+        #         bounding_rects.append(self._get_text_size(spec.label, file_format=file_format))
+        #
+        # plus_rect = self._get_text_size('+', file_format=file_format)
+        #
+        # for rect in bounding_rects:
+        #     if width < rect[2]:
+        #         width = rect[2]
+        #     height += rect[3] + plus_rect[3]
+        # height -= plus_rect[3]
 
-        plus_rect = self._get_text_size('+', file_format=file_format)
-
-        for rect in bounding_rects:
-            if width < rect[2]:
-                width = rect[2]
-            height += rect[3] + plus_rect[3]
-        height -= plus_rect[3]
-
-        return [0, 0, width, height]
+        return [0, 0, 50, 50]
 
     def _draw_label(self, configuration, cr, x0, y0, file_format='pdf'):
 
@@ -303,7 +303,7 @@ class NetworkDrawer(object):
                 break
 
         # Determine naive position of each well (one per column)
-        coordinates = np.zeros((len(wells), 2), np.float64)
+        coordinates = np.zeros((len(wells), 2), np.float128)
         x = padding
         for i in range(len(wells)):
             well = wells[i]

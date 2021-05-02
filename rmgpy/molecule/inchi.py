@@ -35,19 +35,31 @@ import cython
 from rdkit import Chem
 
 import rmgpy.molecule.element as elements
-import rmgpy.molecule.pathfinder as pathfinder
 import rmgpy.molecule.resonance as resonance
 from rmgpy.exceptions import InchiException
 from rmgpy.molecule.adjlist import ConsistencyChecker
 from rmgpy.molecule.converter import to_rdkit_mol
-from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.molecule.util import agglomerate, partition, generate_combo, swap
 
 # search for (*) PARENTHESES
 PARENTHESES = re.compile(r'\((.[^\(\)]*)\)')
 
+def pathfinder():
+    return None
 INCHI_PREFIX = 'InChI=1'
 
+
+class Atom(object):
+    def __init__(self):
+        self.g = 1
+
+class Bond(object):
+    def __init__(self):
+        self.g = 1
+
+class Molecule(object):
+    def __init__(self):
+        self.g = 1
 """
 The prefix with the information on the distribution of unpaired electrons across the atoms.
 

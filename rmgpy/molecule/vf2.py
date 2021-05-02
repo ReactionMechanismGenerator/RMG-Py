@@ -31,7 +31,6 @@ algorithm of Vento and Foggia.  http://dx.doi.org/10.1109/TPAMI.2004.75
 """
 
 from rmgpy.exceptions import VF2Error
-from rmgpy.molecule.graph import Graph
 
 ################################################################################
 

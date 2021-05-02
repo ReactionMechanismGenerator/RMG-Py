@@ -639,7 +639,7 @@ class PressureDependenceJob(object):
 
         path = os.path.join(output_directory, 'network.' + file_format)
 
-        NetworkDrawer().draw(self.network, file_format=file_format, path=path)
+        # NetworkDrawer().draw(self.network, file_format=file_format, path=path)
 
     def save_input_file(self, path):
         """

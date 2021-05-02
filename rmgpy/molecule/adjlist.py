@@ -31,6 +31,7 @@
 This module contains functionality for reading from and writing to the
 adjacency list format used by Reaction Mechanism Generator (RMG).
 """
+
 import logging
 import re
 import warnings
@@ -39,7 +40,831 @@ from rmgpy.exceptions import InvalidAdjacencyListError
 from rmgpy.molecule.atomtype import get_atomtype
 from rmgpy.molecule.element import get_element, PeriodicSystem
 from rmgpy.molecule.group import GroupAtom, GroupBond
-from rmgpy.molecule.molecule import Atom, Bond
+
+import logging
+from copy import deepcopy
+
+import numpy as np
+
+import rmgpy.molecule.element as elements
+import rmgpy.molecule.group as gr
+from rmgpy.molecule.atomtype import AtomType, ATOMTYPES, get_atomtype, AtomTypeError
+from rmgpy.molecule.element import bdes
+from rmgpy.molecule.graph import Vertex, Edge, Graph, get_vertex_connectivity_value
+
+
+################################################################################
+
+def kekulize():
+    return None
+
+
+def find_shortest_path():
+    return None
+
+
+bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+
+globals().update({
+    'bond_orders': bond_orders,
+})
+
+
+class Atom(Vertex):
+    """
+    An atom. The attributes are:
+
+    ==================== =================== ====================================
+    Attribute            Type                Description
+    ==================== =================== ====================================
+    `atomtype`           :class:`AtomType`   The :ref:`atom type <atom-types>`
+    `element`            :class:`Element`    The chemical element the atom represents
+    `radical_electrons`  ``short``           The number of radical electrons
+    `charge`             ``short``           The formal charge of the atom
+    `label`              ``str``             A string label that can be used to tag individual atoms
+    `coords`             ``numpy array``     The (x,y,z) coordinates in Angstrom
+    `lone_pairs`         ``short``           The number of lone electron pairs
+    `id`                 ``int``             Number assignment for atom tracking purposes
+    `bonds`              ``dict``            Dictionary of bond objects with keys being neighboring atoms
+    `props`              ``dict``            Dictionary for storing additional atom properties
+    `mass`               ``int``             atomic mass of element (read only)
+    `number`             ``int``             atomic number of element (read only)
+    `symbol`             ``str``             atomic symbol of element (read only)
+    ==================== =================== ====================================
+
+    Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
+    atom's element can be read (but not written) directly from the atom object,
+    e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
+    """
+
+    def __init__(self, element=None, radical_electrons=0, charge=0, label='', lone_pairs=-100, coords=np.array([]),
+                 id=-1, props=None):
+        Vertex.__init__(self)
+        if isinstance(element, str):
+            self.element = elements.__dict__[element]
+        else:
+            self.element = element
+        self.radical_electrons = radical_electrons
+        self.charge = charge
+        self.label = label
+        self.atomtype = None
+        self.lone_pairs = lone_pairs
+        self.coords = coords
+        self.id = id
+        self.props = props or {}
+
+    def __str__(self):
+        """
+        Return a human-readable string representation of the object.
+        """
+        return '{0}{1}{2}'.format(
+            str(self.element),
+            '.' * self.radical_electrons,
+            '+' * self.charge if self.charge > 0 else '-' * -self.charge,
+        )
+
+    def __repr__(self):
+        """
+        Return a representation that can be used to reconstruct the object.
+        """
+        return "<Atom '{0}'>".format(str(self))
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        d = {
+            'edges': self.edges,
+            'connectivity1': self.connectivity1,
+            'connectivity2': self.connectivity2,
+            'connectivity3': self.connectivity3,
+            'sorting_label': self.sorting_label,
+            'atomtype': self.atomtype.label if self.atomtype else None,
+            'lone_pairs': self.lone_pairs,
+        }
+        if self.element.isotope == -1:
+            element2pickle = self.element.symbol
+        else:
+            element2pickle = self.element
+        return (Atom, (element2pickle, self.radical_electrons, self.charge, self.label), d)
+
+    def __setstate__(self, d):
+        """
+        A helper function used when unpickling an object.
+        """
+        self.edges = d['edges']
+        self.connectivity1 = d['connectivity1']
+        self.connectivity2 = d['connectivity2']
+        self.connectivity3 = d['connectivity3']
+        self.sorting_label = d['sorting_label']
+        self.atomtype = ATOMTYPES[d['atomtype']] if d['atomtype'] else None
+        self.lone_pairs = d['lone_pairs']
+
+    def __hash__(self):
+        """
+        Define a custom hash method to allow Atom objects to be used in dictionaries and sets.
+        """
+        return hash(('Atom', self.symbol))
+
+    def __eq__(self, other):
+        """Method to test equality of two Atom objects."""
+        return self is other
+
+    def __lt__(self, other):
+        """Define less than comparison. For comparing against other Atom objects (e.g. when sorting)."""
+        if isinstance(other, Atom):
+            return self.sorting_key < other.sorting_key
+        else:
+            raise NotImplementedError('Cannot perform less than comparison between Atom and '
+                                      '{0}.'.format(type(other).__name__))
+
+    def __gt__(self, other):
+        """Define greater than comparison. For comparing against other Atom objects (e.g. when sorting)."""
+        if isinstance(other, Atom):
+            return self.sorting_key > other.sorting_key
+        else:
+            raise NotImplementedError('Cannot perform greater than comparison between Atom and '
+                                      '{0}.'.format(type(other).__name__))
+
+    @property
+    def mass(self):
+        return self.element.mass
+
+    @property
+    def number(self):
+        return self.element.number
+
+    @property
+    def symbol(self):
+        return self.element.symbol
+
+    @property
+    def bonds(self):
+        return self.edges
+
+    @property
+    def sorting_key(self):
+        """Returns a sorting key for comparing Atom objects. Read-only"""
+        return self.number, -get_vertex_connectivity_value(self), self.radical_electrons, self.lone_pairs, self.charge
+
+    def equivalent(self, other, strict=True):
+        """
+        Return ``True`` if `other` is indistinguishable from this atom, or
+        ``False`` otherwise. If `other` is an :class:`Atom` object, then all
+        attributes except `label` and 'ID' must match exactly. If `other` is an
+        :class:`GroupAtom` object, then the atom must match any of the
+        combinations in the atom pattern. If ``strict`` is ``False``, then only
+        the element is compared and electrons are ignored.
+        """
+        if isinstance(other, Atom):
+            atom = other
+            if strict:
+                return (self.element is atom.element
+                        and self.radical_electrons == atom.radical_electrons
+                        and self.lone_pairs == atom.lone_pairs
+                        and self.charge == atom.charge
+                        and self.atomtype is atom.atomtype)
+            else:
+                return self.element is atom.element
+        elif isinstance(other, gr.GroupAtom):
+            if not strict:
+                raise NotImplementedError('There is currently no implementation of '
+                                          'the strict argument for Group objects.')
+            ap = other
+            for a in ap.atomtype:
+                if self.atomtype.equivalent(a): break
+            else:
+                return False
+            if ap.radical_electrons:
+                for radical in ap.radical_electrons:
+                    if self.radical_electrons == radical: break
+                else:
+                    return False
+            if ap.lone_pairs:
+                for lp in ap.lone_pairs:
+                    if self.lone_pairs == lp: break
+                else:
+                    return False
+            if ap.charge:
+                for charge in ap.charge:
+                    if self.charge == charge: break
+                else:
+                    return False
+            if 'inRing' in self.props and 'inRing' in ap.props:
+                if self.props['inRing'] != ap.props['inRing']:
+                    return False
+            return True
+
+    def is_specific_case_of(self, other):
+        """
+        Return ``True`` if `self` is a specific case of `other`, or ``False``
+        otherwise. If `other` is an :class:`Atom` object, then this is the same
+        as the :meth:`equivalent()` method. If `other` is an
+        :class:`GroupAtom` object, then the atom must match or be more
+        specific than any of the combinations in the atom pattern.
+        """
+        if isinstance(other, Atom):
+            return self.equivalent(other)
+        elif isinstance(other, gr.GroupAtom):
+            atom = other
+            if self.atomtype is None:
+                return False
+            for a in atom.atomtype:
+                if self.atomtype.is_specific_case_of(a):
+                    break
+            else:
+                return False
+            if atom.radical_electrons:
+                for radical in atom.radical_electrons:
+                    if self.radical_electrons == radical:
+                        break
+                else:
+                    return False
+            if atom.lone_pairs:
+                for lp in atom.lone_pairs:
+                    if self.lone_pairs == lp:
+                        break
+                else:
+                    return False
+            if atom.charge:
+                for charge in atom.charge:
+                    if self.charge == charge:
+                        break
+                else:
+                    return False
+            if 'inRing' in self.props and 'inRing' in atom.props:
+                if self.props['inRing'] != atom.props['inRing']:
+                    return False
+            elif 'inRing' not in self.props and 'inRing' in atom.props:
+                return False
+            return True
+
+    def copy(self):
+        """
+        Generate a deep copy of the current atom. Modifying the
+        attributes of the copy will not affect the original.
+        """
+        # a = Atom(self.element, self.radical_electrons, self.spin_multiplicity, self.charge, self.label)
+        a = Atom.__new__(Atom)
+        a.edges = {}
+        a.reset_connectivity_values()
+        a.element = self.element
+        a.radical_electrons = self.radical_electrons
+        a.charge = self.charge
+        a.label = self.label
+        a.atomtype = self.atomtype
+        a.lone_pairs = self.lone_pairs
+        a.coords = self.coords[:]
+        a.id = self.id
+        a.props = deepcopy(self.props)
+        return a
+
+    def is_hydrogen(self):
+        """
+        Return ``True`` if the atom represents a hydrogen atom or ``False`` if
+        not.
+        """
+        return self.element.number == 1
+
+    def is_non_hydrogen(self):
+        """
+        Return ``True`` if the atom does not represent a hydrogen atom or
+        ``False`` if it does.
+        """
+        return self.element.number != 1
+
+    def is_halogen(self):
+        """
+        Return ``True`` if the atom represents a halogen atom (F, Cl, Br, I)
+        ``False`` if it does.
+        """
+        return self.element.number in [9, 17, 35, 53]
+
+    def is_carbon(self):
+        """
+        Return ``True`` if the atom represents a carbon atom or ``False`` if
+        not.
+        """
+        return self.element.number == 6
+
+    def is_nitrogen(self):
+        """
+        Return ``True`` if the atom represents a nitrogen atom or ``False`` if
+        not.
+        """
+        return self.element.number == 7
+
+    def is_oxygen(self):
+        """
+        Return ``True`` if the atom represents an oxygen atom or ``False`` if
+        not.
+        """
+        return self.element.number == 8
+
+    def is_fluorine(self):
+        """
+        Return ``True`` if the atom represents a fluorine atom or ``False`` if
+        not.
+        """
+        return self.element.number == 9
+
+    def is_surface_site(self):
+        """
+        Return ``True`` if the atom represents a surface site or ``False`` if not.
+        """
+        return self.symbol == 'X'
+
+    def is_silicon(self):
+        """
+        Return ``True`` if the atom represents a silicon atom or ``False`` if
+        not.
+        """
+        return self.element.number == 14
+
+    def is_phosphorus(self):
+        """
+        Return ``True`` if the atom represents a phosphorus atom or ``False`` if
+        not.
+        """
+        return self.element.number == 15
+
+    def is_sulfur(self):
+        """
+        Return ``True`` if the atom represents a sulfur atom or ``False`` if
+        not.
+        """
+        return self.element.number == 16
+
+    def is_chlorine(self):
+        """
+        Return ``True`` if the atom represents a chlorine atom or ``False`` if
+        not.
+        """
+        return self.element.number == 17
+
+    def is_bromine(self):
+        """
+        Return ``True`` if the atom represents a bromine atom or ``False`` if
+        not.
+        """
+        return self.element.number == 35
+
+    def is_iodine(self):
+        """
+        Return ``True`` if the atom represents an iodine atom or ``False`` if
+        not.
+        """
+        return self.element.number == 53
+
+    def is_nos(self):
+        """
+        Return ``True`` if the atom represent either nitrogen, sulfur, or oxygen
+        ``False`` if it does not.
+        """
+        return self.element.number in [7, 8, 16]
+
+    def increment_radical(self):
+        """
+        Update the atom pattern as a result of applying a GAIN_RADICAL action,
+        where `radical` specifies the number of radical electrons to add.
+        """
+        # Set the new radical electron count
+        self.radical_electrons += 1
+        if self.radical_electrons <= 0:
+            raise gr.ActionError('Unable to update Atom due to GAIN_RADICAL action: '
+                                 'Invalid radical electron set "{0}".'.format(self.radical_electrons))
+
+    def decrement_radical(self):
+        """
+        Update the atom pattern as a result of applying a LOSE_RADICAL action,
+        where `radical` specifies the number of radical electrons to remove.
+        """
+        # Set the new radical electron count
+        radical_electrons = self.radical_electrons = self.radical_electrons - 1
+        if radical_electrons < 0:
+            raise gr.ActionError('Unable to update Atom due to LOSE_RADICAL action: '
+                                 'Invalid radical electron set "{0}".'.format(self.radical_electrons))
+
+    def set_lone_pairs(self, lone_pairs):
+        """
+        Set the number of lone electron pairs.
+        """
+        # Set the number of electron pairs
+        self.lone_pairs = lone_pairs
+        if self.lone_pairs < 0:
+            raise gr.ActionError('Unable to update Atom due to set_lone_pairs: '
+                                 'Invalid lone electron pairs set "{0}".'.format(self.set_lone_pairs))
+        self.update_charge()
+
+    def increment_lone_pairs(self):
+        """
+        Update the lone electron pairs pattern as a result of applying a GAIN_PAIR action.
+        """
+        # Set the new lone electron pairs count
+        self.lone_pairs += 1
+        if self.lone_pairs <= 0:
+            raise gr.ActionError('Unable to update Atom due to GAIN_PAIR action: '
+                                 'Invalid lone electron pairs set "{0}".'.format(self.lone_pairs))
+        self.update_charge()
+
+    def decrement_lone_pairs(self):
+        """
+        Update the lone electron pairs pattern as a result of applying a LOSE_PAIR action.
+        """
+        # Set the new lone electron pairs count
+        self.lone_pairs -= 1
+        if self.lone_pairs < 0:
+            raise gr.ActionError('Unable to update Atom due to LOSE_PAIR action: '
+                                 'Invalid lone electron pairs set "{0}".'.format(self.lone_pairs))
+        self.update_charge()
+
+    def update_charge(self):
+        """
+        Update self.charge, according to the valence, and the
+        number and types of bonds, radicals, and lone pairs.
+        """
+        if self.is_surface_site():
+            self.charge = 0
+            return
+        valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
+        order = self.get_total_bond_order()
+        self.charge = valence_electron - order - self.radical_electrons - 2 * self.lone_pairs
+
+    def apply_action(self, action):
+        """
+        Update the atom pattern as a result of applying `action`, a tuple
+        containing the name of the reaction recipe action along with any
+        required parameters. The available actions can be found
+        :ref:`here <reaction-recipe-actions>`.
+        """
+        # Invalidate current atom type
+        self.atomtype = None
+        act = action[0].upper()
+        # Modify attributes if necessary
+        if act in ['CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND']:
+            # Nothing else to do here
+            pass
+        elif act == 'GAIN_RADICAL':
+            for i in range(action[2]): self.increment_radical()
+        elif act == 'LOSE_RADICAL':
+            for i in range(abs(action[2])): self.decrement_radical()
+        elif action[0].upper() == 'GAIN_PAIR':
+            for i in range(action[2]): self.increment_lone_pairs()
+        elif action[0].upper() == 'LOSE_PAIR':
+            for i in range(abs(action[2])): self.decrement_lone_pairs()
+        else:
+            raise gr.ActionError('Unable to update Atom: Invalid action {0}".'.format(action))
+
+    def get_total_bond_order(self):
+        """
+        This helper function is to help calculate total bond orders for an
+        input atom.
+
+        Some special consideration for the order `B` bond. For atoms having
+        three `B` bonds, the order for each is 4/3.0, while for atoms having other
+        than three `B` bonds, the order for  each is 3/2.0
+        """
+        num_b_bond = 0
+        order = 0
+        for bond in self.bonds.values():
+            if bond.is_benzene():
+                num_b_bond += 1
+            else:
+                order += bond.order
+
+        if num_b_bond == 3:
+            order += num_b_bond * 4 / 3.0
+        else:
+            order += num_b_bond * 3 / 2.0
+
+        return order
+
+
+################################################################################
+
+class Bond(Edge):
+    """
+    A chemical bond. The attributes are:
+
+    =================== =================== ====================================
+    Attribute           Type                Description
+    =================== =================== ====================================
+    `order`             ``float``             The :ref:`bond type <bond-types>`
+    `atom1`             ``Atom``              An Atom object connecting to the bond
+    `atom2`             ``Atom``              An Atom object connecting to the bond
+    =================== =================== ====================================
+
+    """
+
+    def __init__(self, atom1, atom2, order=1):
+        Edge.__init__(self, atom1, atom2)
+        if isinstance(order, str):
+            self.set_order_str(order)
+        else:
+            self.order = order
+
+    def __str__(self):
+        """
+        Return a human-readable string representation of the object.
+        """
+        return self.get_order_str()
+
+    def __repr__(self):
+        """
+        Return a representation that can be used to reconstruct the object.
+        """
+        return '<Bond "{0}">'.format(self.order)
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (Bond, (self.vertex1, self.vertex2, self.order))
+
+    def __hash__(self):
+        """
+        Define a custom hash method to allow Bond objects to be used in dictionaries and sets.
+        """
+        return hash(('Bond', self.order,
+                     self.atom1.symbol if self.atom1 is not None else '',
+                     self.atom2.symbol if self.atom2 is not None else ''))
+
+    def __eq__(self, other):
+        """Method to test equality of two Bond objects."""
+        return self is other
+
+    def __lt__(self, other):
+        """Define less than comparison. For comparing against other Bond objects (e.g. when sorting)."""
+        if isinstance(other, Bond):
+            return self.sorting_key < other.sorting_key
+        else:
+            raise NotImplementedError('Cannot perform less than comparison between Bond and '
+                                      '{0}.'.format(type(other).__name__))
+
+    def __gt__(self, other):
+        """Define greater than comparison. For comparing against other Bond objects (e.g. when sorting)."""
+        if isinstance(other, Bond):
+            return self.sorting_key > other.sorting_key
+        else:
+            raise NotImplementedError('Cannot perform greater than comparison between Bond and '
+                                      '{0}.'.format(type(other).__name__))
+
+    @property
+    def atom1(self):
+        return self.vertex1
+
+    @property
+    def atom2(self):
+        return self.vertex2
+
+    @property
+    def sorting_key(self):
+        """Returns a sorting key for comparing Bond objects. Read-only"""
+        return (self.order,
+                self.atom1.number if self.atom1 is not None else 0,
+                self.atom2.number if self.atom2 is not None else 0)
+
+    def get_bde(self):
+        """
+        estimate the bond dissociation energy in J/mol of the bond based on the order of the bond
+        and the atoms involved in the bond
+        """
+        try:
+            return bdes[(self.atom1.element.symbol, self.atom2.element.symbol, self.order)]
+        except KeyError:
+            raise KeyError('Bond Dissociation energy not known for combination: '
+                           '({0},{1},{2})'.format(self.atom1.element.symbol, self.atom2.element.symbol, self.order))
+
+    def equivalent(self, other):
+        """
+        Return ``True`` if `other` is indistinguishable from this bond, or
+        ``False`` otherwise. `other` can be either a :class:`Bond` or a
+        :class:`GroupBond` object.
+        """
+        if isinstance(other, Bond):
+            bond = other
+            return self.is_order(bond.get_order_num())
+        elif isinstance(other, gr.GroupBond):
+            bp = other
+            return any([self.is_order(otherOrder) for otherOrder in bp.get_order_num()])
+
+    def is_specific_case_of(self, other):
+        """
+        Return ``True`` if `self` is a specific case of `other`, or ``False``
+        otherwise. `other` can be either a :class:`Bond` or a
+        :class:`GroupBond` object.
+        """
+        # There are no generic bond types, so is_specific_case_of is the same as equivalent
+        return self.equivalent(other)
+
+    def get_order_str(self):
+        """
+        returns a string representing the bond order
+        """
+        if self.is_single():
+            return 'S'
+        elif self.is_benzene():
+            return 'B'
+        elif self.is_double():
+            return 'D'
+        elif self.is_triple():
+            return 'T'
+        elif self.is_quadruple():
+            return 'Q'
+        elif self.is_van_der_waals():
+            return 'vdW'
+        elif self.is_hydrogen_bond():
+            return 'H'
+        else:
+            raise ValueError("Bond order {} does not have string representation.".format(self.order))
+
+    def set_order_str(self, new_order):
+        """
+        set the bond order using a valid bond-order character
+        """
+        if new_order == 'S':
+            self.order = 1
+        elif new_order == 'D':
+            self.order = 2
+        elif new_order == 'T':
+            self.order = 3
+        elif new_order == 'B':
+            self.order = 1.5
+        elif new_order == 'Q':
+            self.order = 4
+        elif new_order == 'vdW':
+            self.order = 0
+        elif new_order == 'H':
+            self.order = 0.1
+        else:
+            # try to see if an float disguised as a string was input by mistake
+            try:
+                self.order = float(new_order)
+            except ValueError:
+                raise TypeError('Bond order {} is not hardcoded into this method'.format(new_order))
+
+    def get_order_num(self):
+        """
+        returns the bond order as a number
+        """
+
+        return self.order
+
+    def set_order_num(self, new_order):
+        """
+        change the bond order with a number
+        """
+
+        self.order = new_order
+
+    def copy(self):
+        """
+        Generate a deep copy of the current bond. Modifying the
+        attributes of the copy will not affect the original.
+        """
+        # return Bond(self.vertex1, self.vertex2, self.order)
+        b = Bond.__new__(Bond)
+        b.vertex1 = self.vertex1
+        b.vertex2 = self.vertex2
+        b.order = self.order
+        return b
+
+    def is_van_der_waals(self):
+        """
+        Return ``True`` if the bond represents a van der Waals bond or
+        ``False`` if not.
+        """
+        return self.is_order(0)
+
+    def is_order(self, other_order):
+        """
+        Return ``True`` if the bond is of order other_order or ``False`` if
+        not. This compares floats that takes into account floating point error
+
+        NOTE: we can replace the absolute value relation with math.isclose when
+        we swtich to python 3.5+
+        """
+        return abs(self.order - other_order) <= 1e-4
+
+    def is_single(self):
+        """
+        Return ``True`` if the bond represents a single bond or ``False`` if
+        not.
+        """
+        return self.is_order(1)
+
+    def is_double(self):
+        """
+        Return ``True`` if the bond represents a double bond or ``False`` if
+        not.
+        """
+        return self.is_order(2)
+
+    def is_triple(self):
+        """
+        Return ``True`` if the bond represents a triple bond or ``False`` if
+        not.
+        """
+        return self.is_order(3)
+
+    def is_quadruple(self):
+        """
+        Return ``True`` if the bond represents a quadruple bond or ``False`` if
+        not.
+        """
+        return self.is_order(4)
+
+    def is_benzene(self):
+        """
+        Return ``True`` if the bond represents a benzene bond or ``False`` if
+        not.
+        """
+        return self.is_order(1.5)
+
+    def is_hydrogen_bond(self):
+        """
+        Return ``True`` if the bond represents a hydrogen bond or ``False`` if
+        not.
+        """
+        return self.is_order(0.1)
+
+    def increment_order(self):
+        """
+        Update the bond as a result of applying a CHANGE_BOND action to
+        increase the order by one.
+        """
+        if self.order <= 3.0001:
+            self.order += 1
+        else:
+            raise gr.ActionError('Unable to increment Bond due to CHANGE_BOND action: '
+                                 'Bond order "{0}" is greater than 3.'.format(self.order))
+
+    def decrement_order(self):
+        """
+        Update the bond as a result of applying a CHANGE_BOND action to
+        decrease the order by one.
+        """
+        if self.order >= 0.9999:
+            self.order -= 1
+        else:
+            raise gr.ActionError('Unable to decrease Bond due to CHANGE_BOND action: '
+                                 'bond order "{0}" is less than 1.'.format(self.order))
+
+    def _change_bond(self, order):
+        """
+        Update the bond as a result of applying a CHANGE_BOND action,
+        where `order` specifies whether the bond is incremented or decremented
+        in bond order, and can be any real number.
+        """
+        self.order += order
+        if self.order < -0.0001 or self.order > 4.0001:
+            raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: '
+                                 'Invalid resulting order "{0}".'.format(self.order))
+
+    def apply_action(self, action):
+        """
+        Update the bond as a result of applying `action`, a tuple
+        containing the name of the reaction recipe action along with any
+        required parameters. The available actions can be found
+        :ref:`here <reaction-recipe-actions>`.
+        """
+        if action[0].upper() == 'CHANGE_BOND':
+            if isinstance(action[2], str):
+                self.set_order_str(action[2])
+            else:
+                try:  # try to see if addable
+                    self._change_bond(action[2])
+                except TypeError:
+                    raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: '
+                                         'Invalid order "{0}".'.format(action[2]))
+        else:
+            raise gr.ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
+
+    def get_bond_string(self):
+        """
+        Represent the bond object as a string (eg. 'C#N'). The returned string is independent of the atom ordering, with
+        the atom labels in alphabetical order (i.e. 'C-H' is possible but not 'H-C')
+        :return: str
+        """
+        bond_symbol_mapping = {0.1: '~', 1: '-', 1.5: ':', 2: '=', 3: '#'}
+        atom_labels = [self.atom1.symbol, self.atom2.symbol]
+        atom_labels.sort()
+        try:
+            bond_symbol = bond_symbol_mapping[self.get_order_num()]
+        except KeyError:
+            # Direct lookup didn't work, but before giving up try
+            # with the is_order() method which allows a little latitude
+            # for floating point errors.
+            for order, symbol in bond_symbol_mapping.items():
+                if self.is_order(order):
+                    bond_symbol = symbol
+                    break
+            else:  # didn't break
+                bond_symbol = '<bond order {0}>'.format(self.get_order_num())
+        return '{0}{1}{2}'.format(atom_labels[0], bond_symbol, atom_labels[1])
+
+
+#################################################################################
 
 
 class Saturator(object):
