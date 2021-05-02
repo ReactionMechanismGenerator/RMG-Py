@@ -38,9 +38,9 @@ import numpy as np
 cimport numpy as np
 
 import rmgpy.constants as constants
-cimport rmgpy.constants as constants
+import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
-from rmgpy.quantity cimport ScalarQuantity
+from rmgpy.quantity import ScalarQuantity
 from rmgpy.solver.base cimport ReactionSystem
 
 
@@ -50,8 +50,6 @@ cdef class SurfaceReactor(ReactionSystem):
     reactor. 
     """
 
-    cdef public ScalarQuantity T
-    cdef public ScalarQuantity P_initial
     cdef public double V
     cdef public bint constant_volume
 
@@ -62,8 +60,6 @@ cdef class SurfaceReactor(ReactionSystem):
 
     cdef public dict initial_gas_mole_fractions
     cdef public dict initial_surface_coverages
-    cdef public ScalarQuantity surface_volume_ratio
-    cdef public ScalarQuantity surface_site_density
     cdef public np.ndarray reactions_on_surface  # (catalyst surface, not core/edge surface)
     cdef public np.ndarray species_on_surface  # (catalyst surface, not core/edge surface)
 

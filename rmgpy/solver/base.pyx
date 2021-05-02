@@ -51,7 +51,6 @@ else:
     from pydas.daspk import DASSLError as DASxError
 
 import rmgpy.constants as constants
-cimport rmgpy.constants as constants
 from rmgpy.chemkin import get_species_identifier
 from rmgpy.reaction import Reaction
 from rmgpy.quantity import Quantity

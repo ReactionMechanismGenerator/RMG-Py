@@ -39,9 +39,8 @@ import numpy as np
 cimport numpy as np
 
 import rmgpy.constants as constants
-cimport rmgpy.constants as constants
 from rmgpy.quantity import Quantity, RateCoefficient
-from rmgpy.quantity cimport ScalarQuantity
+from rmgpy.quantity import ScalarQuantity
 from rmgpy.solver.base cimport ReactionSystem
 
 
@@ -57,9 +56,6 @@ cdef class MBSampledReactor(ReactionSystem):
     and cannot be used for a standard RMG job.
     """
 
-    cdef public ScalarQuantity T
-    cdef public ScalarQuantity P
-    cdef public ScalarQuantity k_sampling
     cdef public double V
     cdef public bint constant_volume
     cdef public dict initial_mole_fractions

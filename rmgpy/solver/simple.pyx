@@ -38,9 +38,9 @@ import numpy as np
 cimport numpy as np
 
 import rmgpy.constants as constants
-cimport rmgpy.constants as constants
+import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
-from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
+from rmgpy.quantity import ScalarQuantity, ArrayQuantity
 from rmgpy.solver.base cimport ReactionSystem
 
 
@@ -51,8 +51,6 @@ cdef class SimpleReactor(ReactionSystem):
     this solver to complete very rapidly, even for large kinetic models.
     """
 
-    cdef public ScalarQuantity T
-    cdef public ScalarQuantity P
     cdef public double V
     cdef public bint constant_volume
     cdef public dict initial_mole_fractions

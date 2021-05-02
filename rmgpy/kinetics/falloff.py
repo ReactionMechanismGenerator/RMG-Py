@@ -32,7 +32,7 @@ This module contains classes representing pressure-dependent kinetics models
 of "standard" falloff.
 """
 
-from libc.math cimport exp, log, log10
+from math import exp, log, log10
 
 import rmgpy.constants as constants
 import rmgpy.quantity as quantity
@@ -114,7 +114,7 @@ class ThirdBody(PDepKineticsModel):
 
         return True
 
-    cpdef change_rate(self, double factor):
+    def change_rate(self, factor):
         """
         Changes kinetics rate by a multiple ``factor``.
         """
@@ -188,7 +188,6 @@ class Lindemann(PDepKineticsModel):
         first use :meth:`get_effective_pressure()` to compute the effective
         pressure, and pass that value as the pressure to this method.
         """
-        cdef double C, k0, kinf, Pr
 
         C = P / constants.R / T  # bath gas concentration in mol/m^3
         k0 = self.arrheniusLow.get_rate_coefficient(T)

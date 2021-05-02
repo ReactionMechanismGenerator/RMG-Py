@@ -35,7 +35,7 @@ from rmgpy.kinetics.model import PDepKineticsModel, KineticsModel
 
 ################################################################################
 
-cdef class KineticsData(KineticsModel):
+class KineticsData(KineticsModel):
     """
     A kinetics model based on an array of rate coefficient data vs. temperature. 
     The attributes are:

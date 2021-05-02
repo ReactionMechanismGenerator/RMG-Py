@@ -42,7 +42,7 @@ from rmgpy.kinetics.model import KineticsModel, PDepKineticsModel
 RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
 ################################################################################
 
-cdef class Arrhenius(KineticsModel):
+class Arrhenius(KineticsModel):
     """
     A kinetics model based on the (modified) Arrhenius equation. The attributes
     are:
@@ -135,7 +135,6 @@ cdef class Arrhenius(KineticsModel):
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K.
         """
-        cdef double A, n, Ea, T0
         A = self._A.value_si
         n = self._n.value_si
         Ea = self._Ea.value_si
@@ -229,7 +228,7 @@ cdef class Arrhenius(KineticsModel):
 
         return True
 
-    cpdef change_rate(self, double factor):
+    def change_rate(self, factor):
         """
         Changes A factor in Arrhenius expression by multiplying it by a ``factor``.
         """
@@ -455,7 +454,7 @@ class ArrheniusEP(KineticsModel):
 
         return True
 
-    cpdef change_rate(self, double factor):
+    def change_rate(self, factor):
         """
         Changes A factor by multiplying it by a ``factor``.
         """
@@ -788,20 +787,21 @@ class PDepArrhenius(PDepKineticsModel):
         return (PDepArrhenius, (self.pressures, self.arrhenius, self.highPlimit, self.Tmin, self.Tmax,
                                 self.Pmin, self.Pmax, self.comment))
 
-    property pressures:
+    @property
+    def pressures(self):
         """The list of pressures."""
-        def __get__(self):
-            return self._pressures
-        def __set__(self, value):
-            self._pressures = quantity.Pressure(value)
+        return self._pressures
+
+    @pressures.setter
+    def pressures(self, value):
+        """Allow setting the radius"""
+        self._pressures = quantity.Pressure(value)
 
     def get_adjacent_expressions(self, P):
         """
         Returns the pressures and Arrhenius expressions for the pressures that
         most closely bound the specified pressure `P` in Pa.
         """
-        cdef np.ndarray[np.float64_t, ndim=1] pressures
-        cdef int i, ilow, ihigh
 
         pressures = self._pressures.value_si
 
@@ -870,7 +870,7 @@ class PDepArrhenius(PDepKineticsModel):
 
         return True
 
-    def change_rate(self, double factor):
+    def change_rate(self, factor):
         """
         Changes kinetics rate by a multiple ``factor``.
         """
@@ -1056,11 +1056,6 @@ class MultiPDepArrhenius(PDepKineticsModel):
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K and pressure `P` in Pa.
         """
-        cdef double k, klow, khigh, Plow, Phigh
-        cdef PDepArrhenius arrh
-        cdef KineticsModel arrh_low, arrh_high
-        cdef np.ndarray Plist1, Plist2
-        cdef int i
 
         if P == 0:
             raise ValueError('No pressure specified to pressure-dependent MultiPDepArrhenius.get_rate_coefficient().')
@@ -1107,6 +1102,7 @@ class MultiPDepArrhenius(PDepKineticsModel):
 
         for i, arr in enumerate(self.arrhenius):
             arr.set_cantera_kinetics(ct_reaction[i], species_list)
+
 
 def get_w0(actions, rxn):
     """
@@ -1160,6 +1156,7 @@ def get_w0(actions, rxn):
             else:
                 wb += abs(bde_diff)
     return (wf + wb) / 2.0
+
 
 def get_w0s(actions, rxns):
     return [get_w0(actions, rxn) for rxn in rxns]
