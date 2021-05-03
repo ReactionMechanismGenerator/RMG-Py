@@ -12,7 +12,7 @@ jobs:
     strategy:
       max-parallel: 5
     env: # update this if needed to match a pull request on the RMG-database
-      RMG_DATABASE_BRANCH: master
+      RMG_DATABASE_BRANCH: coverage_dependence
     defaults:
       run:
         shell: bash -l {0}
