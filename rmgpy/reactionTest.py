@@ -52,7 +52,10 @@ from rmgpy.statmech.translation import IdealGasTranslation
 from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.thermo import Wilhoit, ThermoData, NASA, NASAPolynomial
 
-
+# work in progress tag chrisb
+from nose.plugins.attrib import attr
+def wipd(f):
+    return attr('wip')(f)
 ################################################################################
 
 class PseudoSpecies(object):
@@ -292,6 +295,13 @@ class TestSurfaceReaction(unittest.TestCase):
             korig = self.rxn2sSC.get_rate_coefficient(T, P, surface_site_density=2.5e-5)
             krevrev = rxn_copy.get_rate_coefficient(T, P, surface_site_density=2.5e-5)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+
+    @wipd
+    def test_cantera_export(self):
+
+        self.assertEqual(1, 1)
+        # stuff
+
 
 class TestReaction(unittest.TestCase):
     """
