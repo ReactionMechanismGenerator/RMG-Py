@@ -514,18 +514,23 @@ class TransportDatabase(object):
 
         halogens = ('F','Cl','Br')
         elements = molecule.get_element_count().keys()
+        comment = None
         if any(atom in elements for atom in halogens):
             # apply corrections for halogenated compounds from https://doi.org/10.1021/ie00008a029
             if 'H' in elements: #partially halogenated
                 if 'F' not in elements:
                     Tb += 11.43 # partially halogenated without fluorine
+                    comment = 'with partial halogenation Tb correction (+11.43 K)'
                 else:
                     Tb -= 25.00 # partially fluorinated with or without other halogens
+                    comment = 'with partial fluorination Tb correction (-25 K)'
             else:
                 if 'Cl' not in elements and 'Br' not in elements:
                     Tb -= 45.57 # perfluorinated
+                    comment = 'with perfluorinated Tb correction (-45.57 K)'
                 else:
                     Tb -= 53.55 # perhalogenated with or without fluorine
+                    comment = 'with perhalogenated Tb correction (-53.55 K)'
 
         critical_point = CriticalPoint(
             Tc=Tc,
@@ -533,6 +538,7 @@ class TransportDatabase(object):
             Vc=Vc,
             Tb=Tb,
             linear=is_linear,
+            comment=comment
         )
         return critical_point
 
