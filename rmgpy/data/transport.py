@@ -627,20 +627,21 @@ class CriticalPoint(object):
     The critical properties of the species (and structureIndex)
     """
 
-    def __init__(self, Tc=None, Pc=None, Vc=None, Tb=None, linear=None):
+    def __init__(self, Tc=None, Pc=None, Vc=None, Tb=None, linear=None, comment=None):
         self.Tc = Tc
         self.Pc = Pc
         self.Vc = Vc
         self.Tb = Tb
         self.linear = linear
+        self.comment = comment
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
         CriticalPoint object
         """
-        string = 'CriticalPoint(Tc={0!r}, Pc={1!r}, Vc={2!r}, Tb={3!r}, linear={4!r}'.format(
-            self.Tc, self.Pc, self.Vc, self.Tb, self.linear)
+        string = 'CriticalPoint(Tc={0!r}, Pc={1!r}, Vc={2!r}, Tb={3!r}, linear={4!r}, comment={5!r}'.format(
+            self.Tc, self.Pc, self.Vc, self.Tb, self.linear, self.comment)
         string += ')'
         return string
 
