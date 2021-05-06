@@ -19,6 +19,7 @@ entry(
         Ea=(1.5E3, 'J/mol'),
         Tmin = (200, 'K'),
         Tmax = (3000, 'K'),
+        coverage_dependence = {'OX': {'E': (0.0, 'J/mol'), 'm':0.0, 'a':0.0},}
     ),
     shortDesc = u"""Default""",
     longDesc = u"""Made up""",
