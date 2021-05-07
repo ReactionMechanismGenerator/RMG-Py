@@ -38,6 +38,7 @@ import numpy as np
 from rmgpy.kinetics.surface import StickingCoefficient, SurfaceArrhenius
 from rmgpy.species import Species
 from rmgpy.molecule import Molecule
+import rmgpy.quantity as quantity
 
 ################################################################################
 
@@ -57,7 +58,10 @@ class TestStickingCoefficient(unittest.TestCase):
         self.T0 = 1.
         self.Tmin = 300.
         self.Tmax = 3000.
-        self.coverage_dependence = {Species().from_adjacency_list('1 X u0 p0 c0'): {'E': (0.0, 'J/mol'), 'm': -1.0, 'a': 0.0}}
+        s = Species().from_adjacency_list('1 X u0 p0 c0')
+        s.label = 'X'
+        self.coverage_dependence = {s: {'E': quantity.Energy(0.0, 'J/mol'), 'm': quantity.Dimensionless(-1.0),
+                                        'a': quantity.Dimensionless(0.0)}}
         self.comment = 'O2 dissociative'
         self.stick = StickingCoefficient(
             A=self.A,
@@ -116,7 +120,20 @@ class TestStickingCoefficient(unittest.TestCase):
         """
         Test that the coverage dependent parameters was properly set.
         """
-        self.assertEqual(self.stick.coverage_dependence, self.coverage_dependence)
+        for key in self.stick.coverage_dependence.keys():
+            match = False
+            for key2 in self.coverage_dependence.keys():
+                if key.is_identical(key2):
+                    match = True
+            self.assertTrue(match)
+        for species, parameters in self.stick.coverage_dependence.items():
+            match = False
+            for species2 in self.coverage_dependence.keys():
+                if species.is_identical(species2):
+                    match = True
+                    for key, value in parameters.items():
+                        self.assertEqual(value.value_si, self.coverage_dependence[species2][key].value_si)
+            self.assertTrue(match)
 
     def test_is_temperature_valid(self):
         """
@@ -249,7 +266,10 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.T0 = 1.
         self.Tmin = 300.
         self.Tmax = 3000.
-        self.coverage_dependence = {Species().from_adjacency_list('1 X u0 p0 c0'): {'E': (0.0, 'J/mol'), 'm': -1.0, 'a': 0.0}}
+        s = Species().from_adjacency_list('1 X u0 p0 c0')
+        s.label = 'X'
+        self.coverage_dependence = {s: {'E': quantity.Energy(0.0, 'J/mol'), 'm': quantity.Dimensionless(-1.0),
+                                        'a': quantity.Dimensionless(0.0)}}
         self.comment = 'CH3x + Hx <=> CH4 + x + x'
         self.surfarr = SurfaceArrhenius(
             A=(self.A, 'm^2/(mol*s)'),
@@ -308,7 +328,20 @@ class TestSurfaceArrhenius(unittest.TestCase):
         """
         Test that the coverage dependent parameters was properly set.
         """
-        self.assertEqual(self.surfarr.coverage_dependence, self.coverage_dependence)
+        for key in self.surfarr.coverage_dependence.keys():
+            match = False
+            for key2 in self.coverage_dependence.keys():
+                if key.is_identical(key2):
+                    match = True
+            self.assertTrue(match)
+        for species, parameters in self.surfarr.coverage_dependence.items():
+            match = False
+            for species2 in self.coverage_dependence.keys():
+                if species.is_identical(species2):
+                    match = True
+                    for key, value in parameters.items():
+                        self.assertEqual(value.value_si, self.coverage_dependence[species2][key].value_si)
+            self.assertTrue(match)
 
     def test_is_temperature_valid(self):
         """
