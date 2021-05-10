@@ -39,6 +39,7 @@ jobs:
         run: |
           make -C documentation continous_integration_setup clean html
       - name: Publish documentation
+        if: ${{ github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
         env:
             COMMITMESSAGE: "Automatic documentation rebuild"
             GIT_AUTHOR_NAME: "RMG Bot"
