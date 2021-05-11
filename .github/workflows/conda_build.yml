@@ -1,0 +1,58 @@
+name: Conda Build
+
+on:
+  push:
+    branches:
+      - stable
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: environment.yml
+          python-version: 3.7
+          activate-environment: rmg_env
+      - name: Conda info
+        run: |
+          conda info
+          conda list
+      - name: Build Binary
+        env: 
+          CONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+        run: |
+          conda install -y conda-build 
+          conda install -y anaconda-client 
+          conda config --add channels rmg
+          conda config --set anaconda_upload yes
+          conda build --token $CONDA_TOKEN --user rmg .conda
+  build-osx:
+    runs-on: macos-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: environment.yml
+          python-version: 3.7
+          activate-environment: rmg_env
+      - name: Conda info
+        run: |
+          conda info
+          conda list
+      - name: Build Binary
+        env: 
+          CONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+        run: |
+            conda install -y conda-build 
+            conda install -y anaconda-client 
+            conda config --add channels rmg
+            conda config --set anaconda_upload yes
+            xcrun --show-sdk-path
+            conda build --token $CONDA_TOKEN --user rmg .conda
