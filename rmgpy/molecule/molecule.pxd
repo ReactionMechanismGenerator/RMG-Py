@@ -253,6 +253,12 @@ cdef class Molecule(Graph):
 
     cpdef list generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
 
+    cpdef update_lone_pairs(self)
+
+    cpdef dict saturate_radicals(self, bint raise_atomtype_exception=?)
+
+    cpdef replace_halogen_with_hydrogen(self, bint raise_atomtype_exception=?)
+
     cpdef identify_ring_membership(self)
 
     cpdef int count_aromatic_rings(self)

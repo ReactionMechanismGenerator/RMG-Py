@@ -1877,6 +1877,26 @@ multiplicity 2
         saturated_molecule.saturate_radicals()
         self.assertTrue(saturated_molecule.is_isomorphic(indene))
 
+    def test_replace_halogen_with_hydrogen(self):
+        """
+        Test that the Molecule.replace_halogen_with_hydrogen() method works properly for various halogenated molecules
+        """
+        testCases = [
+            # halogenated molecule SMILES, hydrogenated (halogens replaced with hydrogens) molecule SMILES
+            ['[F]', '[H]'],
+            ['Cl', '[H][H]'],
+            ['[Br][Br]', '[H][H]'],
+            ['Fc1c(Cl)c(Br)c(I)cc1', 'c1ccccc1'],
+            ['F[CH]COC(Cl)(Cl)', '[CH2]COC']
+        ]
+
+        for smiles1, smiles2 in testCases:
+            mol_halogenated = Molecule().from_smiles(smiles1)
+            mol_replaced = mol_halogenated.copy(deep=True)
+            mol_replaced.replace_halogen_with_hydrogen()
+            mol_replaced_check = Molecule().from_smiles(smiles2)
+            self.assertTrue(mol_replaced.is_isomorphic(mol_replaced_check))
+
     def test_surface_molecules(self):
         """
         Test that we can identify surface molecules.

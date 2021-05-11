@@ -2226,6 +2226,31 @@ class Molecule(Graph):
 
         return added
 
+    def replace_halogen_with_hydrogen(self, raise_atomtype_exception=True):
+        """
+        Replace all halogens in a molecule with hydrogen atoms. Changes self molecule object.
+        """
+        cython.declare(halogen_atom_list=list, atom=Atom, bond_to_replace_dict=dict, H_atom=Atom,
+                       bonded_atom=Atom, bond_to_replace=Bond, new_bond=Bond)
+        # the list of halogen atoms must be obtained before any of the halogen atoms are replaced because it changes
+        # the order of self.atoms
+        halogen_atom_list = [atom for atom in self.atoms if atom.is_halogen()]
+        for atom in halogen_atom_list:
+            if not atom.charge == 0:
+                raise ValueError('For a given molecule {0}, a halogen atom {1} with charge {2} cannot be replaced '
+                                 'with a hydrogen atom'.format(self.to_smiles(), atom.symbol, atom.charge))
+            bond_to_replace_dict = self.get_bonds(atom)
+            self.remove_atom(atom)
+            H_atom = Atom('H', radical_electrons=atom.radical_electrons, lone_pairs=0, charge=0)
+            self.add_atom(H_atom)
+            for bonded_atom, bond_to_replace in bond_to_replace_dict.items():
+                new_bond = Bond(H_atom, bonded_atom, order=bond_to_replace.order)
+                self.add_bond(new_bond)
+
+        # Update the atom types of the new structure
+        self.sort_atoms()
+        self.update_atomtypes(raise_exception=raise_atomtype_exception)
+
     def to_group(self):
         """
         This method converts a list of atoms in a Molecule to a Group object.
