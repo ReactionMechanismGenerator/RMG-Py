@@ -1350,8 +1350,8 @@ class ForbiddenStructures(Database):
                 raise NotImplementedError('Checking is only implemented for forbidden Groups, Molecule, and Species.')
 
         # Until we have more thermodynamic data of molecular ions we will forbid them
-        if molecule.get_net_charge() != 0:
-            return True
+        # if molecule.get_net_charge() != 0:
+        #     return True
 
         return False
 
