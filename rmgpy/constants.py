@@ -110,6 +110,12 @@ m_p = 1.672621777e-27
 #: :math:`\pi = 3.14159 \ldots`      
 pi = float(math.pi)
 
+#: Faradays Constant F in C/mol
+F = 96485.3321233100184
+
+#: Vacuum permittivity 
+epsilon_0 = 8.8541878128
+
 ################################################################################
 
 # Cython does not automatically place module-level variables into the module
@@ -130,4 +136,6 @@ globals().update({
     'm_n': m_n,
     'm_p': m_p,
     'pi': pi,
+    'F': F,
+    'epsilon_0': epsilon_0,
 })
