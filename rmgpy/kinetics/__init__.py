@@ -35,4 +35,5 @@ from rmgpy.kinetics.falloff import ThirdBody, Lindemann, Troe
 from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
 from rmgpy.kinetics.tunneling import Wigner, Eckart
 from rmgpy.kinetics.surface import SurfaceArrhenius, SurfaceArrheniusBEP, \
-                     StickingCoefficient, StickingCoefficientBEP
+                    StickingCoefficient, StickingCoefficientBEP, \
+                    SurfaceChargeTransfer, SurfaceChargeTransferBEP
