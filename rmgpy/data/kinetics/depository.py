@@ -35,6 +35,7 @@ import re
 
 from rmgpy.data.base import Database, Entry, DatabaseError
 from rmgpy.data.kinetics.common import save_entry
+from rmgpy.kinetics import SurfaceChargeTransfer, SurfaceArrheniusBEP
 from rmgpy.reaction import Reaction
 
 
@@ -60,7 +61,8 @@ class DepositoryReaction(Reaction):
                  pairs=None,
                  depository=None,
                  family=None,
-                 entry=None
+                 entry=None,
+                 electrons=None,
                  ):
         Reaction.__init__(self,
                           index=index,
@@ -72,7 +74,8 @@ class DepositoryReaction(Reaction):
                           transition_state=transition_state,
                           duplicate=duplicate,
                           degeneracy=degeneracy,
-                          pairs=pairs
+                          pairs=pairs,
+                          electrons=electrons,
                           )
         self.depository = depository
         self.family = family
@@ -187,6 +190,9 @@ class KineticsDepository(Database):
                                         ''.format(product, self.label))
                 # Same comment about molecule vs species objects as above.
                 rxn.products.append(species_dict[product])
+            
+            if isinstance(entry.data, (SurfaceChargeTransfer, SurfaceArrheniusBEP)):
+                rxn.electrons = entry.data.electrons.value
 
             if not rxn.is_balanced():
                 raise DatabaseError('Reaction {0} in kinetics depository {1} was not balanced! Please reformulate.'
