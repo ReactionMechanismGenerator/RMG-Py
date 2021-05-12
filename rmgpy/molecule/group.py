@@ -544,6 +544,18 @@ class GroupAtom(Vertex):
                 return True
         return False
 
+    def is_electron(self):
+        """
+        Return ``True`` if the atom represents a surface site or ``False`` if not.
+        """
+        return self.atomtype[0] == ATOMTYPES['e']
+
+    def is_proton(self):
+        """
+        Return ``True`` if the atom represents a surface site or ``False`` if not.
+        """
+        return self.atomtype[0] == ATOMTYPES['H+']
+
     def is_oxygen(self):
         """
         Return ``True`` if the atom represents an oxygen atom or ``False`` if not.
@@ -1208,6 +1220,14 @@ class Group(Graph):
         """
         cython.declare(atom=GroupAtom)
         return [atom for atom in self.atoms if atom.is_surface_site()]
+
+    def is_proton(self):
+        """Returns ``True`` iff the group is a proton"""
+        return len(self.atoms) == 1 and self.atoms[0].is_proton()
+
+    def is_electron(self):
+        """Returns ``True`` iff the group is an electron"""
+        return len(self.atoms) == 1 and self.atoms[0].is_electron()
 
     def remove_atom(self, atom):
         """
