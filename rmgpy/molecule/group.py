@@ -260,6 +260,54 @@ class GroupAtom(Vertex):
         # Set the new radical electron counts
         self.radical_electrons = radical_electrons
 
+    def _gain_charge(self, charge):
+        """
+        Update the atom group as a result of applying a GAIN_CHARGE action,
+        where `charge` specifies the charge gained.
+        """
+        atomtype = []
+
+        for atom in self.atomtype:
+            atomtype.extend(atom.increment_charge)
+
+        if any([len(atom.increment_charge) == 0 for atom in self.atomtype]):
+            raise ActionError('Unable to update GroupAtom due to GAIN_CHARGE action: '
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
+
+        if isinstance(self.charge,list):
+            charges = []
+            for c in self.charge:
+                charges.append(c+charge)
+            self.charge = charges
+        else:
+            self.charge += 1
+
+        self.atomtype = list(set(atomtype))
+
+    def _lose_charge(self, charge):
+        """
+        Update the atom group as a result of applying a LOSE_CHARGE action,
+        where `charge` specifies lost charge.
+        """
+        atomtype = []
+
+        for atom in self.atomtype:
+            atomtype.extend(atom.decrement_charge)
+
+        if any([len(atomtype.decrement_charge) == 0 for atomtype in self.atomtype]):
+            raise ActionError('Unable to update GroupAtom due to LOSE_CHARGE action: '
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
+
+        if isinstance(self.charge,list):
+            charges = []
+            for c in self.charge:
+                charges.append(c-charge)
+            self.charge = charges
+        else:
+            self.charge -= 1
+
+        self.atomtype = list(set(atomtype))
+
     def _gain_pair(self, pair):
         """
         Update the atom group as a result of applying a GAIN_PAIR action,
@@ -331,8 +379,12 @@ class GroupAtom(Vertex):
             self._break_bond(action[2])
         elif act == 'GAIN_RADICAL':
             self._gain_radical(action[2])
+        elif act == 'GAIN_CHARGE':
+            self._gain_charge(action[2])
         elif act == 'LOSE_RADICAL':
             self._lose_radical(action[2])
+        elif act == 'LOSE_CHARGE':
+            self._lose_charge(action[2])
         elif action[0].upper() == 'GAIN_PAIR':
             self._gain_pair(action[2])
         elif action[0].upper() == 'LOSE_PAIR':
