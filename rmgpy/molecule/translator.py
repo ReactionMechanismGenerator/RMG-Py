@@ -103,7 +103,17 @@ SMILES_LOOKUPS = {
         """
         multiplicity 1
         1 X u0
+        """,
+    'e':
         """
+        multiplicity 1
+        1 e u0 p0 c-1
+        """,
+    '[H+]':
+        """
+        multiplicity 1
+        1 H u0 p0 c+1
+        """,
 }
 
 #: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
@@ -128,6 +138,8 @@ MOLECULE_LOOKUPS = {
     'ClH': 'Cl',
     'I2': '[I][I]',
     'HI': 'I',
+    'H': 'H+',
+    'e': 'e'
 }
 
 RADICAL_LOOKUPS = {
@@ -155,7 +167,8 @@ RADICAL_LOOKUPS = {
     'I': '[I]',
     'CF': '[C]F',
     'CCl': '[C]Cl',
-    'CBr': '[C]Br'
+    'CBr': '[C]Br',
+    'e': 'e'
 }
 
 
