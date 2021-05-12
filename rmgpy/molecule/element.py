@@ -78,7 +78,7 @@ class Element(object):
         self.mass = mass
         self.isotope = isotope
         self.chemkin_name = chemkin_name or self.name
-        if symbol == 'X':
+        if symbol in ('X','e'):
             self.cov_radius = 0
         else:
             try:
@@ -122,11 +122,11 @@ class PeriodicSystem(object):
     https://sciencenotes.org/list-of-electronegativity-values-of-the-elements/
     isotopes of the same element may have slight different electronegativities, which is not reflected below
     """
-    valences = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'F': 1, 'Ne': 0,
+    valences = {'H+':0, 'e': 0, 'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'F': 1, 'Ne': 0,
                 'Si': 4, 'P': 3, 'S': 2, 'Cl': 1, 'Br': 1, 'Ar': 0, 'I': 1, 'X': 4}
-    valence_electrons = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'F': 7, 'Ne': 8,
+    valence_electrons = {'H+':0, 'e': 1, 'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'F': 7, 'Ne': 8,
                          'Si': 4, 'P': 5, 'S': 6, 'Cl': 7, 'Br': 7, 'Ar': 8, 'I': 7, 'X': 4}
-    lone_pairs = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'F': 3, 'Ne': 4,
+    lone_pairs = {'H+':0, 'e': 0, 'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'F': 3, 'Ne': 4,
                   'Si': 0, 'P': 1, 'S': 2, 'Cl': 3, 'Br': 3, 'Ar': 4, 'I': 3, 'X': 0}
     electronegativity = {'H': 2.20, 'D': 2.20, 'T': 2.20, 'C': 2.55, 'C13': 2.55, 'N': 3.04, 'O': 3.44, 'O18': 3.44,
                          'F': 3.98, 'Si': 1.90, 'P': 2.19, 'S': 2.58, 'Cl': 3.16, 'Br': 2.96, 'I': 2.66, 'X': 0.0}
@@ -173,6 +173,8 @@ def get_element(value, isotope=-1):
 # Recommended IUPAC nomenclature is used throughout (including 'aluminium' and
 # 'caesium')
 
+# electron
+e = Element(-1,   'e', 'electron'      , 5.486e-7)
 
 # Surface site
 X = Element(0,    'X', 'surface_site'   , 0.0)
@@ -310,6 +312,7 @@ Cn = Element(112, 'Cn', 'copernicum'    , 0.285)
 
 # A list of the elements, sorted by increasing atomic number
 element_list = [
+    e,
     X,
     H, D, T, He,
     Li, Be, B, C, C13, N, O, O18, F, Ne,
