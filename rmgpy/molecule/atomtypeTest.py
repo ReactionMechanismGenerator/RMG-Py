@@ -83,6 +83,11 @@ class TestAtomType(unittest.TestCase):
         self.assertEqual(len(self.atomtype.decrement_radical), len(atom_type.decrement_radical))
         for item1, item2 in zip(self.atomtype.decrement_radical, atom_type.decrement_radical):
             self.assertEqual(item1.label, item2.label)
+        for item1, item2 in zip(self.atomtype.increment_charge, atom_type.increment_charge):
+            self.assertEqual(item1.label, item2.label)
+        self.assertEqual(len(self.atomtype.decrement_charge), len(atom_type.decrement_charge))
+        for item1, item2 in zip(self.atomtype.decrement_charge, atom_type.decrement_charge):
+            self.assertEqual(item1.label, item2.label)
 
     def test_output(self):
         """
@@ -120,13 +125,17 @@ class TestAtomType(unittest.TestCase):
                           self.atomtype.increment_radical,
                           self.atomtype.decrement_radical,
                           self.atomtype.increment_lone_pair,
-                          self.atomtype.decrement_lone_pair)
+                          self.atomtype.decrement_lone_pair,
+                          self.atomtype.increment_charge,
+                          self.atomtype.decrement_charge)
         self.assertEqual(self.atomtype.increment_bond, other.increment_bond)
         self.assertEqual(self.atomtype.decrement_bond, other.decrement_bond)
         self.assertEqual(self.atomtype.form_bond, other.form_bond)
         self.assertEqual(self.atomtype.break_bond, other.break_bond)
         self.assertEqual(self.atomtype.increment_radical, other.increment_radical)
         self.assertEqual(self.atomtype.decrement_radical, other.decrement_radical)
+        self.assertEqual(self.atomtype.increment_charge, other.increment_charge)
+        self.assertEqual(self.atomtype.decrement_charge, other.decrement_charge)
 
 
 ################################################################################
@@ -610,6 +619,9 @@ class TestGetAtomType(unittest.TestCase):
                                                        11 H u0 p0 {5,S}
                                                        12 H u0 p0 {6,S}''')
 
+        self.electron = Molecule().from_adjacency_list('''1 e u1 p0 c-1''')
+        self.proton = Molecule().from_adjacency_list('''1 H u0 p0 c+1''')
+
     def atom_type(self, mol, atom_id):
         atom = mol.atoms[atom_id]
         atom_type = get_atomtype(atom, mol.get_bonds(atom))
@@ -622,7 +634,7 @@ class TestGetAtomType(unittest.TestCase):
         """
         Test that get_atomtype() returns the hydrogen atom type.
         """
-        self.assertEqual(self.atom_type(self.mol3, 0), 'H')
+        self.assertEqual(self.atom_type(self.mol3, 0), 'H0')
 
     def test_carbon_types(self):
         """
@@ -788,7 +800,7 @@ class TestGetAtomType(unittest.TestCase):
         """
         Test that get_atomtype() works for occupied surface sites and for regular atoms in the complex.
         """
-        self.assertEqual(self.atom_type(self.mol76, 0), 'H')
+        self.assertEqual(self.atom_type(self.mol76, 0), 'H0')
         self.assertEqual(self.atom_type(self.mol76, 1), 'Xo')
 
     def test_vacant_surface_site_atom_type(self):
@@ -796,9 +808,21 @@ class TestGetAtomType(unittest.TestCase):
         Test that get_atomtype() works for vacant surface sites and for regular atoms in the complex.
         """
         self.assertEqual(self.atom_type(self.mol77, 0), 'Cs')
-        self.assertEqual(self.atom_type(self.mol77, 1), 'H')
+        self.assertEqual(self.atom_type(self.mol77, 1), 'H0')
         self.assertEqual(self.atom_type(self.mol77, 3), 'Xv')
         self.assertEqual(self.atom_type(self.mol78, 0), 'Xv')
+
+    def test_electron(self):
+        """
+        Test that get_atomtype() returns the electron (e) atom type.
+        """
+        self.assertEqual(self.atom_type(self.electron, 0), 'e')
+
+    def test_proton(self):
+        """
+        Test that get_atomtype() returns the proton (H+) atom type.
+        """
+        self.assertEqual(self.atom_type(self.proton, 0), 'H+')
 
 
 ################################################################################
