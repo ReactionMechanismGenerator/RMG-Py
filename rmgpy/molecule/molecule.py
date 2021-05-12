@@ -573,6 +573,10 @@ class Atom(Vertex):
         if self.is_surface_site():
             self.charge = 0
             return
+        if self.is_electron():
+            self.charge = -1
+            return
+
         valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
         order = self.get_total_bond_order()
         self.charge = valence_electron - order - self.radical_electrons - 2 * self.lone_pairs
@@ -1262,17 +1266,21 @@ class Molecule(Graph):
         for index, vertex in enumerate(self.vertices):
             vertex.sorting_label = index
 
+    def update_charge(self):
+
+        for atom in self.atoms:
+            atom.update_charge()
+
     def update(self, log_species=True, raise_atomtype_exception=True, sort_atoms=True):
         """
-        Update the charge and atom types of atoms.
+        Update the lone_pairs, charge, and atom types of atoms.
         Update multiplicity, and sort atoms (if ``sort_atoms`` is ``True``)
         Does not necessarily update the connectivity values (which are used in isomorphism checks)
         If you need that, call update_connectivity_values()
         """
 
-        for atom in self.atoms:
-            atom.update_charge()
-
+        self.update_lone_pairs()
+        self.update_charge()
         self.update_atomtypes(log_species=log_species, raise_exception=raise_atomtype_exception)
         self.update_multiplicity()
         if sort_atoms:
@@ -2344,7 +2352,7 @@ class Molecule(Graph):
         """
         cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=float)
         for atom1 in self.vertices:
-            if atom1.is_hydrogen() or atom1.is_surface_site():
+            if atom1.is_hydrogen() or atom1.is_surface_site() or atom1.is_electron():
                 atom1.lone_pairs = 0
             else:
                 order = atom1.get_total_bond_order()
