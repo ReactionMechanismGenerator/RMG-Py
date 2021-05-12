@@ -48,7 +48,7 @@ from rmgpy.molecule.group import Group
 from rmgpy.data.rmg import get_db
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
-from rmgpy.kinetics import KineticsData, Arrhenius
+from rmgpy.kinetics import KineticsData, Arrhenius, SurfaceChargeTransfer
 from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.pdep import PDepReaction, PDepNetwork
@@ -528,7 +528,8 @@ class CoreEdgeReactionModel:
         return forward
 
     def enlarge(self, new_object=None, react_edge=False,
-                unimolecular_react=None, bimolecular_react=None, trimolecular_react=None):
+                unimolecular_react=None, bimolecular_react=None, trimolecular_react=None,
+                temperature=None, potential=None):
         """
         Enlarge a reaction model by processing the objects in the list `new_object`. 
         If `new_object` is a
@@ -660,9 +661,13 @@ class CoreEdgeReactionModel:
         # self.new_reaction_list only contains *actually* new reactions, all in the forward direction.
         for reaction in self.new_reaction_list:
             # convert KineticsData to Arrhenius forms
-            if isinstance(reaction.kinetics, KineticsData):
+            if isinstance(reaction.kinetics, KineticsData) and not isinstance(reaction.kinetics, SurfaceChargeTransfer):
                 reaction.kinetics = reaction.kinetics.to_arrhenius()
-            #  correct barrier heights of estimated kinetics
+
+            if isinstance(reaction.kinetics, SurfaceChargeTransfer):
+                reaction.set_reference_potential(temperature)
+
+                #  correct barrier heights of estimated kinetics
             if isinstance(reaction, TemplateReaction) or isinstance(reaction,
                                                                     DepositoryReaction):  # i.e. not LibraryReaction
                 reaction.fix_barrier_height()  # also converts ArrheniusEP to Arrhenius.

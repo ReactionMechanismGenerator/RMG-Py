@@ -73,6 +73,7 @@ from rmgpy.rmg.pdep import PDepReaction
 from rmgpy.rmg.settings import ModelSettings
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
+from rmgpy.solver.electrode import ElectrodeReactor
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.plot import plot_sensitivity
@@ -166,6 +167,8 @@ class RMG(util.Subject):
         self.Tmax = 0.0
         self.Pmin = 0.0
         self.Pmax = 0.0
+        self.potential_min = 0.0
+        self.potential_max = 0.0
         self.database = None
 
     def clear(self):
@@ -685,6 +688,8 @@ class RMG(util.Subject):
         try:
             self.Pmin = min([x.Prange[0].value_si if hasattr(x, 'Prange') and x.Prange else x.P.value_si for x in self.reaction_systems])
             self.Pmax = max([x.Prange[1].value_si if hasattr(x, 'Prange') and x.Prange else x.P.value_si for x in self.reaction_systems])
+            self.potential_min = min([x.potential_range[0].value_si if x.potential_range else x.potential.value_si for x in self.reaction_systems])
+            self.potential_max = max([x.potential_range[1].value_si if x.potential_range else x.potential.value_si  for x in self.reaction_systems])
         except AttributeError:
             pass
 
@@ -698,6 +703,16 @@ class RMG(util.Subject):
             self.rmg_memories.append(RMG_Memory(reaction_system, self.balance_species))
             self.rmg_memories[index].generate_cond()
             log_conditions(self.rmg_memories, index)
+            conditions = self.rmg_memories[index].get_cond()
+            temperature = potential = None
+            if isinstance(reaction_system, ElectrodeReactor):
+                if conditions:
+                    potential = conditions.get('potential')
+                    temperature = conditions.get('T')
+                if not potential:
+                    potential = reaction_system.potential.value_si
+                if not temperature:
+                    temperature = reaction_system.T.value_si
 
             # Update react flags
             if self.filter_reactions:
@@ -711,7 +726,7 @@ class RMG(util.Subject):
                     atol=self.simulator_settings_list[0].atol,
                     rtol=self.simulator_settings_list[0].rtol,
                     filter_reactions=True,
-                    conditions=self.rmg_memories[index].get_cond(),
+                    conditions=conditions,
                 )
 
                 self.update_reaction_threshold_and_react_flags(
@@ -732,7 +747,9 @@ class RMG(util.Subject):
             self.reaction_model.enlarge(react_edge=True,
                                         unimolecular_react=self.unimolecular_react,
                                         bimolecular_react=self.bimolecular_react,
-                                        trimolecular_react=self.trimolecular_react)
+                                        trimolecular_react=self.trimolecular_react,
+                                        temperature=temperature,
+                                        potential=potential)
 
         if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
             self.reaction_model.set_thermodynamic_filtering_parameters(
@@ -793,6 +810,15 @@ class RMG(util.Subject):
                         objects_to_enlarge = []
 
                         conditions = self.rmg_memories[index].get_cond()
+                        if isinstance(reaction_system, ElectrodeReactor):
+                            if conditions:
+                                potential = conditions.get('potential')
+                                temperature = conditions.get('T')
+                            if not potential:
+                                potential = reaction_system.potential.value_si
+                            if not temperature:
+                                temperature = reaction_system.T.value_si
+
                         if conditions and self.solvent:
                             T = conditions['T']
                             # Set solvent viscosity
@@ -822,7 +848,7 @@ class RMG(util.Subject):
                                 prune=prune,
                                 model_settings=model_settings,
                                 simulator_settings=simulator_settings,
-                                conditions=self.rmg_memories[index].get_cond()
+                                conditions=conditions
                             )
                         except:
                             logging.error("Model core reactions:")
@@ -835,9 +861,9 @@ class RMG(util.Subject):
                                 self.make_seed_mech()  # Just in case the user wants to restart from this
                             raise
 
+                        log_conditions(self.rmg_memories, index)
                         self.rmg_memories[index].add_t_conv_N(t, x, len(obj))
                         self.rmg_memories[index].generate_cond()
-                        log_conditions(self.rmg_memories, index)
 
                         reactor_done = self.reaction_model.add_new_surface_objects(obj, new_surface_species,
                                                                                    new_surface_reactions, reaction_system)
@@ -922,7 +948,9 @@ class RMG(util.Subject):
                         self.reaction_model.enlarge(react_edge=True,
                                                     unimolecular_react=self.unimolecular_react,
                                                     bimolecular_react=self.bimolecular_react,
-                                                    trimolecular_react=self.trimolecular_react)
+                                                    trimolecular_react=self.trimolecular_react,
+                                                    potential=potential,
+                                                    temperature=temperature)
 
                         if old_edge_size != len(self.reaction_model.edge.reactions) or old_core_size != len(
                                 self.reaction_model.core.reactions):
@@ -2212,6 +2240,9 @@ class RMG_Memory(object):
         if hasattr(reaction_system, 'Prange') and isinstance(reaction_system.Prange, list):
             Prange = reaction_system.Prange
             self.Ranges['P'] = [np.log(P.value_si) for P in Prange]
+        if hasattr(reaction_system, 'potential_range') and isinstance(reaction_system.potential_range, list):
+            potential_range = reaction_system.potential_range
+            self.Ranges['potential'] = [V.value_si for V in potential_range]
         if hasattr(reaction_system, 'initial_mole_fractions'):
             if bspc:
                 self.initial_mole_fractions = deepcopy(reaction_system.initial_mole_fractions)
@@ -2326,6 +2357,8 @@ class RMG_Memory(object):
                        enumerate(ykey)}
             if 'P' in list(new_cond.keys()):
                 new_cond['P'] = np.exp(new_cond['P'])
+            if 'potential' in list(new_cond.keys()):
+                new_cond['potential'] = new_cond['potential']
 
             if hasattr(self, 'initial_mole_fractions'):
                 for key in self.initial_mole_fractions.keys():
@@ -2355,6 +2388,8 @@ def log_conditions(rmg_memories, index):
                 s += 'T = {0} K, '.format(item)
             elif key == 'P':
                 s += 'P = {0} bar, '.format(item / 1.0e5)
+            elif key == 'potential':
+                s += 'potential = {0} V, '.format(item)
             else:
                 s += key.label + ' = {0}, '.format(item)
 
