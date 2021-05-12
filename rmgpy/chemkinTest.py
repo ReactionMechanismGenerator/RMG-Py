@@ -44,6 +44,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 from rmgpy.thermo import NASA, NASAPolynomial
 from rmgpy.transport import TransportData
+from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient
 
 
 ###################################################
@@ -428,6 +429,82 @@ class ChemkinTest(unittest.TestCase):
 
         self.assertEqual(duplicate_flags, expected_flags)
 
+    def test_read_coverage_dependence(self):
+        """Test that we can properly write coverage dependent parameters"""
+
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'test_data/chemkin/chemkin_py')
+
+        s_x_entry = """X(1)                    X   1               G   100.000  5000.000 1554.80      1
+ 1.60299900E-01-2.52235409E-04 1.14181275E-07-1.21471653E-11 3.85790025E-16    2
+-7.08100885E+01-9.09527530E-01 7.10139498E-03-4.25619522E-05 8.98533016E-08    3
+-7.80193649E-11 2.32465471E-14-8.76101712E-01-3.11211229E-02                   4"""
+        s_hx_entry = """H*(10)                  H   1X   1          G   100.000  5000.000  952.91      1
+ 2.80339655E+00-5.41047017E-04 4.99507978E-07-7.54963647E-11 3.06772366E-15    2
+-2.34636021E+03-1.59436787E+01-3.80965452E-01 5.47228709E-03 2.60912778E-06    3
+-9.64961980E-09 4.63946753E-12-1.40561079E+03 1.01725550E+00                   4"""
+        s_h2_entry = """H2                      H   2               G   100.000  5000.000 1959.08      1
+ 2.78816619E+00 5.87640475E-04 1.59010635E-07-5.52739465E-11 4.34311304E-15    2
+-5.96144481E+02 1.12730527E-01 3.43536411E+00 2.12710383E-04-2.78625110E-07    3
+ 3.40267219E-10-7.76032129E-14-1.03135984E+03-3.90841731E+00                   4"""
+
+        s_h2 = Species().from_smiles("[H][H]")
+        s_x = Species().from_adjacency_list("1 X u0 p0")
+        s_x.label = 'X'
+        s_hx = Species().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
+        s_hx.label = 'HX'
+
+        species, thermo, formula = read_thermo_entry(s_x_entry)
+        s_x.thermo = thermo
+        species, thermo, formula = read_thermo_entry(s_hx_entry)
+        s_hx.thermo = thermo
+        species, thermo, formula = read_thermo_entry(s_h2_entry)
+        s_h2.thermo = thermo
+
+        species = [s_h2, s_x, s_hx]
+
+        self.rxn_covdep = Reaction(
+            reactants=[s_h2, s_x, s_x],
+            products=[s_hx, s_hx],
+            kinetics=SurfaceArrhenius(A=(9.05e18, 'cm^5/(mol^2*s)'),
+                                      n=0.5,
+                                      Ea=(5.0, 'kJ/mol'),
+                                      T0=(1.0, 'K'),
+                                      coverage_dependence={
+                                          s_x: {'E': (0.1, 'J/mol'), 'm': -1.0, 'a': 1.0},}))
+
+        reactions = [self.rxn_covdep]
+
+        # save_chemkin_file
+        chemkin_save_path = os.path.join(folder, 'surface', 'chem-surface_new.inp')
+        dictionary_save_path = os.path.join(folder, 'surface', 'species_dictionary_new.txt')
+        save_chemkin_file(chemkin_save_path, species, reactions, verbose=True, check_for_duplicates=True,
+                          coverage_dependence=True)
+        save_species_dictionary(dictionary_save_path, species, old_style=False)
+
+        # load chemkin file
+        species_load, reactions_load = load_chemkin_file(chemkin_save_path, dictionary_save_path)
+
+        # compare only labels because the objects are different
+        species_label = []
+        species_load_label = []
+        for s in range(len(species)):
+            species_label.append(species[s].label)
+            species_load_label.append(species_load[s].label)
+
+        # check the written chemkin file matches what is expected
+        self.assertTrue(all(i in species_load_label for i in species_label))
+
+        for r in range(len(reactions)):
+            for s in range(len(reactions[r].products)):
+                self.assertEqual(reactions[r].products[s].label,reactions_load[r].products[s].label)
+            for s in range(len(reactions[r].reactants)):
+                self.assertEqual(reactions[r].reactants[s].label, reactions_load[r].reactants[s].label)
+            self.assertIsNotNone(reactions[r].kinetics.coverage_dependence)
+            self.assertIsNotNone(reactions_load[r].kinetics.coverage_dependence)
+
+        # clean up
+        os.remove(chemkin_save_path)
+        os.remove(dictionary_save_path)
 
 class TestThermoReadWrite(unittest.TestCase):
 
