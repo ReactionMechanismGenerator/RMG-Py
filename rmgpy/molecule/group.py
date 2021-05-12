@@ -80,7 +80,7 @@ class GroupAtom(Vertex):
     order to match.
     """
 
-    def __init__(self, atomtype=None, radical_electrons=None, charge=None, label='', lone_pairs=None, site=None, morphology=None, 
+    def __init__(self, atomtype=None, radical_electrons=None, charge=None, label='', lone_pairs=None, site=None, morphology=None,
                  props=None):
         Vertex.__init__(self)
         self.atomtype = atomtype or []
@@ -115,7 +115,7 @@ class GroupAtom(Vertex):
         atomtype = self.atomtype
         if atomtype is not None:
             atomtype = [a.label for a in atomtype]
-        return (GroupAtom, (atomtype, self.radical_electrons, self.charge, self.label, self.lone_pairs, self.site, 
+        return (GroupAtom, (atomtype, self.radical_electrons, self.charge, self.label, self.lone_pairs, self.site,
                             self.morphology, self.props), d)
 
     def __setstate__(self, d):
@@ -357,7 +357,7 @@ class GroupAtom(Vertex):
         where `other` can be either an :class:`Atom` or an :class:`GroupAtom`
         object. When comparing two :class:`GroupAtom` objects, this function
         respects wildcards, e.g. ``R!H`` is equivalent to ``C``.
-        
+
         """
         cython.declare(group=GroupAtom)
         if not strict:
@@ -453,7 +453,7 @@ class GroupAtom(Vertex):
         """
         Returns ``True`` if `self` is the same as `other` or is a more
         specific case of `other`. Returns ``False`` if some of `self` is not
-        included in `other` or they are mutually exclusive. 
+        included in `other` or they are mutually exclusive.
         """
         cython.declare(group=GroupAtom)
         if not isinstance(other, GroupAtom):
@@ -686,6 +686,7 @@ class GroupAtom(Vertex):
                               'I': 3,
                               'Ar': 4,
                               'X': 0,
+                              'e': 0
                               }
 
         for element_label in allElements:
@@ -863,7 +864,7 @@ class GroupBond(Edge):
         not. If `wildcards` is ``False`` we return False anytime there is more
         than one bond order, otherwise we return ``True`` if any of the options
         are single.
-        
+
         NOTE: we can replace the absolute value relation with math.isclose when
         we swtich to python 3.5+
         """
@@ -971,7 +972,7 @@ class GroupBond(Edge):
                 return False
         else:
             return abs(self.order[0] - 0.1) <= 1e-9 and len(self.order) == 1
-        
+
     def is_reaction_bond(self, wildcards=False):
         """
         Return ``True`` if the bond represents a reaction bond or ``False`` if
@@ -1097,13 +1098,13 @@ class Group(Graph):
     """
     A representation of a molecular substructure group using a graph data
     type, extending the :class:`Graph` class. The attributes are:
-    
+
     =================== =================== ====================================
     Attribute           Type                Description
     =================== =================== ====================================
     `atoms`             ``list``            Aliases for the `vertices` storing :class:`GroupAtom`
     `multiplicity`      ``list``            Range of multiplicities accepted for the group
-    `props`             ``dict``            Dictionary of arbitrary properties/flags classifying state of Group object 
+    `props`             ``dict``            Dictionary of arbitrary properties/flags classifying state of Group object
     `metal`             ``list``            List of metals accepted for the group
     `facet`             ``list``            List of facets accepted for the group
     =================== =================== ====================================
@@ -1534,10 +1535,10 @@ class Group(Graph):
             old_atom_type = grp.atoms[i].atomtype
             grp.atoms[i].atomtype = [item]
             grpc.atoms[i].atomtype = list(Rset - {item})
-            
+
             if len(grpc.atoms[i].atomtype) == 0:
                 grpc = None
-            
+
             if len(old_atom_type) > 1:
                 labelList = []
                 old_atom_type_str = ''
@@ -1601,10 +1602,10 @@ class Group(Graph):
             grpc = deepcopy(self)
             grp.atoms[i].radical_electrons = [item]
             grpc.atoms[i].radical_electrons = list(Rset - {item})
-            
+
             if len(grpc.atoms[i].radical_electrons) == 0:
                 grpc = None
-                
+
             atom_type = grp.atoms[i].atomtype
 
             if len(atom_type) > 1:
@@ -1710,10 +1711,10 @@ class Group(Graph):
             grp.atoms[j].bonds[grp.atoms[i]].order = [bd]
             grpc.atoms[i].bonds[grpc.atoms[j]].order = list(Rbset - {bd})
             grpc.atoms[j].bonds[grpc.atoms[i]].order = list(Rbset - {bd})
-            
+
             if len(list(Rbset - {bd})) == 0:
                 grpc = None
-                
+
             atom_type_i = grp.atoms[i].atomtype
             atom_type_j = grp.atoms[j].atomtype
 
@@ -2029,7 +2030,7 @@ class Group(Graph):
         else:
             if group.facet:
                 return []
-            
+
         # Do the isomorphism comparison
         return Graph.find_subgraph_isomorphisms(self, other, initial_map, save_order=save_order)
 
@@ -2045,7 +2046,7 @@ class Group(Graph):
         if not isinstance(other, Group):
             raise TypeError(
                 'Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
-        # An identical group is always a child of itself and 
+        # An identical group is always a child of itself and
         # is the only case where that is true. Therefore
         # if we do both directions of isSubgraphIsmorphic, we need
         # to get True twice for it to be identical
@@ -2861,8 +2862,20 @@ class Group(Graph):
                     group_atom = mol_to_group[atom]
                 else:
                     raise UnexpectedChargeError(graph=new_molecule)
-                if atom.charge in group_atom.atomtype[0].charge:
-                    # declared charge in atomtype is same as new charge
+                # check hardcoded atomtypes
+                positive_charged = ['H+',
+                                    'Csc', 'Cdc',
+                                    'N3sc', 'N5sc', 'N5dc', 'N5ddc', 'N5tc', 'N5b',
+                                    'O2sc', 'O4sc', 'O4dc', 'O4tc',
+                                    'P5sc', 'P5dc', 'P5ddc', 'P5tc', 'P5b',
+                                    'S2sc', 'S4sc', 'S4dc', 'S4tdc', 'S6sc', 'S6dc', 'S6tdc']
+                negative_charged = ['e',
+                                    'C2sc', 'C2dc', 'C2tc',
+                                    'N0sc', 'N1sc', 'N1dc', 'N5dddc',
+                                    'O0sc',
+                                    'P0sc', 'P1sc', 'P1dc', 'P5sc',
+                                    'S0sc', 'S2sc', 'S2dc', 'S2tc', 'S4sc', 'S4dc', 'S4tdc', 'S6sc', 'S6dc', 'S6tdc']
+                if group_atom.atomtype[0] in [ATOMTYPES[x] for x in positive_charged] and atom.charge > 0:
                     pass
                 elif atom.charge in group_atom.charge:
                     # declared charge in original group is same as new charge
