@@ -127,6 +127,7 @@ solver_ext_modules = [
     Extension('rmgpy.solver.liquid', ['rmgpy/solver/liquid.pyx'], include_dirs=['.']),
     Extension('rmgpy.solver.mbSampled', ['rmgpy/solver/mbSampled.pyx'], include_dirs=['.']),
     Extension('rmgpy.solver.surface', ['rmgpy/solver/surface.pyx'], include_dirs=['.']),
+    Extension('rmgpy.solver.electrode', ['rmgpy/solver/electrode.pyx'], include_dirs=['.']),
 ]
 
 arkane_ext_modules = [
