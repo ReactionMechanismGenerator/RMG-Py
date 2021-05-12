@@ -358,7 +358,7 @@ class Species(object):
                                 ' should be a List of Species objects.'.format(species))
         return False
 
-    def from_adjacency_list(self, adjlist, raise_atomtype_exception=True, raise_charge_exception=True):
+    def from_adjacency_list(self, adjlist, raise_atomtype_exception=True, raise_charge_exception=False):
         """
         Load the structure of a species as a :class:`Molecule` object from the
         given adjacency list `adjlist` and store it as the first entry of a 
