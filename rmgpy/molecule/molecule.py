@@ -354,6 +354,23 @@ class Atom(Vertex):
         a.props = deepcopy(self.props)
         return a
 
+    def is_electron(self):
+        """
+        Return ``True`` if the atom represents an electron or ``False`` if
+        not.
+        """
+        return self.element.number == -1
+    
+    def is_proton(self):
+        """
+        Return ``True`` if the atom represents a proton or ``False`` if
+        not.
+        """
+
+        if self.element.number == 1 and self.charge == 1:
+            return True
+        return False
+
     def is_hydrogen(self):
         """
         Return ``True`` if the atom represents a hydrogen atom or ``False`` if
@@ -1174,6 +1191,14 @@ class Molecule(Graph):
     def is_surface_site(self):
         """Returns ``True`` iff the molecule is nothing but a surface site 'X'."""
         return len(self.atoms) == 1 and self.atoms[0].is_surface_site()
+
+    def is_electron(self):
+        """Returns ``True`` iff the molecule is nothing but an electron 'e'."""
+        return len(self.atoms) == 1 and self.atoms[0].is_electron()
+
+    def is_proton(self):
+        """Returns ``True`` iff the molecule is nothing but a proton 'H+'."""
+        return len(self.atoms) == 1 and self.atoms[0].is_proton()
 
     def remove_atom(self, atom):
         """
