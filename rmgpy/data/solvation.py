@@ -1311,6 +1311,7 @@ class SolvationDatabase(object):
                 saturated_struct.remove_bond(bond)
                 saturated_struct.remove_atom(H)
                 atom.increment_radical()
+            saturated_struct.update_charge() # we need to update charges before updating lone pairs
             saturated_struct.update()
             try:
                 self._add_group_solute_data(solute_data, self.groups['radical'], saturated_struct, {'*': atom})
