@@ -517,6 +517,18 @@ class Atom(Vertex):
             raise gr.ActionError('Unable to update Atom due to LOSE_RADICAL action: '
                                  'Invalid radical electron set "{0}".'.format(self.radical_electrons))
 
+    def increment_charge(self):
+        """
+        Update the atom pattern as a result of applying a GAIN_CHARGE action
+        """
+        self.charge += 1
+
+    def decrement_charge(self):
+        """
+        Update the atom pattern as a result of applying a LOSE_CHARGE action
+        """
+        self.charge -= 1
+
     def set_lone_pairs(self, lone_pairs):
         """
         Set the number of lone electron pairs.
@@ -580,6 +592,10 @@ class Atom(Vertex):
             for i in range(action[2]): self.increment_radical()
         elif act == 'LOSE_RADICAL':
             for i in range(abs(action[2])): self.decrement_radical()
+        elif act == 'GAIN_CHARGE':
+            for i in range(action[2]): self.increment_charge()
+        elif act == 'LOSE_CHARGE':
+            for i in range(abs(action[2])): self.decrement_charge()
         elif action[0].upper() == 'GAIN_PAIR':
             for i in range(action[2]): self.increment_lone_pairs()
         elif action[0].upper() == 'LOSE_PAIR':
