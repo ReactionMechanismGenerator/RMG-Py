@@ -78,6 +78,10 @@ cdef class Species:
 
     cpdef bint is_surface_site(self) except -2
 
+    cpdef bint is_electron(self) except -2
+
+    cpdef bint is_proton(self) except -2
+
     cpdef bint has_statmech(self) except -2
 
     cpdef bint has_thermo(self) except -2
