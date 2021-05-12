@@ -32,7 +32,7 @@ from rmgpy.molecule.graph cimport Vertex, Graph
 from rmgpy.molecule.element cimport Element
 from rmgpy.kinetics.model cimport KineticsModel
 from rmgpy.kinetics.arrhenius cimport Arrhenius
-from rmgpy.kinetics.surface cimport SurfaceArrhenius, StickingCoefficient
+from rmgpy.kinetics.surface cimport SurfaceArrhenius, StickingCoefficient, SurfaceChargeTransfer
 
 cimport numpy as np
 
@@ -49,8 +49,11 @@ cdef class Reaction:
     cdef public KineticsModel kinetics
     cdef public Arrhenius network_kinetics
     cdef public SurfaceArrhenius
+    cdef public SurfaceChargeTransfer
     cdef public bint duplicate
     cdef public float _degeneracy
+    cdef public int electrons
+    cdef public int _protons
     cdef public list pairs
     cdef public bint allow_pdep_route
     cdef public bint elementary_high_p
@@ -70,6 +73,10 @@ cdef class Reaction:
 
     cpdef bint is_surface_reaction(self)
 
+    cpdef bint is_charge_transfer_reaction(self)
+
+    cpdef bint is_surface_charge_transfer_reaction(self)
+
     cpdef bint has_template(self, list reactants, list products)
 
     cpdef bint matches_species(self, list reactants, list products=?)
@@ -77,28 +84,36 @@ cdef class Reaction:
     cpdef bint is_isomorphic(self, Reaction other, bint either_direction=?, bint check_identical=?,
                              bint check_only_label=?, bint check_template_rxn_products=?, bint generate_initial_map=?,
                              bint strict=?, bint save_order=?) except -2
+    
+    cpdef double _apply_CHE_model(self, double T)
 
     cpdef double get_enthalpy_of_reaction(self, double T)
 
     cpdef double get_entropy_of_reaction(self, double T)
 
-    cpdef double get_free_energy_of_reaction(self, double T)
+    cpdef double _get_free_energy_of_charge_transfer_reaction(self, double T, double potential=?)
 
-    cpdef double get_equilibrium_constant(self, double T, str type=?, double surface_site_density=?)
+    cpdef double get_free_energy_of_reaction(self, double T, double potential=?)
+
+    cpdef double get_reversible_potential(self, double T)
+
+    cpdef double set_reference_potential(self, double T)
+
+    cpdef double get_equilibrium_constant(self, double T, double potential=?, str type=?, double surface_site_density=?)
 
     cpdef np.ndarray get_enthalpies_of_reaction(self, np.ndarray Tlist)
 
     cpdef np.ndarray get_entropies_of_reaction(self, np.ndarray Tlist)
 
-    cpdef np.ndarray get_free_energies_of_reaction(self, np.ndarray Tlist)
+    cpdef np.ndarray get_free_energies_of_reaction(self, np.ndarray Tlist, double potential=?)
 
-    cpdef np.ndarray get_equilibrium_constants(self, np.ndarray Tlist, str type=?)
+    cpdef np.ndarray get_equilibrium_constants(self, np.ndarray Tlist, double potential=?, str type=?)
 
     cpdef int get_stoichiometric_coefficient(self, Species spec)
 
-    cpdef double get_rate_coefficient(self, double T, double P=?, double surface_site_density=?)
+    cpdef double get_rate_coefficient(self, double T, double P=?, double surface_site_density=?, double potential=?)
 
-    cpdef double get_surface_rate_coefficient(self, double T, double surface_site_density) except -2
+    cpdef double get_surface_rate_coefficient(self, double T, double surface_site_density, double potential=?) except -2
 
     cpdef fix_barrier_height(self, bint force_positive=?)
 
@@ -107,6 +122,8 @@ cdef class Reaction:
     cpdef reverse_surface_arrhenius_rate(self, SurfaceArrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)
 
     cpdef reverse_sticking_coeff_rate(self, StickingCoefficient k_forward, str reverse_units, double surface_site_density, Tmin=?, Tmax=?)
+
+    cpdef reverse_surface_charge_transfer_rate(self, SurfaceChargeTransfer k_forward, str reverse_units, Tmin=?, Tmax=?)
 
     cpdef generate_reverse_rate_coefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?, double surface_site_density=?)
 
