@@ -26,8 +26,7 @@ always troublesome.
    - Improvements in bidentate thermochemistry estimation
    - Added new surface attributes for metals and facets
    - Added support for Phosphorus
-   - Enable use LSRs to scale thermo from different metals and enable proper 
-    use of training reactions from different metals
+   - Enable use LSRs to scale thermo from different metals and enable proper use of training reactions from different metals
    - Added maximumSurfaceSites constraint
   
 - Arkane 
@@ -45,12 +44,10 @@ always troublesome.
 - Bugfixes
    - QMTP updated to work with g16 executable
    - Fixed various Sticking Coefficient bugs 
-   - Fixed issues with Surface Arrhenius reactions written in the reverse being converted
-    to ArrheniusEP instead of SurfaceArrheniusBEP
+   - Fixed issues with Surface Arrhenius reactions written in the reverse being converted to ArrheniusEP instead of SurfaceArrheniusBEP
    - Fixed NaN handling in the explorer tool's steady state solve
    - Fixed determine_qm_software for Orca 
-   - Fixed bug where elementary_high_p library reactions with more than the maximum number of atoms for pdep 
-    never entered the edge 
+   - Fixed bug where elementary_high_p library reactions with more than the maximum number of atoms for pdep never entered the edge 
    - Fixed bug related to pdep networks having sources not contained in the core 
    - Fixed various profiling bugs
    - Fixed issue with indexing when merging models
