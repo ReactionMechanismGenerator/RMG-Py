@@ -65,82 +65,52 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <p>We recommend creating a new conda environment using the latest environment.yml
 as many dependencies have changed, and upgrading an existing environment is
 always troublesome.</p>
-<ul>
-<li><p>RMG-Py
-- Added support for Bromine
-- Added improved method to calculate temperature dependent solvation free energy
-- Made Rank 1 accuracy correspond to 0.2 kcal/mol instead of 0 kcal/mol
-- Improvements to Group Additivity comments, in particular adding missing group comments
-- Added support for trimolecular units in ArrheniusBM fits
-- Improvements to profiling
-- Use kekulized structures for transport estimation
-- Automatic tree generation script improvements
-- Properly short circuit is_isomorphic when strict=False
-- Added block for specifying species tuples to react when starting an RMG run
-- Improve ArrheniusBM fitting to a single reaction
-- Improvements in bidentate thermochemistry estimation
-- Added new surface attributes for metals and facets
-- Added support for Phosphorus
-- Enable use LSRs to scale thermo from different metals and enable proper</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/releaseNotes.rst</span>, line 30)</p>
-<p>Unexpected indentation.</p>
-</div>
-<blockquote>
-<div><p>use of training reactions from different metals</p>
-</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/releaseNotes.rst</span>, line 31)</p>
-<p>Block quote ends without a blank line; unexpected unindent.</p>
-</div>
 <ul class="simple">
+<li><dl class="simple">
+<dt>RMG-Py</dt><dd><ul>
+<li><p>Added support for Bromine</p></li>
+<li><p>Added improved method to calculate temperature dependent solvation free energy</p></li>
+<li><p>Made Rank 1 accuracy correspond to 0.2 kcal/mol instead of 0 kcal/mol</p></li>
+<li><p>Improvements to Group Additivity comments, in particular adding missing group comments</p></li>
+<li><p>Added support for trimolecular units in ArrheniusBM fits</p></li>
+<li><p>Improvements to profiling</p></li>
+<li><p>Use kekulized structures for transport estimation</p></li>
+<li><p>Automatic tree generation script improvements</p></li>
+<li><p>Properly short circuit is_isomorphic when strict=False</p></li>
+<li><p>Added block for specifying species tuples to react when starting an RMG run</p></li>
+<li><p>Improve ArrheniusBM fitting to a single reaction</p></li>
+<li><p>Improvements in bidentate thermochemistry estimation</p></li>
+<li><p>Added new surface attributes for metals and facets</p></li>
+<li><p>Added support for Phosphorus</p></li>
+<li><p>Enable use LSRs to scale thermo from different metals and enable proper use of training reactions from different metals</p></li>
 <li><p>Added maximumSurfaceSites constraint</p></li>
 </ul>
+</dd>
+</dl>
 </li>
-<li><p>Arkane
-- Added frequency scaling factors for apfd/deef2tzvp and wb97xd/def2svp
-- Kinetics and pdep sensitivities additionally saved in YAML format
-- Enable automatic isodesmic reaction generation
-- AECs, BACs and frequency scaling factors moved from Arkane to RMG-database
-- Added functionality for Petersson and Melius BAC fitting using Arkane and</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/releaseNotes.rst</span>, line 39)</p>
-<p>Unexpected indentation.</p>
-</div>
-<blockquote>
-<div><p>the reference database</p>
-</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/releaseNotes.rst</span>, line 40)</p>
-<p>Block quote ends without a blank line; unexpected unindent.</p>
-</div>
-<ul class="simple">
+<li><dl class="simple">
+<dt>Arkane</dt><dd><ul>
+<li><p>Added frequency scaling factors for apfd/deef2tzvp and wb97xd/def2svp</p></li>
+<li><p>Kinetics and pdep sensitivities additionally saved in YAML format</p></li>
+<li><p>Enable automatic isodesmic reaction generation</p></li>
+<li><p>AECs, BACs and frequency scaling factors moved from Arkane to RMG-database</p></li>
+<li><p>Added functionality for Petersson and Melius BAC fitting using Arkane and the reference database</p></li>
 <li><p>Enabled two parameter Arrhenius fit option</p></li>
 <li><p>Added functionality for fitting AECs</p></li>
 <li><p>Added classes to standardize model chemistry definitions</p></li>
 <li><p>Use adjlists instead of smiles when saving</p></li>
 </ul>
+</dd>
+</dl>
 </li>
-<li><p>Bugfixes
-- QMTP updated to work with g16 executable
-- Fixed various Sticking Coefficient bugs
-- Fixed issues with Surface Arrhenius reactions written in the reverse being converted</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/releaseNotes.rst</span>, line 49)</p>
-<p>Unexpected indentation.</p>
-</div>
-<blockquote>
-<div><p>to ArrheniusEP instead of SurfaceArrheniusBEP</p>
-</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/releaseNotes.rst</span>, line 50)</p>
-<p>Block quote ends without a blank line; unexpected unindent.</p>
-</div>
-<ul class="simple">
+<li><dl class="simple">
+<dt>Bugfixes</dt><dd><ul>
+<li><p>QMTP updated to work with g16 executable</p></li>
+<li><p>Fixed various Sticking Coefficient bugs</p></li>
+<li><p>Fixed issues with Surface Arrhenius reactions written in the reverse being converted to ArrheniusEP instead of SurfaceArrheniusBEP</p></li>
 <li><p>Fixed NaN handling in the explorer tool’s steady state solve</p></li>
 <li><p>Fixed determine_qm_software for Orca</p></li>
-<li><p>Fixed bug where elementary_high_p library reactions with more than the maximum number of atoms for pdep
-never entered the edge</p></li>
+<li><p>Fixed bug where elementary_high_p library reactions with more than the maximum number of atoms for pdep never entered the edge</p></li>
 <li><p>Fixed bug related to pdep networks having sources not contained in the core</p></li>
 <li><p>Fixed various profiling bugs</p></li>
 <li><p>Fixed issue with indexing when merging models</p></li>
@@ -159,16 +129,23 @@ never entered the edge</p></li>
 <li><p>Fixed bug with the library to training notebook</p></li>
 <li><p>Remove temporary seed mechanisms if they exist from a previous run</p></li>
 </ul>
+</dd>
+</dl>
 </li>
-<li><p>Miscellaneous
-- Modified find_parameter_sources_and_assign_uncertainties to regenerate chem.inp as needed
-- Added option to save atom order when labeling template reactions
-- Added option to ignore atom type errors when creating molecule objects
-- Enable use of critical_distance_factor in from_xyz
-- Improved SIGINT handling when calling lpsolve
-- Enable H-bond drawing
-- Improvements to debug messages
-- Updated dependencies cclib and OpenBabel</p></li>
+<li><dl class="simple">
+<dt>Miscellaneous</dt><dd><ul>
+<li><p>Modified find_parameter_sources_and_assign_uncertainties to regenerate chem.inp as needed</p></li>
+<li><p>Added option to save atom order when labeling template reactions</p></li>
+<li><p>Added option to ignore atom type errors when creating molecule objects</p></li>
+<li><p>Enable use of critical_distance_factor in from_xyz</p></li>
+<li><p>Improved SIGINT handling when calling lpsolve</p></li>
+<li><p>Enable H-bond drawing</p></li>
+<li><p>Improvements to debug messages</p></li>
+<li><p>Updated dependencies cclib and OpenBabel</p></li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 <p>Note that the upgrade to OpenBabel v3+ will change the interpretation
 of some ambiguous SMILES strings that use the lower-case aromatics notation.
