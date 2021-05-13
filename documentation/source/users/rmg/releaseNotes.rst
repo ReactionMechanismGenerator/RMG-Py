@@ -12,7 +12,7 @@ as many dependencies have changed, and upgrading an existing environment is
 always troublesome.
 
 - RMG-Py
-   - Added support for Bromine 
+   - Added support for Bromine
    - Added improved method to calculate temperature dependent solvation free energy
    - Made Rank 1 accuracy correspond to 0.2 kcal/mol instead of 0 kcal/mol
    - Improvements to Group Additivity comments, in particular adding missing group comments
@@ -28,8 +28,8 @@ always troublesome.
    - Added support for Phosphorus
    - Enable use LSRs to scale thermo from different metals and enable proper use of training reactions from different metals
    - Added maximumSurfaceSites constraint
-  
-- Arkane 
+
+- Arkane
    - Added frequency scaling factors for apfd/deef2tzvp and wb97xd/def2svp
    - Kinetics and pdep sensitivities additionally saved in YAML format
    - Enable automatic isodesmic reaction generation
@@ -39,15 +39,15 @@ always troublesome.
    - Added functionality for fitting AECs
    - Added classes to standardize model chemistry definitions
    - Use adjlists instead of smiles when saving
-  
+
 - Bugfixes
    - QMTP updated to work with g16 executable
-   - Fixed various Sticking Coefficient bugs 
+   - Fixed various Sticking Coefficient bugs
    - Fixed issues with Surface Arrhenius reactions written in the reverse being converted to ArrheniusEP instead of SurfaceArrheniusBEP
    - Fixed NaN handling in the explorer tool's steady state solve
-   - Fixed determine_qm_software for Orca 
+   - Fixed determine_qm_software for Orca
    - Fixed bug where elementary_high_p library reactions with more than the maximum number of atoms for pdep never entered the edge 
-   - Fixed bug related to pdep networks having sources not contained in the core 
+   - Fixed bug related to pdep networks having sources not contained in the core
    - Fixed various profiling bugs
    - Fixed issue with indexing when merging models
    - Fixed bug with ranged liquid reactors
@@ -57,14 +57,14 @@ always troublesome.
    - Fixed bugs in global uncertainty analysis for LiquidReactor
    - Fixed bug related to the units of reverse rate constants for reactions involving surface species
    - Fixed bug in Molecule isomorphism where it would simply assume the given initial map was correct
-   - Remove deprecated matplotlib warn keyword 
+   - Remove deprecated matplotlib warn keyword
    - Fixed bug related to reading Chebyshev forms in Chemkin files
    - Fixed reference concentration for surface species when calculating Kc
    - Fixed issue with the reaction generation using the reversee of Surface_ElleyRideal_Addition_MultipleBond
    - Fixed bug with adjlist multiplicitly line being mistaken as the species name
    - Fixed bug with the library to training notebook
    - Remove temporary seed mechanisms if they exist from a previous run
-  
+
 - Miscellaneous
    - Modified find_parameter_sources_and_assign_uncertainties to regenerate chem.inp as needed
    - Added option to save atom order when labeling template reactions
@@ -91,11 +91,11 @@ Date: April 23, 2021
     - Renaming of adsorption libraries
 
 - Kinetics
-    - Added kinetic library and training reactions for Iodine 
-    - Added training reactions for peroxy families 
+    - Added kinetic library and training reactions for Iodine
+    - Added training reactions for peroxy families
     - Prevent forbidden [2pi+2pi] thermal cycloaddition for C=C + C=C
     - Removed incorrectly transcribed training reaction for CH3OH+O2=>CH3O+HO2
-    - Added H_Abstraction training reactions 
+    - Added H_Abstraction training reactions
     - Creation of the retroene family uses automatic tree generation
     - Added Surface Dissociation Double vdW, Surface Dissociation vdW, Surface Migration and Eley-Rideal,
       Surface Addition Single vdW, Surface Abstraction vdW, Surface Dual adsorption vdW, 
@@ -104,24 +104,24 @@ Date: April 23, 2021
       Surface Adsorption Single and Surface Bidentate Dissociation families
     - Added assorted Nitrogen catalysis training reactions
     - Allow CO insertion to H--C(R)=O
-    
+
 - QM Corrections
     - Updated AECs and added frequency scaling factor for wB97M-V/def2-TZVPD
     - Standardized level of theory specifications
 
 - Bug fixes
     - Fixed Cds-CdSH node reference
-    - Fixed typos causing thermo discontinuities for H2_ads and O-NH2-ads 
+    - Fixed typos causing thermo discontinuities for H2_ads and O-NH2-ads
     - Fixed enthalpy error for O-NH2_ads
     - Corrected structure of H2CC in JetSurF2.0, Klippenstein_Glarborg2016, and Narayanaswamy
     - Fixed Ni211 binding energies
-     
+
 - Miscellaneous
     - Fix indexing of importChemkinLibrary.py script
     - Moved AEC, BAC and frequency scale factor data from RMG-Py into RMG-database
     - Added notebook for fitting polycyclic thermo groups
     - New surface attributes
-    
+
 RMG-Py Version 3.0.0
 ====================
 Date: December 16, 2019
