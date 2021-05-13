@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Saving RMG output &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -56,11 +57,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="saving-rmg-output">
+  <section id="saving-rmg-output">
 <h1>Saving RMG output<a class="headerlink" href="#saving-rmg-output" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
-<dt id="rmgpy.rmg.output.save_output_html">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.rmg.output.</span></code><code class="sig-name descname"><span class="pre">save_output_html</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reaction_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_core_edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'core'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.output.save_output_html" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.output.save_output_html">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.rmg.output.</span></span><span class="sig-name descname"><span class="pre">save_output_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reaction_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_core_edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'core'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.output.save_output_html" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the current set of  species and reactions of <cite>reactionModel</cite> to
 an HTML file <cite>path</cite> on disk. As part of this process, drawings of all
 species are created in the species folder (if they don’t already exist)
@@ -70,13 +71,13 @@ HTML will be generated (but the program will carry on).</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.rmg.output.save_diff_html">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.rmg.output.</span></code><code class="sig-name descname"><span class="pre">save_diff_html</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_species_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_reactions1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_reactions2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.output.save_diff_html" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.output.save_diff_html">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.rmg.output.</span></span><span class="sig-name descname"><span class="pre">save_diff_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_species_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_reactions1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_reactions2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.output.save_diff_html" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function outputs the species and reactions on an HTML page
 for the comparison of two RMG models.</p>
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -169,7 +170,7 @@ for the comparison of two RMG models.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

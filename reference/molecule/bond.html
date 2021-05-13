@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.molecule.Bond &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -56,11 +57,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-molecule-bond">
+  <section id="rmgpy-molecule-bond">
 <h1>rmgpy.molecule.Bond<a class="headerlink" href="#rmgpy-molecule-bond" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="rmgpy.molecule.Bond">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></code><code class="sig-name descname"><span class="pre">Bond</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atom2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">Bond</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atom2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical bond. The attributes are:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -90,8 +91,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </tbody>
 </table>
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.apply_action">
-<code class="sig-name descname"><span class="pre">apply_action</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.apply_action" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.apply_action">
+<span class="sig-name descname"><span class="pre">apply_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.apply_action" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the bond as a result of applying <cite>action</cite>, a tuple
 containing the name of the reaction recipe action along with any
 required parameters. The available actions can be found
@@ -99,93 +100,93 @@ required parameters. The available actions can be found
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.copy">
-<code class="sig-name descname"><span class="pre">copy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Edge</span><a class="headerlink" href="#rmgpy.molecule.Bond.copy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Edge</span><a class="headerlink" href="#rmgpy.molecule.Bond.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a deep copy of the current bond. Modifying the
 attributes of the copy will not affect the original.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.decrement_order">
-<code class="sig-name descname"><span class="pre">decrement_order</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.decrement_order" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.decrement_order">
+<span class="sig-name descname"><span class="pre">decrement_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.decrement_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the bond as a result of applying a CHANGE_BOND action to
 decrease the order by one.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.equivalent">
-<code class="sig-name descname"><span class="pre">equivalent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Edge</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.equivalent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.equivalent">
+<span class="sig-name descname"><span class="pre">equivalent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Edge</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is indistinguishable from this bond, or
 <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise. <cite>other</cite> can be either a <a class="reference internal" href="#rmgpy.molecule.Bond" title="rmgpy.molecule.Bond"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bond</span></code></a> or a
 <a class="reference internal" href="groupbond.html#rmgpy.molecule.GroupBond" title="rmgpy.molecule.GroupBond"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupBond</span></code></a> object.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.get_bde">
-<code class="sig-name descname"><span class="pre">get_bde</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.get_bde" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.get_bde">
+<span class="sig-name descname"><span class="pre">get_bde</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.get_bde" title="Permalink to this definition">¶</a></dt>
 <dd><p>estimate the bond dissociation energy in J/mol of the bond based on the order of the bond
 and the atoms involved in the bond</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.get_bond_string">
-<code class="sig-name descname"><span class="pre">get_bond_string</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">unicode</span><a class="headerlink" href="#rmgpy.molecule.Bond.get_bond_string" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.get_bond_string">
+<span class="sig-name descname"><span class="pre">get_bond_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">unicode</span><a class="headerlink" href="#rmgpy.molecule.Bond.get_bond_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent the bond object as a string (eg. ‘C#N’). The returned string is independent of the atom ordering, with
 the atom labels in alphabetical order (i.e. ‘C-H’ is possible but not ‘H-C’)
 :return: str</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.get_order_num">
-<code class="sig-name descname"><span class="pre">get_order_num</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">float</span><a class="headerlink" href="#rmgpy.molecule.Bond.get_order_num" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.get_order_num">
+<span class="sig-name descname"><span class="pre">get_order_num</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">float</span><a class="headerlink" href="#rmgpy.molecule.Bond.get_order_num" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns the bond order as a number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.get_order_str">
-<code class="sig-name descname"><span class="pre">get_order_str</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">unicode</span><a class="headerlink" href="#rmgpy.molecule.Bond.get_order_str" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.get_order_str">
+<span class="sig-name descname"><span class="pre">get_order_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">unicode</span><a class="headerlink" href="#rmgpy.molecule.Bond.get_order_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns a string representing the bond order</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.get_other_vertex">
-<code class="sig-name descname"><span class="pre">get_other_vertex</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Vertex</span><a class="headerlink" href="#rmgpy.molecule.Bond.get_other_vertex" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.get_other_vertex">
+<span class="sig-name descname"><span class="pre">get_other_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Vertex</span><a class="headerlink" href="#rmgpy.molecule.Bond.get_other_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a vertex that makes up part of the edge, return the other vertex.
 Raise a <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code> if the given vertex is not part of the
 edge.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.increment_order">
-<code class="sig-name descname"><span class="pre">increment_order</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.increment_order" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.increment_order">
+<span class="sig-name descname"><span class="pre">increment_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.increment_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the bond as a result of applying a CHANGE_BOND action to
 increase the order by one.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.is_benzene">
-<code class="sig-name descname"><span class="pre">is_benzene</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_benzene" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.is_benzene">
+<span class="sig-name descname"><span class="pre">is_benzene</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_benzene" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a benzene bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.is_double">
-<code class="sig-name descname"><span class="pre">is_double</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_double" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.is_double">
+<span class="sig-name descname"><span class="pre">is_double</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_double" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a double bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.is_hydrogen_bond">
-<code class="sig-name descname"><span class="pre">is_hydrogen_bond</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_hydrogen_bond" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.is_hydrogen_bond">
+<span class="sig-name descname"><span class="pre">is_hydrogen_bond</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_hydrogen_bond" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a hydrogen bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.is_order">
-<code class="sig-name descname"><span class="pre">is_order</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">float</span> <span class="pre">other_order</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_order" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.is_order">
+<span class="sig-name descname"><span class="pre">is_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">float</span> <span class="pre">other_order</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond is of order other_order or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not. This compares floats that takes into account floating point error</p>
 <p>NOTE: we can replace the absolute value relation with math.isclose when
@@ -193,44 +194,44 @@ we swtich to python 3.5+</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.is_quadruple">
-<code class="sig-name descname"><span class="pre">is_quadruple</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_quadruple" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.is_quadruple">
+<span class="sig-name descname"><span class="pre">is_quadruple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_quadruple" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a quadruple bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.is_single">
-<code class="sig-name descname"><span class="pre">is_single</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_single" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.is_single">
+<span class="sig-name descname"><span class="pre">is_single</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_single" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a single bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.is_specific_case_of">
-<code class="sig-name descname"><span class="pre">is_specific_case_of</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Edge</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.is_specific_case_of">
+<span class="sig-name descname"><span class="pre">is_specific_case_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Edge</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> is a specific case of <cite>other</cite>, or <code class="docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. <cite>other</cite> can be either a <a class="reference internal" href="#rmgpy.molecule.Bond" title="rmgpy.molecule.Bond"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bond</span></code></a> or a
 <a class="reference internal" href="groupbond.html#rmgpy.molecule.GroupBond" title="rmgpy.molecule.GroupBond"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupBond</span></code></a> object.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.is_triple">
-<code class="sig-name descname"><span class="pre">is_triple</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_triple" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.is_triple">
+<span class="sig-name descname"><span class="pre">is_triple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_triple" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a triple bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.is_van_der_waals">
-<code class="sig-name descname"><span class="pre">is_van_der_waals</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_van_der_waals" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.is_van_der_waals">
+<span class="sig-name descname"><span class="pre">is_van_der_waals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Bond.is_van_der_waals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a van der Waals bond or
 <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.Bond.order">
-<code class="sig-name descname"><span class="pre">order</span></code><a class="headerlink" href="#rmgpy.molecule.Bond.order" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.order">
+<span class="sig-name descname"><span class="pre">order</span></span><a class="headerlink" href="#rmgpy.molecule.Bond.order" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘float’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -240,26 +241,26 @@ not.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.set_order_num">
-<code class="sig-name descname"><span class="pre">set_order_num</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">float</span> <span class="pre">new_order</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.set_order_num" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.set_order_num">
+<span class="sig-name descname"><span class="pre">set_order_num</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">float</span> <span class="pre">new_order</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.set_order_num" title="Permalink to this definition">¶</a></dt>
 <dd><p>change the bond order with a number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.Bond.set_order_str">
-<code class="sig-name descname"><span class="pre">set_order_str</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">new_order</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.set_order_str" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.set_order_str">
+<span class="sig-name descname"><span class="pre">set_order_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">new_order</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.set_order_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>set the bond order using a valid bond-order character</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.Bond.sorting_key">
-<code class="sig-name descname"><span class="pre">sorting_key</span></code><a class="headerlink" href="#rmgpy.molecule.Bond.sorting_key" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.sorting_key">
+<span class="sig-name descname"><span class="pre">sorting_key</span></span><a class="headerlink" href="#rmgpy.molecule.Bond.sorting_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a sorting key for comparing Bond objects. Read-only</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.Bond.vertex1">
-<code class="sig-name descname"><span class="pre">vertex1</span></code><a class="headerlink" href="#rmgpy.molecule.Bond.vertex1" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.vertex1">
+<span class="sig-name descname"><span class="pre">vertex1</span></span><a class="headerlink" href="#rmgpy.molecule.Bond.vertex1" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.molecule.graph.Vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -269,8 +270,8 @@ not.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.Bond.vertex2">
-<code class="sig-name descname"><span class="pre">vertex2</span></code><a class="headerlink" href="#rmgpy.molecule.Bond.vertex2" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.Bond.vertex2">
+<span class="sig-name descname"><span class="pre">vertex2</span></span><a class="headerlink" href="#rmgpy.molecule.Bond.vertex2" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.molecule.graph.Vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -281,7 +282,7 @@ not.</p>
 
 </dd></dl>
 
-<div class="section" id="bond-types">
+<section id="bond-types">
 <h2>Bond types<a class="headerlink" href="#bond-types" title="Permalink to this headline">¶</a></h2>
 <p id="id1">The bond type simply indicates the order of a chemical bond. We define the
 following bond types:</p>
@@ -312,8 +313,8 @@ following bond types:</p>
 </tbody>
 </table>
 </div></blockquote>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -414,7 +415,7 @@ following bond types:</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -4,16 +4,17 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.thermo.ThermoData &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -57,11 +58,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-thermo-thermodata">
+  <section id="rmgpy-thermo-thermodata">
 <h1>rmgpy.thermo.ThermoData<a class="headerlink" href="#rmgpy-thermo-thermodata" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="thermothermodata"></span><dl class="py class">
-<dt id="rmgpy.thermo.ThermoData">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.thermo.</span></code><code class="sig-name descname"><span class="pre">ThermoData</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cpdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H298</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S298</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cp0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CpInf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.ThermoData" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.thermo.</span></span><span class="sig-name descname"><span class="pre">ThermoData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cpdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H298</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S298</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cp0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CpInf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.ThermoData" title="Permalink to this definition">¶</a></dt>
 <dd><p>A heat capacity model based on a set of discrete heat capacity data points.
 The attributes are:</p>
 <table class="docutils align-default">
@@ -102,62 +103,62 @@ The attributes are:</p>
 </tbody>
 </table>
 <dl class="py attribute">
-<dt id="rmgpy.thermo.ThermoData.Cp0">
-<code class="sig-name descname"><span class="pre">Cp0</span></code><a class="headerlink" href="#rmgpy.thermo.ThermoData.Cp0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.Cp0">
+<span class="sig-name descname"><span class="pre">Cp0</span></span><a class="headerlink" href="#rmgpy.thermo.ThermoData.Cp0" title="Permalink to this definition">¶</a></dt>
 <dd><p>The heat capacity at zero temperature.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.ThermoData.CpInf">
-<code class="sig-name descname"><span class="pre">CpInf</span></code><a class="headerlink" href="#rmgpy.thermo.ThermoData.CpInf" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.CpInf">
+<span class="sig-name descname"><span class="pre">CpInf</span></span><a class="headerlink" href="#rmgpy.thermo.ThermoData.CpInf" title="Permalink to this definition">¶</a></dt>
 <dd><p>The heat capacity at infinite temperature.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.ThermoData.Cpdata">
-<code class="sig-name descname"><span class="pre">Cpdata</span></code><a class="headerlink" href="#rmgpy.thermo.ThermoData.Cpdata" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.Cpdata">
+<span class="sig-name descname"><span class="pre">Cpdata</span></span><a class="headerlink" href="#rmgpy.thermo.ThermoData.Cpdata" title="Permalink to this definition">¶</a></dt>
 <dd><p>An array of heat capacities at the given temperatures.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.ThermoData.E0">
-<code class="sig-name descname"><span class="pre">E0</span></code><a class="headerlink" href="#rmgpy.thermo.ThermoData.E0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.E0">
+<span class="sig-name descname"><span class="pre">E0</span></span><a class="headerlink" href="#rmgpy.thermo.ThermoData.E0" title="Permalink to this definition">¶</a></dt>
 <dd><p>The ground state energy (J/mol) at zero Kelvin, including zero point energy, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not yet specified.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.ThermoData.H298">
-<code class="sig-name descname"><span class="pre">H298</span></code><a class="headerlink" href="#rmgpy.thermo.ThermoData.H298" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.H298">
+<span class="sig-name descname"><span class="pre">H298</span></span><a class="headerlink" href="#rmgpy.thermo.ThermoData.H298" title="Permalink to this definition">¶</a></dt>
 <dd><p>The standard enthalpy of formation at 298 K.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.ThermoData.S298">
-<code class="sig-name descname"><span class="pre">S298</span></code><a class="headerlink" href="#rmgpy.thermo.ThermoData.S298" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.S298">
+<span class="sig-name descname"><span class="pre">S298</span></span><a class="headerlink" href="#rmgpy.thermo.ThermoData.S298" title="Permalink to this definition">¶</a></dt>
 <dd><p>The standard entropy of formation at 298 K.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.ThermoData.Tdata">
-<code class="sig-name descname"><span class="pre">Tdata</span></code><a class="headerlink" href="#rmgpy.thermo.ThermoData.Tdata" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.Tdata">
+<span class="sig-name descname"><span class="pre">Tdata</span></span><a class="headerlink" href="#rmgpy.thermo.ThermoData.Tdata" title="Permalink to this definition">¶</a></dt>
 <dd><p>An array of temperatures at which the heat capacity is known.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.ThermoData.Tmax">
-<code class="sig-name descname"><span class="pre">Tmax</span></code><a class="headerlink" href="#rmgpy.thermo.ThermoData.Tmax" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.Tmax">
+<span class="sig-name descname"><span class="pre">Tmax</span></span><a class="headerlink" href="#rmgpy.thermo.ThermoData.Tmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.ThermoData.Tmin">
-<code class="sig-name descname"><span class="pre">Tmin</span></code><a class="headerlink" href="#rmgpy.thermo.ThermoData.Tmin" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.Tmin">
+<span class="sig-name descname"><span class="pre">Tmin</span></span><a class="headerlink" href="#rmgpy.thermo.ThermoData.Tmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.ThermoData.as_dict">
-<code class="sig-name descname"><span class="pre">as_dict</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.as_dict" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for dumping objects as dictionaries for YAML files</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -170,8 +171,8 @@ The attributes are:</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.ThermoData.comment">
-<code class="sig-name descname"><span class="pre">comment</span></code><a class="headerlink" href="#rmgpy.thermo.ThermoData.comment" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.comment">
+<span class="sig-name descname"><span class="pre">comment</span></span><a class="headerlink" href="#rmgpy.thermo.ThermoData.comment" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -181,42 +182,42 @@ The attributes are:</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.ThermoData.discrepancy">
-<code class="sig-name descname"><span class="pre">discrepancy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.discrepancy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.discrepancy">
+<span class="sig-name descname"><span class="pre">discrepancy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.discrepancy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return some measure of how dissimilar <cite>self</cite> is from <cite>other</cite>.</p>
 <p>The measure is arbitrary, but hopefully useful for sorting purposes.
 Discrepancy of 0 means they are identical</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.ThermoData.get_enthalpy">
-<code class="sig-name descname"><span class="pre">get_enthalpy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.get_enthalpy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.get_enthalpy">
+<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.get_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.ThermoData.get_entropy">
-<code class="sig-name descname"><span class="pre">get_entropy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.get_entropy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.get_entropy">
+<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.get_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.ThermoData.get_free_energy">
-<code class="sig-name descname"><span class="pre">get_free_energy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.get_free_energy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.get_free_energy">
+<span class="sig-name descname"><span class="pre">get_free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.get_free_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy in J/mol at the specified temperature
 <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.ThermoData.get_heat_capacity">
-<code class="sig-name descname"><span class="pre">get_heat_capacity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.get_heat_capacity">
+<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the constant-pressure heat capacity in J/mol*K at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.ThermoData.is_all_zeros">
-<code class="sig-name descname"><span class="pre">is_all_zeros</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.is_all_zeros" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.is_all_zeros">
+<span class="sig-name descname"><span class="pre">is_all_zeros</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.is_all_zeros" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether a ThermoData object has all zero values, e.g.:</p>
 <blockquote>
 <div><dl class="simple">
@@ -243,24 +244,24 @@ S298=(0.0, “J/(mol*K)”),</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.ThermoData.is_identical_to">
-<code class="sig-name descname"><span class="pre">is_identical_to</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.is_identical_to" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.is_identical_to">
+<span class="sig-name descname"><span class="pre">is_identical_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.is_identical_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report very similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.ThermoData.is_similar_to">
-<code class="sig-name descname"><span class="pre">is_similar_to</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.is_similar_to" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.is_similar_to">
+<span class="sig-name descname"><span class="pre">is_similar_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.is_similar_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.ThermoData.is_temperature_valid">
-<code class="sig-name descname"><span class="pre">is_temperature_valid</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.is_temperature_valid">
+<span class="sig-name descname"><span class="pre">is_temperature_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the thermodynamic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
@@ -268,8 +269,8 @@ returned.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.ThermoData.label">
-<code class="sig-name descname"><span class="pre">label</span></code><a class="headerlink" href="#rmgpy.thermo.ThermoData.label" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.label">
+<span class="sig-name descname"><span class="pre">label</span></span><a class="headerlink" href="#rmgpy.thermo.ThermoData.label" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -279,8 +280,8 @@ returned.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.ThermoData.make_object">
-<code class="sig-name descname"><span class="pre">make_object</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">data</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">class_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.make_object" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.make_object">
+<span class="sig-name descname"><span class="pre">make_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">data</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">class_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.ThermoData.make_object" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for constructing objects from a dictionary (used when loading YAML files)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -296,8 +297,8 @@ returned.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.ThermoData.to_nasa">
-<code class="sig-name descname"><span class="pre">to_nasa</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">Tmin</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">Tmax</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">Tint</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">fixedTint=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">weighting=True</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">continuity=3</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><span class="pre">NASA</span></a><a class="headerlink" href="#rmgpy.thermo.ThermoData.to_nasa" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.to_nasa">
+<span class="sig-name descname"><span class="pre">to_nasa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">Tmin</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">Tmax</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">Tint</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">fixedTint=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">weighting=True</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">continuity=3</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><span class="pre">NASA</span></a><a class="headerlink" href="#rmgpy.thermo.ThermoData.to_nasa" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the object to a <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><code class="xref py py-class docutils literal notranslate"><span class="pre">NASA</span></code></a> object. You must specify the
 minimum and maximum temperatures of the fit <cite>Tmin</cite> and <cite>Tmax</cite> in K, as
 well as the intermediate temperature <cite>Tint</cite> in K to use as the bridge
@@ -327,8 +328,8 @@ polynomial (rather than two).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.ThermoData.to_wilhoit">
-<code class="sig-name descname"><span class="pre">to_wilhoit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="wilhoit.html#rmgpy.thermo.Wilhoit" title="rmgpy.thermo.Wilhoit"><span class="pre">Wilhoit</span></a><a class="headerlink" href="#rmgpy.thermo.ThermoData.to_wilhoit" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.ThermoData.to_wilhoit">
+<span class="sig-name descname"><span class="pre">to_wilhoit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="wilhoit.html#rmgpy.thermo.Wilhoit" title="rmgpy.thermo.Wilhoit"><span class="pre">Wilhoit</span></a><a class="headerlink" href="#rmgpy.thermo.ThermoData.to_wilhoit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Benson model to a Wilhoit model. For the conversion to
 succeed, you must have set the <cite>Cp0</cite> and <cite>CpInf</cite> attributes of the
 Benson model.</p>
@@ -337,7 +338,7 @@ Benson model.</p>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -430,7 +431,7 @@ Benson model.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

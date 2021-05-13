@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>RMG Exceptions (rmgpy.exceptions) &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
@@ -51,18 +52,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-rmgpy.exceptions">
+  <section id="module-rmgpy.exceptions">
 <span id="rmg-exceptions-rmgpy-exceptions"></span><h1>RMG Exceptions (<a class="reference internal" href="#module-rmgpy.exceptions" title="rmgpy.exceptions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.exceptions</span></code></a>)<a class="headerlink" href="#module-rmgpy.exceptions" title="Permalink to this headline">¶</a></h1>
 <p>This module contains classes which extend Exception for usage in the RMG module</p>
 <dl class="py exception">
-<dt id="rmgpy.exceptions.ActionError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">ActionError</span></code><a class="headerlink" href="#rmgpy.exceptions.ActionError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ActionError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">ActionError</span></span><a class="headerlink" href="#rmgpy.exceptions.ActionError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception class for errors that occur while applying reaction recipe
 actions. Pass a string describing the circumstances that caused the
 exceptional behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.ActionError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ActionError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ActionError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ActionError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -70,14 +71,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.AtomTypeError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">AtomTypeError</span></code><a class="headerlink" href="#rmgpy.exceptions.AtomTypeError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.AtomTypeError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">AtomTypeError</span></span><a class="headerlink" href="#rmgpy.exceptions.AtomTypeError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception to be raised when an error occurs while working with atom
 types. Pass a string describing the circumstances that caused the
 exceptional behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.AtomTypeError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.AtomTypeError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.AtomTypeError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.AtomTypeError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -85,14 +86,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.ChemicallySignificantEigenvaluesError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">ChemicallySignificantEigenvaluesError</span></code><a class="headerlink" href="#rmgpy.exceptions.ChemicallySignificantEigenvaluesError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ChemicallySignificantEigenvaluesError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">ChemicallySignificantEigenvaluesError</span></span><a class="headerlink" href="#rmgpy.exceptions.ChemicallySignificantEigenvaluesError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception raised when the chemically significant eigenvalue method is
 unsuccessful for any reason.
 Pass a string describing the cause of the exceptional behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.ChemicallySignificantEigenvaluesError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ChemicallySignificantEigenvaluesError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ChemicallySignificantEigenvaluesError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ChemicallySignificantEigenvaluesError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -100,13 +101,13 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.ChemkinError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">ChemkinError</span></code><a class="headerlink" href="#rmgpy.exceptions.ChemkinError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ChemkinError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">ChemkinError</span></span><a class="headerlink" href="#rmgpy.exceptions.ChemkinError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception class for exceptional behavior involving Chemkin files. Pass a
 string describing the circumstances that caused the exceptional behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.ChemkinError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ChemkinError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ChemkinError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ChemkinError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -114,14 +115,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.CollisionError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">CollisionError</span></code><a class="headerlink" href="#rmgpy.exceptions.CollisionError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.CollisionError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">CollisionError</span></span><a class="headerlink" href="#rmgpy.exceptions.CollisionError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception class for when RMG is unable to calculate collision efficiencies
 for the single exponential down pressure dependent solver.
 Pass a string describing the circumstances that caused the exceptional behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.CollisionError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.CollisionError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.CollisionError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.CollisionError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -129,12 +130,12 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.CoreError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">CoreError</span></code><a class="headerlink" href="#rmgpy.exceptions.CoreError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.CoreError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">CoreError</span></span><a class="headerlink" href="#rmgpy.exceptions.CoreError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception raised if there is a problem within the model core</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.CoreError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.CoreError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.CoreError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.CoreError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -142,13 +143,13 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.DatabaseError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">DatabaseError</span></code><a class="headerlink" href="#rmgpy.exceptions.DatabaseError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.DatabaseError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">DatabaseError</span></span><a class="headerlink" href="#rmgpy.exceptions.DatabaseError" title="Permalink to this definition">¶</a></dt>
 <dd><p>A exception that occurs when working with an RMG database. Pass a string
 giving specifics about the exceptional behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.DatabaseError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.DatabaseError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.DatabaseError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.DatabaseError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -156,13 +157,13 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.DependencyError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">DependencyError</span></code><a class="headerlink" href="#rmgpy.exceptions.DependencyError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.DependencyError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">DependencyError</span></span><a class="headerlink" href="#rmgpy.exceptions.DependencyError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception that occurs when an error is encountered with a dependency.
 Pass a string describing the circumstances that caused the exception.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.DependencyError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.DependencyError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.DependencyError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.DependencyError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -170,14 +171,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.ElementError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">ElementError</span></code><a class="headerlink" href="#rmgpy.exceptions.ElementError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ElementError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">ElementError</span></span><a class="headerlink" href="#rmgpy.exceptions.ElementError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception class for errors that occur while working with elements.
 Pass a string describing the circumstances that caused the
 exceptional behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.ElementError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ElementError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ElementError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ElementError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -185,13 +186,13 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.ForbiddenStructureException">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">ForbiddenStructureException</span></code><a class="headerlink" href="#rmgpy.exceptions.ForbiddenStructureException" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ForbiddenStructureException">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">ForbiddenStructureException</span></span><a class="headerlink" href="#rmgpy.exceptions.ForbiddenStructureException" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception passed when RMG encounters a forbidden structure. These are usually
 caught and the reaction that created it is ignored.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.ForbiddenStructureException.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ForbiddenStructureException.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ForbiddenStructureException.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ForbiddenStructureException.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -199,14 +200,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.ILPSolutionError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">ILPSolutionError</span></code><a class="headerlink" href="#rmgpy.exceptions.ILPSolutionError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ILPSolutionError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">ILPSolutionError</span></span><a class="headerlink" href="#rmgpy.exceptions.ILPSolutionError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception to be raised when solving an integer linear programming problem if a solution
 could not be found or the solution is not valid. Can pass a string to indicate the reason
 that the solution is invalid.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.ILPSolutionError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ILPSolutionError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ILPSolutionError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ILPSolutionError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -214,14 +215,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.ImplicitBenzeneError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">ImplicitBenzeneError</span></code><a class="headerlink" href="#rmgpy.exceptions.ImplicitBenzeneError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ImplicitBenzeneError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">ImplicitBenzeneError</span></span><a class="headerlink" href="#rmgpy.exceptions.ImplicitBenzeneError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception class when encountering a group with too many implicit benzene
 atoms. These groups are hard to create sample molecules and hard for users
 to interpret. Pass a string describing the limitation.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.ImplicitBenzeneError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ImplicitBenzeneError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ImplicitBenzeneError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ImplicitBenzeneError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -229,13 +230,13 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.InchiException">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">InchiException</span></code><a class="headerlink" href="#rmgpy.exceptions.InchiException" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.InchiException">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">InchiException</span></span><a class="headerlink" href="#rmgpy.exceptions.InchiException" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception used when encountering a non-valid Inchi expression are encountered.
 Pass a string describing the error.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.InchiException.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InchiException.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.InchiException.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InchiException.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -243,14 +244,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.InputError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">InputError</span></code><a class="headerlink" href="#rmgpy.exceptions.InputError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.InputError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">InputError</span></span><a class="headerlink" href="#rmgpy.exceptions.InputError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception raised when parsing an input file for any module in RMG:
 mechanism generation, Arkane, conformer creation, etc.
 Pass a string describing the error.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.InputError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InputError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.InputError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InputError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -258,13 +259,13 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.InvalidActionError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">InvalidActionError</span></code><a class="headerlink" href="#rmgpy.exceptions.InvalidActionError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.InvalidActionError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidActionError</span></span><a class="headerlink" href="#rmgpy.exceptions.InvalidActionError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception to be raised when an invalid action is encountered in a
 reaction recipe.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.InvalidActionError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InvalidActionError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.InvalidActionError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InvalidActionError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -272,13 +273,13 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.InvalidAdjacencyListError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">InvalidAdjacencyListError</span></code><a class="headerlink" href="#rmgpy.exceptions.InvalidAdjacencyListError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.InvalidAdjacencyListError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidAdjacencyListError</span></span><a class="headerlink" href="#rmgpy.exceptions.InvalidAdjacencyListError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception used to indicate that an RMG-style adjacency list is invalid.
 Pass a string describing the reason the adjacency list is invalid</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.InvalidAdjacencyListError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InvalidAdjacencyListError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.InvalidAdjacencyListError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InvalidAdjacencyListError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -286,20 +287,20 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.InvalidMicrocanonicalRateError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">InvalidMicrocanonicalRateError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Keq_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InvalidMicrocanonicalRateError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.InvalidMicrocanonicalRateError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidMicrocanonicalRateError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Keq_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InvalidMicrocanonicalRateError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Used in pressure dependence when the k(E) calculation does not give
 the correct kf(T) or Kc(T)</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.InvalidMicrocanonicalRateError.badness">
-<code class="sig-name descname"><span class="pre">badness</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InvalidMicrocanonicalRateError.badness" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.InvalidMicrocanonicalRateError.badness">
+<span class="sig-name descname"><span class="pre">badness</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InvalidMicrocanonicalRateError.badness" title="Permalink to this definition">¶</a></dt>
 <dd><p>How bad is the error?</p>
 <p>Returns the max of the absolute logarithmic errors of kf and Kc</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.exceptions.InvalidMicrocanonicalRateError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InvalidMicrocanonicalRateError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.InvalidMicrocanonicalRateError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InvalidMicrocanonicalRateError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -307,13 +308,13 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.KekulizationError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">KekulizationError</span></code><a class="headerlink" href="#rmgpy.exceptions.KekulizationError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.KekulizationError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">KekulizationError</span></span><a class="headerlink" href="#rmgpy.exceptions.KekulizationError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception to be raised when encountering an error while kekulizing an aromatic molecule.
 Can pass a string to indicate the reason for failure.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.KekulizationError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.KekulizationError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.KekulizationError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.KekulizationError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -321,14 +322,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.KineticsError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">KineticsError</span></code><a class="headerlink" href="#rmgpy.exceptions.KineticsError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.KineticsError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">KineticsError</span></span><a class="headerlink" href="#rmgpy.exceptions.KineticsError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception class for problems with kinetics. This can be used when finding
 degeneracy in reaction generation, modifying KineticsData objects, or finding the
 kinetics of reactions. Unable Pass a string describing the problem.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.KineticsError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.KineticsError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.KineticsError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.KineticsError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -336,14 +337,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.ModifiedStrongCollisionError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">ModifiedStrongCollisionError</span></code><a class="headerlink" href="#rmgpy.exceptions.ModifiedStrongCollisionError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ModifiedStrongCollisionError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">ModifiedStrongCollisionError</span></span><a class="headerlink" href="#rmgpy.exceptions.ModifiedStrongCollisionError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception raised when the modified strong collision method is unsuccessful
 for any reason. Pass a string describing the cause of the exceptional
 behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.ModifiedStrongCollisionError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ModifiedStrongCollisionError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ModifiedStrongCollisionError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ModifiedStrongCollisionError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -351,13 +352,13 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.NegativeBarrierException">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">NegativeBarrierException</span></code><a class="headerlink" href="#rmgpy.exceptions.NegativeBarrierException" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.NegativeBarrierException">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">NegativeBarrierException</span></span><a class="headerlink" href="#rmgpy.exceptions.NegativeBarrierException" title="Permalink to this definition">¶</a></dt>
 <dd><p>This Exception occurs when the energy barrier for a hindered Rotor is negative.
 This can occur if the scan or fourier fit is poor.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.NegativeBarrierException.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.NegativeBarrierException.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.NegativeBarrierException.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.NegativeBarrierException.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -365,12 +366,12 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.NetworkError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">NetworkError</span></code><a class="headerlink" href="#rmgpy.exceptions.NetworkError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.NetworkError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">NetworkError</span></span><a class="headerlink" href="#rmgpy.exceptions.NetworkError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Raised when an error occurs while working with a pressure-dependent reaction network</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.NetworkError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.NetworkError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.NetworkError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.NetworkError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -378,14 +379,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.OutputError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">OutputError</span></code><a class="headerlink" href="#rmgpy.exceptions.OutputError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.OutputError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">OutputError</span></span><a class="headerlink" href="#rmgpy.exceptions.OutputError" title="Permalink to this definition">¶</a></dt>
 <dd><p>This exception is raised whenever an error occurs while saving output
 information. Pass a string describing the circumstances of the exceptional
 behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.OutputError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.OutputError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.OutputError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.OutputError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -393,14 +394,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.PressureDependenceError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">PressureDependenceError</span></code><a class="headerlink" href="#rmgpy.exceptions.PressureDependenceError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.PressureDependenceError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">PressureDependenceError</span></span><a class="headerlink" href="#rmgpy.exceptions.PressureDependenceError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception class to use when an error involving pressure dependence is
 encountered. Pass a string describing the circumstances of the exceptional
 behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.PressureDependenceError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.PressureDependenceError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.PressureDependenceError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.PressureDependenceError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -408,14 +409,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.QuantityError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">QuantityError</span></code><a class="headerlink" href="#rmgpy.exceptions.QuantityError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.QuantityError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">QuantityError</span></span><a class="headerlink" href="#rmgpy.exceptions.QuantityError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception to be raised when an error occurs while working with physical
 quantities in RMG. Pass a string describing the circumstances of the
 exceptional behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.QuantityError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.QuantityError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.QuantityError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.QuantityError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -423,14 +424,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.ReactionError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">ReactionError</span></code><a class="headerlink" href="#rmgpy.exceptions.ReactionError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ReactionError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">ReactionError</span></span><a class="headerlink" href="#rmgpy.exceptions.ReactionError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception class for exceptional behavior involving <code class="xref py py-class docutils literal notranslate"><span class="pre">Reaction</span></code>
 objects. Pass a string describing the circumstances that caused the
 exceptional behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.ReactionError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ReactionError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ReactionError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ReactionError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -438,13 +439,13 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.ReactionPairsError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">ReactionPairsError</span></code><a class="headerlink" href="#rmgpy.exceptions.ReactionPairsError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ReactionPairsError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">ReactionPairsError</span></span><a class="headerlink" href="#rmgpy.exceptions.ReactionPairsError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception to be raised when an error occurs while working with reaction
 pairs.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.ReactionPairsError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ReactionPairsError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ReactionPairsError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ReactionPairsError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -452,13 +453,13 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.ReservoirStateError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">ReservoirStateError</span></code><a class="headerlink" href="#rmgpy.exceptions.ReservoirStateError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ReservoirStateError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">ReservoirStateError</span></span><a class="headerlink" href="#rmgpy.exceptions.ReservoirStateError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception raised when the reservoir state method is unsuccessful for
 any reason. Pass a string describing the cause of the exceptional behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.ReservoirStateError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ReservoirStateError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ReservoirStateError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ReservoirStateError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -466,12 +467,12 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.ResonanceError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">ResonanceError</span></code><a class="headerlink" href="#rmgpy.exceptions.ResonanceError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ResonanceError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">ResonanceError</span></span><a class="headerlink" href="#rmgpy.exceptions.ResonanceError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception class for when RMG is unable to generate resonance structures.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.ResonanceError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ResonanceError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.ResonanceError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.ResonanceError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -479,12 +480,12 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.SettingsError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">SettingsError</span></code><a class="headerlink" href="#rmgpy.exceptions.SettingsError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.SettingsError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">SettingsError</span></span><a class="headerlink" href="#rmgpy.exceptions.SettingsError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception raised when dealing with settings.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.SettingsError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.SettingsError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.SettingsError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.SettingsError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -492,14 +493,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.SpeciesError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">SpeciesError</span></code><a class="headerlink" href="#rmgpy.exceptions.SpeciesError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.SpeciesError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">SpeciesError</span></span><a class="headerlink" href="#rmgpy.exceptions.SpeciesError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception class for exceptional behavior that occurs while working with
 chemical species. Pass a string describing the circumstances that caused the
 exceptional behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.SpeciesError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.SpeciesError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.SpeciesError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.SpeciesError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -507,12 +508,12 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.StatmechError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">StatmechError</span></code><a class="headerlink" href="#rmgpy.exceptions.StatmechError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.StatmechError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">StatmechError</span></span><a class="headerlink" href="#rmgpy.exceptions.StatmechError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception used when an error occurs in estimating Statmech.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.StatmechError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.StatmechError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.StatmechError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.StatmechError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -520,14 +521,14 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.StatmechFitError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">StatmechFitError</span></code><a class="headerlink" href="#rmgpy.exceptions.StatmechFitError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.StatmechFitError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">StatmechFitError</span></span><a class="headerlink" href="#rmgpy.exceptions.StatmechFitError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception used when attempting to fit molecular degrees of freedom to
 heat capacity data. Pass a string describing the circumstances of the
 exceptional behavior.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.StatmechFitError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.StatmechFitError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.StatmechFitError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.StatmechFitError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -535,13 +536,13 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.UndeterminableKineticsError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">UndeterminableKineticsError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.UndeterminableKineticsError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.UndeterminableKineticsError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">UndeterminableKineticsError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.UndeterminableKineticsError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception raised when attempts to estimate appropriate kinetic parameters
 for a chemical reaction are unsuccessful.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.UndeterminableKineticsError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.UndeterminableKineticsError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.UndeterminableKineticsError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.UndeterminableKineticsError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -549,8 +550,8 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.UnexpectedChargeError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">UnexpectedChargeError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.UnexpectedChargeError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.UnexpectedChargeError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">UnexpectedChargeError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.UnexpectedChargeError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception class when encountering a group/molecule with unexpected charge
 Curently in RMG, we never expect to see -2/+2 or greater magnitude charge,
 we only except +1/-1 charges on nitrogen, oxygen, sulfur or specifically
@@ -558,8 +559,8 @@ carbon monoxide/monosulfide.</p>
 <p>Attributes:
 <cite>graph</cite> is the molecule or group object with the unexpected charge</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.UnexpectedChargeError.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.UnexpectedChargeError.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.UnexpectedChargeError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.UnexpectedChargeError.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
@@ -567,20 +568,20 @@ set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 <dl class="py exception">
-<dt id="rmgpy.exceptions.VF2Error">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></code><code class="sig-name descname"><span class="pre">VF2Error</span></code><a class="headerlink" href="#rmgpy.exceptions.VF2Error" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.VF2Error">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.exceptions.</span></span><span class="sig-name descname"><span class="pre">VF2Error</span></span><a class="headerlink" href="#rmgpy.exceptions.VF2Error" title="Permalink to this definition">¶</a></dt>
 <dd><p>An exception raised if an error occurs within the VF2 graph isomorphism
 algorithm. Pass a string describing the error.</p>
 <dl class="py method">
-<dt id="rmgpy.exceptions.VF2Error.with_traceback">
-<code class="sig-name descname"><span class="pre">with_traceback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.VF2Error.with_traceback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.exceptions.VF2Error.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.VF2Error.with_traceback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception.with_traceback(tb) –
 set self.__traceback__ to tb and return self.</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -666,7 +667,7 @@ set self.__traceback__ to tb and return self.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

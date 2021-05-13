@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>arkane.ess.OrcaLog &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -56,47 +57,47 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="arkane-ess-orcalog">
+  <section id="arkane-ess-orcalog">
 <h1>arkane.ess.OrcaLog<a class="headerlink" href="#arkane-ess-orcalog" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="arkane.ess.OrcaLog">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">arkane.ess.</span></code><code class="sig-name descname"><span class="pre">OrcaLog</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">arkane.ess.</span></span><span class="sig-name descname"><span class="pre">OrcaLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent an output file from Orca. The attribute <cite>path</cite> refers to the
 location on disk of the Orca output file of interest. Methods are provided
 to extract a variety of information into Arkane classes and/or NumPy
 arrays. OrcaLog is an adapter for the abstract class ESSAdapter.</p>
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.get_D1_diagnostic">
-<code class="sig-name descname"><span class="pre">get_D1_diagnostic</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.get_D1_diagnostic">
+<span class="sig-name descname"><span class="pre">get_D1_diagnostic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the D1 diagnostic from output log.
 If multiple occurrences exist, returns the last occurrence.
 Should be implemented by the relevant subclass.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.get_T1_diagnostic">
-<code class="sig-name descname"><span class="pre">get_T1_diagnostic</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.get_T1_diagnostic">
+<span class="sig-name descname"><span class="pre">get_T1_diagnostic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the T1 diagnostic from output log.
 If multiple occurrences exist, returns the last occurrence</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.get_number_of_atoms">
-<code class="sig-name descname"><span class="pre">get_number_of_atoms</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_number_of_atoms" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.get_number_of_atoms">
+<span class="sig-name descname"><span class="pre">get_number_of_atoms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_number_of_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the number of atoms in the molecular configuration used in
 the Orca output file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.get_software">
-<code class="sig-name descname"><span class="pre">get_software</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_software" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.get_software">
+<span class="sig-name descname"><span class="pre">get_software</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_software" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the name of the software. Should correspond to the class
 name without ‘Log’.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.get_symmetry_properties">
-<code class="sig-name descname"><span class="pre">get_symmetry_properties</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_symmetry_properties" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.get_symmetry_properties">
+<span class="sig-name descname"><span class="pre">get_symmetry_properties</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_symmetry_properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method uses the symmetry package from RMG’s QM module
 and returns a tuple where the first element is the number
 of optical isomers, the second element is the symmetry number,
@@ -104,8 +105,8 @@ and the third element is the point group identified.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.load_conformer">
-<code class="sig-name descname"><span class="pre">load_conformer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin_multiplicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optical_isomers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_conformer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.load_conformer">
+<span class="sig-name descname"><span class="pre">load_conformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin_multiplicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optical_isomers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_conformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the molecular degree of freedom data from a log file created as
 the result of a Orca “Freq” quantum chemistry calculation.</p>
 <p>CAUTION: The rotational entropy is not quite correctly treated here
@@ -117,61 +118,61 @@ to calculate the frequencies and derive E0</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.load_energy">
-<code class="sig-name descname"><span class="pre">load_energy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zpe_scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_energy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.load_energy">
+<span class="sig-name descname"><span class="pre">load_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zpe_scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the energy in J/ml from an Orca log file. Only the last energy
 in the file is returned. The zero-point energy is <em>not</em> included in
 the returned value.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.load_force_constant_matrix">
-<code class="sig-name descname"><span class="pre">load_force_constant_matrix</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_force_constant_matrix" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.load_force_constant_matrix">
+<span class="sig-name descname"><span class="pre">load_force_constant_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_force_constant_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>not implemented in orca</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.load_geometry">
-<code class="sig-name descname"><span class="pre">load_geometry</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_geometry" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.load_geometry">
+<span class="sig-name descname"><span class="pre">load_geometry</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_geometry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the optimum geometry of the molecular configuration from the
 Orca log file. If multiple such geometries are identified, only the
 last is returned.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.load_negative_frequency">
-<code class="sig-name descname"><span class="pre">load_negative_frequency</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_negative_frequency" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.load_negative_frequency">
+<span class="sig-name descname"><span class="pre">load_negative_frequency</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_negative_frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the imaginary frequency from a transition state frequency
 calculation in cm^-1.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.load_scan_energies">
-<code class="sig-name descname"><span class="pre">load_scan_energies</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_scan_energies" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.load_scan_energies">
+<span class="sig-name descname"><span class="pre">load_scan_energies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_scan_energies" title="Permalink to this definition">¶</a></dt>
 <dd><p>not implemented in Orca</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.load_scan_frozen_atoms">
-<code class="sig-name descname"><span class="pre">load_scan_frozen_atoms</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_scan_frozen_atoms" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.load_scan_frozen_atoms">
+<span class="sig-name descname"><span class="pre">load_scan_frozen_atoms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_scan_frozen_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Not implemented for Orca</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.load_scan_pivot_atoms">
-<code class="sig-name descname"><span class="pre">load_scan_pivot_atoms</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_scan_pivot_atoms" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.load_scan_pivot_atoms">
+<span class="sig-name descname"><span class="pre">load_scan_pivot_atoms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_scan_pivot_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Not implemented for Orca</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.ess.OrcaLog.load_zero_point_energy">
-<code class="sig-name descname"><span class="pre">load_zero_point_energy</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_zero_point_energy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.ess.OrcaLog.load_zero_point_energy">
+<span class="sig-name descname"><span class="pre">load_zero_point_energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_zero_point_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the unscaled zero-point energy in J/mol from a Orca output file.</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -264,7 +265,7 @@ calculation in cm^-1.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

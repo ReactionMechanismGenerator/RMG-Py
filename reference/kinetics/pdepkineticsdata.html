@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.kinetics.PDepKineticsData &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -56,11 +57,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-kinetics-pdepkineticsdata">
+  <section id="rmgpy-kinetics-pdepkineticsdata">
 <h1>rmgpy.kinetics.PDepKineticsData<a class="headerlink" href="#rmgpy-kinetics-pdepkineticsdata" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="rmgpy.kinetics.PDepKineticsData">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.kinetics.</span></code><code class="sig-name descname"><span class="pre">PDepKineticsData</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.kinetics.</span></span><span class="sig-name descname"><span class="pre">PDepKineticsData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData" title="Permalink to this definition">¶</a></dt>
 <dd><p>A kinetics model based on an array of rate coefficient data vs. temperature
 and pressure. The attributes are:</p>
 <table class="docutils align-default">
@@ -101,44 +102,44 @@ and pressure. The attributes are:</p>
 </tbody>
 </table>
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.PDepKineticsData.Pdata">
-<code class="sig-name descname"><span class="pre">Pdata</span></code><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Pdata" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.Pdata">
+<span class="sig-name descname"><span class="pre">Pdata</span></span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Pdata" title="Permalink to this definition">¶</a></dt>
 <dd><p>An array of pressures at which rate coefficient values are known.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.PDepKineticsData.Pmax">
-<code class="sig-name descname"><span class="pre">Pmax</span></code><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Pmax" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.Pmax">
+<span class="sig-name descname"><span class="pre">Pmax</span></span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Pmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.PDepKineticsData.Pmin">
-<code class="sig-name descname"><span class="pre">Pmin</span></code><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Pmin" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.Pmin">
+<span class="sig-name descname"><span class="pre">Pmin</span></span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Pmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.PDepKineticsData.Tdata">
-<code class="sig-name descname"><span class="pre">Tdata</span></code><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Tdata" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.Tdata">
+<span class="sig-name descname"><span class="pre">Tdata</span></span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Tdata" title="Permalink to this definition">¶</a></dt>
 <dd><p>An array of temperatures at which rate coefficient values are known.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.PDepKineticsData.Tmax">
-<code class="sig-name descname"><span class="pre">Tmax</span></code><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Tmax" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.Tmax">
+<span class="sig-name descname"><span class="pre">Tmax</span></span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Tmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.PDepKineticsData.Tmin">
-<code class="sig-name descname"><span class="pre">Tmin</span></code><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Tmin" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.Tmin">
+<span class="sig-name descname"><span class="pre">Tmin</span></span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.Tmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.PDepKineticsData.comment">
-<code class="sig-name descname"><span class="pre">comment</span></code><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.comment" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.comment">
+<span class="sig-name descname"><span class="pre">comment</span></span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.comment" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -148,14 +149,14 @@ and pressure. The attributes are:</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.PDepKineticsData.discrepancy">
-<code class="sig-name descname"><span class="pre">discrepancy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.discrepancy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.discrepancy">
+<span class="sig-name descname"><span class="pre">discrepancy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.discrepancy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns some measure of the discrepancy based on two different reaction models.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.PDepKineticsData.efficiencies">
-<code class="sig-name descname"><span class="pre">efficiencies</span></code><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.efficiencies" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.efficiencies">
+<span class="sig-name descname"><span class="pre">efficiencies</span></span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.efficiencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -165,38 +166,38 @@ and pressure. The attributes are:</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.PDepKineticsData.get_cantera_efficiencies">
-<code class="sig-name descname"><span class="pre">get_cantera_efficiencies</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.get_cantera_efficiencies" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.get_cantera_efficiencies">
+<span class="sig-name descname"><span class="pre">get_cantera_efficiencies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.get_cantera_efficiencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a dictionary containing the collider efficiencies for this PDepKineticsModel object
 suitable for setting the efficiencies in the following cantera reaction objects:
 <cite>ThreeBodyReaction</cite>, <cite>FalloffReaction</cite>,`ChemicallyActivatedReaction`</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.PDepKineticsData.get_effective_collider_efficiencies">
-<code class="sig-name descname"><span class="pre">get_effective_collider_efficiencies</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">species</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.get_effective_collider_efficiencies" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.get_effective_collider_efficiencies">
+<span class="sig-name descname"><span class="pre">get_effective_collider_efficiencies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">species</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.get_effective_collider_efficiencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the effective collider efficiencies for all species in the form of
 a numpy array.  This function helps assist rapid effective pressure calculations in the solver.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.PDepKineticsData.get_effective_pressure">
-<code class="sig-name descname"><span class="pre">get_effective_pressure</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">P</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">species</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">fractions</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.get_effective_pressure" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.get_effective_pressure">
+<span class="sig-name descname"><span class="pre">get_effective_pressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">P</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">species</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">fractions</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.get_effective_pressure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the effective pressure in Pa for a system at a given pressure
 <cite>P</cite> in Pa composed of the given list of <cite>species</cite> (Species or Molecule objects) with the given
 <cite>fractions</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.PDepKineticsData.get_rate_coefficient">
-<code class="sig-name descname"><span class="pre">get_rate_coefficient</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">P=0.0</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.get_rate_coefficient">
+<span class="sig-name descname"><span class="pre">get_rate_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">P=0.0</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate coefficient in the appropriate combination of m^3,
 mol, and s at temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.PDepKineticsData.highPlimit">
-<code class="sig-name descname"><span class="pre">highPlimit</span></code><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.highPlimit" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.highPlimit">
+<span class="sig-name descname"><span class="pre">highPlimit</span></span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.highPlimit" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.model.KineticsModel</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -206,21 +207,21 @@ mol, and s at temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa.
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.PDepKineticsData.is_identical_to">
-<code class="sig-name descname"><span class="pre">is_identical_to</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.is_identical_to" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.is_identical_to">
+<span class="sig-name descname"><span class="pre">is_identical_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.is_identical_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the kdata and Tdata match. Returns <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.PDepKineticsData.is_pressure_dependent">
-<code class="sig-name descname"><span class="pre">is_pressure_dependent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.is_pressure_dependent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.is_pressure_dependent">
+<span class="sig-name descname"><span class="pre">is_pressure_dependent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.is_pressure_dependent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> since all objects derived from PDepKineticsModel
 represent pressure-dependent kinetics.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.PDepKineticsData.is_pressure_valid">
-<code class="sig-name descname"><span class="pre">is_pressure_valid</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">P</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.is_pressure_valid" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.is_pressure_valid">
+<span class="sig-name descname"><span class="pre">is_pressure_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">P</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.is_pressure_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the pressure <cite>P</cite> in Pa is within the valid
 pressure range of the kinetic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
 the minimum and maximum pressure are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
@@ -228,15 +229,15 @@ returned.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.PDepKineticsData.is_similar_to">
-<code class="sig-name descname"><span class="pre">is_similar_to</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.is_similar_to" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.is_similar_to">
+<span class="sig-name descname"><span class="pre">is_similar_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.is_similar_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if rates of reaction at temperatures 500,1000,1500,2000 K
 and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.PDepKineticsData.is_temperature_valid">
-<code class="sig-name descname"><span class="pre">is_temperature_valid</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.is_temperature_valid">
+<span class="sig-name descname"><span class="pre">is_temperature_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the kinetic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
@@ -244,26 +245,26 @@ returned.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.PDepKineticsData.kdata">
-<code class="sig-name descname"><span class="pre">kdata</span></code><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.kdata" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.kdata">
+<span class="sig-name descname"><span class="pre">kdata</span></span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.kdata" title="Permalink to this definition">¶</a></dt>
 <dd><p>An array of rate coefficient values at each temperature and pressure.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.PDepKineticsData.set_cantera_kinetics">
-<code class="sig-name descname"><span class="pre">set_cantera_kinetics</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ct_reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.set_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.set_cantera_kinetics">
+<span class="sig-name descname"><span class="pre">set_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ct_reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.set_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the kinetics for a cantera reaction object.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.PDepKineticsData.to_html">
-<code class="sig-name descname"><span class="pre">to_html</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.to_html" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.to_html">
+<span class="sig-name descname"><span class="pre">to_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.to_html" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an HTML rendering.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.PDepKineticsData.uncertainty">
-<code class="sig-name descname"><span class="pre">uncertainty</span></code><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.uncertainty" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.PDepKineticsData.uncertainty">
+<span class="sig-name descname"><span class="pre">uncertainty</span></span><a class="headerlink" href="#rmgpy.kinetics.PDepKineticsData.uncertainty" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.uncertainties.RateUncertainty</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -274,7 +275,7 @@ returned.</p>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -367,7 +368,7 @@ returned.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

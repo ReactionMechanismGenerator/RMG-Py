@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.molecule.filtration &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -56,7 +57,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-rmgpy.molecule.filtration">
+  <section id="module-rmgpy.molecule.filtration">
 <span id="rmgpy-molecule-filtration"></span><h1>rmgpy.molecule.filtration<a class="headerlink" href="#module-rmgpy.molecule.filtration" title="Permalink to this headline">¶</a></h1>
 <p>This module contains functions for filtering a list of Molecules representing a single Species,
 keeping only the representative structures. Relevant for filtration of negligible mesomerism contributing structures.</p>
@@ -72,8 +73,8 @@ whereas positive charges will be assigned to less electronegative atoms (charge 
 </div></blockquote>
 <p>(inspired by <a class="reference external" href="http://www.chem.ucla.edu/~harding/tutorials/resonance/imp_res_str.html">http://www.chem.ucla.edu/~harding/tutorials/resonance/imp_res_str.html</a>)</p>
 <dl class="py function">
-<dt id="rmgpy.molecule.filtration.aromaticity_filtration">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></code><code class="sig-name descname"><span class="pre">aromaticity_filtration</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.aromaticity_filtration" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.aromaticity_filtration">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">aromaticity_filtration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.aromaticity_filtration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a filtered list of molecules based on heuristics for determining
 representative aromatic resonance structures.</p>
 <p>For monocyclic aromatics, Kekule structures are removed, with the
@@ -91,8 +92,8 @@ on the most important ones.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.molecule.filtration.charge_filtration">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></code><code class="sig-name descname"><span class="pre">charge_filtration</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filtered_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_span_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.charge_filtration" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.charge_filtration">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">charge_filtration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filtered_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_span_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.charge_filtration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a new filtered_list, filtered based on charge_span_list, electronegativity and proximity considerations.
 If structures with an additional charge layer introduce reactive sites (i.e., radicals or multiple bonds) they will
 also be considered. For example:</p>
@@ -119,56 +120,56 @@ here we filter the third one out due to the higher charge span, which does not c
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.molecule.filtration.check_reactive">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></code><code class="sig-name descname"><span class="pre">check_reactive</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filtered_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.check_reactive" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.check_reactive">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">check_reactive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filtered_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.check_reactive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that there’s at least one reactive structure in the returned list.
 If not, raise an error (does not return anything)</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.molecule.filtration.filter_structures">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></code><code class="sig-name descname"><span class="pre">filter_structures</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mark_unreactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_expanded_octet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.filter_structures" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.filter_structures">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">filter_structures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mark_unreactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_expanded_octet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.filter_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>We often get too many resonance structures from the combination of all rules, particularly for species containing
 lone pairs. This function filters them out by minimizing the number of C/N/O/S atoms without a full octet.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.molecule.filtration.find_unique_sites_in_charged_list">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></code><code class="sig-name descname"><span class="pre">find_unique_sites_in_charged_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rad_sorting_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mul_bond_sorting_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.find_unique_sites_in_charged_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.find_unique_sites_in_charged_list">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">find_unique_sites_in_charged_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rad_sorting_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mul_bond_sorting_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.find_unique_sites_in_charged_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for reactive site discovery in charged species</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.molecule.filtration.get_charge_span_list">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></code><code class="sig-name descname"><span class="pre">get_charge_span_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.get_charge_span_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.get_charge_span_list">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">get_charge_span_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.get_charge_span_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the a list of charge spans for a respective list of :class:Molecule objects
 This is also calculated in the octet_filtration() function along with the octet filtration process</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.molecule.filtration.get_octet_deviation">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></code><code class="sig-name descname"><span class="pre">get_octet_deviation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_expanded_octet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.get_octet_deviation" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.get_octet_deviation">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">get_octet_deviation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_expanded_octet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.get_octet_deviation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the octet deviation for a :class:Molecule object
 if <cite>allow_expanded_octet</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code> (by default), then the function also considers dectet for
 third row elements (currently sulfur is the only hypervalance third row element in RMG)</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.molecule.filtration.get_octet_deviation_list">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></code><code class="sig-name descname"><span class="pre">get_octet_deviation_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_expanded_octet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.get_octet_deviation_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.get_octet_deviation_list">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">get_octet_deviation_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_expanded_octet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.get_octet_deviation_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the a list of octet deviations for a respective list of :class:Molecule objects</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.molecule.filtration.mark_unreactive_structures">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></code><code class="sig-name descname"><span class="pre">mark_unreactive_structures</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filtered_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.mark_unreactive_structures" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.mark_unreactive_structures">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">mark_unreactive_structures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filtered_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.mark_unreactive_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mark selected structures in filtered_list with the Molecule.reactive flag set to <cite>False</cite> (it is <cite>True</cite> by default)
 Changes the filtered_list object, and does not return anything</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.molecule.filtration.octet_filtration">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></code><code class="sig-name descname"><span class="pre">octet_filtration</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">octet_deviation_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.octet_filtration" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.octet_filtration">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">octet_filtration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">octet_deviation_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.octet_filtration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a filtered list based on the octet_deviation_list. Also computes and returns a charge_span_list.
 Filtering using the octet deviation criterion rules out most unrepresentative structures. However, since some
 charge-strained species are still kept (e.g., [NH]N=S=O &lt;-&gt; [NH+]#[N+][S-][O-]), we also generate during the same
@@ -176,8 +177,8 @@ loop a charge_span_list to keep track of the charge spans. This is used for furt
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.molecule.filtration.stabilize_charges_by_electronegativity">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></code><code class="sig-name descname"><span class="pre">stabilize_charges_by_electronegativity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_empty_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.stabilize_charges_by_electronegativity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.stabilize_charges_by_electronegativity">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">stabilize_charges_by_electronegativity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_empty_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.stabilize_charges_by_electronegativity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Only keep structures that obey the electronegativity rule. If a structure must have charge separation, negative
 charges will be assigned to more electronegative atoms, and vice versa.
 If allow_empty_list is set to <code class="docutils literal notranslate"><span class="pre">False</span></code> (default), this function will not return an empty list. If it is set
@@ -186,13 +187,13 @@ is returned (examples: [C-]#[O+], CS, [NH+]#[C-], [OH+]=[N-], [C-][S+]=C violate
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.molecule.filtration.stabilize_charges_by_proximity">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></code><code class="sig-name descname"><span class="pre">stabilize_charges_by_proximity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.stabilize_charges_by_proximity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.stabilize_charges_by_proximity">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">stabilize_charges_by_proximity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.stabilize_charges_by_proximity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Only keep structures that obey the charge proximity rule.
 Opposite charges will be as close as possible to one another, and vice versa.</p>
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -285,7 +286,7 @@ Opposite charges will be as close as possible to one another, and vice versa.</p
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

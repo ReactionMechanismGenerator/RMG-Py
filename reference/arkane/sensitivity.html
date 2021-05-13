@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Sensitivity Analysis &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -56,13 +57,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-arkane.sensitivity">
+  <section id="module-arkane.sensitivity">
 <span id="sensitivity-analysis"></span><h1>Sensitivity Analysis<a class="headerlink" href="#module-arkane.sensitivity" title="Permalink to this headline">¶</a></h1>
 <p>This module contains classes for sensitivity analysis
 of kinetics and pressure-dependent jobs.</p>
 <dl class="py class">
-<dt id="arkane.sensitivity.KineticsSensitivity">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">arkane.sensitivity.</span></code><code class="sig-name descname"><span class="pre">KineticsSensitivity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.KineticsSensitivity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.sensitivity.KineticsSensitivity">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">arkane.sensitivity.</span></span><span class="sig-name descname"><span class="pre">KineticsSensitivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.KineticsSensitivity" title="Permalink to this definition">¶</a></dt>
 <dd><p>The <a class="reference internal" href="#arkane.sensitivity.KineticsSensitivity" title="arkane.sensitivity.KineticsSensitivity"><code class="xref py py-class docutils literal notranslate"><span class="pre">KineticsSensitivity</span></code></a> class represents an instance of a sensitivity analysis job
 performed for a KineticsJob. The attributes are:</p>
 <table class="docutils align-default">
@@ -104,40 +105,40 @@ respective <cite>conditions</cite> in the appropriate units after perturbing the
 </tbody>
 </table>
 <dl class="py method">
-<dt id="arkane.sensitivity.KineticsSensitivity.execute">
-<code class="sig-name descname"><span class="pre">execute</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.KineticsSensitivity.execute" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.sensitivity.KineticsSensitivity.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.KineticsSensitivity.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute the sensitivity analysis for a :class:KineticsJob: object</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.sensitivity.KineticsSensitivity.perturb">
-<code class="sig-name descname"><span class="pre">perturb</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.KineticsSensitivity.perturb" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.sensitivity.KineticsSensitivity.perturb">
+<span class="sig-name descname"><span class="pre">perturb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.KineticsSensitivity.perturb" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perturb a species’ E0</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.sensitivity.KineticsSensitivity.plot">
-<code class="sig-name descname"><span class="pre">plot</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.KineticsSensitivity.plot" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.sensitivity.KineticsSensitivity.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.KineticsSensitivity.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot the SA results as horizontal bars</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.sensitivity.KineticsSensitivity.save">
-<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.KineticsSensitivity.save" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.sensitivity.KineticsSensitivity.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.KineticsSensitivity.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the SA results as tabulated data as well as in YAML format</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.sensitivity.KineticsSensitivity.unperturb">
-<code class="sig-name descname"><span class="pre">unperturb</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.KineticsSensitivity.unperturb" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.sensitivity.KineticsSensitivity.unperturb">
+<span class="sig-name descname"><span class="pre">unperturb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.KineticsSensitivity.unperturb" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the species’ E0 to its original value</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="arkane.sensitivity.PDepSensitivity">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">arkane.sensitivity.</span></code><code class="sig-name descname"><span class="pre">PDepSensitivity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perturbation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.PDepSensitivity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.sensitivity.PDepSensitivity">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">arkane.sensitivity.</span></span><span class="sig-name descname"><span class="pre">PDepSensitivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perturbation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.PDepSensitivity" title="Permalink to this definition">¶</a></dt>
 <dd><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">Sensitivity</span></code> class represents an instance of a sensitivity analysis job
 performed for a PressureDependenceJob. The attributes are:</p>
 <table class="docutils align-default">
@@ -174,14 +175,14 @@ in the forward direction</p></td>
 </tbody>
 </table>
 <dl class="py method">
-<dt id="arkane.sensitivity.PDepSensitivity.execute">
-<code class="sig-name descname"><span class="pre">execute</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.PDepSensitivity.execute" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.sensitivity.PDepSensitivity.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.PDepSensitivity.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute the sensitivity analysis for a :class:PressureDependenceJob: object</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.sensitivity.PDepSensitivity.perturb">
-<code class="sig-name descname"><span class="pre">perturb</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unperturb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.PDepSensitivity.perturb" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.sensitivity.PDepSensitivity.perturb">
+<span class="sig-name descname"><span class="pre">perturb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unperturb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.PDepSensitivity.perturb" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perturb E0 of <cite>entry</cite> which could be either a :class:TransitionState or a :class:Configuration
 In the latter case, only the first species in the Configuration.species list is perturbed.
 The perturbation is done by addition of the energy amount in self.perturbation.
@@ -190,26 +191,26 @@ If unperturb is <cite>False</cite>, this is done by subtracting.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.sensitivity.PDepSensitivity.plot">
-<code class="sig-name descname"><span class="pre">plot</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wells</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transition_states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.PDepSensitivity.plot" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.sensitivity.PDepSensitivity.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wells</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transition_states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.PDepSensitivity.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw the SA results as horizontal bars</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.sensitivity.PDepSensitivity.save">
-<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wells</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transition_states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.PDepSensitivity.save" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.sensitivity.PDepSensitivity.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wells</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transition_states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.PDepSensitivity.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the SA output as tabulated data as well as in YAML format</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arkane.sensitivity.PDepSensitivity.unperturb">
-<code class="sig-name descname"><span class="pre">unperturb</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.PDepSensitivity.unperturb" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arkane.sensitivity.PDepSensitivity.unperturb">
+<span class="sig-name descname"><span class="pre">unperturb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entry</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.sensitivity.PDepSensitivity.unperturb" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for calling self.perturb cleanly when unperturbing</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -302,7 +303,7 @@ If unperturb is <cite>False</cite>, this is done by subtracting.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

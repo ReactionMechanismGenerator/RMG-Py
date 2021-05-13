@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.rmg.main.RMG &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -56,11 +57,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-rmg-main-rmg">
+  <section id="rmgpy-rmg-main-rmg">
 <h1>rmgpy.rmg.main.RMG<a class="headerlink" href="#rmgpy-rmg-main-rmg" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="rmgpy.rmg.main.RMG">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.rmg.main.</span></code><code class="sig-name descname"><span class="pre">RMG</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profiler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stats_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.rmg.main.</span></span><span class="sig-name descname"><span class="pre">RMG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profiler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stats_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a Reaction Mechanism Generator (RMG) job. The
 attributes are:</p>
 <table class="docutils align-default">
@@ -209,14 +210,14 @@ attributes are:</p>
 </tbody>
 </table>
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.check_input">
-<code class="sig-name descname"><span class="pre">check_input</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.check_input" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.check_input">
+<span class="sig-name descname"><span class="pre">check_input</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.check_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check for a few common mistakes in the input file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.check_libraries">
-<code class="sig-name descname"><span class="pre">check_libraries</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.check_libraries" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.check_libraries">
+<span class="sig-name descname"><span class="pre">check_libraries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.check_libraries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check unwanted use of libraries:
 Liquid phase libraries in Gas phase simulation.
 Loading a Liquid phase library obtained in another solvent than the one defined in the input file.
@@ -224,48 +225,48 @@ Other checks can be added here.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.check_model">
-<code class="sig-name descname"><span class="pre">check_model</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.check_model" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.check_model">
+<span class="sig-name descname"><span class="pre">check_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.check_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run checks on the RMG model</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.clear">
-<code class="sig-name descname"><span class="pre">clear</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.clear" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.clear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clear all loaded information about the job (except the file paths).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.execute">
-<code class="sig-name descname"><span class="pre">execute</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initialize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.execute" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initialize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute an RMG job using the command-line arguments <cite>args</cite> as returned
 by the <code class="xref py py-mod docutils literal notranslate"><span class="pre">argparse</span></code> package.
 <code class="docutils literal notranslate"><span class="pre">initialize</span></code> is a <code class="docutils literal notranslate"><span class="pre">bool</span></code> type flag used to determine whether to call self.initialize()</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.finish">
-<code class="sig-name descname"><span class="pre">finish</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.finish" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.finish">
+<span class="sig-name descname"><span class="pre">finish</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.finish" title="Permalink to this definition">¶</a></dt>
 <dd><p>Complete the model generation.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.generate_cantera_files">
-<code class="sig-name descname"><span class="pre">generate_cantera_files</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chemkin_file</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.generate_cantera_files" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.generate_cantera_files">
+<span class="sig-name descname"><span class="pre">generate_cantera_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chemkin_file</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.generate_cantera_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti
 and save it in the cantera directory</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.initialize">
-<code class="sig-name descname"><span class="pre">initialize</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.initialize" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize an RMG job using the command-line arguments <cite>args</cite> as returned
 by the <code class="xref py py-mod docutils literal notranslate"><span class="pre">argparse</span></code> package.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.initialize_seed_mech">
-<code class="sig-name descname"><span class="pre">initialize_seed_mech</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.initialize_seed_mech" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.initialize_seed_mech">
+<span class="sig-name descname"><span class="pre">initialize_seed_mech</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.initialize_seed_mech" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the process of saving the seed mechanism by performing the following:</p>
 <ol class="arabic simple">
 <li><p>Create the initial seed mechanism folder (the seed from a previous iterations will be deleted)</p></li>
@@ -276,35 +277,35 @@ by the <code class="xref py py-mod docutils literal notranslate"><span class="pr
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.load_input">
-<code class="sig-name descname"><span class="pre">load_input</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.load_input" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.load_input">
+<span class="sig-name descname"><span class="pre">load_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.load_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load an RMG job from the input file located at <cite>input_file</cite>, or
 from the <cite>input_file</cite> attribute if not given as a parameter.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.load_rmg_java_input">
-<code class="sig-name descname"><span class="pre">load_rmg_java_input</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.load_rmg_java_input" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.load_rmg_java_input">
+<span class="sig-name descname"><span class="pre">load_rmg_java_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.load_rmg_java_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load an RMG-Java job from the input file located at <cite>input_file</cite>, or
 from the <cite>input_file</cite> attribute if not given as a parameter.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.load_thermo_input">
-<code class="sig-name descname"><span class="pre">load_thermo_input</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.load_thermo_input" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.load_thermo_input">
+<span class="sig-name descname"><span class="pre">load_thermo_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.load_thermo_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load an Thermo Estimation job from a thermo input file located at <cite>input_file</cite>, or
 from the <cite>input_file</cite> attribute if not given as a parameter.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.log_header">
-<code class="sig-name descname"><span class="pre">log_header</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.log_header" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.log_header">
+<span class="sig-name descname"><span class="pre">log_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.log_header" title="Permalink to this definition">¶</a></dt>
 <dd><p>Output a header containing identifying information about RMG to the log.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.make_seed_mech">
-<code class="sig-name descname"><span class="pre">make_seed_mech</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.make_seed_mech" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.make_seed_mech">
+<span class="sig-name descname"><span class="pre">make_seed_mech</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.make_seed_mech" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a seed mechanism (both core and edge) in the ‘seed’ sub-folder of the output directory. Additionally, save
 the filter tensors to the ‘seed/filters’ sub-folder so that the RMG job can be restarted from a seed mechanism.
 If <cite>self.save_seed_to_database</cite> is True then the seed mechanism is also saved as libraries (one each for the
@@ -314,95 +315,95 @@ core and edge) in the RMG-database.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.make_species_labels_independent">
-<code class="sig-name descname"><span class="pre">make_species_labels_independent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.make_species_labels_independent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.make_species_labels_independent">
+<span class="sig-name descname"><span class="pre">make_species_labels_independent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.make_species_labels_independent" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method looks at the core species labels and makes sure none of them conflict
 If a conflict occurs, the second occurance will have ‘-2’ added
 returns a list of the old labels</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.process_pdep_networks">
-<code class="sig-name descname"><span class="pre">process_pdep_networks</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.process_pdep_networks" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.process_pdep_networks">
+<span class="sig-name descname"><span class="pre">process_pdep_networks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.process_pdep_networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>properly processes PDepNetwork objects and lists of PDepNetwork objects returned from simulate</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.process_reactions_to_species">
-<code class="sig-name descname"><span class="pre">process_reactions_to_species</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.process_reactions_to_species" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.process_reactions_to_species">
+<span class="sig-name descname"><span class="pre">process_reactions_to_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.process_reactions_to_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>properly processes Reaction objects and lists of Reaction objects returned from simulate</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.process_to_species_networks">
-<code class="sig-name descname"><span class="pre">process_to_species_networks</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.process_to_species_networks" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.process_to_species_networks">
+<span class="sig-name descname"><span class="pre">process_to_species_networks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.process_to_species_networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>breaks down the objects returned by simulate into Species and PDepNetwork
 components</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.react_init_tuples">
-<code class="sig-name descname"><span class="pre">react_init_tuples</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.react_init_tuples" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.react_init_tuples">
+<span class="sig-name descname"><span class="pre">react_init_tuples</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.react_init_tuples" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reacts tuples given in the react block</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.read_meaningful_line_java">
-<code class="sig-name descname"><span class="pre">read_meaningful_line_java</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.read_meaningful_line_java" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.read_meaningful_line_java">
+<span class="sig-name descname"><span class="pre">read_meaningful_line_java</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.read_meaningful_line_java" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a meaningful line from an RMG-Java condition file object <cite>f</cite>,
 returning the line with any comments removed.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.register_listeners">
-<code class="sig-name descname"><span class="pre">register_listeners</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.register_listeners" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.register_listeners">
+<span class="sig-name descname"><span class="pre">register_listeners</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.register_listeners" title="Permalink to this definition">¶</a></dt>
 <dd><p>Attaches listener classes depending on the options
 found in the RMG input file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.run_model_analysis">
-<code class="sig-name descname"><span class="pre">run_model_analysis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.run_model_analysis" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.run_model_analysis">
+<span class="sig-name descname"><span class="pre">run_model_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.run_model_analysis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run sensitivity and uncertainty analysis if requested.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.run_uncertainty_analysis">
-<code class="sig-name descname"><span class="pre">run_uncertainty_analysis</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.run_uncertainty_analysis" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.run_uncertainty_analysis">
+<span class="sig-name descname"><span class="pre">run_uncertainty_analysis</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.run_uncertainty_analysis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run uncertainty analysis if proper settings are available.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.save_everything">
-<code class="sig-name descname"><span class="pre">save_everything</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.save_everything" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.save_everything">
+<span class="sig-name descname"><span class="pre">save_everything</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.save_everything" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves the output HTML and the Chemkin file. If the job is being profiled this is saved as well.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.save_input">
-<code class="sig-name descname"><span class="pre">save_input</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.save_input" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.save_input">
+<span class="sig-name descname"><span class="pre">save_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.save_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save an RMG job to the input file located at <cite>path</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.main.RMG.update_reaction_threshold_and_react_flags">
-<code class="sig-name descname"><span class="pre">update_reaction_threshold_and_react_flags</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn_sys_unimol_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rxn_sys_bimol_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rxn_sys_trimol_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.update_reaction_threshold_and_react_flags" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.update_reaction_threshold_and_react_flags">
+<span class="sig-name descname"><span class="pre">update_reaction_threshold_and_react_flags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn_sys_unimol_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rxn_sys_bimol_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rxn_sys_trimol_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.update_reaction_threshold_and_react_flags" title="Permalink to this definition">¶</a></dt>
 <dd><p>updates the length and boolean value of the unimolecular and bimolecular react and threshold flags</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.rmg.main.initialize_log">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.rmg.main.</span></code><code class="sig-name descname"><span class="pre">initialize_log</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.initialize_log" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.initialize_log">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.rmg.main.</span></span><span class="sig-name descname"><span class="pre">initialize_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.initialize_log" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up a logger for RMG to use to print output to stdout. The
 <cite>verbose</cite> parameter is an integer specifying the amount of log text seen
 at the console; the levels correspond to those of the <code class="xref py py-data docutils literal notranslate"><span class="pre">logging</span></code> module.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.rmg.main.make_profile_graph">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.rmg.main.</span></code><code class="sig-name descname"><span class="pre">make_profile_graph</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stats_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_graph_generation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.make_profile_graph" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.make_profile_graph">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.rmg.main.</span></span><span class="sig-name descname"><span class="pre">make_profile_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stats_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_graph_generation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.make_profile_graph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uses gprof2dot to create a graphviz dot file of the profiling information.</p>
 <p>This requires the gprof2dot package available via <cite>pip install gprof2dot</cite>.
 Render the result using the program ‘dot’ via a command like
@@ -414,11 +415,11 @@ True then the graph generation will be attempted either way</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.rmg.main.process_profile_stats">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.rmg.main.</span></code><code class="sig-name descname"><span class="pre">process_profile_stats</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stats_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.process_profile_stats" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.process_profile_stats">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.rmg.main.</span></span><span class="sig-name descname"><span class="pre">process_profile_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stats_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.process_profile_stats" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -511,7 +512,7 @@ True then the graph generation will be attempted either way</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

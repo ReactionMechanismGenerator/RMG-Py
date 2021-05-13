@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.molecule.AtomType &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -56,11 +57,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-molecule-atomtype">
+  <section id="rmgpy-molecule-atomtype">
 <h1>rmgpy.molecule.AtomType<a class="headerlink" href="#rmgpy-molecule-atomtype" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="atom-types"></span><dl class="py class">
-<dt id="rmgpy.molecule.AtomType">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></code><code class="sig-name descname"><span class="pre">AtomType</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_double</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_double</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">o_double</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_double</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quadruple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">benzene</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lone_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">AtomType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_double</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_double</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">o_double</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_double</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quadruple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">benzene</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lone_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for internal representation of atom types. Using unique objects
 rather than strings allows us to use fast pointer comparisons instead of
 slow string comparisons, as well as store extra metadata. In particular,
@@ -169,8 +170,8 @@ involving this atom type are taken. The attributes are:</p>
 </tbody>
 </table>
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.all_double">
-<code class="sig-name descname"><span class="pre">all_double</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.all_double" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.all_double">
+<span class="sig-name descname"><span class="pre">all_double</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.all_double" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -180,8 +181,8 @@ involving this atom type are taken. The attributes are:</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.benzene">
-<code class="sig-name descname"><span class="pre">benzene</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.benzene" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.benzene">
+<span class="sig-name descname"><span class="pre">benzene</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.benzene" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -191,8 +192,8 @@ involving this atom type are taken. The attributes are:</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.break_bond">
-<code class="sig-name descname"><span class="pre">break_bond</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.break_bond" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.break_bond">
+<span class="sig-name descname"><span class="pre">break_bond</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.break_bond" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -202,8 +203,8 @@ involving this atom type are taken. The attributes are:</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.charge">
-<code class="sig-name descname"><span class="pre">charge</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.charge" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.charge">
+<span class="sig-name descname"><span class="pre">charge</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.charge" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -213,8 +214,8 @@ involving this atom type are taken. The attributes are:</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.decrement_bond">
-<code class="sig-name descname"><span class="pre">decrement_bond</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.decrement_bond" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.decrement_bond">
+<span class="sig-name descname"><span class="pre">decrement_bond</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.decrement_bond" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -224,8 +225,8 @@ involving this atom type are taken. The attributes are:</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.decrement_lone_pair">
-<code class="sig-name descname"><span class="pre">decrement_lone_pair</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.decrement_lone_pair" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.decrement_lone_pair">
+<span class="sig-name descname"><span class="pre">decrement_lone_pair</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.decrement_lone_pair" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -235,8 +236,8 @@ involving this atom type are taken. The attributes are:</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.decrement_radical">
-<code class="sig-name descname"><span class="pre">decrement_radical</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.decrement_radical" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.decrement_radical">
+<span class="sig-name descname"><span class="pre">decrement_radical</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.decrement_radical" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -246,16 +247,16 @@ involving this atom type are taken. The attributes are:</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.AtomType.equivalent">
-<code class="sig-name descname"><span class="pre">equivalent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">AtomType</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.AtomType.equivalent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.equivalent">
+<span class="sig-name descname"><span class="pre">equivalent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">AtomType</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.AtomType.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if two atom types <cite>atomType1</cite> and <cite>atomType2</cite> are
 equivalent or <code class="docutils literal notranslate"><span class="pre">False</span></code>  otherwise. This function respects wildcards,
 e.g. <code class="docutils literal notranslate"><span class="pre">R!H</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">C</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.form_bond">
-<code class="sig-name descname"><span class="pre">form_bond</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.form_bond" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.form_bond">
+<span class="sig-name descname"><span class="pre">form_bond</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.form_bond" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -265,8 +266,8 @@ e.g. <code class="docutils literal notranslate"><span class="pre">R!H</span></co
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.generic">
-<code class="sig-name descname"><span class="pre">generic</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.generic" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.generic">
+<span class="sig-name descname"><span class="pre">generic</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.generic" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -276,14 +277,14 @@ e.g. <code class="docutils literal notranslate"><span class="pre">R!H</span></co
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.AtomType.get_features">
-<code class="sig-name descname"><span class="pre">get_features</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#rmgpy.molecule.AtomType.get_features" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.get_features">
+<span class="sig-name descname"><span class="pre">get_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#rmgpy.molecule.AtomType.get_features" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of the features that are checked to determine atomtype</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.increment_bond">
-<code class="sig-name descname"><span class="pre">increment_bond</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.increment_bond" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.increment_bond">
+<span class="sig-name descname"><span class="pre">increment_bond</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.increment_bond" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -293,8 +294,8 @@ e.g. <code class="docutils literal notranslate"><span class="pre">R!H</span></co
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.increment_lone_pair">
-<code class="sig-name descname"><span class="pre">increment_lone_pair</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.increment_lone_pair" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.increment_lone_pair">
+<span class="sig-name descname"><span class="pre">increment_lone_pair</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.increment_lone_pair" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -304,8 +305,8 @@ e.g. <code class="docutils literal notranslate"><span class="pre">R!H</span></co
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.increment_radical">
-<code class="sig-name descname"><span class="pre">increment_radical</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.increment_radical" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.increment_radical">
+<span class="sig-name descname"><span class="pre">increment_radical</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.increment_radical" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -315,15 +316,15 @@ e.g. <code class="docutils literal notranslate"><span class="pre">R!H</span></co
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.AtomType.is_specific_case_of">
-<code class="sig-name descname"><span class="pre">is_specific_case_of</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">AtomType</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.AtomType.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.is_specific_case_of">
+<span class="sig-name descname"><span class="pre">is_specific_case_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">AtomType</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.AtomType.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if atom type <cite>atomType1</cite> is a specific case of
 atom type <cite>atomType2</cite> or <code class="docutils literal notranslate"><span class="pre">False</span></code>  otherwise.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.label">
-<code class="sig-name descname"><span class="pre">label</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.label" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.label">
+<span class="sig-name descname"><span class="pre">label</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.label" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -333,8 +334,8 @@ atom type <cite>atomType2</cite> or <code class="docutils literal notranslate"><
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.lone_pairs">
-<code class="sig-name descname"><span class="pre">lone_pairs</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.lone_pairs" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.lone_pairs">
+<span class="sig-name descname"><span class="pre">lone_pairs</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.lone_pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -344,8 +345,8 @@ atom type <cite>atomType2</cite> or <code class="docutils literal notranslate"><
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.o_double">
-<code class="sig-name descname"><span class="pre">o_double</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.o_double" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.o_double">
+<span class="sig-name descname"><span class="pre">o_double</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.o_double" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -355,8 +356,8 @@ atom type <cite>atomType2</cite> or <code class="docutils literal notranslate"><
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.quadruple">
-<code class="sig-name descname"><span class="pre">quadruple</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.quadruple" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.quadruple">
+<span class="sig-name descname"><span class="pre">quadruple</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.quadruple" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -366,8 +367,8 @@ atom type <cite>atomType2</cite> or <code class="docutils literal notranslate"><
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.r_double">
-<code class="sig-name descname"><span class="pre">r_double</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.r_double" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.r_double">
+<span class="sig-name descname"><span class="pre">r_double</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.r_double" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -377,8 +378,8 @@ atom type <cite>atomType2</cite> or <code class="docutils literal notranslate"><
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.s_double">
-<code class="sig-name descname"><span class="pre">s_double</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.s_double" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.s_double">
+<span class="sig-name descname"><span class="pre">s_double</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.s_double" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -388,13 +389,13 @@ atom type <cite>atomType2</cite> or <code class="docutils literal notranslate"><
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.molecule.AtomType.set_actions">
-<code class="sig-name descname"><span class="pre">set_actions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">increment_bond</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decrement_bond</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">form_bond</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">break_bond</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">increment_radical</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decrement_radical</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">increment_lone_pair</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decrement_lone_pair</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType.set_actions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.set_actions">
+<span class="sig-name descname"><span class="pre">set_actions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">increment_bond</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decrement_bond</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">form_bond</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">break_bond</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">increment_radical</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decrement_radical</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">increment_lone_pair</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decrement_lone_pair</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType.set_actions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.single">
-<code class="sig-name descname"><span class="pre">single</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.single" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.single">
+<span class="sig-name descname"><span class="pre">single</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.single" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -404,8 +405,8 @@ atom type <cite>atomType2</cite> or <code class="docutils literal notranslate"><
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.specific">
-<code class="sig-name descname"><span class="pre">specific</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.specific" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.specific">
+<span class="sig-name descname"><span class="pre">specific</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.specific" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -415,8 +416,8 @@ atom type <cite>atomType2</cite> or <code class="docutils literal notranslate"><
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.molecule.AtomType.triple">
-<code class="sig-name descname"><span class="pre">triple</span></code><a class="headerlink" href="#rmgpy.molecule.AtomType.triple" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.AtomType.triple">
+<span class="sig-name descname"><span class="pre">triple</span></span><a class="headerlink" href="#rmgpy.molecule.AtomType.triple" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -428,8 +429,8 @@ atom type <cite>atomType2</cite> or <code class="docutils literal notranslate"><
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.molecule.get_atomtype">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></code><code class="sig-name descname"><span class="pre">get_atomtype</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">atom</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">bonds</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">AtomType</span><a class="headerlink" href="#rmgpy.molecule.get_atomtype" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.get_atomtype">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">get_atomtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">atom</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">bonds</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">AtomType</span><a class="headerlink" href="#rmgpy.molecule.get_atomtype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the appropriate atom type for an <a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> object <cite>atom</cite>
 with local bond structure <cite>bonds</cite>, a <code class="docutils literal notranslate"><span class="pre">dict</span></code> containing atom-bond pairs.</p>
 </dd></dl>
@@ -806,7 +807,7 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
 </tr>
 </tbody>
 </table>
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -899,7 +900,7 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

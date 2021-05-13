@@ -4,16 +4,17 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>14. Kinetics Estimation &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -57,11 +58,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="kinetics-estimation">
+  <section id="kinetics-estimation">
 <span id="kinetics"></span><h1><span class="section-number">14. </span>Kinetics Estimation<a class="headerlink" href="#kinetics-estimation" title="Permalink to this headline">¶</a></h1>
 <p>This section gives in-depth descriptions of algorithms used for determining
 kinetic parameters. For general usage of the kinetic database see <a class="reference internal" href="database/kinetics.html#kineticsdatabase"><span class="std std-ref">Kinetics Database</span></a>.</p>
-<div class="section" id="priority-of-kinetic-databases">
+<section id="priority-of-kinetic-databases">
 <h2><span class="section-number">14.1. </span>Priority of Kinetic Databases<a class="headerlink" href="#priority-of-kinetic-databases" title="Permalink to this headline">¶</a></h2>
 <p>When multiple sources are available for kinetic parameters, the following priority
 is followed:</p>
@@ -141,8 +142,8 @@ CCSDTQ with various corrections; similar in cost to Wn.</p>
 i.e., successive cc-pVDZ, cc-pVTZ, cc-pVQZ, etc. calculations with some extrapolation formula.</p>
 <p>CCSD(T)-F12:  Coupled cluster with explicit electron correlation; chemical accuracy (1 kcal/mol)
 possible with double-zeta basis sets.</p>
-</div>
-<div class="section" id="kinetic-families">
+</section>
+<section id="kinetic-families">
 <h2><span class="section-number">14.2. </span>Kinetic Families<a class="headerlink" href="#kinetic-families" title="Permalink to this headline">¶</a></h2>
 <p>To show the algorithm used by kinetic families, the following H-abstraction will be
 used an example</p>
@@ -169,8 +170,8 @@ average for <span class="math notranslate nohighlight">\(A\)</span> is a geometr
 <p>If there are still no “sibling” kinetics, then the groups will continue to fall
 up to more and more general nodes. In the worst case, the root nodes may be used.</p>
 <p>A <a class="reference internal" href="database/kinetics.html#kinetics-families-db"><span class="std std-ref">Full List of the Kinetics Families</span></a> in RMG is available.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -272,7 +273,7 @@ up to more and more general nodes. In the worst case, the root nodes may be used
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

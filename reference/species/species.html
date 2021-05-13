@@ -4,16 +4,17 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.species.Species &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -57,11 +58,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-species-species">
+  <section id="rmgpy-species-species">
 <span id="id1"></span><h1>rmgpy.species.Species<a class="headerlink" href="#rmgpy-species-species" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="rmgpy.species.Species">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.species.</span></code><code class="sig-name descname"><span class="pre">Species</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conformer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecular_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_transfer_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inchi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aug_inchi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetry_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">creation_iteration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explicitly_allowed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.species.</span></span><span class="sig-name descname"><span class="pre">Species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conformer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecular_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_transfer_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inchi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aug_inchi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetry_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">creation_iteration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explicitly_allowed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical species, representing a local minimum on a potential energy
 surface. The attributes are:</p>
 <table class="docutils align-default">
@@ -125,8 +126,8 @@ always considered regardless of this variable</p>
 </tbody>
 </table>
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.aug_inchi">
-<code class="sig-name descname"><span class="pre">aug_inchi</span></code><a class="headerlink" href="#rmgpy.species.Species.aug_inchi" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.aug_inchi">
+<span class="sig-name descname"><span class="pre">aug_inchi</span></span><a class="headerlink" href="#rmgpy.species.Species.aug_inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -136,20 +137,20 @@ always considered regardless of this variable</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.calculate_cp0">
-<code class="sig-name descname"><span class="pre">calculate_cp0</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.calculate_cp0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.calculate_cp0">
+<span class="sig-name descname"><span class="pre">calculate_cp0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.calculate_cp0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the heat capacity at zero temperature in J/mol*K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.calculate_cpinf">
-<code class="sig-name descname"><span class="pre">calculate_cpinf</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.calculate_cpinf" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.calculate_cpinf">
+<span class="sig-name descname"><span class="pre">calculate_cpinf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.calculate_cpinf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the heat capacity at infinite temperature in J/mol*K.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.conformer">
-<code class="sig-name descname"><span class="pre">conformer</span></code><a class="headerlink" href="#rmgpy.species.Species.conformer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.conformer">
+<span class="sig-name descname"><span class="pre">conformer</span></span><a class="headerlink" href="#rmgpy.species.Species.conformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.statmech.conformer.Conformer</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -159,14 +160,14 @@ always considered regardless of this variable</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.contains_surface_site">
-<code class="sig-name descname"><span class="pre">contains_surface_site</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.contains_surface_site" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.contains_surface_site">
+<span class="sig-name descname"><span class="pre">contains_surface_site</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.contains_surface_site" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the species is adsorbed on a surface (or is itself a site), else <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.copy">
-<code class="sig-name descname"><span class="pre">copy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">deep=False</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.species.Species" title="rmgpy.species.Species"><span class="pre">Species</span></a><a class="headerlink" href="#rmgpy.species.Species.copy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">deep=False</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.species.Species" title="rmgpy.species.Species"><span class="pre">Species</span></a><a class="headerlink" href="#rmgpy.species.Species.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a copy of the current species. If the
 kw argument ‘deep’ is True, then a deep copy will be made of the
 Molecule objects in self.molecule.</p>
@@ -174,8 +175,8 @@ Molecule objects in self.molecule.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.creation_iteration">
-<code class="sig-name descname"><span class="pre">creation_iteration</span></code><a class="headerlink" href="#rmgpy.species.Species.creation_iteration" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.creation_iteration">
+<span class="sig-name descname"><span class="pre">creation_iteration</span></span><a class="headerlink" href="#rmgpy.species.Species.creation_iteration" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -185,8 +186,8 @@ Molecule objects in self.molecule.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.energy_transfer_model">
-<code class="sig-name descname"><span class="pre">energy_transfer_model</span></code><a class="headerlink" href="#rmgpy.species.Species.energy_transfer_model" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.energy_transfer_model">
+<span class="sig-name descname"><span class="pre">energy_transfer_model</span></span><a class="headerlink" href="#rmgpy.species.Species.energy_transfer_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -196,8 +197,8 @@ Molecule objects in self.molecule.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.explicitly_allowed">
-<code class="sig-name descname"><span class="pre">explicitly_allowed</span></code><a class="headerlink" href="#rmgpy.species.Species.explicitly_allowed" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.explicitly_allowed">
+<span class="sig-name descname"><span class="pre">explicitly_allowed</span></span><a class="headerlink" href="#rmgpy.species.Species.explicitly_allowed" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -207,14 +208,14 @@ Molecule objects in self.molecule.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.fingerprint">
-<code class="sig-name descname"><span class="pre">fingerprint</span></code><a class="headerlink" href="#rmgpy.species.Species.fingerprint" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.fingerprint">
+<span class="sig-name descname"><span class="pre">fingerprint</span></span><a class="headerlink" href="#rmgpy.species.Species.fingerprint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fingerprint of this species, taken from molecule attribute. Read-only.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.from_adjacency_list">
-<code class="sig-name descname"><span class="pre">from_adjacency_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">adjlist</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_charge_exception=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.from_adjacency_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.from_adjacency_list">
+<span class="sig-name descname"><span class="pre">from_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">adjlist</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_charge_exception=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.from_adjacency_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the structure of a species as a <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object from the
 given adjacency list <cite>adjlist</cite> and store it as the first entry of a
 list in the <cite>molecule</cite> attribute. Does not generate resonance isomers
@@ -222,8 +223,8 @@ of the loaded molecule.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.from_smiles">
-<code class="sig-name descname"><span class="pre">from_smiles</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smiles</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.from_smiles" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.from_smiles">
+<span class="sig-name descname"><span class="pre">from_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smiles</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.from_smiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the structure of a species as a <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object from the
 given SMILES string <cite>smiles</cite> and store it as the first entry of a
 list in the <cite>molecule</cite> attribute. Does not generate resonance isomers
@@ -231,20 +232,20 @@ of the loaded molecule.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.generate_aug_inchi">
-<code class="sig-name descname"><span class="pre">generate_aug_inchi</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_aug_inchi" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.generate_aug_inchi">
+<span class="sig-name descname"><span class="pre">generate_aug_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_aug_inchi" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.generate_energy_transfer_model">
-<code class="sig-name descname"><span class="pre">generate_energy_transfer_model</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_energy_transfer_model" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.generate_energy_transfer_model">
+<span class="sig-name descname"><span class="pre">generate_energy_transfer_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_energy_transfer_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the collisional energy transfer model parameters for the
 species. This “algorithm” is <em>very</em> much in need of improvement.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.generate_resonance_structures">
-<code class="sig-name descname"><span class="pre">generate_resonance_structures</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">keep_isomorphic=True</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">filter_structures=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.generate_resonance_structures">
+<span class="sig-name descname"><span class="pre">generate_resonance_structures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">keep_isomorphic=True</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">filter_structures=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance structures of this species. The isomers are
 stored as a list in the <cite>molecule</cite> attribute. If the length of
 <cite>molecule</cite> is already greater than one, it is assumed that all of the
@@ -252,83 +253,83 @@ resonance structures have already been generated.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.generate_statmech">
-<code class="sig-name descname"><span class="pre">generate_statmech</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_statmech" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.generate_statmech">
+<span class="sig-name descname"><span class="pre">generate_statmech</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_statmech" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate molecular degree of freedom data for the species. You must
 have already provided a thermodynamics model using e.g.
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_thermo_data()</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.generate_transport_data">
-<code class="sig-name descname"><span class="pre">generate_transport_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_transport_data" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.generate_transport_data">
+<span class="sig-name descname"><span class="pre">generate_transport_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_transport_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate the transport_data parameters for the species.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.get_augmented_inchi">
-<code class="sig-name descname"><span class="pre">get_augmented_inchi</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_augmented_inchi" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.get_augmented_inchi">
+<span class="sig-name descname"><span class="pre">get_augmented_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_augmented_inchi" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.get_density_of_states">
-<code class="sig-name descname"><span class="pre">get_density_of_states</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.species.Species.get_density_of_states" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.get_density_of_states">
+<span class="sig-name descname"><span class="pre">get_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.species.Species.get_density_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states <span class="math notranslate nohighlight">\(\rho(E) \ dE\)</span> at the specified
 energies <cite>e_list</cite> in J/mol above the ground state.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.get_enthalpy">
-<code class="sig-name descname"><span class="pre">get_enthalpy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.get_enthalpy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.get_enthalpy">
+<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.get_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol for the species at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.get_entropy">
-<code class="sig-name descname"><span class="pre">get_entropy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.get_entropy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.get_entropy">
+<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.get_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K for the species at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.get_free_energy">
-<code class="sig-name descname"><span class="pre">get_free_energy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.get_free_energy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.get_free_energy">
+<span class="sig-name descname"><span class="pre">get_free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.get_free_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy in J/mol for the species at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.get_heat_capacity">
-<code class="sig-name descname"><span class="pre">get_heat_capacity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.get_heat_capacity">
+<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K for the species at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.get_partition_function">
-<code class="sig-name descname"><span class="pre">get_partition_function</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.get_partition_function" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.get_partition_function">
+<span class="sig-name descname"><span class="pre">get_partition_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.species.Species.get_partition_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the partition function for the species at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.get_resonance_hybrid">
-<code class="sig-name descname"><span class="pre">get_resonance_hybrid</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_resonance_hybrid" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.get_resonance_hybrid">
+<span class="sig-name descname"><span class="pre">get_resonance_hybrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_resonance_hybrid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a molecule object with bond orders that are the average
 of all the resonance structures.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.get_sum_of_states">
-<code class="sig-name descname"><span class="pre">get_sum_of_states</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.species.Species.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.get_sum_of_states">
+<span class="sig-name descname"><span class="pre">get_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.species.Species.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states <span class="math notranslate nohighlight">\(N(E)\)</span> at the specified energies <cite>e_list</cite>
 in J/mol.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.get_symmetry_number">
-<code class="sig-name descname"><span class="pre">get_symmetry_number</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.get_symmetry_number">
+<span class="sig-name descname"><span class="pre">get_symmetry_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_symmetry_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the symmetry number for the species, which is the highest symmetry number amongst
 its resonance isomers and the resonance hybrid.
 This function is currently used for website purposes and testing only as it
@@ -336,8 +337,8 @@ requires additional calculate_symmetry_number calls.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.get_thermo_data">
-<code class="sig-name descname"><span class="pre">get_thermo_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_thermo_data" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.get_thermo_data">
+<span class="sig-name descname"><span class="pre">get_thermo_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a <cite>thermoData</cite> object of the current Species object.</p>
 <p>If the thermo object already exists, it is either of the (Wilhoit, ThermoData)
 type, or it is a Future.</p>
@@ -348,41 +349,41 @@ If the thermo object did not exist yet, the thermo object is generated.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.get_transport_data">
-<code class="sig-name descname"><span class="pre">get_transport_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_transport_data" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.get_transport_data">
+<span class="sig-name descname"><span class="pre">get_transport_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_transport_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the transport data associated with this species, and
 calculates it if it is not yet available.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.has_reactive_molecule">
-<code class="sig-name descname"><span class="pre">has_reactive_molecule</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.has_reactive_molecule" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.has_reactive_molecule">
+<span class="sig-name descname"><span class="pre">has_reactive_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.has_reactive_molecule" title="Permalink to this definition">¶</a></dt>
 <dd><p><cite>True</cite> if the species has at least one reactive molecule, <cite>False</cite> otherwise</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.has_statmech">
-<code class="sig-name descname"><span class="pre">has_statmech</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.has_statmech" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.has_statmech">
+<span class="sig-name descname"><span class="pre">has_statmech</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.has_statmech" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the species has statistical mechanical parameters,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.has_thermo">
-<code class="sig-name descname"><span class="pre">has_thermo</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.has_thermo" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.has_thermo">
+<span class="sig-name descname"><span class="pre">has_thermo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.has_thermo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the species has thermodynamic parameters, or
 <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.inchi">
-<code class="sig-name descname"><span class="pre">inchi</span></code><a class="headerlink" href="#rmgpy.species.Species.inchi" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.inchi">
+<span class="sig-name descname"><span class="pre">inchi</span></span><a class="headerlink" href="#rmgpy.species.Species.inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>InChI string representation of this species. Read-only.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.index">
-<code class="sig-name descname"><span class="pre">index</span></code><a class="headerlink" href="#rmgpy.species.Species.index" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.index">
+<span class="sig-name descname"><span class="pre">index</span></span><a class="headerlink" href="#rmgpy.species.Species.index" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -392,16 +393,16 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.is_identical">
-<code class="sig-name descname"><span class="pre">is_identical</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">other</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.is_identical" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.is_identical">
+<span class="sig-name descname"><span class="pre">is_identical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">other</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.is_identical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if at least one molecule of the species is identical to <cite>other</cite>,
 which can be either a <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object or a <a class="reference internal" href="#rmgpy.species.Species" title="rmgpy.species.Species"><code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code></a> object.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">strict=False</span></code>, performs the check ignoring electrons and resonance structures.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.is_isomorphic">
-<code class="sig-name descname"><span class="pre">is_isomorphic</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">other</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">generate_initial_map=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.is_isomorphic" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.is_isomorphic">
+<span class="sig-name descname"><span class="pre">is_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">other</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">generate_initial_map=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.is_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the species is isomorphic to <cite>other</cite>, which can be
 either a <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object or a <a class="reference internal" href="#rmgpy.species.Species" title="rmgpy.species.Species"><code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code></a> object.</p>
 <dl class="field-list simple">
@@ -416,8 +417,8 @@ either a <code class="xref py py-class docutils literal notranslate"><span class
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.is_solvent">
-<code class="sig-name descname"><span class="pre">is_solvent</span></code><a class="headerlink" href="#rmgpy.species.Species.is_solvent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.is_solvent">
+<span class="sig-name descname"><span class="pre">is_solvent</span></span><a class="headerlink" href="#rmgpy.species.Species.is_solvent" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -427,21 +428,21 @@ either a <code class="xref py py-class docutils literal notranslate"><span class
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.is_structure_in_list">
-<code class="sig-name descname"><span class="pre">is_structure_in_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">species_list</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.is_structure_in_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.is_structure_in_list">
+<span class="sig-name descname"><span class="pre">is_structure_in_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">species_list</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.is_structure_in_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if at least one Molecule in self is isomorphic with at least one other Molecule in at least
 one Species in species list.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.is_surface_site">
-<code class="sig-name descname"><span class="pre">is_surface_site</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.is_surface_site" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.is_surface_site">
+<span class="sig-name descname"><span class="pre">is_surface_site</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.species.Species.is_surface_site" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the species is a vacant surface site.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.label">
-<code class="sig-name descname"><span class="pre">label</span></code><a class="headerlink" href="#rmgpy.species.Species.label" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.label">
+<span class="sig-name descname"><span class="pre">label</span></span><a class="headerlink" href="#rmgpy.species.Species.label" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -451,8 +452,8 @@ one Species in species list.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.molecular_weight">
-<code class="sig-name descname"><span class="pre">molecular_weight</span></code><a class="headerlink" href="#rmgpy.species.Species.molecular_weight" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.molecular_weight">
+<span class="sig-name descname"><span class="pre">molecular_weight</span></span><a class="headerlink" href="#rmgpy.species.Species.molecular_weight" title="Permalink to this definition">¶</a></dt>
 <dd><p>value_si is in kg/molecule not kg/mol)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -462,8 +463,8 @@ one Species in species list.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.molecule">
-<code class="sig-name descname"><span class="pre">molecule</span></code><a class="headerlink" href="#rmgpy.species.Species.molecule" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.molecule">
+<span class="sig-name descname"><span class="pre">molecule</span></span><a class="headerlink" href="#rmgpy.species.Species.molecule" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -473,14 +474,14 @@ one Species in species list.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.multiplicity">
-<code class="sig-name descname"><span class="pre">multiplicity</span></code><a class="headerlink" href="#rmgpy.species.Species.multiplicity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.multiplicity">
+<span class="sig-name descname"><span class="pre">multiplicity</span></span><a class="headerlink" href="#rmgpy.species.Species.multiplicity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fingerprint of this species, taken from molecule attribute. Read-only.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.props">
-<code class="sig-name descname"><span class="pre">props</span></code><a class="headerlink" href="#rmgpy.species.Species.props" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.props">
+<span class="sig-name descname"><span class="pre">props</span></span><a class="headerlink" href="#rmgpy.species.Species.props" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -490,8 +491,8 @@ one Species in species list.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.reactive">
-<code class="sig-name descname"><span class="pre">reactive</span></code><a class="headerlink" href="#rmgpy.species.Species.reactive" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.reactive">
+<span class="sig-name descname"><span class="pre">reactive</span></span><a class="headerlink" href="#rmgpy.species.Species.reactive" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -501,33 +502,33 @@ one Species in species list.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.set_e0_with_thermo">
-<code class="sig-name descname"><span class="pre">set_e0_with_thermo</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.set_e0_with_thermo" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.set_e0_with_thermo">
+<span class="sig-name descname"><span class="pre">set_e0_with_thermo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.set_e0_with_thermo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper method that sets species’ E0 using the species’ thermo data</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.set_structure">
-<code class="sig-name descname"><span class="pre">set_structure</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">structure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.set_structure" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.set_structure">
+<span class="sig-name descname"><span class="pre">set_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">structure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.set_structure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set self.molecule from <cite>structure</cite> which could be either a SMILES string or an adjacency list multi-line string</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.smiles">
-<code class="sig-name descname"><span class="pre">smiles</span></code><a class="headerlink" href="#rmgpy.species.Species.smiles" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.smiles">
+<span class="sig-name descname"><span class="pre">smiles</span></span><a class="headerlink" href="#rmgpy.species.Species.smiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>SMILES string representation of this species. Read-only.</p>
 <p>Note that SMILES representations for different resonance structures of the same species may be different.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.sorting_key">
-<code class="sig-name descname"><span class="pre">sorting_key</span></code><a class="headerlink" href="#rmgpy.species.Species.sorting_key" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.sorting_key">
+<span class="sig-name descname"><span class="pre">sorting_key</span></span><a class="headerlink" href="#rmgpy.species.Species.sorting_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a sorting key for comparing Species objects. Read-only</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.symmetry_number">
-<code class="sig-name descname"><span class="pre">symmetry_number</span></code><a class="headerlink" href="#rmgpy.species.Species.symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.symmetry_number">
+<span class="sig-name descname"><span class="pre">symmetry_number</span></span><a class="headerlink" href="#rmgpy.species.Species.symmetry_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘float’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -537,8 +538,8 @@ one Species in species list.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.thermo">
-<code class="sig-name descname"><span class="pre">thermo</span></code><a class="headerlink" href="#rmgpy.species.Species.thermo" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.thermo">
+<span class="sig-name descname"><span class="pre">thermo</span></span><a class="headerlink" href="#rmgpy.species.Species.thermo" title="Permalink to this definition">¶</a></dt>
 <dd><p>object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -548,14 +549,14 @@ one Species in species list.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.to_adjacency_list">
-<code class="sig-name descname"><span class="pre">to_adjacency_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.to_adjacency_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.to_adjacency_list">
+<span class="sig-name descname"><span class="pre">to_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.to_adjacency_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string containing each of the molecules’ adjacency lists.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.to_cantera">
-<code class="sig-name descname"><span class="pre">to_cantera</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_chemkin_identifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.to_cantera" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.to_cantera">
+<span class="sig-name descname"><span class="pre">to_cantera</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_chemkin_identifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.to_cantera" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the RMG Species object to a Cantera Species object
 with the appropriate thermo data.</p>
 <p>If use_chemkin_identifier is set to False, the species label is used
@@ -563,14 +564,14 @@ instead. Be sure that species’ labels are unique when setting it False.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.species.Species.to_chemkin">
-<code class="sig-name descname"><span class="pre">to_chemkin</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.to_chemkin" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.to_chemkin">
+<span class="sig-name descname"><span class="pre">to_chemkin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.to_chemkin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the chemkin-formatted string for this species.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.species.Species.transport_data">
-<code class="sig-name descname"><span class="pre">transport_data</span></code><a class="headerlink" href="#rmgpy.species.Species.transport_data" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.species.Species.transport_data">
+<span class="sig-name descname"><span class="pre">transport_data</span></span><a class="headerlink" href="#rmgpy.species.Species.transport_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -581,7 +582,7 @@ instead. Be sure that species’ labels are unique when setting it False.</p>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -674,7 +675,7 @@ instead. Be sure that species’ labels are unique when setting it False.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

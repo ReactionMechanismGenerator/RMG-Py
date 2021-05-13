@@ -4,16 +4,17 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.solver.SurfaceReactor &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -57,16 +58,16 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-solver-surfacereactor">
+  <section id="rmgpy-solver-surfacereactor">
 <h1>rmgpy.solver.SurfaceReactor<a class="headerlink" href="#rmgpy-solver-surfacereactor" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="rmgpy.solver.SurfaceReactor">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.solver.</span></code><code class="sig-name descname"><span class="pre">SurfaceReactor</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_initial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_gas_mole_fractions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_surface_coverages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_volume_ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_site_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">termination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitive_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.solver.</span></span><span class="sig-name descname"><span class="pre">SurfaceReactor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_initial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_gas_mole_fractions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_surface_coverages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_volume_ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_site_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">termination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitive_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor" title="Permalink to this definition">¶</a></dt>
 <dd><p>A reaction system consisting of a heterogeneous, isothermal, constant volume batch
 reactor.</p>
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.Keq">
-<code class="sig-name descname"><span class="pre">Keq</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.Keq" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.Keq">
+<span class="sig-name descname"><span class="pre">Keq</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.Keq" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -76,8 +77,8 @@ reactor.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.P_initial">
-<code class="sig-name descname"><span class="pre">P_initial</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.P_initial" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.P_initial">
+<span class="sig-name descname"><span class="pre">P_initial</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.P_initial" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.quantity.ScalarQuantity</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -87,8 +88,8 @@ reactor.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.Prange">
-<code class="sig-name descname"><span class="pre">Prange</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.Prange" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.Prange">
+<span class="sig-name descname"><span class="pre">Prange</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.Prange" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -98,8 +99,8 @@ reactor.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.T">
-<code class="sig-name descname"><span class="pre">T</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.T" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.T">
+<span class="sig-name descname"><span class="pre">T</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.T" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.quantity.ScalarQuantity</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -109,8 +110,8 @@ reactor.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.Trange">
-<code class="sig-name descname"><span class="pre">Trange</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.Trange" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.Trange">
+<span class="sig-name descname"><span class="pre">Trange</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.Trange" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -120,8 +121,8 @@ reactor.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.V">
-<code class="sig-name descname"><span class="pre">V</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.V" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.V">
+<span class="sig-name descname"><span class="pre">V</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.V" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -131,15 +132,15 @@ reactor.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.add_reactions_to_surface">
-<code class="sig-name descname"><span class="pre">add_reactions_to_surface</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">new_surface_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">new_surface_reaction_inds</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.add_reactions_to_surface" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.add_reactions_to_surface">
+<span class="sig-name descname"><span class="pre">add_reactions_to_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">new_surface_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">new_surface_reaction_inds</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_species</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.add_reactions_to_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>moves new surface reactions to the surface
 done after the while loop before the simulate call ends</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.advance">
-<code class="sig-name descname"><span class="pre">advance</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.advance" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.advance">
+<span class="sig-name descname"><span class="pre">advance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.advance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate from the current value of the independent variable to a
 specified value <cite>tout</cite>, taking as many steps as necessary. The resulting
 values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and
@@ -148,8 +149,8 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.atol_array">
-<code class="sig-name descname"><span class="pre">atol_array</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.atol_array" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.atol_array">
+<span class="sig-name descname"><span class="pre">atol_array</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.atol_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -159,8 +160,8 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.bimolecular_threshold">
-<code class="sig-name descname"><span class="pre">bimolecular_threshold</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.bimolecular_threshold" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.bimolecular_threshold">
+<span class="sig-name descname"><span class="pre">bimolecular_threshold</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.bimolecular_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -170,20 +171,20 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.compute_network_variables">
-<code class="sig-name descname"><span class="pre">compute_network_variables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdep_networks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.compute_network_variables" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.compute_network_variables">
+<span class="sig-name descname"><span class="pre">compute_network_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdep_networks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.compute_network_variables" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.compute_rate_derivative">
-<code class="sig-name descname"><span class="pre">compute_rate_derivative</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.compute_rate_derivative" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.compute_rate_derivative">
+<span class="sig-name descname"><span class="pre">compute_rate_derivative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.compute_rate_derivative" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns derivative vector df/dk_j where dy/dt = f(y, t, k) and
 k_j is the rate parameter for the jth core reaction.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.constant_volume">
-<code class="sig-name descname"><span class="pre">constant_volume</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.constant_volume" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.constant_volume">
+<span class="sig-name descname"><span class="pre">constant_volume</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.constant_volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -193,16 +194,16 @@ k_j is the rate parameter for the jth core reaction.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.convert_initial_keys_to_species_objects">
-<code class="sig-name descname"><span class="pre">convert_initial_keys_to_species_objects</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.convert_initial_keys_to_species_objects" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.convert_initial_keys_to_species_objects">
+<span class="sig-name descname"><span class="pre">convert_initial_keys_to_species_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.convert_initial_keys_to_species_objects" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the initial_gas_mole_fractions and initial_surface_coverages dictionaries
 from species names into species objects,
 using the given dictionary of species.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.core_reaction_rates">
-<code class="sig-name descname"><span class="pre">core_reaction_rates</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.core_reaction_rates" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.core_reaction_rates">
+<span class="sig-name descname"><span class="pre">core_reaction_rates</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.core_reaction_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -212,8 +213,8 @@ using the given dictionary of species.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.core_species_concentrations">
-<code class="sig-name descname"><span class="pre">core_species_concentrations</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.core_species_concentrations" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.core_species_concentrations">
+<span class="sig-name descname"><span class="pre">core_species_concentrations</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.core_species_concentrations" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -223,8 +224,8 @@ using the given dictionary of species.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.core_species_consumption_rates">
-<code class="sig-name descname"><span class="pre">core_species_consumption_rates</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.core_species_consumption_rates" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.core_species_consumption_rates">
+<span class="sig-name descname"><span class="pre">core_species_consumption_rates</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.core_species_consumption_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -234,8 +235,8 @@ using the given dictionary of species.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.core_species_production_rates">
-<code class="sig-name descname"><span class="pre">core_species_production_rates</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.core_species_production_rates" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.core_species_production_rates">
+<span class="sig-name descname"><span class="pre">core_species_production_rates</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.core_species_production_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -245,8 +246,8 @@ using the given dictionary of species.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.core_species_rates">
-<code class="sig-name descname"><span class="pre">core_species_rates</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.core_species_rates" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.core_species_rates">
+<span class="sig-name descname"><span class="pre">core_species_rates</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.core_species_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -256,8 +257,8 @@ using the given dictionary of species.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.dydt0">
-<code class="sig-name descname"><span class="pre">dydt0</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.dydt0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.dydt0">
+<span class="sig-name descname"><span class="pre">dydt0</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.dydt0" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -267,8 +268,8 @@ using the given dictionary of species.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.edge_reaction_rates">
-<code class="sig-name descname"><span class="pre">edge_reaction_rates</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.edge_reaction_rates" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.edge_reaction_rates">
+<span class="sig-name descname"><span class="pre">edge_reaction_rates</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.edge_reaction_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -278,8 +279,8 @@ using the given dictionary of species.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.edge_species_rates">
-<code class="sig-name descname"><span class="pre">edge_species_rates</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.edge_species_rates" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.edge_species_rates">
+<span class="sig-name descname"><span class="pre">edge_species_rates</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.edge_species_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -289,56 +290,56 @@ using the given dictionary of species.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.generate_rate_coefficients">
-<code class="sig-name descname"><span class="pre">generate_rate_coefficients</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.generate_rate_coefficients" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.generate_rate_coefficients">
+<span class="sig-name descname"><span class="pre">generate_rate_coefficients</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.generate_rate_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>Populates the kf, kb and equilibriumConstants
 arrays with the values computed at the temperature and (effective) pressure of the
 reaction system.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.generate_reactant_product_indices">
-<code class="sig-name descname"><span class="pre">generate_reactant_product_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.generate_reactant_product_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.generate_reactant_product_indices">
+<span class="sig-name descname"><span class="pre">generate_reactant_product_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.generate_reactant_product_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a matrix for the reactants and products.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.generate_reaction_indices">
-<code class="sig-name descname"><span class="pre">generate_reaction_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.generate_reaction_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.generate_reaction_indices">
+<span class="sig-name descname"><span class="pre">generate_reaction_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.generate_reaction_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assign an index to each reaction (core first, then edge) and
 store the (reaction, index) pair in a dictionary.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.generate_species_indices">
-<code class="sig-name descname"><span class="pre">generate_species_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.generate_species_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.generate_species_indices">
+<span class="sig-name descname"><span class="pre">generate_species_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.generate_species_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assign an index to each species (core first, then edge) and
 store the (species, index) pair in a dictionary.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.get_layering_indices">
-<code class="sig-name descname"><span class="pre">get_layering_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.get_layering_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.get_layering_indices">
+<span class="sig-name descname"><span class="pre">get_layering_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.get_layering_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>determines the edge reaction indices that indicate reactions that are valid for movement from
 edge to surface based on the layering constraint</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.get_species_index">
-<code class="sig-name descname"><span class="pre">get_species_index</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.get_species_index" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.get_species_index">
+<span class="sig-name descname"><span class="pre">get_species_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.get_species_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieves the index that is associated with the parameter species
 from the species index dictionary.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.get_threshold_rate_constants">
-<code class="sig-name descname"><span class="pre">get_threshold_rate_constants</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.get_threshold_rate_constants" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.get_threshold_rate_constants">
+<span class="sig-name descname"><span class="pre">get_threshold_rate_constants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.get_threshold_rate_constants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the threshold rate constants for reaction filtering.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.initial_gas_mole_fractions">
-<code class="sig-name descname"><span class="pre">initial_gas_mole_fractions</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initial_gas_mole_fractions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.initial_gas_mole_fractions">
+<span class="sig-name descname"><span class="pre">initial_gas_mole_fractions</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initial_gas_mole_fractions" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -348,8 +349,8 @@ from the species index dictionary.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.initial_surface_coverages">
-<code class="sig-name descname"><span class="pre">initial_surface_coverages</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initial_surface_coverages" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.initial_surface_coverages">
+<span class="sig-name descname"><span class="pre">initial_surface_coverages</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initial_surface_coverages" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -359,8 +360,8 @@ from the species index dictionary.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.initialize">
-<code class="sig-name descname"><span class="pre">initialize</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initialize" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the DASPK solver by setting the initial values of the
 independent variable <cite>t0</cite>, dependent variables <cite>y0</cite>, and first
 derivatives <cite>dydt0</cite>. If provided, the derivatives must be consistent
@@ -372,20 +373,20 @@ individual values for each dependent variable.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.initialize_model">
-<code class="sig-name descname"><span class="pre">initialize_model</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_species=[]</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_reactions=[]</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">pdep_networks=None</span></em>, <em class="sig-param"><span class="pre">atol=1e-16</span></em>, <em class="sig-param"><span class="pre">rtol=1e-8</span></em>, <em class="sig-param"><span class="pre">sensitivity=False</span></em>, <em class="sig-param"><span class="pre">sens_atol=1e-6</span></em>, <em class="sig-param"><span class="pre">sens_rtol=1e-4</span></em>, <em class="sig-param"><span class="pre">filter_reactions=False</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">conditions=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initialize_model" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.initialize_model">
+<span class="sig-name descname"><span class="pre">initialize_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_species=[]</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_reactions=[]</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">pdep_networks=None</span></em>, <em class="sig-param"><span class="pre">atol=1e-16</span></em>, <em class="sig-param"><span class="pre">rtol=1e-8</span></em>, <em class="sig-param"><span class="pre">sensitivity=False</span></em>, <em class="sig-param"><span class="pre">sens_atol=1e-6</span></em>, <em class="sig-param"><span class="pre">sens_rtol=1e-4</span></em>, <em class="sig-param"><span class="pre">filter_reactions=False</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">conditions=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initialize_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a simulation of the simple reactor using the provided kinetic
 model.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.initialize_solver">
-<code class="sig-name descname"><span class="pre">initialize_solver</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initialize_solver" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.initialize_solver">
+<span class="sig-name descname"><span class="pre">initialize_solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initialize_solver" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.initialize_surface">
-<code class="sig-name descname"><span class="pre">initialize_surface</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_reactions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initialize_surface" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.initialize_surface">
+<span class="sig-name descname"><span class="pre">initialize_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_reactions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initialize_surface" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>removes surface_species and surface_reactions from  until they are self consistent:</dt><dd><ol class="arabic simple">
 <li><p>every reaction has one species in the surface</p></li>
@@ -396,14 +397,14 @@ model.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.initiate_tolerances">
-<code class="sig-name descname"><span class="pre">initiate_tolerances</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_atol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initiate_tolerances" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.initiate_tolerances">
+<span class="sig-name descname"><span class="pre">initiate_tolerances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_atol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.initiate_tolerances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the number of differential equations and initializes the tolerance arrays.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.jacobian_matrix">
-<code class="sig-name descname"><span class="pre">jacobian_matrix</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.jacobian_matrix" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.jacobian_matrix">
+<span class="sig-name descname"><span class="pre">jacobian_matrix</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.jacobian_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -413,8 +414,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.kb">
-<code class="sig-name descname"><span class="pre">kb</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.kb" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.kb">
+<span class="sig-name descname"><span class="pre">kb</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.kb" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -424,8 +425,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.kf">
-<code class="sig-name descname"><span class="pre">kf</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.kf" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.kf">
+<span class="sig-name descname"><span class="pre">kf</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.kf" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -435,27 +436,27 @@ model.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.log_conversions">
-<code class="sig-name descname"><span class="pre">log_conversions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.log_conversions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.log_conversions">
+<span class="sig-name descname"><span class="pre">log_conversions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.log_conversions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log information about the current conversion values.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.log_initial_conditions">
-<code class="sig-name descname"><span class="pre">log_initial_conditions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.log_initial_conditions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.log_initial_conditions">
+<span class="sig-name descname"><span class="pre">log_initial_conditions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.log_initial_conditions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log to the console some information about this reaction system.</p>
 <p>Should correspond to the calculations done in set_initial_conditions.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.log_rates">
-<code class="sig-name descname"><span class="pre">log_rates</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">char_rate</span></em>, <em class="sig-param"><span class="pre">species</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">species_rate</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">max_dif_ln_accum_num</span></em>, <em class="sig-param"><span class="pre">network</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">network_rate</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.log_rates" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.log_rates">
+<span class="sig-name descname"><span class="pre">log_rates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">char_rate</span></em>, <em class="sig-param"><span class="pre">species</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">species_rate</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">max_dif_ln_accum_num</span></em>, <em class="sig-param"><span class="pre">network</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">network_rate</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.log_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log information about the current maximum species and network rates.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.max_edge_species_rate_ratios">
-<code class="sig-name descname"><span class="pre">max_edge_species_rate_ratios</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.max_edge_species_rate_ratios">
+<span class="sig-name descname"><span class="pre">max_edge_species_rate_ratios</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -465,8 +466,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.max_network_leak_rate_ratios">
-<code class="sig-name descname"><span class="pre">max_network_leak_rate_ratios</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.max_network_leak_rate_ratios" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.max_network_leak_rate_ratios">
+<span class="sig-name descname"><span class="pre">max_network_leak_rate_ratios</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.max_network_leak_rate_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -476,8 +477,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.n_sims">
-<code class="sig-name descname"><span class="pre">n_sims</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.n_sims" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.n_sims">
+<span class="sig-name descname"><span class="pre">n_sims</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.n_sims" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -487,8 +488,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.neq">
-<code class="sig-name descname"><span class="pre">neq</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.neq" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.neq">
+<span class="sig-name descname"><span class="pre">neq</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.neq" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -498,8 +499,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.network_indices">
-<code class="sig-name descname"><span class="pre">network_indices</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.network_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.network_indices">
+<span class="sig-name descname"><span class="pre">network_indices</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.network_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -509,8 +510,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.network_leak_coefficients">
-<code class="sig-name descname"><span class="pre">network_leak_coefficients</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.network_leak_coefficients" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.network_leak_coefficients">
+<span class="sig-name descname"><span class="pre">network_leak_coefficients</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.network_leak_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -520,8 +521,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.network_leak_rates">
-<code class="sig-name descname"><span class="pre">network_leak_rates</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.network_leak_rates" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.network_leak_rates">
+<span class="sig-name descname"><span class="pre">network_leak_rates</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.network_leak_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -531,8 +532,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.num_core_reactions">
-<code class="sig-name descname"><span class="pre">num_core_reactions</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.num_core_reactions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.num_core_reactions">
+<span class="sig-name descname"><span class="pre">num_core_reactions</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.num_core_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -542,8 +543,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.num_core_species">
-<code class="sig-name descname"><span class="pre">num_core_species</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.num_core_species" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.num_core_species">
+<span class="sig-name descname"><span class="pre">num_core_species</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.num_core_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -553,8 +554,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.num_edge_reactions">
-<code class="sig-name descname"><span class="pre">num_edge_reactions</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.num_edge_reactions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.num_edge_reactions">
+<span class="sig-name descname"><span class="pre">num_edge_reactions</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.num_edge_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -564,8 +565,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.num_edge_species">
-<code class="sig-name descname"><span class="pre">num_edge_species</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.num_edge_species" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.num_edge_species">
+<span class="sig-name descname"><span class="pre">num_edge_species</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.num_edge_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -575,8 +576,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.num_pdep_networks">
-<code class="sig-name descname"><span class="pre">num_pdep_networks</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.num_pdep_networks" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.num_pdep_networks">
+<span class="sig-name descname"><span class="pre">num_pdep_networks</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.num_pdep_networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -586,8 +587,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.product_indices">
-<code class="sig-name descname"><span class="pre">product_indices</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.product_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.product_indices">
+<span class="sig-name descname"><span class="pre">product_indices</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.product_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -597,8 +598,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.prunable_network_indices">
-<code class="sig-name descname"><span class="pre">prunable_network_indices</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.prunable_network_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.prunable_network_indices">
+<span class="sig-name descname"><span class="pre">prunable_network_indices</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.prunable_network_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -608,8 +609,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.prunable_networks">
-<code class="sig-name descname"><span class="pre">prunable_networks</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.prunable_networks" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.prunable_networks">
+<span class="sig-name descname"><span class="pre">prunable_networks</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.prunable_networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -619,8 +620,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.prunable_species">
-<code class="sig-name descname"><span class="pre">prunable_species</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.prunable_species" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.prunable_species">
+<span class="sig-name descname"><span class="pre">prunable_species</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.prunable_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -630,8 +631,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.prunable_species_indices">
-<code class="sig-name descname"><span class="pre">prunable_species_indices</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.prunable_species_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.prunable_species_indices">
+<span class="sig-name descname"><span class="pre">prunable_species_indices</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.prunable_species_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -641,8 +642,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.reactant_indices">
-<code class="sig-name descname"><span class="pre">reactant_indices</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.reactant_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.reactant_indices">
+<span class="sig-name descname"><span class="pre">reactant_indices</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.reactant_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -652,8 +653,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.reaction_index">
-<code class="sig-name descname"><span class="pre">reaction_index</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.reaction_index" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.reaction_index">
+<span class="sig-name descname"><span class="pre">reaction_index</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.reaction_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -663,8 +664,8 @@ model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.reactions_on_surface">
-<code class="sig-name descname"><span class="pre">reactions_on_surface</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.reactions_on_surface" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.reactions_on_surface">
+<span class="sig-name descname"><span class="pre">reactions_on_surface</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.reactions_on_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -674,23 +675,23 @@ model.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.reset_max_edge_species_rate_ratios">
-<code class="sig-name descname"><span class="pre">reset_max_edge_species_rate_ratios</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.reset_max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.reset_max_edge_species_rate_ratios">
+<span class="sig-name descname"><span class="pre">reset_max_edge_species_rate_ratios</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.reset_max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function sets max_edge_species_rate_ratios back to zero
 for pruning of ranged reactors it is important to avoid doing this
 every initialization</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.residual">
-<code class="sig-name descname"><span class="pre">residual</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">t</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">N</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dNdt</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">senpar=np.zeros(1</span></em>, <em class="sig-param"><span class="pre">np.float64)</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.residual" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.residual">
+<span class="sig-name descname"><span class="pre">residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">t</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">N</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dNdt</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">senpar=np.zeros(1</span></em>, <em class="sig-param"><span class="pre">np.float64)</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.residual" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the residual function for the governing DAE system for the
 simple reaction system.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.rtol_array">
-<code class="sig-name descname"><span class="pre">rtol_array</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.rtol_array" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.rtol_array">
+<span class="sig-name descname"><span class="pre">rtol_array</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.rtol_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -700,8 +701,8 @@ simple reaction system.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.sens_conditions">
-<code class="sig-name descname"><span class="pre">sens_conditions</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.sens_conditions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.sens_conditions">
+<span class="sig-name descname"><span class="pre">sens_conditions</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.sens_conditions" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -711,8 +712,8 @@ simple reaction system.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.sensitive_species">
-<code class="sig-name descname"><span class="pre">sensitive_species</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.sensitive_species" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.sensitive_species">
+<span class="sig-name descname"><span class="pre">sensitive_species</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.sensitive_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -722,8 +723,8 @@ simple reaction system.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.sensitivity_coefficients">
-<code class="sig-name descname"><span class="pre">sensitivity_coefficients</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.sensitivity_coefficients" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.sensitivity_coefficients">
+<span class="sig-name descname"><span class="pre">sensitivity_coefficients</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.sensitivity_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -733,8 +734,8 @@ simple reaction system.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.sensitivity_threshold">
-<code class="sig-name descname"><span class="pre">sensitivity_threshold</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.sensitivity_threshold" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.sensitivity_threshold">
+<span class="sig-name descname"><span class="pre">sensitivity_threshold</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.sensitivity_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -744,8 +745,8 @@ simple reaction system.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.set_initial_conditions">
-<code class="sig-name descname"><span class="pre">set_initial_conditions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.set_initial_conditions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.set_initial_conditions">
+<span class="sig-name descname"><span class="pre">set_initial_conditions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.set_initial_conditions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the initial conditions of the rate equations that represent the
 current reactor model.</p>
 <p>The volume is set to the value in m3 required to contain
@@ -760,25 +761,25 @@ y0 instance attribute.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.set_initial_derivative">
-<code class="sig-name descname"><span class="pre">set_initial_derivative</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.set_initial_derivative" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.set_initial_derivative">
+<span class="sig-name descname"><span class="pre">set_initial_derivative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.set_initial_derivative" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the derivative of the species moles with respect to the independent variable (time)
 equal to the residual.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.set_initial_reaction_thresholds">
-<code class="sig-name descname"><span class="pre">set_initial_reaction_thresholds</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.set_initial_reaction_thresholds" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.set_initial_reaction_thresholds">
+<span class="sig-name descname"><span class="pre">set_initial_reaction_thresholds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.set_initial_reaction_thresholds" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.set_prunable_indices">
-<code class="sig-name descname"><span class="pre">set_prunable_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdep_networks</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.set_prunable_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.set_prunable_indices">
+<span class="sig-name descname"><span class="pre">set_prunable_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdep_networks</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.set_prunable_indices" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.simulate">
-<code class="sig-name descname"><span class="pre">simulate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">pdep_networks=None</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">prune=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">sensitivity=False</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">sens_worksheet=None</span></em>, <em class="sig-param"><span class="pre">model_settings=None</span></em>, <em class="sig-param"><span class="pre">simulator_settings=None</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">conditions=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.simulate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.simulate">
+<span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">core_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">edge_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_species</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">surface_reactions</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">pdep_networks=None</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">prune=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">sensitivity=False</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">sens_worksheet=None</span></em>, <em class="sig-param"><span class="pre">model_settings=None</span></em>, <em class="sig-param"><span class="pre">simulator_settings=None</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">conditions=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.simulate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate the reaction system with the provided reaction model,
 consisting of lists of core species, core reactions, edge species, and
 edge reactions. As the simulation proceeds the system is monitored for
@@ -790,8 +791,8 @@ the desired termination criteria and the model remains valid throughout,
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.snapshots">
-<code class="sig-name descname"><span class="pre">snapshots</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.snapshots" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.snapshots">
+<span class="sig-name descname"><span class="pre">snapshots</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.snapshots" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -801,8 +802,8 @@ the desired termination criteria and the model remains valid throughout,
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.species_index">
-<code class="sig-name descname"><span class="pre">species_index</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.species_index" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.species_index">
+<span class="sig-name descname"><span class="pre">species_index</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.species_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -812,8 +813,8 @@ the desired termination criteria and the model remains valid throughout,
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.species_on_surface">
-<code class="sig-name descname"><span class="pre">species_on_surface</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.species_on_surface" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.species_on_surface">
+<span class="sig-name descname"><span class="pre">species_on_surface</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.species_on_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -823,8 +824,8 @@ the desired termination criteria and the model remains valid throughout,
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.solver.SurfaceReactor.step">
-<code class="sig-name descname"><span class="pre">step</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.step" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform one simulation step from the current value of the independent
 variable toward (but not past) a specified value <cite>tout</cite>. The resulting
 values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and
@@ -833,8 +834,8 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.surface_reaction_indices">
-<code class="sig-name descname"><span class="pre">surface_reaction_indices</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.surface_reaction_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.surface_reaction_indices">
+<span class="sig-name descname"><span class="pre">surface_reaction_indices</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.surface_reaction_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -844,8 +845,8 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.surface_site_density">
-<code class="sig-name descname"><span class="pre">surface_site_density</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.surface_site_density" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.surface_site_density">
+<span class="sig-name descname"><span class="pre">surface_site_density</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.surface_site_density" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.quantity.ScalarQuantity</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -855,8 +856,8 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.surface_species_indices">
-<code class="sig-name descname"><span class="pre">surface_species_indices</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.surface_species_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.surface_species_indices">
+<span class="sig-name descname"><span class="pre">surface_species_indices</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.surface_species_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -866,8 +867,8 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.surface_volume_ratio">
-<code class="sig-name descname"><span class="pre">surface_volume_ratio</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.surface_volume_ratio" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.surface_volume_ratio">
+<span class="sig-name descname"><span class="pre">surface_volume_ratio</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.surface_volume_ratio" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.quantity.ScalarQuantity</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -877,8 +878,8 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.t0">
-<code class="sig-name descname"><span class="pre">t0</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.t0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.t0">
+<span class="sig-name descname"><span class="pre">t0</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.t0" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘float’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -888,8 +889,8 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.termination">
-<code class="sig-name descname"><span class="pre">termination</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.termination" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.termination">
+<span class="sig-name descname"><span class="pre">termination</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.termination" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -899,8 +900,8 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.trimolecular">
-<code class="sig-name descname"><span class="pre">trimolecular</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.trimolecular" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.trimolecular">
+<span class="sig-name descname"><span class="pre">trimolecular</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.trimolecular" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -910,8 +911,8 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.trimolecular_threshold">
-<code class="sig-name descname"><span class="pre">trimolecular_threshold</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.trimolecular_threshold" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.trimolecular_threshold">
+<span class="sig-name descname"><span class="pre">trimolecular_threshold</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.trimolecular_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -921,8 +922,8 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.unimolecular_threshold">
-<code class="sig-name descname"><span class="pre">unimolecular_threshold</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.unimolecular_threshold" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.unimolecular_threshold">
+<span class="sig-name descname"><span class="pre">unimolecular_threshold</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.unimolecular_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -932,8 +933,8 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.valid_layering_indices">
-<code class="sig-name descname"><span class="pre">valid_layering_indices</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.valid_layering_indices" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.valid_layering_indices">
+<span class="sig-name descname"><span class="pre">valid_layering_indices</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.valid_layering_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -943,8 +944,8 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.solver.SurfaceReactor.y0">
-<code class="sig-name descname"><span class="pre">y0</span></code><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.y0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.y0">
+<span class="sig-name descname"><span class="pre">y0</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.y0" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -955,7 +956,7 @@ and <cite>dydt</cite> attributes.</p>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -1048,7 +1049,7 @@ and <cite>dydt</cite> attributes.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

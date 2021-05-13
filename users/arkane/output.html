@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>6. Parsing Output Files &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -56,9 +57,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="parsing-output-files">
+  <section id="parsing-output-files">
 <h1><span class="section-number">6. </span>Parsing Output Files<a class="headerlink" href="#parsing-output-files" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="thermodynamic-and-high-pressure-limit-kinetics-calculations">
+<section id="thermodynamic-and-high-pressure-limit-kinetics-calculations">
 <h2><span class="section-number">6.1. </span>Thermodynamic and High-pressure Limit Kinetics Calculations<a class="headerlink" href="#thermodynamic-and-high-pressure-limit-kinetics-calculations" title="Permalink to this headline">¶</a></h2>
 <p>The syntax of Arkane output files closely mirrors that of the input files.
 For each <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> function in the input file, there will be a corresponding
@@ -66,8 +67,8 @@ For each <code class="docutils literal notranslate"><span class="pre">thermo()</
 model. Similarly, For each <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code> function in the input file, there will
 be a corresponding <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code> function in the output file containing the
 computed kinetics model.</p>
-</div>
-<div class="section" id="pressure-dependent-calculations">
+</section>
+<section id="pressure-dependent-calculations">
 <h2><span class="section-number">6.2. </span>Pressure-Dependent Calculations<a class="headerlink" href="#pressure-dependent-calculations" title="Permalink to this headline">¶</a></h2>
 <p>The output file contains the entire contents of the input file. In
 addition, the output file contains a block of <code class="docutils literal notranslate"><span class="pre">pdepreaction()</span></code> calls. The
@@ -77,8 +78,8 @@ the <code class="docutils literal notranslate"><span class="pre">kinetics</span>
 <p>A <code class="docutils literal notranslate"><span class="pre">pdepreaction()</span></code> item is printed for each reaction pathway possible in the
 network. Each reaction is reversible. Reactions in the opposite direction are
 provided as commented out, so a user can choose to use them if she/he desires.</p>
-</div>
-<div class="section" id="chemkin-output-file">
+</section>
+<section id="chemkin-output-file">
 <h2><span class="section-number">6.3. </span>Chemkin Output File<a class="headerlink" href="#chemkin-output-file" title="Permalink to this headline">¶</a></h2>
 <p>In addition to the <code class="docutils literal notranslate"><span class="pre">output.py</span></code> which contains the thermodynamic,
 kinetic, and pressure dependent results from an Arkane run, a Chemkin
@@ -92,8 +93,8 @@ chemkin format. The butanol and ethyl examples both show how to obtain a valid
 chemkin file.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">chem.inp</span></code> file can be used in Chemkin software package or converted to
 a Cantera input file for use in Cantera software.</p>
-</div>
-<div class="section" id="log-file">
+</section>
+<section id="log-file">
 <h2><span class="section-number">6.4. </span>Log File<a class="headerlink" href="#log-file" title="Permalink to this headline">¶</a></h2>
 <p>A log file containing similar information to that displayed on the console
 during Arkane execution is also automatically saved. This file has the name
@@ -103,15 +104,15 @@ the console; thus, it is often useful (and recommended) to examine both if
 something unexpected has occurred.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">examples/arkane</span></code> directory contains both Arkane input files and the resulting
 output files.</p>
-</div>
-<div class="section" id="species-dictionary">
+</section>
+<section id="species-dictionary">
 <h2><span class="section-number">6.5. </span>Species Dictionary<a class="headerlink" href="#species-dictionary" title="Permalink to this headline">¶</a></h2>
 <p>Any species that had the <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> method called and had the structure defined in the Arkane
 input file will also have an RMG style adjacency list representation in <code class="docutils literal notranslate"><span class="pre">species_dictionary.txt</span></code>.
 This allows the user to input the corresponding thermo and kinetics into RMG in various ways
 described in the RMG user guide.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -216,7 +217,7 @@ described in the RMG user guide.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

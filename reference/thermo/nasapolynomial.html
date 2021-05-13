@@ -4,16 +4,17 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.thermo.NASAPolynomial &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -57,11 +58,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-thermo-nasapolynomial">
+  <section id="rmgpy-thermo-nasapolynomial">
 <h1>rmgpy.thermo.NASAPolynomial<a class="headerlink" href="#rmgpy-thermo-nasapolynomial" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="thermonasapolynomial"></span><dl class="py class">
-<dt id="rmgpy.thermo.NASAPolynomial">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.thermo.</span></code><code class="sig-name descname"><span class="pre">NASAPolynomial</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coeffs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.thermo.</span></span><span class="sig-name descname"><span class="pre">NASAPolynomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coeffs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial" title="Permalink to this definition">¶</a></dt>
 <dd><p>A heat capacity model based on the NASA polynomial. Both the
 seven-coefficient and nine-coefficient variations are supported.
 The attributes are:</p>
@@ -110,43 +111,43 @@ physical behavior of the Wilhoit representation. Often multiple NASA polynomials
 are used to accurately represent the thermodynamics of a system over a wide
 temperature range; the <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><code class="xref py py-class docutils literal notranslate"><span class="pre">NASA</span></code></a> class is available for this purpose.</p>
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.Cp0">
-<code class="sig-name descname"><span class="pre">Cp0</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.Cp0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.Cp0">
+<span class="sig-name descname"><span class="pre">Cp0</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.Cp0" title="Permalink to this definition">¶</a></dt>
 <dd><p>The heat capacity at zero temperature.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.CpInf">
-<code class="sig-name descname"><span class="pre">CpInf</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.CpInf" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.CpInf">
+<span class="sig-name descname"><span class="pre">CpInf</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.CpInf" title="Permalink to this definition">¶</a></dt>
 <dd><p>The heat capacity at infinite temperature.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.E0">
-<code class="sig-name descname"><span class="pre">E0</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.E0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.E0">
+<span class="sig-name descname"><span class="pre">E0</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.E0" title="Permalink to this definition">¶</a></dt>
 <dd><p>The ground state energy (J/mol) at zero Kelvin, including zero point energy, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not yet specified.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.Tmax">
-<code class="sig-name descname"><span class="pre">Tmax</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.Tmax" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.Tmax">
+<span class="sig-name descname"><span class="pre">Tmax</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.Tmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.Tmin">
-<code class="sig-name descname"><span class="pre">Tmin</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.Tmin" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.Tmin">
+<span class="sig-name descname"><span class="pre">Tmin</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.Tmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.NASAPolynomial.as_dict">
-<code class="sig-name descname"><span class="pre">as_dict</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.as_dict" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.c0">
-<code class="sig-name descname"><span class="pre">c0</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.c0">
+<span class="sig-name descname"><span class="pre">c0</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c0" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -156,8 +157,8 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.c1">
-<code class="sig-name descname"><span class="pre">c1</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c1" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.c1">
+<span class="sig-name descname"><span class="pre">c1</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c1" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -167,8 +168,8 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.c2">
-<code class="sig-name descname"><span class="pre">c2</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c2" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.c2">
+<span class="sig-name descname"><span class="pre">c2</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c2" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -178,8 +179,8 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.c3">
-<code class="sig-name descname"><span class="pre">c3</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c3" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.c3">
+<span class="sig-name descname"><span class="pre">c3</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c3" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -189,8 +190,8 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.c4">
-<code class="sig-name descname"><span class="pre">c4</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c4" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.c4">
+<span class="sig-name descname"><span class="pre">c4</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c4" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -200,8 +201,8 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.c5">
-<code class="sig-name descname"><span class="pre">c5</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c5" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.c5">
+<span class="sig-name descname"><span class="pre">c5</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c5" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -211,8 +212,8 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.c6">
-<code class="sig-name descname"><span class="pre">c6</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c6" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.c6">
+<span class="sig-name descname"><span class="pre">c6</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c6" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -222,20 +223,20 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.NASAPolynomial.change_base_enthalpy">
-<code class="sig-name descname"><span class="pre">change_base_enthalpy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">deltaH</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.change_base_enthalpy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.change_base_enthalpy">
+<span class="sig-name descname"><span class="pre">change_base_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">deltaH</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.change_base_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add deltaH in J/mol to the base enthalpy of formation H298.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.NASAPolynomial.change_base_entropy">
-<code class="sig-name descname"><span class="pre">change_base_entropy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">deltaS</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.change_base_entropy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.change_base_entropy">
+<span class="sig-name descname"><span class="pre">change_base_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">deltaS</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.change_base_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add deltaS in J/molK to the base entropy of formation S298.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.cm1">
-<code class="sig-name descname"><span class="pre">cm1</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.cm1" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.cm1">
+<span class="sig-name descname"><span class="pre">cm1</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.cm1" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -245,8 +246,8 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.cm2">
-<code class="sig-name descname"><span class="pre">cm2</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.cm2" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.cm2">
+<span class="sig-name descname"><span class="pre">cm2</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.cm2" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -256,14 +257,14 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.coeffs">
-<code class="sig-name descname"><span class="pre">coeffs</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.coeffs" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.coeffs">
+<span class="sig-name descname"><span class="pre">coeffs</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.coeffs" title="Permalink to this definition">¶</a></dt>
 <dd><p>The set of seven or nine NASA polynomial coefficients.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.comment">
-<code class="sig-name descname"><span class="pre">comment</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.comment" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.comment">
+<span class="sig-name descname"><span class="pre">comment</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.comment" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -273,58 +274,58 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.NASAPolynomial.discrepancy">
-<code class="sig-name descname"><span class="pre">discrepancy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.discrepancy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.discrepancy">
+<span class="sig-name descname"><span class="pre">discrepancy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.discrepancy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return some measure of how dissimilar <cite>self</cite> is from <cite>other</cite>.</p>
 <p>The measure is arbitrary, but hopefully useful for sorting purposes.
 Discrepancy of 0 means they are identical</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.NASAPolynomial.get_enthalpy">
-<code class="sig-name descname"><span class="pre">get_enthalpy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.get_enthalpy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.get_enthalpy">
+<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.get_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.NASAPolynomial.get_entropy">
-<code class="sig-name descname"><span class="pre">get_entropy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.get_entropy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.get_entropy">
+<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.get_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.NASAPolynomial.get_free_energy">
-<code class="sig-name descname"><span class="pre">get_free_energy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.get_free_energy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.get_free_energy">
+<span class="sig-name descname"><span class="pre">get_free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.get_free_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy in J/mol at the specified temperature <cite>T</cite>
 in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.NASAPolynomial.get_heat_capacity">
-<code class="sig-name descname"><span class="pre">get_heat_capacity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.get_heat_capacity">
+<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the constant-pressure heat capacity in J/mol*K at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.NASAPolynomial.is_identical_to">
-<code class="sig-name descname"><span class="pre">is_identical_to</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.is_identical_to" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.is_identical_to">
+<span class="sig-name descname"><span class="pre">is_identical_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.is_identical_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report very similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.NASAPolynomial.is_similar_to">
-<code class="sig-name descname"><span class="pre">is_similar_to</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.is_similar_to" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.is_similar_to">
+<span class="sig-name descname"><span class="pre">is_similar_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.is_similar_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.NASAPolynomial.is_temperature_valid">
-<code class="sig-name descname"><span class="pre">is_temperature_valid</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.is_temperature_valid">
+<span class="sig-name descname"><span class="pre">is_temperature_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the thermodynamic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
@@ -332,8 +333,8 @@ returned.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.thermo.NASAPolynomial.label">
-<code class="sig-name descname"><span class="pre">label</span></code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.label" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.label">
+<span class="sig-name descname"><span class="pre">label</span></span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.label" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -343,8 +344,8 @@ returned.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.thermo.NASAPolynomial.make_object">
-<code class="sig-name descname"><span class="pre">make_object</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">data</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">class_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.make_object" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.thermo.NASAPolynomial.make_object">
+<span class="sig-name descname"><span class="pre">make_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">data</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">class_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.make_object" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for constructing objects from a dictionary (used when loading YAML files)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -361,7 +362,7 @@ returned.</p>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -454,7 +455,7 @@ returned.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

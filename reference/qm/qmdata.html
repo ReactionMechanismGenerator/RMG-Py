@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.qm.qmdata &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -56,27 +57,27 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-qm-qmdata">
+  <section id="rmgpy-qm-qmdata">
 <h1>rmgpy.qm.qmdata<a class="headerlink" href="#rmgpy-qm-qmdata" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="rmgpy.qm.qmdata.QMData">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.qm.qmdata.</span></code><code class="sig-name descname"><span class="pre">QMData</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">groundStateDegeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numberOfAtoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stericEnergy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecularMass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atomicNumbers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotationalConstants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atomCoords</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequencies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmdata.QMData" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.qmdata.QMData">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.qmdata.</span></span><span class="sig-name descname"><span class="pre">QMData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">groundStateDegeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numberOfAtoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stericEnergy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecularMass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atomicNumbers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotationalConstants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atomCoords</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequencies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.qmdata.QMData" title="Permalink to this definition">¶</a></dt>
 <dd><p>General class for data extracted from a QM calculation</p>
 <dl class="py attribute">
-<dt id="rmgpy.qm.qmdata.QMData.groundStateDegeneracy">
-<code class="sig-name descname"><span class="pre">groundStateDegeneracy</span></code><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.groundStateDegeneracy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.qmdata.QMData.groundStateDegeneracy">
+<span class="sig-name descname"><span class="pre">groundStateDegeneracy</span></span><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.groundStateDegeneracy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Electronic ground state degeneracy in RMG taken as number of radicals +1</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.qm.qmdata.QMData.numberOfAtoms">
-<code class="sig-name descname"><span class="pre">numberOfAtoms</span></code><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.numberOfAtoms" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.qmdata.QMData.numberOfAtoms">
+<span class="sig-name descname"><span class="pre">numberOfAtoms</span></span><a class="headerlink" href="#rmgpy.qm.qmdata.QMData.numberOfAtoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of atoms.</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -169,7 +170,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -4,16 +4,17 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.data.statmechfit &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -57,13 +58,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-data-statmechfit">
+  <section id="rmgpy-data-statmechfit">
 <h1>rmgpy.data.statmechfit<a class="headerlink" href="#rmgpy-data-statmechfit" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="fitting-functions">
+<section id="fitting-functions">
 <h2>Fitting functions<a class="headerlink" href="#fitting-functions" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt id="rmgpy.data.statmechfit.fit_statmech_to_heat_capacity">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></code><code class="sig-name descname"><span class="pre">fit_statmech_to_heat_capacity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fit_statmech_to_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.fit_statmech_to_heat_capacity">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">fit_statmech_to_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fit_statmech_to_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given set of dimensionless heat capacity data <cite>Cvlist</cite> corresponding
 to temperature list <cite>Tlist</cite> in K, fit <cite>n_vib</cite> harmonic oscillator and <cite>n_rot</cite>
 hindered internal rotor modes. External and other previously-known modes
@@ -75,8 +76,8 @@ in <code class="xref py py-class docutils literal notranslate"><span class="pre"
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.data.statmechfit.fit_statmech_direct">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></code><code class="sig-name descname"><span class="pre">fit_statmech_direct</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fit_statmech_direct" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.fit_statmech_direct">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">fit_statmech_direct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fit_statmech_direct" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit <cite>n_vib</cite> harmonic oscillator and <cite>n_rot</cite> hindered internal rotor modes to
 the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
 in K. This method assumes that there are enough heat capacity points
@@ -85,8 +86,8 @@ barrier pairs can be fit directly.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.data.statmechfit.fit_statmech_pseudo_rotors">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></code><code class="sig-name descname"><span class="pre">fit_statmech_pseudo_rotors</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fit_statmech_pseudo_rotors" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.fit_statmech_pseudo_rotors">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">fit_statmech_pseudo_rotors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fit_statmech_pseudo_rotors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit <cite>n_vib</cite> harmonic oscillator and <cite>n_rot</cite> hindered internal rotor modes to
 the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
 in K. This method assumes that there are enough heat capacity points
@@ -95,8 +96,8 @@ hindered rotors must be combined into a single “pseudo-rotor”.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.data.statmechfit.fit_statmech_pseudo">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></code><code class="sig-name descname"><span class="pre">fit_statmech_pseudo</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fit_statmech_pseudo" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.fit_statmech_pseudo">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">fit_statmech_pseudo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fit_statmech_pseudo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit <cite>n_vib</cite> harmonic oscillator and <cite>n_rot</cite> hindered internal rotor modes to
 the provided dimensionless heat capacities <cite>Cvlist</cite> at temperatures <cite>Tlist</cite>
 in K. This method assumes that there are relatively few heat capacity points
@@ -105,35 +106,35 @@ two “pseudo-vibrations” and the hindered rotors must be combined into a
 single “pseudo-rotor”.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="helper-functions">
+</section>
+<section id="helper-functions">
 <h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt id="rmgpy.data.statmechfit.harmonic_oscillator_heat_capacity">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></code><code class="sig-name descname"><span class="pre">harmonic_oscillator_heat_capacity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.harmonic_oscillator_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.harmonic_oscillator_heat_capacity">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">harmonic_oscillator_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.harmonic_oscillator_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K at the given set of temperatures <cite>Tlist</cite>
 in K for the harmonic oscillator with a frequency <cite>freq</cite> in cm^-1.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.data.statmechfit.harmonic_oscillator_d_heat_capacity_d_freq">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></code><code class="sig-name descname"><span class="pre">harmonic_oscillator_d_heat_capacity_d_freq</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.harmonic_oscillator_d_heat_capacity_d_freq" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.harmonic_oscillator_d_heat_capacity_d_freq">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">harmonic_oscillator_d_heat_capacity_d_freq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.harmonic_oscillator_d_heat_capacity_d_freq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the first derivative of the heat capacity with respect to the
 harmonic oscillator frequency in J/mol*K/cm^-1 at the given set of
 temperatures <cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.data.statmechfit.hindered_rotor_heat_capacity">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></code><code class="sig-name descname"><span class="pre">hindered_rotor_heat_capacity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hindered_rotor_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.hindered_rotor_heat_capacity">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">hindered_rotor_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hindered_rotor_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K at the given set of temperatures <cite>Tlist</cite>
 in K for the 1D hindered rotor with a frequency <cite>freq</cite> in cm^-1 and a
 barrier height <cite>barr</cite> in cm^-1.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_freq">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></code><code class="sig-name descname"><span class="pre">hindered_rotor_d_heat_capacity_d_freq</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_freq" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_freq">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">hindered_rotor_d_heat_capacity_d_freq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_freq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the first derivative of the heat capacity with respect to the
 hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
 <cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1 and a barrier
@@ -141,26 +142,26 @@ height <cite>barr</cite> in cm^-1.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_barr">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></code><code class="sig-name descname"><span class="pre">hindered_rotor_d_heat_capacity_d_barr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_barr" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_barr">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">hindered_rotor_d_heat_capacity_d_barr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_barr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the first derivative of the heat capacity with respect to the
 hindered rotor frequency in J/mol*K/cm^-1 at the given set of temperatures
 <cite>Tlist</cite> in K, evaluated at the frequency <cite>freq</cite> in cm^-1 and a barrier
 height <cite>barr</cite> in cm^-1.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="helper-classes">
+</section>
+<section id="helper-classes">
 <h2>Helper classes<a class="headerlink" href="#helper-classes" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="rmgpy.data.statmechfit.DirectFit">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></code><code class="sig-name descname"><span class="pre">DirectFit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.DirectFit">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">DirectFit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for fitting vibrational frequencies and hindered rotor
 frequency-barrier pairs for the case when there are few enough oscillators
 and rotors that their values can be fit directly.</p>
 <dl class="py method">
-<dt id="rmgpy.data.statmechfit.DirectFit.evaluate">
-<code class="sig-name descname"><span class="pre">evaluate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.evaluate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.DirectFit.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the nonlinear equations and constraints for this system, and
 the corresponding Jacobian matrices, at the given value of the solution
 vector <cite>x</cite>. Return a tuple containing three items:</p>
@@ -175,8 +176,8 @@ constrains: <span class="math notranslate nohighlight">\(J_{ij}^\prime = \frac{\
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.data.statmechfit.DirectFit.initialize">
-<code class="sig-name descname"><span class="pre">initialize</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.initialize" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.DirectFit.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the DQED solver. The required parameters are:</p>
 <ul class="simple">
 <li><p><cite>Neq</cite> - The number of algebraic equations.</p></li>
@@ -206,8 +207,8 @@ error.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.data.statmechfit.DirectFit.solve">
-<code class="sig-name descname"><span class="pre">solve</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.solve" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.DirectFit.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
 set of nonlinear algebraic equations defined by the <a class="reference internal" href="#rmgpy.data.statmechfit.DirectFit.evaluate" title="rmgpy.data.statmechfit.DirectFit.evaluate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">evaluate()</span></code></a>
 method of the derived class. This is the method that actually conducts
@@ -255,16 +256,16 @@ the status of the solve. The possible output values of the flag are:</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="rmgpy.data.statmechfit.PseudoRotorFit">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></code><code class="sig-name descname"><span class="pre">PseudoRotorFit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.PseudoRotorFit">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">PseudoRotorFit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for fitting vibrational frequencies and hindered rotor
 frequency-barrier pairs for the case when there are too many oscillators
 and rotors for their values can be fit directly, and where collapsing the
 rotors into a single pseudo-rotor allows for fitting the vibrational
 frequencies directly.</p>
 <dl class="py method">
-<dt id="rmgpy.data.statmechfit.PseudoRotorFit.evaluate">
-<code class="sig-name descname"><span class="pre">evaluate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.evaluate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.PseudoRotorFit.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the nonlinear equations and constraints for this system, and
 the corresponding Jacobian matrices, at the given value of the solution
 vector <cite>x</cite>. Return a tuple containing three items:</p>
@@ -279,8 +280,8 @@ constrains: <span class="math notranslate nohighlight">\(J_{ij}^\prime = \frac{\
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.data.statmechfit.PseudoRotorFit.initialize">
-<code class="sig-name descname"><span class="pre">initialize</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.initialize" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.PseudoRotorFit.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the DQED solver. The required parameters are:</p>
 <ul class="simple">
 <li><p><cite>Neq</cite> - The number of algebraic equations.</p></li>
@@ -310,8 +311,8 @@ error.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.data.statmechfit.PseudoRotorFit.solve">
-<code class="sig-name descname"><span class="pre">solve</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.solve" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.PseudoRotorFit.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
 set of nonlinear algebraic equations defined by the <a class="reference internal" href="#rmgpy.data.statmechfit.PseudoRotorFit.evaluate" title="rmgpy.data.statmechfit.PseudoRotorFit.evaluate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">evaluate()</span></code></a>
 method of the derived class. This is the method that actually conducts
@@ -359,16 +360,16 @@ the status of the solve. The possible output values of the flag are:</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="rmgpy.data.statmechfit.PseudoFit">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></code><code class="sig-name descname"><span class="pre">PseudoFit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.PseudoFit">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">PseudoFit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for fitting vibrational frequencies and hindered rotor
 frequency-barrier pairs for the case when there are too many oscillators
 and rotors for their values can be fit directly, and where we must collapse
 both the vibrations and hindered rotations into “pseudo-oscillators” and
 “pseudo-rotors”.</p>
 <dl class="py method">
-<dt id="rmgpy.data.statmechfit.PseudoFit.evaluate">
-<code class="sig-name descname"><span class="pre">evaluate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.evaluate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.PseudoFit.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the nonlinear equations and constraints for this system, and
 the corresponding Jacobian matrices, at the given value of the solution
 vector <cite>x</cite>. Return a tuple containing three items:</p>
@@ -383,8 +384,8 @@ constrains: <span class="math notranslate nohighlight">\(J_{ij}^\prime = \frac{\
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.data.statmechfit.PseudoFit.initialize">
-<code class="sig-name descname"><span class="pre">initialize</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.initialize" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.PseudoFit.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the DQED solver. The required parameters are:</p>
 <ul class="simple">
 <li><p><cite>Neq</cite> - The number of algebraic equations.</p></li>
@@ -414,8 +415,8 @@ error.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.data.statmechfit.PseudoFit.solve">
-<code class="sig-name descname"><span class="pre">solve</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.solve" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmechfit.PseudoFit.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
 set of nonlinear algebraic equations defined by the <a class="reference internal" href="#rmgpy.data.statmechfit.PseudoFit.evaluate" title="rmgpy.data.statmechfit.PseudoFit.evaluate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">evaluate()</span></code></a>
 method of the derived class. This is the method that actually conducts
@@ -462,8 +463,8 @@ the status of the solve. The possible output values of the flag are:</p>
 
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -566,7 +567,7 @@ the status of the solve. The possible output values of the flag are:</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

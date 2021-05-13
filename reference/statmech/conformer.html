@@ -4,16 +4,17 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.statmech.Conformer &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -57,11 +58,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-statmech-conformer">
+  <section id="rmgpy-statmech-conformer">
 <h1>rmgpy.statmech.Conformer<a class="headerlink" href="#rmgpy-statmech-conformer" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="rmgpy.statmech.Conformer">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.statmech.</span></code><code class="sig-name descname"><span class="pre">Conformer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin_multiplicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optical_isomers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.statmech.</span></span><span class="sig-name descname"><span class="pre">Conformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin_multiplicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optical_isomers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of an individual molecular conformation. The attributes
 are:</p>
 <table class="docutils align-default">
@@ -101,14 +102,14 @@ are:</p>
 <p>Note that the <cite>spin_multiplicity</cite> reflects the electronic mode of the
 molecular system.</p>
 <dl class="py attribute">
-<dt id="rmgpy.statmech.Conformer.E0">
-<code class="sig-name descname"><span class="pre">E0</span></code><a class="headerlink" href="#rmgpy.statmech.Conformer.E0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.E0">
+<span class="sig-name descname"><span class="pre">E0</span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.E0" title="Permalink to this definition">¶</a></dt>
 <dd><p>The ground-state energy (including zero-point energy) of the conformer.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.as_dict">
-<code class="sig-name descname"><span class="pre">as_dict</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#rmgpy.statmech.Conformer.as_dict" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#rmgpy.statmech.Conformer.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for dumping objects as dictionaries for YAML files</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -121,21 +122,21 @@ molecular system.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.statmech.Conformer.coordinates">
-<code class="sig-name descname"><span class="pre">coordinates</span></code><a class="headerlink" href="#rmgpy.statmech.Conformer.coordinates" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.coordinates">
+<span class="sig-name descname"><span class="pre">coordinates</span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.coordinates" title="Permalink to this definition">¶</a></dt>
 <dd><p>An array of 3D coordinates of each atom in the conformer.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_active_modes">
-<code class="sig-name descname"><span class="pre">get_active_modes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">active_j_rotor=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">active_k_rotor=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_active_modes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_active_modes">
+<span class="sig-name descname"><span class="pre">get_active_modes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">active_j_rotor=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">active_k_rotor=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_active_modes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of the active molecular degrees of freedom of the
 molecular system.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_center_of_mass">
-<code class="sig-name descname"><span class="pre">get_center_of_mass</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_center_of_mass" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_center_of_mass">
+<span class="sig-name descname"><span class="pre">get_center_of_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_center_of_mass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the [three-dimensional] position of the center of
 mass of the conformer in m. If a list <cite>atoms</cite> of atoms is specified,
 only those atoms will be used to calculate the center of mass.
@@ -143,43 +144,43 @@ Otherwise, all atoms will be used.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_density_of_states">
-<code class="sig-name descname"><span class="pre">get_density_of_states</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_density_of_states" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_density_of_states">
+<span class="sig-name descname"><span class="pre">get_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_density_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states <span class="math notranslate nohighlight">\(\rho(E) \ dE\)</span> at the specified
 energies <cite>e_list</cite> above the ground state.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_enthalpy">
-<code class="sig-name descname"><span class="pre">get_enthalpy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_enthalpy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_enthalpy">
+<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol for the system at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_entropy">
-<code class="sig-name descname"><span class="pre">get_entropy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_entropy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_entropy">
+<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K for the system at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_free_energy">
-<code class="sig-name descname"><span class="pre">get_free_energy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_free_energy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_free_energy">
+<span class="sig-name descname"><span class="pre">get_free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_free_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy in J/mol for the system at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_heat_capacity">
-<code class="sig-name descname"><span class="pre">get_heat_capacity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_heat_capacity">
+<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K for the system at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_internal_reduced_moment_of_inertia">
-<code class="sig-name descname"><span class="pre">get_internal_reduced_moment_of_inertia</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_internal_reduced_moment_of_inertia" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_internal_reduced_moment_of_inertia">
+<span class="sig-name descname"><span class="pre">get_internal_reduced_moment_of_inertia</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_internal_reduced_moment_of_inertia" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the reduced moment of inertia for an internal
 torsional rotation around the axis defined by the two atoms in
 <cite>pivots</cite>. The list <cite>top1</cite> contains the atoms that should be considered
@@ -225,45 +226,45 @@ centers of mass of both groups</p></td>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_moment_of_inertia_tensor">
-<code class="sig-name descname"><span class="pre">get_moment_of_inertia_tensor</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_moment_of_inertia_tensor" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_moment_of_inertia_tensor">
+<span class="sig-name descname"><span class="pre">get_moment_of_inertia_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_moment_of_inertia_tensor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the moment of inertia tensor for the conformer
 in kg*m^2. If the coordinates are not at the center of mass, they are
 temporarily shifted there for the purposes of this calculation.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_number_degrees_of_freedom">
-<code class="sig-name descname"><span class="pre">get_number_degrees_of_freedom</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_number_degrees_of_freedom" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_number_degrees_of_freedom">
+<span class="sig-name descname"><span class="pre">get_number_degrees_of_freedom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_number_degrees_of_freedom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the number of degrees of freedom in a species object, which should be 3N,
 and raises an exception if it is not.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_partition_function">
-<code class="sig-name descname"><span class="pre">get_partition_function</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_partition_function" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_partition_function">
+<span class="sig-name descname"><span class="pre">get_partition_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_partition_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the partition function <span class="math notranslate nohighlight">\(Q(T)\)</span> for the system at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_principal_moments_of_inertia">
-<code class="sig-name descname"><span class="pre">get_principal_moments_of_inertia</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_principal_moments_of_inertia" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_principal_moments_of_inertia">
+<span class="sig-name descname"><span class="pre">get_principal_moments_of_inertia</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_principal_moments_of_inertia" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the principal moments of inertia and corresponding
 principal axes for the conformer. The moments of inertia are in
 kg*m^2, while the principal axes have unit length.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_sum_of_states">
-<code class="sig-name descname"><span class="pre">get_sum_of_states</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_sum_of_states">
+<span class="sig-name descname"><span class="pre">get_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states <span class="math notranslate nohighlight">\(N(E)\)</span> at the specified energies <cite>e_list</cite>
 in kJ/mol above the ground state.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_symmetric_top_rotors">
-<code class="sig-name descname"><span class="pre">get_symmetric_top_rotors</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_symmetric_top_rotors" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_symmetric_top_rotors">
+<span class="sig-name descname"><span class="pre">get_symmetric_top_rotors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_symmetric_top_rotors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return objects representing the external J-rotor and K-rotor under the
 symmetric top approximation. For nonlinear molecules, the J-rotor is
 a 2D rigid rotor with a rotational constant <span class="math notranslate nohighlight">\(B\)</span> determined as the
@@ -274,8 +275,8 @@ constant and the J-rotor rotational constant.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.get_total_mass">
-<code class="sig-name descname"><span class="pre">get_total_mass</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_total_mass" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_total_mass">
+<span class="sig-name descname"><span class="pre">get_total_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_total_mass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the total mass of the atoms in the conformer in
 kg. If a list <cite>atoms</cite> of atoms is specified, only those atoms will
 be used to calculate the center of mass. Otherwise, all atoms will be
@@ -283,8 +284,8 @@ used.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.statmech.Conformer.make_object">
-<code class="sig-name descname"><span class="pre">make_object</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">data</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">class_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer.make_object" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.make_object">
+<span class="sig-name descname"><span class="pre">make_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">data</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">class_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer.make_object" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for constructing objects from a dictionary (used when loading YAML files)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -300,14 +301,14 @@ used.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.statmech.Conformer.mass">
-<code class="sig-name descname"><span class="pre">mass</span></code><a class="headerlink" href="#rmgpy.statmech.Conformer.mass" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.mass">
+<span class="sig-name descname"><span class="pre">mass</span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.mass" title="Permalink to this definition">¶</a></dt>
 <dd><p>An array of masses of each atom in the conformer.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.statmech.Conformer.modes">
-<code class="sig-name descname"><span class="pre">modes</span></code><a class="headerlink" href="#rmgpy.statmech.Conformer.modes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.modes">
+<span class="sig-name descname"><span class="pre">modes</span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.modes" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -317,14 +318,14 @@ used.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.statmech.Conformer.number">
-<code class="sig-name descname"><span class="pre">number</span></code><a class="headerlink" href="#rmgpy.statmech.Conformer.number" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.number">
+<span class="sig-name descname"><span class="pre">number</span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.number" title="Permalink to this definition">¶</a></dt>
 <dd><p>An array of atomic numbers of each atom in the conformer.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.statmech.Conformer.optical_isomers">
-<code class="sig-name descname"><span class="pre">optical_isomers</span></code><a class="headerlink" href="#rmgpy.statmech.Conformer.optical_isomers" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.optical_isomers">
+<span class="sig-name descname"><span class="pre">optical_isomers</span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.optical_isomers" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -334,8 +335,8 @@ used.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.statmech.Conformer.spin_multiplicity">
-<code class="sig-name descname"><span class="pre">spin_multiplicity</span></code><a class="headerlink" href="#rmgpy.statmech.Conformer.spin_multiplicity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.statmech.Conformer.spin_multiplicity">
+<span class="sig-name descname"><span class="pre">spin_multiplicity</span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.spin_multiplicity" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -346,7 +347,7 @@ used.</p>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -439,7 +440,7 @@ used.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

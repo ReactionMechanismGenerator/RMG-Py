@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.data.statmech.GroupFrequencies &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -56,18 +57,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-data-statmech-groupfrequencies">
+  <section id="rmgpy-data-statmech-groupfrequencies">
 <h1>rmgpy.data.statmech.GroupFrequencies<a class="headerlink" href="#rmgpy-data-statmech-groupfrequencies" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="rmgpy.data.statmech.GroupFrequencies">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.data.statmech.</span></code><code class="sig-name descname"><span class="pre">GroupFrequencies</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequencies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.GroupFrequencies" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmech.GroupFrequencies">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmech.</span></span><span class="sig-name descname"><span class="pre">GroupFrequencies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequencies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.GroupFrequencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a set of characteristic frequencies for a group in the frequency
 database. These frequencies are stored in the <cite>frequencies</cite> attribute, which
 is a <code class="docutils literal notranslate"><span class="pre">list</span></code> of <code class="docutils literal notranslate"><span class="pre">tuples</span></code>, where each <code class="docutils literal notranslate"><span class="pre">tuple</span></code> defines a lower bound,
 upper bound, and degeneracy. Each group also has a <cite>symmetry</cite> correction.</p>
 <dl class="py method">
-<dt id="rmgpy.data.statmech.GroupFrequencies.generate_frequencies">
-<code class="sig-name descname"><span class="pre">generate_frequencies</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.GroupFrequencies.generate_frequencies" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.data.statmech.GroupFrequencies.generate_frequencies">
+<span class="sig-name descname"><span class="pre">generate_frequencies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.GroupFrequencies.generate_frequencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a set of frequencies. For each characteristic frequency group,
 the number of frequencies returned is degeneracy * count, and these are
 distributed linearly between the lower and upper bounds.</p>
@@ -75,7 +76,7 @@ distributed linearly between the lower and upper bounds.</p>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -168,7 +169,7 @@ distributed linearly between the lower and upper bounds.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

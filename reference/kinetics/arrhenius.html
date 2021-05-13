@@ -4,16 +4,17 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.kinetics.Arrhenius &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -57,11 +58,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-kinetics-arrhenius">
+  <section id="rmgpy-kinetics-arrhenius">
 <h1>rmgpy.kinetics.Arrhenius<a class="headerlink" href="#rmgpy-kinetics-arrhenius" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="rmgpy.kinetics.Arrhenius">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.kinetics.</span></code><code class="sig-name descname"><span class="pre">Arrhenius</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ea</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">'K')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.kinetics.</span></span><span class="sig-name descname"><span class="pre">Arrhenius</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ea</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">'K')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius" title="Permalink to this definition">¶</a></dt>
 <dd><p>A kinetics model based on the (modified) Arrhenius equation. The attributes
 are:</p>
 <table class="docutils align-default">
@@ -112,63 +113,63 @@ reaction families:</p>
 temperature, <span class="math notranslate nohighlight">\(n\)</span> is the temperature exponent, and <span class="math notranslate nohighlight">\(E_\mathrm{a}\)</span>
 is the activation energy.</p>
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.Arrhenius.A">
-<code class="sig-name descname"><span class="pre">A</span></code><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.A" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.A">
+<span class="sig-name descname"><span class="pre">A</span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.A" title="Permalink to this definition">¶</a></dt>
 <dd><p>The preexponential factor.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.Arrhenius.Ea">
-<code class="sig-name descname"><span class="pre">Ea</span></code><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.Ea" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.Ea">
+<span class="sig-name descname"><span class="pre">Ea</span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.Ea" title="Permalink to this definition">¶</a></dt>
 <dd><p>The activation energy.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.Arrhenius.Pmax">
-<code class="sig-name descname"><span class="pre">Pmax</span></code><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.Pmax" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.Pmax">
+<span class="sig-name descname"><span class="pre">Pmax</span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.Pmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.Arrhenius.Pmin">
-<code class="sig-name descname"><span class="pre">Pmin</span></code><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.Pmin" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.Pmin">
+<span class="sig-name descname"><span class="pre">Pmin</span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.Pmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.Arrhenius.T0">
-<code class="sig-name descname"><span class="pre">T0</span></code><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.T0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.T0">
+<span class="sig-name descname"><span class="pre">T0</span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.T0" title="Permalink to this definition">¶</a></dt>
 <dd><p>The reference temperature.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.Arrhenius.Tmax">
-<code class="sig-name descname"><span class="pre">Tmax</span></code><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.Tmax" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.Tmax">
+<span class="sig-name descname"><span class="pre">Tmax</span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.Tmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.Arrhenius.Tmin">
-<code class="sig-name descname"><span class="pre">Tmin</span></code><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.Tmin" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.Tmin">
+<span class="sig-name descname"><span class="pre">Tmin</span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.Tmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.Arrhenius.change_rate">
-<code class="sig-name descname"><span class="pre">change_rate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">factor</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.change_rate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.change_rate">
+<span class="sig-name descname"><span class="pre">change_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">factor</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.change_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Changes A factor in Arrhenius expression by multiplying it by a <code class="docutils literal notranslate"><span class="pre">factor</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.Arrhenius.change_t0">
-<code class="sig-name descname"><span class="pre">change_t0</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.change_t0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.change_t0">
+<span class="sig-name descname"><span class="pre">change_t0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.change_t0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Changes the reference temperature used in the exponent to <cite>T0</cite> in K,
 and adjusts the preexponential factor accordingly.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.Arrhenius.comment">
-<code class="sig-name descname"><span class="pre">comment</span></code><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.comment" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.comment">
+<span class="sig-name descname"><span class="pre">comment</span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.comment" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -178,14 +179,14 @@ and adjusts the preexponential factor accordingly.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.Arrhenius.discrepancy">
-<code class="sig-name descname"><span class="pre">discrepancy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.discrepancy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.discrepancy">
+<span class="sig-name descname"><span class="pre">discrepancy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.discrepancy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns some measure of the discrepancy based on two different reaction models.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.Arrhenius.fit_to_data">
-<code class="sig-name descname"><span class="pre">fit_to_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">Tlist</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">klist</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">kunits</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T0=1</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">weights=None</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">three_params=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.fit_to_data" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.fit_to_data">
+<span class="sig-name descname"><span class="pre">fit_to_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">Tlist</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">klist</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">kunits</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T0=1</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">weights=None</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">three_params=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.fit_to_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit the Arrhenius parameters to a set of rate coefficient data <cite>klist</cite>
 in units of <cite>kunits</cite> corresponding to a set of temperatures <cite>Tlist</cite> in
 K. A linear least-squares fit is used, which guarantees that the
@@ -194,37 +195,37 @@ data.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.Arrhenius.get_rate_coefficient">
-<code class="sig-name descname"><span class="pre">get_rate_coefficient</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">P=0.0</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.get_rate_coefficient">
+<span class="sig-name descname"><span class="pre">get_rate_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">P=0.0</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate coefficient in the appropriate combination of m^3,
 mol, and s at temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.Arrhenius.is_identical_to">
-<code class="sig-name descname"><span class="pre">is_identical_to</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_identical_to" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.is_identical_to">
+<span class="sig-name descname"><span class="pre">is_identical_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_identical_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if kinetics matches that of another kinetics model.  Must match temperature
 and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn’t have pressure
 range if it’s Arrhenius.) Otherwise returns <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.Arrhenius.is_pressure_dependent">
-<code class="sig-name descname"><span class="pre">is_pressure_dependent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_pressure_dependent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.is_pressure_dependent">
+<span class="sig-name descname"><span class="pre">is_pressure_dependent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_pressure_dependent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">False</span></code> since, by default, all objects derived from KineticsModel
 represent pressure-independent kinetics.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.Arrhenius.is_similar_to">
-<code class="sig-name descname"><span class="pre">is_similar_to</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_similar_to" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.is_similar_to">
+<span class="sig-name descname"><span class="pre">is_similar_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_similar_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if rates of reaction at temperatures 500,1000,1500,2000 K
 and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.Arrhenius.is_temperature_valid">
-<code class="sig-name descname"><span class="pre">is_temperature_valid</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.is_temperature_valid">
+<span class="sig-name descname"><span class="pre">is_temperature_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the kinetic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
@@ -232,42 +233,42 @@ returned.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.Arrhenius.n">
-<code class="sig-name descname"><span class="pre">n</span></code><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.n" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.n">
+<span class="sig-name descname"><span class="pre">n</span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.n" title="Permalink to this definition">¶</a></dt>
 <dd><p>The temperature exponent.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.Arrhenius.set_cantera_kinetics">
-<code class="sig-name descname"><span class="pre">set_cantera_kinetics</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ct_reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.set_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.set_cantera_kinetics">
+<span class="sig-name descname"><span class="pre">set_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ct_reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.set_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Passes in a cantera ElementaryReaction() object and sets its
 rate to a Cantera Arrhenius() object.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.Arrhenius.to_arrhenius_ep">
-<code class="sig-name descname"><span class="pre">to_arrhenius_ep</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">alpha=0.0</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">dHrxn=0.0</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ArrheniusEP</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.to_arrhenius_ep" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.to_arrhenius_ep">
+<span class="sig-name descname"><span class="pre">to_arrhenius_ep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">alpha=0.0</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">dHrxn=0.0</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ArrheniusEP</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.to_arrhenius_ep" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts an Arrhenius object to ArrheniusEP</p>
 <p>If setting alpha, you need to also input dHrxn, which must be given
 in J/mol (and vise versa).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.Arrhenius.to_cantera_kinetics">
-<code class="sig-name descname"><span class="pre">to_cantera_kinetics</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.to_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.to_cantera_kinetics">
+<span class="sig-name descname"><span class="pre">to_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.to_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the Arrhenius object to a cantera Arrhenius object</p>
 <p>Arrhenius(A,b,E) where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.kinetics.Arrhenius.to_html">
-<code class="sig-name descname"><span class="pre">to_html</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.to_html" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.to_html">
+<span class="sig-name descname"><span class="pre">to_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.to_html" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an HTML rendering.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="rmgpy.kinetics.Arrhenius.uncertainty">
-<code class="sig-name descname"><span class="pre">uncertainty</span></code><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.uncertainty" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.uncertainty">
+<span class="sig-name descname"><span class="pre">uncertainty</span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.uncertainty" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.uncertainties.RateUncertainty</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -278,7 +279,7 @@ in J/mol (and vise versa).</p>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -371,7 +372,7 @@ in J/mol (and vise versa).</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

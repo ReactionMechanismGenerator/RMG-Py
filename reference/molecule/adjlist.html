@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Adjacency Lists &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -56,7 +57,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-rmgpy.molecule.adjlist">
+  <section id="module-rmgpy.molecule.adjlist">
 <span id="adjacency-lists"></span><span id="rmgpy-molecule-adjlist"></span><h1>Adjacency Lists<a class="headerlink" href="#module-rmgpy.molecule.adjlist" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -240,20 +241,20 @@ electrons, lone pairs, and charges are all correctly defined:</p>
 </table>
 </div></blockquote>
 <dl class="py function">
-<dt id="rmgpy.molecule.adjlist.from_adjacency_list">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.adjlist.</span></code><code class="sig-name descname"><span class="pre">from_adjacency_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adjlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saturate_h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.adjlist.from_adjacency_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.adjlist.from_adjacency_list">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.adjlist.</span></span><span class="sig-name descname"><span class="pre">from_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adjlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saturate_h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.adjlist.from_adjacency_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a string adjacency list <cite>adjlist</cite> into a set of <code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code> and
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Bond</span></code> objects.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="rmgpy.molecule.adjlist.to_adjacency_list">
-<code class="sig-prename descclassname"><span class="pre">rmgpy.molecule.adjlist.</span></code><code class="sig-name descname"><span class="pre">to_adjacency_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplicity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_lone_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.adjlist.to_adjacency_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.molecule.adjlist.to_adjacency_list">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.adjlist.</span></span><span class="sig-name descname"><span class="pre">to_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplicity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_lone_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.adjlist.to_adjacency_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a chemical graph defined by a list of <cite>atoms</cite> into a string
 adjacency list.</p>
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -346,7 +347,7 @@ adjacency list.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

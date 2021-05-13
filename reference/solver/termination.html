@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Termination criteria &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
@@ -56,33 +57,33 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="termination-criteria">
+  <section id="termination-criteria">
 <h1>Termination criteria<a class="headerlink" href="#termination-criteria" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="rmgpy.solver.TerminationTime">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.solver.</span></code><code class="sig-name descname"><span class="pre">TerminationTime</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">'s')</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.TerminationTime" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.TerminationTime">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.solver.</span></span><span class="sig-name descname"><span class="pre">TerminationTime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">'s')</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.TerminationTime" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a time at which the simulation should be terminated. This class
 has one attribute: the termination <cite>time</cite> in seconds.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="rmgpy.solver.TerminationConversion">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.solver.</span></code><code class="sig-name descname"><span class="pre">TerminationConversion</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.TerminationConversion" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.TerminationConversion">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.solver.</span></span><span class="sig-name descname"><span class="pre">TerminationConversion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.TerminationConversion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a conversion at which the simulation should be terminated. This
 class has two attributes: the <cite>species</cite> to monitor and the fractional
 <cite>conversion</cite> at which to terminate.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="rmgpy.solver.TerminationRateRatio">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.solver.</span></code><code class="sig-name descname"><span class="pre">TerminationRateRatio</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.TerminationRateRatio" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.solver.TerminationRateRatio">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.solver.</span></span><span class="sig-name descname"><span class="pre">TerminationRateRatio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.TerminationRateRatio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a fraction of the maximum characteristic rate of the simulation
 at which the simulation should be terminated.  This class has one attribute
 the ratio between the current and maximum characteristic rates at which
 to terminate</p>
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -175,7 +176,7 @@ to terminate</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

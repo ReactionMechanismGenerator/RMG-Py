@@ -4,16 +4,17 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>rmgpy.rmg.model.CoreEdgeReactionModel &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -57,11 +58,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rmgpy-rmg-model-coreedgereactionmodel">
+  <section id="rmgpy-rmg-model-coreedgereactionmodel">
 <h1>rmgpy.rmg.model.CoreEdgeReactionModel<a class="headerlink" href="#rmgpy-rmg-model-coreedgereactionmodel" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.rmg.model.</span></code><code class="sig-name descname"><span class="pre">CoreEdgeReactionModel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.rmg.model.</span></span><span class="sig-name descname"><span class="pre">CoreEdgeReactionModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a reaction model constructed using a rate-based screening
 algorithm. The species and reactions in the model itself are called the
 <em>core</em>; the species and reactions identified as candidates for inclusion in
@@ -104,8 +105,8 @@ the model are called the <em>edge</em>. The attributes are:</p>
 </tbody>
 </table>
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.add_new_surface_objects">
-<code class="sig-name descname"><span class="pre">add_new_surface_objects</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_surface_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_surface_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reaction_system</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_new_surface_objects" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.add_new_surface_objects">
+<span class="sig-name descname"><span class="pre">add_new_surface_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_surface_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_surface_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reaction_system</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_new_surface_objects" title="Permalink to this definition">¶</a></dt>
 <dd><p>obj is the list of objects for enlargement coming from simulate
 new_surface_species and new_surface_reactions are the current lists of surface species and surface reactions
 following simulation
@@ -116,23 +117,23 @@ returns false if the surface has changed</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_library_to_edge">
-<code class="sig-name descname"><span class="pre">add_reaction_library_to_edge</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction_library</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_library_to_edge" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_library_to_edge">
+<span class="sig-name descname"><span class="pre">add_reaction_library_to_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction_library</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_library_to_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add all species and reactions from <cite>reaction_library</cite>, a
 <code class="xref py py-class docutils literal notranslate"><span class="pre">KineticsPrimaryDatabase</span></code> object, to the model edge.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_library_to_output">
-<code class="sig-name descname"><span class="pre">add_reaction_library_to_output</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction_library</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_library_to_output" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_library_to_output">
+<span class="sig-name descname"><span class="pre">add_reaction_library_to_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction_library</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_library_to_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add all species and reactions from <cite>reaction_library</cite>, a
 <code class="xref py py-class docutils literal notranslate"><span class="pre">KineticsPrimaryDatabase</span></code> object, to the output.
 This does not bring any of the reactions or species into the core itself.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_core">
-<code class="sig-name descname"><span class="pre">add_reaction_to_core</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_core" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_core">
+<span class="sig-name descname"><span class="pre">add_reaction_to_core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_core" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a reaction <cite>rxn</cite> to the reaction model core (and remove from edge if
 necessary). This function assumes <cite>rxn</cite> has already been checked to
 ensure it is supposed to be a core reaction (i.e. all of its reactants
@@ -140,8 +141,8 @@ AND all of its products are in the list of core species).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_edge">
-<code class="sig-name descname"><span class="pre">add_reaction_to_edge</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_edge" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_edge">
+<span class="sig-name descname"><span class="pre">add_reaction_to_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a reaction <cite>rxn</cite> to the reaction model edge. This function assumes
 <cite>rxn</cite> has already been checked to ensure it is supposed to be an edge
 reaction (i.e. all of its reactants OR all of its products are in the
@@ -150,8 +151,8 @@ edge).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_unimolecular_networks">
-<code class="sig-name descname"><span class="pre">add_reaction_to_unimolecular_networks</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newReaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_unimolecular_networks" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_unimolecular_networks">
+<span class="sig-name descname"><span class="pre">add_reaction_to_unimolecular_networks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newReaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_unimolecular_networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a newly-created <code class="xref py py-class docutils literal notranslate"><span class="pre">Reaction</span></code> object <cite>newReaction</cite>, update the
 corresponding unimolecular reaction network. If no network exists, a new
 one is created. If the new reaction is an isomerization that connects two
@@ -161,8 +162,8 @@ network containing the new reaction.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.add_seed_mechanism_to_core">
-<code class="sig-name descname"><span class="pre">add_seed_mechanism_to_core</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed_mechanism</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">react</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_seed_mechanism_to_core" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.add_seed_mechanism_to_core">
+<span class="sig-name descname"><span class="pre">add_seed_mechanism_to_core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed_mechanism</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">react</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_seed_mechanism_to_core" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add all species and reactions from <cite>seed_mechanism</cite>, a
 <code class="xref py py-class docutils literal notranslate"><span class="pre">KineticsPrimaryDatabase</span></code> object, to the model core. If <cite>react</cite>
 is <code class="docutils literal notranslate"><span class="pre">True</span></code>, then reactions will also be generated between the seed
@@ -171,8 +172,8 @@ so it is not done by default.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.add_species_to_core">
-<code class="sig-name descname"><span class="pre">add_species_to_core</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_species_to_core" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.add_species_to_core">
+<span class="sig-name descname"><span class="pre">add_species_to_core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_species_to_core" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a species <cite>spec</cite> to the reaction model core (and remove from edge if
 necessary). This function also moves any reactions in the edge that gain
 core status as a result of this change in status to the core.
@@ -180,14 +181,14 @@ If this are any such reactions, they are returned in a list.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.add_species_to_edge">
-<code class="sig-name descname"><span class="pre">add_species_to_edge</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_species_to_edge" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.add_species_to_edge">
+<span class="sig-name descname"><span class="pre">add_species_to_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_species_to_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a species <cite>spec</cite> to the reaction model edge.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.adjust_surface">
-<code class="sig-name descname"><span class="pre">adjust_surface</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.adjust_surface" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.adjust_surface">
+<span class="sig-name descname"><span class="pre">adjust_surface</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.adjust_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>Here we add species intended to be added and remove any species that need to be moved out of the core.
 For now we remove reactions from the surface that have become part of a PDepNetwork by
 intersecting the set of surface reactions with the core so that all surface reactions are in the core
@@ -196,21 +197,21 @@ thus the surface algorithm currently (June 2017) is not implemented for pdep net
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.apply_kinetics_to_reaction">
-<code class="sig-name descname"><span class="pre">apply_kinetics_to_reaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.apply_kinetics_to_reaction" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.apply_kinetics_to_reaction">
+<span class="sig-name descname"><span class="pre">apply_kinetics_to_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.apply_kinetics_to_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>retrieve the best kinetics for the reaction and apply it towards the forward
 or reverse direction (if reverse, flip the direaction).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.apply_thermo_to_species">
-<code class="sig-name descname"><span class="pre">apply_thermo_to_species</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">procnum</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.apply_thermo_to_species" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.apply_thermo_to_species">
+<span class="sig-name descname"><span class="pre">apply_thermo_to_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">procnum</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.apply_thermo_to_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate thermo for species. QM calculations are parallelized if requested.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.check_for_existing_reaction">
-<code class="sig-name descname"><span class="pre">check_for_existing_reaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.check_for_existing_reaction" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.check_for_existing_reaction">
+<span class="sig-name descname"><span class="pre">check_for_existing_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.check_for_existing_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check to see if an existing reaction has the same reactants, products, and
 family as <cite>rxn</cite>. Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> or <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code> and the matched
 reaction (if found).</p>
@@ -226,8 +227,8 @@ in the reaction database are iterated over to check if a reaction was overlooked
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.check_for_existing_species">
-<code class="sig-name descname"><span class="pre">check_for_existing_species</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.check_for_existing_species" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.check_for_existing_species">
+<span class="sig-name descname"><span class="pre">check_for_existing_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.check_for_existing_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check to see if an existing species contains the same
 <code class="xref py py-class docutils literal notranslate"><span class="pre">molecule.Molecule</span></code> as <cite>molecule</cite>. Comparison is done using
 isomorphism without consideration of electrons. Therefore, resonance
@@ -236,14 +237,14 @@ structures of a species will all match each other.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.clear_surface_adjustments">
-<code class="sig-name descname"><span class="pre">clear_surface_adjustments</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.clear_surface_adjustments" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.clear_surface_adjustments">
+<span class="sig-name descname"><span class="pre">clear_surface_adjustments</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.clear_surface_adjustments" title="Permalink to this definition">¶</a></dt>
 <dd><p>empties surface tracking varaibles</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.enlarge">
-<code class="sig-name descname"><span class="pre">enlarge</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_object</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">react_edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unimolecular_react</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bimolecular_react</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trimolecular_react</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.enlarge" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.enlarge">
+<span class="sig-name descname"><span class="pre">enlarge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_object</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">react_edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unimolecular_react</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bimolecular_react</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trimolecular_react</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.enlarge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enlarge a reaction model by processing the objects in the list <cite>new_object</cite>.
 If <cite>new_object</cite> is a
 <code class="xref py py-class docutils literal notranslate"><span class="pre">rmg.species.Species</span></code> object, then the species is moved from
@@ -257,59 +258,59 @@ to form edge reactions.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.generate_kinetics">
-<code class="sig-name descname"><span class="pre">generate_kinetics</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.generate_kinetics" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.generate_kinetics">
+<span class="sig-name descname"><span class="pre">generate_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.generate_kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate best possible kinetics for the given <cite>reaction</cite> using the kinetics database.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.generate_thermo">
-<code class="sig-name descname"><span class="pre">generate_thermo</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.generate_thermo" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.generate_thermo">
+<span class="sig-name descname"><span class="pre">generate_thermo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.generate_thermo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate thermo for species.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.get_model_size">
-<code class="sig-name descname"><span class="pre">get_model_size</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.get_model_size" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.get_model_size">
+<span class="sig-name descname"><span class="pre">get_model_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.get_model_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the numbers of species and reactions in the model core and edge.
 Note that this is not necessarily equal to the lengths of the
 corresponding species and reaction lists.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.get_species_reaction_lists">
-<code class="sig-name descname"><span class="pre">get_species_reaction_lists</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.get_species_reaction_lists" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.get_species_reaction_lists">
+<span class="sig-name descname"><span class="pre">get_species_reaction_lists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.get_species_reaction_lists" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return lists of all of the species and reactions in the core and the
 edge.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.get_stoichiometry_matrix">
-<code class="sig-name descname"><span class="pre">get_stoichiometry_matrix</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.get_stoichiometry_matrix" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.get_stoichiometry_matrix">
+<span class="sig-name descname"><span class="pre">get_stoichiometry_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.get_stoichiometry_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the stoichiometry matrix for all generated species and reactions.
 The id of each species and reaction is the corresponding row and column,
 respectively, in the matrix.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.initialize_index_species_dict">
-<code class="sig-name descname"><span class="pre">initialize_index_species_dict</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.initialize_index_species_dict" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.initialize_index_species_dict">
+<span class="sig-name descname"><span class="pre">initialize_index_species_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.initialize_index_species_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Populates the core species dictionary</p>
 <p>integer -&gt; core Species</p>
 <p>with the species that are currently in the core.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.log_enlarge_summary">
-<code class="sig-name descname"><span class="pre">log_enlarge_summary</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_core_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_edge_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_edge_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactions_moved_from_edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">react_edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.log_enlarge_summary" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.log_enlarge_summary">
+<span class="sig-name descname"><span class="pre">log_enlarge_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_core_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_edge_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_edge_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactions_moved_from_edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">react_edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.log_enlarge_summary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Output a summary of a model enlargement step to the log. The details of
 the enlargement are passed in the <cite>new_core_species</cite>, <cite>new_core_reactions</cite>,
 <cite>new_edge_species</cite>, and <cite>new_edge_reactions</cite> objects.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.make_new_pdep_reaction">
-<code class="sig-name descname"><span class="pre">make_new_pdep_reaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.make_new_pdep_reaction" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.make_new_pdep_reaction">
+<span class="sig-name descname"><span class="pre">make_new_pdep_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.make_new_pdep_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a new pressure-dependent reaction based on a list of <cite>reactants</cite> and a
 list of <cite>products</cite>. The reaction belongs to the specified <cite>network</cite> and
 has pressure-dependent kinetics given by <cite>kinetics</cite>.</p>
@@ -321,8 +322,8 @@ the model edge and/or core.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.make_new_reaction">
-<code class="sig-name descname"><span class="pre">make_new_reaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_existing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_thermo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.make_new_reaction" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.make_new_reaction">
+<span class="sig-name descname"><span class="pre">make_new_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_existing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_thermo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.make_new_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a new reaction given a <code class="xref py py-class docutils literal notranslate"><span class="pre">Reaction</span></code> object <cite>forward</cite>.
 The reaction is added to the global list of reactions.
 Returns the reaction in the direction that corresponds to the
@@ -335,8 +336,8 @@ made such that the forward reaction is exothermic at 298K.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.make_new_species">
-<code class="sig-name descname"><span class="pre">make_new_species</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_existing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_thermo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.make_new_species" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.make_new_species">
+<span class="sig-name descname"><span class="pre">make_new_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_existing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_thermo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.make_new_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Formally create a new species from the specified <cite>object</cite>, which can be
 either a <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object or an <a class="reference internal" href="../species/species.html#rmgpy.species.Species" title="rmgpy.species.Species"><code class="xref py py-class docutils literal notranslate"><span class="pre">rmgpy.species.Species</span></code></a>
 object. It is emphasized that <cite>reactive</cite> relates to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code> attribute, while <cite>reactive_structure</cite>
@@ -344,8 +345,8 @@ relates to the <code class="xref py py-class docutils literal notranslate"><span
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.mark_chemkin_duplicates">
-<code class="sig-name descname"><span class="pre">mark_chemkin_duplicates</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.mark_chemkin_duplicates" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.mark_chemkin_duplicates">
+<span class="sig-name descname"><span class="pre">mark_chemkin_duplicates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.mark_chemkin_duplicates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that all reactions that will appear the chemkin output have been checked as duplicates.</p>
 <p>Call this if you’ve done something that may have introduced undetected duplicate reactions,
 like add a reaction library or seed mechanism.
@@ -353,23 +354,23 @@ Anything added via the <code class="xref py py-meth docutils literal notranslate
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.process_new_reactions">
-<code class="sig-name descname"><span class="pre">process_new_reactions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdep_network</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_thermo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.process_new_reactions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.process_new_reactions">
+<span class="sig-name descname"><span class="pre">process_new_reactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdep_network</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_thermo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.process_new_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process a list of newly-generated reactions involving the new core
 species or explored isomer <cite>new_species</cite> in network <cite>pdep_network</cite>.</p>
 <p>Makes a reaction and decides where to put it: core, edge, or PDepNetwork.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.prune">
-<code class="sig-name descname"><span class="pre">prune</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction_systems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_keep_in_edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_move_to_core</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximum_edge_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_species_exist_iterations_for_prune</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.prune" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.prune">
+<span class="sig-name descname"><span class="pre">prune</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction_systems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_keep_in_edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_move_to_core</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximum_edge_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_species_exist_iterations_for_prune</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.prune" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove species from the model edge based on the simulation results from
 the list of <cite>reaction_systems</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.register_reaction">
-<code class="sig-name descname"><span class="pre">register_reaction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.register_reaction" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.register_reaction">
+<span class="sig-name descname"><span class="pre">register_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.register_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds the reaction to the reaction database.</p>
 <p>The reaction database is structured as a multi-level
 dictionary, for efficient search and retrieval of
@@ -387,28 +388,28 @@ list.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.remove_empty_pdep_networks">
-<code class="sig-name descname"><span class="pre">remove_empty_pdep_networks</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.remove_empty_pdep_networks" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.remove_empty_pdep_networks">
+<span class="sig-name descname"><span class="pre">remove_empty_pdep_networks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.remove_empty_pdep_networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>searches for and deletes any empty pdep networks</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.remove_species_from_edge">
-<code class="sig-name descname"><span class="pre">remove_species_from_edge</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction_systems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.remove_species_from_edge" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.remove_species_from_edge">
+<span class="sig-name descname"><span class="pre">remove_species_from_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction_systems</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.remove_species_from_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove species <cite>spec</cite> from the reaction model edge.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.retrieve">
-<code class="sig-name descname"><span class="pre">retrieve</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">family_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.retrieve" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.retrieve">
+<span class="sig-name descname"><span class="pre">retrieve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">family_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.retrieve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of reactions from the reaction database with the
 same keys as the parameters.</p>
 <p>Returns an empty list when one of the keys could not be found.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.search_retrieve_reactions">
-<code class="sig-name descname"><span class="pre">search_retrieve_reactions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.search_retrieve_reactions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.search_retrieve_reactions">
+<span class="sig-name descname"><span class="pre">search_retrieve_reactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.search_retrieve_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Searches through the reaction database for
 reactions with an identical reaction key as the key of the
 parameter reaction.</p>
@@ -417,8 +418,8 @@ is used to search for possible candidate reactions.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.set_thermodynamic_filtering_parameters">
-<code class="sig-name descname"><span class="pre">set_thermodynamic_filtering_parameters</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermo_tol_keep_spc_in_edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_core_size_for_prune</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximum_edge_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reaction_systems</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.set_thermodynamic_filtering_parameters" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.set_thermodynamic_filtering_parameters">
+<span class="sig-name descname"><span class="pre">set_thermodynamic_filtering_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermo_tol_keep_spc_in_edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_core_size_for_prune</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximum_edge_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reaction_systems</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.set_thermodynamic_filtering_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>sets parameters for thermodynamic filtering based on the current core
 Tmax is the maximum reactor temperature in K
 thermo_tol_keep_spc_in_edge is the Gibbs number above which species will be filtered
@@ -428,8 +429,8 @@ reaction_systems is a list of reaction_system objects</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.thermo_filter_down">
-<code class="sig-name descname"><span class="pre">thermo_filter_down</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maximum_edge_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_species_exist_iterations_for_prune</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.thermo_filter_down" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.thermo_filter_down">
+<span class="sig-name descname"><span class="pre">thermo_filter_down</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maximum_edge_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_species_exist_iterations_for_prune</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.thermo_filter_down" title="Permalink to this definition">¶</a></dt>
 <dd><p>removes species from the edge based on their Gibbs energy until maximum_edge_species
 is reached under the constraint that all removed species are older than
 min_species_exist_iterations_for_prune iterations
@@ -439,15 +440,15 @@ before it is eligible for thermo filtering</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.thermo_filter_species">
-<code class="sig-name descname"><span class="pre">thermo_filter_species</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spcs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.thermo_filter_species" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.thermo_filter_species">
+<span class="sig-name descname"><span class="pre">thermo_filter_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spcs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.thermo_filter_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>checks Gibbs energy of the species in species against the
 maximum allowed Gibbs energy</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.update_unimolecular_reaction_networks">
-<code class="sig-name descname"><span class="pre">update_unimolecular_reaction_networks</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.update_unimolecular_reaction_networks" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.update_unimolecular_reaction_networks">
+<span class="sig-name descname"><span class="pre">update_unimolecular_reaction_networks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.update_unimolecular_reaction_networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate through all of the currently-existing unimolecular reaction
 networks, updating those that have been marked as invalid. In each update,
 the phenomonological rate coefficients <span class="math notranslate nohighlight">\(k(T,P)\)</span> are computed for
@@ -458,20 +459,20 @@ updated.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="rmgpy.rmg.model.ReactionModel">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rmgpy.rmg.model.</span></code><code class="sig-name descname"><span class="pre">ReactionModel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.ReactionModel" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.ReactionModel">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.rmg.model.</span></span><span class="sig-name descname"><span class="pre">ReactionModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.ReactionModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a generic reaction model. A reaction model consists of <cite>species</cite>,
 a list of species, and <cite>reactions</cite>, a list of reactions.</p>
 <dl class="py method">
-<dt id="rmgpy.rmg.model.ReactionModel.merge">
-<code class="sig-name descname"><span class="pre">merge</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.ReactionModel.merge" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.model.ReactionModel.merge">
+<span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.ReactionModel.merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a new <a class="reference internal" href="#rmgpy.rmg.model.ReactionModel" title="rmgpy.rmg.model.ReactionModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReactionModel</span></code></a> object that is the union of this
 model and <cite>other</cite>.</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
+</section>
 
 
             <div class="clearer"></div>
@@ -564,7 +565,7 @@ model and <cite>other</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

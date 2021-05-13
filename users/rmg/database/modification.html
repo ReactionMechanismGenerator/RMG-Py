@@ -4,16 +4,17 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>12.4. Database Modification &#8212; RMG-Py 3.1.0 Documentation</title>
-    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
     
-    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/doctools.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -58,24 +59,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="database-modification">
+  <section id="database-modification">
 <span id="databasemodification"></span><h1><span class="section-number">12.4. </span>Database Modification<a class="headerlink" href="#database-modification" title="Permalink to this headline">¶</a></h1>
 <p>Note that the RMG-Py database is written in Python code where line indentations
 determine the scope. When modifying the database, be sure to preserve all
 line indentations shown in the examples.</p>
-<div class="section" id="modifying-the-thermo-database">
+<section id="modifying-the-thermo-database">
 <h2><span class="section-number">12.4.1. </span>Modifying the Thermo Database<a class="headerlink" href="#modifying-the-thermo-database" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="creating-thermo-libraries">
+<section id="creating-thermo-libraries">
 <h3><span class="section-number">12.4.1.1. </span>Creating Thermo Libraries<a class="headerlink" href="#creating-thermo-libraries" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="adding-thermo-groups">
+</section>
+<section id="adding-thermo-groups">
 <h3><span class="section-number">12.4.1.2. </span>Adding Thermo Groups<a class="headerlink" href="#adding-thermo-groups" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="adding-thermo-to-the-depository">
+</section>
+<section id="adding-thermo-to-the-depository">
 <h3><span class="section-number">12.4.1.3. </span>Adding Thermo to the Depository<a class="headerlink" href="#adding-thermo-to-the-depository" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-<div class="section" id="modifying-the-kinetics-database">
+</section>
+</section>
+<section id="modifying-the-kinetics-database">
 <span id="kinetic-database-modification"></span><h2><span class="section-number">12.4.2. </span>Modifying the Kinetics Database<a class="headerlink" href="#modifying-the-kinetics-database" title="Permalink to this headline">¶</a></h2>
 <p>For the casual user, it is recommended to use either a kinetic library or
 add to the training set instead of modifying the kinetic groups.</p>
@@ -91,7 +92,7 @@ add to the training set instead of modifying the kinetic groups.</p>
 <li><p>You are confident on the accurcy of the kinetic parameter</p></li>
 <li><p>You wish for the reaction to be generalized to similar reactions in your mechanism</p></li>
 </ul>
-<div class="section" id="adding-reaction-family">
+<section id="adding-reaction-family">
 <h3><span class="section-number">12.4.2.1. </span>Adding Reaction Family<a class="headerlink" href="#adding-reaction-family" title="Permalink to this headline">¶</a></h3>
 <p>There are several places in the RMG-database and RMG-Py source code where reaction family details are hard-coded. You should check all these when you create a new reaction family. Here are some of the places:</p>
 <ul class="simple">
@@ -144,8 +145,8 @@ add to the training set instead of modifying the kinetic groups.</p>
 </dl>
 </li>
 </ul>
-</div>
-<div class="section" id="creating-kinetics-libraries">
+</section>
+<section id="creating-kinetics-libraries">
 <h3><span class="section-number">12.4.2.2. </span>Creating Kinetics Libraries<a class="headerlink" href="#creating-kinetics-libraries" title="Permalink to this headline">¶</a></h3>
 <p>To add a reaction library, simply create a folder bearing the library’s name under
 <code class="docutils literal notranslate"><span class="pre">RMG-database/input/kinetics/libraries</span></code>. You’ll need to create two files:
@@ -296,8 +297,8 @@ Allowed pressure units are <code class="docutils literal notranslate"><span clas
         <span class="n">kunits</span><span class="o">=</span><span class="s1">&#39;cm^3/(mol*s)&#39;</span><span class="p">,</span> <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mi">3000</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Pmin</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0013156</span><span class="p">,</span> <span class="s1">&#39;atm&#39;</span><span class="p">),</span> <span class="n">Pmax</span><span class="o">=</span><span class="p">(</span><span class="mf">131.56</span><span class="p">,</span> <span class="s1">&#39;atm&#39;</span><span class="p">)))</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="adding-a-specific-collider">
+</section>
+<section id="adding-a-specific-collider">
 <h3><span class="section-number">12.4.2.3. </span>Adding a specific collider<a class="headerlink" href="#adding-a-specific-collider" title="Permalink to this headline">¶</a></h3>
 <p>Only the <code class="docutils literal notranslate"><span class="pre">Troe</span></code> and <code class="docutils literal notranslate"><span class="pre">Lindemann</span></code> pressure dependent formats could be defined with a specific species as a third body collider, if needed. For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
@@ -319,11 +320,11 @@ Allowed pressure units are <code class="docutils literal notranslate"><span clas
         <span class="n">alpha</span><span class="o">=</span><span class="mf">0.43</span><span class="p">,</span> <span class="n">T3</span><span class="o">=</span><span class="p">(</span><span class="mi">371</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">T1</span><span class="o">=</span><span class="p">(</span><span class="mi">7442</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">efficiencies</span><span class="o">=</span><span class="p">{}))</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="adding-new-kinetic-groups-and-rate-rules">
+</section>
+<section id="adding-new-kinetic-groups-and-rate-rules">
 <h3><span class="section-number">12.4.2.4. </span>Adding New Kinetic Groups and Rate Rules<a class="headerlink" href="#adding-new-kinetic-groups-and-rate-rules" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="decide-on-a-template">
+</section>
+<section id="decide-on-a-template">
 <h3><span class="section-number">12.4.2.5. </span>Decide on a Template<a class="headerlink" href="#decide-on-a-template" title="Permalink to this headline">¶</a></h3>
 <p>First you need to know the template for your reaction to decide whether or not
 to create new groups:</p>
@@ -365,8 +366,8 @@ group. Therefore it is better to make a new group.</p>
 <p>If you have determined the suggested groups is appropriate, skip to
 <a class="reference internal" href="#kinetic-training-set"><span class="std std-ref">Adding Training Reactions</span></a> or <a class="reference internal" href="#kinetic-rules"><span class="std std-ref">Adding Kinetic Rules</span></a>. Otherwise proceed to the
 next section for instructions on creating the new group.</p>
-</div>
-<div class="section" id="creating-a-new-group">
+</section>
+<section id="creating-a-new-group">
 <h3><span class="section-number">12.4.2.6. </span>Creating a New Group<a class="headerlink" href="#creating-a-new-group" title="Permalink to this headline">¶</a></h3>
 <p>In the family’s groups.py, you will need to add an entry of the format:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
@@ -406,8 +407,8 @@ example given in the previous section, the new group would be added under the C_
                 <span class="n">L3</span><span class="p">:</span> <span class="n">C_ter</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="adding-kinetic-rules">
+</section>
+<section id="adding-kinetic-rules">
 <span id="kinetic-rules"></span><h3><span class="section-number">12.4.2.7. </span>Adding Kinetic Rules<a class="headerlink" href="#adding-kinetic-rules" title="Permalink to this headline">¶</a></h3>
 <p>Rules give generalized kinetic parameters for a specific node template. In most
 cases, your kinetic parameters describe a specific reaction in which case you
@@ -469,8 +470,8 @@ will want to add your reaction to the training set.</p>
 <li><p>The short description will appear in the annotated chemkin file.</p></li>
 <li><p>The long description only appears in the database.</p></li>
 </ul>
-</div>
-<div class="section" id="adding-training-reactions">
+</section>
+<section id="adding-training-reactions">
 <span id="kinetic-training-set"></span><h3><span class="section-number">12.4.2.8. </span>Adding Training Reactions<a class="headerlink" href="#adding-training-reactions" title="Permalink to this headline">¶</a></h3>
 <p>If you know the kinetics of a specific reaction, rather than a rate rule for a template, you can
 add the kinetics to the database training set.  By default, RMG creates new rate rules from this
@@ -509,8 +510,8 @@ depending on the order of thermo libraries used when running a job.</p>
 go to the family’s folder in <code class="docutils literal notranslate"><span class="pre">RMG-database/input/kinetics/families/</span></code>.  Create a new kinetics entry
 in the <code class="docutils literal notranslate"><span class="pre">training.py</span></code> file.  Make sure to apply the reaction recipe labels properly for the
 reactants and products.</p>
-</div>
-<div class="section" id="pitfalls">
+</section>
+<section id="pitfalls">
 <h3><span class="section-number">12.4.2.9. </span>Pitfalls<a class="headerlink" href="#pitfalls" title="Permalink to this headline">¶</a></h3>
 <p>Be careful with the specificity when naming neighbouring atoms. On upper nodes,
 you should try to be general so that you do not exclude reactions.</p>
@@ -528,9 +529,9 @@ a bi-Arrhenius fit. 3-parameter fits are more common. However, the resulting fit
 When RMG is assembling pressure-dependent networks, it will use barrier heights from rate rules. This can
 lead to very inaccurate rate calculations. To avoid this issue, try to ensure that your fitted arrhenius
 activation energy truly does reflect the reaction barrier height.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -649,7 +650,7 @@ activation energy truly does reflect the reaction barrier height.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
