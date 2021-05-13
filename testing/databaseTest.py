@@ -762,8 +762,8 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                         expected[pq.m] -= 1
                     if pq.Quantity(1.0, a_factor.units).simplified.dimensionality != expected:
                         boo = True
-                        logging.error('Reaction {0} from {1} {2}, has invalid units {3}'.format(
-                            rxn, tag, database.label, a_factor.units))
+                        logging.error('Reaction {0} from {1} {2}, has invalid units {3} expected {4}'.format(
+                            rxn, tag, database.label, a_factor.units, expected))
                 elif isinstance(k, rmgpy.kinetics.Arrhenius):  # (but not SurfaceArrhenius, which came first)
                     a_factor = k.A
                     if pq.Quantity(1.0, a_factor.units).simplified.dimensionality != dimensionalities[molecularity]:
