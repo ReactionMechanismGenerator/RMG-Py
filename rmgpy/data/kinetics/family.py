@@ -1743,6 +1743,7 @@ class KineticsFamily(Database):
             struct = template_reactant
 
         reactant_contains_surface_site = reactant.contains_surface_site()
+        reactant_is_surface_site = reactant.is_surface_site()
 
         if isinstance(struct, LogicNode):
             mappings = []
@@ -1753,6 +1754,9 @@ class KineticsFamily(Database):
                 mappings.extend(reactant.find_subgraph_isomorphisms(child_structure, save_order=self.save_order))
             return mappings
         elif isinstance(struct, Group):
+            if struct.is_surface_site() != reactant_is_surface_site:
+                # An empty surface site group should not match an adsorbate
+                return []
             if struct.contains_surface_site() != reactant_contains_surface_site:
                 # An adsorbed template can't match a gas-phase species and vice versa
                 return []
