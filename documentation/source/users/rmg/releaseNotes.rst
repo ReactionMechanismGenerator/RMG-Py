@@ -34,8 +34,7 @@ always troublesome.
    - Kinetics and pdep sensitivities additionally saved in YAML format
    - Enable automatic isodesmic reaction generation
    - AECs, BACs and frequency scaling factors moved from Arkane to RMG-database
-   - Added functionality for Petersson and Melius BAC fitting using Arkane and 
-    the reference database
+   - Added functionality for Petersson and Melius BAC fitting using Arkane and the reference database
    - Enabled two parameter Arrhenius fit option
    - Added functionality for fitting AECs
    - Added classes to standardize model chemistry definitions
