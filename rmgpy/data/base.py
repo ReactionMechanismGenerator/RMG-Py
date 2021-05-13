@@ -56,30 +56,29 @@ class Entry(object):
 
     The attributes are:
 
-    =================== ========================================================
-    Attribute           Description
-    =================== ========================================================
-    `index`             A unique nonnegative integer index for the entry
-    `label`             A unique string identifier for the entry (or '' if not used)
-    `item`              The item that this entry represents
-    `parent`            The parent of the entry in the hierarchy (or ``None`` if not used)
-    `children`          A list of the children of the entry in the hierarchy (or ``None`` if not used)
-    `data`              The data to associate with the item
-    'data_count'        The number of data used to fit the group values in the group additivity method
-    `reference`         A :class:`Reference` object containing bibliographic reference information to the source of the data
-    `reference_type`     The way the data was determined: ``'theoretical'``, ``'experimental'``, or ``'review'``
-    `short_desc`         A brief (one-line) description of the data
-    `long_desc`          A long, verbose description of the data
-    `rank`              An integer indicating the degree of confidence in the entry data, or ``None`` if not used
-    `nodal_distance`     A float representing the distance of a given entry from it's parent entry
-    For surface species thermo calculations:
-    `metal`             Which metal the thermo calculation was done on (``None`` if not used)
-    `facet`             Which facet the thermo calculation was done on (``None`` if not used)
-    `site`              Which surface site the molecule prefers (``None`` if not used)
-    `binding_energies'  The surface binding energies for C,H,O, and N
-    `surface_site_density`  The surface site density
-    =================== ========================================================
-
+    ====================== ========================================================
+    Attribute              Description
+    ====================== ========================================================
+    `index`                A unique nonnegative integer index for the entry
+    `label`                A unique string identifier for the entry (or '' if not used)
+    `item`                 The item that this entry represents
+    `parent`               The parent of the entry in the hierarchy (or ``None`` if not used)
+    `children`             A list of the children of the entry in the hierarchy (or ``None`` if not used)
+    `data`                 The data to associate with the item
+    `data_count`           The number of data used to fit the group values in the group additivity method
+    `reference`            A :class:`Reference` object containing bibliographic reference information to the source of the data
+    `reference_type`       The way the data was determined: ``'theoretical'``, ``'experimental'``, or ``'review'``
+    `short_desc`           A brief (one-line) description of the data
+    `long_desc`            A long, verbose description of the data
+    `rank`                 An integer indicating the degree of confidence in the entry data, or ``None`` if not used
+    `nodal_distance`       A float representing the distance of a given entry from it's parent entry
+     --                    For surface species thermo calculations:
+    `metal`                Which metal the thermo calculation was done on (``None`` if not used)
+    `facet`                Which facet the thermo calculation was done on (``None`` if not used)
+    `site`                 Which surface site the molecule prefers (``None`` if not used)
+    `binding_energies`     The surface binding energies for C,H,O, and N
+    `surface_site_density` The surface site density
+    ====================== ========================================================
     """
 
     def __init__(self,
