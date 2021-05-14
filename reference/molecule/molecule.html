@@ -702,6 +702,13 @@ by an edge, or <code class="docutils literal notranslate"><span class="pre">Fals
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Molecule.has_halogen">
+<span class="sig-name descname"><span class="pre">has_halogen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Molecule.has_halogen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the molecule contains at least one halogen (F, Cl, Br, or I),
+or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.has_lone_pairs">
 <span class="sig-name descname"><span class="pre">has_lone_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.Molecule.has_lone_pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the molecule contains at least one lone electron pair,
@@ -959,6 +966,12 @@ removal.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Molecule.replace_halogen_with_hydrogen">
+<span class="sig-name descname"><span class="pre">replace_halogen_with_hydrogen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.replace_halogen_with_hydrogen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace all halogens in a molecule with hydrogen atoms. Changes self molecule object.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.reset_connectivity_values">
 <span class="sig-name descname"><span class="pre">reset_connectivity_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.reset_connectivity_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset any cached connectivity information. Call this method when you
@@ -974,7 +987,7 @@ if you saved the order</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.saturate_radicals">
-<span class="sig-name descname"><span class="pre">saturate_radicals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.saturate_radicals" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">saturate_radicals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#rmgpy.molecule.Molecule.saturate_radicals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.</p>
 </dd></dl>
 
