@@ -1602,6 +1602,34 @@ class KineticsFamily(Database):
                 lowest_labels.append(min(labels))
             product_structures = [s for _, s in sorted(zip(lowest_labels, product_structures))]
 
+        # if applying the family in reverse and the template reactants restrict multiplicity, we need to make sure that
+        # a reverse product matches the multiplicity-constrained template reactant because the forward template products
+        # do not enforce the multiplicity restriction
+        if not forward and isinstance(reactant_structure, Molecule):
+            for template in self.forward_template.reactants:
+                # iterate through the template reactants and check to see if they have a multiplicity constraint
+                if isinstance(template.item, Group):
+                    if template.item.multiplicity != []:
+                        # this template restricts multiplicity and needs to be checked
+                        for struct in product_structures:
+                            # iterate through the product structures to make sure that
+                            # it matches a mulitplicity-constrained template reactant
+                            match = self._match_reactant_to_template(struct, template)
+                            if match:
+                                # A product structure matches the template! 
+                                break
+                        if not match:
+                            # No product matched the template reactant
+                            # Therefore, this reaction is invalid
+                            logging.debug(
+                                f'No product structures matched {template} which has a multiplicity of {template.item.multiplicity}\n\n'
+                                'Template:\n\n'
+                                f'{template.item.to_adjacency_list()}\n\n'
+                                'Product structures:\n')
+                            for struct in product_structures:
+                                logging.debug(f'{struct}\n{struct.to_adjacency_list()}\n')
+                            return None
+
         # Return the product structures
         return product_structures
 
