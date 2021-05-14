@@ -830,7 +830,7 @@ class TestGenerateReactions(unittest.TestCase):
             thermo_libraries=[],
             reaction_libraries=[],
             kinetics_families=['H_Abstraction', 'R_Addition_MultipleBond', 'Singlet_Val6_to_triplet', 'R_Recombination',
-                              'Baeyer-Villiger_step1_cat', 'Surface_Adsorption_Dissociative',
+                              'Baeyer-Villiger_step1_cat', 'Surface_Adsorption_Dissociative', 'Surface_Abstraction_vdW',
                               'Surface_Dissociation_vdW'],
             depository=False,
             solvation=False,
@@ -1029,3 +1029,12 @@ multiplicity 2
         # self.assertEquals(len(reaction_list), 14)
         reaction_list = self.database.kinetics.families['Surface_Dissociation_vdW'].generate_reactions(reactants)
         self.assertEquals(len(reaction_list), 0)
+
+    def test_apply_recipe_multiplicity_check(self):
+        """
+        Test that the multiplicity check is working correctly in the apply_recipe function
+        """
+        family = self.database.kinetics.families['Surface_Abstraction_vdW']
+        reacts = [Molecule(smiles='*[CH2]'),Molecule(smiles='*[CH2]')]
+        reaction_list = family.generate_reactions(reacts)
+        self.assertEqual(len(reaction_list),0)
