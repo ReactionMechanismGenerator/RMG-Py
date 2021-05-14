@@ -43,7 +43,7 @@ jobs:
         continue-on-error: true
         run: |
           cd documentation
-          sphinx-build -b linkcheck -d build/doctrees/ source/ build/linkcheck | grep -e broken -e redirect
+          sphinx-build -b linkcheck -d build/doctrees/ source/ build/linkcheck | grep -e broken -e redirect | grep -v -e 'redirect  https://doi.org/'
       - name: Test documentation
         if: ${{  github.event_name == 'pull_request' }}
         run: |
