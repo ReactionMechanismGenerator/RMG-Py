@@ -1295,53 +1295,57 @@ class ThermoDatabase(object):
             ml_estimator, ml_settings = None, None
 
         if quantum_mechanics:
-            original_molecule = species.molecule[0]
-            if quantum_mechanics.settings.onlyCyclics and not original_molecule.is_cyclic():
-                pass
-            else:  # try a QM calculation
-                if original_molecule.get_radical_count() > quantum_mechanics.settings.maxRadicalNumber:
-                    # Too many radicals for direct calculation: use HBI.
-                    logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
-                        original_molecule.get_radical_count(),
-                        species.label,
-                        quantum_mechanics.settings.maxRadicalNumber,
-                    ))
+            try:
+                original_molecule = species.molecule[0]
+                if quantum_mechanics.settings.onlyCyclics and not original_molecule.is_cyclic():
+                    pass
+                else:  # try a QM calculation
+                    if original_molecule.get_radical_count() > quantum_mechanics.settings.maxRadicalNumber:
+                        # Too many radicals for direct calculation: use HBI.
+                        logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
+                            original_molecule.get_radical_count(),
+                            species.label,
+                            quantum_mechanics.settings.maxRadicalNumber,
+                        ))
 
-                    # Need to estimate thermo via each resonance isomer
-                    thermo = []
-                    for molecule in species.molecule:
-                        molecule.clear_labeled_atoms()
-                        # Try to see if the saturated molecule can be found in the libraries
-                        tdata = self.estimate_radical_thermo_via_hbi(molecule, self.get_thermo_data_from_libraries)
-                        priority = 1
-                        if tdata is None:
-                            # Then attempt quantum mechanics job on the saturated molecule
-                            tdata = self.estimate_radical_thermo_via_hbi(molecule, quantum_mechanics.get_thermo_data)
-                            priority = 2
-                        if tdata is None:
-                            # Fall back to group additivity
-                            tdata = self.estimate_thermo_via_group_additivity(molecule)
-                            priority = 3
+                        # Need to estimate thermo via each resonance isomer
+                        thermo = []
+                        for molecule in species.molecule:
+                            molecule.clear_labeled_atoms()
+                            # Try to see if the saturated molecule can be found in the libraries
+                            tdata = self.estimate_radical_thermo_via_hbi(molecule, self.get_thermo_data_from_libraries)
+                            priority = 1
+                            if tdata is None:
+                                # Then attempt quantum mechanics job on the saturated molecule
+                                tdata = self.estimate_radical_thermo_via_hbi(molecule, quantum_mechanics.get_thermo_data)
+                                priority = 2
+                            if tdata is None:
+                                # Fall back to group additivity
+                                tdata = self.estimate_thermo_via_group_additivity(molecule)
+                                priority = 3
 
-                        thermo.append((priority, tdata.get_enthalpy(298.), molecule, tdata))
+                            thermo.append((priority, tdata.get_enthalpy(298.), molecule, tdata))
 
-                    if len(thermo) > 1:
-                        # Sort thermo first by the priority, then by the most stable H298 value
-                        thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
-                        for i, therm in enumerate(thermo):
-                            logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol"
-                                          "".format(i + 1, therm[2].to_smiles(), therm[1]))
-                        # Save resonance isomers reordered by their thermo
-                        species.molecule = [item[2] for item in thermo]
-                        original_molecule = species.molecule[0]
-                    thermo0 = thermo[0][3]
+                        if len(thermo) > 1:
+                            # Sort thermo first by the priority, then by the most stable H298 value
+                            thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
+                            for i, therm in enumerate(thermo):
+                                logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol"
+                                              "".format(i + 1, therm[2].to_smiles(), therm[1]))
+                            # Save resonance isomers reordered by their thermo
+                            species.molecule = [item[2] for item in thermo]
+                            original_molecule = species.molecule[0]
+                        thermo0 = thermo[0][3]
 
-                    # update entropy by symmetry correction
-                    thermo0.S298.value_si -= constants.R * math.log(species.get_symmetry_number())
+                        # update entropy by symmetry correction
+                        thermo0.S298.value_si -= constants.R * math.log(species.get_symmetry_number())
 
-                else:  # Not too many radicals: do a direct calculation.
-                    thermo0 = quantum_mechanics.get_thermo_data(original_molecule)  # returns None if it fails
-
+                    else:  # Not too many radicals: do a direct calculation.
+                        thermo0 = quantum_mechanics.get_thermo_data(original_molecule)  # returns None if it fails
+            except ValueError as e: #rdkit fails to generate conformers 
+                logging.error("Quantum Mechanics calculation failed for species: %s with ValueError: %s", species.label, e.args[0])
+                logging.error("Falling back to ML (If turned on) or GAV (If not)")
+                    
         if thermo0 is None:
             # First try finding stable species in libraries and using HBI
             for mol in species.molecule:
