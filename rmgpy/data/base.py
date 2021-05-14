@@ -65,6 +65,7 @@ class Entry(object):
     `parent`            The parent of the entry in the hierarchy (or ``None`` if not used)
     `children`          A list of the children of the entry in the hierarchy (or ``None`` if not used)
     `data`              The data to associate with the item
+    'data_count'        The number of data used to fit the group values in the group additivity method
     `reference`         A :class:`Reference` object containing bibliographic reference information to the source of the data
     `reference_type`     The way the data was determined: ``'theoretical'``, ``'experimental'``, or ``'review'``
     `short_desc`         A brief (one-line) description of the data
@@ -88,6 +89,7 @@ class Entry(object):
                  parent=None,
                  children=None,
                  data=None,
+                 data_count=None,
                  reference=None,
                  reference_type='',
                  short_desc='',
@@ -106,6 +108,7 @@ class Entry(object):
         self.parent = parent
         self.children = children or []
         self.data = data
+        self.data_count = data_count
         self.reference = reference
         self.reference_type = reference_type
         self.short_desc = short_desc
