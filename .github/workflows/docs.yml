@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+  pull_request:
 
 jobs:
   build-documentation:
@@ -38,8 +39,13 @@ jobs:
             GH_TOKEN: ${{ secrets.RMG_DEV_TOKEN }}
         run: |
           make -C documentation continous_integration_setup clean html
+      - name: Test documentation
+        if: ${{  github.event_name == 'pull_request' }}
+        run: |
+          cd documentation
+          sphinx-build -b html -d build/doctrees/ source/ build/html -w errors.log -W --keep-going
       - name: Publish documentation
-        if: ${{ github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
+        if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
         env:
             COMMITMESSAGE: "Automatic documentation rebuild"
             GIT_AUTHOR_NAME: "RMG Bot"
