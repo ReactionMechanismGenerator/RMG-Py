@@ -39,6 +39,11 @@ jobs:
             GH_TOKEN: ${{ secrets.RMG_DEV_TOKEN }}
         run: |
           make -C documentation continous_integration_setup clean html
+      - name: Check documentation links
+        continue-on-error: true
+        run: |
+          cd documentation
+          sphinx-build -b linkcheck -d build/doctrees/ source/ build/linkcheck | grep -e broken -e redirect
       - name: Test documentation
         if: ${{  github.event_name == 'pull_request' }}
         run: |
