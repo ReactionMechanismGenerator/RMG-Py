@@ -78,14 +78,14 @@ class TestFamily(unittest.TestCase):
         Test the get_backbone_roots() function
         """
         backbones = self.family.get_backbone_roots()
-        self.assertEquals(backbones[0].label, "RnH")
+        self.assertEqual(backbones[0].label, "RnH")
 
     def test_get_end_roots(self):
         """
         Test the get_end_roots() function
         """
         ends = self.family.get_end_roots()
-        self.assertEquals(len(ends), 2)
+        self.assertEqual(len(ends), 2)
         self.assertIn(self.family.groups.entries["Y_rad_out"], ends)
         self.assertIn(self.family.groups.entries["XH_out"], ends)
 
@@ -94,7 +94,7 @@ class TestFamily(unittest.TestCase):
         Test the get_top_level_groups() function
         """
         top_groups = self.family.get_top_level_groups(self.family.groups.entries["RnH"])
-        self.assertEquals(len(top_groups), 4)
+        self.assertEqual(len(top_groups), 4)
         self.assertIn(self.family.groups.entries["R5Hall"], top_groups)
         self.assertIn(self.family.groups.entries["R6Hall"], top_groups)
         self.assertIn(self.family.groups.entries["R2Hall"], top_groups)
@@ -702,13 +702,13 @@ class TestTreeGeneration(unittest.TestCase):
         """
         self.family.clean_tree()
         ents = [ent for ent in self.family.groups.entries.values() if ent.index != -1]
-        self.assertEquals(len(ents), 1,
+        self.assertEqual(len(ents), 1,
                           'more than one relevant group left in groups after preparing tree for generation')
-        self.assertEquals(len(self.family.rules.entries), 1,
+        self.assertEqual(len(self.family.rules.entries), 1,
                           'more than one group in rules.entries after preparing tree for generation')
         root = self.family.groups.entries[list(self.family.rules.entries.keys())[0]]
-        self.assertEquals([root], self.family.forward_template.reactants)
-        self.assertEquals([root], self.family.groups.top)
+        self.assertEqual([root], self.family.forward_template.reactants)
+        self.assertEqual([root], self.family.groups.top)
 
     def test_b_generate_tree(self):
         """
@@ -751,7 +751,7 @@ class TestTreeGeneration(unittest.TestCase):
             if len(rs) == 1:
                 c += 1
 
-        self.assertEquals(c, 6, 'incorrect number of kinetics information, expected 6 found {0}'.format(c))
+        self.assertEqual(c, 6, 'incorrect number of kinetics information, expected 6 found {0}'.format(c))
 
     def test_d_regularization_dims(self):
         """
@@ -998,11 +998,11 @@ multiplicity 2
         reaction_list = self.database.kinetics.families['R_Recombination'].generate_reactions(reactant)
         for rxn in reaction_list:
             for product in rxn.products:
-                self.assertEquals(product.get_net_charge(), 0)
+                self.assertEqual(product.get_net_charge(), 0)
 
         reactant = [Molecule(smiles='[O-][N+]#N')]
         reaction_list = self.database.kinetics.families['R_Recombination'].generate_reactions(reactant)
-        self.assertEquals(len(reaction_list), 0)
+        self.assertEqual(len(reaction_list), 0)
 
     def test_reactant_num_mismatch(self):
         """Test that we get no reactions for reactant/template size mismatch
@@ -1010,11 +1010,11 @@ multiplicity 2
         This happens often because we test every combo of molecules against all families."""
         reactants = [Molecule(smiles='C'), Molecule(smiles='[OH]')]
         reaction_list = self.database.kinetics.families['Singlet_Val6_to_triplet'].generate_reactions(reactants)
-        self.assertEquals(len(reaction_list), 0)
+        self.assertEqual(len(reaction_list), 0)
         reaction_list = self.database.kinetics.families['Baeyer-Villiger_step1_cat'].generate_reactions(reactants)
-        self.assertEquals(len(reaction_list), 0)
+        self.assertEqual(len(reaction_list), 0)
         reaction_list = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generate_reactions(reactants)
-        self.assertEquals(len(reaction_list), 0)
+        self.assertEqual(len(reaction_list), 0)
 
     def test_match_reactant_to_template_surface_site(self):
         """
@@ -1048,9 +1048,9 @@ multiplicity 2
             Molecule().from_adjacency_list('1 X u0'),
         ]
         # reaction_list = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generate_reactions(reactants)
-        # self.assertEquals(len(reaction_list), 14)
+        # self.assertEqual(len(reaction_list), 14)
         reaction_list = self.database.kinetics.families['Surface_Dissociation_vdW'].generate_reactions(reactants)
-        self.assertEquals(len(reaction_list), 0)
+        self.assertEqual(len(reaction_list), 0)
 
     def test_apply_recipe_multiplicity_check(self):
         """
