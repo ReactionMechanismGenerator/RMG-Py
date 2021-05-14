@@ -1051,6 +1051,28 @@ multiplicity 2
         self.assertEqual(len(empty_surface_site_matches), 1)
         self.assertEqual(len(vdW_matches), 0)
 
+    def test_match_reactant_to_template_surface_site(self):
+        """
+        Test that an empty surface site template group matches an empty surface site Molecule and does not match
+        a vdW adsorbate
+        """
+        family = self.database.kinetics.families['Surface_Adsorption_Dissociative']
+        empty_surface_site_template_group = [r.item for r in family.forward_template.reactants if r.item.is_surface_site()][0]
+
+        empty_surface_site_mol = Molecule().from_adjacency_list('1 X u0')
+        vdW_adsorbate = Molecule().from_adjacency_list("""
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 X u0 p0 c0
+""")
+        empty_surface_site_matches = family._match_reactant_to_template(empty_surface_site_mol, empty_surface_site_template_group)
+        vdW_matches = family._match_reactant_to_template(vdW_adsorbate, empty_surface_site_template_group)
+        self.assertEqual(len(empty_surface_site_matches), 1)
+        self.assertEqual(len(vdW_matches), 0)
+
     def test_reactant_num_mismatch_2(self):
         """Test that we get no reactions for reactant/template size mismatch
 
