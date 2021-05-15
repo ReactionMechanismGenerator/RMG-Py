@@ -20,7 +20,7 @@ Installing the Linux Subsystem
    distributions.
 
 2. Once the Linux subsystem is installed, open a web browser in Windows and go to the
-   `Anaconda Python Platform Downloads Page <https://www.anaconda.com/download/#linux>`_. Go to the tab for the
+   `Anaconda Python Platform Downloads Page <https://www.anaconda.com/products/individual#Downloads`_. Go to the tab for the
    **Linux Installer**, and **right click** on the download icon for Python 3.7 to copy the link location. Open an Ubuntu
    terminal (type in ``Ubuntu`` into the Windows search bar if you are unsure where to find it) and paste the link
    into the terminal immediately after typing the ``wget`` command, so that your terminal looks like the following: ::

@@ -291,4 +291,4 @@ References
 
 .. [Yu] "Estimation method for the thermochemical properties of polycyclic aromatic molecules" (Ph.D), Joanna Yu, M.I.T (2005)
 
-.. [RDKit] Landrum, G. (2012). RDKit, http://rdkit.org.
+.. [RDKit] Landrum, G. (2012). RDKit, https://rdkit.org.

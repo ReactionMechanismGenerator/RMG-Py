@@ -115,7 +115,7 @@ them numerically by discretizing the integrals over energy.
 
 .. [Hinshelwood1926] C. N. Hinshelwood. *Proc. Royal Soc. A* **17**,
    p. 230-233 (1926).
-   `JSTOR:94593 <http://www.jstor.org/stable/94593>`_
+   `JSTOR:94593 <https://www.jstor.org/stable/94593>`_
 
 .. [Rice1927] O. K. Rice and H. C. Ramsperger. *J. Am. Chem. Soc.* **49**,
    p. 1617-1629 (1927).

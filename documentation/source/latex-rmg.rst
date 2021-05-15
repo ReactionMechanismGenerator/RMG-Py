@@ -11,7 +11,7 @@ steps using a general understanding of how molecules react. This documentation i
 +---------------------------------------------+----------------------------------------------------------------------------------------+
 | I want to...                                | Resource                                                                               |
 +=============================================+========================================================================================+
-| analyze models & search databases           | `RMG website resources <http://rmg.mit.edu/>`__  (no download needed)                  |
+| analyze models & search databases           | `RMG website resources <https://rmg.mit.edu/>`__  (no download needed)                 |
 +---------------------------------------------+----------------------------------------------------------------------------------------+
 | create mechanisms automatically             | Download RMG with the RMG User's Guide                                                 |
 +---------------------------------------------+----------------------------------------------------------------------------------------+
@@ -29,7 +29,7 @@ calculations. Its user guide is also included.
 The last section of this documentation covers some of the more in depth theory behind
 RMG and Arkane.
 
-Please visit http://reactionmechanismgenerator.github.io/RMG-Py/
+Please visit https://reactionmechanismgenerator.github.io/RMG-Py/
 for the most up to date documentation and source code. You may refer to the separate *RMG-Py API Reference*
 document to view the details of RMG-Py's modules and subpackages.
 

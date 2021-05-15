@@ -8,19 +8,20 @@ RMG-Py and all of its dependencies may be easily installed through a short serie
 The instructions listed below were written for Ubuntu 12.04 and should generally apply to other distributions.
 
 Warning: This installation method is no longer actively maintained, and is not guaranteed to work as written.
+Please refer to `installation`_ for more up-to-date instructions.
 
 * Install compilers and libraries: ::
 
 	sudo apt-get install git g++ gfortran python-dev liblapack-dev
 	sudo apt-get install python-openbabel python-setuptools python-pip
 
-* After creating a `Github account <https://github.com/signup/free>`_, generate your public key: ::
+* After creating a `Github account <https://github.com/join>`_, generate your public key: ::
 
 	cd ~; ssh-keygen		# press enter to save to the default directory
 					# create a password if desired
 	cat .ssh/id_rsa.pub
 
-  Copy this public key to your `Github profile <https://github.com/settings/ssh>`_.
+  Copy this public key to your `Github profile <https://github.com/settings/keys>`_.
 
 * Install dependencies: ::
 
@@ -38,7 +39,7 @@ Warning: This installation method is no longer actively maintained, and is not g
 
 * Install RDKit
 
-  Full installation instructions: http://code.google.com/p/rdkit/wiki/GettingStarted
+  Full installation instructions: https://www.rdkit.org/docs/Install.html
   Be sure to **build it with InChI support.** Here's a synopsis: ::
   
 	cd ~

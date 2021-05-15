@@ -84,6 +84,6 @@ test:
     - python %SCRIPTS\Arkane.py examples\arkane\networks\n-butanol\input.py # [win]
 
 about:
-  home: http://github.com/ReactionMechanismGenerator/RMG-Py
+  home: https://github.com/ReactionMechanismGenerator/RMG-Py
   license: MIT
   summary: "A program for automatically generating kinetic models of chemical reaction mechanisms."
