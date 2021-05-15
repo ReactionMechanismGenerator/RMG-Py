@@ -18,7 +18,7 @@ Reading electronic structure software log files
 =============================== ================================================
 Class                           Description
 =============================== ================================================
-:class:`Log`                    Base class for generic log files
+:class:`ESSAdapter`             Abstract Base Class for generic log files
 :class:`GaussianLog`            Extract chemical parameters from Gaussian log files
 :class:`MolproLog`              Extract chemical parameters from Molpro log files
 :class:`OrcaLog`                Extract chemical parameters from Orca log files
@@ -107,7 +107,7 @@ Class                       Description
 .. toctree::
     :hidden:
     
-    log
+    essadapter
     gaussianlog
     molprolog
     orcalog
