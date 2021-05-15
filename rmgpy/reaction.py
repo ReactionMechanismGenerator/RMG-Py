@@ -31,7 +31,7 @@
 This module contains classes and functions for working with chemical reactions.
 
 From the `IUPAC Compendium of Chemical Terminology 
-<http://dx.doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that 
+<https://doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that 
 results in the interconversion of chemical species".
 
 In RMG Py, a chemical reaction is represented in memory as a :class:`Reaction`
