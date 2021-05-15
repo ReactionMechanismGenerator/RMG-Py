@@ -99,7 +99,6 @@ Utility modules
 Class                       Description
 =========================== ================================================
 :mod:`arkane.common`        Contains :class:`common.ArkaneSpecies` and other commonly used functions
-:mod:`arkane.util`          Other utility functions
 =========================== ================================================
 
 
@@ -123,4 +122,4 @@ Class                       Description
     explorer
     sensitivity
     common
-    util
+
