@@ -6,7 +6,7 @@
 [![GitHub release](https://img.shields.io/github/release/ReactionMechanismGenerator/RMG-Py.svg)](https://github.com/ReactionMechanismGenerator/RMG-Py/releases)
 [![Anconda](https://img.shields.io/conda/v/rmg/rmg.svg)](https://anaconda.org/rmg/rmg)
 [![Gitter](https://img.shields.io/gitter/room/ReactionMechanismGenerator/RMG-Py.svg)](https://gitter.im/ReactionMechanismGenerator/RMG-Py)
-[![RMG Website](https://img.shields.io/website-up-down-green-red/http/rmg.mit.edu.svg?label=rmg%20website)](http://rmg.mit.edu/)
+[![RMG Website](https://img.shields.io/website-up-down-green-red/http/rmg.mit.edu.svg?label=rmg%20website)](https://rmg.mit.edu/)
 
 ## Description
 This repository contains the Python version of **Reaction Mechanism Generator (RMG)**,
@@ -43,7 +43,7 @@ or drop in to the [chat room](https://gitter.im/ReactionMechanismGenerator/RMG-P
 
 ## Useful Links
 
-- [Interactive Website](http://rmg.mit.edu): Visit this site to visualize RMG-generated models, view the databases, and 
+- [Interactive Website](https://rmg.mit.edu): Visit this site to visualize RMG-generated models, view the databases, and 
 perform thermodynamics and kinetics searches
 - [Wiki](https://github.com/ReactionMechanismGenerator/RMG-Py/wiki): a wiki for developer notes
 - [Issues Page](https://github.com/ReactionMechanismGenerator/RMG-Py/issues/): view current issues and feature requests

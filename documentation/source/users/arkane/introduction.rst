@@ -19,7 +19,7 @@ detailed model into a set of phenomenological rate coefficients. The result
 is a set of :math:`k(T,P)` functions suitable for use in chemical reaction
 mechanisms. More information is available at `Allen et al. <https://doi.org/10.1039/c1cp22765c>`_.
 
-Arkane is developed and distributed as part of `RMG-Py <http://rmg.mit.edu/>`_, but can be used as a stand-alone
+Arkane is developed and distributed as part of `RMG-Py <https://rmg.mit.edu/>`_, but can be used as a stand-alone
 application for Thermochemistry, Transition State Theory, and Master Equation chemical kinetics calculations.
 
 Arkane is written in the `Python <http://www.python.org/>`_ programming

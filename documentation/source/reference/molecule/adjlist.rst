@@ -19,7 +19,7 @@ Adjacency Lists
 .. note::
     To quickly visualize any adjacency list, or to generate an adjacency list from
     other types of molecular representations such as SMILES, InChI, or even common
-    species names, use the Molecule Search tool found here: http://rmg.mit.edu/molecule_search
+    species names, use the Molecule Search tool found here: https://rmg.mit.edu/molecule_search
 
 
 An adjacency list is the most general way of specifying a chemical molecule or

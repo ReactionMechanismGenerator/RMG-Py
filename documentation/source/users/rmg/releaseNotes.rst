@@ -1068,7 +1068,7 @@ This new release adds several new features and bug fixes.
 - Output HTML for visualizing models are now cleaned up and also more functional, including features to display thermo comments,
   display enthalpy, entropy, and free energy of reaction, as well as filter reactions by species.  You can use this new visualization format
   either by running a job in RMG v1.0.2 or revisualizing your CHEMKIN file and species dictionary using
-  the `visualization web tool <http://rmg.mit.edu/simulate/chemkin>`_.
+  the `visualization web tool <https://rmg.mit.edu/simulate/chemkin>`_.
   
   
   
