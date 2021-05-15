@@ -1339,7 +1339,7 @@ class KineticsFamily(Database):
     def apply_recipe(self, reactant_structures, forward=True, unique=True):
         """
         Apply the recipe for this reaction family to the list of
-        :class:`Molecule` objects `reactant_structures`. The atoms
+        :class:`Molecule` or :class:`Group` objects `reactant_structures`. The atoms
         of the reactant structures must already be tagged with the appropriate
         labels. Returns a list of structures corresponding to the products
         after checking that the correct number of products was produced.
