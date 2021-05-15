@@ -344,18 +344,20 @@ class QChemLog(ESSAdapter):
         Return the imaginary frequency from a transition state frequency
         calculation in cm^-1.
         """
-        frequency = 0
+        frequency = []
         with open(self.path, 'r') as f:
             for line in f:
                 # Read imaginary frequency
                 if ' Frequency:' in line:
-                    frequency = float((line.split()[1]))
-                    break
-        # Make sure the frequency is imaginary:
-        if frequency < 0:
-            return frequency
-        else:
+                    frequency.append(float((line.split()[1])))
+        frequency = np.array(frequency)
+        index = np.where(frequency < 0)[0]
+        if len(index) > 1:
+            print('More than one imaginary frequency in QChem output file {0}.'.format(self.path))
+        elif len(index) == 0:
             raise LogError('Unable to find imaginary frequency in QChem output file {0}.'.format(self.path))
+        print(f'Imaginary freq for {self.path} is: {frequency[index[-1]]}')
+        return frequency[index[-1]]
 
     def load_scan_pivot_atoms(self):
         """Not implemented for QChem"""
