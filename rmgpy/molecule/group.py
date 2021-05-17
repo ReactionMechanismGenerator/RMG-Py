@@ -217,15 +217,15 @@ class GroupAtom(Vertex):
 
         The 'radicalElectron' attribute can be an empty list if we use the wildcard
         argument ux in the group definition. In this case, we will have this
-        function set the atom's 'radicalElectron' to a list allowing 1, 2, 3,
-        or 4 radical electrons.
+        function set the atom's 'radicalElectron' to a list allowing from `radical`
+        up to 4 radical electrons.
         """
         radical_electrons = []
         if any([len(atomtype.increment_radical) == 0 for atomtype in self.atomtype]):
             raise ActionError('Unable to update GroupAtom due to GAIN_RADICAL action: '
                               'Unknown atom type produced from set "{0}".'.format(self.atomtype))
         if not self.radical_electrons:
-            radical_electrons = [1, 2, 3, 4]
+            radical_electrons = [1, 2, 3, 4][radical-1:]
         else:
             for electron in self.radical_electrons:
                 radical_electrons.append(electron + radical)
@@ -276,7 +276,7 @@ class GroupAtom(Vertex):
 
         # Add a lone pair to a group atom with none
         if not self.lone_pairs:
-            self.lone_pairs = [1, 2, 3, 4]  # set to a wildcard of any number greater than 0
+            self.lone_pairs = [1, 2, 3, 4][pair-1:]  # set to a wildcard of any number greater than or equal to `pair`
         # Add a lone pair to a group atom that already has at least one lone pair
         else:
             for x in self.lone_pairs:
