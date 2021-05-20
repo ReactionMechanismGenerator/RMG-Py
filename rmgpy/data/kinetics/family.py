@@ -1616,12 +1616,16 @@ class KineticsFamily(Database):
                 lowest_labels.append(min(labels))
             product_structures = [s for _, s in sorted(zip(lowest_labels, product_structures))]
 
-        # If applying the family in reverse and the template reactants restrict multiplicity,
-        # we need to make sure that a reverse product matches the multiplicity-constrained
-        # template reactant because the forward template products do not enforce the
-        # multiplicity restriction.
-        if not forward and isinstance(reactant_structure, Molecule):
-            for template in self.forward_template.reactants:
+        # If the template restricts multiplicity, we need to make sure that
+        # a product matches the multiplicity-constrained template
+        # because the template does not ensure that the
+        # multiplicity restriction is obeyed
+        if isinstance(reactant_structure, Molecule):
+            if forward:
+                template_groups = self.forward_template.products
+            else:
+                template_groups = self.forward_template.reactants
+            for template in template_groups:
                 # iterate through the template reactants and check to see if they have a multiplicity constraint
                 if isinstance(template.item, Group):
                     if template.item.multiplicity != []:
