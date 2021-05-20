@@ -1521,6 +1521,12 @@ class KineticsFamily(Database):
                 atom_labels['*2'].label = '*3'
                 atom_labels['*3'].label = '*2'
 
+            elif label == 'surface_abstraction':
+                atom_labels['*1'].label = '*3'
+                atom_labels['*2'].label = '*5'
+                atom_labels['*3'].label = '*1'
+                atom_labels['*5'].label = '*2'
+
         if not forward:
             template = self.reverse_template
             product_num = self.reactant_num or len(template.products)
