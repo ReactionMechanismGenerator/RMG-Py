@@ -279,15 +279,17 @@ class QChemLog(ESSAdapter):
         e_elect = None
         with open(self.path, 'r') as f:
             a = b = 0
-            for line in f:
-                if 'Final energy is' in line:
-                    a = float(line.split()[3]) * constants.E_h * constants.Na
-                if 'Total energy in the final basis set' in line:
-                    b = float(line.split()[8]) * constants.E_h * constants.Na
-                e_elect = a or b
+            lines = f.readlines()
+            for line in lines[::-1]:
+                if 'total energy' in line:  # Double hybrid methods
+                    e_elect = float(line.split()[-2])
+                    return e_elect * constants.E_h * constants.Na
+                elif 'energy in the final basis set' in line:  # Other DFT methods
+                    e_elect = float(line.split()[-1])
+                    return e_elect * constants.E_h * constants.Na
+ 
         if e_elect is None:
             raise LogError('Unable to find energy in QChem output file {0}.'.format(self.path))
-        return e_elect
 
     def load_zero_point_energy(self):
         """
@@ -295,14 +297,16 @@ class QChemLog(ESSAdapter):
         """
         zpe = None
         with open(self.path, 'r') as f:
-            for line in f:
+            lines = f.readlines()
+            for line in lines[::-1]:
                 if 'Zero point vibrational energy' in line:
-                    zpe = float(line.split()[4]) * 4184  # QChem's ZPE is in kcal/mol, convert to J/mol
+                    zpe = float(line.split()[-2]) * 4184  # QChem's ZPE is in kcal/mol, convert to J/mol
                     logging.debug('ZPE is {}'.format(str(zpe)))
-        if zpe is not None:
-            return zpe
-        else:
+                    return zpe
+    
+        if zpe is None:
             raise LogError('Unable to find zero-point energy in QChem output file {0}.'.format(self.path))
+
 
     def load_scan_energies(self):
         """
