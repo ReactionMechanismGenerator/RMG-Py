@@ -63,7 +63,7 @@ class QChemLogTest(unittest.TestCase):
 
     def test_number_of_atoms_from_qchem_log(self):
         """
-        Uses a QChem log files to test that
+        Uses QChem log files to test that
         number of atoms can be properly read.
         """
         log = QChemLog(os.path.join(self.data_path, 'npropyl.out'))
@@ -73,7 +73,7 @@ class QChemLogTest(unittest.TestCase):
 
     def test_energy_from_qchem_log(self):
         """
-        Uses a QChem log files to test that
+        Uses QChem log files to test that
         molecular energies can be properly read.
         """
         log = QChemLog(os.path.join(self.data_path, 'npropyl.out'))
@@ -97,7 +97,7 @@ class QChemLogTest(unittest.TestCase):
 
     def test_load_vibrations_from_qchem_log(self):
         """
-        Uses a QChem log files to test that
+        Uses QChem log files to test that
         molecular energies can be properly read.
         """
         log = QChemLog(os.path.join(self.data_path, 'npropyl.out'))
@@ -124,7 +124,7 @@ class QChemLogTest(unittest.TestCase):
 
     def test_spin_multiplicity_from_qchem_log(self):
         """
-        Uses a QChem log file for npropyl to test that its
+        Uses QChem log files to test that
         molecular degrees of freedom can be properly read.
         """
         log = QChemLog(os.path.join(self.data_path, 'npropyl.out'))

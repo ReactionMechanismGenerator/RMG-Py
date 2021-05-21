@@ -61,7 +61,7 @@ class OrcaTest(unittest.TestCase):
 
     def test_number_of_atoms_from_orca_log(self):
         """
-        Uses a Orca log files to test that
+        Uses Orca log files to test that
         number of atoms can be properly read.
         """
         log = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
@@ -71,7 +71,7 @@ class OrcaTest(unittest.TestCase):
 
     def test_read_coordinates_from_orca_log(self):
         """
-        Uses a Orca log files to test that
+        Uses Orca log files to test that
         coordinate can be properly read.
         """
         log1 = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
@@ -83,7 +83,7 @@ class OrcaTest(unittest.TestCase):
 
     def test_energy_from_orca_log(self):
         """
-        Uses a Orca log files to test that
+        Uses Orca log files to test that
         molecular energies can be properly read.
         """
         log = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
@@ -95,7 +95,7 @@ class OrcaTest(unittest.TestCase):
 
     def test_load_zero_point_energy_from_orca_log(self):
         """
-        Uses a Orca log files to test that
+        Uses Orca log files to test that
         molecular zero point_energy can be properly read.
         """
         log = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
@@ -105,7 +105,7 @@ class OrcaTest(unittest.TestCase):
 
     def test_load_negative_frequency_from_orca_log(self):
         """
-        Uses a orca log file for npropyl to test that its
+        Uses an Orca log file for npropyl to test that its
         negative frequency can be properly read.
         """
         log = OrcaLog(os.path.join(self.data_path, 'Orca_TS_test.log'))
@@ -113,7 +113,7 @@ class OrcaTest(unittest.TestCase):
 
     def test_T1_diagnostic_from_orca_log(self):
         """
-        Uses a Orca log file for npropyl to test that its
+        Uses an Orca log file for npropyl to test that its
         T1_diagnostic of freedom can be properly read.
         """
         log = OrcaLog(os.path.join(self.data_path, 'Orca_dlpno_test.log'))
