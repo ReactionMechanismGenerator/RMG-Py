@@ -1714,6 +1714,13 @@ class KineticsFamily(Database):
         if self.forbidden is not None and self.forbidden.is_molecule_forbidden(molecule):
             return True
 
+        # forbid vdw multi-dentate molecules for surface families
+        if "surface" in self.label.lower():
+            if molecule.get_num_atoms('X') > 1:
+                for atom in molecule.atoms:
+                    if atom.atomtype.label == 'Xv':
+                        return True
+
         return False
 
     def _create_reaction(self, reactants, products, is_forward):
