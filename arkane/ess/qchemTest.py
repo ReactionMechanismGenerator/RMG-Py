@@ -74,6 +74,18 @@ class QChemLogTest(unittest.TestCase):
         log = QChemLog(os.path.join(self.data_path, 'CH4_sp.out'))
         self.assertAlmostEqual(log.load_energy(), -106356735.53661588, delta=1e-7)
 
+    def test_zero_point_energy_from_qchem_log(self):
+        """
+        Uses QChem log files to test that
+        zero point energies can be properly read.
+        """
+        log = QChemLog(os.path.join(self.data_path, 'npropyl.out'))
+        self.assertAlmostEqual(log.load_zero_point_energy(), 228785.304, delta=1e-3)
+        log = QChemLog(os.path.join(self.data_path, 'co.out'))
+        self.assertAlmostEqual(log.load_zero_point_energy(), 13476.664, delta=1e-3)
+        log = QChemLog(os.path.join(self.data_path, 'formyl_azide.out'), check_for_errors=False)
+        self.assertAlmostEqual(log.load_zero_point_energy(), 83014.744, delta=1e-3)
+
     def test_load_vibrations_from_qchem_log(self):
         """
         Uses a QChem log files to test that
