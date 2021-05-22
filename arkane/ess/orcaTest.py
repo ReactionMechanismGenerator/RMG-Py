@@ -35,6 +35,7 @@ import os
 import unittest
 
 from arkane.ess.orca import OrcaLog
+from arkane.exceptions import LogError
 
 ################################################################################
 
@@ -49,6 +50,14 @@ class OrcaTest(unittest.TestCase):
         A method that is run before all unit tests in this class.
         """
         cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'orca')
+
+    def test_check_for_errors(self):
+        """
+        Uses an Orca log file with SCF error
+        to test if errors are properly parsed.
+        """
+        with self.assertRaises(LogError):
+            OrcaLog(os.path.join(self.data_path, 'Orca_scf_error.log'))
 
     def test_number_of_atoms_from_orca_log(self):
         """

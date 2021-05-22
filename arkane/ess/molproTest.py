@@ -40,6 +40,7 @@ import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
 from arkane.ess.molpro import MolproLog
+from arkane.exceptions import LogError
 
 ################################################################################
 
@@ -54,6 +55,16 @@ class MolproLogTest(unittest.TestCase):
         A method that is run before all unit tests in this class.
         """
         cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'molpro')
+
+    def test_check_for_errors(self):
+        """
+        Uses Molpro log files that failed due to insufficient memory and unrecognized basis set
+        to test if errors are properly parsed.
+        """
+        with self.assertRaises(LogError):
+            MolproLog(os.path.join(self.data_path, 'insufficient_memory.out'))
+        with self.assertRaises(LogError):
+            MolproLog(os.path.join(self.data_path, 'unrecognized_basis_set.out'))
 
     def test_load_dz_from_molpro_log_f12(self):
         """

@@ -37,6 +37,7 @@ import unittest
 from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
 from arkane.ess.qchem import QChemLog
+from arkane.exceptions import LogError
 
 ################################################################################
 
@@ -51,6 +52,14 @@ class QChemLogTest(unittest.TestCase):
         A method that is run before all unit tests in this class.
         """
         cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'qchem')
+
+    def test_check_for_errors(self):
+        """
+        Uses a QChem log file that reached to maximum number of optimization cycles
+        to test if errors are properly parsed.
+        """
+        with self.assertRaises(LogError):
+            QChemLog(os.path.join(self.data_path, 'formyl_azide.out'))
 
     def test_number_of_atoms_from_qchem_log(self):
         """

@@ -57,6 +57,18 @@ class GaussianLogTest(unittest.TestCase):
         """
         cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'gaussian')
 
+    def test_check_for_errors(self):
+        """
+        Uses Gaussian log files that had various errors
+        to test if errors are properly parsed.
+        """
+        with self.assertRaises(LogError):
+            GaussianLog(os.path.join(self.data_path, 'l913.out'))
+        with self.assertRaises(LogError):
+            GaussianLog(os.path.join(self.data_path, 'l9999.out'))
+        with self.assertRaises(LogError):
+            GaussianLog(os.path.join(self.data_path, 'error_termination.out'))
+
     @work_in_progress
     def test_load_ethylene_from_gaussian_log_cbsqb3(self):
         """
@@ -196,16 +208,6 @@ class GaussianLogTest(unittest.TestCase):
         """
         log = GaussianLog(os.path.join(self.data_path, 'isobutanolQOOH_scan.log'))
         self.assertAlmostEqual(log._load_number_scans(), 36)
-
-    def test_gaussian_log_error_termination(self):
-        """
-        Ensures that error termination gaussian log file raises an logError
-        """
-        file_path = os.path.join(self.data_path, 'error_termination.out')
-        log = GaussianLog(file_path)
-        with self.assertRaises(LogError) as log_error:
-            log.load_conformer()
-        self.assertTrue(f'The Gaussian job in {file_path} did not converge.' in str(log_error.exception))
 
     def test_load_scan_with_freq(self):
         """
