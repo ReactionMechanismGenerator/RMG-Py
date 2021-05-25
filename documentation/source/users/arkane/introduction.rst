@@ -25,8 +25,7 @@ application for Thermochemistry, Transition State Theory, and Master Equation ch
 Arkane is written in the `Python <http://www.python.org/>`_ programming
 language to facilitate ease of development, installation, and use.
 
-Additional theoretical background can be found at `RMG's Theory Guide <http://reactionmechanismgenerator.github.io/RMG-Py/theory/index.html>`_
-and `Arkane's Manual <manual.pdf>`_ as well as the `manual's supplement information <manual_supplement-Solving1DSchrodingerEquation.pdf>`_.
+Additional theoretical background can be found at `RMG's Theory Guide <http://reactionmechanismgenerator.github.io/RMG-Py/theory/index.html>`_.
 
 License
 =======
