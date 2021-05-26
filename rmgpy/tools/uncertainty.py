@@ -503,63 +503,69 @@ class Uncertainty(object):
         
         Sigma_k = np.zeros((len(self.reaction_list), len(self.reaction_list)))
 
-        for i, reaction_i in enumerate(self.reaction_list):
-            for j, reaction_j in enumerate(self.reaction_list):
-                source_i = self.reaction_sources_dict[reaction_i]
-                source_j = self.reaction_sources_dict[reaction_j]
-                dlnk_i = {}
-                dlnk_j = {}
-                if 'Rate Rules' in source_i and 'Rate Rules' in source_j:
-                    family_i = source_i['Rate Rules'][0]
-                    family_j = source_j['Rate Rules'][0]
+        for a, reaction_a in enumerate(self.reaction_list):
+            for b, reaction_b in enumerate(self.reaction_list):
+                source_a = self.reaction_sources_dict[reaction_a]
+                source_b = self.reaction_sources_dict[reaction_b]
+                if 'Rate Rules' in source_a and 'Rate Rules' in source_b:
+                    family_a = source_a['Rate Rules'][0]
+                    family_b = source_b['Rate Rules'][0]
 
                     # if they're not in the same family, then the covariance should be zero, but check this
-                    if family_i != family_j:
-                        continue
+                    # if family_a != family_b:
+                    #    continue
 
-                    source_dict_i = source_i['Rate Rules'][1]
-                    source_dict_j = source_j['Rate Rules'][1]
-                    rules = source_dict_i['rules']
-                    training = source_dict_i['training']
+                    source_dict_a = source_a['Rate Rules'][1]
+                    source_dict_b = source_b['Rate Rules'][1]
+                    rules_a = source_dict_a['rules']
+                    rules_b = source_dict_b['rules']
+                    training_a = source_dict_a['training']
+                    training_b = source_dict_b['training']
 
-                    cov_ij = 0.0
-                    for ruleEntry, weight in rules:
-                        dplnk_i = k_param_engine.get_partial_uncertainty_value(source_i, 'Rate Rules', corr_param=ruleEntry,
-                                                                               corr_family=family_i)
-                        dplnk_j = k_param_engine.get_partial_uncertainty_value(source_j, 'Rate Rules', corr_param=ruleEntry,
-                                                                               corr_family=family_j)
-                        cov_ij += dplnk_i * dplnk_j
+                    cov_ab = 0.0
+                    for ruleEntry_a, weight_a in rules_a:
+                        for ruleEntry_b, weight_b in rules_b:
+                            if ruleEntry_a == ruleEntry_b:  # unclear what makes two rules equal, but I'll check this later
+                                cov_ab += weight_a * weight_b * np.float_power(self.dlnk_rule, 2.0)
+                                # assumes that self.dlnk_rule is standard deviation
 
-                    for ruleEntry, trainingEntry, weight in training:
-                        dplnk_i = k_param_engine.get_partial_uncertainty_value(source_i, 'Rate Rules', corr_param=ruleEntry,
-                                                                               corr_family=family_i)
-                        dplnk_j = k_param_engine.get_partial_uncertainty_value(source_j, 'Rate Rules', corr_param=ruleEntry,
-                                                                               corr_family=family_j)
-                        cov_ij += dplnk_i * dplnk_j
+                    for ruleEntry_a, weight_a in training_a:
+                        for ruleEntry_b, weight_b in training_b:
+                            if ruleEntry_a == ruleEntry_b:
+                                cov_ab += weight_a * weight_b * np.float_power(self.dlnk_rule, 2.0)
 
                     # Estimation error only matters if i=j
-                    if i == j:
-                        est_dplnk = k_param_engine.get_partial_uncertainty_value(source_i, 'Estimation')
-                        if est_dplnk:
-                            cov_ij += np.float_power(est_dplnk, 2.0)
+                    # I have assumed that the reaction list is unique
+                    if a == b:
+                        family_variance = np.float_power(self.dlnk_family, 2.0)
+                        match_variance = 0
+                        exact = source_dict_a['exact']
+                        N = len(source_dict_a['rules']) + len(source_dict_a['training'])
+                        if not exact:
+                            # nonexactness contribution increases as N increases
+                            match_variance = np.float_power(np.log10(N + 1) * self.dlnk_nonexact, 2.0)
+                            
+                        est_variance = family_variance + match_variance
+                        cov_ab += est_variance
+                    Sigma_k[a,b] = cov_ab
 
-                    Sigma_k[i,j] = cov_ij
-                elif i == j:  # same reaction, so just compute variance like usual
-                    if 'PDep' in source_i:
-                        dplnk = k_param_engine.get_partial_uncertainty_value(source_i, 'PDep', source_i['PDep'])
-                        Sigma_k[i,i] = np.float_power(dplnk, 2.0)
+                elif a == b:  # same reaction, so just compute variance like usual
+                    if 'PDep' in source_a:
+                        dplnk = k_param_engine.get_partial_uncertainty_value(source_a, 'PDep', source_a['PDep'])
+                        Sigma_k[a,a] = np.float_power(dplnk, 2.0)
 
-                    elif 'Library' in source_i:
-                        dplnk = k_param_engine.get_partial_uncertainty_value(source_i, 'Library', source_i['Library'])
-                        Sigma_k[i,i] = np.float_power(dplnk, 2.0)
+                    elif 'Library' in source_a:
+                        dplnk = k_param_engine.get_partial_uncertainty_value(source_a, 'Library', source_a['Library'])
+                        Sigma_k[a,a] = np.float_power(dplnk, 2.0)
 
-                    elif 'Training' in source_i:
-                        dplnk = k_param_engine.get_partial_uncertainty_value(source_i, 'Training', source_i['Training'])
-                        Sigma_k[i,i] = np.float_power(dplnk, 2.0)
+                    elif 'Training' in source_a:
+                        dplnk = k_param_engine.get_partial_uncertainty_value(source_a, 'Training', source_a['Training'])
+                        Sigma_k[a,a] = np.float_power(dplnk, 2.0)
                 # All other cases, the covariance is zero
 
         return Sigma_k
 
+        Sigma_G = np.zeros((len(self.species_list), len(self.species_list)))
         for species in self.species_list:
             source = self.species_sources_dict[species]
             dG = {}
