@@ -443,6 +443,22 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(bond13.is_benzene())
         self.assertTrue(bond7_11.is_single())
 
+    def test_from_adjacency_list6(self):
+        """
+        adjlist: Test if from_adjacency_list works when the molecule is at an excited state
+        and has a term symbol that needs to be read.
+        """
+        # molecule 6
+        adjlist = """
+OH(A2Sp)
+multiplicity 2
+term symbol A2Sigma+
+1 O u1 p2 c0 {2,S} 
+2 H u0 p0 c0 {1,S}
+"""
+        molecule = Molecule().from_adjacency_list(adjlist)
+        self.assertEqual(molecule.term_symbol, 'A2Sigma+')
+
     def test_various_spin_adjlists(self):
         """
         adjlist: Test that molecules with old or intermediate adjacency list formats containing unusual 
