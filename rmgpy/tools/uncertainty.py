@@ -495,6 +495,101 @@ class Uncertainty(object):
         for family_label in all_kinetic_sources['Training'].keys():
             self.all_kinetic_sources['Training'][family_label] = list(all_kinetic_sources['Training'][family_label])
 
+    def get_uncertainty_covariance_matrix(self):
+        g_param_engine = ThermoParameterUncertainty()
+        k_param_engine = KineticParameterUncertainty()
+        self.thermo_input_uncertainties = []
+        self.kinetic_input_uncertainties = []
+        
+        Sigma_k = np.zeros((len(self.reaction_list), len(self.reaction_list)))
+
+        for i, reaction_i in enumerate(self.reaction_list):
+            for j, reaction_j in enumerate(self.reaction_list):
+                source_i = self.reaction_sources_dict[reaction_i]
+                source_j = self.reaction_sources_dict[reaction_j]
+                dlnk_i = {}
+                dlnk_j = {}
+                if 'Rate Rules' in source_i and 'Rate Rules' in source_j:
+                    family_i = source_i['Rate Rules'][0]
+                    family_j = source_j['Rate Rules'][0]
+
+                    # if they're not in the same family, then the covariance should be zero, but check this
+                    if family_i != family_j:
+                        continue
+
+                    source_dict_i = source_i['Rate Rules'][1]
+                    source_dict_j = source_j['Rate Rules'][1]
+                    rules = source_dict_i['rules']
+                    training = source_dict_i['training']
+
+                    cov_ij = 0.0
+                    for ruleEntry, weight in rules:
+                        dplnk_i = k_param_engine.get_partial_uncertainty_value(source_i, 'Rate Rules', corr_param=ruleEntry,
+                                                                               corr_family=family_i)
+                        dplnk_j = k_param_engine.get_partial_uncertainty_value(source_j, 'Rate Rules', corr_param=ruleEntry,
+                                                                               corr_family=family_j)
+                        cov_ij += dplnk_i * dplnk_j
+
+                    for ruleEntry, trainingEntry, weight in training:
+                        dplnk_i = k_param_engine.get_partial_uncertainty_value(source_i, 'Rate Rules', corr_param=ruleEntry,
+                                                                               corr_family=family_i)
+                        dplnk_j = k_param_engine.get_partial_uncertainty_value(source_j, 'Rate Rules', corr_param=ruleEntry,
+                                                                               corr_family=family_j)
+                        cov_ij += dplnk_i * dplnk_j
+
+                    # Estimation error only matters if i=j
+                    if i == j:
+                        est_dplnk = k_param_engine.get_partial_uncertainty_value(source_i, 'Estimation')
+                        if est_dplnk:
+                            cov_ij += np.float_power(est_dplnk, 2.0)
+
+                    Sigma_k[i,j] = cov_ij
+                elif i == j:  # same reaction, so just compute variance like usual
+                    if 'PDep' in source_i:
+                        dplnk = k_param_engine.get_partial_uncertainty_value(source_i, 'PDep', source_i['PDep'])
+                        Sigma_k[i,i] = np.float_power(dplnk, 2.0)
+
+                    elif 'Library' in source_i:
+                        dplnk = k_param_engine.get_partial_uncertainty_value(source_i, 'Library', source_i['Library'])
+                        Sigma_k[i,i] = np.float_power(dplnk, 2.0)
+
+                    elif 'Training' in source_i:
+                        dplnk = k_param_engine.get_partial_uncertainty_value(source_i, 'Training', source_i['Training'])
+                        Sigma_k[i,i] = np.float_power(dplnk, 2.0)
+                # All other cases, the covariance is zero
+
+        return Sigma_k
+
+        for species in self.species_list:
+            source = self.species_sources_dict[species]
+            dG = {}
+            if 'Library' in source:
+                pdG = g_param_engine.get_partial_uncertainty_value(source, 'Library', corr_param=source['Library'])
+                try:
+                    label = 'Library {}'.format(self.species_list[source['Library']].to_chemkin())
+                except IndexError:
+                    label = 'Library {}'.format(self.extra_species[source['Library'] - len(self.species_list)].to_chemkin())
+                dG[label] = pdG
+            if 'QM' in source:
+                pdG = g_param_engine.get_partial_uncertainty_value(source, 'QM', corr_param=source['QM'])
+                label = 'QM {}'.format(self.species_list[source['QM']].to_chemkin())
+                dG[label] = pdG
+            if 'GAV' in source:
+                for groupType, groupList in source['GAV'].items():
+                    for group, weight in groupList:
+                        pdG = g_param_engine.get_partial_uncertainty_value(source, 'GAV', group, groupType)
+                        label = 'Group({}) {}'.format(groupType, group.label)
+                        dG[label] = pdG
+                # We also know if there is group additivity used, there will be uncorrelated estimation error
+                est_pdG = g_param_engine.get_partial_uncertainty_value(source, 'Estimation')
+                if est_pdG:
+                    label = 'Estimation {}'.format(species.to_chemkin())
+                    dG[label] = est_pdG
+            self.thermo_input_uncertainties.append(dG)
+
+
+
+
     def assign_parameter_uncertainties(self, g_param_engine=None, k_param_engine=None, correlated=False):
         """
         Assign uncertainties based on the sources of the species thermo and reaction kinetics.
