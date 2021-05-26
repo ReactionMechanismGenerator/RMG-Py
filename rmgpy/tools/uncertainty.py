@@ -496,6 +496,9 @@ class Uncertainty(object):
             self.all_kinetic_sources['Training'][family_label] = list(all_kinetic_sources['Training'][family_label])
 
     def get_uncertainty_covariance_matrix(self):
+        """
+            Assumed that the list of species and reactions are unique
+        """
         g_param_engine = ThermoParameterUncertainty()
         k_param_engine = KineticParameterUncertainty()
         self.thermo_input_uncertainties = []
@@ -508,13 +511,6 @@ class Uncertainty(object):
                 source_a = self.reaction_sources_dict[reaction_a]
                 source_b = self.reaction_sources_dict[reaction_b]
                 if 'Rate Rules' in source_a and 'Rate Rules' in source_b:
-                    family_a = source_a['Rate Rules'][0]
-                    family_b = source_b['Rate Rules'][0]
-
-                    # if they're not in the same family, then the covariance should be zero, but check this
-                    # if family_a != family_b:
-                    #    continue
-
                     source_dict_a = source_a['Rate Rules'][1]
                     source_dict_b = source_b['Rate Rules'][1]
                     rules_a = source_dict_a['rules']
@@ -526,24 +522,24 @@ class Uncertainty(object):
                     for ruleEntry_a, weight_a in rules_a:
                         for ruleEntry_b, weight_b in rules_b:
                             if ruleEntry_a == ruleEntry_b:  # unclear what makes two rules equal, but I'll check this later
-                                cov_ab += weight_a * weight_b * np.float_power(self.dlnk_rule, 2.0)
+                                cov_ab += weight_a * weight_b * np.float_power(k_param_engine.dlnk_rule, 2.0)
                                 # assumes that self.dlnk_rule is standard deviation
 
                     for ruleEntry_a, weight_a in training_a:
                         for ruleEntry_b, weight_b in training_b:
                             if ruleEntry_a == ruleEntry_b:
-                                cov_ab += weight_a * weight_b * np.float_power(self.dlnk_rule, 2.0)
+                                cov_ab += weight_a * weight_b * np.float_power(k_param_engine.dlnk_rule, 2.0)
 
                     # Estimation error only matters if i=j
                     # I have assumed that the reaction list is unique
                     if a == b:
-                        family_variance = np.float_power(self.dlnk_family, 2.0)
+                        family_variance = np.float_power(k_param_engine.dlnk_family, 2.0)
                         match_variance = 0
                         exact = source_dict_a['exact']
                         N = len(source_dict_a['rules']) + len(source_dict_a['training'])
                         if not exact:
                             # nonexactness contribution increases as N increases
-                            match_variance = np.float_power(np.log10(N + 1) * self.dlnk_nonexact, 2.0)
+                            match_variance = np.float_power(np.log10(N + 1) * k_param_engine.dlnk_nonexact, 2.0)
                             
                         est_variance = family_variance + match_variance
                         cov_ab += est_variance
@@ -563,35 +559,40 @@ class Uncertainty(object):
                         Sigma_k[a,a] = np.float_power(dplnk, 2.0)
                 # All other cases, the covariance is zero
 
-        return Sigma_k
-
+        # return Sigma_k
         Sigma_G = np.zeros((len(self.species_list), len(self.species_list)))
-        for species in self.species_list:
-            source = self.species_sources_dict[species]
-            dG = {}
-            if 'Library' in source:
-                pdG = g_param_engine.get_partial_uncertainty_value(source, 'Library', corr_param=source['Library'])
-                try:
-                    label = 'Library {}'.format(self.species_list[source['Library']].to_chemkin())
-                except IndexError:
-                    label = 'Library {}'.format(self.extra_species[source['Library'] - len(self.species_list)].to_chemkin())
-                dG[label] = pdG
-            if 'QM' in source:
-                pdG = g_param_engine.get_partial_uncertainty_value(source, 'QM', corr_param=source['QM'])
-                label = 'QM {}'.format(self.species_list[source['QM']].to_chemkin())
-                dG[label] = pdG
-            if 'GAV' in source:
-                for groupType, groupList in source['GAV'].items():
-                    for group, weight in groupList:
-                        pdG = g_param_engine.get_partial_uncertainty_value(source, 'GAV', group, groupType)
-                        label = 'Group({}) {}'.format(groupType, group.label)
-                        dG[label] = pdG
-                # We also know if there is group additivity used, there will be uncorrelated estimation error
-                est_pdG = g_param_engine.get_partial_uncertainty_value(source, 'Estimation')
-                if est_pdG:
-                    label = 'Estimation {}'.format(species.to_chemkin())
-                    dG[label] = est_pdG
-            self.thermo_input_uncertainties.append(dG)
+        for a, species_a in enumerate(self.species_list):
+            for b, species_b in enumerate(self.species_list):
+                source_a = self.species_sources_dict[species_a]
+                source_b = self.species_sources_dict[species_b]
+                cov_ab = 0
+
+
+                if 'GAV' in source_a and 'GAV' in source_b:
+                    for groupType_a, groupList_a in source_a['GAV'].items():
+                        for groupType_b, groupList_b in source_b['GAV'].items():
+                            for group_a, weight_a in groupList_a:
+                                for group_b, weight_b in groupList_b:
+                                    cov_ab += weight_a * weight_b * np.float_power(g_param_engine.dG_group, 2.0)
+
+                    
+                    # We also know if there is group additivity used, there will be uncorrelated estimation error
+                    # but that uncorrelated estimation error only shows up in the covatiance matrix if the molecules are the same
+                    if a == b:
+                        estimation_std = g_param_engine.get_partial_uncertainty_value(source_a, 'Estimation')
+                        if estimation_std:
+                            cov_ab += np.float_power(estimation_std, 2.0)
+
+                # Assume that the library and QM values are uncorrelated if the molecules are not the same
+                if a == b:
+                    if 'Library' in source_a:
+                        library_std = g_param_engine.get_partial_uncertainty_value(source_a, 'Library', corr_param=source_a['Library'])
+                        cov_ab += np.float_power(library_std, 2.0)
+                    if 'QM' in source_a:
+                        qm_std = g_param_engine.get_partial_uncertainty_value(source_a, 'QM', corr_param=source_a['QM'])
+                        cov_ab += np.float_power(qm_std, 2.0)
+
+                Sigma_G[a,b] = cov_ab
 
 
 
