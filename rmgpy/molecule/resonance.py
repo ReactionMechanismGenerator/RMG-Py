@@ -306,22 +306,22 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
     for mol in mol_list[1:]:
         if mol.get_net_charge() != input_charge:
             mol_list.remove(mol)
-            logging.warning('Resonance generation created a molecule {0} with a net charge of {1}\n'
+            logging.debug('Resonance generation created a molecule {0} with a net charge of {1}\n'
                             'which does not match the input mol charge of {2}'
                             'Removing {0} from resonance structures'.format(mol.smiles,mol.get_net_charge(),input_charge))
         if mol.contains_surface_site():
             for x in [atom for atom in mol.atoms if atom.is_surface_site()]:
                 if x.radical_electrons != 0:
                     mol_list.remove(mol)
-                    logging.warning('Resonance generation created a molecule {0} with {1} radicals on {2}\n'
+                    logging.debug('Resonance generation created a molecule {0} with {1} radicals on {2}\n'
                     'Removing {0} from resonance structures'.format(mol.smiles,x.radical_electrons,x.symbol))
                 elif x.lone_pairs != 0:
                     mol_list.remove(mol)
-                    logging.warning('Resonance generation created a molecule {0} with {1} lone pairs on {2}\n'
+                    logging.debug('Resonance generation created a molecule {0} with {1} lone pairs on {2}\n'
                     'Removing {0} from resonance structures'.format(mol.smiles,x.lone_pairs,x.symbol))
                 elif x.charge != 0:
                     mol_list.remove(mol)
-                    logging.warning('Resonance generation created a molecule {0} with a charge of {1} on {2}\n'
+                    logging.debug('Resonance generation created a molecule {0} with a charge of {1} on {2}\n'
                     'Removing {0} from resonance structures'.format(mol.smiles,x.charge,x.symbol))
 
     return mol_list
