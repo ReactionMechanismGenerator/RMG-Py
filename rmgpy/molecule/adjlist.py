@@ -437,7 +437,9 @@ def from_old_adjacency_list(adjlist, group=False, saturate_h=False):
         logging.error("Troublesome adjacency list:\n" + adjlist)
         raise
 
-    return atoms, multiplicity
+    term_symbol = 'X'  # setting the molecular term symbol to the ground state ("X")
+
+    return atoms, multiplicity, term_symbol
 
 
 ###############################
@@ -467,6 +469,7 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
     atom_dict = {}
     bonds = {}
     multiplicity = None
+    term_symbol = None
 
     adjlist = adjlist.strip()
     lines = adjlist.splitlines()
@@ -522,6 +525,15 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
             multiplicity = int(line.split()[1])
         if len(lines) == 0:
             raise InvalidAdjacencyListError('No atoms specified in adjacency list: \n{0}'.format(adjlist))
+
+    # Interpret the third line if it contains a term symbol
+    splits = lines[0].split()
+    if (splits[0], splits[1]) == ('term', 'symbol'):
+        lines.pop(0)
+        if len(splits) != 3:
+            raise InvalidAdjacencyListError(f'Invalid term symbol. Expected a single term symbol value, '
+                                            f'got {len(splits) - 2} values: {[v for v in splits[2:]]}.')
+        term_symbol = splits[2]
 
     mistake1 = re.compile(r'\{[^}]*\s+[^}]*\}')
     # Iterate over the remaining lines, generating Atom or GroupAtom objects
@@ -779,10 +791,10 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
         ConsistencyChecker.check_multiplicity(n_rad, multiplicity)
         for atom in atoms:
             ConsistencyChecker.check_hund_rule(atom, multiplicity)
-        return atoms, multiplicity
+        return atoms, multiplicity, term_symbol
     else:
         # Currently no group consistency check
-        return atoms, multiplicity
+        return atoms, multiplicity, term_symbol
 
 
 def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=False, remove_lone_pairs=False,
