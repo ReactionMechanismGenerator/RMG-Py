@@ -221,6 +221,7 @@ class RMG(util.Subject):
         self.ml_estimator = None
         self.ml_settings = None
         self.species_constraints = {}
+        self.training_reactions_constraints = {}
         self.walltime = '00:00:00:00'
         self.save_seed_modulus = -1
         self.max_iterations = None
