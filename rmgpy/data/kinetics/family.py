@@ -1144,11 +1144,24 @@ class KineticsFamily(Database):
             raise ValueError('No entry for template {0}.'.format(template))
         return entry
 
-    def add_rules_from_training(self, thermo_database=None, train_indices=None):
+    def add_rules_from_training(self, thermo_database=None, train_indices=None, constraints={}):
         """
         For each reaction involving real reactants and products in the training
-        set, add a rate rule for that reaction.
+        set, add a rate rule for that reaction if it does not violate any provided `constraints`
+
+        `constraints` (dict):
+            "metal" : list of allowed metals (e.g ['Pt']) or None (all allowed)
+            "facet" : list of allowed facets (e.g ['111']) or None (all allowed)
+            "elements" : list of allowed elements (e.g ['C','H','O']) or None (all allowed)
+            "forward_only" : True/False, if True, only reactions in the forward direction are allowed 
         """
+
+        # Parse the constraints for selection of training reactions
+        allowed_metals = constraints.get('metal')
+        allowed_facets = constraints.get('facet')
+        allowed_elements = constraints.get('elements')
+        forward_only = constraints.get('forward_only', False)
+
         try:
             depository = self.get_training_depository()
         except:
@@ -1173,12 +1186,33 @@ class KineticsFamily(Database):
 
         reverse_entries = []
         for entry in entries:
+            # skip entry if it has an element that is not allowed
+            if allowed_elements is not None:
+                violates_element_constraint = False
+                for reactant in entry.item.reactants:
+                    for element in reactant.molecule[0].get_element_count().keys():
+                        if element not in allowed_elements:
+                            violates_element_constraint = True
+                            break
+                if violates_element_constraint:
+                    continue
+            if entry.item.is_surface_reaction():
+                # skip entry if the metal is not allowed
+                if allowed_metals:
+                    if entry.metal not in allowed_metals:
+                        continue
+                # skip entry if the facet is not allowed
+                if allowed_facets:
+                    if entry.facet not in allowed_facets:
+                        continue
+
             try:
                 template = self.get_reaction_template(entry.item)
             except UndeterminableKineticsError:
                 # Some entries might be stored in the reverse direction for
-                # this family; save them so we can try this
-                reverse_entries.append(entry)
+                # this family; save them so we can try this in reverse if `forward only` is False
+                if not forward_only:
+                    reverse_entries.append(entry)
                 continue
 
             tentries[entry.index].item.is_forward = True
