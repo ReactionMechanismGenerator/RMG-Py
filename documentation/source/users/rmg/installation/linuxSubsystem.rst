@@ -45,7 +45,12 @@ Installing the Linux Subsystem
     sudo apt install gcc
     sudo apt install g++
     sudo apt install make
-    sudo apt-get install libxrender1
+    sudo apt-get install graphviz 
+
+   Note: installing graphviz as a system package makes sure that rendering libraries that are not included
+   in the WSL version of Ubuntu are installed. Unfortunately, the graphviz conda package does not install
+   these dependencies in the RMG conda environment (later in the installation), instead relying on system
+   libraries even in native Linux installations.
 
 5. Follow the instructions for either the binary (:ref:`anacondaUser`) or source installation (:ref:`anacondaDeveloper`)
    for the Linux Operating system. Follow these instructions from the point directly after installing Anaconda.
