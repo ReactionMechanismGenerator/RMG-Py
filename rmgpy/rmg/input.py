@@ -827,6 +827,26 @@ def generated_species_constraints(**kwargs):
 
         rmg.species_constraints[key] = value
 
+def training_reactions_constraints(**kwargs):
+    valid_constraints = [
+        'metal',
+        'facet',
+        'elements',
+        'forward_only'
+    ]
+
+    for key, value in kwargs.items():
+        if key not in valid_constraints:
+            raise InputError('Invalid generated species constraint {0!r}.'.format(key))
+        if key == 'forward_only':
+            if not isinstance(value, bool):
+                raise InputError('Invalid value for `forward_only` constraint {0!r}. Value must be a bool (True or False)'.format(value))
+            rmg.training_reactions_constraints[key] = value
+            continue
+        if not isinstance(value, list):
+            value = [value]
+        rmg.training_reactions_constraints[key] = [str(v) for v in value]
+
 
 def thermo_central_database(host,
                             port,
@@ -968,6 +988,7 @@ def read_input_file(path, rmg0):
         'pressureDependence': pressure_dependence,
         'options': options,
         'generatedSpeciesConstraints': generated_species_constraints,
+        'trainingReactionsConstraints': training_reactions_constraints,
         'thermoCentralDatabase': thermo_central_database,
         'uncertainty': uncertainty,
         'restartFromSeed': restart_from_seed,
@@ -1213,6 +1234,14 @@ def save_input_file(path, rmg):
     if rmg.species_constraints:
         f.write('generatedSpeciesConstraints(\n')
         for constraint, value in sorted(list(rmg.species_constraints.items()), key=lambda constraint: constraint[0]):
+            if value is not None:
+                f.write('    {0} = {1},\n'.format(constraint, value))
+        f.write(')\n\n')
+
+    # Training Reactions Constraints
+    if rmg.training_reactions_constraints:
+        f.write('trainingReactionsConstraints(\n')
+        for constraint, value in sorted(list(rmg.training_reactions_constraints.items()), key=lambda constraint: constraint[0]):
             if value is not None:
                 f.write('    {0} = {1},\n'.format(constraint, value))
         f.write(')\n\n')
