@@ -561,12 +561,19 @@ class KineticsRules(Database):
         Hence we average n, Ea, and alpha arithmetically, but we
         average log A (geometric average) 
         """
+
+        kinetics_type = None
         logA = 0.0
         n = 0.0
         E0 = 0.0
         alpha = 0.0
         count = len(kinetics_list)
         for kinetics in kinetics_list:
+            if kinetics_type is None:
+                kinetics_type = type(kinetics)
+            else:
+                if type(kinetics) != kinetics_type:
+                    raise KineticsError(f"Unable to average kinetics with mixed kinetics types ({kinetics_type} != {type(kinetics)})")
             logA += math.log10(kinetics.A.value_si)
             n += kinetics.n.value_si
             alpha += kinetics.alpha.value_si
