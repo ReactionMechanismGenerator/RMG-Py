@@ -1153,7 +1153,7 @@ class KineticsFamily(Database):
             raise ValueError('No entry for template {0}.'.format(template))
         return entry
 
-    def add_rules_from_training(self, thermo_database=None, train_indices=None):
+    def add_rules_from_training(self, thermo_database=None, train_indices=None, surface_site_density=None):
         """
         For each reaction involving real reactants and products in the training
         set, add a rate rule for that reaction.
@@ -1180,8 +1180,19 @@ class KineticsFamily(Database):
             entries = np.array(entries)
             entries = entries[train_indices]
 
+        has_sticking_coeff = False
+        if 'surface' in self.label.lower():
+            for entry in entries:
+                if isinstance(entry.data, StickingCoefficient):
+                    has_sticking_coeff = True
+                    break
+
         reverse_entries = []
         for entry in entries:
+            if self.reactant_num:
+                if self.reactant_num != len(entry.item.reactants):
+                    reverse_entries.append(entry)
+                    continue
             try:
                 template = self.get_reaction_template(entry.item)
             except UndeterminableKineticsError:
@@ -1198,8 +1209,14 @@ class KineticsFamily(Database):
             if type(data) is Arrhenius:
                 # more specific than isinstance(data,Arrhenius) because we want to exclude inherited subclasses!
                 data = data.to_arrhenius_ep()
-            elif isinstance(data, StickingCoefficient):
-                data = StickingCoefficientBEP(
+            elif isinstance(data, SurfaceArrhenius):
+                if has_sticking_coeff:
+                    if surface_site_density is None:
+                        surface_site_density = 2.483e-09
+                    entry.item.kinetics = data
+                    # convert to sticking coeff kinetics
+                    data = entry.item.surface_arrhenius_to_sticking_coeff(surface_site_density)
+                    data = StickingCoefficientBEP(
                     # todo: perhaps make a method StickingCoefficient.StickingCoefficientBEP
                     #  analogous to Arrhenius.to_arrhenius_ep
                     A=deepcopy(data.A),
@@ -1208,10 +1225,21 @@ class KineticsFamily(Database):
                     E0=deepcopy(data.Ea),
                     Tmin=deepcopy(data.Tmin),
                     Tmax=deepcopy(data.Tmax)
-                )
-            elif isinstance(data, SurfaceArrhenius):
-                data = SurfaceArrheniusBEP(
-                    # todo: perhaps make a method SurfaceArrhenius.toSurfaceArrheniusBEP
+                    )
+                else:
+                    data = SurfaceArrheniusBEP(
+                        # todo: perhaps make a method SurfaceArrhenius.toSurfaceArrheniusBEP
+                        #  analogous to Arrhenius.to_arrhenius_ep
+                        A=deepcopy(data.A),
+                        n=deepcopy(data.n),
+                        alpha=0,
+                        E0=deepcopy(data.Ea),
+                        Tmin=deepcopy(data.Tmin),
+                        Tmax=deepcopy(data.Tmax)
+                    )
+            elif isinstance(data, StickingCoefficient):
+                data = StickingCoefficientBEP(
+                    # todo: perhaps make a method StickingCoefficient.StickingCoefficientBEP
                     #  analogous to Arrhenius.to_arrhenius_ep
                     A=deepcopy(data.A),
                     n=deepcopy(data.n),
@@ -1292,7 +1320,14 @@ class KineticsFamily(Database):
             new_degeneracy = self.calculate_degeneracy(item)
 
             if isinstance(entry.data, SurfaceArrhenius):
-                data = SurfaceArrheniusBEP(
+                if has_sticking_coeff:
+                    if surface_site_density is None:
+                        surface_site_density = 2.483e-09
+                    # convert to sticking coeff kinetics
+                    item.kinetics = data
+                    data = item.surface_arrhenius_to_sticking_coeff(surface_site_density)
+                    data = StickingCoefficientBEP(
+                    # todo: perhaps make a method StickingCoefficient.StickingCoefficientBEP
                     #  analogous to Arrhenius.to_arrhenius_ep
                     A=deepcopy(data.A),
                     n=deepcopy(data.n),
@@ -1300,7 +1335,17 @@ class KineticsFamily(Database):
                     E0=deepcopy(data.Ea),
                     Tmin=deepcopy(data.Tmin),
                     Tmax=deepcopy(data.Tmax)
-                )
+                    )
+                else:
+                    data = SurfaceArrheniusBEP(
+                        #  analogous to Arrhenius.to_arrhenius_ep
+                        A=deepcopy(data.A),
+                        n=deepcopy(data.n),
+                        alpha=0,
+                        E0=deepcopy(data.Ea),
+                        Tmin=deepcopy(data.Tmin),
+                        Tmax=deepcopy(data.Tmax)
+                    )
             else:
                 data = data.to_arrhenius_ep()
 
