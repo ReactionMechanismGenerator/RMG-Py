@@ -729,6 +729,63 @@ class Reaction:
 
         raise NotImplementedError("Can't get_surface_rate_coefficient for kinetics type {!r}".format(type(self.kinetics)))
 
+    def surface_arrhenius_to_sticking_coeff(self, surface_site_density, Tmin=None, Tmax=None):
+        """
+        Converts `SurfaceArrhenius` kinetics to `StickingCoeff` kinetics using the provided
+        `surface_site_density` in SI units (mol/m^2).  The reaction's kinetics type must but be
+        `SurfaceArrhenius`.
+
+        Returns:
+            `StickingCoefficient` kinetics
+        """
+        cython.declare(kf=StickingCoefficient)
+        cython.declare(sticking_coefficient=cython.double, molecular_weight_kg=cython.double)
+        cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int, number_of_sites=cython.int)
+        if not isinstance(self.kinetics, SurfaceArrhenius):
+            raise TypeError(f'Expected a SurfaceArrhenius object but received {self.kinetics}')
+        # determine the adsorbate and number of surface sites
+        adsorbate = None
+        number_of_sites = 0
+        for r in self.reactants:
+            if r.contains_surface_site():
+                number_of_sites += 1
+            else:
+                if adsorbate is None:
+                    adsorbate = r
+                else:
+                    logging.error("Error in kinetics for reaction {0!s}: "
+                                    "more than one adsorbate detected".format(self))
+                    raise ReactionError("More than one adsorbate detected")
+
+        if adsorbate is None or adsorbate.contains_surface_site():
+            logging.error("Problem reaction: {0!s}".format(self))
+            raise ReactionError("Couldn't find the adsorbate!")
+        molecular_weight_kg = adsorbate.molecular_weight.value_si
+
+        # generate temperature array to evaluate the rate coeff
+        if Tmin is not None and Tmax is not None:
+            Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
+        else:
+            Tlist = 1.0 / np.arange(0.0005, 0.0034, 0.0001)
+
+        # Determine the values of the sticking coefficient at each temperature
+        klist = np.zeros_like(Tlist)
+        for i in range(len(Tlist)):
+            sticking_coefficient = self.kinetics.get_rate_coefficient(Tlist[i])
+            sticking_coefficient /= math.sqrt(constants.kB * Tlist[i] / (2 * math.pi * molecular_weight_kg))
+            klist[i] = sticking_coefficient
+        for i in range(number_of_sites):
+            klist *= surface_site_density
+
+        # set the max sticking coeff to 1
+        for i in np.argwhere(klist>1):
+            klist[i] = 1
+
+        # create Sticking Coeff kinetics and fit to sticking coeff array
+        kf = StickingCoefficient()
+        kf.fit_to_data(Tlist, klist, "", kf.T0.value_si)
+        return kf
+
     def fix_diffusion_limited_a_factor(self, T):
         """
         Decrease the pre-exponential factor (A) by the diffusion factor
