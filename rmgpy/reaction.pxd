@@ -101,6 +101,8 @@ cdef class Reaction:
 
     cpdef surface_arrhenius_to_sticking_coeff(self, double surface_site_density, Tmin=?, Tmax=?)
 
+    cpdef sticking_coeff_to_surface_arrhenius(self, double surface_site_density, Tmin=?, Tmax=?)
+
     cpdef fix_barrier_height(self, bint force_positive=?)
 
     cpdef reverse_arrhenius_rate(self, Arrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)

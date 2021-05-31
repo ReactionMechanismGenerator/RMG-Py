@@ -786,6 +786,46 @@ class Reaction:
         kf.fit_to_data(Tlist, klist, "", kf.T0.value_si)
         return kf
 
+    def sticking_coeff_to_surface_arrhenius(self, surface_site_density, Tmin=None, Tmax=None):
+        """
+        Converts `StickingCoefficient` kinetics to `SurfaceArrhenius` kinetics using the provided
+        `surface_site_density` in SI units (mol/m^2).  The reaction's kinetics type must but be
+        `StickingCoefficent`.
+
+        Returns:
+            `SurfaceArrhenius` kinetics
+        """
+        cython.declare(kf=SurfaceArrhenius)
+        cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int)
+        if not isinstance(self.kinetics, StickingCoefficient):
+            raise TypeError(f'Expected a Sticking Coeff object but received {self.kinetics}')
+
+        # Get the units for the reverse rate coefficient
+        try:
+            surf_reacts = [spcs for spcs in self.reactants if spcs.contains_surface_site()]
+        except IndexError:
+            raise KineticsError("Species do not have an rmgpy.molecule.Molecule." 
+                                "Cannot determine units for rate coefficient.")
+        n_surf = len(surf_reacts)
+        n_gas = len(self.reactants) - len(surf_reacts)
+        kunits = get_rate_coefficient_units_from_reaction_order(n_gas, n_surf)
+
+        # generate temperature array to evaluate the rate coeff
+        if Tmin is not None and Tmax is not None:
+            Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
+        else:
+            Tlist = 1.0 / np.arange(0.0005, 0.0034, 0.0001)
+
+        # Determine the values of the rate coeff k_f(T) at each temperature
+        klist = np.zeros_like(Tlist)
+        for i in range(len(Tlist)):
+            klist[i] = self.get_surface_rate_coefficient(Tlist[i], surface_site_density)
+
+        # create Surface Arrh kinetics and fit to rate coeff array
+        kf = SurfaceArrhenius()
+        kf.fit_to_data(Tlist, klist, kunits)
+        return kf
+
     def fix_diffusion_limited_a_factor(self, T):
         """
         Decrease the pre-exponential factor (A) by the diffusion factor
