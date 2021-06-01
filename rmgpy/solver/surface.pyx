@@ -67,6 +67,7 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public np.ndarray reactions_on_surface  # (catalyst surface, not core/edge surface)
     cdef public np.ndarray species_on_surface  # (catalyst surface, not core/edge surface)
 
+    cdef public bint coverage_dependence
     cdef public dict cov_dep
     cdef public dict cov_dep_index_species
     cdef public dict current_surface_coverages
@@ -83,6 +84,7 @@ cdef class SurfaceReactor(ReactionSystem):
                  sensitive_species=None,
                  sensitivity_threshold=1e-3,
                  sens_conditions=None,
+                 coverage_dependence=False,
                  cov_dep={},
                  cov_dep_index_species={},
                  current_surface_coverages={},
@@ -104,6 +106,7 @@ cdef class SurfaceReactor(ReactionSystem):
         self.initial_surface_coverages = initial_surface_coverages
         self.surface_volume_ratio = Quantity(surface_volume_ratio)
         self.surface_site_density = Quantity(surface_site_density)
+        self.coverage_dependence = coverage_dependence
         self.V = 0  # will be set from ideal gas law in initialize_model
         self.constant_volume = True
         self.sens_conditions = sens_conditions
@@ -312,6 +315,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
         surface_volume_ratio_si = self.surface_volume_ratio.value_si  # 1/m
         total_surface_sites = V * surface_volume_ratio_si * self.surface_site_density.value_si  # total surface sites in reactor
+        coverage_dependence = self.coverage_dependence
 
         for spec, coverage in self.initial_surface_coverages.items():
             i = self.get_species_index(spec)
@@ -368,6 +372,8 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef np.ndarray[np.float64_t, ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
         cdef np.ndarray[np.float64_t, ndim=1] C
         cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk
+        cdef bint coverage_dependence
+        cdef dict cov_dep, cov_dep_index_species
 
         ir = self.reactant_indices
         ip = self.product_indices
@@ -375,6 +381,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
         kf = self.kf  # are already 'per m3 of reactor' even for surface reactions
         kr = self.kb  # are already 'per m3 of reactor' even for surface reactions
+        coverage_dependence = self.coverage_dependence  # turn coverage dependence on/off
         cov_dep = self.cov_dep  # load in coverage dependent parameters
         cov_dep_index_species = self.cov_dep_index_species  # load in species index to species
 
@@ -419,14 +426,15 @@ cdef class SurfaceReactor(ReactionSystem):
 
         for j in range(ir.shape[0]):
             k = kf[j]
-            if j in cov_dep:
-                cov_dep_j = cov_dep[j]
-                for species, parameters in cov_dep_j.items():
-                    if species in current_surface_coverages:
-                        theta = current_surface_coverages[species]
-                        if theta >= 0.1:
-                            k *= 10. ** (parameters['a'] * theta) * theta ** parameters['m'] * np.exp(-1 * \
-                                    parameters['E'].value_si * theta / (constants.R * self.T.value_si))
+            if coverage_dependence:
+                if j in cov_dep:
+                    cov_dep_j = cov_dep[j]
+                    for species, parameters in cov_dep_j.items():
+                        if species in current_surface_coverages:
+                            theta = current_surface_coverages[species]
+                            if theta >= 1e-15:
+                                k *= 10. ** (parameters['a'].value_si * theta) * theta ** parameters['m'].value_si *\
+                                     np.exp(-1 * parameters['E'].value_si * theta / (constants.R * self.T.value_si))
             if ir[j, 0] >= num_core_species or ir[j, 1] >= num_core_species or ir[j, 2] >= num_core_species:
                 reaction_rate = 0.0
             elif ir[j, 1] == -1:  # only one reactant
@@ -436,14 +444,15 @@ cdef class SurfaceReactor(ReactionSystem):
             else:  # three reactants!! (really?)
                 reaction_rate = k * C[ir[j, 0]] * C[ir[j, 1]] * C[ir[j, 2]]
             k = kr[j]
-            if j in cov_dep:
-                cov_dep_j = cov_dep[j]
-                for species, parameters in cov_dep_j.items():
-                    if species in current_surface_coverages:
-                        theta = current_surface_coverages[species]
-                        if theta >= 0.1:
-                            k *= 10. ** (parameters['a'] * theta) * theta ** parameters['m'] * np.exp(-1 * \
-                                    parameters['E'].value_si * theta / (constants.R * self.T.value_si))
+            if coverage_dependence:
+                if j in cov_dep:
+                    cov_dep_j = cov_dep[j]
+                    for species, parameters in cov_dep_j.items():
+                        if species in current_surface_coverages:
+                            theta = current_surface_coverages[species]
+                            if theta >= 1e-15:
+                                k *= 10. ** (parameters['a'].value_si * theta) * theta ** parameters['m'].value_si *\
+                                     np.exp(-1 * parameters['E'].value_si * theta / (constants.R * self.T.value_si))
             if ip[j, 0] >= num_core_species or ip[j, 1] >= num_core_species or ip[j, 2] >= num_core_species:
                 pass
             elif ip[j, 1] == -1:  # only one reactant
