@@ -272,18 +272,19 @@ class QChemLog(ESSAdapter):
 
     def load_energy(self, zpe_scale_factor=1.):
         """
-        Load the energy in J/mol from a QChem log file. Only the last energy
-        in the file is returned. The zero-point energy is *not* included in
-        the returned value.
+        Load the energy in J/mol from a QChem log file. Prioritize the energy from a converged
+        geometry optimization (assigned to variable "a"). If the file does not contain an optimization job
+        or the optimization hit the maximum cycles, return the next best energy, such as from a frequency job
+        (assigned to variable "b"). The zero-point energy is *not* included in the returned value.
         """
         e_elect = None
         with open(self.path, 'r') as f:
-            a = b = 0
+            a = b = None
             for line in f:
                 if 'Final energy is' in line:
-                    a = float(line.split()[3]) * constants.E_h * constants.Na
-                if 'Total energy in the final basis set' in line:
-                    b = float(line.split()[8]) * constants.E_h * constants.Na
+                    a = float(line.split()[-1]) * constants.E_h * constants.Na
+                if 'energy in the final basis set' in line:
+                    b = float(line.split()[-1]) * constants.E_h * constants.Na
                 e_elect = a or b
         if e_elect is None:
             raise LogError('Unable to find energy in QChem output file {0}.'.format(self.path))
