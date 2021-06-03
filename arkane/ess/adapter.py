@@ -45,6 +45,19 @@ class ESSAdapter(ABC):
     An abstract ESS Adapter class
     """
 
+    def __init__(self, path, check_for_errors=True):
+        self.path = path
+        if check_for_errors:
+            self.check_for_errors()
+
+    @abstractmethod
+    def check_for_errors(self):
+        """
+        Checks the log file for common errors.
+        Optionally runs when the class is initialized to catch errors before parsing relevant information.
+        """
+        pass
+
     @abstractmethod
     def get_number_of_atoms(self):
         """

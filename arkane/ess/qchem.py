@@ -57,8 +57,59 @@ class QChemLog(ESSAdapter):
     arrays. QChemLog is an adapter for the abstract class ESSAdapter.
     """
 
-    def __init__(self, path):
-        self.path = path
+    def check_for_errors(self):
+        """
+        Checks for common errors in a QChem log file.
+        If any are found, this method will raise an error and crash.
+        """
+        with open(os.path.join(self.path), 'r') as f:
+            lines = f.readlines()
+            error, warning_line, warning, warn_message = None, None, None, None
+            for line in reversed(lines):
+                # check for common error messages
+                if 'SCF failed' in line:
+                    error = 'SCF failed'
+                    break
+                elif 'error' in line and 'DIIS' not in line and 'gprntSymmMtrx' not in line \
+                        and 'Relative error' not in line and 'zonesort' not in line:
+                    # these are **normal** lines that we should not capture:
+                    # "SCF converges when DIIS error is below 1.0E-08", or
+                    # "Cycle       Energy         DIIS Error" or
+                    # "gprntSymmMtrx error report: "
+
+                    # "Relative error" is captured as a warning later
+
+                    # If running on NERSC, also want to avoid lines containing 'zonesort'
+                    # Per the NERSC documenation:
+                    # The error message means that running the zonesort kernel failed for some reason.
+                    # The end result is that your code may have run less optimally.
+                    # Other than that, the message is usually harmless.
+                    # https://docs.nersc.gov/jobs/errors/
+                    error = 'SCF failed'
+                    break
+                elif 'Invalid charge/multiplicity combination' in line:
+                    error = 'Invalid charge/multiplicity combination'
+                    break
+                elif 'MAXIMUM OPTIMIZATION CYCLES REACHED' in line:
+                    error = 'Maximum optimization cycles reached.'
+                    break
+                elif 'Relative error' in line:
+                    warn_message = """ 
+                    Per the QChem version 5 documentation: https://manual.q-chem.com/pdf/qchem_manual_5.0.pdf
+                    A warning message is printed whenever the relative error in the numerical electron count
+                    reaches 0.01%, indicating that the numerical XC results may not be reliable. If the warning
+                    appears on the first SCF cycle, it is probably not serious, because the initial-guess density
+                    matrix is sometimes not idempotent.
+                    """
+                    warning = 'Relative error'
+                    warning_line = line
+            if error:
+                raise LogError(f'There was an error ({error}) with QChem output file {self.path} '
+                               f'due to line:\n{line}')
+            if warning:
+                logging.warning(f'{warning} with QChem output file {self.path} due to line:\n'
+                                f'{warning_line}\n'
+                                f'{warn_message}')
 
     def get_number_of_atoms(self):
         """
@@ -125,19 +176,6 @@ class QChemLog(ESSAdapter):
 
         with open(self.path) as f:
             log = f.readlines()
-
-        # First check that the QChem job file (not necessarily a geometry optimization)
-        # has successfully completed, if not an error is thrown
-        completed_job = False
-        for line in reversed(log):
-            if 'Total job time:' in line:
-                logging.debug('Found a successfully completed QChem Job')
-                completed_job = True
-                break
-
-        if not completed_job:
-            raise LogError('Could not find a successfully completed QChem job '
-                           'in QChem output file {0}'.format(self.path))
 
         # Now look for the geometry.
         # Will return the final geometry in the file under Standard Nuclear Orientation.
@@ -324,9 +362,6 @@ class QChemLog(ESSAdapter):
                 if 'Summary of potential scan:' in line:
                     logging.info('found a successfully completed QChem Job')
                     read = True
-                elif 'SCF failed to converge' in line:
-                    raise LogError('QChem Job did not successfully complete: '
-                                   'SCF failed to converge in file {0}.'.format(self.path))
         logging.info('   Assuming {0} is the output from a QChem PES scan...'.format(os.path.basename(self.path)))
 
         v_list = np.array(v_list, np.float64)
