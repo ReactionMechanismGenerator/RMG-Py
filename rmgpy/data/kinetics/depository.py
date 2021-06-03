@@ -237,7 +237,7 @@ class KineticsDepository(Database):
             site=site,
             facet=facet
         )
-        assert index not in self.entries
+        assert index not in self.entries, "Index of reaction {0} is not unique!".format(label)
         self.entries[index] = entry
         return entry
 
