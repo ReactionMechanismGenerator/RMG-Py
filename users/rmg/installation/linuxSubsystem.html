@@ -97,9 +97,13 @@ instead of inside the linux subsystem.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">gcc</span>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">g</span><span class="o">++</span>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">make</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libxrender1</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">graphviz</span>
 </pre></div>
 </div>
+<p>Note: installing graphviz as a system package makes sure that rendering libraries that are not included
+in the WSL version of Ubuntu are installed. Unfortunately, the graphviz conda package does not install
+these dependencies in the RMG conda environment (later in the installation), instead relying on system
+libraries even in native Linux installations.</p>
 </li>
 <li><p>Follow the instructions for either the binary (<a class="reference internal" href="anacondaUser.html#anacondauser"><span class="std std-ref">Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</span></a>) or source installation (<a class="reference internal" href="anacondaDeveloper.html#anacondadeveloper"><span class="std std-ref">Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX</span></a>)
 for the Linux Operating system. Follow these instructions from the point directly after installing Anaconda.</p></li>
