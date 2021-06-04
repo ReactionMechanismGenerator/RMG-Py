@@ -619,23 +619,16 @@ cdef class ArrheniusBM(KineticsModel):
             self.Tmax = rxn.kinetics.Tmax
             self.comment = 'Fitted to {0} reaction at temperature: {1} K'.format(len(rxns), T)
         else:
-            # define optimization function
+            # define optimization function            
             def kfcn(xs, lnA, n, E0):
-                out = []
-                for x in xs:
-                    T = x[0]
-                    dHrxn = x[1]
-                    if dHrxn < -4 * E0:
-                        Ea = 0.0
-                    elif dHrxn > 4 * E0:
-                        Ea = dHrxn
-                    else:
-                        Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
-                        Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
-
-                    out.append(lnA + np.log(T ** n * np.exp(-Ea / (8.314 * T))))
-                return out
-
+                T = xs[:,0]
+                dHrxn = xs[:,1]
+                Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
+                Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
+                Ea = np.where(dHrxn< -4.0*E0, 0.0, Ea)
+                Ea = np.where(dHrxn > 4.0*E0, dHrxn, Ea)
+                return lnA + np.log(T ** n * np.exp(-Ea / (8.314 * T)))
+              
             # get (T,dHrxn(T)) -> (Ln(k) mappings
             xdata = []
             ydata = []
