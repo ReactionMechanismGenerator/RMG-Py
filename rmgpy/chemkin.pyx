@@ -1700,7 +1700,8 @@ def write_reaction_string(reaction, java_library=False):
 ################################################################################
 
 
-def write_kinetics_entry(reaction, species_list, verbose=True, java_library=False, commented=False):
+def write_kinetics_entry(reaction, species_list, verbose=True, java_library=False, commented=False,
+                         coverage_dependence=False):
     """
     Return a string representation of the reaction as used in a Chemkin
     file. Use `verbose = True` to turn on kinetics comments.
@@ -1732,7 +1733,8 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
                                         specific_collider=reaction.specific_collider,
                                         reversible=reaction.reversible,
                                         kinetics=kinetics)
-            string += write_kinetics_entry(new_reaction, species_list, verbose, java_library, commented)
+            string += write_kinetics_entry(new_reaction, species_list, verbose, java_library, commented,
+                                           coverage_dependence=coverage_dependence)
             string += "DUPLICATE\n"
 
         if commented:
@@ -1801,10 +1803,12 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
             kinetics.Ea.value_si / 4184.
         )
         string += '\n    STICK'
-        if kinetics.coverage_dependence is not None:
-            for species, cov_params in kinetics.coverage_dependence.items():
-                string += f'\n    COV / {species.label:<41}'
-                string += f"{cov_params['E'].value_si:<9.3e} {cov_params['m'].value:<6.3f} {cov_params['a'].value:<6.3f} /"
+        if coverage_dependence:
+            if kinetics.coverage_dependence is not None:
+                for species, cov_params in kinetics.coverage_dependence.items():
+                    label = get_species_identifier(species)
+                    string += f'\n    COV / {label:<41}'
+                    string += f"{cov_params['E'].value_si:<9.3e} {cov_params['m'].value:<6.3f} {cov_params['a'].value:<6.3f} /"
     elif isinstance(kinetics, _kinetics.Arrhenius):
         conversion_factor = kinetics.A.get_conversion_factor_from_si_to_cm_mol_s()
         if not isinstance(kinetics, _kinetics.SurfaceArrhenius):
@@ -1822,9 +1826,11 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
             kinetics.Ea.value_si / 4184.
         )
         if isinstance(kinetics, _kinetics.SurfaceArrhenius) and kinetics.coverage_dependence:
-            for species, cov_params in kinetics.coverage_dependence.items():
-                string += f'\n    COV / {species.label:<41}'
-                string += f"{cov_params['E'].value_si:<9.3e} {cov_params['m'].value:<6.3f} {cov_params['a'].value:<6.3f} /"
+            if coverage_dependence is True:
+                for species, cov_params in kinetics.coverage_dependence.items():
+                    label = get_species_identifier(species)
+                    string += f'\n    COV / {label:<41}'
+                    string += f"{cov_params['E'].value_si:<9.3e} {cov_params['m'].value:<6.3f} {cov_params['a'].value:<6.3f} /"
     elif isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
         arrhenius = kinetics.arrheniusHigh
         conversion_factor = arrhenius.A.get_conversion_factor_from_si_to_cm_mol_s()
@@ -2091,7 +2097,7 @@ def save_transport_file(path, species):
                 ))
 
 
-def save_chemkin_file(path, species, reactions, verbose=True, check_for_duplicates=True):
+def save_chemkin_file(path, species, reactions, verbose=True, check_for_duplicates=True, coverage_dependence=False):
     """
     Save a Chemkin input file to `path` on disk containing the provided lists
     of `species` and `reactions`.
@@ -2139,7 +2145,7 @@ def save_chemkin_file(path, species, reactions, verbose=True, check_for_duplicat
     global _chemkin_reaction_count
     _chemkin_reaction_count = 0
     for rxn in reactions:
-        f.write(write_kinetics_entry(rxn, species_list=species, verbose=verbose))
+        f.write(write_kinetics_entry(rxn, species_list=species, verbose=verbose, coverage_dependence=coverage_dependence))
         # Don't forget to mark duplicates!
         f.write('\n')
     f.write('END\n\n')
@@ -2149,7 +2155,7 @@ def save_chemkin_file(path, species, reactions, verbose=True, check_for_duplicat
 
 
 def save_chemkin_surface_file(path, species, reactions, verbose=True, check_for_duplicates=True,
-                              surface_site_density=None):
+                              surface_site_density=None, coverage_dependence=False):
     """
     Save a Chemkin *surface* input file to `path` on disk containing the provided lists
     of `species` and `reactions`.
@@ -2199,7 +2205,8 @@ def save_chemkin_surface_file(path, species, reactions, verbose=True, check_for_
     global _chemkin_reaction_count
     _chemkin_reaction_count = 0
     for rxn in reactions:
-        f.write(write_kinetics_entry(rxn, species_list=species, verbose=verbose))
+        f.write(write_kinetics_entry(rxn, species_list=species, verbose=verbose,
+                                     coverage_dependence=coverage_dependence))
         f.write('\n')
     f.write('END\n\n')
     f.close()
@@ -2292,11 +2299,13 @@ def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, trans
         # We should already have marked everything as duplicates by now so use check_for_duplicates=False
         save_chemkin_file(gas_path, gas_species_list, gas_rxn_list, verbose=False, check_for_duplicates=False)
         save_chemkin_surface_file(surface_path, surface_species_list, surface_rxn_list, verbose=False,
-                                  check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density)
+                                  check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density,
+                                  coverage_dependence=reaction_model.coverage_dependence)
         logging.info('Saving annotated version of Chemkin files...')
         save_chemkin_file(gas_verbose_path, gas_species_list, gas_rxn_list, verbose=True, check_for_duplicates=False)
         save_chemkin_surface_file(surface_verbose_path, surface_species_list, surface_rxn_list, verbose=True,
-                                  check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density)
+                                  check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density,
+                                  coverage_dependence=reaction_model.coverage_dependence)
 
     else:
         # Gas phase only
