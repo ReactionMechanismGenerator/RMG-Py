@@ -30,7 +30,7 @@ cd $TARGET_DIR
 
 # create a new branch in RMG-tests with the name equal to
 # the branch name of the tested RMG-Py branch:
-if ["$RMG_DATABASE_BRANCH" == "master"]
+if [ "$RMG_DATABASE_BRANCH" == "master" ]
 then
   RMGTESTSBRANCH=rmgpy-$BRANCH
 else
@@ -42,7 +42,7 @@ git checkout $RMGTESTSBRANCH
 
 # create an empty commit with the SHA-ID of the
 # tested commit of the RMG-Py branch:
-if ["$RMG_DATABASE_BRANCH" == "master"]
+if [ "$RMG_DATABASE_BRANCH" == "master" ]
 then
   git commit --allow-empty -m rmgpy-$REV
 else
