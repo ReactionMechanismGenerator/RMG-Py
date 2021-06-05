@@ -876,7 +876,7 @@ class KineticsFamily(Database):
         # Load the old set of the species of the training reactions
         species_dict = Database().get_species(dictionary_path)
 
-        # Add new unique species with labeledAtoms into species_dict
+        # Add new unique species with labeled_reactant_atoms into species_dict
         for rxn in reactions:
             for spec in (rxn.reactants + rxn.products):
                 for ex_spec in species_dict.values():
@@ -1721,11 +1721,17 @@ class KineticsFamily(Database):
 
         # Store the labeled atoms so we can recover them later
         # (e.g. for generating reaction pairs and templates)
-        labeled_atoms = []
+        labeled_reactant_atoms = []
         for reactant in reaction.reactants:
             for label, atom in reactant.get_all_labeled_atoms().items():
-                labeled_atoms.append((label, atom))
-        reaction.labeledAtoms = labeled_atoms
+                labeled_reactant_atoms.append((label, atom))
+        reaction.labeled_reactant_atoms = labeled_reactant_atoms
+
+        labeled_product_atoms = []
+        for product in reaction.products:
+            for label, atom in product.get_all_labeled_atoms().items():
+                labeled_product_atoms.append((label, atom))
+        reaction.labeled_product_atoms = labeled_product_atoms
 
         return reaction
 
@@ -1764,7 +1770,7 @@ class KineticsFamily(Database):
         else:
             raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
 
-    def generate_reactions(self, reactants, products=None, prod_resonance=True):
+    def generate_reactions(self, reactants, products=None, prod_resonance=True, drop_atom_labels=False):
         """
         Generate all reactions between the provided list of one, two, or three
         `reactants`, which should be either single :class:`Molecule` objects
@@ -1779,6 +1785,9 @@ class KineticsFamily(Database):
             products (list, optional):       List of Molecules or Species of desired product structures.
             prod_resonance (bool, optional): Flag to generate resonance structures for product checking.
                 Defaults to True, resonance structures are compared.
+            drop_atom_labels (bool, optional): Flag to drop atom labels for reactions.
+                Defaults to False.
+                # todo: when merge to master, change drop atom default to True
 
         Returns:
             List of all reactions containing Molecule objects with the
@@ -1789,12 +1798,14 @@ class KineticsFamily(Database):
 
         # Forward direction (the direction in which kinetics is defined)
         reaction_list.extend(
-            self._generate_reactions(reactants, products=products, forward=True, prod_resonance=prod_resonance))
+            self._generate_reactions(reactants, products=products, forward=True, prod_resonance=prod_resonance,
+                                     drop_atom_labels=drop_atom_labels))
 
         if not self.own_reverse and self.reversible:
             # Reverse direction (the direction in which kinetics is not defined)
             reaction_list.extend(
-                self._generate_reactions(reactants, products=products, forward=False, prod_resonance=prod_resonance))
+                self._generate_reactions(reactants, products=products, forward=False, prod_resonance=prod_resonance,
+                                         drop_atom_labels=drop_atom_labels))
 
         return reaction_list
 
@@ -1959,7 +1970,7 @@ class KineticsFamily(Database):
         return reactions[0].degeneracy
 
     def _generate_reactions(self, reactants, products=None, forward=True, prod_resonance=True,
-                            react_non_reactive=False):
+                            react_non_reactive=False, drop_atom_labels=False):
         """
         Generate a list of all the possible reactions of this family between
         the list of `reactants`. The number of reactants provided must match
@@ -2336,7 +2347,7 @@ class KineticsFamily(Database):
             # Restore the labeled atoms long enough to generate some metadata
             for reactant in reaction.reactants:
                 reactant.clear_labeled_atoms()
-            for label, atom in reaction.labeledAtoms:
+            for label, atom in reaction.labeled_reactant_atoms:
                 if isinstance(atom, list):
                     for atm in atom:
                         atm.label = label
@@ -2347,12 +2358,19 @@ class KineticsFamily(Database):
             reaction.pairs = self.get_reaction_pairs(reaction)
             reaction.template = self.get_reaction_template_labels(reaction)
 
-            # Unlabel the atoms for both reactants and products
-            for species in itertools.chain(reaction.reactants, reaction.products):
-                species.clear_labeled_atoms()
+            # Unlabel the atoms for both reactants and products if needed
+            if drop_atom_labels:
+                for species in itertools.chain(reaction.reactants, reaction.products):
+                    species.clear_labeled_atoms()
+            else:
+                for product in reaction.products:
+                    product.clear_labeled_atoms()
+                for label, atom in reaction.labeled_product_atoms:
+                    atom.label = label
+                reaction.products = [p.copy(deep=True) for p in reaction.products]
 
             # We're done with the labeled atoms, so delete the attribute
-            del reaction.labeledAtoms
+            # del reaction.labeled_reactant_atoms
 
             # Mark reaction reversibility
             reaction.reversible = self.reversible
