@@ -867,6 +867,19 @@ class TestGenerateReactions(unittest.TestCase):
                       'used as a reactant in the reverse direction.'),
         ])
 
+    def test_molecule_forbidden(self):
+
+        forbidden_mol = Molecule(smiles='*CC.[*]') # vdw bidentate
+
+        mol1 = Molecule(smiles='*CC*') # bidentate
+        mol2 = Molecule(smiles='C.*') # vdw
+        mol3 = Molecule(smiles='CC*') # chemisorbed
+
+        fam = self.database.kinetics.families['Surface_Dissociation_vdW']
+        self.assertTrue(fam.is_molecule_forbidden(forbidden_mol))
+        for allowed_mol in (mol1, mol2, mol3):
+            self.assertFalse(fam.is_molecule_forbidden(allowed_mol))
+
     def test_add_atom_labels_for_reaction(self):
         """Test that we can add atom labels to an existing reaction"""
         reactants = [Species().from_smiles('C=C'), Species().from_smiles('[OH]')]

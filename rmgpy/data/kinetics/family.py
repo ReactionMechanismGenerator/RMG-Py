@@ -1521,6 +1521,20 @@ class KineticsFamily(Database):
                 atom_labels['*2'].label = '*3'
                 atom_labels['*3'].label = '*2'
 
+            elif label == 'surface_abstraction':
+                atom_labels['*1'].label = '*3'
+                atom_labels['*2'].label = '*5'
+                atom_labels['*3'].label = '*1'
+                atom_labels['*5'].label = '*2'
+
+            elif label == 'surface_abstraction_single_vdw':
+                # *3 migrates from *2-*1 to *4-*5
+                # so swap *1 with *5, swap *2 with *4
+                atom_labels['*1'].label = '*5'
+                atom_labels['*5'].label = '*1'
+                atom_labels['*2'].label = '*4'
+                atom_labels['*4'].label = '*2'
+
         if not forward:
             template = self.reverse_template
             product_num = self.reactant_num or len(template.products)
@@ -1602,12 +1616,16 @@ class KineticsFamily(Database):
                 lowest_labels.append(min(labels))
             product_structures = [s for _, s in sorted(zip(lowest_labels, product_structures))]
 
-        # If applying the family in reverse and the template reactants restrict multiplicity,
-        # we need to make sure that a reverse product matches the multiplicity-constrained
-        # template reactant because the forward template products do not enforce the
-        # multiplicity restriction.
-        if not forward and isinstance(reactant_structure, Molecule):
-            for template in self.forward_template.reactants:
+        # If the template restricts multiplicity, we need to make sure that
+        # a product matches the multiplicity-constrained template
+        # because the template does not ensure that the
+        # multiplicity restriction is obeyed
+        if isinstance(reactant_structure, Molecule):
+            if forward:
+                template_groups = self.forward_template.products
+            else:
+                template_groups = self.forward_template.reactants
+            for template in template_groups:
                 # iterate through the template reactants and check to see if they have a multiplicity constraint
                 if isinstance(template.item, Group):
                     if template.item.multiplicity != []:
@@ -1695,6 +1713,13 @@ class KineticsFamily(Database):
         # check family-specific forbidden structures 
         if self.forbidden is not None and self.forbidden.is_molecule_forbidden(molecule):
             return True
+
+        # forbid vdw multi-dentate molecules for surface families
+        if "surface" in self.label.lower():
+            if molecule.get_num_atoms('X') > 1:
+                for atom in molecule.atoms:
+                    if atom.atomtype.label == 'Xv':
+                        return True
 
         return False
 

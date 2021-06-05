@@ -1419,6 +1419,13 @@ class ClarTest(unittest.TestCase):
 2 O u0 p2 c0 {1,D}"""))
         self.assertEquals(len(mol_list), 1)
 
+    def test_surface_radical(self):
+        """Test resonance structure generation for radical on surface
+
+        Should not put radical on X atom"""
+        mol_list = generate_resonance_structures(Molecule(smiles='*=C[CH]C'))
+        self.assertEquals(len(mol_list), 1)
+
     def test_sulfur_triple_bond(self):
         """
         Test the prevention of S#S formation through the find_lone_pair_multiplebond_paths and 
