@@ -752,6 +752,16 @@ class Bond(Edge):
         """
         return self.is_order(0)
 
+    def is_surface_bond(self):
+        """
+        Return ``True`` if the bond represents a surface bond or 
+        ``False`` if not.
+        """
+        if self.atom1.is_surface_site() or self.atom2.is_surface_site():
+            return True
+        else:
+            return False
+
     def is_order(self, other_order):
         """
         Return ``True`` if the bond is of order other_order or ``False`` if
