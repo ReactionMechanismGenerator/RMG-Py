@@ -4174,7 +4174,7 @@ class KineticsFamily(Database):
                             if r.thermo is None:
                                 therm_spc = deepcopy(r)
                                 therm_spc.generate_resonance_structures()
-                                if r.metal:
+                                if hasattr(r,"metal") and r.metal:
                                     r.thermo = tdb.get_thermo_data(therm_spc, metal_to_scale_to=r.metal)
                                 else:
                                     r.thermo = tdb.get_thermo_data(therm_spc)
