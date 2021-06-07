@@ -330,6 +330,7 @@ element_list = [
 # if a sourced value becomes available
 # (C,C,2.5) is C#C - (CbenzeneC - C-C)
 # P=P value is from: https://www2.chemistry.msu.edu/faculty/reusch/OrgPage/bndenrgy.htm
+# C#S is the value for [C+]#[S-] from 10.1002/chem.201002840 referenced relative to 0 K
 # The reference state is gaseous state at 298 K, but some of the values in the bde_dict might be coming from 0 K.
 # The bond dissociation energy at 298 K is greater than the bond dissociation energy at 0 K by 0.6 to 0.9 kcal/mol
 # (between RT and 3/2 RT), and this difference is usually much smaller than the uncertainty in the bond dissociation
@@ -348,7 +349,8 @@ bde_dict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol')
             ('C', 'N', 3): (887.0, 'kJ/mol'), ('C', 'O', 1): (358.0, 'kJ/mol'),
             ('C', 'O', 2): (799.0, 'kJ/mol'), ('C', 'O', 3): (1072.0, 'kJ/mol'),
             ('C', 'P', 1): (264.0, 'kJ/mol'), ('C', 'S', 1): (272.0, 'kJ/mol'),
-            ('C', 'S', 2): (573.0, 'kJ/mol'), ('C', 'F', 1): (485.0, 'kJ/mol'),
+            ('C', 'S', 2): (573.0, 'kJ/mol'), ('C', 'S', 3): (709.6, 'kJ/mol'),
+            ('C', 'F', 1): (485.0, 'kJ/mol'),
             ('C', 'Cl', 1): (327.0, 'kJ/mol'), ('C', 'Br', 1): (285.0, 'kJ/mol'),
             ('C', 'I', 1): (213.0, 'kJ/mol'),
             ('Si', 'Si', 1): (222.0, 'kJ/mol'), ('Si', 'N', 1): (355.0, 'kJ/mol'),
