@@ -2759,6 +2759,15 @@ multiplicity 2
         mol.remove_van_der_waals_bonds()
         self.assertEqual(len(mol.get_all_edges()), 1)
 
+    def test_add_van_der_waals_bond(self):
+        """Test we can add a van-der-Waals bond"""
+        mol = Molecule(smiles='*.[H][H]')
+        self.assertEqual(len(mol.get_all_edges()), 1)
+        mol.add_van_der_waals_bond()
+        self.assertEqual(len(mol.get_all_edges()), 2)
+        vdw_bonds = [b for b in mol.get_all_edges() if b.is_van_der_waals()]
+        self.assertEqual(len(vdw_bonds), 1)
+
 ################################################################################
 
 if __name__ == '__main__':
