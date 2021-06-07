@@ -840,6 +840,20 @@ class TestBond(unittest.TestCase):
         bond = Bond(atom1=Atom(element=get_element(1)), atom2=Atom(element=get_element(6)), order=1)
         self.assertEqual(bond.get_bond_string(), 'C-H')
 
+    def test_get_bde(self):
+
+        bonds = [Bond(atom1=Atom(element=get_element('X')), atom2=Atom(element=get_element(6)), order=0),
+                Bond(atom1=Atom(element=get_element('X')), atom2=Atom(element=get_element(6)), order=1),
+                Bond(atom1=Atom(element=get_element('X')), atom2=Atom(element=get_element(6)), order=2),
+                Bond(atom1=Atom(element=get_element('X')), atom2=Atom(element=get_element(6)), order=3),
+                Bond(atom1=Atom(element=get_element('X')), atom2=Atom(element=get_element(6)), order=4)]
+
+        bde = 0
+        for bond in bonds:
+            bde_bond = bond.get_bde('Pt111')
+            self.assertGreater(bde_bond, bde)
+            bde = bde_bond
+
 ################################################################################
 
 
