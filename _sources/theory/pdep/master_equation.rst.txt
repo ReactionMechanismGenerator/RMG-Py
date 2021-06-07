@@ -425,5 +425,5 @@ alternative presentations, of which an illustrative sampling is given here
 
 .. [Pilling2003] M. J. Pilling and S. H. Robertson. *Annu. Rev. Phys. Chem.* 
    **54**, p. 245-275 (2003).
-   `doi:10.1146/annurev.physchem.54.011002.103822 <http://dx.doi.org/10.1146/annurev.physchem.54.011002.103822>`_
+   `doi:10.1146/annurev.physchem.54.011002.103822 <https://doi.org/10.1146/annurev.physchem.54.011002.103822>`_
 

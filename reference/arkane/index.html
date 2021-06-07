@@ -18,7 +18,7 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="arkane.ess.Log" href="log.html" />
+    <link rel="next" title="arkane.ess.ESSAdapter" href="essadapter.html" />
     <link rel="prev" title="RMG API Reference" href="../index.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
@@ -39,12 +39,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="log.html" title="arkane.ess.Log"
+          <a href="essadapter.html" title="arkane.ess.ESSAdapter"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../index.html" title="RMG API Reference"
              accesskey="P">previous</a> |</li>
-  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="https://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">3.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">RMG API Reference</a> &#187;</li>
@@ -75,8 +75,8 @@ species and reactions.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Log</span></code></p></td>
-<td><p>Base class for generic log files</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="essadapter.html#arkane.ess.ESSAdapter" title="arkane.ess.ESSAdapter"><code class="xref py py-class docutils literal notranslate"><span class="pre">ESSAdapter</span></code></a></p></td>
+<td><p>Abstract Base Class for generic log files</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="gaussianlog.html#arkane.ess.GaussianLog" title="arkane.ess.GaussianLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianLog</span></code></a></p></td>
 <td><p>Extract chemical parameters from Gaussian log files</p></td>
@@ -92,6 +92,25 @@ species and reactions.</p>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="terachemlog.html#arkane.ess.TeraChemLog" title="arkane.ess.TeraChemLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">TeraChemLog</span></code></a></p></td>
 <td><p>Extract chemical parameters from TeraChem log files</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 39%" />
+<col style="width: 61%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Function</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">register_ess_adapter()</span></code></p></td>
+<td><p>Registers the ESS classes with the factory</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">ess_factory()</span></code></p></td>
+<td><p>Generates the corresponding ESS adapter</p></td>
 </tr>
 </tbody>
 </table>
@@ -218,9 +237,6 @@ species and reactions.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="common.html#module-arkane.common" title="arkane.common"><code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane.common</span></code></a></p></td>
 <td><p>Contains <a class="reference internal" href="common.html#arkane.common.ArkaneSpecies" title="arkane.common.ArkaneSpecies"><code class="xref py py-class docutils literal notranslate"><span class="pre">common.ArkaneSpecies</span></code></a> and other commonly used functions</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">arkane.util</span></code></p></td>
-<td><p>Other utility functions</p></td>
-</tr>
 </tbody>
 </table>
 <div class="toctree-wrapper compound">
@@ -240,7 +256,7 @@ species and reactions.</p>
         </a></div>
       <div id="sidebar">
         <div id="rmgsidebar">
-          <a href="http://rmg.mit.edu">
+          <a href="https://rmg.mit.edu">
             <div class="menuitem">
               <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
               <div class="menutext menutitle">RMG Website</div>
@@ -275,8 +291,8 @@ species and reactions.</p>
   <p class="topless"><a href="../index.html"
                         title="previous chapter">RMG API Reference</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="log.html"
-                        title="next chapter">arkane.ess.Log</a></p>
+  <p class="topless"><a href="essadapter.html"
+                        title="next chapter">arkane.ess.ESSAdapter</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -316,12 +332,12 @@ species and reactions.</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="log.html" title="arkane.ess.Log"
+          <a href="essadapter.html" title="arkane.ess.ESSAdapter"
              >next</a> |</li>
         <li class="right" >
           <a href="../index.html" title="RMG API Reference"
              >previous</a> |</li>
-  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="https://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">3.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
