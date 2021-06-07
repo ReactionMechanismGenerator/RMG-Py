@@ -27,6 +27,14 @@ Class                           Description
 =============================== ================================================
 
 
+=============================== ================================================
+Function                        Description
+=============================== ================================================
+:func:`register_ess_adapter`    Registers the ESS classes with the factory
+:func:`ess_factory`             Generates the corresponding ESS adapter
+=============================== ================================================
+
+
 
 Input
 =====
@@ -107,6 +115,7 @@ Class                       Description
     :hidden:
     
     essadapter
+    essfactory
     gaussianlog
     molprolog
     orcalog
