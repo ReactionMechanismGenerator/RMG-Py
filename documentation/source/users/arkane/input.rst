@@ -544,7 +544,7 @@ The ``collisionModel`` is defined for unimolecular isomers with the transport da
     collisionModel = TransportData(sigma=(3.70,'angstrom'), epsilon=(94.9,'K'))
 
 ``sigma`` and ``epsilon`` are Lennard-Jones parameters, which can be estimated using the Joback method on the
-`RMG website <http://rmg.mit.edu/molecule_search>`_.
+`RMG website <https://rmg.mit.edu/molecule_search>`_.
 
 The ``energyTransferModel`` model available is a ``SingleExponentialDown``.
 

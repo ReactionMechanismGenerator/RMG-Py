@@ -5,7 +5,7 @@ Installation
 Installing Arkane
 =================
 
-Arkane can be obtained by installing the `RMG-Py <http://rmg.mit.edu/>`_ software, which
+Arkane can be obtained by installing the `RMG-Py <https://rmg.mit.edu/>`_ software, which
 includes all neccesary dependancies.
 
 Instructions to install RMG-Py can be found at the :ref:`RMG-Py Installation page <installation>`.

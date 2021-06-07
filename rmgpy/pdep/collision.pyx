@@ -250,7 +250,7 @@ cdef class SingleExponentialDown(RMGObject):
     
         .. [Chang2000] A. Y. Chang, J. W. Bozzelli, and A. M. Dean.
            *Z. Phys. Chem.* **214**, p. 1533-1568 (2000).
-           `doi: 10.1524/zpch.2000.214.11.1533 <http://dx.doi.org/10.1524/zpch.2000.214.11.1533>`_
+           `doi: 10.1524/zpch.2000.214.11.1533 <https://doi.org/10.1524/zpch.2000.214.11.1533>`_
     
         """
     

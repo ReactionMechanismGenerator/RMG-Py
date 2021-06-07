@@ -39,7 +39,8 @@ The rules this module follows are (by order of importance):
        whereas positive charges will be assigned to less electronegative atoms (charge stabilization)
     4. Opposite charges will be as close as possible to one another, and vice versa (charge stabilization)
 
-(inspired by http://www.chem.ucla.edu/~harding/tutorials/resonance/imp_res_str.html)
+(inspired by http://web.archive.org/web/20140310074727/http://www.chem.ucla.edu/~harding/tutorials/resonance/imp_res_str.html
+which is quite like http://www.chem.ucla.edu/~harding/IGOC/R/resonance_contributor_preference_rules.html)
 """
 
 import logging

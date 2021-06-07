@@ -2141,7 +2141,7 @@ class Molecule(Graph):
         """
         # eg. http://dev.rmg.mit.edu/database/kinetics/reaction/reactant1=1%20C%200%20%7B2,S%7D;2%20O%200%20%7B1,S%7D;__reactant2=1%20C%202T;__product1=1%20C%201;__product2=1%20C%200%20%7B2,S%7D;2%20O%201%20%7B1,S%7D;
 
-        base_url = "http://rmg.mit.edu/database/molecule/"
+        base_url = "https://rmg.mit.edu/database/molecule/"
         adjlist = self.to_adjacency_list(remove_h=False)
         url = base_url + quote(adjlist)
         return url.strip('_')

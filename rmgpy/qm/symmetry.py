@@ -168,7 +168,8 @@ class SymmetryJob(object):
     """
     Determine the point group using the SYMMETRY program 
     
-    (http://www.cobalt.chem.ucalgary.ca/ps/symmetry/).
+    (Originally ``http://www.cobalt.chem.ucalgary.ca/ps/symmetry/``
+     now mirrored at https://github.com/nquesada/symmetry).
 
     Required input is a line with number of atoms followed by lines for each atom 
     including:

@@ -31,7 +31,7 @@
 This module contains classes and functions for working with chemical species.
 
 From the `IUPAC Compendium of Chemical Terminology 
-<http://dx.doi.org/10.1351/goldbook>`_, a chemical species is "an 
+<https://doi.org/10.1351/goldbook>`_, a chemical species is "an 
 ensemble of chemically identical molecular entities that can explore the same 
 set of molecular energy levels on the time scale of the experiment". This
 definition is purposefully vague to allow the user flexibility in application.

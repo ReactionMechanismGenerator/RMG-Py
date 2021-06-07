@@ -30,5 +30,5 @@ Optional arguments::
     -f, --foreign  Not an RMG generated Chemkin file
 
 
-This method is also available to use with a web browser from the RMG website: `Convert Chemkin File <http://rmg.mit.edu/tools/chemkin>`_.
+This method is also available to use with a web browser from the RMG website: `Convert Chemkin File <https://rmg.mit.edu/tools/chemkin>`_.
 

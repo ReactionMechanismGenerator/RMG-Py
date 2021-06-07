@@ -27,7 +27,7 @@
 
 """
 This module contains graph ismorphism functions that implement the VF2
-algorithm of Vento and Foggia.  http://dx.doi.org/10.1109/TPAMI.2004.75
+algorithm of Vento and Foggia.  https://doi.org/10.1109/TPAMI.2004.75
 """
 
 from rmgpy.exceptions import VF2Error
