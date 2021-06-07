@@ -1118,6 +1118,19 @@ class Molecule(Graph):
             if bond.is_van_der_waals():
                 self.remove_bond(bond)
 
+    def add_van_der_waals_bond(self):
+        """
+        Adds a single van der Waals bond to the graph to connect a surface site to the physisorbed absorbate.
+        """
+        cython.declare(bond=Bond,fragment=Molecule,fragments=list)
+
+        if self.contains_surface_site():
+            fragments = self.split()
+            if len(fragments) == 2:
+                if any([fragment.is_surface_site() for fragment in fragments]):
+                    bond = Bond(fragments[0].atoms[0],fragments[1].atoms[0],0.0)
+                    self.add_bond(bond)
+
     def sort_atoms(self):
         """
         Sort the atoms in the graph. This can make certain operations, e.g.
