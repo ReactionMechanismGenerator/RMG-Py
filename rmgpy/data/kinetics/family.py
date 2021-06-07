@@ -4091,17 +4091,33 @@ class KineticsFamily(Database):
                     metal = entry.metal + entry.facet
                 for j, react in enumerate(entry.item.reactants):
                     if rxns[i].reactants[j].thermo is None:
-                        react_copy = react.copy(deep=True)
-                        react_copy.molecule[0].clear_labeled_atoms()
-                        react_copy.generate_resonance_structures()
-                        rxns[i].reactants[j].thermo = tdb.get_thermo_data(react_copy, metal_to_scale_to=metal)
+                        label_dict = react.molecule[0].get_all_labeled_atoms()
+                        mol = react.molecule[0]
+                        react.molecule[0].clear_labeled_atoms()
+                        react.generate_resonance_structures()
+                        rxns[i].reactants[j].thermo = tdb.get_thermo_data(react, metal_to_scale_to=metal)
+                        react.molecule = [mol]
+                        for key,atm in label_dict.items():
+                            if isinstance(atm,list):
+                                for a in atm:
+                                    a.label = key
+                            else:
+                                atm.label = key
 
                 for j, react in enumerate(entry.item.products):
                     if rxns[i].products[j].thermo is None:
-                        react_copy = react.copy(deep=True)
-                        react_copy.molecule[0].clear_labeled_atoms()
-                        react_copy.generate_resonance_structures()
-                        rxns[i].products[j].thermo = tdb.get_thermo_data(react_copy, metal_to_scale_to=metal)
+                        label_dict = react.molecule[0].get_all_labeled_atoms()
+                        mol = react.molecule[0]
+                        react.molecule[0].clear_labeled_atoms()
+                        react.generate_resonance_structures()
+                        rxns[i].products[j].thermo = tdb.get_thermo_data(react, metal_to_scale_to=metal)
+                        react.molecule = [mol]
+                        for key,atm in label_dict.items():
+                            if isinstance(atm,list):
+                                for a in atm:
+                                    a.label = key
+                            else:
+                                atm.label = key
 
             rxns[i].kinetics = entry.data
             rxns[i].rank = entry.rank
