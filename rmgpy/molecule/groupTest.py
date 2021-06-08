@@ -828,17 +828,17 @@ class TestGroup(unittest.TestCase):
 """)
 
         ans = [
-            '1 *2 C   u0     r0 {2,[S,D]} {4,[S,D,T,B]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     r1 {2,S}\n4    R!H ux     {1,[S,D,T,B]}\n',
+            '1 *2 C   u0     r0 {2,[S,D]} {4,[S,D,T,B,Q]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     r1 {2,S}\n4    R!H ux     {1,[S,D,T,B,Q]}\n',
             '1 *2 C   u0 r0 {2,[S,D]}\n2 *1 C   u0 {1,[S,D]} {3,S}\n3    R!H u0 r1 {2,S}\n',
             '1 *2 C   u0 r0 {2,[S,D]}\n2 *1 C   u1 {1,[S,D]} {3,S}\n3    R!H u0 r1 {2,S}\n',
             '1 *2 C   u0     r0 {2,[S,D]}\n2 *1 C   u[0,1] r1 {1,[S,D]} {3,S}\n3    R!H u0     r1 {2,S}\n',
-            '1 *2 C   u0     r0 {2,[S,D]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S} {4,[S,D,T,B]}\n3    R!H u0     r1 {2,S}\n4    R!H ux     {2,[S,D,T,B]}\n',
+            '1 *2 C   u0     r0 {2,[S,D]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S} {4,[S,D,T,B,Q]}\n3    R!H u0     r1 {2,S}\n4    R!H ux     {2,[S,D,T,B,Q]}\n',
             '1 *2 C   u0     r0 {2,S}\n2 *1 C   u[0,1] {1,S} {3,S}\n3    R!H u0     r1 {2,S}\n',
             '1 *2 C   u0     r0 {2,D}\n2 *1 C   u[0,1] {1,D} {3,S}\n3    R!H u0     r1 {2,S}\n',
             '1 *2 C u0     r0 {2,[S,D]}\n2 *1 C u[0,1] {1,[S,D]} {3,S}\n3    C u0     r1 {2,S}\n',
             '1 *2 C u0     r0 {2,[S,D]}\n2 *1 C u[0,1] {1,[S,D]} {3,S}\n3    O u0     r1 {2,S}\n',
-            '1 *2 C   u0     r0 {2,[S,D]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     r1 {2,S} {4,[S,D,T,B]}\n4    R!H ux     {3,[S,D,T,B]}\n',
-            '1 *2 C   u0     r0 {2,[S,D]} {3,[S,D,T,B]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     r1 {1,[S,D,T,B]} {2,S}\n'
+            '1 *2 C   u0     r0 {2,[S,D]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     r1 {2,S} {4,[S,D,T,B,Q]}\n4    R!H ux     {3,[S,D,T,B,Q]}\n',
+            '1 *2 C   u0     r0 {2,[S,D]} {3,[S,D,T,B,Q]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     r1 {1,[S,D,T,B,Q]} {2,S}\n'
         ]
         ans = [Group().from_adjacency_list(k) for k in ans]
 
