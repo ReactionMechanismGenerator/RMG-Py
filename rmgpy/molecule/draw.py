@@ -994,7 +994,7 @@ class MoleculeDrawer(object):
 
         for atom in atoms:
             if isinstance(atom, Atom) and atom.is_nitrogen():
-                drawLonePairs = True
+                draw_lone_pairs = True
 
         left = 0.0
         top = 0.0
