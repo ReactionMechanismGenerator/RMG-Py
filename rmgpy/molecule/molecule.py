@@ -1168,14 +1168,40 @@ class Molecule(Graph):
     def add_van_der_waals_bond(self):
         """
         Adds a single van der Waals bond to the graph to connect a surface site to the physisorbed absorbate.
+        If the adsorbate has lone pairs, the vdw bond will be added to an atom with lone pairs.
+        Atoms will be selected in the folowing order:
+            1) Nitrogen with lone pairs
+            2) Oxygen with lone pairs
+            3) atoms without lone pairs (C and H)
         """
-        cython.declare(bond=Bond,fragment=Molecule,fragments=list)
+        cython.declare(bond=Bond, fragment=Molecule, adsorbate=Molecule,
+            surface_site=Molecule,fragments=list, has_surface_site=cython.bint, atom=Atom, lone_pair_atoms=list)
 
         if self.contains_surface_site():
             fragments = self.split()
             if len(fragments) == 2:
-                if any([fragment.is_surface_site() for fragment in fragments]):
-                    bond = Bond(fragments[0].atoms[0],fragments[1].atoms[0],0.0)
+                has_surface_site = False
+                for fragment in fragments:
+                    if fragment.is_surface_site():
+                        has_surface_site = True
+                        surface_site = fragment
+                    else:
+                        adsorbate = fragment
+                if has_surface_site:
+                    lone_pair_atoms = [atom for atom in adsorbate.atoms if atom.lone_pairs > 0]
+                    if len(lone_pair_atoms) == 1:
+                        # only one atom with a lone pair, so pick this one
+                        atom = lone_pair_atoms[0]
+                    elif len(lone_pair_atoms) > 1:
+                        # more than one atom with lone pair
+                        # sort by element symbol and pick the first (pick nitrogen before oxygen)
+                        lone_pair_atoms.sort(key = lambda atom: atom.symbol)
+                        atom = lone_pair_atoms[0]
+                    else:
+                        # no lone pairs, so pick the first atom
+                        atom = adsorbate.atoms[0]
+                    # create and add the vdw bond
+                    bond = Bond(atom, surface_site.atoms[0],0.0)
                     self.add_bond(bond)
 
     def sort_atoms(self):
