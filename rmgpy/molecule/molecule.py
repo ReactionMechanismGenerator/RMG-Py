@@ -672,7 +672,29 @@ class Bond(Edge):
                 binding_energy = metal_binding_energies[adatom]
                 max_bond_order = {'C': 4., 'O': 2., 'N': 3., 'H': 1.}
                 normalized_bond_order = self.order / max_bond_order[adatom]
-                binding_energy = quantity.Energy(binding_energy).value_si * normalized_bond_order
+                # intercepts estimated from DOI:10.1103/PhysRevLett.99.016105
+                intercepts = {
+                    'C' : {
+                        1 : 0,
+                        2 : -1.3,
+                        3 : -1.1,
+                        4 : 0,
+                    },
+                    'N' : {
+                        1 : -0.5,
+                        2 : -0.75,
+                        3 : 0
+                    },
+                    'O' : {
+                        1 : -0.5,
+                        2 : 0
+                    },
+                    'H' : {
+                        1 : 0
+                    }
+                }
+                intercept = intercepts[adatom][self.order]
+                binding_energy = quantity.Energy(binding_energy).value_si * normalized_bond_order + intercept
                 return -1 * binding_energy
 
     def equivalent(self, other):
