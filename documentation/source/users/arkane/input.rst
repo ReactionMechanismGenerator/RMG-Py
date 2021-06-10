@@ -278,7 +278,10 @@ they can specify the path to a quantum chemistry calculation output file that co
 
 In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified
 directly. The energy used will depend on what ``modelChemistry`` was specified in the input file. Arkane can parse the
-energy from a Gaussian, Molpro, or QChem log file, all using the same ``Log`` class, as shown below.
+energy from a Gaussian, Molpro, or QChem log file, all using the same ``Log`` class, as shown below. The first
+(and required) argument for the ``Log`` class is the path to the log file. Optionally, a second keyword argument
+``check_for_errors=False`` can be provided that will prevent Arkane from raising an exception if it finds an error
+in the QM job based on common phrases from the log file.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free
 rotors are included. If ``geometry`` is not set, then Arkane will read the geometry from the ``frequencies`` file.
