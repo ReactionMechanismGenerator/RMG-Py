@@ -51,6 +51,8 @@ cdef class StickingCoefficient(KineticsModel):
     
     cpdef change_rate(self, double factor)
 
+    cpdef to_html(self)
+
 cdef class StickingCoefficientBEP(KineticsModel):
 
     cdef public ScalarQuantity _A
