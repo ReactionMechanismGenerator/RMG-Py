@@ -234,7 +234,7 @@ class StatMechJob(object):
         path = self.path
         directory = os.path.abspath(os.path.dirname(path))
 
-        def create_log(log_path):
+        def create_log(log_path, check_for_errors=True):
             if not os.path.isfile(log_path):
                 modified_log_path = os.path.join(directory, log_path)
                 if not os.path.isfile(modified_log_path):
@@ -243,7 +243,7 @@ class StatMechJob(object):
                 else:
                     log_path = modified_log_path
 
-            return ess_factory(log_path)
+            return ess_factory(log_path, check_for_errors=check_for_errors)
 
         is_ts = isinstance(self.species, TransitionState)
         file_extension = os.path.splitext(path)[-1]
