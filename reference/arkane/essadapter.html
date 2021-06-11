@@ -61,8 +61,15 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>arkane.ess.ESSAdapter<a class="headerlink" href="#arkane-ess-essadapter" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="arkane.ess.ESSAdapter">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">arkane.ess.</span></span><span class="sig-name descname"><span class="pre">ESSAdapter</span></span><a class="headerlink" href="#arkane.ess.ESSAdapter" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">arkane.ess.</span></span><span class="sig-name descname"><span class="pre">ESSAdapter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.ESSAdapter" title="Permalink to this definition">¶</a></dt>
 <dd><p>An abstract ESS Adapter class</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.ESSAdapter.check_for_errors">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">check_for_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.ESSAdapter.check_for_errors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks the log file for common errors.
+Optionally runs when the class is initialized to catch errors before parsing relevant information.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="arkane.ess.ESSAdapter.get_D1_diagnostic">
 <span class="sig-name descname"><span class="pre">get_D1_diagnostic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.ESSAdapter.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>

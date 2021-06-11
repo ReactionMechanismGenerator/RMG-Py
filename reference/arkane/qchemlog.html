@@ -61,11 +61,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>arkane.ess.QchemLog<a class="headerlink" href="#arkane-ess-qchemlog" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="arkane.ess.QChemLog">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">arkane.ess.</span></span><span class="sig-name descname"><span class="pre">QChemLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">arkane.ess.</span></span><span class="sig-name descname"><span class="pre">QChemLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent an output file from QChem. The attribute <cite>path</cite> refers to the
 location on disk of the QChem output file of interest. Methods are provided
 to extract a variety of information into Arkane classes and/or NumPy
 arrays. QChemLog is an adapter for the abstract class ESSAdapter.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.check_for_errors">
+<span class="sig-name descname"><span class="pre">check_for_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.check_for_errors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks for common errors in a QChem log file.
+If any are found, this method will raise an error and crash.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="arkane.ess.QChemLog.get_D1_diagnostic">
 <span class="sig-name descname"><span class="pre">get_D1_diagnostic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
@@ -117,9 +124,10 @@ if not provided, the value in the QChem output file will be adopted.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arkane.ess.QChemLog.load_energy">
 <span class="sig-name descname"><span class="pre">load_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zpe_scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the energy in J/mol from a QChem log file. Only the last energy
-in the file is returned. The zero-point energy is <em>not</em> included in
-the returned value.</p>
+<dd><p>Load the energy in J/mol from a QChem log file. Prioritize the energy from a converged
+geometry optimization. If the file does not contain an optimization job or if the optimization
+hit the maximum cycles, return the next equivalent source, such as from a frequency job.
+The zero-point energy is <em>not</em> included in the returned value.</p>
 </dd></dl>
 
 <dl class="py method">

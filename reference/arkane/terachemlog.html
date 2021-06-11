@@ -61,11 +61,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>arkane.ess.TeraChemLog<a class="headerlink" href="#arkane-ess-terachemlog" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="arkane.ess.TeraChemLog">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">arkane.ess.</span></span><span class="sig-name descname"><span class="pre">TeraChemLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">arkane.ess.</span></span><span class="sig-name descname"><span class="pre">TeraChemLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a log file from TeraChem. The attribute <cite>path</cite> refers to the
 location on disk of the TeraChem log file of interest. Methods are provided
 to extract a variety of information into Arkane classes and/or NumPy arrays.
 TeraChemLog is an adapter for the abstract class ESSAdapter.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.TeraChemLog.check_for_errors">
+<span class="sig-name descname"><span class="pre">check_for_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.check_for_errors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks for common errors in a TeraChem log file.
+If any are found, this method will raise an error and crash.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="arkane.ess.TeraChemLog.get_D1_diagnostic">
 <span class="sig-name descname"><span class="pre">get_D1_diagnostic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.TeraChemLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>

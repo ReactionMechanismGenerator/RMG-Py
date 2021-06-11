@@ -616,7 +616,10 @@ they can specify the path to a quantum chemistry calculation output file that co
 </div>
 <p>In this example, the <code class="docutils literal notranslate"><span class="pre">CBS-QB3</span></code> energy is obtained from a Gaussian log file, while the <code class="docutils literal notranslate"><span class="pre">Klip_2</span></code> energy is specified
 directly. The energy used will depend on what <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> was specified in the input file. Arkane can parse the
-energy from a Gaussian, Molpro, or QChem log file, all using the same <code class="docutils literal notranslate"><span class="pre">Log</span></code> class, as shown below.</p>
+energy from a Gaussian, Molpro, or QChem log file, all using the same <code class="docutils literal notranslate"><span class="pre">Log</span></code> class, as shown below. The first
+(and required) argument for the <code class="docutils literal notranslate"><span class="pre">Log</span></code> class is the path to the log file. Optionally, a second keyword argument
+<code class="docutils literal notranslate"><span class="pre">check_for_errors=False</span></code> can be provided that will prevent Arkane from raising an exception if it finds an error
+in the QM job based on common phrases from the log file.</p>
 <p>The input to the remaining parameters, <code class="docutils literal notranslate"><span class="pre">geometry</span></code>, <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> and <code class="docutils literal notranslate"><span class="pre">rotors</span></code>, will depend on if hindered/free
 rotors are included. If <code class="docutils literal notranslate"><span class="pre">geometry</span></code> is not set, then Arkane will read the geometry from the <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> file.
 Both cases are described below.</p>
