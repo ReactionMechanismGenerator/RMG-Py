@@ -242,6 +242,33 @@ cdef class StickingCoefficient(KineticsModel):
         """
         self._A.value_si *= factor
 
+    cpdef to_html(self):
+        """
+        Return an HTML rendering.
+        """
+        cdef double T
+        cdef str string
+        cdef list Tdata
+
+        Tdata = [500, 1000, 1500, 2000]
+
+        string = '<table class="KineticsData">\n<tr class="KineticsData_Tdata"><th>T/[K]</th>\n'
+        try:
+            for T in Tdata:
+                string += '<td>{0:.0f}</td>'.format(T)
+
+            string += '\n</tr><tr class="KineticsData_kdata"><th>Sticking Coefficient\n    '
+
+            for T in Tdata:
+                string += '<td>{0:+.2f}</td>'.format(self.get_sticking_coefficient(T))
+        except:
+            string += '<td>An error occurred in processing kinetics</td>'
+        string += '\n</tr></table>'
+
+        string += "<span class='KineticsData_repr'>{0!r}</span>".format(self)
+
+        return string
+
 ################################################################################
 cdef class StickingCoefficientBEP(KineticsModel):
     """
