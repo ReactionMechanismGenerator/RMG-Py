@@ -4051,6 +4051,28 @@ class KineticsFamily(Database):
                 if atm.label not in root_labels:
                     atm.label = ''
 
+        def get_reactant_thermo(reactant,metal):
+            """
+            Save the label of reactant and reapply them after thermo estimation to avoid deepcopying
+            """
+            label_dict = reactant.molecule[0].get_all_labeled_atoms()
+            mol = reactant.molecule[0]
+            reactant.molecule[0].clear_labeled_atoms()
+            reactant.generate_resonance_structures()
+            if metal:
+                thermo = tdb.get_thermo_data(reactant, metal_to_scale_to=metal)
+            else:
+                thermo = tdb.get_thermo_data(reactant)
+            reactant.molecule = [mol]
+
+            for key,atm in label_dict.items():
+                if isinstance(atm,list):
+                    for a in atm:
+                        a.label = key
+                else:
+                    atm.label = key
+            return thermo
+
         if self.own_reverse and get_reverse:
             rev_rxns = []
             rkeys = list(self.reverse_map.keys())
@@ -4093,34 +4115,11 @@ class KineticsFamily(Database):
                     metal = entry.metal + entry.facet
                 for j, react in enumerate(entry.item.reactants):
                     if rxns[i].reactants[j].thermo is None:
-                        label_dict = react.molecule[0].get_all_labeled_atoms()
-                        mol = react.molecule[0]
-                        react.molecule[0].clear_labeled_atoms()
-                        react.generate_resonance_structures()
-                        rxns[i].reactants[j].thermo = tdb.get_thermo_data(react, metal_to_scale_to=metal)
-                        react.molecule = [mol]
-                        for key,atm in label_dict.items():
-                            if isinstance(atm,list):
-                                for a in atm:
-                                    a.label = key
-                            else:
-                                atm.label = key
+                        rxns[i].reactants[j].thermo = get_reactant_thermo(react,metal)
 
                 for j, react in enumerate(entry.item.products):
                     if rxns[i].products[j].thermo is None:
-                        label_dict = react.molecule[0].get_all_labeled_atoms()
-                        mol = react.molecule[0]
-                        react.molecule[0].clear_labeled_atoms()
-                        react.generate_resonance_structures()
-                        rxns[i].products[j].thermo = tdb.get_thermo_data(react, metal_to_scale_to=metal)
-                        react.molecule = [mol]
-                        for key,atm in label_dict.items():
-                            if isinstance(atm,list):
-                                for a in atm:
-                                    a.label = key
-                            else:
-                                atm.label = key
-
+                        rxns[i].products[j].thermo = get_reactant_thermo(react,metal)
             rxns[i].kinetics = entry.data
             rxns[i].rank = entry.rank
 
@@ -4199,12 +4198,7 @@ class KineticsFamily(Database):
                     if estimate_thermo:
                         for rev_react in rrev.reactants:
                             if rev_react.thermo is None:
-                                therm_spc = deepcopy(rev_react)
-                                therm_spc.generate_resonance_structures()
-                                if metal:
-                                    rev_react.thermo = tdb.get_thermo_data(therm_spc, metal_to_scale_to=metal)
-                                else:
-                                    rev_react.thermo = tdb.get_thermo_data(therm_spc)
+                                rev_react.thermo = get_reactant_thermo(rev_react,metal)
 
                     rev_rxns.append(rrev)
 
@@ -4241,14 +4235,9 @@ class KineticsFamily(Database):
                 rrev.is_forward = False
 
                 if estimate_thermo:
-                    for r in rrev.reactants:
-                        if r.thermo is None:
-                            therm_spc = deepcopy(r)
-                            therm_spc.generate_resonance_structures()
-                            if r.metal:
-                                r.thermo = tdb.get_thermo_data(therm_spc, metal_to_scale_to=r.metal)
-                            else:
-                                r.thermo = tdb.get_thermo_data(therm_spc)
+                    for rev_react in rrev.reactants:
+                        if rev_react.thermo is None:
+                            rev_react.thermo = get_reactant_thermo(rev_react,metal)
                 rxns[i] = rrev
 
         if self.own_reverse and get_reverse:
