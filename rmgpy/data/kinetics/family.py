@@ -4082,20 +4082,45 @@ class KineticsFamily(Database):
         root_labels = [x.label for x in root.atoms if x.label != '']
         root_label_set = set(root_labels)
         
-        for i, r in enumerate(entries):
+        for i, entry in enumerate(entries):
             if estimate_thermo:
-                for j, react in enumerate(r.item.reactants):
+                # parse out the metal to scale to
+                if entry.facet is None:
+                    metal = entry.metal # could be None
+                else:
+                    metal = entry.metal + entry.facet
+                for j, react in enumerate(entry.item.reactants):
                     if rxns[i].reactants[j].thermo is None:
+                        label_dict = react.molecule[0].get_all_labeled_atoms()
+                        mol = react.molecule[0]
+                        react.molecule[0].clear_labeled_atoms()
                         react.generate_resonance_structures()
-                        rxns[i].reactants[j].thermo = tdb.get_thermo_data(react, metal_to_scale_to=r.metal)
+                        rxns[i].reactants[j].thermo = tdb.get_thermo_data(react, metal_to_scale_to=metal)
+                        react.molecule = [mol]
+                        for key,atm in label_dict.items():
+                            if isinstance(atm,list):
+                                for a in atm:
+                                    a.label = key
+                            else:
+                                atm.label = key
 
-                for j, react in enumerate(r.item.products):
+                for j, react in enumerate(entry.item.products):
                     if rxns[i].products[j].thermo is None:
+                        label_dict = react.molecule[0].get_all_labeled_atoms()
+                        mol = react.molecule[0]
+                        react.molecule[0].clear_labeled_atoms()
                         react.generate_resonance_structures()
-                        rxns[i].products[j].thermo = tdb.get_thermo_data(react, metal_to_scale_to=r.metal)
+                        rxns[i].products[j].thermo = tdb.get_thermo_data(react, metal_to_scale_to=metal)
+                        react.molecule = [mol]
+                        for key,atm in label_dict.items():
+                            if isinstance(atm,list):
+                                for a in atm:
+                                    a.label = key
+                            else:
+                                atm.label = key
 
-            rxns[i].kinetics = r.data
-            rxns[i].rank = r.rank
+            rxns[i].kinetics = entry.data
+            rxns[i].rank = entry.rank
 
             if remove_degeneracy:  # adjust for degeneracy
                 rxns[i].kinetics.A.value_si /= rxns[i].degeneracy
@@ -4170,14 +4195,14 @@ class KineticsFamily(Database):
                     rrev.is_forward = False
 
                     if estimate_thermo:
-                        for r in rrev.reactants:
-                            if r.thermo is None:
-                                therm_spc = deepcopy(r)
+                        for rev_react in rrev.reactants:
+                            if rev_react.thermo is None:
+                                therm_spc = deepcopy(rev_react)
                                 therm_spc.generate_resonance_structures()
-                                if r.metal:
-                                    r.thermo = tdb.get_thermo_data(therm_spc, metal_to_scale_to=r.metal)
+                                if metal:
+                                    rev_react.thermo = tdb.get_thermo_data(therm_spc, metal_to_scale_to=metal)
                                 else:
-                                    r.thermo = tdb.get_thermo_data(therm_spc)
+                                    rev_react.thermo = tdb.get_thermo_data(therm_spc)
 
                     rev_rxns.append(rrev)
 
