@@ -4241,14 +4241,14 @@ class KineticsFamily(Database):
                 rrev.is_forward = False
 
                 if estimate_thermo:
-                    for r in rrev.reactants:
-                        if r.thermo is None:
-                            therm_spc = deepcopy(r)
+                    for rev_react in rrev.reactants:
+                        if rev_react.thermo is None:
+                            therm_spc = deepcopy(rev_react)
                             therm_spc.generate_resonance_structures()
-                            if r.metal:
-                                r.thermo = tdb.get_thermo_data(therm_spc, metal_to_scale_to=r.metal)
+                            if metal:
+                                rev_react.thermo = tdb.get_thermo_data(therm_spc, metal_to_scale_to=metal)
                             else:
-                                r.thermo = tdb.get_thermo_data(therm_spc)
+                                rev_react.thermo = tdb.get_thermo_data(therm_spc)
                 rxns[i] = rrev
 
         if self.own_reverse and get_reverse:
