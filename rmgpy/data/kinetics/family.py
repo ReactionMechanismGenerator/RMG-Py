@@ -3386,6 +3386,8 @@ class KineticsFamily(Database):
                                      min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn, extension_iter_max=extension_iter_max,
                                      extension_iter_item_cap=extension_iter_item_cap)
                 logging.error("built tree with {} nodes".format(len(list(self.groups.entries))))
+            
+            self.auto_generated = True
                 
     def get_rxn_batches(self, rxns, T=1000.0, max_batch_size=800, outlier_fraction=0.02, stratum_num=8):
         """

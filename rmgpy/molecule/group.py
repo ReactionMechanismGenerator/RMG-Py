@@ -1294,7 +1294,7 @@ class Group(Graph):
             r = elements.bde_elements  # set of possible r elements/atoms
             r = [ATOMTYPES[x] for x in r]
 
-        r_bonds = [1, 2, 3, 1.5]
+        r_bonds = [1, 2, 3, 1.5, 4]
         r_un = [0, 1, 2, 3]
 
         RnH = r[:]
@@ -1600,7 +1600,7 @@ class Group(Graph):
         grps = []
         label_list = []
         Rbset = set(r_bonds)
-        bdict = {1: '-', 2: '=', 3: '#', 1.5: '-='}
+        bdict = {1: '-', 2: '=', 3: '#', 1.5: '-=', 4: '$'}
         for bd in r_bonds:
             grp = deepcopy(self)
             grpc = deepcopy(self)
