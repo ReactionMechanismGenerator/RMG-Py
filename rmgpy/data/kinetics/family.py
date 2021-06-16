@@ -2662,18 +2662,29 @@ class KineticsFamily(Database):
                     kinetics.comment += "\nsite: {}".format(entry.site)
         return kinetics_list
 
-    def _select_best_kinetics(self, kinetics_list):
+    def _select_best_kinetics(self, kinetics_list, metal=None, facet=None):
         """
         For a given set of kinetics `kinetics_list`, return the kinetics deemed
         to be the "best". This is determined to be the one with the lowest
         non-zero rank that occurs first (has the lowest index).
         """
+        if metal:
+            # select only the reactions that match metals
+            _kinetics_list = [k for k in kinetics_list if k[1].metal == metal]
+            if _kinetics_list:
+                kinetics_list = _kinetics_list
+        if facet:
+            # select only the reactions that match facets
+            _kinetics_list = [k for k in kinetics_list if k[1].facet == facet]
+            if _kinetics_list:
+                kinetics_list = _kinetics_list
         if any([x[1].rank == 0 for x in kinetics_list]) and not all([x[1].rank == 0 for x in kinetics_list]):
             kinetics_list = [x for x in kinetics_list if x[1].rank != 0]
         kinetics_list.sort(key=lambda x: (x[1].rank, x[1].index))
         return kinetics_list[0]
 
-    def get_kinetics(self, reaction, template_labels, degeneracy=1, estimator='', return_all_kinetics=True):
+    def get_kinetics(self, reaction, template_labels, degeneracy=1, estimator='', return_all_kinetics=True,
+                    metal=None, facet=None):
         """
         Return the kinetics for the given `reaction` by searching the various
         depositories as well as generating a result using the user-specified `estimator`
@@ -2701,7 +2712,7 @@ class KineticsFamily(Database):
         for depository in depositories:
             kinetics_list0 = self.get_kinetics_from_depository(depository, reaction, template, degeneracy)
             if len(kinetics_list0) > 0 and not return_all_kinetics:
-                kinetics, entry, is_forward = self._select_best_kinetics(kinetics_list0)
+                kinetics, entry, is_forward = self._select_best_kinetics(kinetics_list0, metal=metal, facet=facet)
                 return kinetics, depository, entry, is_forward
             else:
                 for kinetics, entry, is_forward in kinetics_list0:
