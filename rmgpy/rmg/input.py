@@ -118,6 +118,7 @@ def catalyst_properties(bindingEnergies=None,
     if metal:
         try:
             logging.info("Using catalyst surface properties from metal %r.", metal)
+            rmg.metal = metal
             rmg.binding_energies = metal_db.get_binding_energies(metal)
             rmg.surface_site_density = metal_db.get_surface_site_density(metal)
         except DatabaseError:

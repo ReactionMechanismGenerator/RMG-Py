@@ -183,6 +183,7 @@ class RMG(util.Subject):
         self.kinetics_estimator = 'group additivity'
         self.solvent = None
         self.diffusion_limiter = None
+        self.metal = None
         self.surface_site_density = None
         self.binding_energies = None
 
