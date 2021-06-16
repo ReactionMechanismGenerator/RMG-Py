@@ -834,8 +834,8 @@ class RMG(util.Subject):
                             raise
 
                         self.rmg_memories[index].add_t_conv_N(t, x, len(obj))
-                        self.rmg_memories[index].generate_cond()
                         log_conditions(self.rmg_memories, index)
+                        self.rmg_memories[index].generate_cond()
 
                         reactor_done = self.reaction_model.add_new_surface_objects(obj, new_surface_species,
                                                                                    new_surface_reactions, reaction_system)
