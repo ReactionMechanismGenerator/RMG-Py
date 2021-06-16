@@ -56,8 +56,15 @@ def convert_chemkin_to_yml(chemkin_path, dictionary_path=None, output="chem.rms"
     write_yml(spcs, rxns, path=output)
 
 
-def write_yml(spcs, rxns, solvent=None, solvent_data=None, path="chem.yml"):
+def write_yml(spcs, rxns, solvent=None, solvent_data=None, metal=None, binding_energies=None, 
+              surface_site_density=None, path="chem.yml"):
     result_dict = get_mech_dict(spcs, rxns, solvent=solvent, solvent_data=solvent_data)
+    if metal:
+        result_dict['metal'] = metal
+    if binding_energies:
+        result_dict['binding_energies_eV'] = {element:energy.value_si/energy.conversionFactors['eV/molecule'] for element,energy in binding_energies.items()}
+    if surface_site_density:
+        result_dict['surface_site_density_mol_m2'] = surface_site_density.value_si
     with open(path, 'w') as f:
         yaml.dump(result_dict, stream=f)
 
@@ -242,4 +249,5 @@ class RMSWriter(object):
         if rmg.solvent:
             solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
         write_yml(rmg.reaction_model.core.species, rmg.reaction_model.core.reactions, solvent=rmg.solvent, solvent_data=solvent_data,
+                  metal = rmg.metal, binding_energies=rmg.binding_energies, surface_site_density=rmg.surface_site_density,
                   path=os.path.join(self.output_directory, 'rms', 'chem{}.rms').format(len(rmg.reaction_model.core.species)))
