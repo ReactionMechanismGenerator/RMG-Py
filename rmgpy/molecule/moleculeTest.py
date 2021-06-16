@@ -2331,6 +2331,8 @@ multiplicity 2
         Test if we can convert a Molecule object into a Group object.
         """
         mol = Molecule().from_smiles('CC(C)CCCC(C)C1CCC2C3CC=C4CC(O)CCC4(C)C3CCC12C')  # cholesterol
+        mol.atoms[0].label = '*1'
+        mol.atoms[1].label = '*2'
         group = mol.to_group()
 
         self.assertTrue(isinstance(group, Group))
@@ -2343,6 +2345,7 @@ multiplicity 2
 
         for i, molAt in enumerate(mol.atoms):
             group_atom = group.atoms[i]
+            self.assertEqual(group_atom.label, molAt.label)
             atom_types = [groupAtomType.equivalent(molAt.atomtype) for groupAtomType in group_atom.atomtype]
             self.assertTrue(any(atom_types))
 
