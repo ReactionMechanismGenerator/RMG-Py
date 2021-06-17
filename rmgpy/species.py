@@ -53,6 +53,7 @@ import rmgpy.quantity as quantity
 from rmgpy.exceptions import SpeciesError, StatmechError
 from rmgpy.molecule.graph import Vertex, Edge, Graph
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
+from rmgpy.molecule.fragment import CuttingLabel, Fragment
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
@@ -122,7 +123,6 @@ class Species(object):
         elif smiles:
             # check it is fragment or molecule
             import re
-            from rmgpy.molecule.fragment import Fragment
             if re.findall(r'([LR]\d?)', smiles) != []: # Fragment
                 self.molecule = [Fragment(smiles=smiles)]
             else: # Molecule
@@ -296,7 +296,6 @@ class Species(object):
             save_order (bool, optional):           if ``True``, reset atom order after performing atom isomorphism
             strict (bool, optional):               If ``False``, perform isomorphism ignoring electrons.
         """
-        from rmgpy.molecule.fragment import Fragment
         if isinstance(other, Molecule) or isinstance(other, Fragment):
             for molecule in self.molecule:
                 if molecule.is_isomorphic(other, generate_initial_map=generate_initial_map,
@@ -324,7 +323,6 @@ class Species(object):
 
         If ``strict=False``, performs the check ignoring electrons and resonance structures.
         """
-        from rmgpy.molecule.fragment import Fragment
         if isinstance(other, Molecule):
             for molecule in self.molecule:
                 if molecule.is_identical(other, strict=strict):
@@ -411,7 +409,6 @@ class Species(object):
         instead. Be sure that species' labels are unique when setting it False.
         """
         import cantera as ct
-        from rmgpy.molecule.fragment import CuttingLabel
         
         # Determine the number of each type of element in the molecule
         element_dict = {}  # element_counts = [0,0,0,0]

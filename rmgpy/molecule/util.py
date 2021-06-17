@@ -31,11 +31,11 @@ import itertools
 import re
 
 from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.fragment import Fragment
 
 
 def get_element_count(obj):
     """Converts an (augmented) inchi or Molecule into a dictionary element -> count"""
-    from rmgpy.molecule.fragment import Fragment
     element_count = {}
 
     if isinstance(obj, str):

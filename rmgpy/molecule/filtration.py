@@ -48,6 +48,7 @@ import logging
 from rmgpy.exceptions import ResonanceError
 from rmgpy.molecule.element import PeriodicSystem
 from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.fragment import CuttingLabel, Fragment
 from rmgpy.molecule.pathfinder import find_shortest_path
 
 
@@ -58,7 +59,6 @@ def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True,
     If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
     """
 
-    from rmgpy.molecule.fragment import Fragment
     if isinstance(mol_list[0], Fragment):
         for mol in mol_list:
             mol.update()
@@ -110,7 +110,6 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
     if `allow_expanded_octet` is ``True`` (by default), then the function also considers dectet for
     third row elements (currently sulfur is the only hypervalance third row element in RMG)
     """
-    from rmgpy.molecule.fragment import Fragment, CuttingLabel
     if not isinstance(mol, (Molecule, Fragment)):
         raise TypeError("Octet deviation could only be determined for Molecule objects.")
 

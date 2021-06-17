@@ -40,6 +40,7 @@ from rmgpy.molecule.atomtype import get_atomtype
 from rmgpy.molecule.element import get_element, PeriodicSystem
 from rmgpy.molecule.group import GroupAtom, GroupBond
 from rmgpy.molecule.molecule import Atom, Bond
+from rmgpy.molecule.fragment import CuttingLabel
 
 
 class Saturator(object):
@@ -698,7 +699,6 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
                 if isotope != -1:
                     atom.element = get_element(atom.number, isotope)
             except KeyError:
-                from rmgpy.molecule.fragment import CuttingLabel
                 atom = CuttingLabel(name=atom_type[0], label=label)
 
         # Add the atom to the list

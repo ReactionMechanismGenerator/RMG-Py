@@ -2,7 +2,6 @@ import os
 from urllib.parse import quote
 import itertools
 
-from rmgpy.species import Species
 import rmgpy.molecule.group as gr
 import rmgpy.molecule.element as elements
 import rmgpy.molecule.converter as converter
@@ -877,6 +876,7 @@ class Fragment(Graph):
 
     def assign_representative_species(self):
 
+        from rmgpy.species import Species
         self.assign_representative_molecule()
         self.species_repr = Species(molecule=[self.mol_repr])
         self.symmetry_number = self.get_symmetry_number()
