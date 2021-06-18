@@ -114,6 +114,9 @@ cdef class ReactionSystem(DASx):
     cdef public np.ndarray bimolecular_threshold
     cdef public np.ndarray trimolecular_threshold
 
+    cdef public int retry
+    cdef public int max_retries
+
     # methods
     cpdef initialize_model(self, list core_species, list core_reactions, list edge_species, list edge_reactions,
         list surface_species=?, list surface_reactions=?, list pdep_networks=?, atol=?, rtol=?,
