@@ -183,6 +183,10 @@ cdef class ReactionSystem(DASx):
         self.bimolecular_threshold = None
         self.trimolecular_threshold = None
 
+        # number of allowed model resurrections
+        self.retry = 0
+        self.max_retries = 0
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -617,6 +621,8 @@ cdef class ReactionSystem(DASx):
         cdef np.ndarray[np.float64_t, ndim=1] mole_sens, dVdk, norm_sens
         cdef list time_array, norm_sens_array, new_surface_reactions, new_surface_reaction_inds, new_objects, new_object_inds
 
+
+
         zero_production = False
         zero_consumption = False
         pdep_networks = pdep_networks or []
@@ -746,20 +752,27 @@ cdef class ReactionSystem(DASx):
                             conversion = 1 - (y_core_species[index] / y0[index])
 
                     if invalid_objects == []:
-                        #species flux criterion
-                        if len(edge_species_rate_ratios) > 0:
-                            ind = np.argmax(edge_species_rate_ratios)
-                            obj = edge_species[ind]
-                            logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} was added to model core '
-                                         'in model resurrection process'.format(self.t, obj,edge_species_rates[ind]))
-                            invalid_objects.append(obj)
+                        if self.retry <= self.max_retries:
+                            #species flux criterion
+                            if len(edge_species_rate_ratios) > 0:
+                                ind = np.argmax(edge_species_rate_ratios)
+                                obj = edge_species[ind]
+                                logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} was added to model core '
+                                            'in model resurrection process. Retry # {3} of {4}'.format(self.t, obj,edge_species_rates[ind], self.retry, self.max_retries))
+                                invalid_objects.append(obj)
+                                self.retry += 1
 
-                        if total_div_accum_nums and len(total_div_accum_nums) > 0:  #if dynamics data available
-                            ind = np.argmax(total_div_accum_nums)
-                            obj = edge_reactions[ind]
-                            logging.info('At time {0:10.4e} s, Reaction {1} at dynamics number {2} was added to model core '
-                                         'in model resurrection process'.format(self.t, obj,total_div_accum_nums[ind]))
-                            invalid_objects.append(obj)
+
+                            if total_div_accum_nums and len(total_div_accum_nums) > 0:  #if dynamics data available
+                                ind = np.argmax(total_div_accum_nums)
+                                obj = edge_reactions[ind]
+                                logging.info('At time {0:10.4e} s, Reaction {1} at dynamics number {2} was added to model core '
+                                            'in model resurrection process. Retry # {3} of {4}'.format(self.t, obj,total_div_accum_nums[ind],  self.retry, self.max_retries))
+                                invalid_objects.append(obj)
+                                self.retry += 1
+                        else:
+                            raise RuntimeError ('too many retries, ending simulation')
+                            
 
                         if pdep_networks != [] and network_leak_rate_ratios != []:
                             ind = np.argmax(network_leak_rate_ratios)
