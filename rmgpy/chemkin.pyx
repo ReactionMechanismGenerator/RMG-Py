@@ -2324,7 +2324,7 @@ def save_chemkin_files(rmg):
         latest_chemkin_path = os.path.join(rmg.output_directory, 'chemkin', 'chem_edge.inp')
         latest_chemkin_verbose_path = os.path.join(rmg.output_directory, 'chemkin', 'chem_edge_annotated.inp')
         latest_dictionary_path = os.path.join(rmg.output_directory, 'chemkin', 'species_edge_dictionary.txt')
-        latest_transport_path = None
+        latest_transport_path = os.path.join(rmg.output_directory, 'chemkin', 'tran_edge.dat')
         save_chemkin(rmg.reaction_model, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path,
                      latest_transport_path, rmg.save_edge_species)
 
