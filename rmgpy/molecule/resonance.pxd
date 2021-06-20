@@ -32,7 +32,7 @@ cpdef list populate_resonance_algorithms(dict features=?)
 
 cpdef dict analyze_molecule(Molecule mol)
 
-cpdef list generate_resonance_structures(Molecule mol, bint clar_structures=?, bint keep_isomorphic=?, bint filter_structures=?)
+cpdef list generate_resonance_structures(Molecule mol, bint clar_structures=?, bint keep_isomorphic=?, bint filter_structures=?, bint save_order=?)
 
 cpdef list _generate_resonance_structures(list mol_list, list method_list, bint keep_isomorphic=?, bint copy=?, bint filter_structures=?)
 
