@@ -1286,7 +1286,7 @@ class Reaction:
 
         return other
 
-    def ensure_species(self, reactant_resonance=False, product_resonance=False):
+    def ensure_species(self, reactant_resonance=False, product_resonance=False, save_order=False):
         """
         Ensure the reaction contains species objects in its reactant and product
         attributes. If the reaction is found to hold molecule objects, it
@@ -1296,6 +1296,7 @@ class Reaction:
         Generates resonance structures for Molecules if the corresponding options,
         reactant_resonance and/or product_resonance, are True. Does not generate
         resonance for reactants or products that start as Species objects.
+        If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
         """
         from rmgpy.data.kinetics.common import ensure_species
         # if already species' objects, return none
@@ -1315,11 +1316,11 @@ class Reaction:
             for reactant, product in self.pairs:
                 new_pair = []
                 for reactant0 in self.reactants:
-                    if reactant0.is_isomorphic(reactant):
+                    if reactant0.is_isomorphic(reactant, save_order=save_order):
                         new_pair.append(reactant0)
                         break
                 for product0 in self.products:
-                    if product0.is_isomorphic(product):
+                    if product0.is_isomorphic(product, save_order=save_order):
                         new_pair.append(product0)
                         break
                 new_pairs.append(new_pair)
