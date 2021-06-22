@@ -245,11 +245,12 @@ species. This “algorithm” is <em>very</em> much in need of improvement.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.species.Species.generate_resonance_structures">
-<span class="sig-name descname"><span class="pre">generate_resonance_structures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">keep_isomorphic=True</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">filter_structures=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate_resonance_structures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">keep_isomorphic=True</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">filter_structures=True</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance structures of this species. The isomers are
 stored as a list in the <cite>molecule</cite> attribute. If the length of
 <cite>molecule</cite> is already greater than one, it is assumed that all of the
-resonance structures have already been generated.</p>
+resonance structures have already been generated.
+If <code class="docutils literal notranslate"><span class="pre">save_order</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> the atom order is reset after performing atom isomorphism.</p>
 </dd></dl>
 
 <dl class="py method">

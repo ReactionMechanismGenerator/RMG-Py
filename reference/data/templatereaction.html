@@ -262,14 +262,15 @@ vector formats.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.TemplateReaction.ensure_species">
-<span class="sig-name descname"><span class="pre">ensure_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">reactant_resonance=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">product_resonance=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.ensure_species" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ensure_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">reactant_resonance=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">product_resonance=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.ensure_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ensure the reaction contains species objects in its reactant and product
 attributes. If the reaction is found to hold molecule objects, it
 modifies the reactant, product and pairs to hold
 Species objects.</p>
 <p>Generates resonance structures for Molecules if the corresponding options,
 reactant_resonance and/or product_resonance, are True. Does not generate
-resonance for reactants or products that start as Species objects.</p>
+resonance for reactants or products that start as Species objects.
+If <code class="docutils literal notranslate"><span class="pre">save_order</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> the atom order is reset after performing atom isomorphism.</p>
 </dd></dl>
 
 <dl class="py method">
