@@ -2294,6 +2294,10 @@ def save_chemkin_files(rmg):
     latest_chemkin_verbose_path = os.path.join(rmg.output_directory, 'chemkin', 'chem_annotated.inp')
     latest_dictionary_path = os.path.join(rmg.output_directory, 'chemkin', 'species_dictionary.txt')
     latest_transport_path = os.path.join(rmg.output_directory, 'chemkin', 'tran.dat')
+    # for troubleshooting, add in intermediate models (tran, dict, and annotated). 
+    latest_chemkin_verbose_path = os.path.join(rmg.output_directory, 'chemkin', 'chem_annotated{0:04d}.inp'.format(len(rmg.reaction_model.core.species)))
+    latest_dictionary_path = os.path.join(rmg.output_directory, 'chemkin', 'species_dictionary{0:04d}.txt'.format(len(rmg.reaction_model.core.species)))
+    latest_transport_path = os.path.join(rmg.output_directory, 'chemkin', 'tran{0:04d}.dat'.format(len(rmg.reaction_model.core.species)))
     save_chemkin(rmg.reaction_model,
                  this_chemkin_path,
                  latest_chemkin_verbose_path,
