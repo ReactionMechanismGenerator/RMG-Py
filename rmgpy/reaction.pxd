@@ -125,7 +125,7 @@ cdef class Reaction:
 
     cpdef copy(self)
 
-    cpdef ensure_species(self, bint reactant_resonance=?, bint product_resonance=?)
+    cpdef ensure_species(self, bint reactant_resonance=?, bint product_resonance=?, bint save_order=?)
 
     cpdef list check_collision_limit_violation(self, float t_min, float t_max, float p_min, float p_max)
 

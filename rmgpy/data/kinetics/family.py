@@ -1731,7 +1731,7 @@ class KineticsFamily(Database):
         """
 
         # Make sure the products are in fact different than the reactants
-        if same_species_lists(reactants, products):
+        if same_species_lists(reactants, products, save_order=self.save_order):
             return None
 
         # Create and return template reaction object
@@ -2351,7 +2351,7 @@ class KineticsFamily(Database):
                 products0 = reaction.products if forward else reaction.reactants
                 # Only keep reactions which give the requested products
                 # If prod_resonance=True, then use strict=False to consider all resonance structures
-                if same_species_lists(products, products0, strict=not prod_resonance):
+                if same_species_lists(products, products0, strict=not prod_resonance, save_order=self.save_order):
                     rxn_list.append(reaction)
 
         # Determine the reactant-product pairs to use for flux analysis
@@ -2824,7 +2824,7 @@ class KineticsFamily(Database):
                 pass
             else:
                 if product_structures is not None:
-                    if same_species_lists(list(products), list(product_structures)):
+                    if same_species_lists(list(products), list(product_structures), save_order=self.save_order):
                         return reactant_structures, product_structures
                     else:
                         continue
@@ -2836,7 +2836,7 @@ class KineticsFamily(Database):
 
         return None, None
 
-    def add_atom_labels_for_reaction(self, reaction, output_with_resonance=True):
+    def add_atom_labels_for_reaction(self, reaction, output_with_resonance=True, save_order=False):
         """
         Apply atom labels on a reaction using the appropriate atom labels from
         this reaction family.
@@ -2844,10 +2844,11 @@ class KineticsFamily(Database):
         The reaction is modified in place containing species objects with the
         atoms labeled. If output_with_resonance is True, all resonance structures
         are generated with labels. If false, only the first resonance structure
-        sucessfully able to map to the reaction is used. None is returned.
+        successfully able to map to the reaction is used. None is returned.
+        If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
         """
         # make sure we start with reaction with species objects
-        reaction.ensure_species(reactant_resonance=False, product_resonance=False)
+        reaction.ensure_species(reactant_resonance=False, product_resonance=False, save_order=save_order)
 
         reactants = reaction.reactants
         products = reaction.products
@@ -3166,7 +3167,7 @@ class KineticsFamily(Database):
             rs = template_rxn_map[parent.label]
             for q, rxn in enumerate(rs):
                 for j in range(q):
-                    if not same_species_lists(rxn.reactants, rs[j].reactants, generate_initial_map=True):
+                    if not same_species_lists(rxn.reactants, rs[j].reactants, generate_initial_map=True, save_order=self.save_order):
                         for p, atm in enumerate(parent.item.atoms):
                             if atm.reg_dim_atm[0] != atm.reg_dim_atm[1]:
                                 logging.error('atom violation')

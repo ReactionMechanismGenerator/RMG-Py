@@ -147,7 +147,8 @@ def analyze_molecule(mol):
     return features
 
 
-def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=False, filter_structures=True):
+def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=False,
+                                  filter_structures=True, save_order=False):
     """
     Generate and return all of the resonance structures for the input molecule.
 
@@ -237,7 +238,7 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
                                    filter_structures=filter_structures)
 
     if filter_structures:
-        return filtration.filter_structures(mol_list, features=features)
+        return filtration.filter_structures(mol_list, features=features, save_order=save_order)
 
     return mol_list
 
