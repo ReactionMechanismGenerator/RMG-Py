@@ -126,6 +126,16 @@ class Entry(object):
     def __repr__(self):
         return '<Entry index={0:d} label="{1}">'.format(self.index, self.label)
 
+    def get_metal(self):
+        """
+        retrieve the metal for the entry
+        """
+        if self.facet is None:
+            metal = self.metal # could be None
+        else:
+            metal = self.metal + self.facet
+        return metal
+
     def get_all_descendants(self):
         """
         retrieve all the descendants of entry
