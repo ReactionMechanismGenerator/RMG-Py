@@ -295,11 +295,16 @@ class KineticsLibrary(Database):
         """
         for entry0 in self.entries.values():
             reaction0 = entry0.item
+            metal0 = entry0.get_metal()
             if not reaction0.duplicate:
                 # This reaction is not marked as a duplicate reaction
                 # This means that if we find any duplicate reactions, it is an error
                 for entry in self.entries.values():
                     reaction = entry.item
+                    metal = entry.get_metal()
+                    if metal0 != metal:
+                        # the metals don't match, so they are not duplicate reactions
+                        continue
                     if reaction0 is not reaction and reaction0.is_isomorphic(reaction):
                         # We found a duplicate reaction that wasn't marked!
                         # RMG requires all duplicate reactions to be marked, unlike CHEMKIN
