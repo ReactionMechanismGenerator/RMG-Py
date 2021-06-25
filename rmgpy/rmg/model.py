@@ -228,6 +228,7 @@ class CoreEdgeReactionModel:
         self.new_surface_rxns_loss = set()
         self.solvent_name = ''
         self.surface_site_density = None
+        self.correct_library_kinetics = False
         self.unrealgroups = [Group().from_adjacency_list("""
             1  O u0 p2 c0 {2,S} {4,S}
             2  O u0 p2 c0 {1,S} {3,S}
@@ -1549,6 +1550,9 @@ class CoreEdgeReactionModel:
                     submit(spec, self.solvent_name)
 
                 rxn.fix_barrier_height(force_positive=True)
+            elif self.correct_library_kinetics and rxn.reversible:
+                rxn.fix_barrier_height()
+
             self.add_reaction_to_core(rxn)
 
         # Check we didn't introduce unmarked duplicates
@@ -1643,6 +1647,8 @@ class CoreEdgeReactionModel:
             # Note that we haven't actually evaluated any fluxes at this point
             # Instead, we remove the comment below if the reaction is moved to
             # the core later in the mechanism generation
+            if self.correct_library_kinetics and rxn.reversible:
+                rxn.fix_barrier_height()
             if not (self.pressure_dependence and rxn.elementary_high_p and rxn.is_unimolecular()
                     and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius) and \
                     (self.pressure_dependence.maximum_atoms is None or self.pressure_dependence.maximum_atoms >= \
