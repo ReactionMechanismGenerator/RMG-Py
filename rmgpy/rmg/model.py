@@ -976,12 +976,12 @@ class CoreEdgeReactionModel:
                     keep_reverse = gibbs_is_positive and is_forward and rev_is_forward
                     reason = "Both directions are estimates, but this direction is exergonic."
 
-                if keep_reverse:
-                    kinetics = rev_kinetics
-                    source = rev_source
-                    entry = rev_entry
-                    is_forward = not rev_is_forward
-                    G298 = -G298
+                # if keep_reverse:
+                #     kinetics = rev_kinetics
+                #     source = rev_source
+                #     entry = rev_entry
+                #     is_forward = not rev_is_forward
+                #     G298 = -G298
 
                 if self.verbose_comments:
                     kinetics.comment += "\nKinetics were estimated in this direction instead of the reverse because:\n{0}".format(reason)
