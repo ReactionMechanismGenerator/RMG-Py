@@ -52,6 +52,7 @@ Currently supported resonance types:
 """
 
 import logging
+from rmgpy.molecule.fragment import CuttingLabel
 
 import cython
 
@@ -531,11 +532,13 @@ def generate_N5dc_radical_resonance_structures(mol):
     Generate all of the resonance structures formed by radical and lone pair shifts mediated by an N5dc atom.
     """
     cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule)
-    cython.declare(atom=Atom, atom2=Atom, atom3=Atom)
+    cython.declare(atom=Vertex, atom2=Vertex, atom3=Vertex)
     cython.declare(v1=Vertex, v2=Vertex)
 
     structures = []
     for atom in mol.vertices:
+        # if isinstance(atom,CuttingLabel):
+        #     continue
         if atom.atomtype.label == 'N5dc' and atom.radical_electrons == 0 and len(atom.edges) == 3:
             paths = pathfinder.find_N5dc_radical_delocalization_paths(atom)
             for atom2, atom3 in paths:
