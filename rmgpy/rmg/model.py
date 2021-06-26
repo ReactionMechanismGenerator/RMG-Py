@@ -2019,7 +2019,9 @@ def get_family_library_object(label):
     except KeyError:
         pass
 
-    raise Exception('Could not retrieve the family/library: {}'.format(label))
+    raise Exception(f"Could not retrieve the family/library: {label} "
+                    f"from families {list(kinetics.families.keys())} "
+                    f"and libraries {list(kinetics.libraries.keys())}.")
 
 
 def get_key(spc):
