@@ -207,6 +207,7 @@ def read_kinetics_entry(entry, species_dict, Aunits, Eunits):
         kinetics.update({
             'chebyshev coefficients': [],
             'efficiencies': {},
+            'coverage dependence': {}
         })
 
         # Note that the subsequent lines could be in any order
@@ -288,6 +289,8 @@ def read_kinetics_entry(entry, species_dict, Aunits, Eunits):
             reaction.kinetics = kinetics['arrhenius high']
         elif 'sticking coefficient' in kinetics:
             reaction.kinetics = kinetics['sticking coefficient']
+        elif 'surface arrhenius' in kinetics:
+            reaction.kinetics = kinetics['surface arrhenius']
         else:
             raise ChemkinError(
                 'Unable to understand all additional information lines for reaction {0}.'.format(entry))
@@ -448,6 +451,25 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
     if 'DUP' in line:
         # Duplicate reaction
         reaction.duplicate = True
+
+    elif 'COV' in line:
+        k = kinetics['arrhenius high']
+        kinetics['surface arrhenius'] = _kinetics.SurfaceArrhenius(
+            A=(k.A.value, kunits),
+            n=k.n,
+            Ea=k.Ea,
+            T0=k.T0,
+        )
+        del kinetics['arrhenius high']
+
+        tokens = tokens[1].split()
+        kinetics['coverage dependence'][species_dict[tokens[0].strip()]] = {'E': (tokens[1].strip(), Eunits), 'm': tokens[2].strip(), 'a':tokens[3].strip()}
+        try:
+            # is a sticking coefficient
+            kinetics['sticking coefficient'][species_dict[tokens[0].strip()]] = {'E': (tokens[1].strip(), Eunits), 'm': tokens[2].strip(), 'a':tokens[3].strip()}
+        except KeyError:
+            # is a not a sticking coefficient
+            kinetics['surface arrhenius'].coverage_dependence[species_dict[tokens[0].strip()]] = {'E': (tokens[1].strip(), 'J/mol'), 'm': tokens[2].strip(), 'a':tokens[3].strip()}
 
     elif 'LOW' in line:
         # Low-pressure-limit Arrhenius parameters
