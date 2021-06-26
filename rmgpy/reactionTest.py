@@ -231,6 +231,17 @@ class TestSurfaceReaction(unittest.TestCase):
                                       comment="""Approximate rate""")
         )
 
+        # adding coverage dependent reaction
+        self.rxn_covdep = Reaction(
+            reactants=[s_h2, s_x, s_x],
+            products=[s_hx, s_hx],
+            kinetics=SurfaceArrhenius(A=(9.05e18, 'cm^5/(mol^2*s)'),
+                                      n=0.5,
+                                      Ea=(5.0, 'kJ/mol'),
+                                      T0=(1.0, 'K'),
+                                      coverage_dependence={Species().from_adjacency_list('1 X u0 p0 c0'): {'E': (0.1, 'J/mol'), 'm': -1.0, 'a': 1.0},
+                                                           Species().from_adjacency_list('1 X u0 p0 c0 {2,S}\n2 H u0 p0 c0 {1,S}'): {'E': (0.2, 'J/mol'), 'm': -2.0, 'a': 2.0}}))
+
     def test_is_surface_reaction_species(self):
         """Test is_surface_reaction for reaction based on Species """
         self.assertTrue(self.rxn1s.is_surface_reaction())
