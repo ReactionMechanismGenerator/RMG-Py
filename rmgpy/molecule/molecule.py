@@ -2629,6 +2629,28 @@ class Molecule(Graph):
 
         return dict(bond_count)
 
+    def get_surface_sites(self):
+        """
+        Get a list of surface site atoms in the molecule.
+        Returns:
+            List(Atom): A list containing the surface site atoms in the molecule
+        """
+        cython.declare(atom=Atom)
+        return [atom for atom in self.atoms if atom.is_surface_site()]
+
+    def get_adatoms(self):
+        """
+        Get a list of adatoms in the molecule.
+        Returns:
+            List(Atom): A list containing the adatoms in the molecule
+        """
+        cython.declare(surface_site=Atom, adatoms=list)
+        adatoms = []
+        for surface_site in self.get_surface_sites():
+            if surface_site.bonds:
+                adatoms.append(list(surface_site.bonds.keys())[0])
+        return adatoms
+
 
 # this variable is used to name atom IDs so that there are as few conflicts by 
 # using the entire space of integer objects
