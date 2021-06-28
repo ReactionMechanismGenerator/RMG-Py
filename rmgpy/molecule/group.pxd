@@ -188,6 +188,8 @@ cdef class Group(Graph):
 
     cpdef bint contains_surface_site(self) except -2
 
+    cpdef list get_surface_sites(self)
+
     cpdef bint is_aromatic_ring(self)
 
     cpdef bint standardize_atomtype(self)
