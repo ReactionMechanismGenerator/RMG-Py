@@ -157,7 +157,7 @@ cdef class SurfaceReactor(ReactionSystem):
                                        conditions=conditions,
                                        )
         cdef np.ndarray[np.int_t, ndim=1] species_on_surface, reactions_on_surface
-        cdef int index
+        cdef Py_ssize_t index
         #: 1 if it's on a surface, 0 if it's in the gas phase
         reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), np.int)
         species_on_surface = np.zeros((self.num_core_species), np.int)
@@ -345,8 +345,8 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef np.ndarray[np.int_t, ndim=2] ir, ip, inet
         cdef np.ndarray[np.int_t, ndim=1] reactions_on_surface, species_on_surface
         cdef np.ndarray[np.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
-        cdef int num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
-        cdef int i, j, z, first, second, third
+        cdef Py_ssize_t num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
+        cdef Py_ssize_t i, j, z, first, second, third
         cdef double k, V, reaction_rate, surface_volume_ratio_si
         cdef np.ndarray[np.float64_t, ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates
         cdef np.ndarray[np.float64_t, ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
