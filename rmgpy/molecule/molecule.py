@@ -2651,6 +2651,130 @@ class Molecule(Graph):
                 adatoms.extend(surface_site.bonds.keys())
         return adatoms
 
+    def get_desorbed_molecules(self):
+        """
+        Get a list of desorbed molecules by desorbing the molecule from the surface.
+        
+        Returns a list of Molecules.  Each molecule's atoms will be labeled corresponding to
+        the bond order with the surface:
+        '*1' - Single bond
+        '*2' - double bond
+        '*3' - triple bond
+        '*4' - quadruple bond
+        """
+        if not self.contains_surface_site():
+            return []
+
+        dummy_molecule = self.copy(deep=True)
+        dummy_molecule.clear_labeled_atoms()
+        sites_to_remove = dummy_molecule.get_surface_sites()
+        adsorbed_atoms = []
+        for site in sites_to_remove:
+            numbonds = len(site.bonds)
+            if numbonds == 0:
+                # vanDerWaals
+                pass
+            else:
+                assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
+                bonded_atom = list(site.bonds.keys())[0]
+                adsorbed_atoms.append(bonded_atom)
+                bond = site.bonds[bonded_atom]
+                dummy_molecule.remove_bond(bond)
+                if bond.is_single():
+                    bonded_atom.increment_radical()
+                    bonded_atom.label = '*1'
+                elif bond.is_double():
+                    bonded_atom.increment_radical()
+                    bonded_atom.increment_radical()
+                    bonded_atom.label = '*2'
+                elif bond.is_triple():
+                    bonded_atom.increment_radical()
+                    bonded_atom.increment_lone_pairs()
+                    bonded_atom.label = '*3'
+                elif bond.is_quadruple():
+                    bonded_atom.increment_radical()
+                    bonded_atom.increment_radical()
+                    bonded_atom.increment_lone_pairs()
+                    bonded_atom.label = '*4'
+                else:
+                    raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
+            dummy_molecule.remove_atom(site)
+
+        desorbed_molecules = [dummy_molecule.copy(deep=True)]
+        if len(adsorbed_atoms) > 1:
+            # multidentate adsorption.
+            # Try to turn adjacent biradical into a bond.
+            for i,j in itertools.combinations(range(len(adsorbed_atoms)),2):
+                try:
+                    atom0 = adsorbed_atoms[i]
+                    atom1 = adsorbed_atoms[j]
+                    bond = atom0.bonds[atom1]
+                except KeyError:
+                    pass # the two adsorbed atoms are not bonded to each other
+                else:
+                    if (atom0.radical_electrons and atom1.radical_electrons and bond.order < 3):
+                        bond.increment_order()
+                        atom0.decrement_radical()
+                        atom1.decrement_radical()
+                        desorbed_molecules.append(dummy_molecule.copy(deep=True))
+                        if (atom0.radical_electrons and
+                                atom1.radical_electrons and
+                                bond.order < 3):
+                            # There are still spare adjacenct radicals, so do it again
+                            bond.increment_order()
+                            atom0.decrement_radical()
+                            atom1.decrement_radical()
+                            desorbed_molecules.append(dummy_molecule.copy(deep=True))
+                        if (atom0.lone_pairs and
+                                atom1.lone_pairs and 
+                                bond.order < 3):
+                            # X#C-C#X will end up with .:C-C:. in gas phase
+                            # and we want to get to .C#C. but not :C=C:
+                            bond.increment_order()
+                            atom0.decrement_lone_pairs()
+                            atom0.increment_radical()
+                            atom1.decrement_lone_pairs()
+                            atom1.increment_radical()
+                            desorbed_molecules.append(dummy_molecule.copy(deep=True))
+                    #For bidentate CO because we want C[-1]#O[+1] but not .C#O.
+                    if (bond.order == 3 and atom0.radical_electrons and 
+                        atom1.radical_electrons and 
+                        (atom0.lone_pairs or atom1.lone_pairs)):
+                        atom0.decrement_radical()
+                        atom1.decrement_radical()
+                        if atom0.lone_pairs:
+                            atom1.increment_lone_pairs()
+                        else:
+                            atom0.increment_lone_pairs()
+                        desorbed_molecules.append(dummy_molecule.copy(deep=True))
+
+        new_mols = []
+        for dummy_molecule in desorbed_molecules:
+            try:
+                dummy_molecule.get_labeled_atoms('*2')
+            except ValueError:
+                # No *2 atoms
+                continue
+            new_mol = dummy_molecule.copy(deep=True)
+            for atom in new_mol.get_labeled_atoms('*2'):
+                if atom.radical_electrons == 2:
+                    atom.decrement_radical()
+                    atom.decrement_radical()
+                    atom.increment_lone_pairs()
+                    new_mols.append(new_mol.copy(deep=True))
+        desorbed_molecules.extend(new_mols)
+
+        for dummy_molecule in desorbed_molecules[:]:
+            try:
+                dummy_molecule.update_connectivity_values()
+                dummy_molecule.update()
+            except:
+                desorbed_molecules.remove(dummy_molecule)
+                logging.debug(f"Removing {dummy_molecule} from possible structure list:\n{dummy_molecule.to_adjacency_list()}")
+            else:
+                logging.debug("After removing from surface:\n" + dummy_molecule.to_adjacency_list())
+
+        return desorbed_molecules
 
 # this variable is used to name atom IDs so that there are as few conflicts by 
 # using the entire space of integer objects
