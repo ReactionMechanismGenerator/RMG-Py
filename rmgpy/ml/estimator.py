@@ -60,7 +60,7 @@ class MLEstimator:
             EnsembleDimeNetPPCalculator,
         )
         from gnns_thermo.testing import get_chkpt
-        from gnns_thermo.config import ModelInferenceEnum
+        from gnns_thermo.config.enums import ModelInferenceEnum
 
         self.model_type = model_type  # for logging
         self.inference_type = inference_type
@@ -99,12 +99,23 @@ class MLEstimator:
         # make calculator objects here
         # ensemble calculators will raise an error here if a sinlge checkpoint is given
         self.hf298_estimator = calculator_type(
-            model_type, "cpu", h298_chkpt, h298_config
+            model_type=model_type,
+            device="cpu",
+            models_path=h298_chkpt,
+            config_file=h298_config,
         )
         self.s298_estimator = calculator_type(
-            model_type, "cpu", s298_chkpt, s298_config
+            model_type=model_type,
+            device="cpu",
+            models_path=s298_chkpt,
+            config_file=s298_config,
         )
-        self.cp_estimator = calculator_type(model_type, "cpu", cp_chkpt, cp_config)
+        self.cp_estimator = calculator_type(
+            model_type=model_type,
+            device="cpu",
+            models_path=cp_chkpt,
+            config_file=cp_config,
+        )
 
     def get_thermo_data(
         self, molecule: Union[Molecule, str], mode: FeatEnum = FeatEnum.from_rdkit_mol
@@ -144,8 +155,10 @@ class MLEstimator:
         hf298, hf298_std = hf298.astype(np.float64), hf298_std.astype(np.float64)
         s298, s298_std = s298.astype(np.float64), s298_std.astype(np.float64)
 
-        cp0, cpinf = cp[0].astype(np.float64), cp[1].astype(np.float64)
-        cp = cp[2:].astype(np.float64)
+        cp0 = molecule.calculate_cp0()
+        cpinf = molecule.calculate_cpinf()
+
+        cp = cp.astype(np.float64)
 
         # Set uncertainties to std
         thermo = ThermoData(

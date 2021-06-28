@@ -49,7 +49,7 @@ class TestMLEstimator(unittest.TestCase):
             "attn_mpn", inference_type="single_model"
         )
         # ensemble mpnn with sum pooling
-        self.ml_estimator_mpnn = MLEstimator("mpnn")
+        # self.ml_estimator_mpnn = MLEstimator("mpnn")
         # dimenetpp with xTB1 geometry optimization
         self.ml_estimator_dimenetpp = MLEstimator("dimenetpp")
 
@@ -59,7 +59,7 @@ class TestMLEstimator(unittest.TestCase):
         """
         smi = "C1C2C1C2"
         thermo = self.ml_estimator.get_thermo_data(smi, mode="from_smiles")
-        thermo_mpnn = self.ml_estimator_mpnn.get_thermo_data(smi, mode="from_smiles")
+        # thermo_mpnn = self.ml_estimator_mpnn.get_thermo_data(smi, mode="from_smiles")
         self.assertTrue(
             thermo.comment.startswith("ML Estimation using featurizer from_smiles")
         )
@@ -76,9 +76,10 @@ class TestMLEstimator(unittest.TestCase):
             abs(thermo.H298.uncertainty), 0.0, msg="No uncertainty values"
         )
         # only check uncertainty for other models
-        self.assertGreater(
-            abs(thermo_mpnn.H298.uncertainty), 0.0, msg="No uncertainty values"
-        )
+        # self.assertGreater(
+        # abs(thermo_mpnn.H298.uncertainty), 0.0, msg="No uncertainty values"
+
+    # )
 
     def test_get_thermo_data_from_rdkit_mol_ensemble(self):
         """
@@ -86,7 +87,7 @@ class TestMLEstimator(unittest.TestCase):
         """
         smi = "C1C2C1C2"
         thermo = self.ml_estimator.get_thermo_data(smi, mode="from_rdkit_mol")
-        thermo_mpnn = self.ml_estimator_mpnn.get_thermo_data(smi, mode="from_rdkit_mol")
+        # thermo_mpnn = self.ml_estimator_mpnn.get_thermo_data(smi, mode="from_rdkit_mol")
         self.assertTrue(
             thermo.comment.startswith("ML Estimation using featurizer from_rdkit")
         )
@@ -104,9 +105,10 @@ class TestMLEstimator(unittest.TestCase):
             abs(thermo.H298.uncertainty), 0.0, msg="No uncertainty values"
         )
         # only check uncertainty for other models
-        self.assertGreater(
-            abs(thermo_mpnn.H298.uncertainty), 0.0, msg="No uncertainty values"
-        )
+
+    # self.assertGreater(
+    # abs(thermo_mpnn.H298.uncertainty), 0.0, msg="No uncertainty values"
+    # )
 
     def test_get_thermo_data_from_rdkit_mol_single_model(self):
         """
