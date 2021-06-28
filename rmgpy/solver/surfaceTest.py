@@ -184,7 +184,11 @@ class SurfaceReactorCheck(unittest.TestCase):
         )
 
         ch3x = Species(
-            molecule=[Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")],
+            molecule=[Molecule().from_adjacency_list("""1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 X u0 p0 c0 {1,S}""")],
             thermo=NASA(
                 polynomials=[
                     NASAPolynomial(
@@ -194,7 +198,7 @@ class SurfaceReactorCheck(unittest.TestCase):
                         coeffs=[3.62557, 0.00739512, -2.43797e-06, 1.86159e-10, 3.6485e-14, -5187.22, -18.9668],
                         Tmin=(1000, 'K'), Tmax=(2000, 'K'))],
                 Tmin=(298, 'K'), Tmax=(2000, 'K'), E0=(-39.1285, 'kJ/mol'),
-                comment="""Thermo library: surfaceThermo""")
+                comment="""Thermo library: surfaceThermoNi111""")
         )
 
         rxn1 = Reaction(reactants=[ch3, x],

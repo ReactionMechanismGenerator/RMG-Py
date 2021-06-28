@@ -141,7 +141,11 @@ class TestSurfaceReaction(unittest.TestCase):
         m_x = Molecule().from_adjacency_list("1 X u0 p0")
         m_hx = Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
         m_ch3 = Molecule().from_smiles("[CH3]")
-        m_ch3x = Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
+        m_ch3x = Molecule().from_adjacency_list("""1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 X u0 p0 c0 {1,S}""")
 
         s_h2 = Species(
             molecule=[m_h2],
@@ -181,14 +185,13 @@ class TestSurfaceReaction(unittest.TestCase):
 
         s_ch3x = Species(
             molecule=[m_ch3x],
-            thermo=NASA(polynomials=[NASAPolynomial(
-                coeffs=[-0.552219, 0.026442, -3.55617e-05, 2.60044e-08, -7.52707e-12, -4433.47, 0.692144],
-                Tmin=(298, 'K'), Tmax=(1000, 'K')),
-                                     NASAPolynomial(
-                                         coeffs=[3.62557, 0.00739512, -2.43797e-06, 1.86159e-10, 3.6485e-14, -5187.22,
-                                                 -18.9668], Tmin=(1000, 'K'), Tmax=(2000, 'K'))],
+            thermo=NASA(polynomials=[
+                NASAPolynomial(coeffs=[-0.552219, 0.026442, -3.55617e-05, 2.60044e-08, -7.52707e-12, -4433.47, 0.692144],
+                               Tmin=(298, 'K'), Tmax=(1000, 'K')),
+                NASAPolynomial(coeffs=[3.62557, 0.00739512, -2.43797e-06, 1.86159e-10, 3.6485e-14, -5187.22, -18.9668],
+                               Tmin=(1000, 'K'), Tmax=(2000, 'K'))],
                         Tmin=(298, 'K'), Tmax=(2000, 'K'), E0=(-39.1285, 'kJ/mol'),
-                        comment="""Thermo library: surfaceThermo""")
+                        comment="""Thermo library: surfaceThermoNi111""")
         )
 
         rxn1s = Reaction(reactants=[s_h2, s_x, s_x],
