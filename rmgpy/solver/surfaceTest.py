@@ -331,6 +331,7 @@ class SurfaceReactorCheck(unittest.TestCase):
             initial_surface_coverages={x: 1.0},
             surface_volume_ratio=(1e1, 'm^-1'),
             surface_site_density=(2.72e-9, 'mol/cm^2'),
+            coverage_dependence=True,
             termination=[])
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
@@ -452,6 +453,7 @@ class SurfaceReactorCheck(unittest.TestCase):
             initial_surface_coverages={x: 1.0},
             surface_volume_ratio=(1., 'm^-1'),
             surface_site_density=(2.72e-9, 'mol/cm^2'),
+            coverage_dependence=True,
             termination=[])
         # in chemkin, the sites are mostly occupied in about 1e-8 seconds.
 
