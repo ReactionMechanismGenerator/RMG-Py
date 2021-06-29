@@ -49,9 +49,7 @@ class TestMLEstimator(unittest.TestCase):
             "attn_mpn", inference_type="single_model"
         )
         # ensemble mpnn with sum pooling
-        self.ml_estimator_mpnn = MLEstimator("mpnn")
-        # dimenetpp with xTB1 geometry optimization
-        self.ml_estimator_dimenetpp = MLEstimator("dimenetpp")
+        # self.ml_estimator_mpnn = MLEstimator("mpnn")
 
     def test_get_thermo_data_from_smiles_ensemble(self):
         """
@@ -59,16 +57,16 @@ class TestMLEstimator(unittest.TestCase):
         """
         smi = "C1C2C1C2"
         thermo = self.ml_estimator.get_thermo_data(smi, mode="from_smiles")
-        thermo_mpnn = self.ml_estimator_mpnn.get_thermo_data(smi, mode="from_smiles")
+        # thermo_mpnn = self.ml_estimator_mpnn.get_thermo_data(smi, mode="from_smiles")
         self.assertTrue(
             thermo.comment.startswith("ML Estimation using featurizer from_smiles")
         )
-        # regression tests with qm9 all systematic datasets (april 20)
+        # regression tests with all subsets (June 28)
         self.assertAlmostEqual(
-            thermo.Cp0.value_si, 33.15302276611328, 1, msg="Cp0 regression error"
+            thermo.Cp0.value_si, 33.257888, 1, msg="Cp0 regression error"
         )
         self.assertAlmostEqual(
-            thermo.CpInf.value_si, 232.6637420654297, 1, msg="CpInf regression error"
+            thermo.CpInf.value_si, 232.805216, 1, msg="CpInf regression error"
         )
         self.assertEqual(len(thermo.Cpdata.value_si), 9)
         # check we get some uncertainty values
@@ -76,9 +74,10 @@ class TestMLEstimator(unittest.TestCase):
             abs(thermo.H298.uncertainty), 0.0, msg="No uncertainty values"
         )
         # only check uncertainty for other models
-        self.assertGreater(
-            abs(thermo_mpnn.H298.uncertainty), 0.0, msg="No uncertainty values"
-        )
+        # self.assertGreater(
+        # abs(thermo_mpnn.H298.uncertainty), 0.0, msg="No uncertainty values"
+
+    # )
 
     def test_get_thermo_data_from_rdkit_mol_ensemble(self):
         """
@@ -86,17 +85,17 @@ class TestMLEstimator(unittest.TestCase):
         """
         smi = "C1C2C1C2"
         thermo = self.ml_estimator.get_thermo_data(smi, mode="from_rdkit_mol")
-        thermo_mpnn = self.ml_estimator_mpnn.get_thermo_data(smi, mode="from_rdkit_mol")
+        # thermo_mpnn = self.ml_estimator_mpnn.get_thermo_data(smi, mode="from_rdkit_mol")
         self.assertTrue(
             thermo.comment.startswith("ML Estimation using featurizer from_rdkit")
         )
 
-        # regression tests with qm9 all systematic datasets (april 20)
+        # regression tests with all subsets (June 28)
         self.assertAlmostEqual(
-            thermo.Cp0.value_si, 33.15302276611328, 1, msg="Cp0 regression error"
+            thermo.Cp0.value_si, 33.257888, 1, msg="Cp0 regression error"
         )
         self.assertAlmostEqual(
-            thermo.CpInf.value_si, 232.6637420654297, 1, msg="CpInf regression error"
+            thermo.CpInf.value_si, 232.805216, 1, msg="CpInf regression error"
         )
         self.assertEqual(len(thermo.Cpdata.value_si), 9)
         # check we get some uncertainty values
@@ -104,9 +103,10 @@ class TestMLEstimator(unittest.TestCase):
             abs(thermo.H298.uncertainty), 0.0, msg="No uncertainty values"
         )
         # only check uncertainty for other models
-        self.assertGreater(
-            abs(thermo_mpnn.H298.uncertainty), 0.0, msg="No uncertainty values"
-        )
+
+    # self.assertGreater(
+    # abs(thermo_mpnn.H298.uncertainty), 0.0, msg="No uncertainty values"
+    # )
 
     def test_get_thermo_data_from_rdkit_mol_single_model(self):
         """
@@ -125,17 +125,19 @@ class TestMLEstimator(unittest.TestCase):
         """
         Test that we can make a prediction using MLEstimator using gnns_thermo dimenetpp single model and smiles as input.
         """
+        # dimenetpp with xTB1 geometry optimization
+        ml_estimator_dimenetpp = MLEstimator("dimenetpp")
         smi = "C1C2C1C2"
-        thermo = self.ml_estimator_dimenetpp.get_thermo_data(smi, mode="from_smiles")
+        thermo = ml_estimator_dimenetpp.get_thermo_data(smi, mode="from_smiles")
         self.assertTrue(
             thermo.comment.startswith("ML Estimation using featurizer from_smiles")
         )
         self.assertAlmostEqual(
-            thermo.Cp0.value_si, 33.989723205566406, 1, msg="Cp0 regression error"
+            thermo.Cp0.value_si, 33.257888, 1, msg="Cp0 regression error"
         )
-        # self.assertAlmostEqual(
-        # thermo.CpInf.value_si, 232.6637420654297, 1, msg="CpInf regression error"
-        # )
+        self.assertAlmostEqual(
+            thermo.CpInf.value_si, 232.805216, 1, msg="CpInf regression error"
+        )
         self.assertEqual(len(thermo.Cpdata.value_si), 9)
         # check we get some uncertainty values
         # self.assertGreater(
