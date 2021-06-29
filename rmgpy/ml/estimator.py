@@ -142,7 +142,7 @@ class MLEstimator:
         if self.inference_type == "ensemble":
             hf298, hf298_std = hf298_pred.mean(0), hf298_pred.std(0)
             s298, s298_std = s298_pred.mean(0), s298_pred.std(0)
-            cp, cp_std = cp_pred.mean(0), cp_pred.std(0)
+            cp, cp_std = cp_pred.mean(1), cp_pred.std(1)
             # explcit cast for cp
         elif self.inference_type == "single_model":
             # some weird quantity errors and this is a hack
