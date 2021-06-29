@@ -34,5 +34,5 @@ Optional arguments::
     -r TOL, --ratetol TOL  Lowest fractional species rate to show
     -t S, --tstep S        Multiplicative factor to use between consecutive time points
 
-This method is also available to use with a web browser from the RMG website: `Generate Flux Diagram <http://rmg.mit.edu/tools/flux>`_.
+This method is also available to use with a web browser from the RMG website: `Generate Flux Diagram <https://rmg.mit.edu/tools/flux>`_.
 

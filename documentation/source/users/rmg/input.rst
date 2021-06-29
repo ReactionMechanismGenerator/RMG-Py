@@ -842,7 +842,7 @@ uncertainties based on the estimation method used by RMG. Actual uncertainties a
 are not used. Thus, the output uncertainties reported by these analyses should be viewed with this in mind.
 
 .. [Cantera] Goodwin, D.G.; Moffat, H.K.; Speth, R.L. Cantera: An object-oriented software toolkit for
-                chemical kinetics, thermodynamics, and transport processes; http://www.cantera.org
+                chemical kinetics, thermodynamics, and transport processes; https://www.cantera.org/
 .. [MUQ] Conrad, P.R.; Parno, M.D.; Davis, A.D.; Marzouk, Y.M. MIT Uncertainty Quantification Library (MUQ); http://muq.mit.edu/
 .. [Gao2016] Gao, C. W.; Ph.D. Thesis. 2016.
 

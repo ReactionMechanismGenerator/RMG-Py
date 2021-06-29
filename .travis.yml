@@ -43,7 +43,7 @@ jobs:
         - conda config --append channels conda-forge
         - conda config --set anaconda_upload yes
       script:
-        - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
+        - travis_wait 60 conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
     - os: osx
       install:
         # Setup conda build
@@ -56,4 +56,4 @@ jobs:
         - conda config --append channels conda-forge
         - conda config --set anaconda_upload yes
       script:
-        - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
+        - travis_wait 60 conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda

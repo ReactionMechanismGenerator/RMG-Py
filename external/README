@@ -30,6 +30,7 @@ Brute force symmetry determination program and the associated test set.
 (C) 1996, 2003 S. Patchkovskii, Serguei.Patchkovskii@sympatico.ca
 Published under GNU General Public License
 http://www.cobalt.chem.ucalgary.ca/ps/symmetry/
+(now mirrored at https://github.com/nquesada/symmetry)
 This is based on Revision 1.16  2003/04/04
 This program is no longer stored in the external programs folder but is instead found on the anaconda platform.
 

@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -41,21 +41,25 @@ cdef class RateUncertainty(object):
     on Log(k) and a lognormal distribution on k by mu and var at a single temperature Tref also 
     includes potentially useful uncertainty treatment variables
     N = number of samples used to generate the distribution 
+    data_mean is the mean of the data points fit to the uncertainty
     correlation = label identifying source of estimate for correlated error treatment
     Note that correlated errors are expected to be associated only with mu (the bias of the distribution)
     """
 
-    def __init__(self, mu, var, Tref, N=None, correlation=None):
+    def __init__(self, mu, var, Tref, N=None, data_mean = None, correlation=None):
         self.Tref = Tref
         self.correlation = correlation
         self.mu = mu
         self.var = var
         self.N = N
+        self.data_mean
 
     def __repr__(self):
         s = "RateUncertainty(mu={mu}, var={var}, Tref={Tref},".format(mu=self.mu, var=self.var, Tref=self.Tref)
         if self.N is not None:
             s += " N={0!r},".format(self.N)
+        if self.data_mean is not None:
+            s += " data_mean={0!r},".format(self.data_mean)
         if self.correlation is not None:
             s += " correlation={0!r},".format(self.correlation)
         s += ")"

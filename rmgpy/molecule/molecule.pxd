@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -58,6 +58,8 @@ cdef class Atom(Vertex):
 
     cpdef bint is_non_hydrogen(self)
 
+    cpdef bint is_halogen(self)
+
     cpdef bint is_carbon(self)
 
     cpdef bint is_oxygen(self)
@@ -75,7 +77,7 @@ cdef class Atom(Vertex):
     cpdef bint is_iodine(self)
 
     cpdef bint is_nos(self)
-    
+
     cpdef bint is_surface_site(self)
     
     cpdef increment_radical(self)
@@ -243,11 +245,19 @@ cdef class Molecule(Graph):
 
     cpdef bint has_lone_pairs(self) except -2
 
+    cpdef bint has_halogen(self) except -2
+
     cpdef bint is_aryl_radical(self, list aromatic_rings=?) except -2
 
     cpdef float calculate_symmetry_number(self) except -1
 
-    cpdef list generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
+    cpdef list generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?, bint save_order=?)
+
+    cpdef update_lone_pairs(self)
+
+    cpdef dict saturate_radicals(self, bint raise_atomtype_exception=?)
+
+    cpdef replace_halogen_with_hydrogen(self, bint raise_atomtype_exception=?)
 
     cpdef identify_ring_membership(self)
 

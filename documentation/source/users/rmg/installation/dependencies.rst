@@ -58,10 +58,10 @@ License Restrictions on Dependencies
 
 All of RMG's dependencies except the ones listed below are freely available and compatible with RMG's open source MIT license (though the specific nature of their licenses vary). 
 
-* **pydas**: The DAE solvers used in the simulations come from `Linda Petzold’s research group <http://www.engineering.ucsb.edu/~cse/software.html>`_ at UCSB.  For running sensitivity analysis in RMG, the DASPK 3.1 solver is required, which "is subject to copyright restrictions” for non-academic use. Please visit their website for more details. To run RMG without this restriction, one may switch to compiling with the DASSL solver instead in RMG, which is "available in the public domain.”
+* **pydas**: The DAE solvers used in the simulations come from `Linda Petzold’s research group <https://cse.cs.ucsb.edu/software/>`_ at UCSB.  For running sensitivity analysis in RMG, the DASPK 3.1 solver is required, which "is subject to copyright restrictions” for non-academic use. Please visit their website for more details. To run RMG without this restriction, one may switch to compiling with the DASSL solver instead in RMG, which is "available in the public domain.”
 
 If you wish to do on-the-fly quantum chemistry calculations of thermochemistry (advisable for fused cyclic species in particular, where the ring corrections to group additive estimates are lacking),
 the then you will need the third-party software for the QM calculations:
 
-* **gaussian**: Gaussian03 and Gaussian09 are currently supported and commercially available.  See `http://www.gaussian.com <http://www.gaussian.com>`_ for more details.  
+* **gaussian**: Gaussian03 and Gaussian09 are currently supported and commercially available.  See `https://gaussian.com <https://gaussian.com>`_ for more details.  
 * **mopac** MOPAC can be found at `http://openmopac.net/ <http://openmopac.net/>`_. Though it is not free for industrial use, it is free for non-profit and academic research use.

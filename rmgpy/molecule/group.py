@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -217,15 +217,15 @@ class GroupAtom(Vertex):
 
         The 'radicalElectron' attribute can be an empty list if we use the wildcard
         argument ux in the group definition. In this case, we will have this
-        function set the atom's 'radicalElectron' to a list allowing 1, 2, 3,
-        or 4 radical electrons.
+        function set the atom's 'radicalElectron' to a list allowing from `radical`
+        up to 4 radical electrons.
         """
         radical_electrons = []
         if any([len(atomtype.increment_radical) == 0 for atomtype in self.atomtype]):
             raise ActionError('Unable to update GroupAtom due to GAIN_RADICAL action: '
                               'Unknown atom type produced from set "{0}".'.format(self.atomtype))
         if not self.radical_electrons:
-            radical_electrons = [1, 2, 3, 4]
+            radical_electrons = [1, 2, 3, 4][radical-1:]
         else:
             for electron in self.radical_electrons:
                 radical_electrons.append(electron + radical)
@@ -276,7 +276,7 @@ class GroupAtom(Vertex):
 
         # Add a lone pair to a group atom with none
         if not self.lone_pairs:
-            self.lone_pairs = [1, 2, 3, 4]  # set to a wildcard of any number greater than 0
+            self.lone_pairs = [1, 2, 3, 4][pair-1:]  # set to a wildcard of any number greater than or equal to `pair`
         # Add a lone pair to a group atom that already has at least one lone pair
         else:
             for x in self.lone_pairs:
@@ -499,7 +499,7 @@ class GroupAtom(Vertex):
 
     def is_nitrogen(self):
         """
-        Return ``True`` if the atom represents an sulfur atom or ``False`` if not.
+        Return ``True`` if the atom represents a nitrogen atom or ``False`` if not.
         """
         all_nitrogen = [ATOMTYPES['N']] + ATOMTYPES['N'].specific
         check_list = [x in all_nitrogen for x in self.atomtype]
@@ -507,10 +507,34 @@ class GroupAtom(Vertex):
 
     def is_carbon(self):
         """
-        Return ``True`` if the atom represents an sulfur atom or ``False`` if not.
+        Return ``True`` if the atom represents a carbon atom or ``False`` if not.
         """
         all_carbon = [ATOMTYPES['C']] + ATOMTYPES['C'].specific
         check_list = [x in all_carbon for x in self.atomtype]
+        return all(check_list)
+
+    def is_fluorine(self):
+        """
+        Return ``True`` if the atom represents a fluorine atom or ``False`` if not.
+        """
+        all_fluorine = [ATOMTYPES['F']] + ATOMTYPES['F'].specific
+        check_list = [x in all_fluorine for x in self.atomtype]
+        return all(check_list)
+
+    def is_chlorine(self):
+        """
+        Return ``True`` if the atom represents a chlorine atom or ``False`` if not.
+        """
+        all_chlorine = [ATOMTYPES['Cl']] + ATOMTYPES['Cl'].specific
+        check_list = [x in all_chlorine for x in self.atomtype]
+        return all(check_list)
+
+    def is_bromine(self):
+        """
+        Return ``True`` if the atom represents a bromine atom or ``False`` if not.
+        """
+        all_bromine = [ATOMTYPES['Br']] + ATOMTYPES['Br'].specific
+        check_list = [x in all_bromine for x in self.atomtype]
         return all(check_list)
 
     def has_wildcards(self):
@@ -1270,7 +1294,7 @@ class Group(Graph):
             r = elements.bde_elements  # set of possible r elements/atoms
             r = [ATOMTYPES[x] for x in r]
 
-        r_bonds = [1, 2, 3, 1.5]
+        r_bonds = [1, 2, 3, 1.5, 4]
         r_un = [0, 1, 2, 3]
 
         RnH = r[:]
@@ -1408,7 +1432,10 @@ class Group(Graph):
             old_atom_type = grp.atoms[i].atomtype
             grp.atoms[i].atomtype = [item]
             grpc.atoms[i].atomtype = list(Rset - {item})
-
+            
+            if len(grpc.atoms[i].atomtype) == 0:
+                grpc = None
+            
             if len(old_atom_type) > 1:
                 labelList = []
                 old_atom_type_str = ''
@@ -1416,6 +1443,8 @@ class Group(Graph):
                     labelList.append(k.label)
                 for p in sorted(labelList):
                     old_atom_type_str += p
+            elif len(old_atom_type) == 0:
+                old_atom_type_str = ""
             else:
                 old_atom_type_str = old_atom_type[0].label
 
@@ -1447,6 +1476,8 @@ class Group(Graph):
                 label_list.append(k.label)
             for p in sorted(label_list):
                 atom_type_str += p
+        elif len(atom_type) == 0:
+            atom_type_str = ""
         else:
             atom_type_str = atom_type[0].label
 
@@ -1468,7 +1499,10 @@ class Group(Graph):
             grpc = deepcopy(self)
             grp.atoms[i].radical_electrons = [item]
             grpc.atoms[i].radical_electrons = list(Rset - {item})
-
+            
+            if len(grpc.atoms[i].radical_electrons) == 0:
+                grpc = None
+                
             atom_type = grp.atoms[i].atomtype
 
             if len(atom_type) > 1:
@@ -1477,6 +1511,8 @@ class Group(Graph):
                     label_list.append(k.label)
                 for p in sorted(label_list):
                     atom_type_str += p
+            elif len(atom_type) == 0:
+                atom_type_str = ""
             else:
                 atom_type_str = atom_type[0].label
 
@@ -1505,6 +1541,8 @@ class Group(Graph):
                 label_list.append(k.label)
             for k in sorted(label_list):
                 atom_type_i_str += k
+        elif len(atom_type_i) == 0:
+            atom_type_i_str = ""
         else:
             atom_type_i_str = atom_type_i[0].label
         if len(atom_type_j) > 1:
@@ -1513,6 +1551,8 @@ class Group(Graph):
                 label_list.append(k.label)
             for p in sorted(label_list):
                 atom_type_j_str += p
+        elif len(atom_type_j) == 0:
+            atom_type_j_str = ""
         else:
             atom_type_j_str = atom_type_j[0].label
 
@@ -1544,6 +1584,8 @@ class Group(Graph):
                 label_list.append(k.label)
             for p in sorted(label_list):
                 atom_type_str += p
+        elif len(atom_type) == 0:
+            atom_type_str = ""
         else:
             atom_type_str = atom_type[0].label
 
@@ -1558,7 +1600,7 @@ class Group(Graph):
         grps = []
         label_list = []
         Rbset = set(r_bonds)
-        bdict = {1: '-', 2: '=', 3: '#', 1.5: '-='}
+        bdict = {1: '-', 2: '=', 3: '#', 1.5: '-=', 4: '$'}
         for bd in r_bonds:
             grp = deepcopy(self)
             grpc = deepcopy(self)
@@ -1566,7 +1608,10 @@ class Group(Graph):
             grp.atoms[j].bonds[grp.atoms[i]].order = [bd]
             grpc.atoms[i].bonds[grpc.atoms[j]].order = list(Rbset - {bd})
             grpc.atoms[j].bonds[grpc.atoms[i]].order = list(Rbset - {bd})
-
+            
+            if len(list(Rbset - {bd})) == 0:
+                grpc = None
+                
             atom_type_i = grp.atoms[i].atomtype
             atom_type_j = grp.atoms[j].atomtype
 
@@ -1576,6 +1621,8 @@ class Group(Graph):
                     label_list.append(k.label)
                 for p in sorted(label_list):
                     atom_type_i_str += p
+            elif len(atom_type_i) == 0:
+                atom_type_i_str = ""
             else:
                 atom_type_i_str = atom_type_i[0].label
             if len(atom_type_j) > 1:
@@ -1584,6 +1631,8 @@ class Group(Graph):
                     label_list.append(k.label)
                 for p in sorted(label_list):
                     atom_type_j_str += p
+            elif len(atom_type_j) == 0:
+                atom_type_j_str = ""
             else:
                 atom_type_j_str = atom_type_j[0].label
 

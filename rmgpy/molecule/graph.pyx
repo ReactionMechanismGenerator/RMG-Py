@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -45,7 +45,7 @@ cdef class Vertex(object):
     """
     A base class for vertices in a graph. Contains several connectivity values
     useful for accelerating isomorphism searches, as proposed by
-    `Morgan (1965) <http://dx.doi.org/10.1021/c160017a018>`_.
+    `Morgan (1965) <https://doi.org/10.1021/c160017a018>`_.
 
     =================== =============== ========================================
     Attribute           Type            Description

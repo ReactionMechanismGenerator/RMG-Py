@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -31,7 +31,7 @@
 This module contains classes and functions for working with chemical reactions.
 
 From the `IUPAC Compendium of Chemical Terminology 
-<http://dx.doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that 
+<https://doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that 
 results in the interconversion of chemical species".
 
 In RMG Py, a chemical reaction is represented in memory as a :class:`Reaction`
@@ -343,7 +343,7 @@ class Reaction:
         """
         # eg. http://dev.rmg.mit.edu/database/kinetics/reaction/reactant1=1%20C%200%20%7B2,S%7D;2%20O%200%20%7B1,S%7D;__reactant2=1%20C%202T;__product1=1%20C%201;__product2=1%20C%200%20%7B2,S%7D;2%20O%201%20%7B1,S%7D;
 
-        base_url = "http://rmg.mit.edu/database/kinetics/reaction/"
+        base_url = "https://rmg.mit.edu/database/kinetics/reaction/"
 
         rxn_string = ''
         for i, species in enumerate(self.reactants):
@@ -1286,7 +1286,7 @@ class Reaction:
 
         return other
 
-    def ensure_species(self, reactant_resonance=False, product_resonance=False):
+    def ensure_species(self, reactant_resonance=False, product_resonance=False, save_order=False):
         """
         Ensure the reaction contains species objects in its reactant and product
         attributes. If the reaction is found to hold molecule objects, it
@@ -1296,6 +1296,7 @@ class Reaction:
         Generates resonance structures for Molecules if the corresponding options,
         reactant_resonance and/or product_resonance, are True. Does not generate
         resonance for reactants or products that start as Species objects.
+        If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
         """
         from rmgpy.data.kinetics.common import ensure_species
         # if already species' objects, return none
@@ -1315,11 +1316,11 @@ class Reaction:
             for reactant, product in self.pairs:
                 new_pair = []
                 for reactant0 in self.reactants:
-                    if reactant0.is_isomorphic(reactant):
+                    if reactant0.is_isomorphic(reactant, save_order=save_order):
                         new_pair.append(reactant0)
                         break
                 for product0 in self.products:
-                    if product0.is_isomorphic(product):
+                    if product0.is_isomorphic(product, save_order=save_order):
                         new_pair.append(product0)
                         break
                 new_pairs.append(new_pair)

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -120,6 +120,17 @@ class TestAtom(unittest.TestCase):
             else:
                 self.assertTrue(atom.is_non_hydrogen(), "Atom {0!r} isn't reporting is_non_hydrogen()".format(atom))
 
+    def test_is_halogen(self):
+        """
+        Test the Atom.is_halogen() method.
+        """
+        for element in element_list:
+            atom = Atom(element=element, radical_electrons=1, charge=0, label='*1', lone_pairs=3)
+            if element.symbol in ['F', 'Cl', 'Br', 'I']:
+                self.assertTrue(atom.is_halogen())
+            else:
+                self.assertFalse(atom.is_halogen(), "Atom {0!r} is reporting is_halogen(), but it shouldn't be".format(atom))
+
     def test_is_carbon(self):
         """
         Test the Atom.is_carbon() method.
@@ -207,6 +218,17 @@ class TestAtom(unittest.TestCase):
                 self.assertTrue(atom.is_chlorine())
             else:
                 self.assertFalse(atom.is_chlorine())
+
+    def test_is_bromine(self):
+        """
+        Test the Atom.is_bromine() method.
+        """
+        for element in element_list:
+            atom = Atom(element=element, radical_electrons=1, charge=0, label='*1', lone_pairs=3)
+            if element.symbol == 'Br':
+                self.assertTrue(atom.is_bromine())
+            else:
+                self.assertFalse(atom.is_bromine())
 
     def test_is_iodine(self):
         """
@@ -1855,6 +1877,26 @@ multiplicity 2
         saturated_molecule.saturate_radicals()
         self.assertTrue(saturated_molecule.is_isomorphic(indene))
 
+    def test_replace_halogen_with_hydrogen(self):
+        """
+        Test that the Molecule.replace_halogen_with_hydrogen() method works properly for various halogenated molecules
+        """
+        testCases = [
+            # halogenated molecule SMILES, hydrogenated (halogens replaced with hydrogens) molecule SMILES
+            ['[F]', '[H]'],
+            ['Cl', '[H][H]'],
+            ['[Br][Br]', '[H][H]'],
+            ['Fc1c(Cl)c(Br)c(I)cc1', 'c1ccccc1'],
+            ['F[CH]COC(Cl)(Cl)', '[CH2]COC']
+        ]
+
+        for smiles1, smiles2 in testCases:
+            mol_halogenated = Molecule().from_smiles(smiles1)
+            mol_replaced = mol_halogenated.copy(deep=True)
+            mol_replaced.replace_halogen_with_hydrogen()
+            mol_replaced_check = Molecule().from_smiles(smiles2)
+            self.assertTrue(mol_replaced.is_isomorphic(mol_replaced_check))
+
     def test_surface_molecules(self):
         """
         Test that we can identify surface molecules.
@@ -2431,6 +2473,13 @@ multiplicity 2
         """Test aryl radical perception for phenyl radical."""
         mol = Molecule(smiles='[c]1ccccc1')
         self.assertTrue(mol.is_aryl_radical())
+
+    def test_has_halogen(self):
+        """Test Molecule.has_halogen() method."""
+        mol1 = Molecule(smiles='CCCCl')
+        mol2 = Molecule(smiles='CCCCC')
+        self.assertTrue(mol1.has_halogen())
+        self.assertFalse(mol2.has_halogen())
 
     def test_aryl_radical_false(self):
         """Test aryl radical perception for benzyl radical."""

@@ -42,10 +42,12 @@ the same species: ::
    
     structure=InChI("InChI=1S/CH4/h1H4"),
 
-
+Be careful using the SMILES shorthand with lowercase letters for aromatics,
+radicals, or double bonds, because these can be ambiguous and the resulting
+molecule may depend on the version of OpenBabel, RDKit, and RMG in use.
 To quickly generate any adjacency list, or to generate an adjacency list from
 other types of molecular representations such as SMILES, InChI, or even common
-species names, use the Molecule Search tool found here: http://rmg.mit.edu/molecule_search
+species names, use the Molecule Search tool found here: https://rmg.mit.edu/molecule_search
 
 .. _representing_oxygen:
 

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -445,6 +445,12 @@ class TransportDatabase(object):
         
         Radicals are saturated with H atoms and the parent molecule properties
         are returned.
+
+        For halogenated hydrocarbons, a boiling point `Tb` correction is applied from the following source:
+        Sukumar Devotta and V. Rao Pendyala, 
+        "Modified Joback group contribution method for normal boiling point of aliphatic halogenated compounds"
+        Industrial & Engineering Chemistry Research 1992 31 (8), 2042-2046
+        DOI: 10.1021/ie00008a029
         """
         # For transport estimation we need the atoms to already be sorted because we
         # iterate over them; if the order changes during the iteration then we
@@ -506,12 +512,33 @@ class TransportDatabase(object):
         Pc = 1 / (0.113 + 0.0032 * num_atoms + group_data.Pc) ** 2
         is_linear = (group_data.structureIndex == 0)
 
+        halogens = ('F','Cl','Br')
+        elements = molecule.get_element_count().keys()
+        comment = None
+        if any(atom in elements for atom in halogens):
+            # apply corrections for halogenated compounds from https://doi.org/10.1021/ie00008a029
+            if 'H' in elements: #partially halogenated
+                if 'F' not in elements:
+                    Tb += 11.43 # partially halogenated without fluorine
+                    comment = 'with partial halogenation Tb correction (+11.43 K)'
+                else:
+                    Tb -= 25.00 # partially fluorinated with or without other halogens
+                    comment = 'with partial fluorination Tb correction (-25 K)'
+            else:
+                if 'Cl' not in elements and 'Br' not in elements:
+                    Tb -= 45.57 # perfluorinated
+                    comment = 'with perfluorinated Tb correction (-45.57 K)'
+                else:
+                    Tb -= 53.55 # perhalogenated with or without fluorine
+                    comment = 'with perhalogenated Tb correction (-53.55 K)'
+
         critical_point = CriticalPoint(
             Tc=Tc,
             Pc=Pc,
             Vc=Vc,
             Tb=Tb,
             linear=is_linear,
+            comment=comment
         )
         return critical_point
 
@@ -606,20 +633,21 @@ class CriticalPoint(object):
     The critical properties of the species (and structureIndex)
     """
 
-    def __init__(self, Tc=None, Pc=None, Vc=None, Tb=None, linear=None):
+    def __init__(self, Tc=None, Pc=None, Vc=None, Tb=None, linear=None, comment=None):
         self.Tc = Tc
         self.Pc = Pc
         self.Vc = Vc
         self.Tb = Tb
         self.linear = linear
+        self.comment = comment
 
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
         CriticalPoint object
         """
-        string = 'CriticalPoint(Tc={0!r}, Pc={1!r}, Vc={2!r}, Tb={3!r}, linear={4!r}'.format(
-            self.Tc, self.Pc, self.Vc, self.Tb, self.linear)
+        string = 'CriticalPoint(Tc={0!r}, Pc={1!r}, Vc={2!r}, Tb={3!r}, linear={4!r}, comment={5!r}'.format(
+            self.Tc, self.Pc, self.Vc, self.Tb, self.linear, self.comment)
         string += ')'
         return string
 

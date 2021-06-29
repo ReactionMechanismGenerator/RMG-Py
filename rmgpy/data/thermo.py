@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -1518,72 +1518,82 @@ class ThermoDatabase(object):
             ml_estimator, ml_settings = None, None
 
         if quantum_mechanics:
-            original_molecule = species.molecule[0]
-            if (
-                quantum_mechanics.settings.onlyCyclics
-                and not original_molecule.is_cyclic()
-            ):
-                pass
-            else:  # try a QM calculation
+            try:
+                original_molecule = species.molecule[0]
                 if (
-                    original_molecule.get_radical_count()
-                    > quantum_mechanics.settings.maxRadicalNumber
+                    quantum_mechanics.settings.onlyCyclics
+                    and not original_molecule.is_cyclic()
                 ):
-                    # Too many radicals for direct calculation: use HBI.
-                    logging.info(
-                        "{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
-                            original_molecule.get_radical_count(),
-                            species.label,
-                            quantum_mechanics.settings.maxRadicalNumber,
+                    pass
+                else:  # try a QM calculation
+                    if (
+                        original_molecule.get_radical_count()
+                        > quantum_mechanics.settings.maxRadicalNumber
+                    ):
+                        # Too many radicals for direct calculation: use HBI.
+                        logging.info(
+                            "{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
+                                original_molecule.get_radical_count(),
+                                species.label,
+                                quantum_mechanics.settings.maxRadicalNumber,
+                            )
                         )
-                    )
 
-                    # Need to estimate thermo via each resonance isomer
-                    thermo = []
-                    for molecule in species.molecule:
-                        molecule.clear_labeled_atoms()
-                        # Try to see if the saturated molecule can be found in the libraries
-                        tdata = self.estimate_radical_thermo_via_hbi(
-                            molecule, self.get_thermo_data_from_libraries
-                        )
-                        priority = 1
-                        if tdata is None:
-                            # Then attempt quantum mechanics job on the saturated molecule
+                        # Need to estimate thermo via each resonance isomer
+                        thermo = []
+                        for molecule in species.molecule:
+                            molecule.clear_labeled_atoms()
+                            # Try to see if the saturated molecule can be found in the libraries
                             tdata = self.estimate_radical_thermo_via_hbi(
-                                molecule, quantum_mechanics.get_thermo_data
+                                molecule, self.get_thermo_data_from_libraries
                             )
-                            priority = 2
-                        if tdata is None:
-                            # Fall back to group additivity
-                            tdata = self.estimate_thermo_via_group_additivity(molecule)
-                            priority = 3
+                            priority = 1
+                            if tdata is None:
+                                # Then attempt quantum mechanics job on the saturated molecule
+                                tdata = self.estimate_radical_thermo_via_hbi(
+                                    molecule, quantum_mechanics.get_thermo_data
+                                )
+                                priority = 2
+                            if tdata is None:
+                                # Fall back to group additivity
+                                tdata = self.estimate_thermo_via_group_additivity(
+                                    molecule
+                                )
+                                priority = 3
 
-                        thermo.append(
-                            (priority, tdata.get_enthalpy(298.0), molecule, tdata)
+                            thermo.append(
+                                (priority, tdata.get_enthalpy(298.0), molecule, tdata)
+                            )
+
+                        if len(thermo) > 1:
+                            # Sort thermo first by the priority, then by the most stable H298 value
+                            thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
+                            for i, therm in enumerate(thermo):
+                                logging.debug(
+                                    "Resonance isomer {0} {1} gives H298={2:.0f} J/mol"
+                                    "".format(i + 1, therm[2].to_smiles(), therm[1])
+                                )
+                            # Save resonance isomers reordered by their thermo
+                            species.molecule = [item[2] for item in thermo]
+                            original_molecule = species.molecule[0]
+                        thermo0 = thermo[0][3]
+
+                        # update entropy by symmetry correction
+                        thermo0.S298.value_si -= constants.R * math.log(
+                            species.get_symmetry_number()
                         )
 
-                    if len(thermo) > 1:
-                        # Sort thermo first by the priority, then by the most stable H298 value
-                        thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
-                        for i, therm in enumerate(thermo):
-                            logging.debug(
-                                "Resonance isomer {0} {1} gives H298={2:.0f} J/mol"
-                                "".format(i + 1, therm[2].to_smiles(), therm[1])
-                            )
-                        # Save resonance isomers reordered by their thermo
-                        species.molecule = [item[2] for item in thermo]
-                        original_molecule = species.molecule[0]
-                    thermo0 = thermo[0][3]
-
-                    # update entropy by symmetry correction
-                    thermo0.S298.value_si -= constants.R * math.log(
-                        species.get_symmetry_number()
-                    )
-
-                else:  # Not too many radicals: do a direct calculation.
-                    thermo0 = quantum_mechanics.get_thermo_data(
-                        original_molecule
-                    )  # returns None if it fails
+                    else:  # Not too many radicals: do a direct calculation.
+                        thermo0 = quantum_mechanics.get_thermo_data(
+                            original_molecule
+                        )  # returns None if it fails
+            except ValueError as e:  # rdkit fails to generate conformers
+                logging.error(
+                    "Quantum Mechanics calculation failed for species: %s with ValueError: %s",
+                    species.label,
+                    e.args[0],
+                )
+                logging.error("Falling back to ML (If turned on) or GAV (If not)")
 
         if thermo0 is None:
             # First try finding stable species in libraries and using HBI
@@ -1642,15 +1652,22 @@ class ThermoDatabase(object):
                 # estimate using gnns_thermo
                 # trained on rings,radicals and stable species
                 # `self.get_thermo_data_from_ml`.
-                if (ml_estimator is not None
-                    and all(a.element.number in {1, 6, 7, 8, 9, 17, 35} for a in species.molecule[0].atoms)
-                    and species.molecule[0].get_singlet_carbene_count() == 0):
+                if (
+                    ml_estimator is not None
+                    and all(
+                        a.element.number in {1, 6, 7, 8, 9, 17, 35}
+                        for a in species.molecule[0].atoms
+                    )
+                    and species.molecule[0].get_singlet_carbene_count() == 0
+                ):
                     try:
                         thermo0 = self.get_thermo_data_from_ml(
                             species, ml_estimator, ml_settings
                         )
                     except Exception as exc:
-                        logging.info(f"Thermo estimation failed for {species.molecule[0].smiles} with error \n {str(exc)}")
+                        logging.info(
+                            f"Thermo estimation failed for {species.molecule[0].smiles} with error \n {str(exc)}"
+                        )
                         thermo0 = None
                         # make it none so it can be estimated with group additivity
 
@@ -2485,8 +2502,8 @@ class ThermoDatabase(object):
         cyclic = molecule.is_cyclic()
         # Generate estimates of the thermodynamics parameters
         for atom in molecule.atoms:
-            # Iterate over heavy (non-hydrogen) atoms
-            if atom.is_non_hydrogen():
+            # Iterate over atoms and skip hydogens and halogens (since there are no groups centered on these atomtypes)
+            if atom.is_non_hydrogen() and not atom.is_halogen():
                 # Get initial thermo estimate from main group database
                 data_added = False
                 try:
@@ -2640,8 +2657,8 @@ class ThermoDatabase(object):
             ):
                 # apply secondary decompostion formula
                 # to get a estimated_group_thermodata
-                estimated_bicyclic_thermodata = (
-                    self.get_bicyclic_correction_thermo_data_from_heuristic(polyring)
+                estimated_bicyclic_thermodata = self.get_bicyclic_correction_thermo_data_from_heuristic(
+                    polyring
                 )
                 if not estimated_bicyclic_thermodata:
                     estimated_bicyclic_thermodata = matched_group_thermodata
@@ -2698,10 +2715,8 @@ class ThermoDatabase(object):
             if matched_group.label in self.groups["polycyclic"].generic_nodes:
                 # apply secondary decompostion formula
                 # to get a estimated_group_thermodata
-                estimated_bicyclic_thermodata = (
-                    self.get_bicyclic_correction_thermo_data_from_heuristic(
-                        bicyclic.atoms
-                    )
+                estimated_bicyclic_thermodata = self.get_bicyclic_correction_thermo_data_from_heuristic(
+                    bicyclic.atoms
                 )
                 if not estimated_bicyclic_thermodata:
                     estimated_bicyclic_thermodata = matched_group_thermodata
@@ -2733,19 +2748,19 @@ class ThermoDatabase(object):
                         aromaticBond.set_order_num(1)
 
                     submol.saturate_unfilled_valence()
-                    single_ring_thermodata = (
-                        self._add_ring_correction_thermo_data_from_tree(
-                            None, self.groups["ring"], submol, submol.atoms
-                        )[0]
-                    )
+                    single_ring_thermodata = self._add_ring_correction_thermo_data_from_tree(
+                        None, self.groups["ring"], submol, submol.atoms
+                    )[
+                        0
+                    ]
 
                 else:
                     submol.update()
-                    single_ring_thermodata = (
-                        self._add_ring_correction_thermo_data_from_tree(
-                            None, self.groups["ring"], submol, submol.atoms
-                        )[0]
-                    )
+                    single_ring_thermodata = self._add_ring_correction_thermo_data_from_tree(
+                        None, self.groups["ring"], submol, submol.atoms
+                    )[
+                        0
+                    ]
             for _ in range(occurrence - 1):
                 thermo_data = remove_thermo_data(
                     thermo_data, single_ring_thermodata, True, True
@@ -2783,14 +2798,14 @@ class ThermoDatabase(object):
             S298=(0.0, "J/(mol*K)"),
         )
 
-        saturated_bicyclic_thermo_data = (
-            self._add_ring_correction_thermo_data_from_tree(
-                None,
-                self.groups["polycyclic"],
-                saturated_bicyclic_submol,
-                saturated_bicyclic_submol.atoms,
-            )[0]
-        )
+        saturated_bicyclic_thermo_data = self._add_ring_correction_thermo_data_from_tree(
+            None,
+            self.groups["polycyclic"],
+            saturated_bicyclic_submol,
+            saturated_bicyclic_submol.atoms,
+        )[
+            0
+        ]
 
         estimated_bicyclic_thermo_data = add_thermo_data(
             estimated_bicyclic_thermo_data,
@@ -2810,19 +2825,19 @@ class ThermoDatabase(object):
                     aromatic_bond.set_order_num(1)
 
                 submol.saturate_unfilled_valence()
-                single_ring_thermo_data = (
-                    self._add_ring_correction_thermo_data_from_tree(
-                        None, self.groups["ring"], submol, submol.atoms
-                    )[0]
-                )
+                single_ring_thermo_data = self._add_ring_correction_thermo_data_from_tree(
+                    None, self.groups["ring"], submol, submol.atoms
+                )[
+                    0
+                ]
 
             else:
                 submol.update()
-                single_ring_thermo_data = (
-                    self._add_ring_correction_thermo_data_from_tree(
-                        None, self.groups["ring"], submol, submol.atoms
-                    )[0]
-                )
+                single_ring_thermo_data = self._add_ring_correction_thermo_data_from_tree(
+                    None, self.groups["ring"], submol, submol.atoms
+                )[
+                    0
+                ]
             estimated_bicyclic_thermo_data = remove_thermo_data(
                 estimated_bicyclic_thermo_data,
                 single_ring_thermo_data,
@@ -2838,19 +2853,19 @@ class ThermoDatabase(object):
                     aromatic_bond.set_order_num(1)
 
                 submol.saturate_unfilled_valence()
-                single_ring_thermo_data = (
-                    self._add_ring_correction_thermo_data_from_tree(
-                        None, self.groups["ring"], submol, submol.atoms
-                    )[0]
-                )
+                single_ring_thermo_data = self._add_ring_correction_thermo_data_from_tree(
+                    None, self.groups["ring"], submol, submol.atoms
+                )[
+                    0
+                ]
 
             else:
                 submol.update()
-                single_ring_thermo_data = (
-                    self._add_ring_correction_thermo_data_from_tree(
-                        None, self.groups["ring"], submol, submol.atoms
-                    )[0]
-                )
+                single_ring_thermo_data = self._add_ring_correction_thermo_data_from_tree(
+                    None, self.groups["ring"], submol, submol.atoms
+                )[
+                    0
+                ]
 
             estimated_bicyclic_thermo_data = add_thermo_data(
                 estimated_bicyclic_thermo_data,

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -57,8 +57,26 @@ class TeraChemLog(ESSAdapter):
     TeraChemLog is an adapter for the abstract class ESSAdapter.
     """
 
-    def __init__(self, path):
-        self.path = path
+    def check_for_errors(self):
+        """
+        Checks for common errors in a TeraChem log file.
+        If any are found, this method will raise an error and crash.
+        """
+        with open(os.path.join(self.path), 'r') as f:
+            lines = f.readlines()
+            error = None
+            for line in reversed(lines):
+                # check for common error messages
+                if 'incorrect method' in line.lower():
+                    error = 'incorrect method'
+                    break
+                elif 'error: ' in line.lower():
+                    # e.g.: "ERROR: Closed shell calculations can't have spin multiplicity 0."
+                    error = 'multiplicity'
+                    break
+            if error:
+                raise LogError(f'There was an error ({error}) with TeraChem output file {self.path} '
+                               f'due to line:\n{line}')
 
     def get_number_of_atoms(self):
         """

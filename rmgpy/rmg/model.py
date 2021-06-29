@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -44,6 +44,10 @@ from rmgpy.constraints import fails_species_constraints
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
+
+from rmgpy.molecule.group import Group
+from rmgpy.kinetics import KineticsData, Arrhenius
+
 from rmgpy.data.rmg import get_db
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
@@ -54,6 +58,7 @@ from rmgpy.rmg.pdep import PDepReaction, PDepNetwork
 from rmgpy.rmg.react import react_all
 from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
+from rmgpy.rmg.decay import decay_species
 
 
 ################################################################################
@@ -223,6 +228,12 @@ class CoreEdgeReactionModel:
         self.new_surface_rxns_loss = set()
         self.solvent_name = ''
         self.surface_site_density = None
+        self.unrealgroups = [Group().from_adjacency_list("""
+            1  O u0 p2 c0 {2,S} {4,S}
+            2  O u0 p2 c0 {1,S} {3,S}
+            3  R!H u1 px c0 {2,S}
+            4  H u0 p0  c0 {1,S}
+            """)]
 
     def check_for_existing_species(self, molecule):
         """
@@ -257,7 +268,7 @@ class CoreEdgeReactionModel:
         # At this point we can conclude that the species is new
         return None
 
-    def make_new_species(self, object, label='', reactive=True, check_existing=True, generate_thermo=True):
+    def make_new_species(self, object, label='', reactive=True, check_existing=True, generate_thermo=True, check_decay=False):
         """
         Formally create a new species from the specified `object`, which can be
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
@@ -282,19 +293,27 @@ class CoreEdgeReactionModel:
                 return spec, False
 
         # If we're here then we're ready to make the new species
+        try:
+            spec = Species(label=label,molecule=[molecule],reactive=reactive,thermo=object.thermo, transport_data=object.transport_data)
+        except AttributeError:
+            spec = Species(label=label, molecule=[molecule], reactive=reactive)
+        
+        spec.generate_resonance_structures()
+        
+        if check_decay:
+            spcs = decay_species(spec)
+            if len(spcs) == 1:
+                spec = spcs[0]
+            else:
+                return [self.make_new_species(spc) for spc in spcs]
+        
         if reactive:
             self.species_counter += 1  # count only reactive species
-            species_index = self.species_counter
+            spec.index = self.species_counter
         else:
-            species_index = -1
-        try:
-            spec = Species(index=species_index, label=label, molecule=[molecule], reactive=reactive,
-                           thermo=object.thermo, transport_data=object.transport_data)
-        except AttributeError:
-            spec = Species(index=species_index, label=label, molecule=[molecule], reactive=reactive)
+            spec.index = -1
 
         spec.creation_iteration = self.iteration_num
-        spec.generate_resonance_structures()
         spec.molecular_weight = Quantity(spec.molecule[0].get_molecular_weight() * 1000., "amu")
 
         if generate_thermo:
@@ -418,12 +437,23 @@ class CoreEdgeReactionModel:
         """
 
         # Determine the proper species objects for all reactants and products
-        try:
+        if forward.family and forward.is_forward:
             reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
-            products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
-        except:
-            logging.error(f"Error when making species in reaction {forward:s} from {forward.family:s}")
-            raise
+            products = []
+            for product in forward.products:
+                spcs = self.make_new_species(product, generate_thermo=generate_thermo,check_decay=True)
+                if type(spcs) == tuple:
+                    products.append(spcs[0])
+                elif type(spcs) == list:
+                    products.extend([spc[0] for spc in spcs])
+        else:
+            try:
+                reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
+                products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
+            except:
+                logging.error(f"Error when making species in reaction {forward:s} from {forward.family:s}")
+                raise
+        
         if forward.specific_collider is not None:
             forward.specific_collider = self.make_new_species(forward.specific_collider)[0]
 
@@ -444,7 +474,7 @@ class CoreEdgeReactionModel:
                 return rxn, False
 
         # Generate the reaction pairs if not yet defined
-        if forward.pairs is None:
+        if forward.pairs is None or len(forward.pairs) != max(len(forward.reactants), len(forward.products)):
             forward.generate_pairs()
             if hasattr(forward, 'reverse'):
                 if forward.reverse:
@@ -781,6 +811,8 @@ class CoreEdgeReactionModel:
             elif isinstance(rxn, LibraryReaction):
                 # Try generating the high pressure limit kinetics. If successful, set pdep to ``True``, and vice versa.
                 pdep = rxn.generate_high_p_limit_kinetics()
+            elif any([any([x.is_subgraph_isomorphic(q) for q in self.unrealgroups]) for y in rxn.reactants+rxn.products for x in y.molecule]):
+                pdep = False
 
             # If pressure dependence is on, we only add reactions that are not unimolecular;
             # unimolecular reactions will be added after processing the associated networks
@@ -876,7 +908,7 @@ class CoreEdgeReactionModel:
         G298 = reaction.get_free_energy_of_reaction(298)
         gibbs_is_positive = G298 > -1e-8
 
-        if family.own_reverse and hasattr(reaction, 'reverse'):
+        if family.own_reverse and len(reaction.products)==len(reaction.reactants) and hasattr(reaction, 'reverse'):
             if reaction.reverse:
                 # The kinetics family is its own reverse, so we could estimate kinetics in either direction
 

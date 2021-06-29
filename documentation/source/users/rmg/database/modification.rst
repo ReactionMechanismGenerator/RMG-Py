@@ -75,7 +75,7 @@ Creating Kinetics Libraries
 To add a reaction library, simply create a folder bearing the library's name under
 ``RMG-database/input/kinetics/libraries``. You'll need to create two files:
 ``dictionary.txt`` and ``reactions.py``. The dictionary file contains the Adjacency lists
-for all relevant species (can be generated using the `Molecule Search <http://rmg.mit.edu/molecule_search>`_
+for all relevant species (can be generated using the `Molecule Search <https://rmg.mit.edu/molecule_search>`_
 function of the rmg website, while the reactions file specifies the kinetics.
 To conform to RMG's format, simply copy and modify an existing library.
 
@@ -263,7 +263,7 @@ Decide on a Template
 First you need to know the template for your reaction to decide whether or not
 to create new groups: 
 
-#. Type your reaction into the kinetics search at http://rmg.mit.edu/database/kinetics/search/
+#. Type your reaction into the kinetics search at https://rmg.mit.edu/database/kinetics/search/
 #. Select the correct reaction
 #. In the results search for "(RMG-Py rate rules)" and select that link. The kinetic family listed is the family of interest.
 #. Scroll to the bottom and look at the end of the long description. There may be very long description of the averaging scheme, but the template for the reaction is the very last one listed:
@@ -428,7 +428,7 @@ will not be used.  If you want the training reaction to override the rate rule e
 a reaction library or seed mechanism.  
 
 The easiest way to add training reactions to the database is via the RMG website.  First, search for 
-the reaction using http://rmg.mit.edu/database/kinetics/search/ . This will automatically search 
+the reaction using https://rmg.mit.edu/database/kinetics/search/ . This will automatically search 
 the existing RMG database for the reaction, as well as identify the reaction family template
 that this reaction matches.  If the reaction does not match any family, then it cannot be added to the 
 training reactions.  Click the 'Create training rate from average' button underneath the kinetics plot 

@@ -4,17 +4,18 @@
 MacOS X Installation
 ********************
 
+Warning: This installation method is no longer maintained, and is unlikely to work as written.
+Please refer to `installation`_ for more up-to-date instructions.
+
 There are a number of dependencies for RMG-Py. This page will guide you through installing them.
 You will need the Command Line Tools for XCode. If you are not using Anaconda to install RMG-Py,
-we highly recommend the `Homebrew <http://brew.sh>`_ package manager.
-The following instructions assume that you have `installed Homebrew and its requirements <http://brew.sh>`_.
-We recommend using a `Virtual Environment <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_ for your Python packages,
+we highly recommend the `Homebrew <https://brew.sh>`_ package manager.
+The following instructions assume that you have `installed Homebrew and its requirements <https://brew.sh>`_.
+We recommend using a `Virtual Environment <https://docs.python-guide.org/dev/virtualenvs/>`_ for your Python packages,
 but this is optional (without it you may need to add `sudo` before some commands to solve permission errors).
 
 You will also need gfortran, Python, Numpy and Scipy. We typically install them using 
-`homebrew-python <https://github.com/Homebrew/homebrew-python>`_  but other methods may work as well.
-
-Warning: This installation method is no longer actively maintained, and is not guaranteed to work as written.
+homebrew-python (which used to be at ``https://github.com/Homebrew/homebrew-python``)  but other methods may work as well.
 
 * For example::
 
@@ -23,7 +24,7 @@ Warning: This installation method is no longer actively maintained, and is not g
 	brew install scipy
 	brew install matplotlib --with-cairo --with-ghostscript --with-ticl-tk --with-pyqt --with-pygtk --withgtk3
 
-* Install git if you don't already have it (you may also like some graphical interfaces like `mxcl's GitX <https://github.com/mxcl/gitx/downloads>`_ or `GitHub for Mac <http://mac.github.com/>`_)::
+* Install git if you don't already have it (you may also like some graphical interfaces like `GitX <https://github.com/gitx/gitx>`_ or `GitUp <https://gitup.co>`_ or dozens more)::
 
 	brew update
 	brew install git
@@ -32,7 +33,7 @@ Warning: This installation method is no longer actively maintained, and is not g
 
 	brew install open-babel --with-python --HEAD
 
-* Install `RDKit <http://www.rdkit.org>`_::
+* Install `RDKit <https://www.rdkit.org>`_::
 
 	brew tap rdkit/rdkit
 	brew install rdkit --with-inchi
@@ -100,4 +101,4 @@ Warning: This installation method is no longer actively maintained, and is not g
 	make eg2
 
 To run with on-the-fly Quantum Mechanics calculations, you will also need to install
-`MOPAC <http://openmopac.net/downloads.html>`_ or `Gaussian <http://www.gaussian.com>`_, then run `make QM`.
+`MOPAC <http://openmopac.net/downloads.html>`_ or `Gaussian <https://gaussian.com>`_, then run `make QM`.

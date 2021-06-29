@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -189,6 +189,29 @@ class TestTransportDatabase(unittest.TestCase):
         
         critical_point = self.database.estimate_critical_properties_via_group_additivity(molecule)
         self.assertIsNotNone(critical_point)
+
+    def test_Tb_correction_for_halogens(self):
+        """
+        Test that the halogen `Tb` correction is applied to the critical point estimated from 
+        group additivity
+        """
+        partial_F_mol1 = Molecule(smiles='CCF') # partially fluorinated without other halogens
+        partial_F_mol2 = Molecule(smiles='ClCCF') # partially fluorinated with other halogens
+        per_F_mol = Molecule(smiles='FC(F)(F)C(F)(F)F') # perfluorinated
+        partial_hal_mol = Molecule(smiles='BrCCCl') # partially halogenated without fluorine
+        per_hal_mol1 = Molecule(smiles='BrC(F)(Cl)C(Br)(F)Cl') # perhalogenated with fluorine
+        per_hal_mol2 = Molecule(smiles='BrC(Cl)(Cl)C(Cl)(Br)Cl') # perhalogenated without fluorine
+
+        for mol,comment in [
+            (partial_F_mol1,'with partial fluorination Tb correction (-25 K)'),
+            (partial_F_mol2,'with partial fluorination Tb correction (-25 K)'),
+            (per_F_mol,'with perfluorinated Tb correction (-45.57 K)'),
+            (partial_hal_mol,'with partial halogenation Tb correction (+11.43 K)'),
+            (per_hal_mol1,'with perhalogenated Tb correction (-53.55 K)'),
+            (per_hal_mol2,'with perhalogenated Tb correction (-53.55 K)')
+        ]:
+            critical_point = self.database.estimate_critical_properties_via_group_additivity(mol)
+            self.assertEqual(critical_point.comment,comment)
 
     def test_get_transport_properties(self):
         """Test that we can retrieve best transport properties for a species."""

@@ -22,7 +22,18 @@ It varies depending on the catalyst in question, but is held constant across sim
 This block should also contain the reference adatom binding energies 
 (see linear scaling section below).
 
+One can also specify a specific metal of interest, and RMG will load corresponding binding energies from the
+metal database by using ``metal``.
+The full database of available metals can be found in ``input/surface/libraries/metal.py``.
+
+
 Here is an example catalyst properties block for Pt(111)::
+
+    catalystProperties(
+        metal = Pt111
+    )
+
+Here is an example custom catalyst properties block for Pt(111)::
 
     catalystProperties(
         bindingEnergies = {
@@ -346,4 +357,3 @@ Other things to update:
 .. [Mazeau2019] \ E.J. Mazeau, P. Satupte, K. Blondal, C.F. Goldsmith and R.H. West. "Linear Scaling Relationships and Sensitivity Analyses in RMG-Cat." *Unpublished*.
 
 .. [Abild2007] \ F. Abild-Pedersen, J. Greeley, F. Studt, J. Rossmeisl, T.R. Munter, P.G. Moses, E. Skúlason, T. Bligaard, and J.K. Nørskov. "Scaling Properties of Adsorption Energies for Hydrogen-Containing Molecules on Transition-Metal Surfaces." *Phys. Rev. Lett.* **99(1)**, p. 4-7 (2007).
-
