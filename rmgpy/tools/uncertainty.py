@@ -423,8 +423,9 @@ class Uncertainty(object):
 
     def compile_all_sources(self):
         """
-        Compile two dictionaries composed of all the thermo and kinetic sources.  Must
+        Compile two dictionaries composed of all the thermo and kinetic sources. Must
         be performed after extract_sources_from_model function
+        Returns covariance matrix as a numpy array and parameter labels as a list of Species and Reaction objects
         """
         # Account for all the thermo sources
         all_thermo_sources = {'GAV': {}, 'Library': set(), 'QM': set()}
@@ -497,15 +498,14 @@ class Uncertainty(object):
 
     def get_uncertainty_covariance_matrix(self):
         """
-            Assumed that the list of species and reactions are unique
+            Function to estimate the uncertainty covariance matrix of all input parameters
+            Must be called after extract_sources_from_model() and assign_parameter_uncertainties()
+            Returns the covariance matrix as a numpy array and the parameter labels as a list
         """
         g_param_engine = ThermoParameterUncertainty()
         k_param_engine = KineticParameterUncertainty()
-        self.thermo_input_uncertainties = []
-        self.kinetic_input_uncertainties = []
 
         Sigma_k = np.zeros((len(self.reaction_list), len(self.reaction_list)))
-
         for a, reaction_a in enumerate(self.reaction_list):
             for b, reaction_b in enumerate(self.reaction_list):
                 source_a = self.reaction_sources_dict[reaction_a]
@@ -529,8 +529,7 @@ class Uncertainty(object):
                             if ruleEntry_a == ruleEntry_b:
                                 cov_ab += weight_a * weight_b * k_param_engine.dlnk_rule  # assumes delta is variance
 
-                    # Estimation error only matters if i=j
-                    # I have assumed that the reaction list is unique
+                    # Estimation error only matters if i=j, assumes the reaction list is unique
                     if a == b:
                         # family_variance = np.float_power(k_param_engine.dlnk_family, 2.0) # assumes uncertainty is std dev
                         family_variance = k_param_engine.dlnk_family  # assumes uncertainty is variance
@@ -558,7 +557,6 @@ class Uncertainty(object):
                         Sigma_k[a, a] = dplnk  # assumes uncertainty is variance
                 # All other cases, the covariance is zero
 
-        # return Sigma_k
         Sigma_G = np.zeros((len(self.species_list), len(self.species_list)))
         for a, species_a in enumerate(self.species_list):
             for b, species_b in enumerate(self.species_list):
@@ -583,18 +581,16 @@ class Uncertainty(object):
                 if a == b:
                     if 'Library' in source_a:
                         library_std = g_param_engine.get_partial_uncertainty_value(source_a, 'Library', corr_param=source_a['Library'])
-                        # cov_ab += np.float_power(library_std, 2.0)
                         cov_ab += library_std
                     if 'QM' in source_a:
                         qm_std = g_param_engine.get_partial_uncertainty_value(source_a, 'QM', corr_param=source_a['QM'])
-                        # cov_ab += np.float_power(qm_std, 2.0)
                         cov_ab += qm_std
 
                 Sigma_G[a, b] = cov_ab
 
         filler = np.zeros((Sigma_G.shape[0], Sigma_k.shape[1]))
         covariance_matrix = np.block([[Sigma_G, filler], [filler.transpose(), Sigma_k]])
-        parameter_labels = self.species_list
+        parameter_labels = self.species_list.copy()
         parameter_labels.extend(self.reaction_list)
 
         return (covariance_matrix, parameter_labels)
