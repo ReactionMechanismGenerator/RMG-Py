@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -179,32 +179,32 @@ X = Element(0,    'X', 'surface_site'   , 0.0)
 
 # Period 1
 # Hydrogen
-H  = Element(1,   'H' , 'hydrogen'      , 0.001007971)  # assuming 99.9855% 1_H, 0.0145% 2_H; see https://applets.kcvs.ca/IPTEI/pdf-elements/hydrogen.pdf
-D  = Element(1,   'H' , 'deuterium'     , 0.0020141017781, 2, 'D')  # see https://applets.kcvs.ca/IPTEI/pdf-elements/hydrogen.pdf
+H  = Element(1,   'H' , 'hydrogen'      , 0.00100794)
+D  = Element(1,   'H' , 'deuterium'     , 0.002014101, 2, 'D')
 T  = Element(1,   'H' , 'tritium'       , 0.003016049, 3, 'T')
-He = Element(2,   'He', 'helium'        , 0.004002601)  # see  https://applets.kcvs.ca/IPTEI/pdf-elements/helium.pdf
+He = Element(2,   'He', 'helium'        , 0.004002602)
 
 # Period 2
 Li = Element(3,   'Li', 'lithium'       , 0.006941)
 Be = Element(4,   'Be', 'beryllium'     , 0.009012182)
 B  = Element(5,   'B',  'boron'         , 0.010811)
-C  = Element(6,   'C' , 'carbon'        , 0.01201064)  # assuming 1.06% 13_C, 98.94% 12_C; see https://applets.kcvs.ca/IPTEI/pdf-elements/carbon.pdf
-C13= Element(6,   'C' , 'carbon-13'     , 0.013003354, 13, 'CI')  # see https://applets.kcvs.ca/IPTEI/pdf-elements/carbon.pdf
-N  = Element(7,   'N' , 'nitrogen'      , 0.01400686)  # assuming 0.3795% 15_N, 99.9855% 14_N; see https://applets.kcvs.ca/IPTEI/pdf-elements/nitrogen.pdf
-O  = Element(8,   'O' , 'oxygen'        , 0.0159994)  # assuming 99.7572% 16_O2, 0.2045% 18_O2, 0.0384% 17_O2; see https://applets.kcvs.ca/IPTEI/pdf-elements/oxygen.pdf
-O18= Element(8,   'O' , 'oxygen-18'     , 0.017999159613, 18, 'OI')  # see https://applets.kcvs.ca/IPTEI/pdf-elements/oxygen.pdf
-F  = Element(9,   'F' , 'fluorine'      , 0.018998403163)  # see https://applets.kcvs.ca/IPTEI/pdf-elements/fluorine.pdf
-Ne = Element(10,  'Ne', 'neon'          , 0.02018005)   # see https://applets.kcvs.ca/IPTEI/pdf-elements/neon.pdf
+C  = Element(6,   'C' , 'carbon'        , 0.0120107)
+C13= Element(6,   'C' , 'carbon-13'     , 0.0130033, 13, 'CI')
+N  = Element(7,   'N' , 'nitrogen'      , 0.01400674)
+O  = Element(8,   'O' , 'oxygen'        , 0.0159994)
+O18= Element(8,   'O' , 'oxygen-18'     , 0.0179999, 18, 'OI')
+F  = Element(9,   'F' , 'fluorine'      , 0.018998403)
+Ne = Element(10,  'Ne', 'neon'          , 0.0201797)
 
 # Period 3
 Na = Element(11,  'Na', 'sodium'        , 0.022989770)
 Mg = Element(12,  'Mg', 'magnesium'     , 0.0243050)
 Al = Element(13,  'Al', 'aluminium'     , 0.026981538)
 Si = Element(14,  'Si', 'silicon'       , 0.0280855)
-P  = Element(15,  'P' , 'phosphorus'    , 0.030973761998)  # see https://applets.kcvs.ca/IPTEI/pdf-elements/phosphorus.pdf
-S  = Element(16,  'S' , 'sulfur'        , 0.0320725)  # assuming 0.7630% 33_S, 4.3650% 34_S, 0.0158% 36_S, 94.8562% 32_S; see https://applets.kcvs.ca/IPTEI/pdf-elements/sulfur.pdf
-Cl = Element(17,  'Cl', 'chlorine'      , 0.03545214)  # assuming 24.2% 37_Cl, 75.8% 35_Cl; see https://applets.kcvs.ca/IPTEI/pdf-elements/chlorine.pdf
-Ar = Element(18,  'Ar', 'argon'         , 0.0398775)  # assuming 1.04% 36_Ar, 2.165% 38_Ar, 96.795% 40_Ar; see https://applets.kcvs.ca/IPTEI/pdf-elements/argon.pdf
+P  = Element(15,  'P' , 'phosphorus'    , 0.030973761)
+S  = Element(16,  'S' , 'sulfur'        , 0.032065)
+Cl = Element(17,  'Cl', 'chlorine'      , 0.035453)
+Ar = Element(18,  'Ar', 'argon'         , 0.039348)
 
 # Period 4
 K  = Element(19,  'K' , 'potassium'     , 0.0390983)
@@ -330,7 +330,6 @@ element_list = [
 # if a sourced value becomes available
 # (C,C,2.5) is C#C - (CbenzeneC - C-C)
 # P=P value is from: https://www2.chemistry.msu.edu/faculty/reusch/OrgPage/bndenrgy.htm
-# C#S is the value for [C+]#[S-] from 10.1002/chem.201002840 referenced relative to 0 K
 # The reference state is gaseous state at 298 K, but some of the values in the bde_dict might be coming from 0 K.
 # The bond dissociation energy at 298 K is greater than the bond dissociation energy at 0 K by 0.6 to 0.9 kcal/mol
 # (between RT and 3/2 RT), and this difference is usually much smaller than the uncertainty in the bond dissociation
@@ -349,8 +348,7 @@ bde_dict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol')
             ('C', 'N', 3): (887.0, 'kJ/mol'), ('C', 'O', 1): (358.0, 'kJ/mol'),
             ('C', 'O', 2): (799.0, 'kJ/mol'), ('C', 'O', 3): (1072.0, 'kJ/mol'),
             ('C', 'P', 1): (264.0, 'kJ/mol'), ('C', 'S', 1): (272.0, 'kJ/mol'),
-            ('C', 'S', 2): (573.0, 'kJ/mol'), ('C', 'S', 3): (709.6, 'kJ/mol'),
-            ('C', 'F', 1): (485.0, 'kJ/mol'),
+            ('C', 'S', 2): (573.0, 'kJ/mol'), ('C', 'F', 1): (485.0, 'kJ/mol'),
             ('C', 'Cl', 1): (327.0, 'kJ/mol'), ('C', 'Br', 1): (285.0, 'kJ/mol'),
             ('C', 'I', 1): (213.0, 'kJ/mol'),
             ('Si', 'Si', 1): (222.0, 'kJ/mol'), ('Si', 'N', 1): (355.0, 'kJ/mol'),
@@ -360,7 +358,7 @@ bde_dict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol')
             ('N', 'N', 1): (167.0, 'kJ/mol'), ('N', 'N', 2): (418.0, 'kJ/mol'),
             ('N', 'N', 3): (942.0, 'kJ/mol'), ('N', 'O', 1): (201.0, 'kJ/mol'),
             ('N', 'O', 2): (607.0, 'kJ/mol'), ('N', 'F', 1): (283.0, 'kJ/mol'),
-            ('N', 'Cl', 1): (313.0, 'kJ/mol'), ('N', 'S', 1): (467.0, 'kJ/mol'),
+            ('N', 'Cl', 1): (313.0, 'kJ/mol'),
             ('O', 'O', 1): (142.0, 'kJ/mol'), ('O', 'O', 2): (494.0, 'kJ/mol'),
             ('O', 'P', 1): (335.0, 'kJ/mol'), ('O', 'P', 2): (544.0, 'kJ/mol'),
             ('O', 'S', 1): (265.0, 'kJ/mol'), ('O', 'S', 2): (522.0, 'kJ/mol'),

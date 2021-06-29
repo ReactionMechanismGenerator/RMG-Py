@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -31,8 +32,8 @@
 Arkane Orca module
 Used to parse Orca output files
 """
-import os.path
 
+import logging
 import numpy
 import rmgpy.constants as constants
 
@@ -52,30 +53,8 @@ class OrcaLog(ESSAdapter):
     arrays. OrcaLog is an adapter for the abstract class ESSAdapter.
     """
 
-    def check_for_errors(self):
-        """
-        Checks for common errors in an Orca log file.
-        If any are found, this method will raise an error and crash.
-        """
-        with open(os.path.join(self.path), 'r') as f:
-            lines = f.readlines()
-            error = None
-            for line in reversed(lines):
-                # check for common error messages
-                if 'ORCA finished by error termination in SCF' in line:
-                    error = 'SCF'
-                    break
-                elif 'ORCA finished by error termination in MDCI' in line:
-                    error = 'MDCI'
-                    break
-                elif 'Error : multiplicity' in line:
-                    error = f'The multiplicity and charge combination for species {species_label} are wrong.'
-                    break
-                elif 'ORCA TERMINATED NORMALLY' in line:
-                    break
-            if error:
-                raise LogError(f'There was an error ({error}) with Orca output file {self.path} '
-                               f'due to line:\n{line}')
+    def __init__(self, path):
+        self.path = path
 
     def get_number_of_atoms(self):
         """
@@ -116,6 +95,19 @@ class OrcaLog(ESSAdapter):
 
         with open(self.path) as f:
             log = f.readlines()
+
+        # First check that the Orca job file (not necessarily a geometry optimization)
+        # has successfully completed, if not an error is thrown
+        completed_job = False
+        for line in reversed(log):
+            if 'ORCA TERMINATED NORMALLY' in line:
+                logging.debug('Found a successfully completed Orca Job')
+                completed_job = True
+                break
+
+        if not completed_job:
+            raise LogError(
+                'Could not find a successfully completed Orca job in Orca output file {0}'.format(self.path))
 
         # Now look for the geometry.
         # Will return the final geometry in the file under Standard Nuclear Orientation.

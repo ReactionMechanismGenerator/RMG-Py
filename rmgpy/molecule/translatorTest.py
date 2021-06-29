@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -713,33 +713,6 @@ class SMILESGenerationTest(unittest.TestCase):
         2 O u1 p2 c0 {1,S}
         '''
         smiles = '[O][O]'
-        self.compare(adjlist, smiles)
-
-        # Test CF
-        adjlist = '''
-        multiplicity 2
-        1 C u1 p1 c0 {2,S}
-        2 F u0 p3 c0 {1,S}
-        '''
-        smiles = '[C]F'
-        self.compare(adjlist, smiles)
-
-        # Test CCl
-        adjlist = '''
-        multiplicity 2
-        1 C u1 p1 c0 {2,S}
-        2 Cl u0 p3 c0 {1,S}
-        '''
-        smiles = '[C]Cl'
-        self.compare(adjlist, smiles)
-
-        # Test CBr
-        adjlist = '''
-        multiplicity 2
-        1 C u1 p1 c0 {2,S}
-        2 Br u0 p3 c0 {1,S}
-        '''
-        smiles = '[C]Br'
         self.compare(adjlist, smiles)
 
     def test_aromatics(self):

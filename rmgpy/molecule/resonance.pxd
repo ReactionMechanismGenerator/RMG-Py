@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -32,7 +32,7 @@ cpdef list populate_resonance_algorithms(dict features=?)
 
 cpdef dict analyze_molecule(Molecule mol)
 
-cpdef list generate_resonance_structures(Molecule mol, bint clar_structures=?, bint keep_isomorphic=?, bint filter_structures=?, bint save_order=?)
+cpdef list generate_resonance_structures(Molecule mol, bint clar_structures=?, bint keep_isomorphic=?, bint filter_structures=?)
 
 cpdef list _generate_resonance_structures(list mol_list, list method_list, bint keep_isomorphic=?, bint copy=?, bint filter_structures=?)
 

@@ -1,5 +1,3 @@
-:orphan:
-
 *********************************
 RMG-Py v\ |release| API Reference
 *********************************
@@ -11,7 +9,7 @@ steps using a general understanding of how molecules react.
 This is the API Reference guide for RMG. For instructions on how to use RMG, please refer to the User Guide.
 
 For the latest documentation and source code,
-please visit https://reactionmechanismgenerator.github.io/RMG-Py/
+please visit http://reactionmechanismgenerator.github.io/RMG-Py/
 
 .. toctree::
     :maxdepth: 2

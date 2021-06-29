@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+# encoding: utf-8
 
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -59,9 +60,7 @@ def register_ess_adapter(ess: str,
     _registered_ess_adapters[ess] = ess_class
 
 
-def ess_factory(fullpath: str,
-                check_for_errors: bool = True,
-                ) -> Type[ESSAdapter]:
+def ess_factory(fullpath: str) -> Type[ESSAdapter]:
     """
     A factory generating the ESS adapter corresponding to ``ess_adapter``.
     Given a path to the log file of a QM software, determine whether it is
@@ -69,8 +68,6 @@ def ess_factory(fullpath: str,
 
     Args:
         fullpath (str): The disk location of the output file of interest.
-        check_for_errors (bool): Boolean indicating whether to check the QM log for common errors
-                                 before parsing relevant information.
 
     Returns:
         Type[ESSAdapter]: The requested ESSAdapter child, initialized with the respective arguments.
@@ -105,4 +102,4 @@ def ess_factory(fullpath: str,
         raise InputError(f'The file at {fullpath} could not be identified as a '
                          f'Gaussian, Molpro, Orca, QChem, or TeraChem log file.')
 
-    return _registered_ess_adapters[ess_name](path=fullpath, check_for_errors=check_for_errors)
+    return _registered_ess_adapters[ess_name](path=fullpath)

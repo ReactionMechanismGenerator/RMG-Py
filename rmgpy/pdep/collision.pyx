@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -250,7 +250,7 @@ cdef class SingleExponentialDown(RMGObject):
     
         .. [Chang2000] A. Y. Chang, J. W. Bozzelli, and A. M. Dean.
            *Z. Phys. Chem.* **214**, p. 1533-1568 (2000).
-           `doi: 10.1524/zpch.2000.214.11.1533 <https://doi.org/10.1524/zpch.2000.214.11.1533>`_
+           `doi: 10.1524/zpch.2000.214.11.1533 <http://dx.doi.org/10.1524/zpch.2000.214.11.1533>`_
     
         """
     

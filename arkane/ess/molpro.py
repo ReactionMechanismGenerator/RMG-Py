@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -34,7 +34,6 @@ Used to parse Molpro output files
 
 import logging
 import math
-import os.path
 
 import numpy as np
 
@@ -57,51 +56,8 @@ class MolproLog(ESSAdapter):
     MolproLog is an adapter for the abstract class ESSAdapter.
     """
 
-    def check_for_errors(self):
-        """
-        Checks for common errors in a Molpro log file.
-        If any are found, this method will raise an error and crash.
-        """
-        with open(os.path.join(self.path), 'r') as f:
-            lines = f.readlines()
-            error = None
-            for line in reversed(lines):
-                if 'molpro calculation terminated' in line.lower() or 'variable memory released' in line.lower():
-                    break
-                # check for common error messages
-                elif 'No convergence' in line:
-                    error = 'Unconverged'
-                elif 'A further' in line and 'Mwords of memory are needed' in line and 'Increase memory to' in line:
-                    # e.g.: `A further 246.03 Mwords of memory are needed for the triples to run.
-                    # Increase memory to 996.31 Mwords.` (w/o the line break)
-                    error = 'Memory'
-                elif 'insufficient memory available - require' in line:
-                    # e.g.: `insufficient memory available - require              228765625  have
-                    #        62928590
-                    #        the request was for real words`
-                    # add_mem = (float(line.split()[-2]) - float(prev_line.split()[0])) / 1e6
-                    error = 'Memory'
-                elif 'Basis library exhausted' in line:
-                    # e.g.:
-                    # ` SETTING BASIS          =    6-311G**
-                    #
-                    #
-                    #  Using spherical harmonics
-                    #
-                    #  LIBRARY EXHAUSTED
-                    #   Searching for I  S 6-311G
-                    #   Library contains the following bases:
-                    #  ? Error
-                    #  ? Basis library exhausted
-                    #  ? The problem occurs in Binput`
-                    basis_set = None
-                    for line0 in reversed(line):
-                        if 'SETTING BASIS' in line0:
-                            basis_set = line0.split()[-1]
-                    error = f'Unrecognized basis set {basis_set}'
-                if error:
-                    raise LogError(f'There was an error ({error}) with Molpro output file {self.path} '
-                                   f'due to line:\n{line}')
+    def __init__(self, path):
+        self.path = path
 
     def get_number_of_atoms(self):
         """

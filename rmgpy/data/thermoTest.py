@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -169,8 +169,10 @@ class TestThermoDatabase(unittest.TestCase):
         spc = Species(molecule=[Molecule().from_smiles("C[CH]C=CC")])
 
         thermo_with_sym = self.databaseWithoutLibraries.get_thermo_data(spc)
-        thermo_without_sym = self.databaseWithoutLibraries.estimate_thermo_via_group_additivity(
-            spc.molecule[0]
+        thermo_without_sym = (
+            self.databaseWithoutLibraries.estimate_thermo_via_group_additivity(
+                spc.molecule[0]
+            )
         )
 
         symmetry_number = spc.get_symmetry_number()
@@ -633,7 +635,10 @@ multiplicity 2
         """Test thermo generation for species objects based on ML estimation."""
 
         # ML settings
-        ml_settings = dict(min_heavy_atoms=1, max_heavy_atoms=None,)
+        ml_settings = dict(
+            min_heavy_atoms=1,
+            max_heavy_atoms=None,
+        )
 
         # Make these large so they don't influence estimation
         ml_uncertainty_cutoffs = dict(
@@ -899,10 +904,10 @@ multiplicity 2
     def test_identifying_missing_group(self):
         """Test identifying a missing GAV group"""
         # this test should be updated once data is added to the missing group
-        spc = Species(smiles="C[N+]#[C-]")
+        spc = Species(smiles="CN(C)CCCN1C2=CC=CC=C2CCC3=CC=CC=C31")
         spc.generate_resonance_structures()
         thermo_gav = self.database.get_thermo_data_from_groups(spc)
-        self.assertIn("missing(N5tc-C2tcCs)", thermo_gav.comment)
+        self.assertIn("missing(N3s-CbCbCs)", thermo_gav.comment)
 
     def test_adsorbate_thermo_generation_gav(self):
         """Test thermo generation for adsorbate from Group Additivity value.

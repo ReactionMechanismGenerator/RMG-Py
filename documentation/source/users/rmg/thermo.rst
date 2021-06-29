@@ -287,8 +287,8 @@ References
 
 .. [Allinger] Allinger, N. L., & Lii, J.-H. (2008). MM4(2008) and MM4(2003).
 
-.. [Patchkovskii] Patchkovskii, S. (2003). SYMMETRY, originally from ``http://www.cobalt.chem.ucalgary.ca/ps/symmetry/`` now mirrored at https://github.com/nquesada/symmetry.
+.. [Patchkovskii] Patchkovskii, S. (2003). SYMMETRY, http://www.cobalt.chem.ucalgary.ca/ps/symmetry/.
 
 .. [Yu] "Estimation method for the thermochemical properties of polycyclic aromatic molecules" (Ph.D), Joanna Yu, M.I.T (2005)
 
-.. [RDKit] Landrum, G. (2012). RDKit, https://rdkit.org.
+.. [RDKit] Landrum, G. (2012). RDKit, http://rdkit.org.

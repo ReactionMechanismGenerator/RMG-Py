@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -598,7 +598,7 @@ def _remove_line_breaks(comments):
                                 'This direction matched an entry in ', 'From training reaction',
                                 'This reaction matched rate rule', 'family: ', 'Warning:',
                                 'Chemkin file stated explicit reverse rate:', 'Ea raised from',
-                                'Fitted to', 'Reaction library', 'Estimated from node', 'Matched node',
+                                'Fitted to', 'Reaction library',
                                 ]
     for indicator in new_statement_indicators:
         comments = comments.replace(' ' + indicator, '\n' + indicator, 1)
@@ -799,13 +799,12 @@ def read_reaction_comments(reaction, comments, read=True):
 ################################################################################
 
 
-def load_species_dictionary(path, generate_resonance_structures=True):
+def load_species_dictionary(path):
     """
     Load an RMG dictionary - containing species identifiers and the associated
     adjacency lists - from the file located at `path` on disk. Returns a dict
-    mapping the species identifiers to the loaded species.
-    If `generate_resonance_structures` is True (default if omitted)
-    then resonance isomers for each species are generated.
+    mapping the species identifiers to the loaded species. Resonance isomers
+    for each species are automatically generated.
     """
     species_dict = {}
 
@@ -816,8 +815,7 @@ def load_species_dictionary(path, generate_resonance_structures=True):
             if line.strip() == '' and adjlist.strip() != '':
                 # Finish this adjacency list
                 species = Species().from_adjacency_list(adjlist)
-                if generate_resonance_structures:
-                    species.generate_resonance_structures()
+                species.generate_resonance_structures()
                 label = species.label
                 for inert in inerts:
                     if inert.is_isomorphic(species):
@@ -835,8 +833,7 @@ def load_species_dictionary(path, generate_resonance_structures=True):
         else:  #reach end of file
             if adjlist.strip() != '':
                 species = Species().from_adjacency_list(adjlist)
-                if generate_resonance_structures:
-                    species.generate_resonance_structures()
+                species.generate_resonance_structures()
                 label = species.label
                 for inert in inerts:
                     if inert.is_isomorphic(species):
@@ -897,13 +894,11 @@ def load_transport_file(path, species_dict):
 
 
 def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comments=True, thermo_path=None,
-                      use_chemkin_names=False, check_duplicates=True, generate_resonance_structures=True):
+                      use_chemkin_names=False, check_duplicates=True):
     """
     Load a Chemkin input file located at `path` on disk to `path`, returning lists of the species
     and reactions in the Chemkin file. The 'thermo_path' point to a separate thermo file, or, if 'None' is
-    specified, the function will look for the thermo database within the chemkin mechanism file.
-    If `generate_resonance_structures` is True (default if omitted) then resonance isomers for
-    each species are generated.
+    specified, the function will look for the thermo database within the chemkin mechanism file
     """
     species_list = []
     species_dict = {}
@@ -915,7 +910,7 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
     # as N2, or else the species objects will not store any structures for the final
     # HTML output.
     if dictionary_path:
-        species_dict = load_species_dictionary(dictionary_path, generate_resonance_structures=generate_resonance_structures)
+        species_dict = load_species_dictionary(dictionary_path)
 
     with open(path, 'r') as f:
         previous_line = f.tell()

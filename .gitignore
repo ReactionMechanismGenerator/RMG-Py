@@ -83,5 +83,3 @@ RMG_Py.egg-info/*
 *.dot 
 *.dot.ps2
 simulate_backup.log
-# deleted files
-**/.fuse_hidden*

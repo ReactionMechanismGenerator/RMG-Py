@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -335,13 +335,6 @@ class Atom(Vertex):
         """
         return self.element.number != 1
 
-    def is_halogen(self):
-        """
-        Return ``True`` if the atom represents a halogen atom (F, Cl, Br, I)
-        ``False`` if it does.
-        """
-        return self.element.number in [9, 17, 35, 53]
-
     def is_carbon(self):
         """
         Return ``True`` if the atom represents a carbon atom or ``False`` if
@@ -403,13 +396,6 @@ class Atom(Vertex):
         not.
         """
         return self.element.number == 17
-
-    def is_bromine(self):
-        """
-        Return ``True`` if the atom represents a bromine atom or ``False`` if
-        not.
-        """
-        return self.element.number == 35
 
     def is_iodine(self):
         """
@@ -2104,17 +2090,6 @@ class Molecule(Graph):
                 return True
         return False
 
-    def has_halogen(self):
-        """
-        Return ``True`` if the molecule contains at least one halogen (F, Cl, Br, or I),
-        or ``False`` otherwise.
-        """
-        cython.declare(atom=Atom)
-        for atom in self.vertices:
-            if atom.is_halogen():
-                return True
-        return False
-
     def is_aryl_radical(self, aromatic_rings=None):
         """
         Return ``True`` if the molecule only contains aryl radicals,
@@ -2130,12 +2105,10 @@ class Molecule(Graph):
 
         return total == aryl
 
-    def generate_resonance_structures(self, keep_isomorphic=False, filter_structures=True, save_order=False):
+    def generate_resonance_structures(self, keep_isomorphic=False, filter_structures=True):
         """Returns a list of resonance structures of the molecule."""
         return resonance.generate_resonance_structures(self, keep_isomorphic=keep_isomorphic,
-                                                       filter_structures=filter_structures,
-                                                       save_order=save_order,
-                                                       )
+                                                       filter_structures=filter_structures)
 
     def get_url(self):
         """
@@ -2143,7 +2116,7 @@ class Molecule(Graph):
         """
         # eg. http://dev.rmg.mit.edu/database/kinetics/reaction/reactant1=1%20C%200%20%7B2,S%7D;2%20O%200%20%7B1,S%7D;__reactant2=1%20C%202T;__product1=1%20C%201;__product2=1%20C%200%20%7B2,S%7D;2%20O%201%20%7B1,S%7D;
 
-        base_url = "https://rmg.mit.edu/database/molecule/"
+        base_url = "http://rmg.mit.edu/database/molecule/"
         adjlist = self.to_adjacency_list(remove_h=False)
         url = base_url + quote(adjlist)
         return url.strip('_')
@@ -2227,31 +2200,6 @@ class Molecule(Graph):
         self.multiplicity = 1
 
         return added
-
-    def replace_halogen_with_hydrogen(self, raise_atomtype_exception=True):
-        """
-        Replace all halogens in a molecule with hydrogen atoms. Changes self molecule object.
-        """
-        cython.declare(halogen_atom_list=list, atom=Atom, bond_to_replace_dict=dict, H_atom=Atom,
-                       bonded_atom=Atom, bond_to_replace=Bond, new_bond=Bond)
-        # the list of halogen atoms must be obtained before any of the halogen atoms are replaced because it changes
-        # the order of self.atoms
-        halogen_atom_list = [atom for atom in self.atoms if atom.is_halogen()]
-        for atom in halogen_atom_list:
-            if not atom.charge == 0:
-                raise ValueError('For a given molecule {0}, a halogen atom {1} with charge {2} cannot be replaced '
-                                 'with a hydrogen atom'.format(self.to_smiles(), atom.symbol, atom.charge))
-            bond_to_replace_dict = self.get_bonds(atom)
-            self.remove_atom(atom)
-            H_atom = Atom('H', radical_electrons=atom.radical_electrons, lone_pairs=0, charge=0)
-            self.add_atom(H_atom)
-            for bonded_atom, bond_to_replace in bond_to_replace_dict.items():
-                new_bond = Bond(H_atom, bonded_atom, order=bond_to_replace.order)
-                self.add_bond(new_bond)
-
-        # Update the atom types of the new structure
-        self.sort_atoms()
-        self.update_atomtypes(raise_exception=raise_atomtype_exception)
 
     def to_group(self):
         """

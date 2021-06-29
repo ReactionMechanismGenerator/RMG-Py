@@ -18,20 +18,12 @@ Reading electronic structure software log files
 =============================== ================================================
 Class                           Description
 =============================== ================================================
-:class:`ESSAdapter`             Abstract Base Class for generic log files
+:class:`Log`                    Base class for generic log files
 :class:`GaussianLog`            Extract chemical parameters from Gaussian log files
 :class:`MolproLog`              Extract chemical parameters from Molpro log files
 :class:`OrcaLog`                Extract chemical parameters from Orca log files
 :class:`QChemLog`               Extract chemical parameters from Q-Chem log files
 :class:`TeraChemLog`            Extract chemical parameters from TeraChem log files
-=============================== ================================================
-
-
-=============================== ================================================
-Function                        Description
-=============================== ================================================
-:func:`register_ess_adapter`    Registers the ESS classes with the factory
-:func:`ess_factory`             Generates the corresponding ESS adapter
 =============================== ================================================
 
 
@@ -107,6 +99,7 @@ Utility modules
 Class                       Description
 =========================== ================================================
 :mod:`arkane.common`        Contains :class:`common.ArkaneSpecies` and other commonly used functions
+:mod:`arkane.util`          Other utility functions
 =========================== ================================================
 
 
@@ -114,8 +107,7 @@ Class                       Description
 .. toctree::
     :hidden:
     
-    essadapter
-    essfactory
+    log
     gaussianlog
     molprolog
     orcalog
@@ -131,4 +123,4 @@ Class                       Description
     explorer
     sensitivity
     common
-
+    util

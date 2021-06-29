@@ -20,7 +20,7 @@ Installing the Linux Subsystem
    distributions.
 
 2. Once the Linux subsystem is installed, open a web browser in Windows and go to the
-   `Anaconda Python Platform Downloads Page <https://www.anaconda.com/products/individual#Downloads`_. Go to the tab for the
+   `Anaconda Python Platform Downloads Page <https://www.anaconda.com/download/#linux>`_. Go to the tab for the
    **Linux Installer**, and **right click** on the download icon for Python 3.7 to copy the link location. Open an Ubuntu
    terminal (type in ``Ubuntu`` into the Windows search bar if you are unsure where to find it) and paste the link
    into the terminal immediately after typing the ``wget`` command, so that your terminal looks like the following: ::
@@ -45,12 +45,7 @@ Installing the Linux Subsystem
     sudo apt install gcc
     sudo apt install g++
     sudo apt install make
-    sudo apt-get install graphviz 
-
-   Note: installing graphviz as a system package makes sure that rendering libraries that are not included
-   in the WSL version of Ubuntu are installed. Unfortunately, the graphviz conda package does not install
-   these dependencies in the RMG conda environment (later in the installation), instead relying on system
-   libraries even in native Linux installations.
+    sudo apt-get install libxrender1
 
 5. Follow the instructions for either the binary (:ref:`anacondaUser`) or source installation (:ref:`anacondaDeveloper`)
    for the Linux Operating system. Follow these instructions from the point directly after installing Anaconda.

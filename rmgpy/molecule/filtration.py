@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -39,8 +39,7 @@ The rules this module follows are (by order of importance):
        whereas positive charges will be assigned to less electronegative atoms (charge stabilization)
     4. Opposite charges will be as close as possible to one another, and vice versa (charge stabilization)
 
-(inspired by http://web.archive.org/web/20140310074727/http://www.chem.ucla.edu/~harding/tutorials/resonance/imp_res_str.html
-which is quite like http://www.chem.ucla.edu/~harding/IGOC/R/resonance_contributor_preference_rules.html)
+(inspired by http://www.chem.ucla.edu/~harding/tutorials/resonance/imp_res_str.html)
 """
 
 import logging
@@ -51,11 +50,10 @@ from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.pathfinder import find_shortest_path
 
 
-def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True, features=None, save_order=False):
+def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True, features=None):
     """
     We often get too many resonance structures from the combination of all rules, particularly for species containing
     lone pairs. This function filters them out by minimizing the number of C/N/O/S atoms without a full octet.
-    If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
     """
     if not all([(mol.multiplicity == mol_list[0].multiplicity) for mol in mol_list]):
         raise ValueError("Cannot filter structures with different multiplicities!")
@@ -79,7 +77,7 @@ def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True,
 
     if mark_unreactive:
         # Mark selected unreactive structures if OS and/or adjacent birad unidirectional transitions were used
-        mark_unreactive_structures(filtered_list, mol_list, save_order=save_order)
+        mark_unreactive_structures(filtered_list, mol_list)
 
     # Check that there's at least one reactive structure in the list
     check_reactive(filtered_list)
@@ -391,11 +389,10 @@ def aromaticity_filtration(mol_list, features):
     return filtered_list
 
 
-def mark_unreactive_structures(filtered_list, mol_list, save_order=False):
+def mark_unreactive_structures(filtered_list, mol_list):
     """
     Mark selected structures in filtered_list with the Molecule.reactive flag set to `False` (it is `True` by default)
-    Changes the filtered_list object, and does not return anything.
-    If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
+    Changes the filtered_list object, and does not return anything
     """
     # sort all structures in filtered_list so that the reactive ones are first
     filtered_list.sort(key=lambda mol: mol.reactive, reverse=True)
@@ -404,7 +401,7 @@ def mark_unreactive_structures(filtered_list, mol_list, save_order=False):
     # Important whenever Species.molecule[0] is expected to be used (e.g., training reactions) after generating
     # resonance structures. However, if it was filtered out, it should be appended to the end of the list.
     for index, filtered in enumerate(filtered_list):
-        if filtered.copy(deep=True).is_isomorphic(mol_list[0].copy(deep=True), save_order=save_order):
+        if filtered.copy(deep=True).is_isomorphic(mol_list[0].copy(deep=True)):
             filtered_list.insert(0, filtered_list.pop(index))
             break
     else:

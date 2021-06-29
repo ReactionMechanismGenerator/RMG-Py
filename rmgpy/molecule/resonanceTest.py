@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -1417,13 +1417,6 @@ class ClarTest(unittest.TestCase):
         mol_list = generate_resonance_structures(Molecule().from_adjacency_list("""OX
 1 X u0 p0 c0 {2,D}
 2 O u0 p2 c0 {1,D}"""))
-        self.assertEquals(len(mol_list), 1)
-
-    def test_surface_radical(self):
-        """Test resonance structure generation for radical on surface
-
-        Should not put radical on X atom"""
-        mol_list = generate_resonance_structures(Molecule(smiles='*=C[CH]C'))
         self.assertEquals(len(mol_list), 1)
 
     def test_sulfur_triple_bond(self):

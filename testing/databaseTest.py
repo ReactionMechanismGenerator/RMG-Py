@@ -135,6 +135,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
             # these families have some sort of difficulty which prevents us from testing accessibility right now
             difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', 'Retroene']
+            generated_trees = ["R_Recombination"]
 
             if len(family.forward_template.reactants) < len(family.groups.top) and family_name not in difficult_families:
                 test = lambda x: self.kinetics_check_unimolecular_groups(family_name)
@@ -144,7 +145,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 self.compat_func_name = test_name
                 yield test, family_name
 
-            if family_name not in difficult_families and not family.auto_generated:
+            if family_name not in difficult_families and family_name not in generated_trees:
                 test = lambda x: self.kinetics_check_sample_descends_to_group(family_name)
                 test_name = "Kinetics family {0}: Entry is accessible?".format(family_name)
                 test.description = test_name
@@ -1267,7 +1268,7 @@ Origin Group AdjList:
 
         # print out entries skipped from exception we can't currently handle
         if skipped:
-            print("These entries were skipped because too big benzene rings:")
+            print("These entries were skipped because too big benzene rings or has nitrogen sample atom:")
             for entryName in skipped:
                 print(entryName)
 
@@ -1540,10 +1541,6 @@ Origin Group AdjList:
         This test checks whether nodes are found in the tree, with proper parents.
         """
         for node_name, node_group in group.entries.items():
-            # Pass this check for special solvation polycyclic groups. These groups are used to put similar polycyclic
-            # groups or polycyclic groups with resonance structures together under one entry.
-            if node_group.short_desc == 'special solvation polycyclic group':
-                continue
             ascend_parent = node_group
             # Check whether the node has proper parents unless it is the top reactant or product node
             tst1 = []
@@ -1586,15 +1583,8 @@ Origin Group AdjList:
         entries_copy = copy(group.entries)
         tst = []
         for node_name, node_group in group.entries.items():
-            # Pass this check for special solvation polycyclic groups. These groups are used to put similar polycyclic
-            # groups or polycyclic groups with resonance structures together under one entry.
-            if node_group.short_desc == 'special solvation polycyclic group':
-                continue
             del entries_copy[node_name]
             for node_name_other, node_group_other in entries_copy.items():
-                # Pass this check for special solvation polycyclic groups.
-                if node_group_other.short_desc == 'special solvation polycyclic group':
-                    continue
                 group.match_node_to_node(node_group, node_group_other)
                 tst.append((group.match_node_to_node(node_group, node_group_other),
                             "Node {node} in {group} group was found to be identical to node {node_other}".format(
@@ -1618,10 +1608,6 @@ Origin Group AdjList:
         for node_name, child_node in group.entries.items():
             # top nodes and product nodes don't have parents by definition, so they get an automatic pass:
             if child_node in group.top:
-                continue
-            # Pass this check for special solvation polycyclic groups. These groups are used to put similar polycyclic
-            # groups or polycyclic groups with resonance structures together under one entry.
-            if child_node.short_desc == 'special solvation polycyclic group':
                 continue
             parent_node = child_node.parent
             # Check whether the node has proper parents unless it is the top reactant or product node
@@ -1749,16 +1735,7 @@ The following adjList may have atoms in a different ordering than the input file
         tst1 = []
         tst2 = []
         tst3 = []
-
-        # Solvation groups have special groups that RMG cannot generate proper sample_molecules. Skip them.
-        skip_entry_list = ['Cds-CdsCS6dd', 'Cs-CS4dHH']
-        skip_short_desc_list = ['special solvation group with ring', 'special solvation polycyclic group']
-
         for entryName, entry in group.entries.items():
-            # Pass special cases
-            if entry.short_desc in skip_short_desc_list or entryName in skip_entry_list:
-                skipped.append(entryName)
-                continue
             try:
                 if isinstance(entry.item, Group):
                     try:
@@ -1767,6 +1744,14 @@ The following adjList may have atoms in a different ordering than the input file
                         logging.error("Problem making sample molecule for group {}\n{}".format(
                             entryName, entry.item.to_adjacency_list()))
                         raise
+                    # for now ignore sample atoms that use nitrogen types
+                    nitrogen = False
+                    for atom in sample_molecule.atoms:
+                        if atom.is_nitrogen():
+                            nitrogen = True
+                    if nitrogen:
+                        skipped.append(entryName)
+                        continue
 
                     atoms = sample_molecule.get_all_labeled_atoms()
                     match = group.descend_tree(sample_molecule, atoms, strict=True)
@@ -1802,7 +1787,7 @@ Origin Group AdjList:
 
         # print out entries skipped from exception we can't currently handle
         if skipped:
-            print("These entries were skipped because too big benzene rings:")
+            print("These entries were skipped because too big benzene rings or has nitrogen sample atom:")
             for entryName in skipped:
                 print(entryName)
 
