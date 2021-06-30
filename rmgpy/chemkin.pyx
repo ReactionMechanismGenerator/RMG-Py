@@ -463,13 +463,13 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
         del kinetics['arrhenius high']
 
         tokens = tokens[1].split()
-        kinetics['coverage dependence'][species_dict[tokens[0].strip()]] = {'E': (tokens[1].strip(), Eunits), 'm': tokens[2].strip(), 'a':tokens[3].strip()}
+        kinetics['coverage dependence'][species_dict[tokens[0].strip()]] = {'E': (tokens[3].strip(), Eunits), 'm': tokens[2].strip(), 'a':tokens[1].strip()}
         try:
             # is a sticking coefficient
-            kinetics['sticking coefficient'][species_dict[tokens[0].strip()]] = {'E': (tokens[1].strip(), Eunits), 'm': tokens[2].strip(), 'a':tokens[3].strip()}
+            kinetics['sticking coefficient'][species_dict[tokens[0].strip()]] = {'E': (tokens[3].strip(), Eunits), 'm': tokens[2].strip(), 'a':tokens[1].strip()}
         except KeyError:
             # is a not a sticking coefficient
-            kinetics['surface arrhenius'].coverage_dependence[species_dict[tokens[0].strip()]] = {'E': (tokens[1].strip(), 'J/mol'), 'm': tokens[2].strip(), 'a':tokens[3].strip()}
+            kinetics['surface arrhenius'].coverage_dependence[species_dict[tokens[0].strip()]] = {'E': (tokens[3].strip(), 'J/mol'), 'm': tokens[2].strip(), 'a':tokens[1].strip()}
 
     elif 'LOW' in line:
         # Low-pressure-limit Arrhenius parameters
@@ -1808,7 +1808,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
                 for species, cov_params in kinetics.coverage_dependence.items():
                     label = get_species_identifier(species)
                     string += f'\n    COV / {label:<41}'
-                    string += f"{cov_params['E'].value_si:<9.3e} {cov_params['m'].value:<6.3f} {cov_params['a'].value:<6.3f} /"
+                    string += f"{cov_params['a'].value:<9.3e} {cov_params['m'].value:<6.3f} {cov_params['E'].value_si:<6.3f} /"
     elif isinstance(kinetics, _kinetics.Arrhenius):
         conversion_factor = kinetics.A.get_conversion_factor_from_si_to_cm_mol_s()
         if not isinstance(kinetics, _kinetics.SurfaceArrhenius):
@@ -1830,7 +1830,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
                 for species, cov_params in kinetics.coverage_dependence.items():
                     label = get_species_identifier(species)
                     string += f'\n    COV / {label:<41}'
-                    string += f"{cov_params['E'].value_si:<9.3e} {cov_params['m'].value:<6.3f} {cov_params['a'].value:<6.3f} /"
+                    string += f"{cov_params['a'].value:<9.3e} {cov_params['m'].value:<6.3f} {cov_params['E'].value_si:<6.3f} /"
     elif isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
         arrhenius = kinetics.arrheniusHigh
         conversion_factor = arrhenius.A.get_conversion_factor_from_si_to_cm_mol_s()
