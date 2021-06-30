@@ -880,7 +880,7 @@ multiplicity 2
         # change the database to cause errors
         groups['N*'].data = None
         groups['N*'].parent = None
-        with self.assertRaisesRegex(DatabaseError, 'no data for node'):
+        with self.assertRaisesRegex(DatabaseError, 'Could not find an adsorption correction'):
             thermo = self.database.get_thermo_data(spec)
         groups['N*'].data = 'O*'
         groups['O*'].data = 'N*'
