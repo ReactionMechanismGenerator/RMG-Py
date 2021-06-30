@@ -1640,11 +1640,10 @@ class ThermoDatabase(object):
         matches = []
         for atom in surface_sites:
             labeled_atoms = {'*': atom}
-            node0 = adsorption_groups.descend_tree(molecule, labeled_atoms)
-            if node0 is None: 
+            node = adsorption_groups.descend_tree(molecule, labeled_atoms)
+            if node is None: 
                 # no match, so try the next surface site
                 continue
-            node = node0
             while node is not None and node.data is None:
                 node = node.parent
             if node is None:
@@ -1658,7 +1657,7 @@ class ThermoDatabase(object):
                 if loop_count > 100:
                     raise DatabaseError("Maximum iterations reached while following thermo group data pointers. A circular"
                                     f" reference may exist. Last node was {node.label} pointing to group called {data} in "
-                                    f"database {database.label}")
+                                    f"database {adsorption_groups.label}")
 
                 for entry in adsorption_groups.entries.values():
                     if entry.label == data:
@@ -1667,7 +1666,7 @@ class ThermoDatabase(object):
                         break
                 else:
                     raise DatabaseError(f"Node {node.label} points to a non-existing group called {data} "
-                                    f"in database {database.label}")
+                                    f"in database {adsorption_groups.label}")
             data.comment = f'{adsorption_groups.label}({comment})'
             group_surface_sites = node.item.get_surface_sites()
             if len(group_surface_sites) == number_of_surface_sites:
@@ -1680,21 +1679,31 @@ class ThermoDatabase(object):
         
         matches.sort(key = lambda x: -x[0])
         # sort the matches by descending number of surface sites
-        for i,(number_of_group_sites, data) in enumerate(matches):
+        corrections_applied = 0
+        # start a counter for the number of corrections applied
+        for number_of_group_sites, data in matches:
             if number_of_surface_sites - number_of_group_sites < 0:
                 # too many sites in this group, skip to the next one
                 continue
-            if i == 0:
+            if not corrections_applied:
                 # this is the first correction, so add H298, S298, and Cp
                 add_thermo_data(adsorption_thermo, data, group_additivity=True)
             else:
                 # We have already corrected S298 and Cp, so we only want to correct H298
                 adsorption_thermo.H298.value_si += data.H298.value_si
                 adsorption_thermo.comment += ' + H298({0})'.format(data.comment)
+            corrections_applied += 1
             number_of_surface_sites -= number_of_group_sites
             if number_of_surface_sites <= 0:
                 # we have corrected for all the sites
+                if number_of_surface_sites < 0:
+                    adsorption_thermo.comment += ' WARNING(Too many adsorption corrections were added to the thermo!'
+                    adsorption_thermo.comment += 'The H298 is very likely understimated as a result!)'
                 break
+        
+        if number_of_surface_sites > 0:
+            adsorption_thermo.comment += ' WARNING({} surface sites were unaccounted for with adsorption corrections!'.format(number_of_surface_sites)
+            adsorption_thermo.comment += 'The H298 is very likely overestimated as a result!)'
 
         return True
 
