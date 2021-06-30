@@ -1677,6 +1677,8 @@ class ThermoDatabase(object):
                 # we have not found a full match yet, so append and keep looking
                 matches.append((len(group_surface_sites),data))
         
+        if len(matches) == 0:
+            raise DatabaseError(f"Could not find an adsorption correction in {adsorption_groups.label} for {molecule}")
         matches.sort(key = lambda x: -x[0])
         # sort the matches by descending number of surface sites
         corrections_applied = 0
