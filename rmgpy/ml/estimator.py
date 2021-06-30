@@ -131,7 +131,7 @@ class MLEstimator:
             # calculator takes a list so we can batch if needed
             input = [molecule.smiles]
         elif mode == FeatEnum.from_rdkit_mol:
-            input = [molecule.to_rdkit_mol()]
+            input = [molecule.to_rdkit_mol(remove_h=False)]
         else:
             raise NotImplementedError(
                 f"Give mode {mode} is not implemented for ML stimation"
