@@ -2662,12 +2662,16 @@ class Molecule(Graph):
         '*3' - triple bond
         '*4' - quadruple bond
         """
+        cython.declare(desorbed_molecules=list, desorbed_molecule=Molecule, sites_to_remove=list, adsorbed_atoms=list,
+                       site=Atom, numbonds=cython.int, bonded_atom=Atom, bond=Bond, i=cython.int, j=cython.int, atom0=Atom,
+                       atom1=Atom)
+
         if not self.contains_surface_site():
             return []
 
-        dummy_molecule = self.copy(deep=True)
-        dummy_molecule.clear_labeled_atoms()
-        sites_to_remove = dummy_molecule.get_surface_sites()
+        desorbed_molecule = self.copy(deep=True)
+        desorbed_molecule.clear_labeled_atoms()
+        sites_to_remove = desorbed_molecule.get_surface_sites()
         adsorbed_atoms = []
         for site in sites_to_remove:
             numbonds = len(site.bonds)
@@ -2676,10 +2680,9 @@ class Molecule(Graph):
                 pass
             else:
                 assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
-                bonded_atom = list(site.bonds.keys())[0]
+                (bonded_atom, bond), = site.bonds.items()
                 adsorbed_atoms.append(bonded_atom)
-                bond = site.bonds[bonded_atom]
-                dummy_molecule.remove_bond(bond)
+                desorbed_molecule.remove_bond(bond)
                 if bond.is_single():
                     bonded_atom.increment_radical()
                     bonded_atom.label = '*1'
@@ -2698,9 +2701,9 @@ class Molecule(Graph):
                     bonded_atom.label = '*4'
                 else:
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
-            dummy_molecule.remove_atom(site)
+            desorbed_molecule.remove_atom(site)
 
-        desorbed_molecules = [dummy_molecule.copy(deep=True)]
+        desorbed_molecules = [desorbed_molecule.copy(deep=True)]
         if len(adsorbed_atoms) > 1:
             # multidentate adsorption.
             # Try to turn adjacent biradical into a bond.
@@ -2716,7 +2719,7 @@ class Molecule(Graph):
                         bond.increment_order()
                         atom0.decrement_radical()
                         atom1.decrement_radical()
-                        desorbed_molecules.append(dummy_molecule.copy(deep=True))
+                        desorbed_molecules.append(desorbed_molecule.copy(deep=True))
                         if (atom0.radical_electrons and
                                 atom1.radical_electrons and
                                 bond.order < 3):
@@ -2724,7 +2727,7 @@ class Molecule(Graph):
                             bond.increment_order()
                             atom0.decrement_radical()
                             atom1.decrement_radical()
-                            desorbed_molecules.append(dummy_molecule.copy(deep=True))
+                            desorbed_molecules.append(desorbed_molecule.copy(deep=True))
                         if (atom0.lone_pairs and
                                 atom1.lone_pairs and 
                                 bond.order < 3):
@@ -2735,7 +2738,7 @@ class Molecule(Graph):
                             atom0.increment_radical()
                             atom1.decrement_lone_pairs()
                             atom1.increment_radical()
-                            desorbed_molecules.append(dummy_molecule.copy(deep=True))
+                            desorbed_molecules.append(desorbed_molecule.copy(deep=True))
                     #For bidentate CO because we want C[-1]#O[+1] but not .C#O.
                     if (bond.order == 3 and atom0.radical_electrons and 
                         atom1.radical_electrons and 
@@ -2746,33 +2749,17 @@ class Molecule(Graph):
                             atom1.increment_lone_pairs()
                         else:
                             atom0.increment_lone_pairs()
-                        desorbed_molecules.append(dummy_molecule.copy(deep=True))
+                        desorbed_molecules.append(desorbed_molecule.copy(deep=True))
 
-        new_mols = []
-        for dummy_molecule in desorbed_molecules:
+        for desorbed_molecule in desorbed_molecules[:]:
             try:
-                dummy_molecule.get_labeled_atoms('*2')
-            except ValueError:
-                # No *2 atoms
-                continue
-            new_mol = dummy_molecule.copy(deep=True)
-            for atom in new_mol.get_labeled_atoms('*2'):
-                if atom.radical_electrons == 2:
-                    atom.decrement_radical()
-                    atom.decrement_radical()
-                    atom.increment_lone_pairs()
-                    new_mols.append(new_mol.copy(deep=True))
-        desorbed_molecules.extend(new_mols)
-
-        for dummy_molecule in desorbed_molecules[:]:
-            try:
-                dummy_molecule.update_connectivity_values()
-                dummy_molecule.update()
-            except:
-                desorbed_molecules.remove(dummy_molecule)
-                logging.debug(f"Removing {dummy_molecule} from possible structure list:\n{dummy_molecule.to_adjacency_list()}")
+                desorbed_molecule.update_connectivity_values()
+                desorbed_molecule.update()
+            except AtomTypeError:
+                desorbed_molecules.remove(desorbed_molecule)
+                logging.debug(f"Removing {desorbed_molecule} from possible structure list:\n{desorbed_molecule.to_adjacency_list()}")
             else:
-                logging.debug("After removing from surface:\n" + dummy_molecule.to_adjacency_list())
+                logging.debug("After removing from surface:\n" + desorbed_molecule.to_adjacency_list())
 
         return desorbed_molecules
 
