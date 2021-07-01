@@ -462,7 +462,7 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
         )
         del kinetics['arrhenius high']
 
-        tokens = tokens[1].split()
+        tokens = case_preserved_tokens[1].split()
         kinetics['coverage dependence'][species_dict[tokens[0].strip()]] = {'a':float(tokens[1]), 'm':float(tokens[2]), 'E':(float(tokens[3]), Eunits)}
         try:
             # is a sticking coefficient
