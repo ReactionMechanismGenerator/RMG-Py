@@ -59,9 +59,9 @@ cdef class StickingCoefficient(KineticsModel):
     `Pmin`                  The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`                  The maximum pressure at which the model is valid, or zero if unknown or undefined
     `coverage_dependence`   A dictionary of coverage dependent parameters to a certain surface species with:
-                             `E`, the activation energy dependence on coverage,
+                             `a`, the coefficient for exponential dependence on the coverage,
                              `m`, the power-law exponent of coverage dependence, and
-                             `a`, the coefficient for exponential dependence on the coverage
+                             `E`, the activation energy dependence on coverage.
     `comment`               Information about the model (e.g. its source)
     ======================= =============================================================
     
@@ -87,7 +87,7 @@ cdef class StickingCoefficient(KineticsModel):
         if self.coverage_dependence is not None:
             string += ", coverage_dependence={"
             for species, parameters in self.coverage_dependence.items():
-                string += f"{species.to_chemkin()!r}: {{'E':({parameters['E'].value}, '{parameters['E'].units}'), 'm':{parameters['m']}, 'a':{parameters['a']}}},"
+                string += f"{species.to_chemkin()!r}: {{'a':{parameters['a']}, 'm':{parameters['m']}, 'E':({parameters['E'].value}, '{parameters['E'].units}')}},"
             string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
@@ -264,9 +264,9 @@ cdef class StickingCoefficientBEP(KineticsModel):
     `Pmin`                  The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`                  The maximum pressure at which the model is valid, or zero if unknown or undefined
     `coverage_dependence`   A dictionary of coverage dependent parameters to a certain surface species with:
-                             `E`, the activation energy dependence on coverage,
+                             `a`, the coefficient for exponential dependence on the coverage,
                              `m`, the power-law exponent of coverage dependence, and
-                             `a`, the coefficient for exponential dependence on the coverage
+                             `E`, the activation energy dependence on coverage.
     `comment`               Information about the model (e.g. its source)
     ======================= =============================================================
     
@@ -293,7 +293,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
         if self.coverage_dependence is not None:
             string += ", coverage_dependence={"
             for species, parameters in self.coverage_dependence.items():
-                string += f"{species.to_chemkin()!r}: {{'E':({parameters['E'].value}, '{parameters['E'].units}'), 'm':{parameters['m']}, 'a':{parameters['a']}}},"
+                string += f"{species.to_chemkin()!r}: {{'a':{parameters['a']}, 'm':{parameters['m']}, 'E':({parameters['E'].value}, '{parameters['E'].units}')}},"
             string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
@@ -445,9 +445,9 @@ cdef class SurfaceArrhenius(Arrhenius):
     `Pmin`                  The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`                  The maximum pressure at which the model is valid, or zero if unknown or undefined
     `coverage_dependence`   A dictionary of coverage dependent parameters to a certain surface species with:
-                             `E`, the activation energy dependence on coverage,
+                             `a`, the coefficient for exponential dependence on the coverage,
                              `m`, the power-law exponent of coverage dependence, and
-                             `a`, the coefficient for exponential dependence on the coverage
+                             `E`, the activation energy dependence on coverage.
     `uncertainty`           Uncertainty information
     `comment`               Information about the model (e.g. its source)
     ======================= =============================================================
@@ -495,7 +495,7 @@ cdef class SurfaceArrhenius(Arrhenius):
         if self.coverage_dependence is not None:
             string += ", coverage_dependence={"
             for species, parameters in self.coverage_dependence.items():
-                string += f"{species.to_chemkin()!r}: {{'E':({parameters['E'].value}, '{parameters['E'].units}'), 'm':{parameters['m']}, 'a':{parameters['a']}}},"
+                string += f"{species.to_chemkin()!r}: {{'a':{parameters['a']}, 'm':{parameters['m']}, 'E':({parameters['E'].value}, '{parameters['E'].units}')}},"
             string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
@@ -537,9 +537,9 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
     `Pmin`                  The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`                  The maximum pressure at which the model is valid, or zero if unknown or undefined
     `coverage_dependence`   A dictionary of coverage dependent parameters to a certain surface species with:
-                             `E`, the activation energy dependence on coverage,
+                             `a`, the coefficient for exponential dependence on the coverage,
                              `m`, the power-law exponent of coverage dependence, and
-                             `a`, the coefficient for exponential dependence on the coverage
+                             `E`, the activation energy dependence on coverage.
     `uncertainty`           Uncertainty information
     `comment`               Information about the model (e.g. its source)
     ======================= =============================================================
@@ -589,7 +589,7 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
         if self.coverage_dependence is not None:
             string += ", coverage_dependence={"
             for species, parameters in self.coverage_dependence.items():
-                string += f"{species.to_chemkin()!r}: {{'E':({parameters['E'].value}, '{parameters['E'].units}'), 'm':{parameters['m']}, 'a':{parameters['a']}}},"
+                string += f"{species.to_chemkin()!r}: {{'a':{parameters['a']}, 'm':{parameters['m']}, 'E':({parameters['E'].value}, '{parameters['E'].units}')}},"
             string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)

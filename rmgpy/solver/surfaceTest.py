@@ -315,7 +315,7 @@ class SurfaceReactorCheck(unittest.TestCase):
                                                   n=0.5,
                                                   Ea=(5.0, 'kJ/mol'),
                                                   T0=(1.0, 'K'),
-                                                  coverage_dependence={'*': {'E': (0.0, 'J/mol'), 'm': -1.0, 'a': 0.0}}))
+                                                  coverage_dependence={'*': {'a': 0.0, 'm': -1.0, 'E': (0.0, 'J/mol')}}))
 
         core_species = [h2, x, hx]
         edge_species = []
@@ -342,9 +342,9 @@ class SurfaceReactorCheck(unittest.TestCase):
         for species, parameters in rxn1.kinetics.coverage_dependence.items():
             self.assertIsInstance(species, str)  # species should be a string
             self.assertIsInstance(parameters, dict)
-            self.assertIsNotNone(parameters['E'])
-            self.assertIsNotNone(parameters['m'])
             self.assertIsNotNone(parameters['a'])
+            self.assertIsNotNone(parameters['m'])
+            self.assertIsNotNone(parameters['E'])
 
         # Integrate to get the solution at each time point
         t = []
@@ -435,7 +435,7 @@ class SurfaceReactorCheck(unittest.TestCase):
                         products=[ch3x],
                         kinetics=StickingCoefficient(
                             A=0.1, n=0, Ea=(0, 'kcal/mol'), T0=(1, 'K'), Tmin=(200, 'K'), Tmax=(3000, 'K'),
-                            coverage_dependence={'*': {'E': (0.0, 'J/mol'), 'm': -1.0, 'a': 0.0}},
+                            coverage_dependence={'*': {'a': 0.0, 'm': -1.0, 'E': (0.0, 'J/mol')}},
                             comment="""Exact match found for rate rule (Adsorbate;VacantSite)"""
                         )
                         )
@@ -470,9 +470,9 @@ class SurfaceReactorCheck(unittest.TestCase):
         for species, parameters in rxn1.kinetics.coverage_dependence.items():
             self.assertIsInstance(species, str)  # species should be a string
             self.assertIsInstance(parameters, dict)
-            self.assertIsNotNone(parameters['E'])
-            self.assertIsNotNone(parameters['m'])
             self.assertIsNotNone(parameters['a'])
+            self.assertIsNotNone(parameters['m'])
+            self.assertIsNotNone(parameters['E'])
 
         # Integrate to get the solution at each time point
         t = []
