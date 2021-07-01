@@ -81,17 +81,6 @@ class MLEstimator:
                 raise NotImplementedError(
                     f"Given model type {model_type} is not implemented"
                 )
-        elif inference_type == ModelInferenceEnum.single_model:
-            if model_type in ["attn_mpn", "mpnn", "dmpnn"]:
-                calculator_type = GNNCalculator
-            elif model_type == "dimenetpp":
-                raise NotImplementedError(
-                    f"Single model inference is not implemented for dimenetpp"
-                )
-            else:
-                raise NotImplementedError(
-                    f"Given model type {model_type} is not implemented"
-                )
         else:
             raise NotImplementedError(
                 f"Given inference type {inference_type} is not supported"
@@ -136,9 +125,13 @@ class MLEstimator:
             raise NotImplementedError(
                 f"Give mode {mode} is not implemented for ML stimation"
             )
-        hf298_pred = self.hf298_estimator.calculate(input)
-        s298_pred = self.s298_estimator.calculate(input)
-        cp_pred = self.cp_estimator.calculate(input)
+        if self.model_type == "dimenetpp":
+            uhf = molecule.multiplicity - 1
+        else:
+            uhf = None
+        hf298_pred = self.hf298_estimator.calculate(input, uhf=uhf)
+        s298_pred = self.s298_estimator.calculate(input, uhf=uhf)
+        cp_pred = self.cp_estimator.calculate(input, uhf=uhf)
         if self.inference_type == "ensemble":
             hf298, hf298_std = hf298_pred.mean(0), hf298_pred.std(0)
             s298, s298_std = s298_pred.mean(0), s298_pred.std(0)
