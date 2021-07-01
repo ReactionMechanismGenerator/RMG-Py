@@ -470,7 +470,7 @@ class ChemkinTest(unittest.TestCase):
                                       Ea=(5.0, 'kJ/mol'),
                                       T0=(1.0, 'K'),
                                       coverage_dependence={
-                                          s_x: {'E': (0.1, 'J/mol'), 'm': -1.0, 'a': 1.0},}))
+                                          s_x: {'a': 1.0, 'm': -1.0, 'E': (0.1, 'J/mol')},}))
 
         reactions = [self.rxn_covdep]
 

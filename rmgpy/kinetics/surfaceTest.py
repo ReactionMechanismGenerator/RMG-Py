@@ -60,8 +60,9 @@ class TestStickingCoefficient(unittest.TestCase):
         self.Tmax = 3000.
         s = Species().from_adjacency_list('1 X u0 p0 c0')
         s.label = 'X'
-        self.coverage_dependence = {s: {'E': quantity.Energy(0.0, 'J/mol'), 'm': quantity.Dimensionless(-1.0),
-                                        'a': quantity.Dimensionless(0.0)}}
+        self.coverage_dependence = {s: {'a': quantity.Dimensionless(0.0),
+                                        'm': quantity.Dimensionless(-1.0),
+                                        'E': quantity.Energy(0.0, 'J/mol')}}
         self.comment = 'O2 dissociative'
         self.stick = StickingCoefficient(
             A=self.A,
@@ -268,8 +269,9 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.Tmax = 3000.
         s = Species().from_adjacency_list('1 X u0 p0 c0')
         s.label = 'X'
-        self.coverage_dependence = {s: {'E': quantity.Energy(0.0, 'J/mol'), 'm': quantity.Dimensionless(-1.0),
-                                        'a': quantity.Dimensionless(0.0)}}
+        self.coverage_dependence = {s: {'a': quantity.Dimensionless(0.0),
+                                        'm': quantity.Dimensionless(-1.0),
+                                        'E': quantity.Energy(0.0, 'J/mol')}}
         self.comment = 'CH3x + Hx <=> CH4 + x + x'
         self.surfarr = SurfaceArrhenius(
             A=(self.A, 'm^2/(mol*s)'),
