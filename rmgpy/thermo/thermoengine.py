@@ -102,7 +102,7 @@ def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
     return thermo
 
 
-def generate_thermo_data(spc, thermo_class=NASA, solvent_name=''):
+def generate_thermo_data(spc, thermo_class=NASA, solvent_name='', metal=None):
     """
     Generates thermo data, first checking Libraries, then using either QM or Database.
     
@@ -122,7 +122,7 @@ def generate_thermo_data(spc, thermo_class=NASA, solvent_name=''):
         logging.debug('Could not obtain the thermo database. Not generating thermo...')
         return None
 
-    thermo0 = thermodb.get_thermo_data(spc)
+    thermo0 = thermodb.get_thermo_data(spc, metal_to_scale_to=metal)
 
     # 1. maybe only submit cyclic core
     # 2. to help radical prediction, HBI should also
@@ -143,7 +143,7 @@ def generate_thermo_data(spc, thermo_class=NASA, solvent_name=''):
     return process_thermo_data(spc, thermo0, thermo_class, solvent_name)
 
 
-def evaluator(spc, solvent_name=''):
+def evaluator(spc, solvent_name='', metal=None):
     """
     Module-level function passed to workers.
 
@@ -157,12 +157,12 @@ def evaluator(spc, solvent_name=''):
     logging.debug("Evaluating spc %s ", spc)
 
     spc.generate_resonance_structures()
-    thermo = generate_thermo_data(spc, solvent_name=solvent_name)
+    thermo = generate_thermo_data(spc, solvent_name=solvent_name, metal=metal)
 
     return thermo
 
 
-def submit(spc, solvent_name=''):
+def submit(spc, solvent_name='', metal=None):
     """
     Submits a request to calculate chemical data for the Species object.
 
@@ -172,4 +172,4 @@ def submit(spc, solvent_name=''):
     the result.
 
     """
-    spc.thermo = evaluator(spc, solvent_name=solvent_name)
+    spc.thermo = evaluator(spc, solvent_name=solvent_name, metal=metal)
