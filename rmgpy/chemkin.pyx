@@ -463,13 +463,13 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
         del kinetics['arrhenius high']
 
         tokens = tokens[1].split()
-        kinetics['coverage dependence'][species_dict[tokens[0].strip()]] = {'E': (tokens[3].strip(), Eunits), 'm': tokens[2].strip(), 'a':tokens[1].strip()}
+        kinetics['coverage dependence'][species_dict[tokens[0].strip()]] = {'a':tokens[1].strip(), 'm': tokens[2].strip(), 'E': (tokens[3].strip(), Eunits)}
         try:
             # is a sticking coefficient
-            kinetics['sticking coefficient'][species_dict[tokens[0].strip()]] = {'E': (tokens[3].strip(), Eunits), 'm': tokens[2].strip(), 'a':tokens[1].strip()}
+            kinetics['sticking coefficient'][species_dict[tokens[0].strip()]] = {'a':tokens[1].strip(), 'm': tokens[2].strip(), 'E': (tokens[3].strip(), Eunits)}
         except KeyError:
             # is a not a sticking coefficient
-            kinetics['surface arrhenius'].coverage_dependence[species_dict[tokens[0].strip()]] = {'E': (tokens[3].strip(), 'J/mol'), 'm': tokens[2].strip(), 'a':tokens[1].strip()}
+            kinetics['surface arrhenius'].coverage_dependence[species_dict[tokens[0].strip()]] = {'a':tokens[1].strip(), 'm': tokens[2].strip(), 'E': (tokens[3].strip(), Eunits)}
 
     elif 'LOW' in line:
         # Low-pressure-limit Arrhenius parameters
