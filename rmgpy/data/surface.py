@@ -233,8 +233,9 @@ class MetalDatabase(object):
 
     def find_binding_energies(self, metal):
         """
-        Tries to find a match in the database when given a metal and/or facet and returns the binding energies or a
-        best guess of binding energies.
+        Tries to find a match in the database when given a metal and/or facet (str).
+
+        Returns: (`database entry label (str)`, `atomic binding_energies (dict)`)
         """
         if metal is None:
             raise DatabaseError("Cannot search for nothing.")
@@ -245,6 +246,7 @@ class MetalDatabase(object):
         if facet is not None:
             try:
                 metal_binding_energies = self.libraries['surface'].get_binding_energies(metal)
+                db_label = metal
             except DatabaseError:
                 # no exact match was found, so continue on as if no facet was given
                 logging.warning("Requested metal %r not found in database.", metal)
@@ -257,16 +259,18 @@ class MetalDatabase(object):
             metal_entry_matches = self.libraries['surface'].get_all_entries_on_metal(metal)
 
             if len(metal_entry_matches) == 1:
-                metal_binding_energies = self.libraries['surface'].get_binding_energies(metal_entry_matches[0])
+                db_label = metal_entry_matches[0]
+                metal_binding_energies = self.libraries['surface'].get_binding_energies(db_label)
             elif metal_entry_matches is None:  # no matches
                 raise DatabaseError(f"No metal {metal} found in metal database.")
             else:  # multiple matches
                 # average the binding energies together? just pick the first one?
                 # just picking the first one for now...
-                logging.warning(f"Found multiple binding energies for {metal!r}. Using {metal_entry_matches[0]!r}.")
-                metal_binding_energies = self.libraries['surface'].get_binding_energies(metal_entry_matches[0])
+                db_label = metal_entry_matches[0]
+                logging.warning(f"Found multiple binding energies for {metal!r}. Using {db_label!r}.")
+                metal_binding_energies = self.libraries['surface'].get_binding_energies(db_label)
 
-        return metal_binding_energies
+        return db_label, metal_binding_energies
 
     def add_entry(self, entry):
         """
