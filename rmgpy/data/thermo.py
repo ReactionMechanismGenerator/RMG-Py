@@ -1432,7 +1432,7 @@ class ThermoDatabase(object):
         if isinstance(binding_energies, str):
             if not self.surface:
                 self.load_surface()
-            binding_energies = self.surface['metal'].find_binding_energies(binding_energies)
+            metal_label, binding_energies = self.surface['metal'].find_binding_energies(binding_energies)
 
         for element, energy in binding_energies.items():
             binding_energies[element] = rmgpy.quantity.Energy(energy)
@@ -1457,12 +1457,12 @@ class ThermoDatabase(object):
         if metal_to_scale_to is None:
             metal_to_scale_to_binding_energies = self.binding_energies
         else:
-            metal_to_scale_to_binding_energies = self.surface['metal'].find_binding_energies(metal_to_scale_to)
+            metal_to_scale_to, metal_to_scale_to_binding_energies = self.surface['metal'].find_binding_energies(metal_to_scale_to)
 
         if metal_to_scale_from is None:
             metal_to_scale_from_binding_energies = self.binding_energies
         else:
-            metal_to_scale_from_binding_energies = self.surface['metal'].find_binding_energies(metal_to_scale_from)
+            metal_to_scale_from, metal_to_scale_from_binding_energies = self.surface['metal'].find_binding_energies(metal_to_scale_from)
 
         delta_atomic_adsorption_energy = {
             'C': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
@@ -1520,6 +1520,8 @@ class ThermoDatabase(object):
                 thermo.H298.value_si += change_in_binding_energy
                 comments.append(f'{normalized_bonds[element]:.2f}{element}')
         thermo.comment += " Binding energy corrected by LSR ({}) from {}".format('+'.join(comments), metal_to_scale_from)
+        if metal_to_scale_to:
+            thermo.comment += " to {}".format(metal_to_scale_to)
         return thermo
 
     def get_thermo_data_for_surface_species(self, species):
