@@ -481,6 +481,17 @@ class GroupAtom(Vertex):
         site_type = ATOMTYPES['X']
         return all([s.is_specific_case_of(site_type) for s in self.atomtype])
 
+    def is_bonded_to_surface(self):
+        """
+        Return ``True`` if the atom is bonded to a surface GroupAtom `X`
+        ``False`` if it is not
+        """
+        cython.declare(bonded_atom=GroupAtom)
+        for bonded_atom in self.bonds.keys():
+            if bonded_atom.is_surface_site():
+                return True
+        return False
+
     def is_oxygen(self):
         """
         Return ``True`` if the atom represents an oxygen atom or ``False`` if not.
