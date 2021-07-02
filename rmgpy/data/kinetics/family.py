@@ -346,15 +346,23 @@ class ReactionRecipe(object):
                                 else:
                                     atom2.atomtype = [ATOMTYPES['Xv']]
                 elif (action[0] == 'FORM_BOND' and forward) or (action[0] == 'BREAK_BOND' and not forward):
+                    # Form bond between atom1 and atom2
                     if struct.has_bond(atom1, atom2):
                         raise InvalidActionError('Attempted to create an existing bond.')
                     if info not in (1, 0):  # Can only form single or vdW bonds
                         raise InvalidActionError('Attempted to create bond of type {:!r}'.format(info))
+                    # we need to make sure we are not forming
+                    # a surface bond to an atom that is already bonded to the surface
+                    if atom1.is_surface_site() and atom2.is_bonded_to_surface():
+                        raise InvalidActionError('Attempted to form a surface bond to an atom already bonded to surface.')
+                    elif atom2.is_surface_site() and atom1.is_bonded_to_surface():
+                        raise InvalidActionError('Attempted to form a surface bond to an atom already bonded to surface.')
                     bond = GroupBond(atom1, atom2, order=[info]) if pattern else Bond(atom1, atom2, order=info)
                     struct.add_bond(bond)
                     atom1.apply_action(['FORM_BOND', label1, info, label2])
                     atom2.apply_action(['FORM_BOND', label1, info, label2])
                 elif (action[0] == 'BREAK_BOND' and forward) or (action[0] == 'FORM_BOND' and not forward):
+                    # Break bond between atom1 and atom2
                     if not struct.has_bond(atom1, atom2):
                         if info == 0:
                             if atom1.is_surface_site() or atom2.is_surface_site():

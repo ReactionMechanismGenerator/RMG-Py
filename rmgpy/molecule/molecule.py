@@ -376,6 +376,17 @@ class Atom(Vertex):
         """
         return self.symbol == 'X'
 
+    def is_bonded_to_surface(self):
+        """
+        Return ``True`` if the atom is bonded to a surface atom `X`
+        ``False`` if it is not
+        """
+        cython.declare(bonded_atom=Atom)
+        for bonded_atom in self.bonds.keys():
+            if bonded_atom.is_surface_site():
+                return True
+        return False
+
     def is_silicon(self):
         """
         Return ``True`` if the atom represents a silicon atom or ``False`` if
