@@ -394,6 +394,14 @@ structures grows 2^n where n is the number of possible H-bonds</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_adatoms">
+<span class="sig-name descname"><span class="pre">get_adatoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_adatoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of adatoms in the molecule.
+:returns: A list containing the adatoms in the molecule
+:rtype: List(Atom)</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_all_cycles">
 <span class="sig-name descname"><span class="pre">get_all_cycles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">starting_vertex</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_all_cycles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a starting vertex, returns a list of all the cycles containing
@@ -477,6 +485,34 @@ by RMG, and not by RDKit.</p>
 <dd><p>Iterate through the atoms in the structure and calculate the charge span
 on the overall molecule.
 The charge span is a measure of the number of charge separations in a molecule.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_desorbed_molecules">
+<span class="sig-name descname"><span class="pre">get_desorbed_molecules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_desorbed_molecules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of desorbed molecules by desorbing the molecule from the surface.</p>
+<p>Returns a list of Molecules.  Each molecule’s atoms will be labeled corresponding to
+the bond order with the surface:
+‘<a href="#id1"><span class="problematic" id="id2">*</span></a>1’ - Single bond
+‘<a href="#id3"><span class="problematic" id="id4">*</span></a>2’ - double bond
+‘<a href="#id5"><span class="problematic" id="id6">*</span></a>3’ - triple bond
+‘<a href="#id7"><span class="problematic" id="id8">*</span></a>4’ - quadruple bond</p>
+<div class="system-message" id="id1">
+<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">docstring of rmgpy.molecule.molecule.Molecule.get_desorbed_molecules</span>, line 3); <em><a href="#id2">backlink</a></em></p>
+<p>Inline emphasis start-string without end-string.</p>
+</div>
+<div class="system-message" id="id3">
+<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">docstring of rmgpy.molecule.molecule.Molecule.get_desorbed_molecules</span>, line 3); <em><a href="#id4">backlink</a></em></p>
+<p>Inline emphasis start-string without end-string.</p>
+</div>
+<div class="system-message" id="id5">
+<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">docstring of rmgpy.molecule.molecule.Molecule.get_desorbed_molecules</span>, line 3); <em><a href="#id6">backlink</a></em></p>
+<p>Inline emphasis start-string without end-string.</p>
+</div>
+<div class="system-message" id="id7">
+<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">docstring of rmgpy.molecule.molecule.Molecule.get_desorbed_molecules</span>, line 3); <em><a href="#id8">backlink</a></em></p>
+<p>Inline emphasis start-string without end-string.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -659,6 +695,14 @@ J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021</p>
 RingDecomposerLib: An Open-Source Implementation of
 Unique Ring Families and Other Cycle Bases.
 J. Chem. Inf. Model., 2017, 57 (2), pp 122-126</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_surface_sites">
+<span class="sig-name descname"><span class="pre">get_surface_sites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_surface_sites" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of surface site atoms in the molecule.
+:returns: A list containing the surface site atoms in the molecule
+:rtype: List(Atom)</p>
 </dd></dl>
 
 <dl class="py method">
