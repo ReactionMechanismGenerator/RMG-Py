@@ -43,12 +43,12 @@ cdef class ReactionSystem(DASx):
     cdef public np.ndarray dydt0
 
     #  variables that determine the dimensions of arrays and matrices:
-    cdef public int num_core_species
-    cdef public int num_core_reactions
-    cdef public int num_edge_species
-    cdef public int num_edge_reactions
-    cdef public int num_pdep_networks
-    cdef public int neq
+    cdef public Py_ssize_t num_core_species
+    cdef public Py_ssize_t num_core_reactions
+    cdef public Py_ssize_t num_edge_species
+    cdef public Py_ssize_t num_edge_reactions
+    cdef public Py_ssize_t num_pdep_networks
+    cdef public Py_ssize_t neq
 
     # variables that store stoichiometry data
     cdef public dict species_index

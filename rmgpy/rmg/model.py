@@ -44,10 +44,7 @@ from rmgpy.constraints import fails_species_constraints
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
-
 from rmgpy.molecule.group import Group
-from rmgpy.kinetics import KineticsData, Arrhenius
-
 from rmgpy.data.rmg import get_db
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
@@ -2019,7 +2016,9 @@ def get_family_library_object(label):
     except KeyError:
         pass
 
-    raise Exception('Could not retrieve the family/library: {}'.format(label))
+    raise Exception(f"Could not retrieve the family/library: {label} "
+                    f"from families {list(kinetics.families.keys())} "
+                    f"and libraries {list(kinetics.libraries.keys())}.")
 
 
 def get_key(spc):

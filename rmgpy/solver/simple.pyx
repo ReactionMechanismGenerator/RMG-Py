@@ -351,8 +351,8 @@ cdef class SimpleReactor(ReactionSystem):
         """
         cdef np.ndarray[np.int_t, ndim=2] ir, ip, inet
         cdef np.ndarray[np.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
-        cdef int num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
-        cdef int i, j, z, first, second, third
+        cdef Py_ssize_t num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
+        cdef Py_ssize_t i, j, z, first, second, third
         cdef double k, V, reaction_rate, rev_reaction_rate, T, P, Peff
         cdef np.ndarray[np.float64_t, ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates
         cdef np.ndarray[np.float64_t, ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
