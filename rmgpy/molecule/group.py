@@ -1147,6 +1147,13 @@ class Group(Graph):
         """Returns ``True`` iff the group is nothing but a surface site 'X'."""
         return len(self.atoms) == 1 and self.atoms[0].is_surface_site()
 
+    def get_surface_sites(self):
+        """
+        Returns ``True`` iff the group contains an 'X' surface site.
+        """
+        cython.declare(atom=GroupAtom)
+        return [atom for atom in self.atoms if atom.is_surface_site()]
+
     def remove_atom(self, atom):
         """
         Remove `atom` and all bonds associated with it from the graph. Does

@@ -279,4 +279,8 @@ cdef class Molecule(Graph):
 
     cpdef dict enumerate_bonds(self)
 
+    cpdef list get_surface_sites(self)
+
+    cpdef list get_adatoms(self)
+
 cdef atom_id_counter

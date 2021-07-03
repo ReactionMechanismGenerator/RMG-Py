@@ -1539,100 +1539,17 @@ class ThermoDatabase(object):
         logging.debug("Trying to generate thermo for surface species using first of %d resonance isomer(s):",
                       len(species.molecule))
         molecule = species.molecule[0]
+        # store any labeled atoms to reapply at the end
+        labeled_atoms = molecule.get_all_labeled_atoms()
+        molecule.clear_labeled_atoms()
         logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())
         # only want/need to do one resonance structure,
         # because will need to regenerate others in gas phase
-        dummy_molecule = molecule.copy(deep=True)
-        sites_to_remove = []
-        adsorbed_atoms = []
-        for atom in dummy_molecule.atoms:
-            if atom.is_surface_site():
-                sites_to_remove.append(atom)
-        for site in sites_to_remove:
-            numbonds = len(site.bonds)
-            if numbonds == 0:
-                # vanDerWaals
-                pass
-            else:
-                assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
-                bonded_atom = list(site.bonds.keys())[0]
-                adsorbed_atoms.append(bonded_atom)
-                bond = site.bonds[bonded_atom]
-                dummy_molecule.remove_bond(bond)
-                if bond.is_single():
-                    bonded_atom.increment_radical()
-                elif bond.is_double():
-                    bonded_atom.increment_radical()
-                    bonded_atom.increment_radical()
-                elif bond.is_triple():
-                    bonded_atom.increment_radical()
-                    bonded_atom.increment_lone_pairs()
-                elif bond.is_quadruple():
-                    bonded_atom.increment_radical()
-                    bonded_atom.increment_radical()
-                    bonded_atom.increment_lone_pairs()
-                else:
-                    raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
-            dummy_molecule.remove_atom(site)
-
-        dummy_molecules = [dummy_molecule.copy(deep=True)]
-        if len(adsorbed_atoms) == 2:
-            # Bidentate adsorption.
-            # Try to turn adjacent biradical into a bond.
-            try:
-                bond = adsorbed_atoms[0].bonds[adsorbed_atoms[1]]
-            except KeyError:
-                pass # the two adsorbed atoms are not bonded to each other
-            else:
-                if bond.order < 3:
-                    bond.increment_order()
-                    adsorbed_atoms[0].decrement_radical()
-                    adsorbed_atoms[1].decrement_radical()
-                    dummy_molecules.append(dummy_molecule.copy(deep=True))
-                    if (adsorbed_atoms[0].radical_electrons and
-                            adsorbed_atoms[1].radical_electrons and
-                            bond.order < 3):
-                        # There are still spare adjacenct radicals, so do it again
-                        bond.increment_order()
-                        adsorbed_atoms[0].decrement_radical()
-                        adsorbed_atoms[1].decrement_radical()
-                        dummy_molecules.append(dummy_molecule.copy(deep=True))
-                    if (adsorbed_atoms[0].lone_pairs and
-                            adsorbed_atoms[1].lone_pairs and 
-                            bond.order < 3):
-                        # X#C-C#X will end up with .:C-C:. in gas phase
-                        # and we want to get to .C#C. but not :C=C:
-                        bond.increment_order()
-                        adsorbed_atoms[0].decrement_lone_pairs()
-                        adsorbed_atoms[0].increment_radical()
-                        adsorbed_atoms[1].decrement_lone_pairs()
-                        adsorbed_atoms[1].increment_radical()
-                        dummy_molecules.append(dummy_molecule.copy(deep=True))
-                #For bidentate CO because we want C[-1]#O[+1] but not .C#O.
-                if (bond.order == 3 and adsorbed_atoms[0].radical_electrons and 
-                    adsorbed_atoms[1].radical_electrons and 
-                    (adsorbed_atoms[0].lone_pairs or adsorbed_atoms[1].lone_pairs)):
-                    adsorbed_atoms[0].decrement_radical()
-                    adsorbed_atoms[1].decrement_radical()
-                    if adsorbed_atoms[0].lone_pairs:
-                        adsorbed_atoms[1].increment_lone_pairs()
-                    else:
-                        adsorbed_atoms[0].increment_lone_pairs()
-                    dummy_molecules.append(dummy_molecule.copy(deep=True))
-
-        for dummy_molecule in dummy_molecules[:]:
-            try:
-                dummy_molecule.update_connectivity_values()
-                dummy_molecule.update()
-            except:
-                dummy_molecules.remove(dummy_molecule)
-                logging.debug(f"Removing {dummy_molecule} from possible structure list:\n{dummy_molecule.to_adjacency_list()}")
-            else:
-                logging.debug("After removing from surface:\n" + dummy_molecule.to_adjacency_list())
-
+        dummy_molecules = molecule.get_desorbed_molecules()
+        for mol in dummy_molecules:
+            mol.clear_labeled_atoms()
         if len(dummy_molecules) == 0:
             raise RuntimeError(f"Cannot get thermo for gas-phase molecule. No valid dummy molecules from original molecule:\n{molecule.to_adjacency_list()}")
-
         
         # if len(molecule) > 1, it will assume all resonance structures have already been generated when it tries to generate them, so evaluate each configuration separately and pick the lowest energy one by H298 value
         gas_phase_species_from_libraries = []
@@ -1675,8 +1592,10 @@ class ThermoDatabase(object):
             H298=(0.0, "kJ/mol"),
             S298=(0.0, "J/(mol*K)"),
         )
+
+        surface_sites = molecule.get_surface_sites()
         try:
-            self._add_group_thermo_data(adsorption_thermo, self.groups['adsorptionPt111'], molecule, {})
+            self._add_adsorption_correction(adsorption_thermo, self.groups['adsorptionPt111'], molecule, surface_sites)
         except (KeyError, DatabaseError):
             logging.error("Couldn't find in adsorption thermo database:")
             logging.error(molecule)
@@ -1687,10 +1606,97 @@ class ThermoDatabase(object):
         add_thermo_data(thermo, adsorption_thermo, group_additivity=True)
 
         if thermo.label:
-            thermo.label += 'X' * len(adsorbed_atoms)
+            thermo.label += 'X' * len(surface_sites)
 
         find_cp0_and_cpinf(species, thermo)
+
+        # if the molecule had labels, reapply them 
+        for label,atom in labeled_atoms.items():
+            if isinstance(atom,list):
+                for a in atom:
+                    a.label = label
+            else:
+                atom.label = label
+
         return thermo
+
+    def _add_adsorption_correction(self, adsorption_thermo, adsorption_groups, molecule, surface_sites):
+        """Add thermo adsorption correction(s) to estimate adsorbate thermo from gas phase.
+        If the molecule is multidentate, multiple adsoption corrections may be applied if 
+        there does not exist a multidentate adsorption group with the same number of sites.
+        In this case, only the enthalpy correction (H298) will be used for subsequent groups
+        to avoid over-correcting the entropy and heat capacity due to the loss of translational 
+        and rotational degrees of freedom from the gas phase.
+
+        Args:
+            adsorption_thermo ([ThermoData]): the ThermoData object to add the correction(s)
+            adsorption_groups ([database]): the groups database (adsorptionPt111)
+            molecule ([Molecule]): the molecule to apply the thermo correction
+            surface_sites ([list([Atom])]): a list of the surface site atoms in the molecule
+        """
+
+        number_of_surface_sites = len(surface_sites)
+
+        matches = []
+        for atom in surface_sites:
+            labeled_atoms = {'*': atom}
+            node0 = adsorption_groups.descend_tree(molecule, labeled_atoms)
+            if node0 is None: 
+                # no match, so try the next surface site
+                continue
+            node = node0
+            while node is not None and node.data is None:
+                node = node.parent
+            if node is None:
+                # no data, so try the next surface site
+                continue
+            data = node.data
+            comment = node.label
+            loop_count = 0
+            while isinstance(data, str):
+                loop_count += 1
+                if loop_count > 100:
+                    raise DatabaseError("Maximum iterations reached while following thermo group data pointers. A circular"
+                                    f" reference may exist. Last node was {node.label} pointing to group called {data} in "
+                                    f"database {database.label}")
+
+                for entry in adsorption_groups.entries.values():
+                    if entry.label == data:
+                        data = entry.data
+                        comment = entry.label
+                        break
+                else:
+                    raise DatabaseError(f"Node {node.label} points to a non-existing group called {data} "
+                                    f"in database {database.label}")
+            data.comment = f'{adsorption_groups.label}({comment})'
+            group_surface_sites = node.item.get_surface_sites()
+            if len(group_surface_sites) == number_of_surface_sites:
+                # all the surface sites are accounted for so add the adsorption group and return
+                add_thermo_data(adsorption_thermo, data, group_additivity=True)
+                return True
+            else:
+                # we have not found a full match yet, so append and keep looking
+                matches.append((len(group_surface_sites),data))
+        
+        matches.sort(key = lambda x: -x[0])
+        # sort the matches by descending number of surface sites
+        for i,(number_of_group_sites, data) in enumerate(matches):
+            if number_of_surface_sites - number_of_group_sites < 0:
+                # too many sites in this group, skip to the next one
+                continue
+            if i == 0:
+                # this is the first correction, so add H298, S298, and Cp
+                add_thermo_data(adsorption_thermo, data, group_additivity=True)
+            else:
+                # We have already corrected S298 and Cp, so we only want to correct H298
+                adsorption_thermo.H298.value_si += data.H298.value_si
+                adsorption_thermo.comment += ' + H298({0})'.format(data.comment)
+            number_of_surface_sites -= number_of_group_sites
+            if number_of_surface_sites <= 0:
+                # we have corrected for all the sites
+                break
+
+        return True
 
     def get_thermo_data_from_libraries(self, species, training_set=None):
         """
