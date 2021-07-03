@@ -207,7 +207,6 @@ def read_kinetics_entry(entry, species_dict, Aunits, Eunits):
         kinetics.update({
             'chebyshev coefficients': [],
             'efficiencies': {},
-            'coverage dependence': {}
         })
 
         # Note that the subsequent lines could be in any order
@@ -453,23 +452,22 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
         reaction.duplicate = True
 
     elif 'COV' in line:
-        k = kinetics['arrhenius high']
-        kinetics['surface arrhenius'] = _kinetics.SurfaceArrhenius(
-            A=(k.A.value, kunits),
-            n=k.n,
-            Ea=k.Ea,
-            T0=k.T0,
-        )
-        del kinetics['arrhenius high']
+        try:
+            k = kinetics['sticking coefficient']
+        except KeyError:
+            k = kinetics['arrhenius high']
+            k = _kinetics.SurfaceArrhenius(
+                A=(k.A.value, kunits),
+                n=k.n,
+                Ea=k.Ea,
+                T0=k.T0,
+            )
+            kinetics['surface arrhenius'] = k
+            del kinetics['arrhenius high']
 
         tokens = case_preserved_tokens[1].split()
-        kinetics['coverage dependence'][species_dict[tokens[0].strip()]] = {'a':float(tokens[1]), 'm':float(tokens[2]), 'E':(float(tokens[3]), Eunits)}
-        try:
-            # is a sticking coefficient
-            kinetics['sticking coefficient'][species_dict[tokens[0].strip()]] = {'a':float(tokens[1]), 'm':float(tokens[2]), 'E':(float(tokens[3]), Eunits)}
-        except KeyError:
-            # is a not a sticking coefficient
-            kinetics['surface arrhenius'].coverage_dependence[species_dict[tokens[0].strip()]] = {'a':float(tokens[1]), 'm':float(tokens[2]), 'E': (float(tokens[3]), Eunits)}
+        cov_dep_species = species_dict[tokens[0].strip()]
+        k.coverage_dependence[cov_dep_species] = {'a':float(tokens[1]), 'm':float(tokens[2]), 'E':(float(tokens[3]), Eunits)}
 
     elif 'LOW' in line:
         # Low-pressure-limit Arrhenius parameters
@@ -563,6 +561,7 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
                                    Ea=(float(tokens[3].strip()), Eunits),
                                    T0=(1, "K"),
                                )])
+
     elif tokens[0].startswith('REV'):
         reverse_A = float(tokens[1].split()[0])
         kinetics['explicit reverse'] = line.strip()
@@ -571,6 +570,7 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
             reaction.reversible = False
         else:
             logging.info("Ignoring explicit reverse rate for reaction {0}".format(reaction))
+
     elif line.strip() == 'STICK':
         # Convert what we thought was Arrhenius into StickingCoefficient
         k = kinetics['arrhenius high']
@@ -581,6 +581,7 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
             T0=k.T0,
         )
         del kinetics['arrhenius high']
+
     else:
         # Assume a list of collider efficiencies
         try:
