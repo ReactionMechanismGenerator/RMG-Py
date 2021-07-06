@@ -815,7 +815,7 @@ def ml_estimator(
 
     # Currently only support thermo
     if thermo:
-        if not model_type in ["attn_mpn", "mpnn", "dmpnn"]:
+        if not model_type in ["attn_mpn", "mpnn", "dmpnn", "dimenetpp"]:
             raise RuntimeError(
                 f"Given ML estimator model {model_type} is not supported"
             )
