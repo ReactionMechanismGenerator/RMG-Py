@@ -51,7 +51,12 @@ class MLEstimator:
     # we also train on cp0 and cpinf in 0,1 th index of prediction
     temps = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0, 2000.0, 2400.0]
 
-    def __init__(self, model_type: str = "attn_mpn", inference_type: str = "ensemble"):
+    def __init__(
+        self,
+        model_type: str = "attn_mpn",
+        inference_type: str = "ensemble",
+        dimenetpp_featurizer: str = "gfn1",
+    ):
         # once gnns thermo is updated in upstream this will change
         # lazy import here
         from gnns_thermo.inference import (
@@ -63,6 +68,7 @@ class MLEstimator:
         from gnns_thermo.config.enums import ModelInferenceEnum
 
         self.model_type = model_type  # for logging
+        self.dimenetpp_featurizer = dimenetpp_featurizer
         self.inference_type = inference_type
         h298_chkpt, h298_config = get_chkpt(
             model_type, "h298", inference_type=inference_type
@@ -129,9 +135,16 @@ class MLEstimator:
             uhf = molecule.multiplicity - 1
         else:
             uhf = None
-        hf298_pred = self.hf298_estimator.calculate(input, uhf=uhf)
-        s298_pred = self.s298_estimator.calculate(input, uhf=uhf)
-        cp_pred = self.cp_estimator.calculate(input, uhf=uhf)
+        # need to find
+        hf298_pred = self.hf298_estimator.calculate(
+            input, uhf=uhf, feat=self.dimenetpp_featurizer
+        )
+        s298_pred = self.s298_estimator.calculate(
+            input, uhf=uhf, feat=self.dimenetpp_featurizer
+        )
+        cp_pred = self.cp_estimator.calculate(
+            input, uhf=uhf, feat=self.dimenetpp_featurizer
+        )
         if self.inference_type == "ensemble":
             hf298, hf298_std = hf298_pred.mean(0), hf298_pred.std(0)
             s298, s298_std = s298_pred.mean(0), s298_pred.std(0)
