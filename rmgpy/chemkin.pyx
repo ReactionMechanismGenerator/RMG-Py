@@ -1802,11 +1802,6 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
             kinetics.Ea.value_si / 4184.
         )
         string += '\n    STICK'
-        if kinetics.coverage_dependence:
-            for species, cov_params in kinetics.coverage_dependence.items():
-                label = get_species_identifier(species)
-                string += f'\n    COV / {label:<41}'
-                string += f"{cov_params['a'].value:<9.3g} {cov_params['m'].value:<6.3g} {cov_params['E'].value_si/4184:<6.3f} /"
     elif isinstance(kinetics, _kinetics.Arrhenius):
         conversion_factor = kinetics.A.get_conversion_factor_from_si_to_cm_mol_s()
         if not isinstance(kinetics, _kinetics.SurfaceArrhenius):
@@ -1823,11 +1818,6 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
             kinetics.n.value_si,
             kinetics.Ea.value_si / 4184.
         )
-        if isinstance(kinetics, _kinetics.SurfaceArrhenius) and kinetics.coverage_dependence:
-            for species, cov_params in kinetics.coverage_dependence.items():
-                label = get_species_identifier(species)
-                string += f'\n    COV / {label:<41}'
-                string += f"{cov_params['a'].value:<9.3g} {cov_params['m'].value:<6.3g} {cov_params['E'].value_si/4184.:<6.3f} /"
     elif isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
         arrhenius = kinetics.arrheniusHigh
         conversion_factor = arrhenius.A.get_conversion_factor_from_si_to_cm_mol_s()
@@ -1866,6 +1856,13 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
         string += '{0:<9.1f} {1:<9.1f} {2:<9.1f}'.format(0, 0, 0)
 
     string += '\n'
+
+    if getattr(kinetics, 'coverage_dependence', None):
+        # Write coverage dependence parameters for surface reactions
+        for species, cov_params in kinetics.coverage_dependence.items():
+            label = get_species_identifier(species)
+            string += f'    COV / {label:<41} '
+            string += f"{cov_params['a'].value:<9.3g} {cov_params['m'].value:<9.3g} {cov_params['E'].value_si/4184.:<9.3f} /\n"
 
     if isinstance(kinetics, (_kinetics.ThirdBody, _kinetics.Lindemann, _kinetics.Troe)):
         # Write collider efficiencies
