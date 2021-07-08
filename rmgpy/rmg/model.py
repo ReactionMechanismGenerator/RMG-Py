@@ -874,7 +874,13 @@ class CoreEdgeReactionModel:
         This ensures that species that are used in coverage-dependent kinetic
         expressions exist in the model. (Before this is called, they may have
         only existed in a reaction libary instance).
+
+        If <CoreEdgeReactionModel>self.coverage_dependence is False then
+        it instead removes any coverage_dependence from the kinetics.
         """
+        if not self.coverage_dependence:
+            kinetics.coverage_dependence = None
+            return
         cov_dep = {}
         for species, values in kinetics.coverage_dependence.items():
             species_in_model, is_new = self.make_new_species(species)
