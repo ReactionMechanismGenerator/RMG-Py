@@ -477,8 +477,7 @@ class ChemkinTest(unittest.TestCase):
         # save_chemkin_file
         chemkin_save_path = os.path.join(folder, 'surface', 'chem-surface_new.inp')
         dictionary_save_path = os.path.join(folder, 'surface', 'species_dictionary_new.txt')
-        save_chemkin_file(chemkin_save_path, species, reactions, verbose=True, check_for_duplicates=True,
-                          coverage_dependence=True)
+        save_chemkin_file(chemkin_save_path, species, reactions, verbose=True, check_for_duplicates=True)
         save_species_dictionary(dictionary_save_path, species, old_style=False)
 
         # load chemkin file
