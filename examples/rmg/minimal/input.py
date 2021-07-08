@@ -12,22 +12,8 @@ database(
 species(
     label='ethane',
     reactive=True,
-    structure=fragment_adj("""1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
-2 C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
-3 R u0 p0 c0 {2,S}
-4 H u0 p0 c0 {1,S}
-5 H u0 p0 c0 {1,S}
-6 H u0 p0 c0 {1,S}
-7 H u0 p0 c0 {2,S}
-8 H u0 p0 c0 {2,S}
-"""),
+    structure=SMILES("CC"),
 )
-
-# species(
-#     label='ethane',
-#     reactive=True,
-#     structure=SMILES("CC"),
-# )
 
 # Reaction systems
 simpleReactor(
@@ -49,7 +35,7 @@ simulator(
 
 model(
     toleranceKeepInEdge=0.0,
-    toleranceMoveToCore=0.01,
+    toleranceMoveToCore=0.1,
     toleranceInterruptSimulation=0.1,
     maximumEdgeSpecies=100000,
     filterReactions=True,
