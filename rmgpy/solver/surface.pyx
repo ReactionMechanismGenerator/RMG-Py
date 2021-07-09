@@ -85,9 +85,6 @@ cdef class SurfaceReactor(ReactionSystem):
                  sensitivity_threshold=1e-3,
                  sens_conditions=None,
                  coverage_dependence=False,
-                 cov_dep={},
-                 cov_dep_index_species={},
-                 current_surface_coverages={},
                  ):
         ReactionSystem.__init__(self,
                                 termination,
@@ -111,9 +108,10 @@ cdef class SurfaceReactor(ReactionSystem):
         self.constant_volume = True
         self.sens_conditions = sens_conditions
         self.n_sims = n_sims
-        self.cov_dep = cov_dep
-        self.cov_dep_index_species = cov_dep_index_species
-        self.current_surface_coverages = current_surface_coverages
+
+        self.cov_dep = {}
+        self.cov_dep_index_species = {}
+        self.current_surface_coverages = {}
 
     def convert_initial_keys_to_species_objects(self, species_dict):
         """
