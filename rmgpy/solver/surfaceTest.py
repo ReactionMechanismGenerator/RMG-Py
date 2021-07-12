@@ -315,7 +315,7 @@ class SurfaceReactorCheck(unittest.TestCase):
                                                   n=0.5,
                                                   Ea=(5.0, 'kJ/mol'),
                                                   T0=(1.0, 'K'),
-                                                  coverage_dependence={'*': {'a': 0.0, 'm': -1.0, 'E': (0.0, 'J/mol')}}))
+                                                  coverage_dependence={x: {'a': 0.0, 'm': -1.0, 'E': (0.0, 'J/mol')}}))
 
         core_species = [h2, x, hx]
         edge_species = []
@@ -340,7 +340,7 @@ class SurfaceReactorCheck(unittest.TestCase):
 
         self.assertIsInstance(rxn1.kinetics.coverage_dependence, dict)  # check to make sure coverage_dependence is still the correct type
         for species, parameters in rxn1.kinetics.coverage_dependence.items():
-            self.assertIsInstance(species, str)  # species should be a string
+            self.assertIsInstance(species, Species)  # species should be a Species
             self.assertIsInstance(parameters, dict)
             self.assertIsNotNone(parameters['a'])
             self.assertIsNotNone(parameters['m'])
@@ -455,7 +455,7 @@ class SurfaceReactorCheck(unittest.TestCase):
                         products=[ch3x],
                         kinetics=StickingCoefficient(
                             A=0.1, n=0, Ea=(0, 'kcal/mol'), T0=(1, 'K'), Tmin=(200, 'K'), Tmax=(3000, 'K'),
-                            coverage_dependence={'*': {'a': 0.0, 'm': -1.0, 'E': (0.0, 'J/mol')}},
+                            coverage_dependence={x: {'a': 0.0, 'm': -1.0, 'E': (0.0, 'J/mol')}},
                             comment="""Exact match found for rate rule (Adsorbate;VacantSite)"""
                         )
                         )
@@ -488,7 +488,7 @@ class SurfaceReactorCheck(unittest.TestCase):
 
         self.assertIsInstance(rxn1.kinetics.coverage_dependence, dict)  # check to make sure coverage_dependence is still the correct type
         for species, parameters in rxn1.kinetics.coverage_dependence.items():
-            self.assertIsInstance(species, str)  # species should be a string
+            self.assertIsInstance(species, Species)  # species should be a Species
             self.assertIsInstance(parameters, dict)
             self.assertIsNotNone(parameters['a'])
             self.assertIsNotNone(parameters['m'])
