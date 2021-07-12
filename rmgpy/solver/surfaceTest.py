@@ -28,6 +28,7 @@
 ###############################################################################
 
 import unittest
+import time
 
 import numpy as np
 
@@ -351,6 +352,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         y = []
         reaction_rates = []
         species_rates = []
+        start_time = time.time()
         for t1 in tlist:
             rxn_system.advance(t1)
             t.append(rxn_system.t)
@@ -359,6 +361,8 @@ class SurfaceReactorCheck(unittest.TestCase):
             y.append(rxn_system.y.copy())
             reaction_rates.append(rxn_system.core_reaction_rates.copy())
             species_rates.append(rxn_system.core_species_rates.copy())
+        run_time = time.time() - start_time
+        print(f"Simulation took {run_time:.3e} seconds in {self.id()}")
 
         # Convert the solution vectors to np arrays
         t = np.array(t, np.float64)
@@ -489,6 +493,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         print("moles:", y)
         print("reaction rates:", reaction_rates)
         print("species rates:", species_rates)
+        start_time = time.time()
         for t1 in tlist:
             rxn_system.advance(t1)
             t.append(rxn_system.t)
@@ -497,6 +502,8 @@ class SurfaceReactorCheck(unittest.TestCase):
             y.append(rxn_system.y.copy())
             reaction_rates.append(rxn_system.core_reaction_rates.copy())
             species_rates.append(rxn_system.core_species_rates.copy())
+        run_time = time.time() - start_time
+        print(f"Simulation took {run_time:.3e} seconds in {self.id()}")
 
         # Convert the solution vectors to np arrays
         t = np.array(t, np.float64)
