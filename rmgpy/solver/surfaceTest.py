@@ -132,23 +132,22 @@ class SurfaceReactorCheck(unittest.TestCase):
         # Check that we've reached equilibrium
         self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
 
-        # # Visualize the simulation results
-        # import pylab
-        # fig = pylab.figure(figsize=(6, 6))
-        # pylab.subplot(2, 1, 1)
-        # pylab.semilogx(t, y[:, 2])
-        # pylab.ylabel('Concentration (mol/m$^\\mathdefault{3 or 2}$)')
-        # pylab.legend(['HX'], loc=4)
-        # pylab.subplot(2, 1, 2)
-        # pylab.semilogx(t, species_rates)
-        # pylab.legend(['H2', 'X', 'HX'], loc=4)
-        # pylab.xlabel('Time (s)')
-        # pylab.ylabel('Rate (mol/m$^\\mathdefault{3 or 2}$*s)')
-        # # fig.subplots_adjust(left=0.21, bottom=0.10, right=0.95, top=0.95, wspace=0.20, hspace=0.35)
-        # pylab.tight_layout()
-        # # pylab.show()
-        # pylab.savefig('surfaceTestH2.pdf')
-
+        # Visualize the simulation results
+        import pylab
+        fig = pylab.figure(figsize=(6, 6))
+        pylab.subplot(2, 1, 1)
+        pylab.semilogx(t, y[:, 2])
+        pylab.ylabel('Concentration (mol/m$^\\mathdefault{3 or 2}$)')
+        pylab.legend(['HX'], loc=4)
+        pylab.subplot(2, 1, 2)
+        pylab.semilogx(t, species_rates)
+        pylab.legend(['H2', 'X', 'HX'], loc=4)
+        pylab.xlabel('Time (s)')
+        pylab.ylabel('Rate (mol/m$^\\mathdefault{3 or 2}$*s)')
+        # fig.subplots_adjust(left=0.21, bottom=0.10, right=0.95, top=0.95, wspace=0.20, hspace=0.35)
+        pylab.tight_layout()
+        # pylab.show()
+        pylab.savefig('surfaceTestH2.pdf')
         return
 
     def test_solve_ch3(self):
@@ -382,6 +381,23 @@ class SurfaceReactorCheck(unittest.TestCase):
 
         # Check that we've reached equilibrium
         self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
+
+        # Visualize the simulation results
+        import pylab
+        fig = pylab.figure(figsize=(6, 6))
+        pylab.subplot(2, 1, 1)
+        pylab.semilogx(t, y[:, 2])
+        pylab.ylabel('Concentration (mol/m$^\\mathdefault{3 or 2}$)')
+        pylab.legend(['HX'], loc=4)
+        pylab.subplot(2, 1, 2)
+        pylab.semilogx(t, species_rates)
+        pylab.legend(['H2', 'X', 'HX'], loc=4)
+        pylab.xlabel('Time (s)')
+        pylab.ylabel('Rate (mol/m$^\\mathdefault{3 or 2}$*s)')
+        # fig.subplots_adjust(left=0.21, bottom=0.10, right=0.95, top=0.95, wspace=0.20, hspace=0.35)
+        pylab.tight_layout()
+        # pylab.show()
+        pylab.savefig('surfaceTestH2covdep.pdf')
 
     def test_solve_ch3_coverage_dependence(self):
         """
