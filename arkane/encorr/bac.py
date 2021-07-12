@@ -822,7 +822,15 @@ class BAC:
                             # Does not overwrite comments
                             del_idx_start = del_idx_end = None
                             for j, line2 in enumerate(lines[i:]):
-                                if repr(self.level_of_theory) in line2:
+                                proceed = False
+                                if 'Composite' not in repr(self.level_of_theory) \
+                                    and repr(self.level_of_theory) in line2 and 'Composite' not in line2:
+                                    proceed = True
+                                elif 'Composite' in repr(self.level_of_theory) \
+                                    and repr(self.level_of_theory) in line2:
+                                    proceed = True
+
+                                if proceed:
                                     del_idx_start = i + j
                                     del_idx_end = None
                                 elif line2.rstrip() == '    },':  # Can't have comment after final brace
