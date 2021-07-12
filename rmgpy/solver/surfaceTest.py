@@ -84,7 +84,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         core_reactions = [rxn1]
         edge_reactions = []
 
-        T = 1000
+        T = 600
         P_initial = 1.0e5
         rxn_system = SurfaceReactor(
             T, P_initial,
@@ -118,7 +118,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         y = np.array(y, np.float64)
         reaction_rates = np.array(reaction_rates, np.float64)
         species_rates = np.array(species_rates, np.float64)
-        V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P_initial.value_si
+        total_sites = y[0,1]
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
@@ -136,8 +136,8 @@ class SurfaceReactorCheck(unittest.TestCase):
         import pylab
         fig = pylab.figure(figsize=(6, 6))
         pylab.subplot(2, 1, 1)
-        pylab.semilogx(t, y[:, 2])
-        pylab.ylabel('Concentration (mol/m$^\\mathdefault{3 or 2}$)')
+        pylab.semilogx(t, y[:, 2] / total_sites)
+        pylab.ylabel('Surface coverage')
         pylab.legend(['HX'], loc=4)
         pylab.subplot(2, 1, 2)
         pylab.semilogx(t, species_rates)
@@ -322,7 +322,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         core_reactions = [rxn1]
         edge_reactions = []
 
-        T = 1000
+        T = 600
         P_initial = 1.0e5
         rxn_system = SurfaceReactor(
             T, P_initial,
@@ -368,7 +368,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         y = np.array(y, np.float64)
         reaction_rates = np.array(reaction_rates, np.float64)
         species_rates = np.array(species_rates, np.float64)
-        V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P_initial.value_si
+        total_sites = y[0,1]
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
@@ -386,8 +386,8 @@ class SurfaceReactorCheck(unittest.TestCase):
         import pylab
         fig = pylab.figure(figsize=(6, 6))
         pylab.subplot(2, 1, 1)
-        pylab.semilogx(t, y[:, 2])
-        pylab.ylabel('Concentration (mol/m$^\\mathdefault{3 or 2}$)')
+        pylab.semilogx(t, y[:, 2] / total_sites)
+        pylab.ylabel('Surface coverage')
         pylab.legend(['HX'], loc=4)
         pylab.subplot(2, 1, 2)
         pylab.semilogx(t, species_rates)
