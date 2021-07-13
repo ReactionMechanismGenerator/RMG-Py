@@ -37,7 +37,7 @@ from subprocess import Popen, PIPE
 
 import cclib
 
-from rmgpy.exceptions import DependencyError
+from rmgpy.exceptions import DependencyError, AtomTypeError
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.qm.molecule import QMMolecule
 
@@ -214,7 +214,11 @@ class Mopac(object):
         # Compare the optimized geometry to the original molecule
         qm_data = self.parse()
         cclib_mol = Molecule()
-        cclib_mol.from_xyz(qm_data.atomicNumbers, qm_data.atomCoords.value)
+        try:
+            cclib_mol.from_xyz(qm_data.atomicNumbers, qm_data.atomCoords.value)
+        except AtomTypeError as error:
+            logging.info(f"Problem getting molecule from xyz coordinates: {error}")
+            return False
         test_mol = self.molecule.to_single_bonds()
         if not cclib_mol.is_isomorphic(test_mol):
             logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.output_file_path))
