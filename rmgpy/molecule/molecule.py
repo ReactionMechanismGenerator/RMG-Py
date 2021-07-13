@@ -1794,7 +1794,11 @@ class Molecule(Graph):
         Convert a molecular structure to an InChI string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
-        return translator.to_inchi(self)
+        try:
+            return translator.to_inchi(self)
+        except:
+            logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
+            raise
 
     def to_augmented_inchi(self):
         """
@@ -1803,7 +1807,11 @@ class Molecule(Graph):
         
         Separate layer with a forward slash character.
         """
-        return translator.to_inchi(self, aug_level=2)
+        try:
+            return translator.to_inchi(self, aug_level=2)
+        except:
+            logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
+            raise
 
     def to_inchi_key(self):
         """
@@ -1815,7 +1823,11 @@ class Molecule(Graph):
         Convert a molecular structure to an InChI Key string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         """
-        return translator.to_inchi_key(self)
+        try:
+            return translator.to_inchi_key(self)
+        except:
+            logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
+            raise
 
     def to_augmented_inchi_key(self):
         """
@@ -1825,7 +1837,11 @@ class Molecule(Graph):
         Simply append the multiplicity string, do not separate by a
         character like forward slash.
         """
-        return translator.to_inchi_key(self, aug_level=2)
+        try:
+            return translator.to_inchi_key(self, aug_level=2)
+        except:
+            logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
+            raise
 
     def to_smarts(self):
         """
