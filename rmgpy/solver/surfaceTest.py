@@ -317,10 +317,25 @@ class SurfaceReactorCheck(unittest.TestCase):
                                                   T0=(1.0, 'K'),
                                                   coverage_dependence={x: {'a': 0.0, 'm': -1.0, 'E': (0.0, 'J/mol')}}))
 
+        rxn2 = Reaction(reactants=[h2, x, x],
+                        products=[hx, hx],
+                        kinetics=SurfaceArrhenius(A=(9.05e-18, 'cm^5/(mol^2*s)'), # 1e36 times slower
+                                                  n=0.5,
+                                                  Ea=(5.0, 'kJ/mol'),
+                                                  T0=(1.0, 'K'),
+                                                  coverage_dependence={x: {'a': 0.0, 'm': -1.0, 'E': (10.0, 'J/mol')}}
+                        ))
+
         core_species = [h2, x, hx]
         edge_species = []
         core_reactions = [rxn1]
         edge_reactions = []
+
+        # make it slower, for benchmarking
+        for j in range(200):
+            core_species.append(hx.copy())
+        for j in range(1000):
+            core_reactions.append(rxn2)
 
         T = 600
         P_initial = 1.0e5
