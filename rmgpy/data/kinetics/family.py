@@ -3872,7 +3872,7 @@ class KineticsFamily(Database):
         grp = node.item
         rxns = template_rxn_map[node.label]
 
-        R = ['H', 'C', 'N', 'O', 'Si', 'S', 'Cl']  # set of possible R elements/atoms
+        R = ['H', 'C', 'N', 'O', 'Si', 'S', 'Cl', 'F', 'Br']  # set of possible R elements/atoms
         R = [ATOMTYPES[x] for x in R]
 
         RnH = R[:]
