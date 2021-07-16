@@ -1190,6 +1190,16 @@ def read_thermo_block(f, species_dict):
             continue
 
         thermo_block += line
+
+        # check for extended elemental composition line
+        if line.rstrip().endswith('1&'):
+            # this thermo entry has extended elemental composition line
+            # read the elements line, append it to thermo_block, and continue 
+            line = f.readline()
+            thermo_block += line
+            line = f.readline()
+            continue
+
         if line[79] == '4':
             try:
                 label, thermo, formula = read_thermo_entry(thermo_block, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
@@ -1227,7 +1237,7 @@ def read_thermo_block(f, species_dict):
                     logging.warning('Skipping unexpected species "{0}" while reading '
                                     'thermodynamics entry.'.format(label))
             thermo_block = ''
-        if len(thermo_block.split('/n')) > 4:
+        if len(thermo_block.split('/n')) > 5:
             raise ChemkinError('Should only have 4 lines in a thermo block:\n{0}'.format(thermo_block))
         line = f.readline()
     return formula_dict
