@@ -968,24 +968,25 @@ class SolvationDatabase(object):
                 continue
             self.groups['ring'].generic_nodes.append(label)
 
-    def get_solute_data(self, species):
+    def get_solute_data(self, species, skip_library=False):
         """
         For a given :class:`Species` object `species`, this function first searches
         the loaded libraries in order, returning the first match found, before falling back to
         estimation via solute data group additivity.
 
-        Parameters
-        ----------
-        species : :class:`Species`
+        Args:
+            species: :class:`Species` object for which the solute data is searched or estimated.
+            skip_library: a Boolean to skip the library search and do the group additivity estimation.
 
-        Returns
-        -------
-        solute_data: :class:`SoluteData` object
+        Returns:
+            solute_data: :class:`SoluteData` object for the given species object.
 
         """
 
         # Check the library first
-        solute_data = self.get_solute_data_from_library(species, self.libraries['solute'])
+        solute_data = None
+        if not skip_library:
+            solute_data = self.get_solute_data_from_library(species, self.libraries['solute'])
         if solute_data is not None:
             assert len(solute_data) == 3, "solute_data should be a tuple (solute_data, library, entry)"
             solute_data[0].comment += "Solute library: " + solute_data[2].label
@@ -1037,7 +1038,7 @@ class SolvationDatabase(object):
             solute_data_list.append(data)
         # Estimate from group additivity
         # Make it a tuple
-        data = (self.get_solute_data_from_groups(species), None, None)
+        data = (self.get_solute_data(species, skip_library=True), None, None)
         solute_data_list.append(data)
         return solute_data_list
 
