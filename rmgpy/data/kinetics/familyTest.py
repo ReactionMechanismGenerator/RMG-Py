@@ -831,7 +831,7 @@ class TestGenerateReactions(unittest.TestCase):
             reaction_libraries=[],
             kinetics_families=['H_Abstraction', 'R_Addition_MultipleBond', 'Singlet_Val6_to_triplet', 'R_Recombination',
                                'Baeyer-Villiger_step1_cat', 'Surface_Adsorption_Dissociative',
-                               'Surface_Abstraction_vdW', 'Surface_Dissociation_vdW'],
+                               'Surface_Abstraction_vdW', 'Surface_Dissociation_vdW', 'intra_H_migration'],
             depository=False,
             solvation=False,
             surface=False,
@@ -1073,6 +1073,23 @@ multiplicity 2
         reacts = [Molecule(smiles='*[CH2]'), Molecule(smiles='*[CH2]')]
         reaction_list = family.generate_reactions(reacts)
         self.assertEqual(len(reaction_list), 0)
+
+    def test_retaining_atom_labels_in_template_reaction(self):
+        """
+        Test that atom labels are not deleted from a TemplateReaction if so requested.
+        """
+        family = self.database.kinetics.families['intra_H_migration']
+        reacts = [Molecule(smiles='C[CH]C')]
+        reaction_list_1 = family.generate_reactions(reacts)
+        self.assertFalse(hasattr(reaction_list_1[0], 'labeled_atoms'))
+        reaction_list_2 = family.generate_reactions(reacts, delete_labels=False, relabel_atoms=False)
+        self.assertTrue(hasattr(reaction_list_2[0], 'labeled_atoms'))
+        self.assertEqual([(label, str(atom)) for label, atom in
+                          reaction_list_2[0].labeled_atoms['reactants'].items()],
+                         [('*2', 'C'), ('*1', 'C.'), ('*3', 'H')])
+        self.assertEqual([(label, str(atom)) for label, atom in
+                          reaction_list_2[0].labeled_atoms['products'].items()],
+                         [('*1', 'C'), ('*2', 'C.'), ('*3', 'H')])
 
 
 ################################################################################
