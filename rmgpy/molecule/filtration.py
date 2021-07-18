@@ -74,8 +74,8 @@ def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True,
         filtered_list = aromaticity_filtration(filtered_list, features)
 
     if not filtered_list:
-        raise ResonanceError('Could not determine representative localized structures for species {0}'.format(
-            mol_list[0].to_smiles()))
+        raise ResonanceError(f'Could not determine representative localized structures for species '
+                             f'{mol_list[0].to_smiles()}')
 
     if mark_unreactive:
         # Mark selected unreactive structures if OS and/or adjacent birad unidirectional transitions were used
@@ -428,9 +428,9 @@ def check_reactive(filtered_list):
     """
     if not any([mol.reactive for mol in filtered_list]):
         logging.info('\n\n')
-        logging.error('No reactive structures were attributed to species {0}'.format(filtered_list[0].to_smiles()))
+        logging.error(f'No reactive structures were attributed to species {filtered_list[0].to_smiles()}')
         for mol in filtered_list:
-            logging.info('Structure: {0}\n{1}Reactive: {2}'.format(mol.to_smiles(), mol.to_adjacency_list(), mol.reactive))
+            logging.info(f'Structure: {mol.to_smiles()}\n{mol.to_adjacency_list()}Reactive: {mol.reactive}')
         logging.info('\n')
-        raise ResonanceError('Each species must have at least one reactive structure. Something probably went wrong'
-                             ' when exploring resonance structures for species {0}'.format(filtered_list[0].to_smiles()))
+        raise ResonanceError(f'Each species must have at least one reactive structure. Something probably went wrong '
+                             f'when exploring resonance structures for species {filtered_list[0].to_smiles()}')
