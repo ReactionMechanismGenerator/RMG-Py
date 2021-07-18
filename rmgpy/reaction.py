@@ -1460,14 +1460,14 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
     """
 
     def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label,
-             _generate_initial_map=generate_initial_map, _strict=strict, save_order=save_order):
+             _generate_initial_map=generate_initial_map, _strict=strict, _save_order=save_order):
         if _only_check_label:
             return str(object1) == str(object2)
         elif _check_identical:
             return object1.is_identical(object2, strict=_strict)
         else:
             return object1.is_isomorphic(object2, generate_initial_map=_generate_initial_map,
-                                         strict=_strict, save_order=save_order)
+                                         strict=_strict, save_order=_save_order)
 
     if len(list1) == len(list2) == 1:
         if same(list1[0], list2[0]):
