@@ -2074,8 +2074,8 @@ class KineticsFamily(Database):
                         else:
                             if product_structures is not None:
                                 rxn = self._create_reaction(reactant_structures, product_structures, forward)
-                                if rxn: rxn_list.append(rxn)
-
+                                if rxn:
+                                    rxn_list.append(rxn)
         # Bimolecular reactants: A + B --> products
         elif len(reactants) == 2 and len(template_reactants) == 2:
 
@@ -2115,7 +2115,8 @@ class KineticsFamily(Database):
                                 else:
                                     if product_structures is not None:
                                         rxn = self._create_reaction(reactant_structures, product_structures, forward)
-                                        if rxn: rxn_list.append(rxn)
+                                        if rxn:
+                                            rxn_list.append(rxn)
 
                         # Only check for swapped reactants if they are different
                         if reactants[0] is not reactants[1]:
