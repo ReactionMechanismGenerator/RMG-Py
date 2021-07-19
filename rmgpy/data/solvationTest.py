@@ -42,11 +42,13 @@ from rmgpy.exceptions import InputError
 
 class TestSoluteDatabase(TestCase):
 
-    def setUp(self):
-        self.database = SolvationDatabase()
-        self.database.load(os.path.join(settings['database.directory'], 'solvation'))
+    @classmethod
+    def setUpClass(cls):
+        cls.database = SolvationDatabase()
+        cls.database.load(os.path.join(settings['database.directory'], 'solvation'))
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         """
         Reset the database & liquid parameters for solution
         """
