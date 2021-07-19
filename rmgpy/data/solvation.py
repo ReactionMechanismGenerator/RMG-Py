@@ -763,6 +763,34 @@ class SolvationDatabase(object):
 
         self.load_groups(os.path.join(path, 'groups'))
 
+    def get_all_solvent_data(self, solvent_species):
+        """Return all possible sets of solvent data for a given :class:`Species` object `species`.
+
+        This searches for the solvent data from the solvent library. The mixture solvent data containing
+        the given species are also searched.
+
+        Args:
+            solvent_species: :class:`Species` object
+
+        Returns:
+            solvent_data_list: A list of tuple. The tuple is (solvent_label, solvent_entry) for the matched solvent.
+            `solvent_label` is the label of the solvent and `solvent_entry` is a :class:`Entry` object containing
+            solvent information stored in the solvent library of RMG-database.
+
+        """
+
+        solvent_data_list = []
+
+        # Searches for the solvent data from library
+        for label, value in self.libraries['solvent'].entries.items():
+            spc_list = value.item
+            # This also returns a mixture solvent entry if any of the mixture solvents matches the given solvent species
+            for spc in spc_list:
+                if solvent_species.is_isomorphic(spc):
+                    solvent_data_list.append((label, value))
+                    break
+        return solvent_data_list
+
     def find_solvent_from_smiles(self, smiles):
         """
         This function uses the given SMILES string to find matching solvents from the solvent library. It uses
@@ -789,15 +817,7 @@ class SolvationDatabase(object):
 
         solvent_spc = Species().from_smiles(smiles)
         solvent_spc.generate_resonance_structures()
-
-        match_list = []
-        for label, value in self.libraries['solvent'].entries.items():
-            spc_list = value.item
-            # this only works for pure solvents, with value.item with length 1.
-            if len(spc_list) == 1:
-                if solvent_spc.is_isomorphic(spc_list[0]):
-                    match_list.append((label, value))
-        return match_list
+        return self.get_all_solvent_data(solvent_spc)
 
     def get_solvent_data(self, solvent_name):
         try:
