@@ -31,7 +31,8 @@ import os
 from unittest import TestCase, TestLoader, TextTestRunner
 
 from rmgpy import settings
-from rmgpy.data.solvation import DatabaseError, SoluteData, SolvationDatabase, SolventLibrary
+from rmgpy.data.solvation import DatabaseError, SoluteData, SolvationDatabase, SolventLibrary, \
+    get_critical_temperature, get_liquid_saturation_density, get_gas_saturation_density
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.main import Species
@@ -116,9 +117,26 @@ class TestSoluteDatabase(TestCase):
         and we can raise DatabaseError when the solvent's name_in_coolprop is None.
         """
         solvent_data = self.database.get_solvent_data('water')
-        self.assertAlmostEqual(solvent_data.get_solvent_critical_temperature(), 647.096)
+        solvent_name = solvent_data.name_in_coolprop
+        self.assertAlmostEqual(get_critical_temperature(solvent_name), 647.096)
         solvent_data = self.database.get_solvent_data('dibutylether')
-        self.assertRaises(DatabaseError, solvent_data.get_solvent_critical_temperature)
+        solvent_name = solvent_data.name_in_coolprop
+        self.assertRaises(DatabaseError, get_critical_temperature, solvent_name)
+
+    def test_saturation_density(self):
+        """
+        Test we can calculate the solvent's liquid-phase and gas-phase saturation densities given the compound name
+        and temperature and we can raise DatabaseError when the compound is not available in CoolProp or
+        the temperature is out of the calculable range.
+        """
+        compound_name = 'Hexane'
+        temp = 400  # in K
+        self.assertAlmostEqual(get_liquid_saturation_density(compound_name, temp), 6383.22, places=2)
+        self.assertAlmostEqual(get_gas_saturation_density(compound_name, temp), 162.99, places=2)
+        # Unsupported compound name
+        self.assertRaises(DatabaseError, get_gas_saturation_density, "Hexadecane", temp)
+        # Out of the valid temperature range
+        self.assertRaises(DatabaseError, get_gas_saturation_density, compound_name, 700)
 
     def test_find_solvent(self):
         """ Test we can find solvents from the solvent library using SMILES"""
@@ -336,7 +354,12 @@ class TestSoluteDatabase(TestCase):
         species = Species().from_smiles('CCC(C)=O') # 2-Butanone for a solute
         solute_data = self.database.get_solute_data(species)
         solvent_data = self.database.get_solvent_data('water')
-        kfactor_parameters = self.database.get_Kfactor_parameters(solute_data, solvent_data)
+        correction = self.database.get_solvation_correction(solute_data, solvent_data)
+        delG298 = correction.gibbs  # in J/mol
+        delH298 = correction.enthalpy  # in J/mol
+        delS298 = correction.entropy  # in J/mol/K
+        solvent_name = solvent_data.name_in_coolprop
+        kfactor_parameters = self.database.get_Kfactor_parameters(delG298, delH298, delS298, solvent_name)
         self.assertAlmostEqual(kfactor_parameters.lower_T[0], -9.780, 3) # check up to 3 decimal places
         self.assertAlmostEqual(kfactor_parameters.lower_T[1], 0.492, 3)
         self.assertAlmostEqual(kfactor_parameters.lower_T[2], 10.485, 3)
@@ -344,23 +367,42 @@ class TestSoluteDatabase(TestCase):
         self.assertAlmostEqual(kfactor_parameters.T_transition, 485.3, 1)
         # check that DatabaseError is raised when the solvent's name_in_coolprop is None
         solvent_data = self.database.get_solvent_data('chloroform')
-        self.assertRaises(DatabaseError, self.database.get_Kfactor_parameters, solute_data, solvent_data)
+        solvent_name = solvent_data.name_in_coolprop
+        self.assertRaises(DatabaseError, self.database.get_Kfactor_parameters, delG298, delH298, delS298, solvent_name)
 
     def test_Tdep_solvation_calculation(self):
-        '''Test we can calculate the temperature dependent K-factor and solvation free energy'''
+        '''
+        Test we can calculate the temperature dependent solvation free energy and K-factor
+        using both `get_T_dep_solvation_energy_from_LSER_298` and `get_T_dep_solvation_energy_from_input_298` methods.
+        '''
+        # First, test `get_T_dep_solvation_energy_from_LSER_298` method.
         species = Species().from_smiles('CCC1=CC=CC=C1')  # ethylbenzene
         species.generate_resonance_structures()
         solute_data = self.database.get_solute_data(species)
         solvent_data = self.database.get_solvent_data('benzene')
         T = 500 # in K
-        Kfactor = self.database.get_Kfactor(solute_data, solvent_data, T)
-        delG = self.database.get_T_dep_solvation_energy(solute_data, solvent_data, T) / 1000 # in kJ/mol
+        delG, Kfactor = self.database.get_T_dep_solvation_energy_from_LSER_298(solute_data, solvent_data, T)
         self.assertAlmostEqual(Kfactor, 0.403, 3)
-        self.assertAlmostEqual(delG, -13.59, 2)
+        self.assertAlmostEqual(delG/1000, -13.59, 2) # delG is in J/mol
         # For temperature greater than or equal to the critical temperature of the solvent,
         # it should raise InputError
         T = 1000
-        self.assertRaises(InputError, self.database.get_T_dep_solvation_energy, solute_data, solvent_data, T)
+        self.assertRaises(InputError, self.database.get_T_dep_solvation_energy_from_LSER_298,
+                          solute_data, solvent_data, T)
+
+        # Now test `get_T_dep_solvation_energy_from_input_298` method.
+        delG298 = -23570 # in J/mol
+        delH298 = -40612 # in J/mol
+        delS298 = (delH298 - delG298) / 298 # in J/mol/K
+        solvent_name = 'benzene'
+        T = 500  # in K
+        delG, Kfactor = self.database.get_T_dep_solvation_energy_from_input_298(delG298, delH298, delS298, solvent_name, T)
+        self.assertAlmostEqual(Kfactor, 0.567, 3)
+        self.assertAlmostEqual(delG / 1000, -12.18, 2)  # delG is in J/mol
+        # test that it raises InputError for T above the critical temperature
+        T = 1000
+        self.assertRaises(InputError, self.database.get_T_dep_solvation_energy_from_input_298,
+                          delG298, delH298, delS298, solvent_name, T)
 
     def test_initial_species(self):
         """Test we can check whether the solvent is listed as one of the initial species in various scenarios"""
