@@ -950,7 +950,7 @@ class Database(object):
         elif isinstance(parent_node.item, LogicOr):
             return child_node.label in parent_node.item.components
 
-    def match_node_to_structure(self, node, structure, atoms, strict=False):
+    def match_node_to_structure(self, node, structure, atoms, strict=False, metal=None, facet=None, site=None):
         """
         Return :data:`True` if the `structure` centered at `atom` matches the
         structure at `node` in the dictionary. The structure at `node` should
@@ -976,6 +976,17 @@ class Database(object):
         if isinstance(node, str):
             node = self.entries[node]
         group = node.item
+        
+        if metal and node.metal:
+            if metal != node.metal:
+                return False
+        if facet and node.facet:
+            if facet != node.facet:
+                return False
+        if site and node.site:
+            if site != node.site:
+                return False
+
         if isinstance(group, LogicNode):
             return group.match_to_structure(self, structure, atoms, strict)
         else:
@@ -1033,7 +1044,7 @@ class Database(object):
 
             return result
 
-    def descend_tree(self, structure, atoms, root=None, strict=False):
+    def descend_tree(self, structure, atoms, root=None, strict=False, metal=None, facet=None, site=None):
         """
         Descend the tree in search of the functional group node that best
         matches the local structure around `atoms` in `structure`.
@@ -1049,20 +1060,20 @@ class Database(object):
 
         if root is None:
             for root in self.top:
-                if self.match_node_to_structure(root, structure, atoms, strict):
+                if self.match_node_to_structure(root, structure, atoms, strict, metal=metal, facet=facet, site=site):
                     break  # We've found a matching root
             else:  # didn't break - matched no top nodes
                 return None
-        elif not self.match_node_to_structure(root, structure, atoms, strict):
+        elif not self.match_node_to_structure(root, structure, atoms, strict, metal=metal, facet=facet, site=site):
             return None
 
         next_node = []
         for child in root.children:
-            if self.match_node_to_structure(child, structure, atoms, strict):
+            if self.match_node_to_structure(child, structure, atoms, strict, metal=metal, facet=facet, site=site):
                 next_node.append(child)
 
         if len(next_node) == 1:
-            return self.descend_tree(structure, atoms, next_node[0], strict)
+            return self.descend_tree(structure, atoms, next_node[0], strict, metal=metal, facet=facet, site=site)
         elif len(next_node) == 0:
             if len(root.children) > 0 and root.children[-1].label.startswith('Others-'):
                 return root.children[-1]
@@ -1072,7 +1083,7 @@ class Database(object):
             # logging.warning('For {0}, a node {1} with overlapping children {2} was encountered '
             #                 'in tree with top level nodes {3}. Assuming the first match is the '
             #                 'better one.'.format(structure, root, next, self.top))
-            return self.descend_tree(structure, atoms, next_node[0], strict)
+            return self.descend_tree(structure, atoms, next_node[0], strict, metal=metal, facet=facet, site=site)
 
     def are_siblings(self, node, node_other):
         """
