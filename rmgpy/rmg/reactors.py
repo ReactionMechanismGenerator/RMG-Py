@@ -162,6 +162,88 @@ class PhaseSystem:
         else:
             return None
 
+class Phase:
+    """
+    Class containing all species, reactions and properties necessary to describe
+    kinetics within a specific phase of a simulation
+    """
+    def __init__(self, label="", solvent=None, site_density=None):
+        self.species = []
+        self.reactions = []
+        self.names = []
+        self.species_dict = dict()
+        if solvent:
+            self.solvent = to_rms(solvent)
+        if site_density:
+            self.site_density = site_density
+
+    def get_species(self, label):
+        """
+        Retrieve rms species associated with the input label
+        """
+        try:
+            ind = self.names.index(label)
+            return self.species[ind]
+        except IndexError:
+            return None
+
+    def set_solvent(self, solvent):
+        """
+        Set the solvent of the phase
+        """
+        self.solvent = to_rms(solvent)
+
+    def add_reaction(self, rxn, species_list):
+        """
+        add a reaction to the phase
+        """
+        self.reactions.append(to_rms(rxn, species_list=species_list, rms_species_list=self.species))
+
+    def add_species(self, spc, edge_phase=None):
+        """
+        add a species to the phase
+        if an edge_phase is given the
+        edge phase species order is reordered to match
+        that of self
+        """
+        if spc.label in self.names: #already exists
+            label = spc.label
+            logging.debug(f"species {label} was already in phase skipping...")
+            return
+
+        label = spc.label
+        spec = to_rms(spc)
+        self.species.append(spec)
+        self.names.append(spc.label)
+
+        if edge_phase is not None:
+            edge_phase.species.insert(len(self.species)-1, spec)
+            edge_phase.names.insert(len(self.species)-1, label)
+
+    def remove_species(self, label):
+        """
+        Remove species and associated reactions from the phase
+        """
+        try:
+            ind = self.names.index(label)
+        except ValueError:
+            return
+        spc = self.species[ind]
+        rxninds = []
+        for i, rxn in enumerate(self.reactions):
+            for spc2 in itertools.chain(rxn.reactants, rxn.products):
+                if label == spc2.name:
+                    rxninds.append(i)
+                    break
+
+        del self.species[ind]
+        del self.names[ind]
+
+        for ind in reversed(rxninds):
+            del self.reactions[ind]
+
+        return spc
+
 def to_rms(obj, species_list=None, rms_species_list=None):
     """
     Generate corresponding rms object
