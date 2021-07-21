@@ -1104,7 +1104,8 @@ def read_input_file(path, rmg0):
 
     # convert keys from species names into species objects.
     for reactionSystem in rmg.reaction_systems:
-        reactionSystem.convert_initial_keys_to_species_objects(species_dict)
+        if not isinstance(reactionSystem, Reactor):
+            reactionSystem.convert_initial_keys_to_species_objects(species_dict)
 
     if rmg.quantum_mechanics:
         rmg.quantum_mechanics.set_default_output_directory(rmg.output_directory)
