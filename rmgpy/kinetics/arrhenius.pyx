@@ -34,7 +34,7 @@ from scipy.optimize import curve_fit, fsolve
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
-from rmgpy.exceptions import KineticsError
+from rmgpy.exceptions import KineticsError, QuantityError
 from rmgpy.kinetics.uncertainties import rank_accuracy_map
 from rmgpy.molecule.molecule import Bond
 
