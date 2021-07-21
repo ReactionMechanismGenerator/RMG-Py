@@ -4169,12 +4169,20 @@ class KineticsFamily(Database):
                 else:
                     metal = entry.metal + entry.facet
                 for j, react in enumerate(entry.item.reactants):
+                    if metal:
+                        # we need to make a new species for different metals beacause thermo is different
+                        rxns[i].reactants[j] = react.copy(deep=True)
+                        rxns[i].reactants[j].thermo = None
                     if rxns[i].reactants[j].thermo is None:
-                        rxns[i].reactants[j].thermo = get_reactant_thermo(react,metal)
+                        rxns[i].reactants[j].thermo = get_reactant_thermo(rxns[i].reactants[j],metal)
 
                 for j, react in enumerate(entry.item.products):
+                    if metal:
+                        # we need to make a new species for different metals beacause thermo is different
+                        rxns[i].products[j] = react.copy(deep=True)
+                        rxns[i].products[j].thermo = None
                     if rxns[i].products[j].thermo is None:
-                        rxns[i].products[j].thermo = get_reactant_thermo(react,metal)
+                        rxns[i].products[j].thermo = get_reactant_thermo(rxns[i].products[j],metal)
             rxns[i].kinetics = entry.data
             rxns[i].rank = entry.rank
 
@@ -4251,9 +4259,13 @@ class KineticsFamily(Database):
                     rrev.is_forward = False
 
                     if estimate_thermo:
-                        for rev_react in rrev.reactants:
-                            if rev_react.thermo is None:
-                                rev_react.thermo = get_reactant_thermo(rev_react,metal)
+                        for x,react in enumerate(rrev.reactants):
+                            if metal:
+                            # we need to make a new species for different metals beacause thermo is different
+                                rrev.reactants[x] = react.copy(deep=True)
+                                rrev.reactants[x].thermo = None
+                            if rrev.reactants[x].thermo is None:
+                                rrev.reactants[x].thermo = get_reactant_thermo(rrev.reactants[x],metal)
 
                     rev_rxns.append(rrev)
 
@@ -4285,14 +4297,19 @@ class KineticsFamily(Database):
                     products = [Species(molecule=[p]) for p in products]
 
                 rrev = Reaction(reactants=products, products=rxns[i].reactants,
-                                kinetics=rxns[i].generate_reverse_rate_coefficient(), rank=rxns[i].rank)
+                                kinetics=rxns[i].generate_reverse_rate_coefficient(), rank=rxns[i].rank,
+                                metal = rxns[i].metal, facet = rxns[i].facet, site = rxns[i].site)
 
                 rrev.is_forward = False
 
                 if estimate_thermo:
-                    for rev_react in rrev.reactants:
-                        if rev_react.thermo is None:
-                            rev_react.thermo = get_reactant_thermo(rev_react,metal)
+                    for x,react in enumerate(rrev.reactants):
+                        if metal:
+                        # we need to make a new species for different metals beacause thermo is different
+                            rrev.reactants[x] = react.copy(deep=True)
+                            rrev.reactants[x].thermo = None
+                        if rrev.reactants[x].thermo is None:
+                            rrev.reactants[x].thermo = get_reactant_thermo(rrev.reactants[x],metal)
                 rxns[i] = rrev
 
         if self.own_reverse and get_reverse:
