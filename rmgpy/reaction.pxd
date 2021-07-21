@@ -58,6 +58,9 @@ cdef class Reaction:
     cdef public bint is_forward
     cdef public bint allow_max_rate_violation
     cdef public object rank
+    cdef public str metal
+    cdef public str facet
+    cdef public str site
 
     cpdef bint is_isomerization(self)
 
