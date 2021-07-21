@@ -66,37 +66,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dd><p>A Reaction object generated from a reaction family template. In addition
 to attributes inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">Reaction</span></code>, this class includes the
 following attributes:</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 11%" />
-<col style="width: 23%" />
-<col style="width: 67%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Attribute</p></th>
-<th class="head"><p>Type</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><cite>family</cite></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
-<td><p>The kinetics family that the reaction was created from.</p></td>
-</tr>
-<tr class="row-odd"><td><p><cite>estimator</cite></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
-<td><p>Whether the kinetics came from rate rules or group additivity.</p></td>
-</tr>
-<tr class="row-even"><td><p><cite>reverse</cite></p></td>
-<td><p><a class="reference internal" href="#rmgpy.data.kinetics.TemplateReaction" title="rmgpy.data.kinetics.TemplateReaction"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemplateReaction</span></code></a></p></td>
-<td><p>The reverse reaction, for families that are their own reverse.</p></td>
-</tr>
-<tr class="row-odd"><td><p><cite>is_forward</cite></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">bool</span></code></p></td>
-<td><p>Whether the reaction was generated in the forward direction of the family.</p></td>
-</tr>
-</tbody>
-</table>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.family.TemplateReaction</span>, line 12)</p>
+<p>Malformed table.
+Text in column margin in table line 8.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>============ ========================= =====================================
+Attribute    Type                      Description
+============ ========================= =====================================
+`family`     ``str``                   The kinetics family that the reaction was created from.
+`estimator`  ``str``                   Whether the kinetics came from rate rules or group additivity.
+`reverse`    :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
+`is_forward`  ``bool``                 Whether the reaction was generated in the forward direction of the family.
+`labeled_atoms`   ``dict``             Keys are &#39;reactants&#39; or &#39;products&#39;, values are dictionaries.
+                                       Keys in the second level dictionary are template labels (e.g., &#39;*1&#39;),
+                                       values are the respective Atom object instance in the reactants.
+============ ========================= =====================================
+</pre></div>
+</div>
+</div>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.TemplateReaction.SurfaceArrhenius">
 <span class="sig-name descname"><span class="pre">SurfaceArrhenius</span></span><a class="headerlink" href="#rmgpy.data.kinetics.TemplateReaction.SurfaceArrhenius" title="Permalink to this definition">¶</a></dt>

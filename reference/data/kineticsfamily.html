@@ -183,12 +183,14 @@ set, add a rate rule for that reaction.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.apply_recipe">
-<span class="sig-name descname"><span class="pre">apply_recipe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reactant_structures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forward</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.apply_recipe" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">apply_recipe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reactant_structures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forward</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relabel_atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.apply_recipe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply the recipe for this reaction family to the list of
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">Group</span></code> objects <cite>reactant_structures</cite>. The atoms
 of the reactant structures must already be tagged with the appropriate
 labels. Returns a list of structures corresponding to the products
-after checking that the correct number of products was produced.</p>
+after checking that the correct number of products was produced.
+If <code class="docutils literal notranslate"><span class="pre">relabel_atoms</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, product atom labels of reversible families
+will be reversed to assist in identifying forbidden structures.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -339,7 +341,7 @@ the first is used here; it is assumed to be the most generic.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.generate_reactions">
-<span class="sig-name descname"><span class="pre">generate_reactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reactants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prod_resonance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generate_reactions" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate_reactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reactants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prod_resonance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relabel_atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generate_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all reactions between the provided list of one, two, or three
 <cite>reactants</cite>, which should be either single <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> objects
 or lists of same. Does not estimate the kinetics of these reactions
@@ -353,7 +355,10 @@ consistent with the template of this reaction family.</p>
 <li><p><strong>reactants</strong> (<em>list</em>) – List of Molecules to react.</p></li>
 <li><p><strong>products</strong> (<em>list</em><em>, </em><em>optional</em>) – List of Molecules or Species of desired product structures.</p></li>
 <li><p><strong>prod_resonance</strong> (<em>bool</em><em>, </em><em>optional</em>) – Flag to generate resonance structures for product checking.
-Defaults to True, resonance structures are compared.</p></li>
+Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>, resonance structures are compared.</p></li>
+<li><p><strong>delete_labels</strong> (<em>bool</em><em>, </em><em>optional</em>) – Delete the labeled atoms from each generated reaction (optional).
+Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>, atom labels are deleted.</p></li>
+<li><p><strong>relabel_atoms</strong> (<em>bool</em><em>, </em><em>optional</em>) – Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>, atoms are re-labeled.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
