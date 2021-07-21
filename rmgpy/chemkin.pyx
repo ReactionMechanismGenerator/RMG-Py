@@ -375,7 +375,7 @@ def _read_kinetics_reaction(line, species_dict, Aunits, Eunits):
     for reactant in reactants.split('+'):
         reactant = reactant.strip()
         stoichiometry = 1
-        if reactant[0].isdigit():
+        if reactant not in species_dict and reactant[0].isdigit():
             # This allows for reactions to be of the form 2A=B+C instead of A+A=B+C
             # The implementation below assumes an integer between 0 and 9, inclusive
             stoichiometry = int(reactant[0])
@@ -394,7 +394,7 @@ def _read_kinetics_reaction(line, species_dict, Aunits, Eunits):
     for product in products.split('+'):
         product = product.strip()
         stoichiometry = 1
-        if product[0].isdigit():
+        if product not in species_dict and product[0].isdigit():
             # This allows for reactions to be of the form A+B=2C instead of A+B=C+C
             # The implementation below assumes an integer between 0 and 9, inclusive
             stoichiometry = int(product[0])
@@ -1190,6 +1190,16 @@ def read_thermo_block(f, species_dict):
             continue
 
         thermo_block += line
+
+        # check for extended elemental composition line
+        if line.rstrip().endswith('1&'):
+            # this thermo entry has extended elemental composition line
+            # read the elements line, append it to thermo_block, and continue 
+            line = f.readline()
+            thermo_block += line
+            line = f.readline()
+            continue
+
         if line[79] == '4':
             try:
                 label, thermo, formula = read_thermo_entry(thermo_block, Tmin=Tmin, Tint=Tint, Tmax=Tmax)
@@ -1227,8 +1237,8 @@ def read_thermo_block(f, species_dict):
                     logging.warning('Skipping unexpected species "{0}" while reading '
                                     'thermodynamics entry.'.format(label))
             thermo_block = ''
-        if len(thermo_block.split('/n')) > 4:
-            raise ChemkinError('Should only have 4 lines in a thermo block:\n{0}'.format(thermo_block))
+        if len(thermo_block.split('/n')) > 5:
+            raise ChemkinError('Should only have a maximum of 5 lines in a thermo block:\n{0}'.format(thermo_block))
         line = f.readline()
     return formula_dict
 
