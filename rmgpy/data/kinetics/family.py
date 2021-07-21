@@ -858,6 +858,32 @@ class KineticsFamily(Database):
         Write the given `entry` in the thermo database to the file object `f`.
         """
         return save_entry(f, entry)
+    
+    def split_template(self):
+
+        if self.reactant_num > 1 and len(self.forward_template.reactants) == 1:
+            template = self.forward_template.reactants[0]
+            if isinstance(template.item, Group):
+                if self.vdw_bonds:
+                    for label0,label1 in self.vdw_bonds.items():
+                        atom0 = template.item.get_labeled_atoms(label0)[0]
+                        atom1 = template.item.get_labeled_atoms(label1)[0]
+                        bond = GroupBond(atom0, atom1, order=[0])
+                        template.item.add_bond(bond)
+
+                groups = template.item.split()
+                template_reactants = []
+                if len(groups) > 1:
+                    for i,group in enumerate(groups):
+                        group.remove_van_der_waals_bonds()
+                        template_reactant = deepcopy(template)
+                        template_reactant.item = group
+                        template_reactant.label += str(i)
+                        template_reactants.append(template_reactant)
+                self.forward_template.reactants = template_reactants
+                if self.reverse_template:
+                    self.reverse_template.products = template_reactants
+                assert len(self.forward_template.reactants) == self.reactant_num
 
     def save_training_reactions(self, reactions, reference=None, reference_type='', short_desc='', long_desc='',
                                 metal=None, facet=None, site=None, rank=3):
@@ -2065,6 +2091,7 @@ class KineticsFamily(Database):
         # This also makes a copy of the reactants list so we don't modify the
         # original
         reactants = [reactant if isinstance(reactant, list) else [reactant] for reactant in reactants]
+        self.split_template()
 
         if forward:
             template = self.forward_template
@@ -2078,22 +2105,7 @@ class KineticsFamily(Database):
         if self.auto_generated and reactant_num != len(reactants):
             return []
 
-        if len(reactants) > len(template.reactants):
-            if not self.auto_generated:
-                # If the template contains a surface site, we do not want to split it because it will break vdw bonds
-                if isinstance(template.reactants[0].item, Group):
-                    if template.reactants[0].item.contains_surface_site():
-                        return []
-            # if the family has one template and is bimolecular split template into multiple reactants
-            try:
-                grps = template.reactants[0].item.split()
-                template_reactants = []
-                for grp in grps:
-                    template_reactants.append(grp)
-            except AttributeError:
-                template_reactants = [x.item for x in template.reactants]
-        else:
-            template_reactants = [x.item for x in template.reactants]
+        template_reactants = [x.item for x in template.reactants]
 
         # Unimolecular reactants: A --> products
         if len(reactants) == 1 and len(template_reactants) == 1:
@@ -2833,23 +2845,16 @@ class KineticsFamily(Database):
         new entities in memory so input molecules `reactants` and `products` won't be affected.
         If RMG cannot find appropriate labels, (None, None) will be returned.
         """
+
+        self.split_template() # if the family has one template and is bimolecular split template into multiple reactants
         template = self.forward_template
         reactants0 = [reactant.copy(deep=True) for reactant in reactants]
+        template_reactants = [x.item for x in template.reactants]
 
         if self.auto_generated and self.reactant_num != len(reactants):
             return None, None
-
-        if len(reactants) > len(template.reactants):
-            # if the family has one template and is bimolecular split template into multiple reactants
-            try:
-                grps = template.reactants[0].item.split()
-                template_reactants = []
-                for grp in grps:
-                    template_reactants.append(grp)
-            except AttributeError:
-                template_reactants = [x.item for x in template.reactants]
-        else:
-            template_reactants = [x.item for x in template.reactants]
+        
+        template_reactants = [x.item for x in template.reactants]
 
         if len(reactants0) == 1:
             molecule = reactants0[0]
