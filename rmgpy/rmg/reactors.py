@@ -273,6 +273,59 @@ class Interface:
             del self.reactions[ind]
         return
 
+class Reactor:
+    """
+    Super class for running edge analysis
+    Subclasses implement generate_reactor methods for
+    generating the necessary RMS phase/domain/reactor objects
+    """
+    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations):
+        self.core_phase_system = core_phase_system
+        self.edge_phase_system = edge_phase_system
+        self.initial_conditions = initial_conditions
+        self.n_sims = 1
+        self.tf = 1.0e6
+        for term in terminations:
+            if isinstance(term, TerminationTime):
+                self.tf = term.time.value_si
+
+        self.terminations = [to_rms(term) for term in terminations]
+
+    def finish_termination_criteria(self):
+        """
+        Convert tuples into TerminationConversion objects
+        this is necessary because in input.py some species objects
+        are created before they can be converted to rms Species objects
+        so we construct the rms TerminationConversion objects later
+        """
+        for (i, term) in enumerate(self.terminations):
+            if isinstance(term, tuple):
+                self.terminations[i] = to_rms(TerminationConversion(term[0], term[1]))
+
+    def reset_max_edge_species_rate_ratios(self):
+        """
+        This function sets max_edge_species_rate_ratios back to zero
+        for pruning of ranged reactors it is important to avoid doing this
+        every initialization
+        """
+        self.max_edge_species_rate_ratios = np.zeros((len(self.prunable_species)), np.float64)
+
+    def simulate(self, model_settings, simulator_settings, conditions):
+        """
+        Run edge analysis of the reactor system
+        """
+        core_react, core_domains, core_interfaces, core_p = self.generate_reactor(self.core_phase_system)
+        edge_react, edge_domains, edge_interfaces, edge_p = self.generate_reactor(self.edge_phase_system)
+
+        terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x = rms.selectobjects(core_react,
+                                                edge_domains, edge_interfaces, core_domains, core_interfaces, core_p, edge_p, model_settings.tol_move_to_core,
+                                                model_settings.tol_interrupt_simulation, model_settings.ignore_overall_flux_criterion,
+                                                model_settings.filter_reactions, model_settings.max_num_objects_per_iter, model_settings.tol_branch_rxn_to_core,
+                                                model_settings.branching_ratio_max, model_settings.branching_index, model_settings.terminate_at_max_objects,
+                                                self.terminations, model_settings.filter_threshold, atol=simulator_settings.atol, rtol=simulator_settings.rtol, solver=de.CVODE_BDF())
+
+        return terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x
+
 def to_rms(obj, species_list=None, rms_species_list=None):
     """
     Generate corresponding rms object
