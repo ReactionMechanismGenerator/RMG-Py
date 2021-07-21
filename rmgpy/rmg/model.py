@@ -56,7 +56,7 @@ from rmgpy.rmg.react import react_all
 from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.rmg.decay import decay_species
-
+from rmgpy.rmg.reactors import PhaseSystem, Phase, Interface
 
 ################################################################################
 
@@ -66,9 +66,13 @@ class ReactionModel:
     a list of species, and `reactions`, a list of reactions.
     """
 
-    def __init__(self, species=None, reactions=None):
+    def __init__(self, species=None, reactions=None, phases=None, interfaces={}):
         self.species = species or []
         self.reactions = reactions or []
+        if phases is None:
+            phases = {"Default":Phase(),"Surface":Phase()}
+            interfaces = {frozenset({"Default","Surface"}):Interface(list(phases.values()))}
+        self.phase_system = PhaseSystem(phases,interfaces)
 
     def __reduce__(self):
         """
