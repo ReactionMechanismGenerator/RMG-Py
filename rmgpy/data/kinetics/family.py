@@ -55,7 +55,7 @@ from rmgpy.data.kinetics.rules import KineticsRules
 from rmgpy.exceptions import ActionError, DatabaseError, InvalidActionError, KekulizationError, KineticsError, \
                              ForbiddenStructureException, UndeterminableKineticsError
 from rmgpy.kinetics import Arrhenius, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficient, \
-                           StickingCoefficientBEP, ArrheniusBM
+                           StickingCoefficientBEP, ArrheniusBM, SurfaceArrheniusBM
 from rmgpy.kinetics.uncertainties import RateUncertainty, rank_accuracy_map
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
@@ -3745,6 +3745,10 @@ class KineticsFamily(Database):
 
         if template_rxn_map is None:
             template_rxn_map = self.get_reaction_matches(remove_degeneracy=True, get_reverse=True, fix_labels=True)
+        if template_rxn_map['Root'][0].is_surface_reaction():
+            surface = True
+        else:
+            surface = False
 
         rxns = np.array(template_rxn_map['Root'])
 
@@ -3797,7 +3801,10 @@ class KineticsFamily(Database):
                     L = list(set(template_rxn_map[entry.label]) - set(rxns_test))
 
                     if L != []:
-                        kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
+                        if surface:
+                            kinetics = SurfaceArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
+                        else:
+                            kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
                         kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(T))
                         k = kinetics.get_rate_coefficient(T)
                         errors[rxn] = np.log(k / krxn)
@@ -4729,14 +4736,31 @@ def _make_rule(rr):
     """
     recipe, rxns, Tref, fmax, label, ranks = rr
     n = len(rxns)
+    if n == 0:
+        return None
     for i, rxn in enumerate(rxns):
         rxn.rank = ranks[i]
+    if rxn.is_surface_reaction():
+        surface = True
+    else:
+        surface = False
     rxns = np.array(rxns)
     data_mean = np.mean(np.log([r.kinetics.get_rate_coefficient(Tref) for r in rxns]))
-    if n > 0:
+    if surface:
+        kin = SurfaceArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
+    else:
         kin = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
-        if n == 1:
-            kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
+    if n == 1:
+        kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
+    else:
+        if surface:
+            dlnks = np.array([
+                np.log(
+                    SurfaceArrheniusBM().fit_to_reactions(rxns[list(set(range(len(rxns))) - {i})], recipe=recipe)
+                    .to_arrhenius(rxn.get_enthalpy_of_reaction(Tref))
+                    .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                ) for i, rxn in enumerate(rxns)
+            ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
         else:
             dlnks = np.array([
                 np.log(
@@ -4745,17 +4769,15 @@ def _make_rule(rr):
                     .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
                 ) for i, rxn in enumerate(rxns)
             ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
-            varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rxns]) / (2.0 * 8.314 * Tref)) ** 2
-            # weighted average calculations
-            ws = 1.0 / varis
-            V1 = ws.sum()
-            V2 = (ws ** 2).sum()
-            mu = np.dot(ws, dlnks) / V1
-            s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
-            kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
-        return kin
-    else:
-        return None
+        varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rxns]) / (2.0 * 8.314 * Tref)) ** 2
+        # weighted average calculations
+        ws = 1.0 / varis
+        V1 = ws.sum()
+        V2 = (ws ** 2).sum()
+        mu = np.dot(ws, dlnks) / V1
+        s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
+        kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
+    return kin
 
 
 def _spawn_tree_process(family, template_rxn_map, obj, T, nprocs, depth, min_splitable_entry_num, min_rxns_to_spawn, extension_iter_max, extension_iter_item_cap):
