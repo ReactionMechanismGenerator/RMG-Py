@@ -65,6 +65,7 @@ from rmgpy.tools.uncertainty import KineticParameterUncertainty
 
 ################################################################################
 
+
 class TemplateReaction(Reaction):
     """
     A Reaction object generated from a reaction family template. In addition
@@ -78,6 +79,9 @@ class TemplateReaction(Reaction):
     `estimator`  ``str``                   Whether the kinetics came from rate rules or group additivity.
     `reverse`    :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
     `is_forward`  ``bool``                 Whether the reaction was generated in the forward direction of the family.
+    `labeled_atoms`   ``dict``             Keys are 'reactants' or 'products', values are dictionaries.
+                                           Keys in the second level dictionary are template labels (e.g., '*1'),
+                                           values are the respective Atom object instance in the reactants.
     ============ ========================= =====================================
     """
 
@@ -115,6 +119,7 @@ class TemplateReaction(Reaction):
         self.template = template
         self.estimator = estimator
         self.reverse = reverse
+        self.labeled_atoms = {'reactants': dict(), 'products': dict()}
 
     def __reduce__(self):
         """
@@ -884,7 +889,7 @@ class KineticsFamily(Database):
         # Load the old set of the species of the training reactions
         species_dict = Database().get_species(dictionary_path)
 
-        # Add new unique species with labeledAtoms into species_dict
+        # Add new unique species with labeled atoms into species_dict
         for rxn in reactions:
             for spec in (rxn.reactants + rxn.products):
                 for ex_spec in species_dict.values():
@@ -1754,11 +1759,9 @@ class KineticsFamily(Database):
 
         # Store the labeled atoms so we can recover them later
         # (e.g. for generating reaction pairs and templates)
-        labeled_atoms = []
-        for reactant in reaction.reactants:
-            for label, atom in reactant.get_all_labeled_atoms().items():
-                labeled_atoms.append((label, atom))
-        reaction.labeledAtoms = labeled_atoms
+        for key, species_list in zip(['reactants', 'products'], [reaction.reactants, reaction.products]):
+            for species in species_list:
+                reaction.labeled_atoms[key] = dict(reaction.labeled_atoms[key], **species.get_all_labeled_atoms())
 
         return reaction
 
@@ -2370,7 +2373,7 @@ class KineticsFamily(Database):
             # Restore the labeled atoms long enough to generate some metadata
             for reactant in reaction.reactants:
                 reactant.clear_labeled_atoms()
-            for label, atom in reaction.labeledAtoms:
+            for label, atom in reaction.labeled_atoms['reactants'].items():
                 if isinstance(atom, list):
                     for atm in atom:
                         atm.label = label
@@ -2386,7 +2389,7 @@ class KineticsFamily(Database):
                 species.clear_labeled_atoms()
 
             # We're done with the labeled atoms, so delete the attribute
-            del reaction.labeledAtoms
+            del reaction.labeled_atoms
 
             # Mark reaction reversibility
             reaction.reversible = self.reversible
