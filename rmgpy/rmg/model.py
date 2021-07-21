@@ -1117,6 +1117,13 @@ class CoreEdgeReactionModel:
             for rxn in rxn_list:
                 self.add_reaction_to_core(rxn)
                 logging.debug("Moving reaction from edge to core: %s", rxn)
+        else:
+            if not self.core.phase_system.in_nose:
+                if spec.molecule[0].contains_surface_site():
+                    self.core.phase_system.phases["Surface"].add_species(spec,edge_phase=self.edge.phase_system.phases["Surface"])
+                else:
+                    self.core.phase_system.phases["Default"].add_species(spec,edge_phase=self.edge.phase_system.phases["Default"])
+            
         return rxn_list
 
     def add_species_to_edge(self, spec):
