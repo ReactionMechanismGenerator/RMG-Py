@@ -704,8 +704,8 @@ class Bond(Edge):
                         1 : 0
                     }
                 }
-                intercept = intercepts[adatom][self.order]
-                binding_energy = quantity.Energy(binding_energy).value_si * normalized_bond_order + intercept
+                intercept = quantity.Energy(intercepts[adatom][self.order],'eV/molecule')
+                binding_energy = quantity.Energy(binding_energy).value_si * normalized_bond_order + intercept.value_si
                 return -1 * binding_energy
 
     def equivalent(self, other):
