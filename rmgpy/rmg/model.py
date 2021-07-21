@@ -432,7 +432,7 @@ class CoreEdgeReactionModel:
 
         return False, None
 
-    def make_new_reaction(self, forward, check_existing=True, generate_thermo=True):
+    def make_new_reaction(self, forward, check_existing=True, generate_thermo=True, generate_kinetics=True):
         """
         Make a new reaction given a :class:`Reaction` object `forward`. 
         The reaction is added to the global list of reactions.
@@ -505,7 +505,22 @@ class CoreEdgeReactionModel:
 
         forward.index = self.reaction_counter + 1
         self.reaction_counter += 1
+        
+        if generate_kinetics:
+            if forward.kinetics is None: 
+                self.apply_kinetics_to_reaction(forward)
+            
+            if isinstance(forward.kinetics, KineticsData):
+                forward.kinetics = forward.kinetics.to_arrhenius()
+            #  correct barrier heights of estimated kinetics
+            if isinstance(forward, (TemplateReaction,DepositoryReaction)): # i.e. not LibraryReaction
+                forward.fix_barrier_height()  # also converts ArrheniusEP to Arrhenius.
 
+            if self.pressure_dependence and forward.is_unimolecular():
+                # If this is going to be run through pressure dependence code,
+                # we need to make sure the barrier is positive.
+                forward.fix_barrier_height(force_positive=True)
+            
         # Since the reaction is new, add it to the list of new reactions
         self.new_reaction_list.append(forward)
 
