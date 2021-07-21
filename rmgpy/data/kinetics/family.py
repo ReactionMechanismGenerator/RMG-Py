@@ -2971,14 +2971,14 @@ class KineticsFamily(Database):
         else:
             raise DatabaseError('Could not find training depository in family {0}.'.format(self.label))
 
-    def add_entry(self, parent, grp, name):
+    def add_entry(self, parent, grp, name, facet=None):
         """
         Adds a group entry with parent parent
         group structure grp
         and group name name
         """
         ind = len(self.groups.entries) - 1
-        entry = Entry(index=ind, label=name, item=grp, parent=parent)
+        entry = Entry(index=ind, label=name, item=grp, parent=parent, facet=facet)
         self.groups.entries[name] = entry
         self.rules.entries[name] = []
         if entry.parent:
@@ -3219,55 +3219,80 @@ class KineticsFamily(Database):
 
         if exts == [] and not gave_up_split:  # should only occur when all reactions at this node are identical
             rs = template_rxn_map[parent.label]
+            facets_added = []
+            split_violation_flag = False
             for q, rxn in enumerate(rs):
                 for j in range(q):
                     if not same_species_lists(rxn.reactants, rs[j].reactants, generate_initial_map=True, save_order=self.save_order):
-                        for p, atm in enumerate(parent.item.atoms):
-                            if atm.reg_dim_atm[0] != atm.reg_dim_atm[1]:
-                                logging.error('atom violation')
-                                logging.error(atm.reg_dim_atm)
-                                logging.error(parent.label)
-                                logging.error('Regularization dimension suggest this node can be expanded, '
-                                              'but extension generation has failed')
-                            if atm.reg_dim_u[0] != atm.reg_dim_u[1]:
-                                logging.error('radical violation')
-                                logging.error(atm.reg_dim_u)
-                                logging.error(parent.label)
-                                logging.error('Regularization dimension suggest this node can be expanded, '
-                                              'but extension generation has failed')
-                        for p, bd in enumerate(parent.item.get_all_edges()):
-                            if bd.reg_dim[0] != bd.reg_dim[1]:
-                                logging.error('bond violation')
-                                logging.error(bd.order)
-                                logging.error(bd.reg_dim)
-                                logging.error(parent.label)
-                                logging.error('Regularization dimension suggest this node can be expanded, '
-                                              'but extension generation has failed')
+                        if not split_violation_flag:
+                            for p, atm in enumerate(parent.item.atoms):
+                                if atm.reg_dim_atm[0] != atm.reg_dim_atm[1]:
+                                    logging.error('atom violation')
+                                    logging.error(atm.reg_dim_atm)
+                                    logging.error(parent.label)
+                                    logging.error('Regularization dimension suggest this node can be expanded, '
+                                                'but extension generation has failed')
+                                if atm.reg_dim_u[0] != atm.reg_dim_u[1]:
+                                    logging.error('radical violation')
+                                    logging.error(atm.reg_dim_u)
+                                    logging.error(parent.label)
+                                    logging.error('Regularization dimension suggest this node can be expanded, '
+                                                'but extension generation has failed')
+                            for p, bd in enumerate(parent.item.get_all_edges()):
+                                if bd.reg_dim[0] != bd.reg_dim[1]:
+                                    logging.error('bond violation')
+                                    logging.error(bd.order)
+                                    logging.error(bd.reg_dim)
+                                    logging.error(parent.label)
+                                    logging.error('Regularization dimension suggest this node can be expanded, '
+                                                'but extension generation has failed')
 
-                        logging.error('split violation')
-                        logging.error('parent')
-                        logging.error(parent.item.to_adjacency_list())
-                        for c, atm in enumerate(parent.item.atoms):
-                            logging.error(c)
-                            logging.error(atm.reg_dim_atm)
-                            logging.error(atm.reg_dim_u)
-                        logging.error("bonds:")
-                        for bd in parent.item.get_all_edges():
-                            ind1 = parent.item.atoms.index(bd.vertex1)
-                            ind2 = parent.item.atoms.index(bd.vertex2)
-                            logging.error(((ind1, ind2), bd.order, bd.reg_dim))
-                        for rxn in rs:
-                            logging.error(str(rxn))
-                            for react in rxn.reactants:
-                                logging.error(react.label)
-                                logging.error(react.to_adjacency_list())
-                            for prod in rxn.products:
-                                logging.error(prod.label)
-                                logging.error(prod.to_adjacency_list())
-                        logging.error("Clearing Regularization Dimensions and Reattempting")  # this usually happens when node expansion breaks some symmetry
-                        parent.item.clear_reg_dims()  # this almost always solves the problem
-                        return True
-            return False
+                            logging.error('split violation')
+                            logging.error('parent')
+                            logging.error(parent.item.to_adjacency_list())
+                            for c, atm in enumerate(parent.item.atoms):
+                                logging.error(c)
+                                logging.error(atm.reg_dim_atm)
+                                logging.error(atm.reg_dim_u)
+                            logging.error("bonds:")
+                            for bd in parent.item.get_all_edges():
+                                ind1 = parent.item.atoms.index(bd.vertex1)
+                                ind2 = parent.item.atoms.index(bd.vertex2)
+                                logging.error(((ind1, ind2), bd.order, bd.reg_dim))
+                            for rxn in rs:
+                                logging.error(str(rxn))
+                                for react in rxn.reactants:
+                                    logging.error(react.label)
+                                    logging.error(react.to_adjacency_list())
+                                for prod in rxn.products:
+                                    logging.error(prod.label)
+                                    logging.error(prod.to_adjacency_list())
+                            logging.error("Clearing Regularization Dimensions and Reattempting")  # this usually happens when node expansion breaks some symmetry
+                            if 'split_violations' in parent.item.props:
+                                parent.item.props['split_violations'] += 1
+                            else:
+                                parent.item.props['split_violations'] = 1
+                            split_violation_flag = True
+                            if parent.item.props['split_violations'] >= 10:
+                                # give up
+                                logging.error(f"Exceeded max split violations for {parent.label}")
+                                return False
+                            parent.item.clear_reg_dims()  # this almost always solves the problem
+                    else:
+                        if rxn.facet != rs[j].facet:
+                            for facet in (rxn.facet,rs[j].facet):
+                                if (not parent.facet) or (parent.facet == facet): 
+                                    if facet and not facet in facets_added:
+                                        group = parent.item
+                                        extname = parent.label + '_facet{}'.format(facet)
+                                        self.add_entry(parent, group, extname, facet=facet)
+                                        facets_added.append(facet)
+            if split_violation_flag and not facets_added:
+                logging.error("Clearing Regularization Dimensions and Reattempting")
+                parent.item.clear_reg_dims()
+                return True
+            else:
+                return False
         
         if gave_up_split:
             return False
