@@ -1351,6 +1351,7 @@ class CoreEdgeReactionModel:
         # remove the species
         self.edge.species.remove(spec)
         self.index_species_dict.pop(spec.index)
+        self.edge.phase_system.remove_species(spec)
 
         # clean up species references in reaction_systems
         for reaction_system in reaction_systems:
