@@ -1461,7 +1461,15 @@ class CoreEdgeReactionModel:
         edge).
         """
         self.edge.reactions.append(rxn)
-
+        if not self.edge.phase_system.in_nose:
+            bits = np.array([spc.molecule[0].contains_surface_site() for spc in rxn.reactants+rxn.products])
+            if all(bits):
+                self.edge.phase_system.phases["Surface"].add_reaction(rxn,self.core.species+self.edge.species)
+            elif all(bits==False):
+                self.edge.phase_system.phases["Default"].add_reaction(rxn,self.core.species+self.edge.species)
+            else:
+                self.edge.phase_system.interfaces[set(["Default","Surface"])].add_reaction(rxn,self.core.species+self.edge.species)
+            
     def get_model_size(self):
         """
         Return the numbers of species and reactions in the model core and edge.
