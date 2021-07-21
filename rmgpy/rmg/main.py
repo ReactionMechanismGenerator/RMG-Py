@@ -78,6 +78,7 @@ from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.plot import plot_sensitivity
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
 from rmgpy.yml import RMSWriter
+from rmgpy.rmg.reactors import Reactor
 
 ################################################################################
 
@@ -672,6 +673,9 @@ class RMG(util.Subject):
         if self.save_simulation_profiles:
 
             for index, reaction_system in enumerate(self.reaction_systems):
+                if isinstance(reaction_system, Reactor):
+                    typ = type(reaction_system)
+                    raise InputError(f"save_simulation_profiles=True not compatible with reactor of type {typ}")
                 reaction_system.attach(SimulationProfileWriter(
                     self.output_directory, index, self.reaction_model.core.species))
                 reaction_system.attach(SimulationProfilePlotter(
