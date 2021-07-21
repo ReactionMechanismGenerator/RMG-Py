@@ -232,7 +232,8 @@ class CoreEdgeReactionModel:
             3  R!H u1 px c0 {2,S}
             4  H u0 p0  c0 {1,S}
             """)]
-        self.metal = None # (str with metal and facet, i.e Pt111)
+        self.metal = None
+        self.facet = None
 
     def check_for_existing_species(self, molecule):
         """
@@ -897,21 +898,15 @@ class CoreEdgeReactionModel:
         assert isinstance(reaction, TemplateReaction)
 
         family = get_family_library_object(reaction.family)
-
-        metal = self.metal
-        facet = None
-        if metal:
-            facet = re.search('\d+', metal)
-            if facet:
-                metal = metal[:facet.span()[0]]
-                facet = facet.group(0)
+        if reaction.is_surface_reaction():
+            reaction.metal = self.metal
+            reaction.facet = self.facet
 
         # Get the kinetics for the reaction
         kinetics, source, entry, is_forward = family.get_kinetics(reaction, template_labels=reaction.template,
                                                                   degeneracy=reaction.degeneracy,
                                                                   estimator=self.kinetics_estimator,
-                                                                  return_all_kinetics=False, 
-                                                                  metal=metal, facet=facet)
+                                                                  return_all_kinetics=False)
         # Get the gibbs free energy of reaction at 298 K
         G298 = reaction.get_free_energy_of_reaction(298)
         gibbs_is_positive = G298 > -1e-8
@@ -925,8 +920,7 @@ class CoreEdgeReactionModel:
                                                                                           template_labels=reaction.reverse.template,
                                                                                           degeneracy=reaction.reverse.degeneracy,
                                                                                           estimator=self.kinetics_estimator,
-                                                                                          return_all_kinetics=False,
-                                                                                          metal=metal, facet=facet)
+                                                                                          return_all_kinetics=False)
                 # Now decide which direction's kinetics to keep
                 keep_reverse = False
                 if entry is not None and rev_entry is None:
