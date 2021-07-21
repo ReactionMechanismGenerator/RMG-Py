@@ -36,6 +36,7 @@ cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import KineticsError, QuantityError
 from rmgpy.kinetics.uncertainties import rank_accuracy_map
+from rmgpy.kinetics import get_rate_coefficient_units_from_reaction_order
 from rmgpy.molecule.molecule import Bond
 
 # Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
