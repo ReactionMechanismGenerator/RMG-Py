@@ -1132,8 +1132,19 @@ def get_w0(actions, rxn):
             bd = Bond(a_dict[act[1]], a_dict[act[3]], act[2])
             wf += bd.get_bde(metal=metal)
         elif act[0] == 'CHANGE_BOND':
-            bd1 = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
-
+            atom1, atom2 = a_dict[act[1]], a_dict[act[3]]
+            if not mol.has_bond(atom1, atom2): # we dont have a bond
+                is_vdW_bond = False
+                for atom in (atom1, atom2):
+                    if atom.is_surface_site():
+                        is_vdW_bond = True
+                        break
+                if not is_vdW_bond: # no surface site, so no vdW bond
+                    raise ('Attempted to change a nonexistent bond.')
+                else: # we found a surface site, so we will make vdw bond
+                    bd1 = Bond(atom1, atom2, order=0)
+            else: # we have a bond
+                bd1 = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
             if act[2] + bd1.order == 0.5:
                 mol2 = None
                 for r in rxn.products:
@@ -1146,10 +1157,7 @@ def get_w0(actions, rxn):
             else:
                 bd2 = Bond(a_dict[act[1]], a_dict[act[3]], bd1.order + act[2])
 
-            if bd2.order == 0:
-                bd2_bde = 0.0
-            else:
-                bd2_bde = bd2.get_bde(metal=metal)
+            bd2_bde = bd2.get_bde(metal=metal)
             bde_diff = bd2_bde - bd1.get_bde(metal=metal)
             if bde_diff > 0:
                 wf += abs(bde_diff)
