@@ -244,6 +244,35 @@ class Phase:
 
         return spc
 
+class Interface:
+    """
+    Class containing all reactions and properties necessary to describe
+    kinetics within an interface between two phases in a simulation
+    """
+    def __init__(self, phases, reactions=[]):
+        self.reactions = reactions or []
+        self.phaseset = set(phases)
+
+    def add_reaction(self, rxn, species_list):
+        """
+        add a reaction to the interface
+        """
+        self.reactions.append(to_rms(rxn, species_list=species_list, rms_species_list=self.reactions))
+
+    def remove_species(self, spc):
+        """
+        Remove reactions associated with the input species from the interface
+        """
+        rxninds = []
+        for i, rxn in enumerate(self.reactions):
+            for spc2 in itertools.chain(rxn.reactants, rxn.products):
+                if spc.name == spc2.name:
+                    rxninds.append(i)
+                    break
+        for ind in reversed(rxninds):
+            del self.reactions[ind]
+        return
+
 def to_rms(obj, species_list=None, rms_species_list=None):
     """
     Generate corresponding rms object
