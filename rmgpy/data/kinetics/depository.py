@@ -221,7 +221,8 @@ class KineticsDepository(Database):
         """
 
         reaction = Reaction(reactants=[], products=[], specific_collider=specificCollider,
-                            degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
+                            degeneracy=degeneracy, duplicate=duplicate, reversible=reversible, metal=metal,
+                            facet=facet, site=site)
 
         entry = Entry(
             index=index,
