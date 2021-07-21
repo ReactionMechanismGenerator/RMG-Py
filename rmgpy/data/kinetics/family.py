@@ -3295,8 +3295,6 @@ class KineticsFamily(Database):
             if len(facets) > 1:
                 for facet in facets:
                     if (not parent.facet) or (parent.facet == facet):
-                                if (not parent.facet) or (parent.facet == facet): 
-                    if (not parent.facet) or (parent.facet == facet):
                         group = parent.item
                         extname = parent.label + '_facet{}'.format(facet)
                         self.add_entry(parent, group, extname, facet=facet)
