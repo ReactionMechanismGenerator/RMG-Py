@@ -397,23 +397,6 @@ class SurfaceReactorCheck(unittest.TestCase):
         # Check that we've reached equilibrium
         self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
 
-        # # Visualize the simulation results
-        # import pylab
-        # fig = pylab.figure(figsize=(6, 6))
-        # pylab.subplot(2, 1, 1)
-        # pylab.semilogx(t, y[:, 2] / total_sites)
-        # pylab.ylabel('Surface coverage')
-        # pylab.legend(['HX'], loc=4)
-        # pylab.subplot(2, 1, 2)
-        # pylab.semilogx(t, species_rates)
-        # pylab.legend(['H2', 'X', 'HX'], loc=4)
-        # pylab.xlabel('Time (s)')
-        # pylab.ylabel('Rate (mol/m$^\\mathdefault{3 or 2}$*s)')
-        # # fig.subplots_adjust(left=0.21, bottom=0.10, right=0.95, top=0.95, wspace=0.20, hspace=0.35)
-        # pylab.tight_layout()
-        # # pylab.show()
-        # pylab.savefig('surfaceTestH2covdep.pdf')
-
     def test_solve_ch3_coverage_dependence(self):
         """
         Test the surface batch reactor can properly apply coverage dependent parameters
@@ -554,3 +537,50 @@ class SurfaceReactorCheck(unittest.TestCase):
 
         # Check that we've reached equilibrium by the end
         self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
+
+        # Run model with Covdep off so we can test that it is actually being implemented
+        rxn_system = SurfaceReactor(
+            T, P_initial,
+            n_sims=1,
+            initial_gas_mole_fractions={ch3: 1.0},
+            initial_surface_coverages={x: 1.0},
+            surface_volume_ratio=(1., 'm^-1'),
+            surface_site_density=(2.72e-9, 'mol/cm^2'),
+            coverage_dependence=False,
+            termination=[])
+
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+
+        tlist = np.logspace(-13, -5, 81, dtype=np.float64)
+
+        # Integrate to get the solution at each time point
+        t = []
+        y_off = []
+        species_rates_off = []
+        t.append(rxn_system.t)
+
+        # You must make a copy of y because it is overwritten by DASSL at
+        # each call to advance()
+        y_off.append(rxn_system.y.copy())
+        species_rates_off.append(rxn_system.core_species_rates.copy())
+        for t1 in tlist:
+            rxn_system.advance(t1)
+            t.append(rxn_system.t)
+            # You must make a copy of y because it is overwritten by DASSL at
+            # each call to advance()
+            y_off.append(rxn_system.y.copy())
+            species_rates_off.append(rxn_system.core_species_rates.copy())
+        run_time = time.time() - start_time
+        print(f"Simulation took {run_time:.3e} seconds in {self.id()}")
+
+        # Convert the solution vectors to np arrays
+        t = np.array(t, np.float64)
+        y_off = np.array(y_off, np.float64)
+        species_rates_off = np.array(species_rates_off, np.float64)
+
+        # Check that we've reached equilibrium
+        self.assertAlmostEqual(species_rates_off[-1, 0], 0.0, delta=1e-2)
+
+        # Check that coverages are different
+        self.assertFalse(np.array_equal(y,y_off))
+        self.assertFalse(np.array_equal(species_rates, species_rates_off))
