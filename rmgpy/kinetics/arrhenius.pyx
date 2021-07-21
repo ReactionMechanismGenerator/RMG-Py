@@ -1116,16 +1116,21 @@ def get_w0(actions, rxn):
 
     recipe = actions
 
+    if rxn.facet is None:
+        metal = rxn.metal # could be None
+    else:
+        metal = rxn.metal + rxn.facet
+
     wb = 0.0
     wf = 0.0
     for act in recipe:
 
         if act[0] == 'BREAK_BOND':
             bd = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
-            wb += bd.get_bde()
+            wb += bd.get_bde(metal=metal)
         elif act[0] == 'FORM_BOND':
             bd = Bond(a_dict[act[1]], a_dict[act[3]], act[2])
-            wf += bd.get_bde()
+            wf += bd.get_bde(metal=metal)
         elif act[0] == 'CHANGE_BOND':
             bd1 = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
 
@@ -1144,8 +1149,8 @@ def get_w0(actions, rxn):
             if bd2.order == 0:
                 bd2_bde = 0.0
             else:
-                bd2_bde = bd2.get_bde()
-            bde_diff = bd2_bde - bd1.get_bde()
+                bd2_bde = bd2.get_bde(metal=metal)
+            bde_diff = bd2_bde - bd1.get_bde(metal=metal)
             if bde_diff > 0:
                 wf += abs(bde_diff)
             else:
