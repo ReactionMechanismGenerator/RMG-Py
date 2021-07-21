@@ -1094,7 +1094,8 @@ class CoreEdgeReactionModel:
 
         rxn_list = []
         if spec in self.edge.species:
-
+            if not self.edge.phase_system.in_nose:
+                self.edge.phase_system.pass_species(spec.label,self.core.phase_system)
             # If species was in edge, remove it
             logging.debug("Removing species %s from edge.", spec)
             self.edge.species.remove(spec)
