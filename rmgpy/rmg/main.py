@@ -2306,10 +2306,13 @@ class RMG_Memory(object):
                 assert key != 'T' and key != 'P', 'naming a species T or P is forbidden'
                 if isinstance(value, list):
                     self.Ranges[key] = [v.value_si for v in value]
-
-        for term in reaction_system.termination:
-            if isinstance(term, TerminationTime):
-                self.tmax = term.time.value_si
+        
+        if isinstance(reaction_system, Reactor):
+            self.tmax = reaction_system.tf
+        else:
+            for term in reaction_system.termination:
+                if isinstance(term, TerminationTime):
+                    self.tmax = term.time.value_si
 
         self.reaction_system = reaction_system
         self.condition_list = []
