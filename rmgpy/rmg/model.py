@@ -324,6 +324,16 @@ class CoreEdgeReactionModel:
         # This may change later after getting thermo in self.generate_thermo()
         if not spec.label:
             spec.label = spec.smiles
+        
+        #ensure species labels are unique
+        orilabel = spec.label 
+        label = orilabel
+        i = 2
+        while any([label in phase.names for phase in self.edge.phase_system.phases.values()]):
+            label = orilabel + "-" + str(i)
+            i += 1
+        spec.label = label
+
         logging.debug('Creating new species %s', spec.label)
 
         formula = molecule.get_formula()
