@@ -1433,6 +1433,22 @@ class CoreEdgeReactionModel:
         """
         if rxn not in self.core.reactions:
             self.core.reactions.append(rxn)
+            if not self.core.phase_system.in_nose:
+                bits = np.array([spc.molecule[0].contains_surface_site() for spc in rxn.reactants+rxn.products])
+                in_edge = rxn in self.edge.reactions
+                if all(bits):
+                    self.core.phase_system.phases["Surface"].add_reaction(rxn,self.core.species)
+                    if not in_edge:
+                        self.edge.phase_system.phases["Surface"].add_reaction(rxn,self.core.species)
+                elif all(bits==False):
+                    self.core.phase_system.phases["Default"].add_reaction(rxn,self.core.species)
+                    if not in_edge:
+                        self.edge.phase_system.phases["Default"].add_reaction(rxn,self.core.species)
+                else:
+                    self.core.phase_system.interfaces[frozenset({"Default","Surface"})].add_reaction(rxn,self.core.species)
+                    if not in_edge:
+                        self.edge.phase_system.interfaces[frozenset({"Default","Surface"})].add_reaction(rxn,self.core.species)
+
         if rxn in self.edge.reactions:
             self.edge.reactions.remove(rxn)
 
