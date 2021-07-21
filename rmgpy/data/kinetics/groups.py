@@ -76,7 +76,7 @@ class KineticsGroups(Database):
         return '<KineticsGroups "{0}">'.format(self.label)
 
     def load_entry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='',
-                   nodalDistance=None):
+                   nodalDistance=None, metal=None, facet=None, site=None):
         """
         Method for parsing entries in database files.
         Note that these argument names are retained for backward compatibility.
@@ -103,7 +103,10 @@ class KineticsGroups(Database):
             reference_type=referenceType,
             short_desc=shortDesc,
             long_desc=longDesc.strip(),
-            nodal_distance=nodalDistance
+            nodal_distance=nodalDistance,
+            metal = metal,
+            facet = facet,
+            site = site
         )
 
     def get_reaction_template(self, reaction):
@@ -115,6 +118,7 @@ class KineticsGroups(Database):
 
         # Get forward reaction template and remove any duplicates
         forward_template = self.top[:]
+        metal, facet, site = reaction.metal, reaction.facet, reaction.site
 
         temporary = []
         symmetric_tree = False
@@ -148,7 +152,7 @@ class KineticsGroups(Database):
 
             atoms = r.get_all_labeled_atoms()
 
-            matched_node = self.descend_tree(r, atoms, root=entry, strict=True)
+            matched_node = self.descend_tree(r, atoms, root=entry, strict=True, metal=metal, facet=facet, site=site)
 
             if matched_node is not None:
                 template.append(matched_node)
@@ -175,7 +179,7 @@ class KineticsGroups(Database):
                     # Match structures
                     atoms = reactant.get_all_labeled_atoms()
                     # Descend the tree, making sure to match atomlabels exactly using strict = True
-                    matched_node = self.descend_tree(reactant, atoms, root=entry, strict=True)
+                    matched_node = self.descend_tree(reactant, atoms, root=entry, strict=True, metal=metal, facet=facet, site=site)
                     if matched_node is not None:
                         template.append(matched_node)
                     # else:
