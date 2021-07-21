@@ -65,6 +65,7 @@ from rmgpy.tools.uncertainty import KineticParameterUncertainty
 
 ################################################################################
 
+
 class TemplateReaction(Reaction):
     """
     A Reaction object generated from a reaction family template. In addition
@@ -78,6 +79,9 @@ class TemplateReaction(Reaction):
     `estimator`  ``str``                   Whether the kinetics came from rate rules or group additivity.
     `reverse`    :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
     `is_forward`  ``bool``                 Whether the reaction was generated in the forward direction of the family.
+    `labeled_atoms`   ``dict``             Keys are 'reactants' or 'products', values are dictionaries.
+                                           Keys in the second level dictionary are template labels (e.g., '*1'),
+                                           values are the respective Atom object instance in the reactants.
     ============ ========================= =====================================
     """
 
@@ -115,6 +119,7 @@ class TemplateReaction(Reaction):
         self.template = template
         self.estimator = estimator
         self.reverse = reverse
+        self.labeled_atoms = {'reactants': dict(), 'products': dict()}
 
     def __reduce__(self):
         """
@@ -884,7 +889,7 @@ class KineticsFamily(Database):
         # Load the old set of the species of the training reactions
         species_dict = Database().get_species(dictionary_path)
 
-        # Add new unique species with labeledAtoms into species_dict
+        # Add new unique species with labeled atoms into species_dict
         for rxn in reactions:
             for spec in (rxn.reactants + rxn.products):
                 for ex_spec in species_dict.values():
@@ -1344,13 +1349,15 @@ class KineticsFamily(Database):
 
         self.rules.fill_rules_by_averaging_up(self.get_root_template(), {}, verbose)
 
-    def apply_recipe(self, reactant_structures, forward=True, unique=True):
+    def apply_recipe(self, reactant_structures, forward=True, unique=True, relabel_atoms=True):
         """
         Apply the recipe for this reaction family to the list of
         :class:`Molecule` or :class:`Group` objects `reactant_structures`. The atoms
         of the reactant structures must already be tagged with the appropriate
         labels. Returns a list of structures corresponding to the products
         after checking that the correct number of products was produced.
+        If ``relabel_atoms`` is ``True``, product atom labels of reversible families
+        will be reversed to assist in identifying forbidden structures.
         """
 
         # There is some hardcoding of reaction families in this function, so
@@ -1471,7 +1478,7 @@ class KineticsFamily(Database):
         #  structures which are labeled as reactants.
         # Unfortunately, this means that reaction family info is
         #  hardcoded, so this must be updated if the database changes.
-        if not self.reverse_template:
+        if not self.reverse_template and relabel_atoms:
             # Get atom labels for products
             atom_labels = {}
             for atom in product_structure.atoms:
@@ -1661,7 +1668,7 @@ class KineticsFamily(Database):
         # Return the product structures
         return product_structures
 
-    def _generate_product_structures(self, reactant_structures, maps, forward):
+    def _generate_product_structures(self, reactant_structures, maps, forward, relabel_atoms=True):
         """
         For a given set of `reactant_structures` and a given set of `maps`,
         generate and return the corresponding product structures. The
@@ -1670,6 +1677,8 @@ class KineticsFamily(Database):
         parameter is a list of mappings of the top-level tree node of each
         *template* reactant to the corresponding *structure*. This function
         returns a list of the product structures.
+        If ``relabel_atoms`` is ``True``, product atom labels of reversible families
+        will be reversed to assist in identifying forbidden structures.
         """
 
         # Clear any previous atom labeling from all reactant structures
@@ -1689,7 +1698,7 @@ class KineticsFamily(Database):
 
         # Generate the product structures by applying the forward reaction recipe
         try:
-            product_structures = self.apply_recipe(reactant_structures, forward=forward)
+            product_structures = self.apply_recipe(reactant_structures, forward=forward, relabel_atoms=relabel_atoms)
             if not product_structures:
                 return None
         except (InvalidActionError, KekulizationError):
@@ -1754,11 +1763,9 @@ class KineticsFamily(Database):
 
         # Store the labeled atoms so we can recover them later
         # (e.g. for generating reaction pairs and templates)
-        labeled_atoms = []
-        for reactant in reaction.reactants:
-            for label, atom in reactant.get_all_labeled_atoms().items():
-                labeled_atoms.append((label, atom))
-        reaction.labeledAtoms = labeled_atoms
+        for key, species_list in zip(['reactants', 'products'], [reaction.reactants, reaction.products]):
+            for species in species_list:
+                reaction.labeled_atoms[key] = dict(reaction.labeled_atoms[key], **species.get_all_labeled_atoms())
 
         return reaction
 
@@ -1797,7 +1804,7 @@ class KineticsFamily(Database):
         else:
             raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
 
-    def generate_reactions(self, reactants, products=None, prod_resonance=True):
+    def generate_reactions(self, reactants, products=None, prod_resonance=True, delete_labels=True, relabel_atoms=True):
         """
         Generate all reactions between the provided list of one, two, or three
         `reactants`, which should be either single :class:`Molecule` objects
@@ -1811,7 +1818,11 @@ class KineticsFamily(Database):
             reactants (list):                List of Molecules to react.
             products (list, optional):       List of Molecules or Species of desired product structures.
             prod_resonance (bool, optional): Flag to generate resonance structures for product checking.
-                Defaults to True, resonance structures are compared.
+                                             Defaults to ``True``, resonance structures are compared.
+            delete_labels (bool, optional):  Delete the labeled atoms from each generated reaction (optional).
+                                             Default is ``True``, atom labels are deleted.
+            relabel_atoms (bool, optional)   Whether to reverse product atom labels of reversible families.
+                                             Default is ``True``, atoms are re-labeled.
 
         Returns:
             List of all reactions containing Molecule objects with the
@@ -1822,13 +1833,24 @@ class KineticsFamily(Database):
 
         # Forward direction (the direction in which kinetics is defined)
         reaction_list.extend(
-            self._generate_reactions(reactants, products=products, forward=True, prod_resonance=prod_resonance))
+            self._generate_reactions(reactants=reactants,
+                                     products=products,
+                                     forward=True,
+                                     prod_resonance=prod_resonance,
+                                     delete_labels=delete_labels,
+                                     relabel_atoms=relabel_atoms,
+                                     ))
 
         if not self.own_reverse and self.reversible:
             # Reverse direction (the direction in which kinetics is not defined)
             reaction_list.extend(
-                self._generate_reactions(reactants, products=products, forward=False, prod_resonance=prod_resonance))
-
+                self._generate_reactions(reactants=reactants,
+                                         products=products,
+                                         forward=False,
+                                         prod_resonance=prod_resonance,
+                                         delete_labels=delete_labels,
+                                         relabel_atoms=relabel_atoms,
+                                         ))
         return reaction_list
 
     def add_reverse_attribute(self, rxn, react_non_reactive=True):
@@ -1992,7 +2014,7 @@ class KineticsFamily(Database):
         return reactions[0].degeneracy
 
     def _generate_reactions(self, reactants, products=None, forward=True, prod_resonance=True,
-                            react_non_reactive=False):
+                            react_non_reactive=False, delete_labels=True, relabel_atoms=True):
         """
         Generate a list of all the possible reactions of this family between
         the list of `reactants`. The number of reactants provided must match
@@ -2005,14 +2027,17 @@ class KineticsFamily(Database):
         found using `rmgpy.data.kinetics.common.find_degenerate_reactions`.
 
         Args:
-            reactants:          List of Molecules to react
-            products:           List of Molecules or Species of desired product structures (optional)
-            forward:            Flag to indicate whether the forward or reverse template should be applied (optional)
-                                Default is True, forward template is used
-            prod_resonance:     Flag to generate resonance structures for product checking (optional)
-                                Default is True, resonance structures are compared
-            react_non_reactive: Flag to generate reactions between unreactive molecules (optional)
-                                Default is False, reactions involving unreactive molecules are not generated
+            reactants:          List of Molecules to react.
+            products:           List of Molecules or Species of desired product structures (optional).
+            forward:            Flag to indicate whether the forward or reverse template should be applied (optional).
+                                Default is ``True``, forward template is used.
+            prod_resonance:     Flag to generate resonance structures for product checking (optional).
+                                Default is ``True``, resonance structures are compared.
+            react_non_reactive: Flag to generate reactions between unreactive molecules (optional).
+                                Default is ``False``, reactions involving unreactive molecules are not generated.
+            delete_labels:      Delete the labeled atoms from each generated reaction (optional).
+                                Default is ``True``, atom labels are deleted.
+            relabel_atoms (bool, optional)   Whether to reverse product atom labels of reversible families.
 
         Returns:
             List of all reactions containing Molecule objects with the
@@ -2068,14 +2093,16 @@ class KineticsFamily(Database):
                         reactant_structures = [molecule]
                         try:
                             product_structures = self._generate_product_structures(reactant_structures,
-                                                                                   [mapping], forward)
+                                                                                   [mapping],
+                                                                                   forward,
+                                                                                   relabel_atoms)
                         except ForbiddenStructureException:
                             pass
                         else:
                             if product_structures is not None:
                                 rxn = self._create_reaction(reactant_structures, product_structures, forward)
-                                if rxn: rxn_list.append(rxn)
-
+                                if rxn:
+                                    rxn_list.append(rxn)
         # Bimolecular reactants: A + B --> products
         elif len(reactants) == 2 and len(template_reactants) == 2:
 
@@ -2109,13 +2136,16 @@ class KineticsFamily(Database):
                                 reactant_structures = [molecule_b, molecule_a]
                                 try:
                                     product_structures = self._generate_product_structures(reactant_structures,
-                                                                                           [map_b, map_a], forward)
+                                                                                           [map_b, map_a],
+                                                                                           forward,
+                                                                                           relabel_atoms)
                                 except ForbiddenStructureException:
                                     pass
                                 else:
                                     if product_structures is not None:
                                         rxn = self._create_reaction(reactant_structures, product_structures, forward)
-                                        if rxn: rxn_list.append(rxn)
+                                        if rxn:
+                                            rxn_list.append(rxn)
 
                         # Only check for swapped reactants if they are different
                         if reactants[0] is not reactants[1]:
@@ -2130,7 +2160,9 @@ class KineticsFamily(Database):
                                     reactant_structures = [molecule_a, molecule_b]
                                     try:
                                         product_structures = self._generate_product_structures(reactant_structures,
-                                                                                               [map_a, map_b], forward)
+                                                                                               [map_a, map_b],
+                                                                                               forward,
+                                                                                               relabel_atoms)
                                     except ForbiddenStructureException:
                                         pass
                                     else:
@@ -2187,7 +2219,8 @@ class KineticsFamily(Database):
                         try:
                             product_structures = self._generate_product_structures(reactant_structures,
                                                                                    [map_a, map_b, map_c],
-                                                                                   forward)
+                                                                                   forward,
+                                                                                   relabel_atoms)
                         except ForbiddenStructureException:
                             pass
                         else:
@@ -2254,7 +2287,8 @@ class KineticsFamily(Database):
                         try:
                             product_structures = self._generate_product_structures(reactant_structures,
                                                                                    [map_a, map_b, map_c],
-                                                                                   forward)
+                                                                                   forward,
+                                                                                   relabel_atoms)
                         except ForbiddenStructureException:
                             pass
                         else:
@@ -2299,7 +2333,8 @@ class KineticsFamily(Database):
                                                 _productStructures = self._generate_product_structures(
                                                     _reactantStructures,
                                                     _maps,
-                                                    forward)
+                                                    forward,
+                                                    relabel_atoms)
                                             except ForbiddenStructureException:
                                                 pass
                                             else:
@@ -2369,7 +2404,7 @@ class KineticsFamily(Database):
             # Restore the labeled atoms long enough to generate some metadata
             for reactant in reaction.reactants:
                 reactant.clear_labeled_atoms()
-            for label, atom in reaction.labeledAtoms:
+            for label, atom in reaction.labeled_atoms['reactants'].items():
                 if isinstance(atom, list):
                     for atm in atom:
                         atm.label = label
@@ -2380,12 +2415,13 @@ class KineticsFamily(Database):
             reaction.pairs = self.get_reaction_pairs(reaction)
             reaction.template = self.get_reaction_template_labels(reaction)
 
-            # Unlabel the atoms for both reactants and products
-            for species in itertools.chain(reaction.reactants, reaction.products):
-                species.clear_labeled_atoms()
+            if delete_labels:
+                # Unlabel the atoms for both reactants and products
+                for species in itertools.chain(reaction.reactants, reaction.products):
+                    species.clear_labeled_atoms()
 
-            # We're done with the labeled atoms, so delete the attribute
-            del reaction.labeledAtoms
+                # We're done with the labeled atoms, so delete the attribute
+                del reaction.labeled_atoms
 
             # Mark reaction reversibility
             reaction.reversible = self.reversible

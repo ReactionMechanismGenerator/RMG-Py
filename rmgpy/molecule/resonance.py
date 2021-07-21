@@ -102,7 +102,7 @@ def populate_resonance_algorithms(features=None):
             method_list.append(generate_adj_lone_pair_multiple_bond_resonance_structures)
             method_list.append(generate_adj_lone_pair_radical_multiple_bond_resonance_structures)
             if not features['is_aromatic']:
-                # The generate_lone_pair_multiple_bond_resonance_structures method may purturb the electronic
+                # The generate_lone_pair_multiple_bond_resonance_structures method may perturb the electronic
                 # configuration of a conjugated aromatic system, causing a major slow-down (two orders of magnitude
                 # slower in one observed case), and it doesn't necessarily result in new representative localized
                 # structures. Here we forbid it for all structures bearing at least one aromatic ring as a "good enough"
@@ -176,7 +176,7 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
     # Check that mol is a valid structure in terms of atomTypes and net charge. Since SMILES with hypervalance
     # heteroatoms are not always read correctly, print a suggestion to input the structure using an adjList.
     try:
-        mol.update()
+        mol.update(sort_atoms=not save_order)
     except AtomTypeError:
         logging.error("The following molecule has at least one atom with an undefined atomtype:\n{0}"
                       "\nIf this structure was entered in SMILES, try using the adjacencyList format for an unambiguous"
@@ -255,8 +255,8 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         copy                if False, append new resonance structures to input list (default)
                             if True, make a new list with all of the resonance structures
     """
-    cython.declare(index=cython.int, molecule=Molecule, new_mol_list=list, new_mol=Molecule, mol=Molecule, input_charge=cython.int,
-                    x=Atom)
+    cython.declare(index=cython.int, molecule=Molecule, new_mol_list=list, new_mol=Molecule, mol=Molecule,
+                   input_charge=cython.int, x=Atom)
 
     if copy:
         # Make a copy of the list so we don't modify the input list
@@ -275,7 +275,7 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         # (a +2 distance from the minimal deviation is used, octet deviations per species are in increments of 2)
         # Sometimes rearranging the structure requires an additional higher charge span structure, so allow
         # structures with a +1 higher charge span compared to the minimum, e.g., [O-]S#S[N+]#N
-        # This is run by default even if filter_structures=False.
+        # Filtration is always called.
         octet_deviation = filtration.get_octet_deviation(molecule)
         charge_span = molecule.get_charge_span()
         if octet_deviation <= min_octet_deviation + 2 and charge_span <= min_charge_span + 1:
@@ -308,22 +308,22 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         if mol.get_net_charge() != input_charge:
             mol_list.remove(mol)
             logging.debug('Resonance generation created a molecule %s with a net charge of %d '
-                            'which does not match the input mol charge of %d.\n'
-                            'Removing it from resonance structures',mol.smiles,mol.get_net_charge(),input_charge)
+                          'which does not match the input mol charge of %d.\n'
+                          'Removing it from resonance structures', mol.smiles, mol.get_net_charge(), input_charge)
         if mol.contains_surface_site():
             for x in [atom for atom in mol.atoms if atom.is_surface_site()]:
                 if x.radical_electrons != 0:
                     mol_list.remove(mol)
                     logging.debug('Resonance generation created a molecule %s with %d radicals on %s.\n'
-                    'Removing it from resonance structures',mol.smiles,x.radical_electrons,x.symbol)
+                                  'Removing it from resonance structures', mol.smiles, x.radical_electrons, x.symbol)
                 elif x.lone_pairs != 0:
                     mol_list.remove(mol)
                     logging.debug('Resonance generation created a molecule %s with %d lone pairs on %s.\n'
-                    'Removing it from resonance structures',mol.smiles,x.lone_pairs,x.symbol)
+                                  'Removing it from resonance structures', mol.smiles, x.lone_pairs, x.symbol)
                 elif x.charge != 0:
                     mol_list.remove(mol)
                     logging.debug('Resonance generation created a molecule %s with a charge of %d on %s.\n'
-                    'Removing it from resonance structures',mol.smiles,x.charge,x.symbol)
+                                  'Removing it from resonance structures', mol.smiles, x.charge, x.symbol)
 
     return mol_list
 
