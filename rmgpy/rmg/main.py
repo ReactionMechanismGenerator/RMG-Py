@@ -94,9 +94,9 @@ maxproc = 1
 
 class RMG(util.Subject):
     """
-    A representation of a Reaction Mechanism Generator (RMG) job. The 
+    A representation of a Reaction Mechanism Generator (RMG) job. The
     attributes are:
-    
+
     =================================== ================================================
     Attribute                           Description
     =================================== ================================================
@@ -150,7 +150,7 @@ class RMG(util.Subject):
     `initialization_time`               The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
     `done`                              Whether the job has completed (there is nothing new to add)
     =================================== ================================================
-    
+
     """
 
     def __init__(self, input_file=None, output_directory=None, profiler=None, stats_file=None):
@@ -264,8 +264,10 @@ class RMG(util.Subject):
 
         if self.surface_site_density:
             self.reaction_model.surface_site_density = self.surface_site_density
-
+            self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si()
+            self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si()
         self.reaction_model.coverage_dependence = self.coverage_dependence
+            
         self.reaction_model.verbose_comments = self.verbose_comments
         self.reaction_model.save_edge_species = self.save_edge_species
 
@@ -465,7 +467,7 @@ class RMG(util.Subject):
             import rmgpy.rmg.input
             rmgpy.rmg.input.restart_from_seed(path=kwargs['restart'])
 
-        # Check input file 
+        # Check input file
         self.check_input()
 
         # Properly set filter_reactions to initialize flags properly
@@ -490,20 +492,20 @@ class RMG(util.Subject):
             pass
 
         if maxproc > psutil.cpu_count():
-            raise ValueError("""Invalid input for user defined maximum number of processes {0}; 
-            should be an integer and smaller or equal to your available number of 
+            raise ValueError("""Invalid input for user defined maximum number of processes {0};
+            should be an integer and smaller or equal to your available number of
             processors {1}""".format(maxproc, psutil.cpu_count()))
 
         # Load databases
         self.load_database()
-        
+
         for spec in self.initial_species:
             self.reaction_model.add_species_to_edge(spec)
-        
+
         for reaction_system in self.reaction_systems:
             if isinstance(reaction_system, Reactor):
                 reaction_system.finish_termination_criteria()
-                
+
         # Load restart seed mechanism (if specified)
         if self.restart:
             # Copy the restart files to a separate folder so that the job does not overwrite it
@@ -648,7 +650,7 @@ class RMG(util.Subject):
 
     def register_listeners(self):
         """
-        Attaches listener classes depending on the options 
+        Attaches listener classes depending on the options
         found in the RMG input file.
         """
 
@@ -993,7 +995,7 @@ class RMG(util.Subject):
                     logging.info('The current model core has %s species and %s reactions' % (core_spec, core_reac))
                     logging.info('The current model edge has %s species and %s reactions' % (edge_spec, edge_reac))
                     return
-                    
+
             if max_num_spcs_hit:  # resets maxNumSpcsHit and continues the settings for loop
                 logging.info('The maximum number of species ({0}) has been hit, Exiting stage {1} ...'.format(
                     model_settings.max_num_species, q + 1))
@@ -1142,7 +1144,7 @@ class RMG(util.Subject):
                                                     'must be specified in the uncertainty options block for global uncertainty'
                                                     'analysis.')
 
-                                    
+
                             Tlist = ([reaction_system.sens_conditions['T']], 'K')
                             try:
                                 Plist = ([reaction_system.sens_conditions['P']], 'Pa')
@@ -1717,7 +1719,7 @@ class RMG(util.Subject):
                         self.bimolecular_react[:num_restart_spcs, :num_restart_spcs] = False
                         if self.trimolecular:
                             self.trimolecular_react[:num_restart_spcs, :num_restart_spcs, :num_restart_spcs] = False
-                
+
     def react_init_tuples(self):
         """
         Reacts tuples given in the react block
@@ -1739,18 +1741,18 @@ class RMG(util.Subject):
             elif len(tup) == 2:
                 inds = sorted([sts.index(it) for it in tup])
                 if not self.bimolecular_threshold[inds[0], inds[1]]:
-                    self.bimolecular_react[inds[0], inds[1]] = True 
+                    self.bimolecular_react[inds[0], inds[1]] = True
                     self.bimolecular_threshold[inds[0], inds[1]] = True
             elif self.trimolecular and len(tup) == 3:
                 inds = sorted([sts.index(it) for it in tup])
                 if not self.trimolecular_threshold[inds[0], inds[1], inds[2]]:
-                    self.trimolecular_react[inds[0], inds[1], inds[2]] = True 
+                    self.trimolecular_react[inds[0], inds[1], inds[2]] = True
                     self.trimolecular_threshold[inds[0], inds[1], inds[2]] = True
         self.reaction_model.enlarge(react_edge=True,
                                     unimolecular_react=self.unimolecular_react,
                                     bimolecular_react=self.bimolecular_react,
                                     trimolecular_react=self.trimolecular_react)
-        
+
     def update_reaction_threshold_and_react_flags(self,
                                                   rxn_sys_unimol_threshold=None,
                                                   rxn_sys_bimol_threshold=None,
@@ -2248,7 +2250,7 @@ class RMG_Memory(object):
 
     def add_t_conv_N(self, t, conv, N):
         """
-        adds the completion time and conversion and the number of objects added 
+        adds the completion time and conversion and the number of objects added
         from a given run to the memory
         """
         if hasattr(self, 'tmax'):
@@ -2267,8 +2269,8 @@ class RMG_Memory(object):
 
     def calculate_cond(self, obj, Ndims, Ns=20):
         """
-        Weighted Stochastic Grid Sampling algorithm 
-        obj is evaluated at a grid of points and the evaluations are normalized 
+        Weighted Stochastic Grid Sampling algorithm
+        obj is evaluated at a grid of points and the evaluations are normalized
         and then sampled randomly based on their normalized value
         then a random step of length 1/(2*Ns) is taken from that point to give a final condition point
         if this process were to impact runtime under some conditions you could decrease the value of Ns to speed it up
@@ -2370,7 +2372,7 @@ def log_conditions(rmg_memories, index):
 
 class Tee(object):
     """A simple tee to create a stream which prints to many streams.
-    
+
     This is used to report the profiling statistics to both the log file
     and the standard output.
     """
@@ -2426,11 +2428,11 @@ def process_profile_stats(stats_file, log_file):
 def make_profile_graph(stats_file, force_graph_generation=False):
     """
     Uses gprof2dot to create a graphviz dot file of the profiling information.
-    
+
     This requires the gprof2dot package available via `pip install gprof2dot`.
     Render the result using the program 'dot' via a command like
     `dot -Tps2 input.dot -o output.ps2`.
-    
+
     Rendering the ps2 file to pdf requires an external pdf converter
     `ps2pdf output.ps2` which produces a `output.ps2.pdf` file.
 
