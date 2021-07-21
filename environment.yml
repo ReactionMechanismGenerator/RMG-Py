@@ -12,6 +12,7 @@ dependencies:
   - coolprop
   - coverage
   - cython >=0.25.2
+  - rmg::diffeqpy
   - ffmpeg
   - rmg::gprof2dot
   - graphviz
@@ -37,6 +38,7 @@ dependencies:
   - pymongo
   - pyparsing
   - rmg::pyrdl
+  - rmg::pyrms
   - python >=3.7
   - pyyaml
   - rmg::quantities
