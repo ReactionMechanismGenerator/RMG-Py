@@ -1640,7 +1640,7 @@ class ThermoDatabase(object):
         matches = []
         for atom in surface_sites:
             labeled_atoms = {'*': atom}
-            node = adsorption_groups.descend_tree(molecule, labeled_atoms)
+            node = adsorption_groups.descend_tree(molecule, labeled_atoms, metal='Pt', facet='111')
             if node is None: 
                 # no match, so try the next surface site
                 continue

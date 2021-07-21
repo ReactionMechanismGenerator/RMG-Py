@@ -977,13 +977,13 @@ class Database(object):
             node = self.entries[node]
         group = node.item
         
-        if metal and node.metal:
+        if node.metal:
             if metal != node.metal:
                 return False
-        if facet and node.facet:
+        if node.facet:
             if facet != node.facet:
                 return False
-        if site and node.site:
+        if node.site:
             if site != node.site:
                 return False
 
