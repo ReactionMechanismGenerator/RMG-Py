@@ -496,7 +496,14 @@ class RMG(util.Subject):
 
         # Load databases
         self.load_database()
-
+        
+        for spec in self.initial_species:
+            self.reaction_model.add_species_to_edge(spec)
+        
+        for reaction_system in self.reaction_systems:
+            if isinstance(reaction_system, Reactor):
+                reaction_system.finish_termination_criteria()
+                
         # Load restart seed mechanism (if specified)
         if self.restart:
             # Copy the restart files to a separate folder so that the job does not overwrite it

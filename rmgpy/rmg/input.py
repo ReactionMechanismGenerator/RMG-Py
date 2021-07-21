@@ -187,9 +187,7 @@ def species(label, structure, reactive=True):
     if not is_new:
         raise InputError("Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,
                                                                                                           spec.label))
-    # Force RMG to add the species to edge first, prior to where it is added to the core, in case it is found in 
-    # any reaction libraries along the way
-    rmg.reaction_model.add_species_to_edge(spec)
+
     rmg.initial_species.append(spec)
     species_dict[label] = spec
 
