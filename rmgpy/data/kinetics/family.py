@@ -4228,6 +4228,7 @@ class KineticsFamily(Database):
                         rxns[i].products[j].thermo = get_reactant_thermo(rxns[i].products[j],metal)
             rxns[i].kinetics = entry.data
             rxns[i].rank = entry.rank
+            rxns[i].index = entry.index
 
             if remove_degeneracy:  # adjust for degeneracy
                 rxns[i].kinetics.A.value_si /= rxns[i].degeneracy
@@ -4354,6 +4355,7 @@ class KineticsFamily(Database):
                         if rrev.reactants[x].thermo is None:
                             rrev.reactants[x].thermo = get_reactant_thermo(rrev.reactants[x],metal)
                 rxns[i] = rrev
+                rxns[i].index = entry.index
 
         if self.own_reverse and get_reverse:
             return rxns + rev_rxns
