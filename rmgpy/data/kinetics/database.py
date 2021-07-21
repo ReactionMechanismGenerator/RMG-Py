@@ -44,7 +44,8 @@ from rmgpy.exceptions import DatabaseError
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, StickingCoefficient, \
-                           StickingCoefficientBEP, SurfaceArrhenius, SurfaceArrheniusBEP, ArrheniusBM
+                           StickingCoefficientBEP, SurfaceArrhenius, SurfaceArrheniusBEP, \
+                           ArrheniusBM, SurfaceArrheniusBM
 from rmgpy.molecule import Molecule, Group
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
@@ -79,7 +80,8 @@ class KineticsDatabase(object):
             'SurfaceArrhenius': SurfaceArrhenius,
             'SurfaceArrheniusBEP': SurfaceArrheniusBEP,
             'R': constants.R,
-            'ArrheniusBM': ArrheniusBM
+            'ArrheniusBM': ArrheniusBM,
+            'SurfaceArrheniusBM': SurfaceArrheniusBM
         }
         self.global_context = {}
 
@@ -813,6 +815,6 @@ and immediately used in input files without any additional changes.
             else:
 
                 h298 = rxn_copy.get_enthalpy_of_reaction(298)
-                if isinstance(kinetics, (ArrheniusEP, ArrheniusBM)):
+                if isinstance(kinetics, (ArrheniusEP, ArrheniusBM, SurfaceArrheniusBM)):
                     kinetics = kinetics.to_arrhenius(h298)
                 return kinetics
