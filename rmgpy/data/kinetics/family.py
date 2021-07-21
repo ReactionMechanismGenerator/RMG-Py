@@ -2683,8 +2683,7 @@ class KineticsFamily(Database):
         kinetics_list.sort(key=lambda x: (x[1].rank, x[1].index))
         return kinetics_list[0]
 
-    def get_kinetics(self, reaction, template_labels, degeneracy=1, estimator='', return_all_kinetics=True,
-                    metal=None, facet=None):
+    def get_kinetics(self, reaction, template_labels, degeneracy=1, estimator='', return_all_kinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
         depositories as well as generating a result using the user-specified `estimator`
@@ -2707,6 +2706,9 @@ class KineticsFamily(Database):
         depositories = self.depositories[:]
 
         template = self.retrieve_template(template_labels)
+
+        metal = reaction.metal
+        facet = reaction.facet
 
         # Check the various depositories for kinetics
         for depository in depositories:
