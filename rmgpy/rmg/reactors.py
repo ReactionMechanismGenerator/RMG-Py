@@ -56,6 +56,112 @@ from rmgpy.solver.termination import TerminationTime, TerminationConversion, Ter
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.depository import DepositoryReaction
 
+
+class PhaseSystem:
+    """
+    Class for tracking and managing all the phases and interfaces of species/reactions
+    needed to run a simulation
+    will typically have a core and edge PhaseSystem where the edge PhaseSystem
+    contains all species/reactions in the core PhaseSystem
+    """
+    def __init__(self, phases, interfaces):
+        self.phases = phases
+        self.interfaces = interfaces
+        self.species_dict = dict()
+        if 'nose' in sys.modules.keys(): #pyrms and nosetests aren't compatible
+            self.in_nose = True
+        else:
+            self.in_nose = False
+
+    def remove_species(self, spc):
+        """
+        If the species is found
+        removes that species and any reactions it is involved in
+        from the PhaseSystem and its Phases/Interfaces
+        """
+        for key, phase in self.phases.items():
+            rms_spc = phase.remove_species(spc.label)
+
+        if rms_spc:
+            for key, interface in self.interfaces.items():
+                interface.remove_species(rms_spc)
+
+            del self.species_dict[spc.label]
+
+    def add_reaction(self, rxn, species_list):
+        """
+        adds reaction to the appropriate phase/interface
+        within PhaseSystem
+        """
+        spclabels = [r.label for r in rxn.reactants+rxn.products]
+        phaseinv = []
+        for plabel, phase in self.phases.items():
+            out = [label for label in spclabels if label in phase.names]
+            if len(out) > 0:
+                phaseinv.append(phase)
+
+        if len(phaseinv) == 1:
+            phaseinv[0].add_reaction(rxn, species_list)
+        else:
+            phases = set(phaseinv)
+            for interface in self.interfaces:
+                if interface.phaseset == phases:
+                    interface.add_reaction(rxn, species_list)
+                    break
+
+    def pass_species(self, label, phasesys):
+        """
+        Adds a species from self to the input phase system phasesys
+        (usually adding an edge species to the core PhaseSystem)
+        also adds any reactions whose participating species are now all
+        in the core to the core PhaseSystem
+        reorders edge species ordering to match that of the core
+        """
+        spc = None
+        for plabel, phase in self.phases.items():
+            phase_label = plabel
+            spc = phase.get_species(label)
+            if spc is not None:
+                break
+
+        assert spc.name not in phasesys.phases[phase_label].names, spc.name
+
+        phasesys.phases[phase_label].species.append(spc)
+        phasesys.phases[phase_label].names.append(label)
+        phasesys.species_dict[label] = self.species_dict[label]
+        self.phases[phase_label].species.remove(spc)
+        self.phases[phase_label].names.remove(label)
+        self.phases[phase_label].species.insert(len(phasesys.phases[phase_label].species)-1, spc)
+        self.phases[phase_label].names.insert(len(phasesys.phases[phase_label].species)-1, label)
+
+        rxnlist = []
+        for i, rxn in enumerate(self.phases[phase_label].reactions):
+            if (spc in rxn.reactants or spc in rxn.products) and all([spec in phasesys.phases[phase_label].species for spec in rxn.reactants]) and all([spec in phasesys.phases[phase_label].species for spec in rxn.products]):
+                rxnlist.append(rxn)
+
+        phasesys.phases[phase_label].reactions.extend(rxnlist)
+
+        for key, interface in self.interfaces.items():
+            rxnlist = []
+            for i, rxn in enumerate(interface.reactions):
+                if (spc in rxn.reactants or spc in rxn.products) and all([spec in phasesys.interfaces[key].species for spec in rxn.reactants]) and all([spec in phasesys.interfaces[key].species for spec in rxn.products]):
+                    rxnlist.append(rxn)
+
+            phasesys.interfaces[key].reactions.extend(rxnlist)
+
+        return
+
+    def get_species(self, label):
+        """
+        Retrieve rms species associated with the input label
+        """
+        for plabel, phase in self.phases.items():
+            spc = phase.get_species(label)
+            if spc is not None:
+                return spc
+        else:
+            return None
+
 def to_rms(obj, species_list=None, rms_species_list=None):
     """
     Generate corresponding rms object
