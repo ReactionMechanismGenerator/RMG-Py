@@ -326,6 +326,20 @@ class Reactor:
 
         return terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x
 
+class ConstantVIdealGasReactor(Reactor):
+    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations):
+        super().__init__(core_phase_system, edge_phase_system, initial_conditions, terminations)
+
+    def generate_reactor(self, phase_system):
+        """
+        Setup an RMS simulation for EdgeAnalysis
+        """
+        phase = phase_system.phases["Default"]
+        ig = rms.IdealGas(phase.species, phase.reactions)
+        domain, y0, p = rms.ConstantVDomain(phase=ig, initialconds=self.initial_conditions)
+        react = rms.Reactor(domain, y0, (0.0, self.tf), p)
+        return react, domain, [], p
+
 def to_rms(obj, species_list=None, rms_species_list=None):
     """
     Generate corresponding rms object
