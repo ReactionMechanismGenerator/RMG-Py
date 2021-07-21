@@ -1131,6 +1131,14 @@ class CoreEdgeReactionModel:
         Add a species `spec` to the reaction model edge.
         """
         self.edge.species.append(spec)
+        if not self.edge.phase_system.in_nose:
+            if spec.molecule[0].contains_surface_site():
+                self.edge.phase_system.phases["Surface"].add_species(spec)
+                self.edge.phase_system.species_dict[spec.label] = spec
+            else:
+                self.edge.phase_system.phases["Default"].add_species(spec)
+                self.edge.phase_system.species_dict[spec.label] = spec
+                
 
     def set_thermodynamic_filtering_parameters(self, Tmax, thermo_tol_keep_spc_in_edge,
                                                min_core_size_for_prune, maximum_edge_species, reaction_systems):
