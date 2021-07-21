@@ -100,7 +100,10 @@ cdef class Arrhenius(KineticsModel):
         def __get__(self):
             return self._A
         def __set__(self, value):
-            self._A = quantity.RateCoefficient(value)
+            try:
+                self._A = quantity.RateCoefficient(value)
+            except QuantityError:
+                self._A = quantity.SurfaceRateCoefficient(value)
 
     property n:
         """The temperature exponent."""
@@ -517,7 +520,10 @@ cdef class ArrheniusBM(KineticsModel):
         def __get__(self):
             return self._A
         def __set__(self, value):
-            self._A = quantity.RateCoefficient(value)
+            try:
+                self._A = quantity.RateCoefficient(value)
+            except QuantityError:
+                self._A = quantity.SurfaceRateCoefficient(value)
 
     property n:
         """The temperature exponent."""
