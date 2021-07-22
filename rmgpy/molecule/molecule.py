@@ -45,13 +45,14 @@ from urllib.parse import quote
 import cython
 import numpy as np
 
+import rmgpy.quantity as quantity
 import rmgpy.constants as constants
 import rmgpy.molecule.converter as converter
 import rmgpy.molecule.element as elements
 import rmgpy.molecule.group as gr
 import rmgpy.molecule.resonance as resonance
 import rmgpy.molecule.translator as translator
-from rmgpy.exceptions import DependencyError
+from rmgpy.exceptions import DependencyError, DatabaseError
 from rmgpy.molecule.adjlist import Saturator
 from rmgpy.molecule.atomtype import AtomType, ATOMTYPES, get_atomtype, AtomTypeError
 from rmgpy.molecule.element import bdes
@@ -638,16 +639,74 @@ class Bond(Edge):
                 self.atom1.number if self.atom1 is not None else 0,
                 self.atom2.number if self.atom2 is not None else 0)
 
-    def get_bde(self):
+    def get_bde(self, metal='Pt111'):
         """
         estimate the bond dissociation energy in J/mol of the bond based on the order of the bond
         and the atoms involved in the bond
+
+        If the bond involves a surface site, the atomic binding energies from the `metal` (str) 
+        will be use to estimate the bond dissociation energy.
         """
         try:
             return bdes[(self.atom1.element.symbol, self.atom2.element.symbol, self.order)]
         except KeyError:
-            raise KeyError('Bond Dissociation energy not known for combination: '
-                           '({0},{1},{2})'.format(self.atom1.element.symbol, self.atom2.element.symbol, self.order))
+            if not self.is_surface_bond():
+                raise KeyError('Bond Dissociation energy not known for combination: '
+                               '({0},{1},{2})'.format(self.atom1.element.symbol, self.atom2.element.symbol, self.order))
+            else:
+                if self.atom1.is_surface_site():
+                    adatom = self.atom2.element.symbol
+                else:
+                    adatom = self.atom1.element.symbol
+                if self.is_van_der_waals():
+                    if adatom == 'O':
+                        binding_energy = quantity.Energy(-0.189,'eV/molecule') # binding energy for H2O_ads in surfaceThermoPt111
+                    elif adatom == 'N':
+                        binding_energy = quantity.Energy(-0.673,'eV/molecule') # binding energy for NH3_ads in surfaceThermoPt111
+                    elif adatom == 'C':
+                        binding_energy = quantity.Energy(-0.122,'eV/molecule') # binding energy for CH4_ads in surfaceThermoPt111
+                    elif adatom == 'H':
+                        binding_energy = quantity.Energy(-0.054,'eV/molecule') # binding energy for H2_ads in surfaceThermoPt111
+                    else:
+                        binding_energy = quantity.Energy(-0.2,'eV/molecule') # default vdw binding energy
+                    return -1 * binding_energy.value_si
+                try:
+                    from rmgpy.data.rmg import get_db
+                    tdb = get_db('thermo')
+                    metal_db = tdb.surface['metal']
+                except (DatabaseError, KeyError):
+                    from rmgpy.data.surface import MetalDatabase
+                    from rmgpy import settings
+                    metal_db = MetalDatabase()
+                    metal_db.load(os.path.join(settings['database.directory'], 'surface'))
+                metal_binding_energies = metal_db.find_binding_energies(metal=metal)
+                binding_energy = metal_binding_energies[adatom]
+                max_bond_order = {'C': 4., 'O': 2., 'N': 3., 'H': 1.}
+                normalized_bond_order = self.order / max_bond_order[adatom]
+                # intercepts estimated from DOI:10.1103/PhysRevLett.99.016105
+                intercepts = {
+                    'C' : {
+                        1 : 0,
+                        2 : -1.3,
+                        3 : -1.1,
+                        4 : 0,
+                    },
+                    'N' : {
+                        1 : -0.5,
+                        2 : -0.75,
+                        3 : 0
+                    },
+                    'O' : {
+                        1 : -0.5,
+                        2 : 0
+                    },
+                    'H' : {
+                        1 : 0
+                    }
+                }
+                intercept = quantity.Energy(intercepts[adatom][self.order],'eV/molecule')
+                binding_energy = quantity.Energy(binding_energy).value_si * normalized_bond_order + intercept.value_si
+                return -1 * binding_energy
 
     def equivalent(self, other):
         """
