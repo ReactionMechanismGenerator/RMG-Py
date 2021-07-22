@@ -247,9 +247,9 @@ class MetalDatabase(object):
                 metal_binding_energies = self.libraries['surface'].get_binding_energies(metal)
             except DatabaseError:
                 # no exact match was found, so continue on as if no facet was given
-                logging.warning("Requested metal %r not found in database.", metal)
+                logging.info("Requested metal %r not found in database.", metal)
                 metal = metal[:facet.span()[0]]
-                logging.warning("Searching for generic %r.", metal)
+                logging.info("Searching for generic %r.", metal)
                 facet = None
 
         if facet is None:
@@ -263,7 +263,7 @@ class MetalDatabase(object):
             else:  # multiple matches
                 # average the binding energies together? just pick the first one?
                 # just picking the first one for now...
-                logging.warning(f"Found multiple binding energies for {metal!r}. Using {metal_entry_matches[0]!r}.")
+                logging.info(f"Found multiple binding energies for {metal!r}. Using {metal_entry_matches[0]!r}.")
                 metal_binding_energies = self.libraries['surface'].get_binding_energies(metal_entry_matches[0])
 
         return metal_binding_energies
