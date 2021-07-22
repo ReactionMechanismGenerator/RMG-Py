@@ -727,6 +727,7 @@ class KineticsFamily(Database):
         self.boundary_atoms = local_context.get('boundaryAtoms', None)
         self.tree_distances = local_context.get('treeDistances', None)
         self.reverse_map = local_context.get('reverseMap', None)
+        self.vdw_bonds = local_context.get('vdwBonds', None)
 
         self.reactant_num = local_context.get('reactantNum', None)
         self.product_num = local_context.get('productNum', None)
@@ -1013,6 +1014,9 @@ class KineticsFamily(Database):
 
         if self.reverse_map is not None:
             f.write('reverseMap = {0}\n\n'.format(self.reverse_map))
+
+        if self.vdw_bonds is not None:
+            f.write('vdwBonds = {0}\n\n'.format(self.vdw_bonds))
 
         if self.reactant_num is not None:
             f.write('reactantNum = {0}\n\n'.format(self.reactant_num))
