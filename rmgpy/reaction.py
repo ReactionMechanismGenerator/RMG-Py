@@ -113,6 +113,9 @@ class Reaction:
                  allow_max_rate_violation=False,
                  rank=None,
                  comment='',
+                 metal=None,
+                 facet=None,
+                 site=None,
                  is_forward=None,
                  ):
         self.index = index
@@ -134,6 +137,9 @@ class Reaction:
         self.is_forward = is_forward
         self.allow_max_rate_violation = allow_max_rate_violation
         self.rank = rank
+        self.metal = metal
+        self.facet = facet
+        self.site = site
 
     def __repr__(self):
         """
@@ -157,7 +163,10 @@ class Reaction:
         if self.elementary_high_p: string += 'elementary_high_p={0}, '.format(self.elementary_high_p)
         if self.comment != '': string += 'comment={0!r}, '.format(self.comment)
         if self.rank is not None: string += 'rank={0!r},'.format(self.rank)
-        string = string[:-2] + ')'
+        if self.metal is not None: string += 'metal={0!r},'.format(self.metal)
+        if self.facet is not None: string += 'facet={0!r},'.format(self.facet)
+        if self.site is not None: string += 'site={0!r},'.format(self.site)
+        string = string[:-1] + ')'
         return string
 
     def __str__(self):
@@ -197,8 +206,12 @@ class Reaction:
                            self.pairs,
                            self.allow_pdep_route,
                            self.elementary_high_p,
+                           self.allow_max_rate_violation,
                            self.rank,
-                           self.comment
+                           self.comment,
+                           self.metal,
+                           self.facet,
+                           self.site,
                            ))
 
     @property
@@ -230,6 +243,16 @@ class Reaction:
             self.kinetics.change_rate(degeneracy_ratio)
         # set new degeneracy
         self._degeneracy = new
+
+    def get_metal_label(self):
+        """
+        retrieve the metal label (str) for the reaction
+        """
+        if self.facet is None:
+            metal = self.metal # could be None
+        else:
+            metal = self.metal + self.facet
+        return metal
 
     def to_chemkin(self, species_list=None, kinetics=True):
         """
