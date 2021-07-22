@@ -455,6 +455,7 @@ class RMG(util.Subject):
             for family in self.database.kinetics.families.values():
                 if not family.auto_generated:
                     family.fill_rules_by_averaging_up(verbose=self.verbose_comments)
+                family.split_template()
 
     def initialize(self, **kwargs):
         """
