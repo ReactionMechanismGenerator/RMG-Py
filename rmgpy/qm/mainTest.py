@@ -281,7 +281,7 @@ class TestQMCalculator(unittest.TestCase):
 
         self.assertAlmostEqual(thermo1.H298.value_si, 169908.3376, 0)  # to 1 decimal place
         self.assertAlmostEqual(thermo1.S298.value_si, 335.5438748, 0)  # to 1 decimal place
-        self.assertAlmostEqual(thermo2.H298.value_si, 169326.2504, 0)  # to 1 decimal place
+        self.assertAlmostEqual(thermo2.H298.value_si, 169325.2248, 0)  # to 1 decimal place
         self.assertAlmostEqual(thermo2.S298.value_si, 338.2696063, 0)  # to 1 decimal place
 
     @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
