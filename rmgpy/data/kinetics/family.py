@@ -2678,11 +2678,11 @@ class KineticsFamily(Database):
                     '[{0}]'.format(';'.join([g.label for g in template])))
                 kinetics.comment += "\nfamily: {}".format(self.label)
                 if entry.metal:
-                    kinetics.comment += "\nmetal: {}".format(self.metal)
+                    kinetics.comment += "\nmetal: {}".format(entry.metal)
                 if entry.facet:
-                    kinetics.comment += "\nfacet: {}".format(self.facet)
-                if entry.facet:
-                    kinetics.comment += "\nsite: {}".format(self.site)
+                    kinetics.comment += "\nfacet: {}".format(entry.facet)
+                if entry.site:
+                    kinetics.comment += "\nsite: {}".format(entry.site)
         return kinetics_list
 
     def _select_best_kinetics(self, kinetics_list, metal=None, facet=None):
