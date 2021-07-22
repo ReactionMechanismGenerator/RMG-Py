@@ -546,7 +546,6 @@ class SurfaceReactorCheck(unittest.TestCase):
             initial_surface_coverages={x: 1.0},
             surface_volume_ratio=(1., 'm^-1'),
             surface_site_density=(2.72e-9, 'mol/cm^2'),
-            coverage_dependence=False,
             termination=[])
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
@@ -582,5 +581,5 @@ class SurfaceReactorCheck(unittest.TestCase):
         self.assertAlmostEqual(species_rates_off[-1, 0], 0.0, delta=1e-2)
 
         # Check that coverages are different
-        self.assertFalse(np.array_equal(y,y_off))
-        self.assertFalse(np.array_equal(species_rates, species_rates_off))
+        self.assertFalse(np.allclose(y,y_off))
+        self.assertFalse(np.allclose(species_rates, species_rates_off))
