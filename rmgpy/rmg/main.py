@@ -389,6 +389,10 @@ class RMG(util.Subject):
             depository=False,  # Don't bother loading the depository information, as we don't use it
         )
 
+        # add metal attrs to kinetics database
+        self.database.kinetics.metal = self.metal
+        self.database.kinetics.facet = self.facet
+
         # Turn off reversibility for families with three products if desired
         if not self.trimolecular_product_reversible:
             for family in self.database.kinetics.families.values():

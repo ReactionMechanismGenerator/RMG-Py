@@ -84,6 +84,9 @@ class KineticsDatabase(object):
             'SurfaceArrheniusBM': SurfaceArrheniusBM
         }
         self.global_context = {}
+        self.metal = None
+        self.facet = None
+        self.site = None
 
     def __reduce__(self):
         """
@@ -560,7 +563,9 @@ and immediately used in input files without any additional changes.
             if only_families is None or label in only_families:
                 try:
                     reaction_list.extend(family.generate_reactions(molecules, products=products,
-                                                                   prod_resonance=prod_resonance))
+                                                                   prod_resonance=prod_resonance,
+                                                                   metal=self.metal, facet=self.facet,
+                                                                   site=self.site))
                 except:
                     logging.error("Problem family: {}".format(label))
                     logging.error("Problem reactants: {}".format(molecules))

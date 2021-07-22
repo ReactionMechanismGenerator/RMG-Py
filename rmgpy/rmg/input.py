@@ -120,15 +120,19 @@ def catalyst_properties(bindingEnergies=None,
                          "or the surfaceSiteDensity and bindingEnergies, but not both.")
 
     if metal:
+        if facet:
+            metal_label = metal + facet
+        else:
+            metal_label = metal
         try:
-            logging.info("Using catalyst surface properties from metal %r.", metal)
+            logging.info("Using catalyst surface properties from metal %r.", metal_label)
             rmg.metal = metal
             rmg.facet = facet
 
-            rmg.binding_energies = metal_db.get_binding_energies(metal+facet)
-            rmg.surface_site_density = metal_db.get_surface_site_density(metal+facet)
+            rmg.binding_energies = metal_db.get_binding_energies(metal_label)
+            rmg.surface_site_density = metal_db.get_surface_site_density(metal_label)
         except DatabaseError:
-            logging.error('Metal %r missing from surface library. Please specify both metal and facet.', metal+facet)
+            logging.error('Metal %r missing from surface library. Please specify both metal and facet.', metal_label)
             raise
     else: # metal not specified
         if bindingEnergies is None:

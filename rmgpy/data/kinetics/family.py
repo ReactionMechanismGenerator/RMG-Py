@@ -1850,7 +1850,8 @@ class KineticsFamily(Database):
         else:
             raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
 
-    def generate_reactions(self, reactants, products=None, prod_resonance=True, delete_labels=True, relabel_atoms=True):
+    def generate_reactions(self, reactants, products=None, prod_resonance=True, delete_labels=True, relabel_atoms=True,
+                           metal= None, facet=None, site=None):
         """
         Generate all reactions between the provided list of one, two, or three
         `reactants`, which should be either single :class:`Molecule` objects
@@ -1885,6 +1886,9 @@ class KineticsFamily(Database):
                                      prod_resonance=prod_resonance,
                                      delete_labels=delete_labels,
                                      relabel_atoms=relabel_atoms,
+                                     metal=metal,
+                                     facet=facet,
+                                     site=site
                                      ))
 
         if not self.own_reverse and self.reversible:
@@ -1896,6 +1900,9 @@ class KineticsFamily(Database):
                                          prod_resonance=prod_resonance,
                                          delete_labels=delete_labels,
                                          relabel_atoms=relabel_atoms,
+                                         metal=metal,
+                                         facet=facet,
+                                         site=site
                                          ))
         return reaction_list
 
@@ -1907,6 +1914,9 @@ class KineticsFamily(Database):
         Returns `True` if successful and `False` if the reverse reaction is forbidden.
         Will raise a `KineticsError` if unsuccessful for other reasons.
         """
+
+        #parse out metal attrs of rxn
+        metal, facet, site = rxn.metal, rxn.facet, rxn.site
         if self.own_reverse and all([spc.has_reactive_molecule() for spc in rxn.products]):
             # Check if the reactants are the same
             same_reactants = 0
@@ -1926,7 +1936,8 @@ class KineticsFamily(Database):
 
             reaction_list = self._generate_reactions([spc.molecule for spc in rxn.products],
                                                      products=rxn.reactants, forward=True,
-                                                     react_non_reactive=react_non_reactive)
+                                                     react_non_reactive=react_non_reactive,
+                                                     metal=metal, facet=facet, site=site)
             reactions = find_degenerate_reactions(reaction_list, same_reactants, kinetics_family=self)
             if len(reactions) == 0:
                 logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for "
@@ -1949,7 +1960,8 @@ class KineticsFamily(Database):
                 try:
                     reaction_list = self._generate_reactions([spc.molecule for spc in rxn.products],
                                                              products=rxn.reactants, forward=True,
-                                                             react_non_reactive=react_non_reactive)
+                                                             react_non_reactive=react_non_reactive,
+                                                             metal=metal, facet=facet, site=site)
                     reactions = find_degenerate_reactions(reaction_list, same_reactants, kinetics_family=self)
                 finally:
                     self.forbidden = temp_object
@@ -1998,6 +2010,8 @@ class KineticsFamily(Database):
         identical reactants (since you will be reducing them later in the algorithm), add
         `ignoreSameReactants= True` to this method.
         """
+        # parse out metal attrs of reaction
+        metal, facet, site = reaction.metal, reaction.facet, reaction.site
         # Check if the reactants are the same
         # If they refer to the same memory address, then make a deep copy so
         # they can be manipulated independently
@@ -2042,7 +2056,7 @@ class KineticsFamily(Database):
         reactions = []
         for combo in molecule_combos:
             reactions.extend(self._generate_reactions(combo, products=reaction.products, forward=True,
-                                                      react_non_reactive=True))
+                                                      react_non_reactive=True, metal=metal, facet=facet, site=site))
 
         # remove degenerate reactions
         reactions = find_degenerate_reactions(reactions, same_reactants, template=reaction.template,
@@ -2060,7 +2074,8 @@ class KineticsFamily(Database):
         return reactions[0].degeneracy
 
     def _generate_reactions(self, reactants, products=None, forward=True, prod_resonance=True,
-                            react_non_reactive=False, delete_labels=True, relabel_atoms=True):
+                            react_non_reactive=False, delete_labels=True, relabel_atoms=True,
+                            metal=None, facet=None, site=None):
         """
         Generate a list of all the possible reactions of this family between
         the list of `reactants`. The number of reactants provided must match
@@ -2433,6 +2448,12 @@ class KineticsFamily(Database):
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxn_list:
+
+            if any([metal,facet,site]):
+                if reaction.is_surface_reaction():
+                    reaction.metal = metal
+                    reaction.facet = facet
+                    reaction.site = site
 
             # Restore the labeled atoms long enough to generate some metadata
             for reactant in reaction.reactants:
