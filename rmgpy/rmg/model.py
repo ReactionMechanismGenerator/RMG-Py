@@ -920,6 +920,9 @@ class CoreEdgeReactionModel:
         assert isinstance(reaction, TemplateReaction)
 
         family = get_family_library_object(reaction.family)
+        if reaction.is_surface_reaction():
+            reaction.metal = self.metal
+            reaction.facet = self.facet
 
         # Get the kinetics for the reaction
         kinetics, source, entry, is_forward = family.get_kinetics(reaction, template_labels=reaction.template,
