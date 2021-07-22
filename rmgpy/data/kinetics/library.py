@@ -545,7 +545,7 @@ class KineticsLibrary(Database):
         # Make a blank reaction
         rxn = Reaction(reactants=[], products=[], degeneracy=degeneracy, duplicate=duplicate, reversible=reversible,
                        allow_pdep_route=allow_pdep_route, elementary_high_p=elementary_high_p,
-                       allow_max_rate_violation=allow_max_rate_violation)
+                       allow_max_rate_violation=allow_max_rate_violation,metal=metal, facet=facet, site=site)
         # if not rxn.is_balanced():
         #    raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))
         # label = str(rxn)
