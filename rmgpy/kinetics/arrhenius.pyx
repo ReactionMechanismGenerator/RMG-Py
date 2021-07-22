@@ -1109,6 +1109,8 @@ def get_w0(actions, rxn):
 
     recipe = actions
 
+    metal = rxn.get_metal_label()
+
     wb = 0.0
     wf = 0.0
     for act in recipe:
@@ -1123,14 +1125,24 @@ def get_w0(actions, rxn):
                 atom2 = a_dict[act[3]]
 
         if act[0] == 'BREAK_BOND':
-            bd = mol.get_bond(atom1, atom2)
-            wb += bd.get_bde()
+            bd = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
+            wb += bd.get_bde(metal=metal)
         elif act[0] == 'FORM_BOND':
-            bd = Bond(atom1, atom2, act[2])
-            wf += bd.get_bde()
+            bd = Bond(a_dict[act[1]], a_dict[act[3]], act[2])
+            wf += bd.get_bde(metal=metal)
         elif act[0] == 'CHANGE_BOND':
-            bd1 = mol.get_bond(atom1, atom2)
-
+            if not mol.has_bond(a_dict[act[1]], a_dict[act[3]]): # we dont have a bond
+                is_vdW_bond = False
+                for atom in (a_dict[act[1]], a_dict[act[3]]):
+                    if atom.is_surface_site():
+                        is_vdW_bond = True
+                        break
+                if not is_vdW_bond: # no surface site, so no vdW bond
+                    raise ('Attempted to change a nonexistent bond.')
+                else: # we found a surface site, so we will make vdw bond
+                    bd1 = Bond(a_dict[act[1]], a_dict[act[3]], order=0)
+            else: # we have a bond
+                bd1 = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
             if act[2] + bd1.order == 0.5:
                 mol2 = None
                 for r in rxn.products:
@@ -1154,8 +1166,9 @@ def get_w0(actions, rxn):
             if bd2.order == 0:
                 bd2_bde = 0.0
             else:
-                bd2_bde = bd2.get_bde()
-            bde_diff = bd2_bde - bd1.get_bde()
+                bd2_bde = bd2.get_bde(metal=metal)
+
+            bde_diff = bd2_bde - bd1.get_bde(metal=metal)
             if bde_diff > 0:
                 wf += abs(bde_diff)
             else:
