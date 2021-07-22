@@ -275,6 +275,9 @@ class RMG(util.Subject):
         if self.quantum_mechanics:
             self.reaction_model.quantum_mechanics = self.quantum_mechanics
 
+        for reaction_system in self.reaction_systems:
+            self.reaction_model.reaction_systems.append(reaction_system)
+
     def load_thermo_input(self, path=None):
         """
         Load an Thermo Estimation job from a thermo input file located at `input_file`, or
