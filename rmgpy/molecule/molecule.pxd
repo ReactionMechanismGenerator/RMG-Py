@@ -120,6 +120,8 @@ cdef class Bond(Edge):
 
     cpdef bint is_van_der_waals(self) except -2
 
+    cpdef bint is_surface_bond(self) except -2
+
     cpdef bint is_single(self) except -2
 
     cpdef bint is_double(self) except -2
