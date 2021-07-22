@@ -235,6 +235,8 @@ class CoreEdgeReactionModel:
             3  R!H u1 px c0 {2,S}
             4  H u0 p0  c0 {1,S}
             """)]
+        self.metal = None
+        self.facet = None
 
     def check_for_existing_species(self, molecule):
         """

@@ -184,6 +184,8 @@ class RMG(util.Subject):
         self.kinetics_estimator = 'group additivity'
         self.solvent = None
         self.diffusion_limiter = None
+        self.metal = None
+        self.facet = None
         self.surface_site_density = None
         self.binding_energies = None
         self.coverage_dependence = False
@@ -268,7 +270,12 @@ class RMG(util.Subject):
             self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
             self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
         self.reaction_model.coverage_dependence = self.coverage_dependence
-            
+
+        if self.metal:
+            self.reaction_model.metal = self.metal
+        if self.facet:
+            self.reaction_model.facet = self.facet
+
         self.reaction_model.verbose_comments = self.verbose_comments
         self.reaction_model.save_edge_species = self.save_edge_species
 
