@@ -337,6 +337,14 @@ class QMMolecule(object):
         radical_number = self.molecule.get_radical_count()
         cclib_data.rotcons = parser.rotcons # this hack required because rotcons not part of a default cclib data object
         cclib_data.molmass = parser.molmass # this hack required because rotcons not part of a default cclib data object
+
+        # Temporary fix for Gaussian parsers until cclib is updated.
+        if parser.logname == 'Gaussian':
+            if cclib_data.molmass is None or cclib_data.rotcons is []:  # Try parsing for these directly
+                molmass, rotcons = parse_gaussian_molmass_and_rotcons(self.output_file_path)
+                cclib_data.rotcons = rotcons
+                cclib_data.molmass = molmass
+
         qm_data = parse_cclib_data(cclib_data, radical_number + 1)  # Should `radical_number+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
         return qm_data
 
