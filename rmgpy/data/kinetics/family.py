@@ -4024,7 +4024,7 @@ class KineticsFamily(Database):
                                 if not self.rxns_match_node(node, rxns):
                                     atm1.radical_electrons = oldvals
 
-                if (not skip and atm1.reg_dim_r[1] != [] and
+                if (not grp.contains_surface_site() and not skip and atm1.reg_dim_r[1] != [] and
                         ('inRing' not in atm1.props.keys() or atm1.reg_dim_r[1][0] != atm1.props['inRing'])):
                     if 'inRing' not in atm1.props.keys():
                         if (all(['inRing' in child.item.atoms[i].props.keys() for child in node.children]) and
