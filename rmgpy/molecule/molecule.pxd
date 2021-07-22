@@ -170,6 +170,8 @@ cdef class Molecule(Graph):
 
     cpdef remove_van_der_waals_bonds(self)
 
+    cpdef add_van_der_waals_bond(self)
+
     cpdef sort_atoms(self)
     
     cpdef str get_formula(self)
