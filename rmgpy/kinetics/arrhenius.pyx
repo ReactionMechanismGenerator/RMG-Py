@@ -36,6 +36,7 @@ cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import KineticsError
 from rmgpy.kinetics.uncertainties import rank_accuracy_map
+from rmgpy.kinetics import get_rate_coefficient_units_from_reaction_order
 from rmgpy.molecule.molecule import Bond
 
 # Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
@@ -669,9 +670,11 @@ cdef class ArrheniusBM(KineticsModel):
             self.comment = 'Fitted to {0} reactions at temperatures: {1}'.format(len(rxns), Ts)
 
         # fill in parameters
-        A_units = ['', 's^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)']
-        order = len(rxns[0].reactants)
-        self.A = (A, A_units[order])
+        surf_reacts = [spcs for spcs in rxns[0].reactants if spcs.contains_surface_site()]
+        n_surf = len(surf_reacts)
+        n_gas = len(rxns[0].reactants) - len(surf_reacts)
+        A_units = get_rate_coefficient_units_from_reaction_order(n_gas, n_surf)
+        self.A = (A, A_units)
 
         self.n = n
         self.w0 = (w0, 'J/mol')
