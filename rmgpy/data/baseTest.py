@@ -61,6 +61,17 @@ class TestBaseDatabase(unittest.TestCase):
                 """)
         )
 
+        entry1_facet = Entry(
+            item=Group().from_adjacency_list(
+                """
+                1 *3 C  u1 {2,D} {3,S}
+                2    C  u0 {1,D}
+                3 *5 Cd u0 {1,S} {4,D}
+                4    C  u0 {3,D}
+                """),
+            facet='111'
+        )
+
         entry2 = Entry(
             item=Group().from_adjacency_list(
                 """
@@ -92,6 +103,17 @@ class TestBaseDatabase(unittest.TestCase):
         # entry3 contains fewer labels than entry1, therefore it can be matched
         self.assertTrue(self.database.match_node_to_structure(entry1, entry3.item, atoms=entry3.item.get_all_labeled_atoms()))
 
+        # entry3 does not have a facet, so it should not match entry1_facet
+        self.assertFalse(self.database.match_node_to_structure(entry1_facet, entry3.item, atoms=entry3.item.get_all_labeled_atoms()))
+
+        # entry3 should match entry_1 facet if we provide a matching facet
+        self.assertTrue(self.database.match_node_to_structure(entry1_facet, entry3.item, atoms=entry3.item.get_all_labeled_atoms(),
+        facet='111'))
+
+        # entry3 should not match entry1_facet if the facets do not match
+        self.assertFalse(self.database.match_node_to_structure(entry1_facet, entry3.item, atoms=entry3.item.get_all_labeled_atoms(),
+        facet='211'))
+
     def test_match_node_to_node(self):
         """
         Test that nodes can match other nodes.
@@ -103,14 +125,25 @@ class TestBaseDatabase(unittest.TestCase):
                 """)
         )
 
+        entry1_facet = Entry(
+            item=Group().from_adjacency_list(
+                """
+                1 *1 R!H u1
+                """),
+            facet = '111'
+        )
+
         entry2 = Entry(
             item=Group().from_adjacency_list(
                 """
                 1 *1 Cb u1
                 """)
         )
+
         self.assertTrue(self.database.match_node_to_node(entry1, entry1))
+        self.assertTrue(self.database.match_node_to_node(entry1_facet, entry1_facet))
         self.assertFalse(self.database.match_node_to_node(entry1, entry2))
+        self.assertFalse(self.database.match_node_to_node(entry1, entry1_facet))
 
 
 class TestForbiddenStructures(unittest.TestCase):

@@ -911,8 +911,10 @@ class Database(object):
         Both `node` and `node_other` must be Entry types with items containing Group or LogicNode types.
         """
         if isinstance(node.item, Group) and isinstance(node_other.item, Group):
-            return (self.match_node_to_structure(node, node_other.item, atoms=node_other.item.get_all_labeled_atoms()) and
-                    self.match_node_to_structure(node_other, node.item, atoms=node.item.get_all_labeled_atoms()))
+            return (self.match_node_to_structure(node, node_other.item, atoms=node_other.item.get_all_labeled_atoms(),
+            metal=node_other.metal, facet=node_other.facet, site=node_other.site) and
+                    self.match_node_to_structure(node_other, node.item, atoms=node.item.get_all_labeled_atoms(),
+                    metal=node.metal, facet=node.facet, site=node.site))
         elif isinstance(node.item, LogicOr) and isinstance(node_other.item, LogicOr):
             return node.item.match_logic_or(node_other.item)
         else:
@@ -928,9 +930,11 @@ class Database(object):
 
         if isinstance(parent_node.item, Group) and isinstance(child_node.item, Group):
             if (self.match_node_to_structure(parent_node, child_node.item,
-                                             atoms=child_node.item.get_all_labeled_atoms(), strict=True) and
+                                             atoms=child_node.item.get_all_labeled_atoms(), strict=True,
+                                             metal=child_node.metal, facet=child_node.facet, site=child_node.site) and
                     not self.match_node_to_structure(child_node, parent_node.item,
-                                                     atoms=parent_node.item.get_all_labeled_atoms(), strict=True)):
+                                                     atoms=parent_node.item.get_all_labeled_atoms(), strict=True,
+                                                     metal=parent_node.metal, facet=parent_node.facet, site=parent_node.site)):
                 return True
             return False
 
@@ -950,7 +954,7 @@ class Database(object):
         elif isinstance(parent_node.item, LogicOr):
             return child_node.label in parent_node.item.components
 
-    def match_node_to_structure(self, node, structure, atoms, strict=False):
+    def match_node_to_structure(self, node, structure, atoms, strict=False, metal=None, facet=None, site=None):
         """
         Return :data:`True` if the `structure` centered at `atom` matches the
         structure at `node` in the dictionary. The structure at `node` should
@@ -963,6 +967,9 @@ class Database(object):
         
         Matching to structure is more strict than to node.  All labels in structure must 
         be found in node.  However the reverse is not true, unless `strict` is set to True.
+
+        If the node has a metal attribute (metal, facet, and/or site) that does not match the
+        provdied `metal`, `facet`, and/or `site`, the structure is not a match (returns `False`)
         
         =================== ========================================================
         Attribute           Description
@@ -971,11 +978,25 @@ class Database(object):
         `structure`         A Group or a Molecule
         `atoms`             Dictionary of {label: atom} in the structure.  A possible dictionary is the one produced by structure.get_all_labeled_atoms()
         `strict`            If set to ``True``, ensures that all the node's atomLabels are matched by in the structure
+        `metal`             metal of structure (default is None)
+        `facet`             facet of structure (default is None)
+        `site`              site of structure (default is None)
         =================== ========================================================
         """
         if isinstance(node, str):
             node = self.entries[node]
         group = node.item
+        
+        if node.metal:
+            if metal != node.metal:
+                return False
+        if node.facet:
+            if facet != node.facet:
+                return False
+        if node.site:
+            if site != node.site:
+                return False
+
         if isinstance(group, LogicNode):
             return group.match_to_structure(self, structure, atoms, strict)
         else:
@@ -1033,7 +1054,7 @@ class Database(object):
 
             return result
 
-    def descend_tree(self, structure, atoms, root=None, strict=False):
+    def descend_tree(self, structure, atoms, root=None, strict=False, metal=None, facet=None, site=None):
         """
         Descend the tree in search of the functional group node that best
         matches the local structure around `atoms` in `structure`.
@@ -1045,24 +1066,28 @@ class Database(object):
         Set strict to ``True`` if all labels in final matched node must match that of the
         structure.  This is used in kinetics groups to find the correct reaction template, but
         not generally used in other GAVs due to species generally not being prelabeled.
+
+        `metal` (None or str): metal of structure (default is None)
+        `facet` (None or str): facet of structure (default is None)
+        `site` (None or str): site of structure (default is None)
         """
 
         if root is None:
             for root in self.top:
-                if self.match_node_to_structure(root, structure, atoms, strict):
+                if self.match_node_to_structure(root, structure, atoms, strict, metal=metal, facet=facet, site=site):
                     break  # We've found a matching root
             else:  # didn't break - matched no top nodes
                 return None
-        elif not self.match_node_to_structure(root, structure, atoms, strict):
+        elif not self.match_node_to_structure(root, structure, atoms, strict, metal=metal, facet=facet, site=site):
             return None
 
         next_node = []
         for child in root.children:
-            if self.match_node_to_structure(child, structure, atoms, strict):
+            if self.match_node_to_structure(child, structure, atoms, strict, metal=metal, facet=facet, site=site):
                 next_node.append(child)
 
         if len(next_node) == 1:
-            return self.descend_tree(structure, atoms, next_node[0], strict)
+            return self.descend_tree(structure, atoms, next_node[0], strict, metal=metal, facet=facet, site=site)
         elif len(next_node) == 0:
             if len(root.children) > 0 and root.children[-1].label.startswith('Others-'):
                 return root.children[-1]
@@ -1072,7 +1097,7 @@ class Database(object):
             # logging.warning('For {0}, a node {1} with overlapping children {2} was encountered '
             #                 'in tree with top level nodes {3}. Assuming the first match is the '
             #                 'better one.'.format(structure, root, next, self.top))
-            return self.descend_tree(structure, atoms, next_node[0], strict)
+            return self.descend_tree(structure, atoms, next_node[0], strict, metal=metal, facet=facet, site=site)
 
     def are_siblings(self, node, node_other):
         """
@@ -1154,18 +1179,22 @@ class LogicOr(LogicNode):
 
     symbol = "OR"
 
-    def match_to_structure(self, database, structure, atoms, strict=False):
+    def match_to_structure(self, database, structure, atoms, strict=False, metal=None, facet=None, site=None):
         """
         Does this node in the given database match the given structure with the labeled atoms?
         
         Setting `strict` to True makes enforces matching of atomLabels in the structure to every
         atomLabel in the node.
+
+        `metal` (None or str): metal of structure (default is None)
+        `facet` (None or str): facet of structure (default is None)
+        `site` (None or str): site of structure (default is None)
         """
         for node in self.components:
             if isinstance(node, LogicNode):
                 match = node.match_to_structure(database, structure, atoms, strict)
             else:
-                match = database.match_node_to_structure(node, structure, atoms, strict)
+                match = database.match_node_to_structure(node, structure, atoms, strict, metal=metal, facet=facet, site=site)
             if match:
                 return True != self.invert
         return False != self.invert
@@ -1205,18 +1234,22 @@ class LogicAnd(LogicNode):
 
     symbol = "AND"
 
-    def match_to_structure(self, database, structure, atoms, strict=False):
+    def match_to_structure(self, database, structure, atoms, strict=False, metal=None, facet=None, site=None):
         """
         Does this node in the given database match the given structure with the labeled atoms?
         
         Setting `strict` to True makes enforces matching of atomLabels in the structure to every
         atomLabel in the node.
+
+        `metal` (None or str): metal of structure (default is None)
+        `facet` (None or str): facet of structure (default is None)
+        `site` (None or str): site of structure (default is None)
         """
         for node in self.components:
             if isinstance(node, LogicNode):
                 match = node.match_to_structure(database, structure, atoms, strict)
             else:
-                match = database.match_node_to_structure(node, structure, atoms, strict)
+                match = database.match_node_to_structure(node, structure, atoms, strict, metal=metal, facet=facet, site=site)
             if not match:
                 return False != self.invert
         return True != self.invert
