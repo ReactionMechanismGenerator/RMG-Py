@@ -625,3 +625,76 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
             coverage_dependence=self.coverage_dependence,
             comment=self.comment,
         )
+
+################################################################################
+
+cdef class SurfaceArrheniusBM(ArrheniusBM):
+    """
+    A kinetics model based on the (modified) Arrhenius equation, using the
+    Blowers-Masel equation to determine the activation energy.
+    Based on Blowers and Masel's 2000 paper Engineering Approximations for Activation
+    Energies in Hydrogen Transfer Reactions.
+    The attributes are:
+
+    =============== =============================================================
+    Attribute       Description
+    =============== =============================================================
+    `A`             The preexponential factor
+    `n`             The temperature exponent
+    `w0`            The average of the bond dissociation energies of the bond formed and the bond broken
+    `E0`            The activation energy for a thermoneutral reaction
+    `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `comment`       Information about the model (e.g. its source)
+    =============== =============================================================
+
+    """
+
+    property A:
+        """The preexponential factor. 
+    
+        This is the only thing different from a ArrheniusBM class"""
+        def __get__(self):
+            return self._A
+        def __set__(self, value):
+            self._A = quantity.SurfaceRateCoefficient(value)
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        ArrheniusBM object.
+        """
+        string = 'SurfaceArrheniusBM(A={0!r}, n={1!r}, w0={2!r}, E0={3!r}'.format(self.A, self.n, self.w0, self.E0)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.uncertainty is not None: string += ', uncertainty={0!r}'.format(self.uncertainty)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an ArrheniusEP object.
+        """
+        return (SurfaceArrheniusBM, (self.A, self.n, self.w0, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
+                              self.uncertainty, self.comment))
+
+    cpdef SurfaceArrhenius to_arrhenius(self, double dHrxn):
+        """
+        Return an :class:`Arrhenius` instance of the kinetics model using the
+        given enthalpy of reaction `dHrxn` to determine the activation energy.
+        """
+        return SurfaceArrhenius(
+            A=self.A,
+            n=self.n,
+            Ea=(self.get_activation_energy(dHrxn) * 0.001, "kJ/mol"),
+            T0=(1, "K"),
+            Tmin=self.Tmin,
+            Tmax=self.Tmax,
+            uncertainty=self.uncertainty,
+            comment=self.comment,
+        )

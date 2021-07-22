@@ -53,7 +53,7 @@ import rmgpy.constants as constants
 from rmgpy.exceptions import ReactionError, KineticsError
 from rmgpy.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, \
     PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, get_rate_coefficient_units_from_reaction_order, \
-    SurfaceArrheniusBEP, StickingCoefficientBEP
+    SurfaceArrheniusBEP, StickingCoefficientBEP, SurfaceArrheniusBM
 from rmgpy.kinetics.arrhenius import Arrhenius  # Separate because we cimport from rmgpy.kinetics.arrhenius
 from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient  # Separate because we cimport from rmgpy.kinetics.surface
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
