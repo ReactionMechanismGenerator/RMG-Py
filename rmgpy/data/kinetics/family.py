@@ -1313,10 +1313,7 @@ class KineticsFamily(Database):
                 if quantum_mechanics:
                     quantum_mechanics.run_jobs(item.reactants + item.products, procnum=procnum)
 
-            if entry.facet is None:
-                metal = entry.metal # could be None
-            else:
-                metal = entry.metal + entry.facet
+            metal = entry.get_metal_label()
 
             for reactant in item.reactants:
                 # Clear atom labels to avoid effects on thermo generation, ok because this is a deepcopy
@@ -4204,10 +4201,7 @@ class KineticsFamily(Database):
         for i, entry in enumerate(entries):
             if estimate_thermo:
                 # parse out the metal to scale to
-                if entry.facet is None:
-                    metal = entry.metal # could be None
-                else:
-                    metal = entry.metal + entry.facet
+                metal = entry.get_metal_label()
                 for j, react in enumerate(entry.item.reactants):
                     if rxns[i].reactants[j].thermo is None:
                         rxns[i].reactants[j].thermo = get_reactant_thermo(react,metal)
