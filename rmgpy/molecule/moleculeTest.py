@@ -840,6 +840,20 @@ class TestBond(unittest.TestCase):
         bond = Bond(atom1=Atom(element=get_element(1)), atom2=Atom(element=get_element(6)), order=1)
         self.assertEqual(bond.get_bond_string(), 'C-H')
 
+    def test_get_bde(self):
+
+        bonds = [Bond(atom1=Atom(element=get_element('X')), atom2=Atom(element=get_element(6)), order=0),
+                Bond(atom1=Atom(element=get_element('X')), atom2=Atom(element=get_element(6)), order=1),
+                Bond(atom1=Atom(element=get_element('X')), atom2=Atom(element=get_element(6)), order=2),
+                Bond(atom1=Atom(element=get_element('X')), atom2=Atom(element=get_element(6)), order=3),
+                Bond(atom1=Atom(element=get_element('X')), atom2=Atom(element=get_element(6)), order=4)]
+
+        bde = 0
+        for bond in bonds:
+            bde_bond = bond.get_bde('Pt111')
+            self.assertGreater(bde_bond, bde)
+            bde = bde_bond
+
 ################################################################################
 
 
@@ -2758,6 +2772,16 @@ multiplicity 2
         self.assertEqual(len(mol.get_all_edges()), 2)
         mol.remove_van_der_waals_bonds()
         self.assertEqual(len(mol.get_all_edges()), 1)
+
+    def test_add_van_der_waals_bond(self):
+        """Test we can add a van-der-Waals bond"""
+        mol = Molecule(smiles='*.NOC')
+        mol.add_van_der_waals_bond()
+        vdw_bonds = [b for b in mol.get_all_edges() if b.is_van_der_waals()]
+        self.assertEqual(len(vdw_bonds), 1)
+        vdw_bond = vdw_bonds[0]
+        self.assertEqual(vdw_bond.atom1.symbol,'N')
+
 
 ################################################################################
 
