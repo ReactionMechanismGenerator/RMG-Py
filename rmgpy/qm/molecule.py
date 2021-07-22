@@ -516,3 +516,45 @@ class QMMolecule(object):
         )
         self.thermo = thermo
         return thermo
+
+
+def parse_gaussian_molmass_and_rotcons(outfile):
+    """
+    Temporary function to parse molecular mass and rotational constants from Gaussian files until cclib is updated
+
+    Args:
+        outfile (str): Location of Gaussian file to parse
+
+    Returns:
+        float, list: Molecular mass, list of rotational constants
+    """
+    molmass = None
+    rotcons = []
+
+    with open(outfile, 'r') as f:
+        lines = f.readlines()
+
+    for line in lines:
+        # Extract Rotational Constants
+        # Example:
+        # Rotational constants (GHZ):           3.13081     1.24272     0.88960
+        # OR for linear molecules:
+        # Rotational constants (GHZ): ************ 12.73690 12.73690
+        # Note: rotational constant is converted to wavenumber units (1/cm) to standardize across parsers
+        if 'Rotational constants (GHZ)' in line:
+            splits = line.split()
+
+            # Determine if the molecule is linear and only has two constants
+            if '*' in line:  # linear molecule
+                rotcons.append([0.0] + [float(splits[i]) / 29.9792458 for i in (-2, -1)])
+            else:
+                rotcons.append([float(splits[i]) / 29.9792458 for i in (-3, -2, -1)])
+
+        # Extract Molecular Mass (in amu)
+        # Example:
+        # Molecular mass:   128.06260 amu.
+        if 'Molecular mass:' in line:
+            splits = line.split()
+            molmass = float(splits[2])
+
+    return molmass, rotcons
