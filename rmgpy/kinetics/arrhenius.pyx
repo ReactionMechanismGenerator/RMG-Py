@@ -34,7 +34,7 @@ from scipy.optimize import curve_fit, fsolve
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
-from rmgpy.exceptions import KineticsError
+from rmgpy.exceptions import KineticsError, InvalidActionError
 from rmgpy.kinetics.uncertainties import rank_accuracy_map
 from rmgpy.kinetics import get_rate_coefficient_units_from_reaction_order
 from rmgpy.molecule.molecule import Bond
@@ -1138,7 +1138,7 @@ def get_w0(actions, rxn):
                         is_vdW_bond = True
                         break
                 if not is_vdW_bond: # no surface site, so no vdW bond
-                    raise ('Attempted to change a nonexistent bond.')
+                    raise InvalidActionError('Attempted to change a nonexistent bond.')
                 else: # we found a surface site, so we will make vdw bond
                     bd1 = Bond(a_dict[act[1]], a_dict[act[3]], order=0)
             else: # we have a bond
