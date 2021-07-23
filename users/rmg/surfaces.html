@@ -366,10 +366,60 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 </table>
 </section>
 </section>
+<section id="coverage-dependence">
+<h2><span class="section-number">16.5. </span>Coverage Dependence<a class="headerlink" href="#coverage-dependence" title="Permalink to this headline">¶</a></h2>
+<p>An Arrhenius-like expression can be used to describe the effect of the coverage (<span class="math notranslate nohighlight">\(\theta_{k}\)</span>) of species k on the forward rate constant for a given surface reaction. RMG has the capability to account for such coverage dependent kinetics, as specified in the following equation:</p>
+<div class="math notranslate nohighlight" id="equation-covdepeqn">
+<span class="eqno">(3)<a class="headerlink" href="#equation-covdepeqn" title="Permalink to this equation">¶</a></span>\[k_f = A T^b \exp \left( - \frac{E_a}{RT} \right)\prod_k 10^{a_k \theta_k} \theta_k^{m_k}\exp \left( \frac{- E_k \theta_k}{RT} \right)\]</div>
+<p>where the parameters <span class="math notranslate nohighlight">\(a_k\)</span>, <span class="math notranslate nohighlight">\(m_k\)</span>, and <span class="math notranslate nohighlight">\(E_k\)</span> are the modifiers for the pre-exponential, temperature exponent, and activation energy from species k.</p>
+<section id="input-file-specifications">
+<h3><span class="section-number">16.5.1. </span>input file specifications<a class="headerlink" href="#input-file-specifications" title="Permalink to this headline">¶</a></h3>
+<p>Coverage dependent parameters are applied if the “coverage_dependence” attribute is set to “True” in the catalyst properties block:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">catalystProperties</span><span class="p">(</span>
+    <span class="n">metal</span> <span class="o">=</span> <span class="n">Pt111</span>
+    <span class="n">coverageDependence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, this field is false.</p>
+</section>
+<section id="coverage-block-in-families-and-libraries">
+<h3><span class="section-number">16.5.2. </span>Coverage block in families and libraries<a class="headerlink" href="#coverage-block-in-families-and-libraries" title="Permalink to this headline">¶</a></h3>
+<p>Coverage dependent parameters can be added to a family or library reaction by specifying a dictionary in the “coverage_dependence” field, with the names of the species serving as the keys. Nested within that dictionary is a dictionary of the coverage dependent parameters for each species. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;NH_X + X &lt;=&gt; N_X + H_X&quot;</span><span class="p">,</span>
+    <span class="n">kinetics</span> <span class="o">=</span> <span class="n">SurfaceArrhenius</span><span class="p">(</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="mf">7.22E20</span><span class="p">,</span> <span class="s1">&#39;cm^2/(mol*s)&#39;</span><span class="p">),</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">Ea</span> <span class="o">=</span> <span class="p">(</span><span class="mf">5.3</span><span class="p">,</span> <span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3000</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">coverage_dependence</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;N_X&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">:(</span><span class="mf">15.5</span><span class="p">,</span> <span class="s1">&#39;kcal/mol&#39;</span><span class="p">)},</span>
+                               <span class="s1">&#39;H_X&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">:(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;kcal/mol&#39;</span><span class="p">)}},</span>
+    <span class="p">),</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;Surface_Dissociation&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">longDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">&quot;The role of adsorbate–adsorbate interactions in the rate controlling step</span>
+<span class="s2">and the most abundant reaction intermediate of NH3 decomposition on Ru&quot;</span>
+<span class="s2">D.G. Vlachos et al. (2004). Catalysis Letters 96, 13–22.</span>
+<span class="s2">https://doi.org/10.1023/B:CATL.0000029523.22277.e1</span>
+<span class="s2">This reaction used RMG&#39;s surface site density of Ru0001 = 2.630E-9(mol/cm^2) to calculate the A factor.</span>
+<span class="s2">A = 1.9E12(1/s)/2.630E-9(mol/cm^2) = 7.22E20 cm^2/(mol*s)</span>
+<span class="s2">This is R5 in Table 2 (set A)</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">metal</span> <span class="o">=</span> <span class="s2">&quot;Ru&quot;</span><span class="p">,</span>
+    <span class="n">facet</span> <span class="o">=</span> <span class="s2">&quot;0001&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The species “N_X” and “H_X” are the coverage dependent species in this example, and they also happen to be species partaking in this reaction. However, any species that are listed in the species dictionary can also be used.</p>
+</section>
+</section>
 <section id="examples">
-<h2><span class="section-number">16.5. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">16.6. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <section id="example-input-file-methane-steam-reforming">
-<h3><span class="section-number">16.5.1. </span>Example input file: methane steam reforming<a class="headerlink" href="#example-input-file-methane-steam-reforming" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">16.6.1. </span>Example input file: methane steam reforming<a class="headerlink" href="#example-input-file-methane-steam-reforming" title="Permalink to this headline">¶</a></h3>
 <p>This is a simple input file steam reforming of methane</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
@@ -577,7 +627,7 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 </div>
 </section>
 <section id="example-input-file-methane-oxidation">
-<h3><span class="section-number">16.5.2. </span>Example input file: methane oxidation<a class="headerlink" href="#example-input-file-methane-oxidation" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">16.6.2. </span>Example input file: methane oxidation<a class="headerlink" href="#example-input-file-methane-oxidation" title="Permalink to this headline">¶</a></h3>
 <p>This is an input file for catalytic partial oxidation (CPOX) of methane</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
@@ -662,7 +712,7 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 </div>
 </section>
 <section id="additional-notes">
-<h3><span class="section-number">16.5.3. </span>Additional Notes<a class="headerlink" href="#additional-notes" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">16.6.3. </span>Additional Notes<a class="headerlink" href="#additional-notes" title="Permalink to this headline">¶</a></h3>
 <p>Other things to update:
 * table of atom types in users/rmg/database/introduction.rst
 * table of atom types in reference/molecule/atomtype.rst</p>
@@ -730,10 +780,15 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <li><a class="reference internal" href="#reaction-families-and-libraries-for-surface-reaction-systems">16.4.1. Reaction families and libraries for surface reaction systems</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#examples">16.5. Examples</a><ul>
-<li><a class="reference internal" href="#example-input-file-methane-steam-reforming">16.5.1. Example input file: methane steam reforming</a></li>
-<li><a class="reference internal" href="#example-input-file-methane-oxidation">16.5.2. Example input file: methane oxidation</a></li>
-<li><a class="reference internal" href="#additional-notes">16.5.3. Additional Notes</a></li>
+<li><a class="reference internal" href="#coverage-dependence">16.5. Coverage Dependence</a><ul>
+<li><a class="reference internal" href="#input-file-specifications">16.5.1. input file specifications</a></li>
+<li><a class="reference internal" href="#coverage-block-in-families-and-libraries">16.5.2. Coverage block in families and libraries</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#examples">16.6. Examples</a><ul>
+<li><a class="reference internal" href="#example-input-file-methane-steam-reforming">16.6.1. Example input file: methane steam reforming</a></li>
+<li><a class="reference internal" href="#example-input-file-methane-oxidation">16.6.2. Example input file: methane oxidation</a></li>
+<li><a class="reference internal" href="#additional-notes">16.6.3. Additional Notes</a></li>
 </ul>
 </li>
 </ul>

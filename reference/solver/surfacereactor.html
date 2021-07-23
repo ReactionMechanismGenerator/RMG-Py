@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.solver.SurfaceReactor<a class="headerlink" href="#rmgpy-solver-surfacereactor" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.solver.</span></span><span class="sig-name descname"><span class="pre">SurfaceReactor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_initial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_gas_mole_fractions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_surface_coverages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_volume_ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_site_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">termination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitive_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.solver.</span></span><span class="sig-name descname"><span class="pre">SurfaceReactor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P_initial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_gas_mole_fractions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_surface_coverages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_volume_ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_site_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">termination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitive_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor" title="Permalink to this definition">¶</a></dt>
 <dd><p>A reaction system consisting of a heterogeneous, isothermal, constant volume batch
 reactor.</p>
 <dl class="py attribute">
@@ -252,6 +252,28 @@ using the given dictionary of species.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>core_species_rates</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.coverage_dependence">
+<span class="sig-name descname"><span class="pre">coverage_dependence</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.coverage_dependence" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>coverage_dependence</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.coverage_dependencies">
+<span class="sig-name descname"><span class="pre">coverage_dependencies</span></span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.coverage_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>coverage_dependencies</p>
 </dd>
 </dl>
 </dd></dl>

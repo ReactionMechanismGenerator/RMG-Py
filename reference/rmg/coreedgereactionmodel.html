@@ -354,6 +354,17 @@ Anything added via the <code class="xref py py-meth docutils literal notranslate
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.process_coverage_dependence">
+<span class="sig-name descname"><span class="pre">process_coverage_dependence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kinetics</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.process_coverage_dependence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process the coverage dependence kinetics.</p>
+<p>This ensures that species that are used in coverage-dependent kinetic
+expressions exist in the model. (Before this is called, they may have
+only existed in a reaction libary instance).</p>
+<p>If &lt;CoreEdgeReactionModel&gt;self.coverage_dependence is False then
+it instead removes any coverage_dependence from the kinetics.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.rmg.model.CoreEdgeReactionModel.process_new_reactions">
 <span class="sig-name descname"><span class="pre">process_new_reactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdep_network</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_thermo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.process_new_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process a list of newly-generated reactions involving the new core
