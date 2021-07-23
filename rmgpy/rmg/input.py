@@ -1101,9 +1101,9 @@ def read_input_file(path, rmg0):
     rmg.species_constraints['explicitlyAllowedMolecules'] = []
 
     # convert keys from species names into species objects.
-    for reactionSystem in rmg.reaction_systems:
-        if not isinstance(reactionSystem, Reactor):
-            reactionSystem.convert_initial_keys_to_species_objects(species_dict)
+    for reaction_system in rmg.reaction_systems:
+        if not isinstance(reaction_system, Reactor):
+            reaction_system.convert_initial_keys_to_species_objects(species_dict)
 
     if rmg.quantum_mechanics:
         rmg.quantum_mechanics.set_default_output_directory(rmg.output_directory)
