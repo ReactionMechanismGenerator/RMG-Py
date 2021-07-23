@@ -4664,6 +4664,43 @@ def _make_rule(rr):
     data_mean = np.mean(np.log([r.kinetics.get_rate_coefficient(Tref) for r in rxns]))
     if n > 0:
         kin = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
+
+        # compute the derivatives
+        compute_derivatives = True
+        if compute_derivatives:
+            for j, rxn in enumerate(rxns):
+                # Activation Energy derivatives
+                saved_Ea_value = rxn.kinetics.Ea.value
+                rxn.kinetics.Ea.value *= 1.01
+                dEa = rxn.kinetics.Ea.value - saved_Ea_value
+                kin_dEa = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
+                rxn.kinetics.Ea.value = saved_Ea_value
+
+                dA_dEA = (kin_dEa.A.value - kin.A.value)/ dEa
+                dn_dEA = (kin_dEa.n.value - kin.n.value)/ dEa
+                dw0_dEA = (kin_dEa.w0.value - kin.w0.value)/ dEa
+                dE0_dEA = (kin_dEa.E0.value - kin.E0.value)/ dEa
+            
+                # A factor derivatives
+                saved_A_value = rxn.kinetics.A.value
+                rxn.kinetics.A.value *= 1.01
+                dA = rxn.kinetics.A.value - saved_A_value
+                kin_dA = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
+                rxn.kinetics.Ea.value = saved_A_value
+
+                dA_dA = (kin_dA.A.value - kin.A.value)/ dA
+                dn_dA = (kin_dA.n.value - kin.n.value)/ dA
+                dw0_dA = (kin_dA.w0.value - kin.w0.value)/ dEa
+                dE0_dA = (kin_dA.E0.value - kin.E0.value)/ dA
+
+                # TODO add d_dn?
+                # TODO check that dw0 is correct because it's handled a little differently
+                # TODO add checks to make sure params exist before accessing them - in case a different type is passed in
+                # TODO speed this up by passing the guess into ArrheniusBM().fit_to_reactions
+                # TODO pass in "compute_derivatives" as a parameter
+                # TODO move this to a separate helper function
+                # TODO save the derivatives somewhere or return them up the chain
+
         if n == 1:
             kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
         else:
