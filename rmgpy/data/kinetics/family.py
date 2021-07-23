@@ -358,9 +358,9 @@ class ReactionRecipe(object):
                         raise InvalidActionError('Attempted to create bond of type {:!r}'.format(info))
                     # we need to make sure we are not forming
                     # a surface bond to an atom that is already bonded to the surface
-                    if atom1.is_surface_site() and atom2.is_bonded_to_surface():
+                    if atom1.is_surface_site() and hasattr(atom2, 'is_bonded_to_surface') and atom2.is_bonded_to_surface():
                         raise InvalidActionError('Attempted to form a surface bond to an atom already bonded to surface.')
-                    elif atom2.is_surface_site() and atom1.is_bonded_to_surface():
+                    elif atom2.is_surface_site() and hasattr(atom1, 'is_bonded_to_surface') and atom1.is_bonded_to_surface():
                         raise InvalidActionError('Attempted to form a surface bond to an atom already bonded to surface.')
                     bond = GroupBond(atom1, atom2, order=[info]) if pattern else Bond(atom1, atom2, order=info)
                     struct.add_bond(bond)
