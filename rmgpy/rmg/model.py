@@ -649,9 +649,12 @@ class CoreEdgeReactionModel:
             logging.info('Generating kinetics for new reactions...')
         for reaction in self.new_reaction_list:
             # If the reaction already has kinetics (e.g. from a library),
-            # assume the kinetics are satisfactory
+            # assume the kinetics are satisfactory, else generate them
             if reaction.kinetics is None:
                 self.apply_kinetics_to_reaction(reaction)
+
+            if getattr(reaction.kinetics, 'coverage_dependence', None):
+                self.process_coverage_dependence(reaction.kinetics)
 
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
         # self.new_reaction_list only contains *actually* new reactions, all in the forward direction.
@@ -864,6 +867,25 @@ class CoreEdgeReactionModel:
                 spc.label = spc.thermo.label
 
         spc.generate_energy_transfer_model()
+
+    def process_coverage_dependence(self, kinetics):
+        """Process the coverage dependence kinetics.
+
+        This ensures that species that are used in coverage-dependent kinetic
+        expressions exist in the model. (Before this is called, they may have
+        only existed in a reaction libary instance).
+
+        If <CoreEdgeReactionModel>self.coverage_dependence is False then
+        it instead removes any coverage_dependence from the kinetics.
+        """
+        if not self.coverage_dependence:
+            kinetics.coverage_dependence = None
+            return
+        cov_dep = {}
+        for species, values in kinetics.coverage_dependence.items():
+            species_in_model, is_new = self.make_new_species(species)
+            cov_dep[species_in_model] = values
+        kinetics.coverage_dependence = cov_dep
 
     def apply_kinetics_to_reaction(self, reaction):
         """
@@ -1496,6 +1518,8 @@ class CoreEdgeReactionModel:
                                       reversible=rxn.reversible
                                       )
             r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.newReactionlist
+            if getattr(r.kinetics, 'coverage_dependence', None):
+                self.process_coverage_dependence(r.kinetics)
             if not isNew:
                 logging.info("This library reaction was not new: {0}".format(rxn))
             elif self.pressure_dependence and rxn.elementary_high_p and rxn.is_unimolecular() \
@@ -1595,6 +1619,8 @@ class CoreEdgeReactionModel:
                                       reversible=rxn.reversible
                                       )
             r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.newReactionlist
+            if getattr(r.kinetics, 'coverage_dependence', None):
+                self.process_coverage_dependence(r.kinetics)
             if not isNew:
                 logging.info("This library reaction was not new: {0}".format(rxn))
             elif self.pressure_dependence and rxn.elementary_high_p and rxn.is_unimolecular() \

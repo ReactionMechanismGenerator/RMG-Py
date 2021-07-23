@@ -36,13 +36,13 @@ import logging
 cimport cython
 import numpy as np
 cimport numpy as np
+from libc.math cimport exp
 
 import rmgpy.constants as constants
 cimport rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.quantity cimport ScalarQuantity
 from rmgpy.solver.base cimport ReactionSystem
-
 
 cdef class SurfaceReactor(ReactionSystem):
     """
@@ -67,6 +67,10 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public np.ndarray reactions_on_surface  # (catalyst surface, not core/edge surface)
     cdef public np.ndarray species_on_surface  # (catalyst surface, not core/edge surface)
 
+    cdef public bint coverage_dependence
+    cdef public dict coverage_dependencies
+
+
     def __init__(self,
                  T,
                  P_initial,
@@ -79,6 +83,7 @@ cdef class SurfaceReactor(ReactionSystem):
                  sensitive_species=None,
                  sensitivity_threshold=1e-3,
                  sens_conditions=None,
+                 coverage_dependence=False,
                  ):
         ReactionSystem.__init__(self,
                                 termination,
@@ -97,10 +102,13 @@ cdef class SurfaceReactor(ReactionSystem):
         self.initial_surface_coverages = initial_surface_coverages
         self.surface_volume_ratio = Quantity(surface_volume_ratio)
         self.surface_site_density = Quantity(surface_site_density)
+        self.coverage_dependence = coverage_dependence
         self.V = 0  # will be set from ideal gas law in initialize_model
         self.constant_volume = True
         self.sens_conditions = sens_conditions
         self.n_sims = n_sims
+
+        self.coverage_dependencies = {}
 
     def convert_initial_keys_to_species_objects(self, species_dict):
         """
@@ -166,9 +174,27 @@ cdef class SurfaceReactor(ReactionSystem):
                 continue
             if spec.contains_surface_site():
                 species_on_surface[index] = 1
-        for rxn, index in self.reaction_index.items():
+        self.coverage_dependencies = {}
+        for rxn, rxn_index in self.reaction_index.items():
             if rxn.is_surface_reaction():
-                reactions_on_surface[index] = 1
+                reactions_on_surface[rxn_index] = 1
+                if self.coverage_dependence and rxn.kinetics.coverage_dependence:
+                    for spec, parameters in rxn.kinetics.coverage_dependence.items():
+                        species_index = self.species_index[spec]
+                        try:
+                            list_of_coverage_deps = self.coverage_dependencies[species_index]
+                        except KeyError: # doesn't exist yet
+                            list_of_coverage_deps = []
+                            self.coverage_dependencies[species_index] = list_of_coverage_deps
+                        list_of_coverage_deps.append((rxn_index,
+                                                      parameters['a'].value_si,
+                                                      parameters['m'].value_si,
+                                                      parameters['E'].value_si))
+                """
+                self.coverage_dependencies[2] = [(3, 0.1, -1.0, 12000.0),]
+                means that Species with index 2 in the current simulation is used in
+                Reaction 3 with parameters a=0.1, m=-1, E=12 kJ/mol
+                """
         self.species_on_surface = species_on_surface
         self.reactions_on_surface = reactions_on_surface
 
@@ -205,8 +231,6 @@ cdef class SurfaceReactor(ReactionSystem):
         warned = False
         for rxn in itertools.chain(core_reactions, edge_reactions):
             j = self.reaction_index[rxn]
-
-            # ToDo: get_rate_coefficient should also depend on surface coverages vector
 
             if rxn.is_surface_reaction():
                 """
@@ -344,7 +368,7 @@ cdef class SurfaceReactor(ReactionSystem):
         """
         cdef np.ndarray[np.int_t, ndim=2] ir, ip, inet
         cdef np.ndarray[np.int_t, ndim=1] reactions_on_surface, species_on_surface
-        cdef np.ndarray[np.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
+        cdef np.ndarray[np.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants, coverage_corrections
         cdef Py_ssize_t num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
         cdef Py_ssize_t i, j, z, first, second, third
         cdef double k, V, reaction_rate, surface_volume_ratio_si
@@ -352,6 +376,10 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef np.ndarray[np.float64_t, ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
         cdef np.ndarray[np.float64_t, ndim=1] C
         cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk
+        cdef list list_of_coverage_deps
+        cdef double surface_site_fraction, total_sites, a, m, E
+
+
 
         ir = self.reactant_indices
         ip = self.product_indices
@@ -384,6 +412,8 @@ cdef class SurfaceReactor(ReactionSystem):
 
         C = np.zeros_like(self.core_species_concentrations)
         V = self.V  # constant volume reactor
+        A = self.V * surface_volume_ratio_si  # area
+        total_sites = self.surface_site_density.value_si * A  # todo: double check units
 
         for j in range(num_core_species):
             if species_on_surface[j]:
@@ -392,6 +422,26 @@ cdef class SurfaceReactor(ReactionSystem):
                 C[j] = N[j] / V
             #: surface species are in mol/m2, gas phase are in mol/m3
             core_species_concentrations[j] = C[j]
+
+        # Coverage dependence
+        coverage_corrections = np.ones_like(kf, np.float64)
+        if self.coverage_dependence:
+            """
+            self.coverage_dependencies[2] = [(3, 0.1, -1.0, 12000.0),]
+            means that Species with index 2 in the current simulation is used in
+            Reaction 3 with parameters a=0.1, m=-1, E=12 kJ/mol
+            """
+            for i, list_of_coverage_deps in self.coverage_dependencies.items():
+                # Species i, Reaction j
+                surface_site_fraction = N[i] / total_sites
+                if surface_site_fraction < 1e-15:
+                    continue
+                for j, a, m, E in list_of_coverage_deps:
+                    coverage_corrections[j] *= 10. ** (a * surface_site_fraction) *\
+                                                surface_site_fraction ** m *\
+                                                exp(-1 * E * surface_site_fraction / (constants.R * self.T.value_si))
+            kf = kf * coverage_corrections # make a corrected copy kf, but leave the original array at self.kf unchanged
+            kr = kr * coverage_corrections
 
         for j in range(ir.shape[0]):
             k = kf[j]
