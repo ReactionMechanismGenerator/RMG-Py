@@ -34,8 +34,10 @@ from copy import deepcopy
 import numpy as np
 
 from rmgpy import settings
+from rmgpy.data.base import Entry
 from rmgpy.exceptions import DatabaseError, InputError
 from rmgpy.molecule import Molecule
+from rmgpy.molecule.group import Group
 from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
@@ -191,6 +193,11 @@ def species(label, structure, reactive=True):
     rmg.initial_species.append(spec)
     species_dict[label] = spec
 
+def forbidden(label, structure):
+
+    if '+' in label:
+        raise InputError('forbidden species {0} label cannot include a + sign'.format(label))
+    rmg.forbidden_structures.append(Entry(label=label,item=structure))
 
 def smarts(string):
     return Molecule().from_smarts(string)
@@ -206,6 +213,9 @@ def inchi(string):
 
 def adjacency_list(string):
     return Molecule().from_adjacency_list(string)
+
+def adjacency_list_group(string):
+    return Group().from_adjacency_list(string)
 
 def react(tups):
     if not isinstance(tups, list):
@@ -1148,10 +1158,12 @@ def read_input_file(path, rmg0):
         'database': database,
         'catalystProperties': catalyst_properties,
         'species': species,
+        'forbidden': forbidden,
         'SMARTS': smarts,
         'SMILES': smiles,
         'InChI': inchi,
         'adjacencyList': adjacency_list,
+        'adjacencyListGroup': adjacency_list_group,
         'react': react,
         'simpleReactor': simple_reactor,
         'constantVIdealGasReactor' : constant_V_ideal_gas_reactor,

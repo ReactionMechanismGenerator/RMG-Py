@@ -187,6 +187,7 @@ class RMG(util.Subject):
         self.surface_site_density = None
         self.binding_energies = None
         self.coverage_dependence = False
+        self.forbidden_structures = []
 
         self.reaction_model = None
         self.reaction_systems = None
@@ -416,6 +417,17 @@ class RMG(util.Subject):
         if self.solvent:
             global solvent
             solvent = self.solvent
+
+        # add any forbidden structures in the input file to the forbidden structures database
+        for forbidden_structure_entry in self.forbidden_structures:
+            label = forbidden_structure_entry.label
+            if label in self.database.forbidden_structures.entries:
+                raise InputError("""
+        Forbidden structure {0} label is already in the forbidden structure database.
+        Please choose a different label for this structure that is not already in
+        {1}""".format(label,os.path.join(self.database_directory,'forbiddenStructures.py')))
+            logging.info('Adding {0} to the forbidden structures database...'.format(label))
+            self.database.forbidden_structures.entries[label] = forbidden_structure_entry
 
         if self.kinetics_estimator == 'rate rules':
             if '!training' not in self.kinetics_depositories:
