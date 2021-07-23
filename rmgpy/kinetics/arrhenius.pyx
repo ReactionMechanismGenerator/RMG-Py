@@ -583,10 +583,13 @@ cdef class ArrheniusBM(KineticsModel):
             comment=self.comment,
         )
 
-    def fit_to_reactions(self, rxns, w0=None, recipe=None, Ts=None):
+    def fit_to_reactions(self, rxns, w0=None, recipe=None, Ts=None, compute_derivatives=False):
         """
         Fit an ArrheniusBM model to a list of reactions at the given temperatures,
         w0 must be either given or estimated using the family object
+
+        If compute_derivatives=True then the sensitivites of A, n, E0 with respect to each
+        training reaction in rxns is added as an array called self.sensitivities.
         """
         assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
 
@@ -676,6 +679,69 @@ cdef class ArrheniusBM(KineticsModel):
         self.n = n
         self.w0 = (w0, 'J/mol')
         self.E0 = (E0, 'J/mol')
+
+
+        # compute the derivatives
+        #compute_derivatives = True
+        if compute_derivatives:
+            sensitivities = []
+            for j, rxn in enumerate(rxns):
+                lnA, n, E0  # before tweaking
+                xdata # unchanged
+                ydata # ln(k(T)) for each T for each reaction
+
+                # recreate the whole ydata array, with a perturbed rxn
+                # (may be better to just change the elements we need, if we can figure that out)
+                ydata = []
+                SCALE_FACTOR = 1.1
+                saved_A_value = rxn.kinetics.A.value_si
+                rxn.kinetics.A.value_si *= SCALE_FACTOR
+                for r in rxns:
+                    for T in Ts:
+                        ydata.append(np.log(rxn.get_rate_coefficient(T)))
+                rxn.kinetics.A.value_si = saved_A_value
+                ydata = np.array(ydata)
+
+                # fit new parameters
+                boo = True
+                xtol = 1e-8
+                ftol = 1e-8
+                while boo:
+                    boo = False
+                    try:
+                        # starting guess is the previously optimized result
+                        params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[lnA, n, E0], xtol=xtol, ftol=ftol)
+                    except RuntimeError:
+                        if xtol < 1.0:
+                            boo = True
+                            xtol *= 10.0
+                            ftol *= 10.0
+                        else:
+                            raise ValueError("Could not fit perturbed BM arrhenius to reactions with xtol<1.0")
+
+                perturbed_lnA, perturbed_n, perturbed_E0 = params[0].tolist()
+                # d lnk = 1/k dk
+                # dOUT/OUT = S * dIN/IN
+                # S = (dOUT/OUT) / (dIN/IN) = dOUT/dIN * IN/OUT = dln(OUT)/ dln(IN)
+                # SCALE_FACTOR-1 = 0.1 = dIN/IN
+                # S = (dOUT/OUT) / (SCALE_FACTOR-1)  or
+                # S = dln(OUT) / (SCALE_FACTOR-1)
+
+                sensitivity_A = (perturbed_lnA - lnA)/ (SCALE_FACTOR-1)
+                sensitivity_n = (perturbed_n - n)/n / (SCALE_FACTOR-1)
+                sensitivity_E0 = (perturbed_E0 - E0)/E0 / (SCALE_FACTOR-1)
+
+                # TODO add d_dn?
+                # TODO check that dw0 is correct because it's handled a little differently
+                # TODO add checks to make sure params exist before accessing them - in case a different type is passed in
+                # TODO speed this up by passing the guess into ArrheniusBM().fit_to_reactions
+                # TODO pass in "compute_derivatives" as a parameter
+                # TODO move this to a separate helper function
+                # TODO save the derivatives somewhere or return them up the chain
+
+                sensitivities.append([sensitivity_A, sensitivity_n, sensitivity_E0])
+            sensitivities = np.array(sensitivities)
+            self.sensitivities = sensitivities
 
         return self
 
