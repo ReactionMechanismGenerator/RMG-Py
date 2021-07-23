@@ -1096,14 +1096,13 @@ def get_w0(actions, rxn):
     and wb (total bond energy of bonds broken) with w0 = (wf+wb)/2
     """
     mol = None
-    a_dict = {}
     for r in rxn.reactants:
         m = r.molecule[0]
-        a_dict.update(m.get_all_labeled_atoms())
         if mol:
             mol = mol.merge(m)
         else:
             mol = m.copy(deep=True)
+    a_dict = mol.get_all_labeled_atoms()
 
     recipe = actions
 
@@ -1128,7 +1127,8 @@ def get_w0(actions, rxn):
                         mol2 = mol2.merge(m)
                     else:
                         mol2 = m.copy(deep=True)
-                bd2 = mol2.get_bond(a_dict[act[1]], a_dict[act[3]])
+                a_dict_mol2 = mol2.get_all_labeled_atoms()
+                bd2 = mol2.get_bond(a_dict_mol2[act[1]], a_dict_mol2[act[3]])
             else:
                 bd2 = Bond(a_dict[act[1]], a_dict[act[3]], bd1.order + act[2])
 
