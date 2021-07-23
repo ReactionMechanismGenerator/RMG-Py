@@ -736,6 +736,9 @@ class KineticsFamily(Database):
 
         if not self.reactant_num:
             self.reactant_num = len(self.forward_template.reactants)
+        if not self.product_num:
+            self.product_num = len(self.forward_template.products)
+        
         self.groups.reactant_num = self.reactant_num
 
         # Generate the reverse template if necessary
