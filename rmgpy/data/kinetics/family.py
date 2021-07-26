@@ -3645,7 +3645,7 @@ class KineticsFamily(Database):
             raise e
         return grps
 
-    def make_bm_rules_from_template_rxn_map(self, template_rxn_map, nprocs=1, Tref=1000.0, fmax=1.0e5):
+    def make_bm_rules_from_template_rxn_map(self, template_rxn_map, nprocs=1, Tref=1000.0, fmax=1.0e5, compute_derivatives=False):
 
         rule_keys = self.rules.entries.keys()
         for entry in self.groups.entries.values():
@@ -3667,7 +3667,7 @@ class KineticsFamily(Database):
 
         pool = mp.Pool(nprocs)
 
-        kinetics_list = np.array(pool.map(_make_rule, inputs[inds]))
+        kinetics_list = np.array(pool.map(_make_rule, inputs[inds])) # pass in compute_derivatives
         kinetics_list = kinetics_list[revinds]  # fix order
 
         for i, kinetics in enumerate(kinetics_list):
@@ -4664,7 +4664,7 @@ def _make_rule(rr):
     rxns = np.array(rxns)
     data_mean = np.mean(np.log([r.kinetics.get_rate_coefficient(Tref) for r in rxns]))
     if n > 0:
-        kin = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe, compute_derivatives=True)
+        kin = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
 
         # compute the derivatives
         compute_derivatives = True
@@ -4684,10 +4684,12 @@ def _make_rule(rr):
                 # SCALE_FACTOR-1 = 0.1 = dIN/IN
                 # S = (dOUT/OUT) / (SCALE_FACTOR-1)  or
                 # S = dln(OUT) / (SCALE_FACTOR-1)
-
+                
                 sensitivity_A = (np.log(kin_perturbed.A) - np.log(kin.A))/ (SCALE_FACTOR-1)
                 sensitivity_n = (kin_perturbed.n - kin.n)/kin.n / (SCALE_FACTOR-1)
                 sensitivity_E0 = (kin_perturbed.E0 - kin.E0)/kin.E0 / (SCALE_FACTOR-1)
+                sensitivities = [sensitivity_A, sensitivity_n, sensitivity_E0]
+
 
                 # TODO add d_dn?
                 # TODO check that dw0 is correct because it's handled a little differently

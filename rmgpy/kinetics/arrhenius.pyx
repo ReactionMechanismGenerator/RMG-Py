@@ -588,9 +588,6 @@ cdef class ArrheniusBM(KineticsModel):
         Fit an ArrheniusBM model to a list of reactions at the given temperatures,
         w0 must be either given or estimated using the family object
 
-        If compute_derivatives=True then the sensitivites of A, n, E0 with respect to each
-        training reaction in rxns is added as an array called self.sensitivities.
-
         If param_guess is specified, pass that in as the starting point of the curve_fit
         """
         assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
