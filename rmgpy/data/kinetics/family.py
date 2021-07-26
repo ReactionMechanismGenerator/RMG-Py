@@ -4666,6 +4666,37 @@ def _make_rule(rr):
     if n > 0:
         kin = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe, compute_derivatives=True)
 
+        # compute the derivatives
+        compute_derivatives = True
+        if compute_derivatives:
+            sensitivities = []
+            for j, rxn in enumerate(rxns):
+                unperturbed_params = [np.log(rxn.kinetics.A.value_si), rxn.kinetics.n.value_si, rxn.kinetics.Ea.value_si]
+                SCALE_FACTOR = 1.1
+                saved_A_value = rxn.kinetics.A.value_si
+                rxn.kinetics.A.value_si *= SCALE_FACTOR
+                kin_perturbed = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
+                rxn.kinetics.A.value_si = saved_A_value
+             
+                # d lnk = 1/k dk
+                # dOUT/OUT = S * dIN/IN
+                # S = (dOUT/OUT) / (dIN/IN) = dOUT/dIN * IN/OUT = dln(OUT)/ dln(IN)
+                # SCALE_FACTOR-1 = 0.1 = dIN/IN
+                # S = (dOUT/OUT) / (SCALE_FACTOR-1)  or
+                # S = dln(OUT) / (SCALE_FACTOR-1)
+
+                sensitivity_A = (np.log(kin_perturbed.A) - np.log(kin.A))/ (SCALE_FACTOR-1)
+                sensitivity_n = (kin_perturbed.n - kin.n)/kin.n / (SCALE_FACTOR-1)
+                sensitivity_E0 = (kin_perturbed.E0 - kin.E0)/kin.E0 / (SCALE_FACTOR-1)
+
+                # TODO add d_dn?
+                # TODO check that dw0 is correct because it's handled a little differently
+                # TODO add checks to make sure params exist before accessing them - in case a different type is passed in
+                # TODO speed this up by passing the guess into ArrheniusBM().fit_to_reactions
+                # TODO pass in "compute_derivatives" as a parameter
+                # TODO move this to a separate helper function
+                # TODO save the derivatives somewhere or return them up the chain
+
         if n == 1:
             kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
         else:
