@@ -1514,30 +1514,30 @@ Origin Group AdjList:
             boo = True
         if boo:
             raise ValueError("Error Occurred. See log for details.")
-    def check_surface_thermo_groups_have_surface_attributes(self, group_name, group):
-        """
-        Tests that each entry in the surface thermo groups has a 'metal' and 'facet' attribute, 
-        describing which metal the data came from.
-        """
-        failed = False
-        for entry in group.entries.values():
-            if isinstance(entry.data, rmgpy.thermo.thermodata.ThermoData):
-                if 'Pt' in group_name:
-                    if entry.metal is not 'Pt':
-                        logging.error(f'Expected {entry} metal attribute in {group_name} group to match Pt, but was {entry.metal}')
-                        failed = True
-                if '111' in group_name:
-                    if entry.facet is not '111':
-                        logging.error(f'Expected {entry} facet attribute in {group_name} group to match 111, but was {entry.facet}')
-                        failed = True
-                if not entry.metal:
-                    logging.error(f'Expected a metal attribute for {entry} in {group_name} group but found {entry.metal!r}')
-                    failed = True
-                if not entry.facet:
-                    logging.error(f'Expected a facet attribute for {entry} in {group_name} group but found {entry.facet!r}')
-                    failed = True
-        if failed:
-            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
+    # def check_surface_thermo_groups_have_surface_attributes(self, group_name, group):
+    #     """
+    #     Tests that each entry in the surface thermo groups has a 'metal' and 'facet' attribute, 
+    #     describing which metal the data came from.
+    #     """
+    #     failed = False
+    #     for entry in group.entries.values():
+    #         if isinstance(entry.data, rmgpy.thermo.thermodata.ThermoData):
+    #             if 'Pt' in group_name:
+    #                 if entry.metal is not 'Pt':
+    #                     logging.error(f'Expected {entry} metal attribute in {group_name} group to match Pt, but was {entry.metal}')
+    #                     failed = True
+    #             if '111' in group_name:
+    #                 if entry.facet is not '111':
+    #                     logging.error(f'Expected {entry} facet attribute in {group_name} group to match 111, but was {entry.facet}')
+    #                     failed = True
+    #             if not entry.metal:
+    #                 logging.error(f'Expected a metal attribute for {entry} in {group_name} group but found {entry.metal!r}')
+    #                 failed = True
+    #             if not entry.facet:
+    #                 logging.error(f'Expected a facet attribute for {entry} in {group_name} group but found {entry.facet!r}')
+    #                 failed = True
+    #     if failed:
+    #         raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def check_surface_thermo_libraries_have_surface_attributes(self, library_name, library):
         """
