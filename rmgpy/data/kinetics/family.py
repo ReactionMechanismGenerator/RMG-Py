@@ -4337,7 +4337,8 @@ class KineticsFamily(Database):
                     reacts = [Species(molecule=[get_label_fixed_mol(x.molecule[0], root_labels)], thermo=x.thermo)
                               for x in rxns[i].reactants]
                     rrev = Reaction(reactants=products, products=reacts,
-                                    kinetics=rxns[i].generate_reverse_rate_coefficient(), rank=rxns[i].rank)
+                                    kinetics=rxns[i].generate_reverse_rate_coefficient(), rank=rxns[i].rank,
+                                    metal=rxns[i].metal, facet=rxns[i].facet, site=rxns[i].site)
                     rrev.is_forward = False
 
                     if estimate_thermo:
