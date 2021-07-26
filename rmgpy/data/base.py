@@ -380,6 +380,12 @@ class Database(object):
         f.write('#!/usr/bin/env python\n')
         f.write('# encoding: utf-8\n\n')
         f.write('name = "{0}"\n'.format(self.name))
+        if self.metal:
+            f.write('metal = "{0}"\n'.format(self.metal))
+        if self.facet:
+            f.write('facet = "{0}"\n'.format(self.facet))
+        if self.site:
+            f.write('site = "{0}"\n'.format(self.site))
         f.write('shortDesc = "{0}"\n'.format(self.short_desc))
         f.write('longDesc = """\n')
         f.write(self.long_desc.strip() + '\n')
