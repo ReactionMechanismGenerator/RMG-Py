@@ -242,12 +242,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             yield test, group_name
 
             # tests for adsorption groups
-            if 'adsorption' in group_name.lower():
-                test = lambda x: self.check_surface_thermo_groups_have_surface_attributes(group_name, group)
-                test_name = "Thermo surface groups {0}: Entry has metal attributes?".format(group_name)
-                test.description = test_name
-                self.compat_func_name = test_name
-                yield test, group_name
+            # if 'adsorption' in group_name.lower():
+            #     test = lambda x: self.check_surface_thermo_groups_have_surface_attributes(group_name, group)
+            #     test_name = "Thermo surface groups {0}: Entry has metal attributes?".format(group_name)
+            #     test.description = test_name
+            #     self.compat_func_name = test_name
+            #     yield test, group_name
 
         for library_name, library in self.database.thermo.libraries.items():
             if 'surface' in library_name.lower():
