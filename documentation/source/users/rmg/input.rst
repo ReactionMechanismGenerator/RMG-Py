@@ -230,8 +230,69 @@ The following is an example of a typical species item, based on methane using SM
 			"""
 	)
 
-.. _reactionsystem:
+.. _forbidden_structures:
 
+Forbidden Structures
+=====================
+
+RMG exlores a wide varitey of structures as it builds a mechanism.
+Sometimes, RMG makes nonsensical, unphysical, or unstable species that make their way into the core.
+
+Luckily, RMG has a remedy to prevent these undesirable structures from making their way into your mechanism.
+RMG's ForbiddenStructures database contains structures that are forbidden from entering the core 
+(see :ref:`kineticsDatabase` for more information)
+
+While this database forbids many undesirable structures, it may not contain a species
+or structure you would like to exclude from your model. If you would like to forbid a structure from your model,
+you can do so by adding it to your input file in the forbidden block.
+
+The label and structure of each forbidden structure must be specified.
+The structure of the forbidden structure can be defined using either SMILES or
+:ref:`adjacencyList <rmgpy.molecule.adjlist>`.
+
+The following is an example of a forbidden structure item, based on bidentate CO2 using SMILES or adjacency list to define the structure::
+
+	forbidden(
+		label='CO2_bidentate',
+		structure=SMILES("O=C(*)O*"),
+	)
+
+	forbidden(
+		label='CO2_bidentate',
+		structure=adjacencyList(
+			"""
+			1 O u0 p2 c0 {2,D}
+			2 C u0 p0 c0 {1,D} {3,S} {4,S}
+			3 X u0 p0 c0 {2,S}
+			4 O u0 p2 c0 {2,S} {5,S}
+			5 X u0 p0 c0 {4,S}
+			"""
+		)
+	)
+
+If you would like to forbid a functional group from your mechanism, use the ``adjacencyListGroup`` syntax in the forbidden block.
+
+The following is an example of a forbidden structure using ``adjacencyListGroup``.
+The ``R-O-Cl`` forbidden structure forbids any species which contain an "R-O-Cl" group from your mechanism.
+::
+
+	forbidden(
+		label = "R-O-Cl,
+		structure=adjacencyListGroup(
+			"""
+			1 R  ux {2,S}
+			2 O  ux {1,S} {3,S}
+			3 Cl ux {2,S}
+			"""
+		)
+	)
+
+Note: If you would like to allow Hypochlorous acid (`ClOH`) in your model and forbid any other species with an "R-O-Cl" group,
+you can do so by changing the `R` atomtype to `R!H` in the ``R-O-Cl`` forbidden structure above.
+Alternatively, you could explicitly allow `ClOH` by creating a `ClOH` species in your input file (see :ref:`species_list`) and add "input species"
+to the `generatedSpeciesConstraints` block discussed here :ref:`miscellaneousoptions`.
+
+.. _reactionsystem:
 
 Reaction System
 ===============
