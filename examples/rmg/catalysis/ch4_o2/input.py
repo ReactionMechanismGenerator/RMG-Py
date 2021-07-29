@@ -40,6 +40,14 @@ species(
     reactive=True,
     structure=adjacencyList("1 X u0"),
 )
+
+# If you would like to forbid the bidentate form of absorbed CO2 from your model,
+# use the following `CO2_bidentate` forbidden structure
+# forbidden(
+#     label='CO2_bidentate',
+#     structure=SMILES("O=C(*)O*"),
+# )
+
 #----------
 # Reaction systems
 surfaceReactor(

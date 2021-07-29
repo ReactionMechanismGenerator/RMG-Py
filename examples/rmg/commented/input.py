@@ -78,6 +78,35 @@ species(
     structure=SMILES("O=C=O")
 )
 
+# You can also list forbidden structures to forbid a certain molecule or set of molecules from your model
+# To prevent a single molecule from your model, use SMILES or adjacencyList to define the strucutre 
+# For example, if you do not want cyclopropyne in your model, you can forbid it using SMILES
+# forbidden(
+#     label='cyclopropyne',
+#     structure=SMILES("C1#CC1")
+# )
+# or adjacencyList
+# forbidden(
+#     label='cyclopropyne',
+#     structure=adjacencyList("""
+#     1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+#     2 C u0 p0 c0 {1,S} {3,T}
+#     3 C u0 p0 c0 {1,S} {2,T}
+#     4 H u0 p0 c0 {1,S}
+#     5 H u0 p0 c0 {1,S}
+#     """),
+# )
+# If you want to exclude not just cyclopropyne but all three member rings, use `adjacencyListGroup` 
+# to define the forbidden group structure
+# forbidden(
+#     label='Three-member Ring',
+#     structure=adjacencyListGroup("""
+#     1 R ux {2,[S,D,T]} {3,[S,D,T]}
+#     2 R ux {1,[S,D,T]} {3,[S,D,T]}
+#     3 R ux {1,[S,D,T]} {2,[S,D,T]}
+#     """),
+# )
+
 # Reaction systems
 # currently RMG models only constant temperature and pressure as homogeneous batch reactors.
 # two options are: simpleReactor for gas phase or liquidReactor for liquid phase
