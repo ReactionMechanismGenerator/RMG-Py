@@ -983,10 +983,6 @@ from either the input file, seed mechanisms, or reaction libraries to bypass the
 Note that this should be done with caution, since the constraints will still apply to subsequent
 products that form.
 
-Note that under all circumstances all forbidden species will still be banned unless they are
-manually removed from the database.  See :ref:`kineticsDatabase` for more information on
-forbidden groups.
-
 By default, the ``allowSingletO2`` flag is set to ``False``.  See :ref:`representing_oxygen` for more information.
 
 
