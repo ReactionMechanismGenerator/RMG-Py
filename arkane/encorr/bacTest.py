@@ -48,7 +48,7 @@ from arkane.encorr.bac import BAC
 from arkane.encorr.data import BACDataset, BOND_SYMBOLS, _pybel_to_rmg
 from arkane.encorr.reference import ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
-from arkane.modelchem import LevelOfTheory
+from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory
 
 
 class TestBAC(unittest.TestCase):
@@ -59,6 +59,7 @@ class TestBAC(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.lot_get = LevelOfTheory(method='CCSD(T)-F12', basis='cc-pVTZ-F12', software='Molpro')
+        cls.lot_get_composite = CompositeLevelOfTheory(freq=LevelOfTheory(method='wb97xd3',basis='def2tzvp',software='qchem'),energy=LevelOfTheory(method='ccsd(t)f12',basis='ccpvtzf12',software='molpro'))
         cls.lot_fit = LevelOfTheory(method='wB97M-V', basis='def2-TZVPD', software='Q-Chem')
         cls.lot_nonexisting = LevelOfTheory('notamethod')
 
@@ -238,6 +239,12 @@ class TestBAC(unittest.TestCase):
         module = importlib.util.module_from_spec(spec)
 
         # Check that existing Petersson BACs can be overwritten
+        self.bac.write_to_database(overwrite=True, alternate_path=tmp_datafile_path)
+        spec.loader.exec_module(module)  # Load data as module
+        self.assertEqual(self.bac.bacs, module.pbac[repr(self.bac.level_of_theory)])
+
+        # Check that existing Composite Petersson BACs can be overwritten
+        self.bac.level_of_theory = self.lot_get_composite
         self.bac.write_to_database(overwrite=True, alternate_path=tmp_datafile_path)
         spec.loader.exec_module(module)  # Load data as module
         self.assertEqual(self.bac.bacs, module.pbac[repr(self.bac.level_of_theory)])

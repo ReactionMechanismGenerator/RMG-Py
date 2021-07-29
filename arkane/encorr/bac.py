@@ -814,35 +814,51 @@ class BAC:
         has_entries = bool(data.mbac) if self.bac_type == 'm' else bool(data.pbac)
 
         # Add new BACs to file without changing existing formatting
+        # First: find the BACs dict in the file
         for i, line in enumerate(lines):
             if keyword in line:
-                if has_entries:
-                    if self.level_of_theory in bac_dict:
-                        if overwrite:
-                            # Does not overwrite comments
-                            del_idx_start = del_idx_end = None
-                            for j, line2 in enumerate(lines[i:]):
-                                if repr(self.level_of_theory) in line2:
-                                    del_idx_start = i + j
-                                    del_idx_end = None
-                                elif line2.rstrip() == '    },':  # Can't have comment after final brace
-                                    del_idx_end = i + j + 1
-                                if del_idx_start is not None and del_idx_end is not None:
-                                    if (lines[del_idx_start - 1].lstrip().startswith('#')
-                                            or lines[del_idx_end + 1].lstrip().startswith('#')):
-                                        logging.warning('There may be left over comments from previous BACs')
-                                    lines[del_idx_start:del_idx_end] = bacs_formatted
-                                    break
-                        else:
-                            raise IOError(
-                                f'{self.level_of_theory} already exists. Set `overwrite` to True.'
-                            )
-                    else:
-                        lines[(i+1):(i+1)] = ['\n'] + bacs_formatted
-                else:
-                    lines[i] = f'{keyword} = {{\n'
-                    lines[(i+1):(i+1)] = ['\n'] + bacs_formatted + ['\n}\n']
                 break
+        else:
+            # 'pbac' and 'mbac' should both be found at `data_path`
+            raise RuntimeError(f'Keyword "{keyword} is not found in the data file. '
+                               f'Please check the database file at {data_path} and '
+                               f'make sure an up-to-date RMG-database branch is used.')
+
+        # Second: Write the BACs block into the BACs dict
+        # Does not overwrite comments
+        if self.level_of_theory in bac_dict and overwrite:
+            del_idx_start = del_idx_end = None
+            lot_repr = repr(self.level_of_theory)
+            for j, line2 in enumerate(lines[i:]):
+                if lot_repr in line2 and 'Composite' not in lot_repr and 'Composite' not in line2:
+                    del_idx_start = i + j
+                elif lot_repr in line2 and 'Composite' in lot_repr:
+                    del_idx_start = i + j
+
+                if del_idx_start is not None and line2.rstrip() == '    },':  # Can't have comment after final brace
+                    del_idx_end = i + j + 1
+                    if (lines[del_idx_start - 1].lstrip().startswith('#')
+                            or lines[del_idx_end + 1].lstrip().startswith('#')):
+                        logging.warning('There may be left over comments from previous BACs')
+                    lines[del_idx_start:del_idx_end] = bacs_formatted
+                    break
+
+            # Check if the entry is successfully inserted to the `lines`
+            if del_idx_start is None or del_idx_end is None:
+                raise RuntimeError(f'The script cannot identify the corresponding block for the given BACs. '
+                                   f'It is possible that the database file at {data_path} is not correctly '
+                                   f'formatted. Please check the file.')
+
+        elif self.level_of_theory in bac_dict and not overwrite:
+            raise IOError(
+                    f'{self.level_of_theory} already exists. Set `overwrite` to True.'
+                )
+        else:
+            # Either empty BACs dict or adding BACs for a new level of theory
+            if not has_entries and '}' in lines[i]:  # Empty BACs dict
+                lines[i] = f'{keyword} = {{\n'
+                lines[(i+1):(i+1)] = ['\n}\n']
+            lines[(i+1):(i+1)] = ['\n'] + bacs_formatted
 
         with open(data_path if alternate_path is None else alternate_path, 'w') as f:
             f.writelines(lines)
