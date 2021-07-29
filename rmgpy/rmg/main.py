@@ -599,12 +599,12 @@ class RMG(util.Subject):
         for spec in self.initial_species:
             if self.database.forbidden_structures.is_molecule_forbidden(spec.molecule[0]):
                 if 'allowed' in self.species_constraints and 'input species' in self.species_constraints['allowed']:
-                    logging.warning('Input species {0} is globally forbidden.  It will behave as an inert unless found '
-                                    'in a seed mechanism or reaction library.'.format(spec.label))
+                    spec.explicitly_allowed = True
+                    logging.warning("Input species {0} is globally forbidden but will be explicitly allowed "
+                            " since input species are permitted by the user's species constraints".format(spec.label))
                 else:
                     raise ForbiddenStructureException("Input species {0} is globally forbidden. You may explicitly "
-                                                      "allow it, but it will remain inert unless found in a seed "
-                                                      "mechanism or reaction library.".format(spec.label))
+                                                      "allow it by adding 'input species' to the `generatedSpeciesConstraints` `allowed` list.".format(spec.label))
             if fails_species_constraints(spec):
                 if 'allowed' in self.species_constraints and 'input species' in self.species_constraints['allowed']:
                     self.species_constraints['explicitlyAllowedMolecules'].append(spec.molecule[0])
