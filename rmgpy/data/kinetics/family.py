@@ -3687,7 +3687,7 @@ class KineticsFamily(Database):
                     long_desc=st,
                 )
                 new_entry.data.comment = st
-                new_entry.long_desc += f'\nsensitivities = {kinetics.sensitivites}'
+                # new_entry.long_desc += f'\nsensitivities = {kinetics.sensitivites}'
 
                 self.rules.entries[entry.label].append(new_entry)
 
@@ -4685,9 +4685,9 @@ def _make_rule(rr):
                 # S = (dOUT/OUT) / (SCALE_FACTOR-1)  or
                 # S = dln(OUT) / (SCALE_FACTOR-1)
                 
-                sensitivity_A = (np.log(kin_perturbed.A) - np.log(kin.A))/ (SCALE_FACTOR-1)
-                sensitivity_n = (kin_perturbed.n - kin.n)/kin.n / (SCALE_FACTOR-1)
-                sensitivity_E0 = (kin_perturbed.E0 - kin.E0)/kin.E0 / (SCALE_FACTOR-1)
+                sensitivity_A = (np.log(kin_perturbed.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
+                sensitivity_n = (kin_perturbed.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
+                sensitivity_E0 = (kin_perturbed.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
                 sensitivities = [sensitivity_A, sensitivity_n, sensitivity_E0]
 
 
