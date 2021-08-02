@@ -3668,6 +3668,9 @@ class KineticsFamily(Database):
         pool = mp.Pool(nprocs)
 
         kinetics_list = np.array(pool.map(_make_rule, inputs[inds])) # pass in compute_derivatives
+        if compute_derivatives:
+            derivative_list = np.array(pool.map(_compute_rule_sensitivity, inputs[inds]))
+            derivative_list = derivative_list[revinds]
         kinetics_list = kinetics_list[revinds]  # fix order
 
         for i, kinetics in enumerate(kinetics_list):
@@ -3687,7 +3690,8 @@ class KineticsFamily(Database):
                     long_desc=st,
                 )
                 new_entry.data.comment = st
-                # new_entry.long_desc += f'\nsensitivities = {kinetics.sensitivites}'
+                if 'derivative_list' in locals() and derivative_list is not None:
+                    new_entry.long_desc += f'\nsensitivities = {derivative_list[i]}'
 
                 self.rules.entries[entry.label].append(new_entry)
 
@@ -4665,40 +4669,6 @@ def _make_rule(rr):
     data_mean = np.mean(np.log([r.kinetics.get_rate_coefficient(Tref) for r in rxns]))
     if n > 0:
         kin = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
-
-        # compute the derivatives
-        compute_derivatives = True
-        if compute_derivatives:
-            sensitivities = []
-            for j, rxn in enumerate(rxns):
-                unperturbed_params = [np.log(rxn.kinetics.A.value_si), rxn.kinetics.n.value_si, rxn.kinetics.Ea.value_si]
-                SCALE_FACTOR = 1.1
-                saved_A_value = rxn.kinetics.A.value_si
-                rxn.kinetics.A.value_si *= SCALE_FACTOR
-                kin_perturbed = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
-                rxn.kinetics.A.value_si = saved_A_value
-             
-                # d lnk = 1/k dk
-                # dOUT/OUT = S * dIN/IN
-                # S = (dOUT/OUT) / (dIN/IN) = dOUT/dIN * IN/OUT = dln(OUT)/ dln(IN)
-                # SCALE_FACTOR-1 = 0.1 = dIN/IN
-                # S = (dOUT/OUT) / (SCALE_FACTOR-1)  or
-                # S = dln(OUT) / (SCALE_FACTOR-1)
-                
-                sensitivity_A = (np.log(kin_perturbed.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
-                sensitivity_n = (kin_perturbed.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
-                sensitivity_E0 = (kin_perturbed.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
-                sensitivities = [sensitivity_A, sensitivity_n, sensitivity_E0]
-
-
-                # TODO add d_dn?
-                # TODO check that dw0 is correct because it's handled a little differently
-                # TODO add checks to make sure params exist before accessing them - in case a different type is passed in
-                # TODO speed this up by passing the guess into ArrheniusBM().fit_to_reactions
-                # TODO pass in "compute_derivatives" as a parameter
-                # TODO move this to a separate helper function
-                # TODO save the derivatives somewhere or return them up the chain
-
         if n == 1:
             kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
         else:
@@ -4721,6 +4691,52 @@ def _make_rule(rr):
     else:
         return None
 
+
+def _compute_rule_sensitivity(rr):
+    """
+    function for parallelization of rule uncertainty calculation
+    """
+    # TODO add d_dn?
+    # TODO check that dw0 is correct because it's handled a little differently
+    # TODO add checks to make sure params exist before accessing them - in case a different type is passed in
+    # TODO speed this up by passing the guess into ArrheniusBM().fit_to_reactions
+    # TODO pass in "compute_derivatives" as a parameter
+    # TODO move this to a separate helper function
+    # TODO save the derivatives somewhere or return them up the chain
+
+    recipe, rxns, Tref, fmax, label, ranks = rr
+    n = len(rxns)
+    for i, rxn in enumerate(rxns):
+        rxn.rank = ranks[i]
+    rxns = np.array(rxns)
+
+    # Is rxns the same for every node? if so, then I can probably use a list instead of a dictionary
+    if n > 0:
+        kin = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
+
+        # compute the derivatives
+        sensitivities = []
+        for j, rxn in enumerate(rxns):
+            unperturbed_params = [np.log(rxn.kinetics.A.value_si), rxn.kinetics.n.value_si, rxn.kinetics.Ea.value_si]
+            SCALE_FACTOR = 1.1
+            saved_A_value = rxn.kinetics.A.value_si
+            rxn.kinetics.A.value_si *= SCALE_FACTOR
+            kin_perturbed = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
+            rxn.kinetics.A.value_si = saved_A_value
+            
+            # d lnk = 1/k dk
+            # dOUT/OUT = S * dIN/IN
+            # S = (dOUT/OUT) / (dIN/IN) = dOUT/dIN * IN/OUT = dln(OUT)/ dln(IN)
+            # SCALE_FACTOR-1 = 0.1 = dIN/IN
+            # S = (dOUT/OUT) / (SCALE_FACTOR-1)  or
+            # S = dln(OUT) / (SCALE_FACTOR-1)
+            
+            sensitivity_A = (np.log(kin_perturbed.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
+            sensitivity_E0 = (kin_perturbed.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
+            sensitivity_n = (kin_perturbed.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
+            sensitivities.append({'dA': sensitivity_A, 'dE0': sensitivity_E0, 'dn': sensitivity_n})
+
+        return sensitivities
 
 def _spawn_tree_process(family, template_rxn_map, obj, T, nprocs, depth, min_splitable_entry_num, min_rxns_to_spawn, extension_iter_max, extension_iter_item_cap):
     parent_conn, child_conn = mp.Pipe()
