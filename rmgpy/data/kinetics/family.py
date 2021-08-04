@@ -4734,7 +4734,7 @@ def _compute_rule_sensitivity(rr):
             sensitivity_A = (np.log(kin_perturbed.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
             sensitivity_E0 = (kin_perturbed.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
             sensitivity_n = (kin_perturbed.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
-            sensitivities.append({'dA': sensitivity_A, 'dE0': sensitivity_E0, 'dn': sensitivity_n})
+            sensitivities.append({'dA': sensitivity_A, 'dE0': sensitivity_E0, 'dn': sensitivity_n, 'name': str(rxn)})
 
         return sensitivities
 
