@@ -137,6 +137,7 @@ class TestSurfaceReaction(unittest.TestCase):
     """Test surface reactions"""
 
     def setUp(self):
+        self.surface_site_density = 2.483e-05 # mol/m^2 for Pt111
         m_h2 = Molecule().from_smiles("[H][H]")
         m_x = Molecule().from_adjacency_list("1 X u0 p0")
         m_hx = Molecule().from_smiles("[H][*]")
@@ -312,6 +313,44 @@ class TestSurfaceReaction(unittest.TestCase):
             korig = self.rxn2sSC.get_rate_coefficient(T, P, surface_site_density=2.5e-5)
             krevrev = rxn_copy.get_rate_coefficient(T, P, surface_site_density=2.5e-5)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+
+    def test_sticking_coefficient_to_surface_arrhenius(self):
+        """
+        Tests that the sticking_coeff_to_surface_arrhenius() method is working properly
+        """
+        arr = self.rxn2sSC.sticking_coeff_to_surface_arrhenius(surface_site_density=self.surface_site_density)
+        temps = numpy.linspace(200,2000,10)
+        for temp in temps:
+            arr_k = arr.get_rate_coefficient(temp)
+            sc_k = self.rxn2sSC.get_rate_coefficient(temp,surface_site_density=self.surface_site_density)
+            self.assertAlmostEqual(arr_k,sc_k,6)
+
+    def test_surface_arrhenius_to_sticking_coeff(self):
+        """
+        Tests that the surface_arrhenius_to_sticking_coeff() method is working properly
+        """
+
+        sc = self.rxn2sSA.surface_arrhenius_to_sticking_coeff(surface_site_density=self.surface_site_density)
+        arr = self.rxn2sSA.kinetics
+        self.rxn2sSA.kinetics = sc
+        temps = numpy.linspace(200,2000,10)
+        for temp in temps:
+            arr_k = arr.get_rate_coefficient(temp)
+            sc_k = self.rxn2sSA.get_rate_coefficient(temp,surface_site_density=self.surface_site_density)
+            self.assertAlmostEqual(arr_k,sc_k,6)
+        self.rxn2sSA.kinetics = arr
+
+
+        # also test that the max sticking coefficient is 1 if we are converting a super fast Surface Arr rate
+        arr_too_fast = SurfaceArrhenius(A=(2.7e30, 'cm^3/(mol*s)'), comment="""a super fast rate""")
+        self.rxn2sSA.kinetics = arr_too_fast
+        sc = self.rxn2sSA.surface_arrhenius_to_sticking_coeff(surface_site_density=self.surface_site_density)
+        temps = numpy.linspace(200,2000,10)
+        for temp in temps:
+            sc_T = sc.get_sticking_coefficient(temp)
+            self.assertAlmostEqual(sc_T,1.0,2)
+
+        self.rxn2sSA.kinetics = arr
 
 class TestReaction(unittest.TestCase):
     """
