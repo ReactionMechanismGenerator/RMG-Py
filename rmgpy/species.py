@@ -361,9 +361,16 @@ class Species(object):
         list in the `molecule` attribute. Does not generate resonance isomers
         of the loaded molecule.
         """
-        self.molecule = [Molecule().from_adjacency_list(adjlist, saturate_h=False,
-                                                        raise_atomtype_exception=raise_atomtype_exception,
-                                                        raise_charge_exception=raise_charge_exception)]
+        # detect if it contains cutting label
+        _ , cutting_label_list = Fragment().detect_cutting_label(adjlist)
+        if cutting_label_list == []:
+            self.molecule = [Molecule().from_adjacency_list(adjlist, saturate_h=False,
+                                                            raise_atomtype_exception=raise_atomtype_exception,
+                                                            raise_charge_exception=raise_charge_exception)]
+        else:
+            self.molecule = [Fragment().from_adjacency_list(adjlist, saturate_h=False,
+                                                            raise_atomtype_exception=raise_atomtype_exception,
+                                                            raise_charge_exception=raise_charge_exception)]
         # If the first line is a label, then save it to the label attribute
         for label in adjlist.splitlines():
             if label.strip():
