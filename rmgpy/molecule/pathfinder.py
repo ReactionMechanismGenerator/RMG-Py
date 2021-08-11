@@ -367,7 +367,7 @@ def find_adj_lone_pair_multiple_bond_delocalization_paths(atom1):
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     (In direction 1 atom1 <losses> a lone pair, in direction 2 atom1 <gains> a lone pair)
     """
-    cython.declare(paths=list, atom2=Vertex, atom3=Vertex, bond12=Bond, bond23=Edge)
+    cython.declare(paths=list, atom2=Vertex, atom3=Vertex, bond12=Edge, bond23=Edge)
 
     paths = []
 
