@@ -122,8 +122,8 @@ class Species(object):
             self._inchi = inchi
         elif smiles:
             # check it is fragment or molecule
-            import re
-            if re.findall(r'([LR]\d?)', smiles) != []: # Fragment
+            _ , cutting_label_list = Fragment().detect_cutting_label(smiles)
+            if cutting_label_list != []: # Fragment
                 self.molecule = [Fragment(smiles=smiles)]
             else: # Molecule
                 self.molecule = [Molecule(smiles=smiles)]
