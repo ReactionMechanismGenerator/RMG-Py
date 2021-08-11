@@ -1027,7 +1027,7 @@ class Fragment(Graph):
 
         smiles = self.to_smiles()
 
-        cutting_label_list = re.findall(r'([LR]\d?)', smiles)
+        _ , cutting_label_list = self.detect_cutting_label(smiles)
 
         metal_list = ['[Cl]', '[I]', '[Si]', '[F]', '[Si+]', '[Si-]', '[Br]', '[He+]', '[Ne+]', '[Ar+]']
 
