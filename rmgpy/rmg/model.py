@@ -296,7 +296,6 @@ class CoreEdgeReactionModel:
 
         # If we're here then we're ready to make the new species
         if check_cut:
-            # molecule = Fragment().from_smiles_like_string(molecule.to_smiles())
             mols = Fragment().cut_molecule(molecule, cut_through = False)
             if len(mols) == 1:
                 molecule = mols[0]
