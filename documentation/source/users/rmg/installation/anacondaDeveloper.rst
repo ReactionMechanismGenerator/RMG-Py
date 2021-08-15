@@ -34,6 +34,9 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    Replace ``dnf`` with ``yum`` in the preceding for Red Hat 7 and lower.
 
+   On openSUSE the package manager is ``zypper``::
+
+    sudo zypper install git gcc gcc-c++ make
 
    On Manjaro or Arch Linux the package manager is ``pacman`` ::
 
