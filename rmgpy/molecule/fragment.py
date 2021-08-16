@@ -1641,6 +1641,7 @@ class Fragment(Graph):
         fragment lies in appropriate size range. As for auto-cutting during model generation,
         the number of products should be less (or equal) than 3, due to the 3 body collision
         rxn format limit.
+        size_threshold is the minimum size for each aliphatic fragment size. Default value is 5.
         """
         mol = self.generate_resonance_structures()[0]
 
