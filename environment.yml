@@ -26,6 +26,7 @@ dependencies:
   - mpmath
   - rmg::muq2
   - networkx
+  - nomkl
   - nose
   - rmg::numdifftools
   - numpy >=1.10.0
@@ -35,6 +36,7 @@ dependencies:
   - rmg::pydas >=1.0.2
   - pydot
   - rmg::pydqed >=1.0.1
+  - rmg::pyjulia
   - pymongo
   - pyparsing
   - rmg::pyrdl
