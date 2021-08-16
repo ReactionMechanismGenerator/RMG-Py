@@ -1632,23 +1632,17 @@ class Fragment(Graph):
 
         return self
 
-    def cut_molecule(self, mol_to_cut, cut_through = True, size_threshold=None):
+    def cut_molecule(self, output_smiles = False, cut_through = True, size_threshold = None):
         """
-        For given input, output a list of cut fragments (either string or Fragment)
+        For given input, output a list of cut fragments (either string or Fragment).
+        if output_smiles = True, the output list of fragments will be smiles.
+        cut_through is whether to have multiple cuts (True) or just cut once (False).
+        For initial input species cutting, it's better to have multiple cutting so that each
+        fragment lies in appropriate size range. As for auto-cutting during model generation,
+        the number of products should be less (or equal) than 3, due to the 3 body collision
+        rxn format limit.
         """
-        # if input is smiles string, output smiles
-        if isinstance(mol_to_cut, str):
-            mol = self.from_smiles_like_string(mol_to_cut)
-            mol = mol.generate_resonance_structures()[0]
-        # if input is fragment, output fragment
-        elif isinstance(mol_to_cut, Fragment):
-            mol = mol_to_cut.generate_resonance_structures()[0]
-        # if input is molecule, output fragment
-        elif isinstance(mol_to_cut, Molecule):
-            # transfer to Fragment
-            frag = Fragment()
-            frag.vertices = mol_to_cut.vertices
-            mol = frag.generate_resonance_structures()[0]
+        mol = self.generate_resonance_structures()[0]
 
         # slice mol
         frag_smiles_list = []
@@ -1679,9 +1673,9 @@ class Fragment(Graph):
 
             frag_list_new.append(new_frag_smiles)
 
-        if isinstance(mol_to_cut, str):
+        if output_smiles == True:
             return frag_list_new
-        elif isinstance(mol_to_cut, (Fragment, Molecule)):
+        else:
             frag_list = []
             for frag in frag_list_new:
                 frag = Fragment().from_smiles_like_string(frag)
