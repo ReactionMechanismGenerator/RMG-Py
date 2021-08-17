@@ -1702,12 +1702,10 @@ class Fragment(Graph):
             molecule_smiles = mol.to_smiles()
 
         # if input is Fragment (with Cuttinglabel), need to transform to special Atom
-        import re
-        cutting_label_list = re.findall(r'([LR]\d?)', molecule_smiles)
+        ind_ranger , cutting_label_list = self.detect_cutting_label(molecule_smiles)
+        smiles_replace_dict = {'R': '[Na]', 'L': '[Mg]'}
         if cutting_label_list != []:
-            n_frag_smiles = molecule_smiles.replace('R', '[Na]')
-            nn_frag_smiles = n_frag_smiles.replace('L', '[Mg]')
-            molecule_smiles = nn_frag_smiles
+            molecule_smiles = self.replace_cutting_label(molecule_smiles, ind_ranger, cutting_label_list, smiles_replace_dict)
 
         molecule1 = Chem.MolFromSmiles(molecule_smiles)
         molecule_Br2 = Chem.MolFromSmiles('BrI')
@@ -1788,12 +1786,10 @@ class Fragment(Graph):
             molecule_smiles = mol.to_smiles()
 
         # if input is Fragment (with Cuttinglabel), need to transform to special Atom
-        import re
-        cutting_label_list = re.findall(r'([LR]\d?)', molecule_smiles)
+        ind_ranger , cutting_label_list = self.detect_cutting_label(molecule_smiles)
+        smiles_replace_dict = {'R': '[Na]', 'L': '[Mg]'}
         if cutting_label_list != []:
-            n_frag_smiles = molecule_smiles.replace('R', '[Na]')
-            nn_frag_smiles = n_frag_smiles.replace('L', '[Mg]')
-            molecule_smiles = nn_frag_smiles
+            molecule_smiles = self.replace_cutting_label(molecule_smiles, ind_ranger, cutting_label_list, smiles_replace_dict)
 
         molecule1 = Chem.MolFromSmiles(molecule_smiles)
         molecule_F2 = Chem.MolFromSmiles('FCl')
