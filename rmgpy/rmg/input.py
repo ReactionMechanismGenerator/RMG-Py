@@ -183,9 +183,9 @@ def species(label, structure, reactive=True, cut=False, size_threshold=None):
     if cut:
         mol_to_frag[label] = {} # key:original molecule label, value:created fragment label
         if size_threshold:
-            cut_frag_list = Fragment().cut_molecule(structure, size_threshold=size_threshold)
+            cut_frag_list = structure.cut_molecule(size_threshold=size_threshold)
         else:
-            cut_frag_list = Fragment().cut_molecule(structure)
+            cut_frag_list = structure.cut_molecule()
         logging.info('The original molecule {0} is divided into several fragments:'.format(label))
         for initial_frag in cut_frag_list:
             frag_label = initial_frag.to_smiles()
