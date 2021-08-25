@@ -125,7 +125,8 @@ Model Chemistry                                  AEC   BC   SOC  Freq Scale Supp
 ``'CCSD-F12/cc-pVDZ-F12'``                        v         v    v (0.947)  H, C, N, O
 ``'CCSD(T)-F12/cc-pVDZ-F12_H-TZ'``                v         v               H, C, N, O
 ``'CCSD(T)-F12/cc-pVDZ-F12_H-QZ'``                v         v               H, C, N, O
-``'CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*        v    v    v    v          H, C, N, O, S
+``'CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T*          v    v    v    v          H, C, N, O, F, S, Cl
+``'CCSD(T)-F12/cc-pVQZ-F12'``                     v    v    v    v          H, C, N, O, S
 ``'CCSD(T)-F12/cc-pVDZ-F12_noscale'``             v         v               H, C, N, O
 ``'CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*       v         v    v          H, C, N, O
 ``'CCSD(T)-F12/aug-cc-pVnZ'``, *n = D,T,Q*        v         v    v          H, C, N, O, S
