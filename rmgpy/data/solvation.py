@@ -1703,7 +1703,7 @@ class SolvationDatabase(object):
 
         while node is not None and node.data is None:
             # do average of its children
-            success, averaged_solute_data = self._average_children_solute(node)
+            success, averaged_solute_data = self._average_children_solute(node, ring_database)
             if success:
                 node.data = averaged_solute_data
             else:
@@ -1727,7 +1727,7 @@ class SolvationDatabase(object):
             # By setting verbose=True, we turn on the comments of ring correction to pass the unittest.
             # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
 
-    def _average_children_solute(self, node):
+    def _average_children_solute(self, node, database):
         """
         Use children's solute data to guess solute data of parent `node`
         that doesn't have solute data built-in in tree yet.
@@ -1745,11 +1745,14 @@ class SolvationDatabase(object):
             children_solute_data_list = []
             for child in node.children:
                 if child.data is None:
-                    success, child_solute_data_average = self._average_children_solute(child)
+                    success, child_solute_data_average = self._average_children_solute(child, database)
                     if success:
                         children_solute_data_list.append(child_solute_data_average)
                 else:
-                    children_solute_data_list.append(child.data)
+                    data = child.data
+                    while isinstance(data, str):
+                        data = database.entries[data].data
+                    children_solute_data_list.append(data)
             if children_solute_data_list:
                 return True, average_solute_data(children_solute_data_list)
             else:
