@@ -690,7 +690,7 @@ cdef class ArrheniusBM(KineticsModel):
 
         Only change the A value. w, E0, n must be specified.
         """
-        assert len(param_guess) == 3, 'Must specify [lnA, E0, n]'
+        assert len(param_guess) == 3, 'Must specify [lnA, n, E0]'
 
         assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
 
@@ -758,6 +758,110 @@ cdef class ArrheniusBM(KineticsModel):
                         raise ValueError("Could not fit BM arrhenius to reactions with xtol<1.0")
 
             lnA = float(params[0])
+            A = np.exp(lnA)
+
+            self.Tmin = (np.min(Ts), "K")
+            self.Tmax = (np.max(Ts), "K")
+            self.comment = 'Fitted to {0} reactions at temperatures: {1}'.format(len(rxns), Ts)
+
+        # fill in parameters
+        A_units = ['', 's^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)']
+        order = len(rxns[0].reactants)
+        self.A = (A, A_units[order])
+
+        self.n = n
+        self.w0 = (w0, 'J/mol')
+        self.E0 = (E0, 'J/mol')
+
+        return self
+
+
+    def fit_E0_to_reactions(self, rxns, w0=None, recipe=None, Ts=None, param_guess=None):
+        """
+        Fit an ArrheniusBM model to a list of reactions at the given temperatures,
+        w0 must be either given or estimated using the family object
+
+        Only change the E0 value. w, A, n must be specified.
+        """
+        assert len(param_guess) == 3, 'Must specify [lnA, n, E0]'
+
+        assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
+
+        if Ts is None:
+            Ts = [300.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1100.0, 1200.0, 1500.0]
+        if w0 is None:
+            #estimate w0
+            w0s = get_w0s(recipe, rxns)
+            w0 = sum(w0s) / len(w0s)
+
+        lnA = param_guess[0]
+        n = param_guess[1]
+        
+        if len(rxns) == 1:
+            T = 1000.0
+            rxn = rxns[0]
+            dHrxn = rxn.get_enthalpy_of_reaction(T)
+            A = np.exp(lnA)
+            Ea = rxn.kinetics.Ea.value_si
+
+            def kfcn(E0):
+                Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
+                out = Ea - (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
+                return out
+
+            if abs(dHrxn) > 4 * w0 / 10.0:
+                E0 = w0 / 10.0
+            else:
+                E0 = fsolve(kfcn, w0 / 10.0)[0]
+
+
+            self.Tmin = rxn.kinetics.Tmin
+            self.Tmax = rxn.kinetics.Tmax
+            self.comment = 'Fitted to {0} reaction at temperature: {1} K'.format(len(rxns), T)
+        else:
+            # define optimization function
+            def kfcn(xs, E0):
+                T = xs[:,0]
+                dHrxn = xs[:,1]
+                Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
+                Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
+                Ea = np.where(dHrxn< -4.0*E0, 0.0, Ea)
+                Ea = np.where(dHrxn > 4.0*E0, dHrxn, Ea)
+                return lnA + np.log(T ** n * np.exp(-Ea / (8.314 * T)))
+              
+            # get (T,dHrxn(T)) -> (Ln(k) mappings
+            xdata = []
+            ydata = []
+            sigmas = []
+            for rxn in rxns:
+                # approximately correct the overall uncertainties to std deviations
+                s = rank_accuracy_map[rxn.rank].value_si/2.0
+                for T in Ts:
+                    xdata.append([T, rxn.get_enthalpy_of_reaction(T)])
+                    ydata.append(np.log(rxn.get_rate_coefficient(T)))
+
+                    sigmas.append(s / (8.314 * T))
+
+            xdata = np.array(xdata)
+            ydata = np.array(ydata)
+
+            # fit parameters
+            boo = True
+            xtol = 1e-8
+            ftol = 1e-8
+            while boo:
+                boo = False
+                try:
+                    params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=param_guess[2], xtol=xtol, ftol=ftol)
+                except RuntimeError:
+                    if xtol < 1.0:
+                        boo = True
+                        xtol *= 10.0
+                        ftol *= 10.0
+                    else:
+                        raise ValueError("Could not fit BM arrhenius to reactions with xtol<1.0")
+
+            E0 = float(params[0])
             A = np.exp(lnA)
 
             self.Tmin = (np.min(Ts), "K")

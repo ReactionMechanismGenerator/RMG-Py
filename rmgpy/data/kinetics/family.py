@@ -4719,11 +4719,13 @@ def _compute_rule_sensitivity(rr):
         for j, rxn in enumerate(rxns):
             # unperturbed_params = [np.log(rxn.kinetics.A.value_si), rxn.kinetics.n.value_si, rxn.kinetics.E0.value_si]
             unperturbed_params = [np.log(kin.A.value_si), kin.n.value_si, kin.E0.value_si]
-            SCALE_FACTOR = 1.01
+            SCALE_FACTOR = 1.001
             saved_A_value = rxn.kinetics.A.value_si
             rxn.kinetics.A.value_si *= SCALE_FACTOR
             kin_perturbed = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
             kin_perturbed_onlyA = ArrheniusBM().fit_A_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
+            kin_perturbed_onlyE0 = ArrheniusBM().fit_E0_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
+            
             rxn.kinetics.A.value_si = saved_A_value
             
             # d lnk = 1/k dk
@@ -4735,8 +4737,12 @@ def _compute_rule_sensitivity(rr):
             sensitivity_A = (np.log(kin_perturbed.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
             sensitivity_A_only = (np.log(kin_perturbed_onlyA.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
             sensitivity_E0 = (kin_perturbed.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
+            sensitivity_E0_only = (np.log(kin_perturbed_onlyE0.E0.value_si) - np.log(kin.E0.value_si)) / (SCALE_FACTOR - 1)
+            
             sensitivity_n = (kin_perturbed.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
-            sensitivities.append({'dA': sensitivity_A, 'dA_only': sensitivity_A_only, 'dE0': sensitivity_E0, 'dn': sensitivity_n, 'name': str(rxn)})
+            # sensitivities.append({'dA': sensitivity_A, 'dA_only': sensitivity_A_only, 'dE0': sensitivity_E0, 'dn': sensitivity_n, 'name': str(rxn)})
+
+            sensitivities.append({'dA': sensitivity_A, 'dA_only': sensitivity_A_only, 'dE0': sensitivity_E0, 'dE0_only': sensitivity_E0_only, 'dn': sensitivity_n, 'name': str(rxn)})
 
         return sensitivities
 
