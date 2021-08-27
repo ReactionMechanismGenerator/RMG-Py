@@ -902,7 +902,7 @@ cdef class ArrheniusBM(KineticsModel):
         E0 = param_guess[2]
         
         if len(rxns) == 1:
-            # original fit only changes E0, so the dn has to be 0
+            # original fit only changes E0, so the dn has to be 0?
             T = 1000.0
             rxn = rxns[0]
             dHrxn = rxn.get_enthalpy_of_reaction(T)
@@ -947,7 +947,7 @@ cdef class ArrheniusBM(KineticsModel):
             while boo:
                 boo = False
                 try:
-                    params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=param_guess[2], xtol=xtol, ftol=ftol)
+                    params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=param_guess[1], xtol=xtol, ftol=ftol)
                 except RuntimeError:
                     if xtol < 1.0:
                         boo = True
