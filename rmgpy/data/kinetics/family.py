@@ -4725,6 +4725,7 @@ def _compute_rule_sensitivity(rr):
             kin_perturbed = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
             kin_perturbed_onlyA = ArrheniusBM().fit_A_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
             kin_perturbed_onlyE0 = ArrheniusBM().fit_E0_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
+            kin_perturbed_onlyn = ArrheniusBM().fit_n_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
             
             rxn.kinetics.A.value_si = saved_A_value
             
@@ -4735,14 +4736,15 @@ def _compute_rule_sensitivity(rr):
             # S = (dOUT/OUT) / (SCALE_FACTOR-1)  or
             # S = dln(OUT) / (SCALE_FACTOR-1)
             sensitivity_A = (np.log(kin_perturbed.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
-            sensitivity_A_only = (np.log(kin_perturbed_onlyA.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
             sensitivity_E0 = (kin_perturbed.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
-            sensitivity_E0_only = (np.log(kin_perturbed_onlyE0.E0.value_si) - np.log(kin.E0.value_si)) / (SCALE_FACTOR - 1)
-            
             sensitivity_n = (kin_perturbed.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
             # sensitivities.append({'dA': sensitivity_A, 'dA_only': sensitivity_A_only, 'dE0': sensitivity_E0, 'dn': sensitivity_n, 'name': str(rxn)})
-
-            sensitivities.append({'dA': sensitivity_A, 'dA_only': sensitivity_A_only, 'dE0': sensitivity_E0, 'dE0_only': sensitivity_E0_only, 'dn': sensitivity_n, 'name': str(rxn)})
+            
+            sensitivity_A_only = (np.log(kin_perturbed_onlyA.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
+            sensitivity_E0_only = (np.log(kin_perturbed_onlyE0.E0.value_si) - np.log(kin.E0.value_si)) / (SCALE_FACTOR - 1)
+            sensitivity_n_only = (np.log(kin_perturbed_onlyn.n.value_si) - np.log(kin.n.value_si)) / (SCALE_FACTOR - 1)
+            
+            sensitivities.append({'dA': sensitivity_A, 'dA_only': sensitivity_A_only, 'dE0': sensitivity_E0, 'dE0_only': sensitivity_E0_only, 'dn': sensitivity_n,  'dn_only': sensitivity_n_only, 'name': str(rxn)})
 
         return sensitivities
 
