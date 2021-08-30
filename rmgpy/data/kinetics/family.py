@@ -1553,6 +1553,11 @@ class KineticsFamily(Database):
                 atom_labels['*2'].label = '*4'
                 atom_labels['*4'].label = '*2'
 
+            # Use the family's reverse map if it has one
+            elif self.reverse_map:
+                for label0,label1 in self.reverse_map.items():
+                    atom_labels[label0] = label1
+
         if not forward:
             template = self.reverse_template
             product_num = self.reactant_num or len(template.products)
@@ -3872,7 +3877,7 @@ class KineticsFamily(Database):
         grp = node.item
         rxns = template_rxn_map[node.label]
 
-        R = ['H', 'C', 'N', 'O', 'Si', 'S', 'Cl']  # set of possible R elements/atoms
+        R = ['H', 'C', 'N', 'O', 'Si', 'S', 'Cl', 'F', 'Br']  # set of possible R elements/atoms
         R = [ATOMTYPES[x] for x in R]
 
         RnH = R[:]
