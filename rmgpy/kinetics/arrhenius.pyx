@@ -1096,14 +1096,13 @@ def get_w0(actions, rxn):
     and wb (total bond energy of bonds broken) with w0 = (wf+wb)/2
     """
     mol = None
-    a_dict = {}
     for r in rxn.reactants:
         m = r.molecule[0]
-        a_dict.update(m.get_all_labeled_atoms())
         if mol:
             mol = mol.merge(m)
         else:
             mol = m.copy(deep=True)
+    a_dict = mol.get_all_labeled_atoms()
 
     recipe = actions
 
@@ -1111,14 +1110,23 @@ def get_w0(actions, rxn):
     wf = 0.0
     for act in recipe:
 
+        if act[0] in ['BREAK_BOND','FORM_BOND','CHANGE_BOND']:
+
+            if act[1] == act[3]: # the labels are the same
+                atom1 = a_dict[act[1]][0]
+                atom2 = a_dict[act[3]][1]
+            else:
+                atom1 = a_dict[act[1]]
+                atom2 = a_dict[act[3]]
+
         if act[0] == 'BREAK_BOND':
-            bd = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
+            bd = mol.get_bond(atom1, atom2)
             wb += bd.get_bde()
         elif act[0] == 'FORM_BOND':
-            bd = Bond(a_dict[act[1]], a_dict[act[3]], act[2])
+            bd = Bond(atom1, atom2, act[2])
             wf += bd.get_bde()
         elif act[0] == 'CHANGE_BOND':
-            bd1 = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
+            bd1 = mol.get_bond(atom1, atom2)
 
             if act[2] + bd1.order == 0.5:
                 mol2 = None
@@ -1128,9 +1136,17 @@ def get_w0(actions, rxn):
                         mol2 = mol2.merge(m)
                     else:
                         mol2 = m.copy(deep=True)
-                bd2 = mol2.get_bond(a_dict[act[1]], a_dict[act[3]])
+                a_dict_mol2 = mol2.get_all_labeled_atoms()
+                if act[1] == act[3]: # the labels are the same
+                    atom1_mol2 = a_dict_mol2[act[1]][0]
+                    atom2_mol2 = a_dict_mol2[act[3]][1]
+                else:
+                    atom1_mol2 = a_dict_mol2[act[1]]
+                    atom2_mol2 = a_dict_mol2[act[3]]
+
+                bd2 = mol2.get_bond(atom1_mol2, atom2_mol2)
             else:
-                bd2 = Bond(a_dict[act[1]], a_dict[act[3]], bd1.order + act[2])
+                bd2 = Bond(atom1, atom2, bd1.order + act[2])
 
             if bd2.order == 0:
                 bd2_bde = 0.0
