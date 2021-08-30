@@ -2465,7 +2465,7 @@ class ThermoDatabase(object):
 
         while node is not None and node.data is None:
             # do average of its children
-            success, averaged_thermo_data = self._average_children_thermo(node)
+            success, averaged_thermo_data = self._average_children_thermo(node, ring_database)
             if success:
                 node.data = averaged_thermo_data
             else:
@@ -2489,7 +2489,7 @@ class ThermoDatabase(object):
             # By setting verbose=True, we turn on the comments of ring correction to pass the unittest.
             # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
 
-    def _average_children_thermo(self, node):
+    def _average_children_thermo(self, node, database):
         """
         Use children's thermo data to guess thermo data of parent `node` 
         that doesn't have thermo data built-in in tree yet. 
@@ -2507,11 +2507,14 @@ class ThermoDatabase(object):
             children_thermo_data_list = []
             for child in node.children:
                 if child.data is None:
-                    success, child_thermo_data_average = self._average_children_thermo(child)
+                    success, child_thermo_data_average = self._average_children_thermo(child, database)
                     if success:
                         children_thermo_data_list.append(child_thermo_data_average)
                 else:
-                    children_thermo_data_list.append(child.data)
+                    data = child.data
+                    while isinstance(data, str):
+                        data = database.entries[data].data
+                    children_thermo_data_list.append(data)
             if children_thermo_data_list:
                 return True, average_thermo_data(children_thermo_data_list)
             else:
