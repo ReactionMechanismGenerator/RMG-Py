@@ -338,7 +338,7 @@ class StatmechGroups(Database):
         # Generate estimate of thermodynamics
         for atom in molecule.atoms:
             # Iterate over heavy (non-hydrogen) atoms
-            if atom.is_hydrogen(): continue
+            if atom.is_hydrogen() or atom.is_halogen(): continue
             if molecule.is_atom_in_cycle(atom):
                 # Atom is in cycle
                 # Add each C-H bond to the ringCH group
