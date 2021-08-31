@@ -37,6 +37,7 @@ cdef class Configuration(object):
     cdef public np.ndarray sum_states
     cdef public bint active_j_rotor
     cdef public bint active_k_rotor
+    cdef public float energy_correction
 
     cpdef cleanup(self)
 

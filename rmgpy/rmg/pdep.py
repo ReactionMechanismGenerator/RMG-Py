@@ -132,6 +132,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         rmgpy.pdep.network.Network.__init__(self, label="PDepNetwork #{0}".format(index))
         self.index = index
         self.source = source
+        self.energy_correction = None
         self.explored = []
 
     def __str__(self):
@@ -714,6 +715,9 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             self.reactants.append(Configuration(*reactant))
         for product in products:
             self.products.append(Configuration(*product))
+        if self.energy_correction:
+            for spec in self.reactants + self.products + self.isomers:
+                spec.energy_correction = self.energy_correction
 
     def update(self, reaction_model, pdep_settings):
         """
@@ -762,21 +766,25 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Log the network being updated
         logging.info("Updating {0!s}".format(self))
 
+        E0 = []
         # Generate states data for unimolecular isomers and reactants if necessary
         for isomer in self.isomers:
             spec = isomer.species[0]
             if not spec.has_statmech():
                 spec.generate_statmech()
+            E0.append(spec.conformer.E0.value_si)
         for reactants in self.reactants:
             for spec in reactants.species:
                 if not spec.has_statmech():
                     spec.generate_statmech()
+                E0.append(spec.conformer.E0.value_si)
         # Also generate states data for any path reaction reactants, so we can
         # always apply the ILT method in the direction the kinetics are known
         for reaction in self.path_reactions:
             for spec in reaction.reactants:
                 if not spec.has_statmech():
                     spec.generate_statmech()
+                E0.append(spec.conformer.E0.value_si)
         # While we don't need the frequencies for product channels, we do need
         # the E0, so create a conformer object with the E0 for the product
         # channel species if necessary
@@ -784,6 +792,15 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             for spec in products.species:
                 if spec.conformer is None:
                     spec.conformer = Conformer(E0=spec.get_thermo_data().E0)
+                E0.append(spec.conformer.E0.value_si)
+
+        # Use the average E0 as the reference energy (`energy_correction`) for the network
+        # The `energy_correction` will be added to the free energies and enthalpies for each
+        # configuration in the network.
+        energy_correction = -np.array(E0).mean()
+        for spec in self.reactants + self.products + self.isomers:
+            spec.energy_correction = energy_correction
+        self.energy_correction = energy_correction
 
         # Determine transition state energies on potential energy surface
         # In the absence of any better information, we simply set it to
@@ -812,9 +829,9 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                                 'type "{2!s}".'.format(rxn, self.index, rxn.kinetics.__class__))
             rxn.fix_barrier_height(force_positive=True)
             if rxn.network_kinetics is None:
-                E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si
+                E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si + energy_correction
             else:
-                E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si
+                E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si + energy_correction
             rxn.transition_state = rmgpy.species.TransitionState(conformer=Conformer(E0=(E0 * 0.001, "kJ/mol")))
 
         # Set collision model
