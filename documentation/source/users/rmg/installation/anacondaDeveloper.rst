@@ -47,7 +47,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    to install this is to simply run one of the commands in the terminal, e.g. ``git``. The terminal will then prompt you on
    whether or not you would like to install the Command Line Tools.
 
-   For MacOS users only, download and install the latest macOS julia from here: <https://julialang.org/downloads/>. Then add julia to PATH by running the following command replacing 1.6 with the first two numbers in the Julia version designation (ex: 1.6.2->1.6, 1.1.1->1.1):
+   For MacOS users only, download and install the latest macOS julia from here: <https://julialang.org/downloads/>. Then add julia to PATH by running the following command replacing 1.6 with the first two numbers in the Julia version designation (ex: 1.6.2->1.6, 1.1.1->1.1) ::
 
      echo 'export PATH="/Applications/Julia-1.6.app/Contents/Resources/julia/bin:$PATH"' >> ~/.bash_profile
 
@@ -81,16 +81,16 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     conda activate rmg_env
     
-    Note regarding differences between conda versions: Prior to Anaconda 4.4, the command to activate an environment was
-    ``source activate rmg_env``. It has since been changed to ``conda activate rmg_env`` due to underlying changes to
-    standardize operation across different operating systems. However, a prerequisite to using the new syntax is having
-    run the ``conda init`` setup routine, which can be done at the end of the install procedure if the user requests.
+   Note regarding differences between conda versions: Prior to Anaconda 4.4, the command to activate an environment was
+   ``source activate rmg_env``. It has since been changed to ``conda activate rmg_env`` due to underlying changes to
+   standardize operation across different operating systems. However, a prerequisite to using the new syntax is having
+   run the ``conda init`` setup routine, which can be done at the end of the install procedure if the user requests.
     
 #. Install and Link Julia dependencies ::
 
-   python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
+     python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
-   julia -e 'using Pkg; Pkg.add(PackageSpec("ReactionMechanismSimulator",version="0.4")); using ReactionMechanismSimulator;'
+     julia -e 'using Pkg; Pkg.add(PackageSpec("ReactionMechanismSimulator",version="0.4")); using ReactionMechanismSimulator;'
 
    Note that this links your python to python-jl enabling calls to Julia through pyjulia. Occasionally programs will
    interact with python-jl differently than the default python. If this occurs for you we recommend doing that operation
@@ -114,7 +114,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    NOTE: Make sure to change ``YourFolder`` to the path leading to the ``RMG-Py`` code. Not doing so will lead to an error stating that python cannot find the module ``rmgpy``.
 
-   Be sure to either close and reopen your terminal to refresh your environment variables (`source ~/.bashrc` or `source ~/.zshrc`).
+   Be sure to either close and reopen your terminal to refresh your environment variables (``source ~/.bashrc`` or ``source ~/.zshrc``).
 
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
