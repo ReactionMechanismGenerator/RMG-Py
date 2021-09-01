@@ -17,13 +17,13 @@ Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX
 #. Install both RMG and the RMG-database binaries through the terminal.   Dependencies will be installed automatically. It is safest to make a new conda environment for RMG and its dependencies. Type the following command into the terminal to create the new environment named 'rmg_env' containing the latest stable version of the RMG program and its database. ::
 
     conda create -c defaults -c rmg -c rdkit -c cantera -c pytorch -c conda-forge --name rmg_env rmg rmgdatabase
-    
+
    Whenever you wish to use it you must first activate the environment::
-    
+
     source activate rmg_env
-    
+
 #. Optional: If you wish to use the :ref:`QMTP interface <qm>` with `MOPAC <http://openmopac.net/>`_ to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the `MOPAC License Request Form <http://openmopac.net/form.php>`_.  Once you have it, type the following into your terminal ::
-    
+
     mopac password_string_here
 
 #. You may now run an RMG test job. Save the `Minimal Example Input File <https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/examples/rmg/minimal/input.py>`_
@@ -41,4 +41,4 @@ If you had previously installed a binary version of the RMG package, you may
 check and update your installation to the latest stable version available on Anaconda by typing the following command on the terminal ::
 
     source activate rmg_env
-    conda update rmg rmgdatabase -c rmg 
+    conda update rmg rmgdatabase -c rmg
