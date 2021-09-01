@@ -78,6 +78,7 @@ from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.plot import plot_sensitivity
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
 from rmgpy.yml import RMSWriter
+from rmgpy.rmg.reactors import Reactor
 
 ################################################################################
 
@@ -94,9 +95,9 @@ maxproc = 1
 
 class RMG(util.Subject):
     """
-    A representation of a Reaction Mechanism Generator (RMG) job. The 
+    A representation of a Reaction Mechanism Generator (RMG) job. The
     attributes are:
-    
+
     =================================== ================================================
     Attribute                           Description
     =================================== ================================================
@@ -150,7 +151,7 @@ class RMG(util.Subject):
     `initialization_time`               The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
     `done`                              Whether the job has completed (there is nothing new to add)
     =================================== ================================================
-    
+
     """
 
     def __init__(self, input_file=None, output_directory=None, profiler=None, stats_file=None):
@@ -264,8 +265,10 @@ class RMG(util.Subject):
 
         if self.surface_site_density:
             self.reaction_model.surface_site_density = self.surface_site_density
-
+            self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si()
+            self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si()
         self.reaction_model.coverage_dependence = self.coverage_dependence
+            
         self.reaction_model.verbose_comments = self.verbose_comments
         self.reaction_model.save_edge_species = self.save_edge_species
 
@@ -465,7 +468,7 @@ class RMG(util.Subject):
             import rmgpy.rmg.input
             rmgpy.rmg.input.restart_from_seed(path=kwargs['restart'])
 
-        # Check input file 
+        # Check input file
         self.check_input()
 
         # Properly set filter_reactions to initialize flags properly
@@ -490,12 +493,19 @@ class RMG(util.Subject):
             pass
 
         if maxproc > psutil.cpu_count():
-            raise ValueError("""Invalid input for user defined maximum number of processes {0}; 
-            should be an integer and smaller or equal to your available number of 
+            raise ValueError("""Invalid input for user defined maximum number of processes {0};
+            should be an integer and smaller or equal to your available number of
             processors {1}""".format(maxproc, psutil.cpu_count()))
 
         # Load databases
         self.load_database()
+
+        for spec in self.initial_species:
+            self.reaction_model.add_species_to_edge(spec)
+
+        for reaction_system in self.reaction_systems:
+            if isinstance(reaction_system, Reactor):
+                reaction_system.finish_termination_criteria()
 
         # Load restart seed mechanism (if specified)
         if self.restart:
@@ -524,6 +534,10 @@ class RMG(util.Subject):
         # Do all liquid-phase startup things:
         if self.solvent:
             solvent_data = self.database.solvation.get_solvent_data(self.solvent)
+            if not self.reaction_model.core.phase_system.in_nose:
+                self.reaction_model.core.phase_system.phases["Default"].set_solvent(solvent_data)
+                self.reaction_model.edge.phase_system.phases["Default"].set_solvent(solvent_data)
+
             diffusion_limiter.enable(solvent_data, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent))
 
@@ -641,7 +655,7 @@ class RMG(util.Subject):
 
     def register_listeners(self):
         """
-        Attaches listener classes depending on the options 
+        Attaches listener classes depending on the options
         found in the RMG input file.
         """
 
@@ -659,6 +673,9 @@ class RMG(util.Subject):
         if self.save_simulation_profiles:
 
             for index, reaction_system in enumerate(self.reaction_systems):
+                if isinstance(reaction_system, Reactor):
+                    typ = type(reaction_system)
+                    raise InputError(f"save_simulation_profiles=True not compatible with reactor of type {typ}")
                 reaction_system.attach(SimulationProfileWriter(
                     self.output_directory, index, self.reaction_model.core.species))
                 reaction_system.attach(SimulationProfilePlotter(
@@ -811,19 +828,50 @@ class RMG(util.Subject):
                             prune = False
 
                         try:
-                            terminated, resurrected, obj, new_surface_species, new_surface_reactions, t, x = reaction_system.simulate(
-                                core_species=self.reaction_model.core.species,
-                                core_reactions=self.reaction_model.core.reactions,
-                                edge_species=self.reaction_model.edge.species,
-                                edge_reactions=self.reaction_model.edge.reactions,
-                                surface_species=self.reaction_model.surface.species,
-                                surface_reactions=self.reaction_model.surface.reactions,
-                                pdep_networks=self.reaction_model.network_list,
-                                prune=prune,
-                                model_settings=model_settings,
-                                simulator_settings=simulator_settings,
-                                conditions=self.rmg_memories[index].get_cond()
-                            )
+                            if isinstance(reaction_system, Reactor):
+                                terminated,resurrected,obj,unimolecular_threshold,bimolecular_threshold,trimolecular_threshold,max_edge_species_rate_ratios,t,x = reaction_system.simulate(model_settings=model_settings,
+                                    simulator_settings=simulator_settings,
+                                    conditions=self.rmg_memories[index].get_cond()
+                                )
+                                reaction_system.unimolecular_threshold = unimolecular_threshold
+                                reaction_system.bimolecular_threshold = bimolecular_threshold
+                                reaction_system.trimolecular_threshold = trimolecular_threshold
+                                if hasattr(reaction_system,"max_edge_species_rate_ratios"):
+                                    max_edge_species_rate_ratios_temp = np.zeros(len(max_edge_species_rate_ratios))
+                                    for i in range(len(max_edge_species_rate_ratios)):
+                                        if i < len(reaction_system.max_edge_species_rate_ratios):
+                                            max_edge_species_rate_ratios_temp[i] = max(reaction_system.max_edge_species_rate_ratios[i],max_edge_species_rate_ratios[i])
+                                        else:
+                                            max_edge_species_rate_ratios_temp[i] = max_edge_species_rate_ratios[i]
+                                    reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios_temp
+                                else:
+                                    reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios
+                                new_surface_species = []
+                                new_surface_reactions =  []
+                                obj_temp = []
+                                for item in obj:
+                                    if hasattr(item,"name"):
+                                        obj_temp.append(self.reaction_model.edge.phase_system.species_dict[item.name])
+                                    else: #Reaction
+                                        for val in item.reactants:
+                                            obj_temp.append(self.reaction_model.edge.phase_system.species_dict[val.name])
+                                        for val in item.products:
+                                            obj_temp.append(self.reaction_model.edge.phase_system.species_dict[val.name])
+                                obj = obj_temp
+                            else:
+                                terminated, resurrected, obj, new_surface_species, new_surface_reactions, t, x = reaction_system.simulate(
+                                    core_species=self.reaction_model.core.species,
+                                    core_reactions=self.reaction_model.core.reactions,
+                                    edge_species=self.reaction_model.edge.species,
+                                    edge_reactions=self.reaction_model.edge.reactions,
+                                    surface_species=self.reaction_model.surface.species,
+                                    surface_reactions=self.reaction_model.surface.reactions,
+                                    pdep_networks=self.reaction_model.network_list,
+                                    prune=prune,
+                                    model_settings=model_settings,
+                                    simulator_settings=simulator_settings,
+                                    conditions=self.rmg_memories[index].get_cond()
+                                )
                         except:
                             logging.error("Model core reactions:")
                             if len(self.reaction_model.core.reactions) > 5:
@@ -868,18 +916,50 @@ class RMG(util.Subject):
                             temp_model_settings.tol_keep_in_edge = 0
                             if not resurrected:
                                 try:
-                                    reaction_system.simulate(
-                                        core_species=self.reaction_model.core.species,
-                                        core_reactions=self.reaction_model.core.reactions,
-                                        edge_species=[],
-                                        edge_reactions=[],
-                                        surface_species=self.reaction_model.surface.species,
-                                        surface_reactions=self.reaction_model.surface.reactions,
-                                        pdep_networks=self.reaction_model.network_list,
-                                        model_settings=temp_model_settings,
-                                        simulator_settings=simulator_settings,
-                                        conditions=self.rmg_memories[index].get_cond()
-                                    )
+                                    if isinstance(reaction_system, Reactor):
+                                        terminated,obj,unimolecular_threshold,bimolecular_threshold,trimolecular_threshold,max_edge_species_rate_ratios,t,x = reaction_system.simulate(model_settings=model_settings,
+                                            simulator_settings=simulator_settings,
+                                            conditions=self.rmg_memories[index].get_cond()
+                                        )
+                                        reaction_system.unimolecular_threshold = unimolecular_threshold
+                                        reaction_system.bimolecular_threshold = bimolecular_threshold
+                                        reaction_system.trimolecular_threshold = trimolecular_threshold
+                                        if hasattr(reaction_system,"max_edge_species_rate_ratios"):
+                                            max_edge_species_rate_ratios_temp = np.zeros(len(max_edge_species_rate_ratios))
+                                            for i in range(len(max_edge_species_rate_ratios)):
+                                                if i < len(reaction_system.max_edge_species_rate_ratios):
+                                                    max_edge_species_rate_ratios_temp[i] = max(reaction_system.max_edge_species_rate_ratios[i],max_edge_species_rate_ratios[i])
+                                                else:
+                                                    max_edge_species_rate_ratios_temp[i] = max_edge_species_rate_ratios[i]
+                                            reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios_temp
+                                        else:
+                                            reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios
+                                        new_surface_species = []
+                                        new_surface_reactions =  []
+                                        resurrected = False
+                                        obj_temp = []
+                                        for item in obj:
+                                            if hasattr(item,"name"):
+                                                obj_temp.append(self.reaction_model.edge.phase_system.species_dict[item.name])
+                                            else: #Reaction
+                                                for val in item.reactants:
+                                                    obj_temp.append(self.reaction_model.edge.phase_system.species_dict[val.name])
+                                                for val in item.products:
+                                                    obj_temp.append(self.reaction_model.edge.phase_system.species_dict[val.name])
+                                        obj = obj_temp
+                                    else:
+                                        reaction_system.simulate(
+                                            core_species=self.reaction_model.core.species,
+                                            core_reactions=self.reaction_model.core.reactions,
+                                            edge_species=[],
+                                            edge_reactions=[],
+                                            surface_species=self.reaction_model.surface.species,
+                                            surface_reactions=self.reaction_model.surface.reactions,
+                                            pdep_networks=self.reaction_model.network_list,
+                                            model_settings=temp_model_settings,
+                                            simulator_settings=simulator_settings,
+                                            conditions=self.rmg_memories[index].get_cond()
+                                        )
                                 except:
                                     self.update_reaction_threshold_and_react_flags(
                                         rxn_sys_unimol_threshold=reaction_system.unimolecular_threshold,
@@ -986,7 +1066,7 @@ class RMG(util.Subject):
                     logging.info('The current model core has %s species and %s reactions' % (core_spec, core_reac))
                     logging.info('The current model edge has %s species and %s reactions' % (edge_spec, edge_reac))
                     return
-                    
+
             if max_num_spcs_hit:  # resets maxNumSpcsHit and continues the settings for loop
                 logging.info('The maximum number of species ({0}) has been hit, Exiting stage {1} ...'.format(
                     model_settings.max_num_species, q + 1))
@@ -1135,7 +1215,7 @@ class RMG(util.Subject):
                                                     'must be specified in the uncertainty options block for global uncertainty'
                                                     'analysis.')
 
-                                    
+
                             Tlist = ([reaction_system.sens_conditions['T']], 'K')
                             try:
                                 Plist = ([reaction_system.sens_conditions['P']], 'Pa')
@@ -1710,7 +1790,7 @@ class RMG(util.Subject):
                         self.bimolecular_react[:num_restart_spcs, :num_restart_spcs] = False
                         if self.trimolecular:
                             self.trimolecular_react[:num_restart_spcs, :num_restart_spcs, :num_restart_spcs] = False
-                
+
     def react_init_tuples(self):
         """
         Reacts tuples given in the react block
@@ -1732,18 +1812,18 @@ class RMG(util.Subject):
             elif len(tup) == 2:
                 inds = sorted([sts.index(it) for it in tup])
                 if not self.bimolecular_threshold[inds[0], inds[1]]:
-                    self.bimolecular_react[inds[0], inds[1]] = True 
+                    self.bimolecular_react[inds[0], inds[1]] = True
                     self.bimolecular_threshold[inds[0], inds[1]] = True
             elif self.trimolecular and len(tup) == 3:
                 inds = sorted([sts.index(it) for it in tup])
                 if not self.trimolecular_threshold[inds[0], inds[1], inds[2]]:
-                    self.trimolecular_react[inds[0], inds[1], inds[2]] = True 
+                    self.trimolecular_react[inds[0], inds[1], inds[2]] = True
                     self.trimolecular_threshold[inds[0], inds[1], inds[2]] = True
         self.reaction_model.enlarge(react_edge=True,
                                     unimolecular_react=self.unimolecular_react,
                                     bimolecular_react=self.bimolecular_react,
                                     trimolecular_react=self.trimolecular_react)
-        
+
     def update_reaction_threshold_and_react_flags(self,
                                                   rxn_sys_unimol_threshold=None,
                                                   rxn_sys_bimol_threshold=None,
@@ -2226,10 +2306,13 @@ class RMG_Memory(object):
                 assert key != 'T' and key != 'P', 'naming a species T or P is forbidden'
                 if isinstance(value, list):
                     self.Ranges[key] = [v.value_si for v in value]
-
-        for term in reaction_system.termination:
-            if isinstance(term, TerminationTime):
-                self.tmax = term.time.value_si
+        
+        if isinstance(reaction_system, Reactor):
+            self.tmax = reaction_system.tf
+        else:
+            for term in reaction_system.termination:
+                if isinstance(term, TerminationTime):
+                    self.tmax = term.time.value_si
 
         self.reaction_system = reaction_system
         self.condition_list = []
@@ -2241,7 +2324,7 @@ class RMG_Memory(object):
 
     def add_t_conv_N(self, t, conv, N):
         """
-        adds the completion time and conversion and the number of objects added 
+        adds the completion time and conversion and the number of objects added
         from a given run to the memory
         """
         if hasattr(self, 'tmax'):
@@ -2260,8 +2343,8 @@ class RMG_Memory(object):
 
     def calculate_cond(self, obj, Ndims, Ns=20):
         """
-        Weighted Stochastic Grid Sampling algorithm 
-        obj is evaluated at a grid of points and the evaluations are normalized 
+        Weighted Stochastic Grid Sampling algorithm
+        obj is evaluated at a grid of points and the evaluations are normalized
         and then sampled randomly based on their normalized value
         then a random step of length 1/(2*Ns) is taken from that point to give a final condition point
         if this process were to impact runtime under some conditions you could decrease the value of Ns to speed it up
@@ -2363,7 +2446,7 @@ def log_conditions(rmg_memories, index):
 
 class Tee(object):
     """A simple tee to create a stream which prints to many streams.
-    
+
     This is used to report the profiling statistics to both the log file
     and the standard output.
     """
@@ -2419,11 +2502,11 @@ def process_profile_stats(stats_file, log_file):
 def make_profile_graph(stats_file, force_graph_generation=False):
     """
     Uses gprof2dot to create a graphviz dot file of the profiling information.
-    
+
     This requires the gprof2dot package available via `pip install gprof2dot`.
     Render the result using the program 'dot' via a command like
     `dot -Tps2 input.dot -o output.ps2`.
-    
+
     Rendering the ps2 file to pdf requires an external pdf converter
     `ps2pdf output.ps2` which produces a `output.ps2.pdf` file.
 

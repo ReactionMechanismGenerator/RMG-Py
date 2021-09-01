@@ -28,7 +28,13 @@ jobs:
       - name: Conda info
         run: |
           conda info
-          conda list
+          conda list  
+      - name: Install and link Julia dependencies 
+        run: |
+          julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"master\"))"
+          julia -e "using Pkg; Pkg.add(\"PyCall\"); Pkg.add(\"DifferentialEquations\")"
+          python -c "import julia; julia.install()"
+          ln -sfn $(which python-jl) $(which python)
       - name: Install MOPAC
         env:
           MOPACKEY: ${{ secrets.MOPACKEY }}

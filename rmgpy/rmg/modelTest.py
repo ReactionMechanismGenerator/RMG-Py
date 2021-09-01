@@ -155,7 +155,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         rxns += list(itertools.chain.from_iterable(react([((spcs[0], spcs[1]), ['H_Abstraction'])], procnum)))
 
         for rxn in rxns:
-            cerm.make_new_reaction(rxn)
+            cerm.make_new_reaction(rxn, generate_thermo=False, generate_kinetics=False)
 
         cerm.core.species = [spcA] + spcs
 
@@ -260,7 +260,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         cerm = CoreEdgeReactionModel()
 
         for rxn in rxns:
-            cerm.make_new_reaction(rxn)
+            cerm.make_new_reaction(rxn, generate_thermo=False, generate_kinetics=False)
 
         """
         3 expected H-abstraction reactions:
@@ -344,7 +344,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
             family='H_Abstraction',
         )
 
-        cerm.process_new_reactions(new_reactions=[reaction], new_species=[])  # adds CH2 and O to edge
+        cerm.process_new_reactions(new_reactions=[reaction], new_species=[], generate_kinetics=False, generate_thermo=False)  # adds CH2 and O to edge
 
         for spc in cerm.core.species + cerm.edge.species:
             spc.thermo = thermo_dict[spc.molecule[0].to_smiles()]  # assign thermo
@@ -439,7 +439,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                                     reversible=True,
                                     family='H_Abstraction')
 
-        cerm.process_new_reactions(new_reactions=[reaction], new_species=[])  # add CH2 and O to edge
+        cerm.process_new_reactions(new_reactions=[reaction], new_species=[], generate_thermo=False, generate_kinetics=False)  # add CH2 and O to edge
 
         for spc in cerm.core.species + cerm.edge.species:
             spc.thermo = thermo_dict[spc.molecule[0].to_smiles()]  # assign thermo

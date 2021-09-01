@@ -56,7 +56,7 @@ from rmgpy.chemkin import get_species_identifier
 from rmgpy.reaction import Reaction
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
-
+from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
 ################################################################################
 
 cdef class ReactionSystem(DASx):
@@ -1399,41 +1399,3 @@ cdef class ReactionSystem(DASx):
         rate_deriv = V * rate_deriv
 
         return rate_deriv
-
-
-################################################################################
-
-class TerminationTime:
-    """
-    Represent a time at which the simulation should be terminated. This class
-    has one attribute: the termination `time` in seconds.
-    """
-
-    def __init__(self, time=(0.0, 's')):
-        self.time = Quantity(time)
-
-
-################################################################################
-
-class TerminationConversion:
-    """
-    Represent a conversion at which the simulation should be terminated. This
-    class has two attributes: the `species` to monitor and the fractional
-    `conversion` at which to terminate.
-    """
-
-    def __init__(self, spec=None, conv=0.0):
-        self.species = spec
-        self.conversion = conv
-
-
-class TerminationRateRatio:
-    """
-    Represent a fraction of the maximum characteristic rate of the simulation
-    at which the simulation should be terminated.  This class has one attribute
-    the ratio between the current and maximum characteristic rates at which
-    to terminate
-    """
-
-    def __init__(self, ratio=0.01):
-        self.ratio = ratio
