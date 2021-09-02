@@ -1011,6 +1011,7 @@ def generated_species_constraints(**kwargs):
         'maximumSiliconAtoms',
         'maximumSulfurAtoms',
         'maximumSurfaceSites',
+        'maximumSurfaceBondOrder',
         'maximumHeavyAtoms',
         'maximumRadicalElectrons',
         'maximumSingletCarbenes',
