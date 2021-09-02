@@ -1483,10 +1483,14 @@ class ThermoDatabase(object):
             'H': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
             'O': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
             'N': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
+            'F': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
         }
 
         for element, delta_energy in delta_atomic_adsorption_energy.items():
-            delta_energy.value_si = metal_to_scale_to_binding_energies[element].value_si - metal_to_scale_from_binding_energies[element].value_si
+            try:
+                delta_energy.value_si = metal_to_scale_to_binding_energies[element].value_si - metal_to_scale_from_binding_energies[element].value_si
+            except KeyError:
+                pass
 
         if all(-0.01 < v.value_si < 0.01 for v in delta_atomic_adsorption_energy.values()):
             return thermo
@@ -1497,8 +1501,8 @@ class ThermoDatabase(object):
         for atom in molecule.atoms:
             if atom.is_surface_site():
                 surface_sites.append(atom)
-        normalized_bonds = {'C': 0., 'O': 0., 'N': 0., 'H': 0.}
-        max_bond_order = {'C': 4., 'O': 2., 'N': 3., 'H': 1.}
+        normalized_bonds = {'C': 0., 'O': 0., 'N': 0., 'H': 0., 'F': 0.}
+        max_bond_order = {'C': 4., 'O': 2., 'N': 3., 'H': 1., 'F': 1}
         for site in surface_sites:
             numbonds = len(site.bonds)
             if numbonds == 0:
@@ -1528,11 +1532,14 @@ class ThermoDatabase(object):
 
         # now edit the adsorptionThermo using LSR
         comments = []
-        for element in 'CHON':
-            if normalized_bonds[element]:
-                change_in_binding_energy = delta_atomic_adsorption_energy[element].value_si * normalized_bonds[element]
+        for element,bond in normalized_bonds.items():
+            if bond:
+                try:
+                    change_in_binding_energy = delta_atomic_adsorption_energy[element].value_si * bond
+                except KeyError:
+                    continue
                 thermo.H298.value_si += change_in_binding_energy
-                comments.append(f'{normalized_bonds[element]:.2f}{element}')
+                comments.append(f'{bond:.2f}{element}')
         thermo.comment += " Binding energy corrected by LSR ({}) from {}".format('+'.join(comments), metal_to_scale_from)
         return thermo
 
