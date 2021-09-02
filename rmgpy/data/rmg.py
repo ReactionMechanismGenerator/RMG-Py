@@ -80,6 +80,7 @@ class RMGDatabase(object):
              kinetics_families=None,
              kinetics_depositories=None,
              statmech_libraries=None,
+             adsorption_groups='adsorptionPt111',
              depository=True,
              solvation=True,
              surface=True,  # on by default, because solvation is also on by default
@@ -109,16 +110,17 @@ class RMGDatabase(object):
             self.load_solvation(os.path.join(path, 'solvation'))
 
         if surface:
-            self.load_thermo(os.path.join(path, 'thermo'), thermo_libraries, depository, surface)
+            self.load_thermo(os.path.join(path, 'thermo'), thermo_libraries, depository, surface, adsorption_groups)
 
 
 
-    def load_thermo(self, path, thermo_libraries=None, depository=True, surface=False):
+    def load_thermo(self, path, thermo_libraries=None, depository=True, surface=False, adsorption_groups='adsorptionPt111'):
         """
         Load the RMG thermo database from the given `path` on disk, where
         `path` points to the top-level folder of the RMG thermo database.
         """
         self.thermo = ThermoDatabase()
+        self.thermo.adsorption_groups = adsorption_groups
         self.thermo.load(path, thermo_libraries, depository, surface)
 
     def load_transport(self, path, transport_libraries=None):
