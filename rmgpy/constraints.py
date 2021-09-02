@@ -113,6 +113,12 @@ def fails_species_constraints(species):
         if struct.get_num_atoms('X') > max_surface_sites:
             return True
 
+    max_surface_bond_order = species_constraints.get('maximumSurfaceBondOrder', -1)
+    if max_surface_sites != -1:
+        for site in struct.get_surface_sites():
+            if site.get_total_bond_order() > max_surface_bond_order:
+                return True
+
     max_heavy_atoms = species_constraints.get('maximumHeavyAtoms', -1)
     if max_heavy_atoms != -1:
         if struct.get_num_atoms() - struct.get_num_atoms('H') > max_heavy_atoms:
