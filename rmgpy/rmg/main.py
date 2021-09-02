@@ -375,6 +375,7 @@ class RMG(util.Subject):
             seed_mechanisms=self.seed_mechanisms,
             kinetics_families=self.kinetics_families,
             kinetics_depositories=self.kinetics_depositories,
+            adsorption_groups='adsorptionPt111', # use Pt111 groups for training reactions
             # frequenciesLibraries = self.statmech_libraries,
             depository=False,  # Don't bother loading the depository information, as we don't use it
         )
@@ -445,6 +446,8 @@ class RMG(util.Subject):
             for family in self.database.kinetics.families.values():
                 if not family.auto_generated:
                     family.fill_rules_by_averaging_up(verbose=self.verbose_comments)
+
+        self.database.thermo.adsorption_groups = self.adsorption_groups
 
     def initialize(self, **kwargs):
         """
