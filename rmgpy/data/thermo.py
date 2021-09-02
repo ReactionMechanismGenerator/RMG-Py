@@ -851,6 +851,7 @@ class ThermoDatabase(object):
         self.libraries = {}
         self.surface = {}
         self.groups = {}
+        self.adsorption_groups = "adsorptionPt111"
         self.library_order = []
         self.local_context = {
             'ThermoData': ThermoData,
@@ -986,7 +987,9 @@ class ThermoDatabase(object):
             'longDistanceInteraction_cyclic',
             'longDistanceInteraction_noncyclic',
             'adsorptionPt111',
+            'adsorptionLi'
         ]
+        # categories.append(self.adsorption_groups)
         self.groups = {
             category: ThermoGroups(label=category).load(os.path.join(path, category + '.py'),
                                                         self.local_context, self.global_context)
@@ -1284,7 +1287,9 @@ class ThermoDatabase(object):
         if species.contains_surface_site():
             try:
                 thermo0 = self.get_thermo_data_for_surface_species(species)
-                thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from="Pt111", metal_to_scale_to=metal_to_scale_to)  # group adsorption values come from Pt111
+                metal_to_scale_from = self.adsorption_groups.split('adsorption')[-1]
+                if metal_to_scale_from != metal_to_scale_to:
+                    thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from=metal_to_scale_from, metal_to_scale_to=metal_to_scale_to)  # group adsorption values come from Pt111
                 return thermo0
             except:
                 logging.error("Error attempting to get thermo for species %s with structure \n%s", 
@@ -1604,7 +1609,7 @@ class ThermoDatabase(object):
 
         surface_sites = molecule.get_surface_sites()
         try:
-            self._add_adsorption_correction(adsorption_thermo, self.groups['adsorptionPt111'], molecule, surface_sites)
+            self._add_adsorption_correction(adsorption_thermo, self.groups[self.adsorption_groups], molecule, surface_sites)
         except (KeyError, DatabaseError):
             logging.error("Couldn't find in adsorption thermo database:")
             logging.error(molecule)
