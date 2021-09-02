@@ -1487,7 +1487,10 @@ class ThermoDatabase(object):
         }
 
         for element, delta_energy in delta_atomic_adsorption_energy.items():
-            delta_energy.value_si = metal_to_scale_to_binding_energies[element].value_si - metal_to_scale_from_binding_energies[element].value_si
+            try:
+                delta_energy.value_si = metal_to_scale_to_binding_energies[element].value_si - metal_to_scale_from_binding_energies[element].value_si
+            except KeyError:
+                pass
 
         if all(-0.01 < v.value_si < 0.01 for v in delta_atomic_adsorption_energy.values()):
             return thermo
@@ -1531,7 +1534,10 @@ class ThermoDatabase(object):
         comments = []
         for element,bond in normalized_bonds.items():
             if bond:
-                change_in_binding_energy = delta_atomic_adsorption_energy[element].value_si * bond
+                try:
+                    change_in_binding_energy = delta_atomic_adsorption_energy[element].value_si * bond
+                except KeyError:
+                    continue
                 thermo.H298.value_si += change_in_binding_energy
                 comments.append(f'{bond:.2f}{element}')
         thermo.comment += " Binding energy corrected by LSR ({}) from {}".format('+'.join(comments), metal_to_scale_from)
