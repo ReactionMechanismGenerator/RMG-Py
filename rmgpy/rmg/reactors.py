@@ -349,8 +349,8 @@ class Reactor:
         return terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x
 
 class ConstantVIdealGasReactor(Reactor):
-    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations):
-        super().__init__(core_phase_system, edge_phase_system, initial_conditions, terminations)
+    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species=[]):
+        super().__init__(core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species=[])
 
     def generate_reactor(self, phase_system):
         """
