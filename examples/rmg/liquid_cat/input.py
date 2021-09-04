@@ -1,7 +1,11 @@
 # Data sources
 database(
     thermoLibraries=['surfaceThermoPt111', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'], # 'surfaceThermoPt' is the default. Thermo data is derived using bindingEnergies for other metals
+<<<<<<< HEAD
     reactionLibraries = [],
+=======
+    reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006', False)], # when Ni is used change the library to Surface/Deutschmann_Ni
+>>>>>>> 2899d7045 (add test example for liquidSurfaceReactor)
     seedMechanisms = [],
     kineticsDepositories = ['training'],
     kineticsFamilies = ['surface','default'],
