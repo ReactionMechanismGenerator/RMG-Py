@@ -201,7 +201,7 @@ class Phase:
         try:
             ind = self.names.index(label)
             return self.species[ind]
-        except IndexError:
+        except (IndexError, ValueError):
             return None
 
     def set_solvent(self, solvent):
