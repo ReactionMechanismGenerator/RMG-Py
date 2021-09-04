@@ -358,6 +358,30 @@ class ConstantVIdealGasReactor(Reactor):
         react = rms.Reactor(domain, y0, (0.0, self.tf), p)
         return react, domain, [], p
 
+class ConstantTLiquidSurfaceReactor(Reactor):
+    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species):
+        super().__init__(core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species)
+
+    def generate_reactor(self, phase_system):
+        """
+        Setup an RMS simulation for EdgeAnalysis
+        """
+        liq = phase_system.phases["Default"]
+        surf = phase_system.phases["Surface"]
+        interface = list(phase_system.interfaces.values())[0]
+        liq = rms.IdealDiluteSolution(liq.species, liq.reactions, liq.solvent, name="liquid")
+        surf = rms.IdealSurface(surf.species, surf.reactions, surf.site_density, name="surface")
+        liq_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in liq.species]]
+        cat_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in surf.species]]
+        domainliq,y0liq,pliq = rms.ConstantTVDomain(phase=liq,initialconds=self.initial_conditions["liquid"],constantspecies=liq_constant_species)
+        domaincat,y0cat,pcat  = rms.ConstantTAPhiDomain(phase=surf,initialconds=self.initial_conditions["surface"],constantspecies=cat_constant_species)
+        if interface.reactions == []:
+            inter,pinter = rms.ReactiveInternalInterfaceConstantTPhi(domainliq,domaincat,Main.eval("using ReactionMechanismSimulator; Vector{ElementaryReaction}()"),self.initial_conditions["liquid"]["T"],self.initial_conditions["surface"]["A"])
+        else:
+            inter,pinter = rms.ReactiveInternalInterfaceConstantTPhi(domainliq,domaincat,interface.reactions,self.initial_conditions["liquid"]["T"],self.initial_conditions["surface"]["A"])
+        react,y0,p = rms.Reactor((domainliq,domaincat), (y0liq,y0cat), (0.0, self.tf), [inter], (pliq,pcat,pinter))
+        return react, (domainliq,domaincat), [inter], p
+
 def to_rms(obj, species_names=None, rms_species_list=None):
     """
     Generate corresponding rms object
