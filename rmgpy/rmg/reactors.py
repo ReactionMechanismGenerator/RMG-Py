@@ -296,10 +296,11 @@ class Reactor:
     Subclasses implement generate_reactor methods for
     generating the necessary RMS phase/domain/reactor objects
     """
-    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations):
+    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species=[]):
         self.core_phase_system = core_phase_system
         self.edge_phase_system = edge_phase_system
         self.initial_conditions = initial_conditions
+        self.const_spc_names = constant_species
         self.n_sims = 1
         self.tf = 1.0e6
         for term in terminations:
@@ -307,6 +308,10 @@ class Reactor:
                 self.tf = term.time.value_si
 
         self.terminations = [to_rms(term) for term in terminations]
+
+    def get_const_spc_indices(self,spcs=None):
+        rms_species_names = [spc.name for spc in self.core_phase_system.get_rms_species_list()]
+        return [rms_species_names.index(name) for name in self.const_spc_names]
 
     def finish_termination_criteria(self):
         """
