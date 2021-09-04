@@ -101,13 +101,15 @@ class PhaseSystem:
             if len(out) > 0:
                 phaseinv.append(phase)
 
+        rms_species_list = self.get_rms_species_list()
+
         if len(phaseinv) == 1:
-            phaseinv[0].add_reaction(rxn, species_list)
+            phaseinv[0].add_reaction(rxn, species_list, rms_species_list)
         else:
             phases = set(phaseinv)
             for interface in self.interfaces:
                 if interface.phaseset == phases:
-                    interface.add_reaction(rxn, species_list)
+                    interface.add_reaction(rxn, species_list, rms_species_list)
                     break
 
     def pass_species(self, label, phasesys):
@@ -207,11 +209,11 @@ class Phase:
         """
         self.solvent = to_rms(solvent)
 
-    def add_reaction(self, rxn, species_list):
+    def add_reaction(self, rxn):
         """
         add a reaction to the phase
         """
-        self.reactions.append(to_rms(rxn, species_list=species_list, rms_species_list=self.species))
+        self.reactions.append(to_rms(rxn, species_names=self.names, rms_species_list=self.species))
 
     def add_species(self, spc, edge_phase=None):
         """
@@ -267,11 +269,11 @@ class Interface:
         self.reactions = reactions or []
         self.phaseset = set(phases)
 
-    def add_reaction(self, rxn, species_list):
+    def add_reaction(self, rxn, species_names, rms_species_list):
         """
         add a reaction to the interface
         """
-        self.reactions.append(to_rms(rxn, species_list=species_list, rms_species_list=self.reactions))
+        self.reactions.append(to_rms(rxn, species_names=species_names, rms_species_list=rms_species_list))
 
     def remove_species(self, spc):
         """
