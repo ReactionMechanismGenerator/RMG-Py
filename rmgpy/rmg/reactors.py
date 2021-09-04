@@ -184,6 +184,7 @@ class Phase:
     kinetics within a specific phase of a simulation
     """
     def __init__(self, label="", solvent=None, site_density=None):
+        self.label = label
         self.species = []
         self.reactions = []
         self.names = []
