@@ -38,6 +38,7 @@ import itertools
 try:
     from pyrms import rms
     from diffeqpy import de
+    from julia import Main
 except:
     pass
 
