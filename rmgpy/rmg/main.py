@@ -642,7 +642,7 @@ class RMG(util.Subject):
         # advantages to write it here: this is run only once (as species indexes does not change over the generation)
         if self.solvent is not None:
             for index, reaction_system in enumerate(self.reaction_systems):
-                if reaction_system.const_spc_names is not None:  # if no constant species provided do nothing
+                if not isinstance(reaction_system, Reactor) and reaction_system.const_spc_names is not None:  # if no constant species provided do nothing
                     reaction_system.get_const_spc_indices(
                         self.reaction_model.core.species)  # call the function to identify indices in the solver
 
