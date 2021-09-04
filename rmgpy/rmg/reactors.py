@@ -354,7 +354,7 @@ class ConstantVIdealGasReactor(Reactor):
         react = rms.Reactor(domain, y0, (0.0, self.tf), p)
         return react, domain, [], p
 
-def to_rms(obj, species_list=None, rms_species_list=None):
+def to_rms(obj, species_names=None, rms_species_list=None):
     """
     Generate corresponding rms object
     """
@@ -427,8 +427,8 @@ def to_rms(obj, species_list=None, rms_species_list=None):
         thermo = to_rms(th)
         return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, diff, rad, obj.molecule[0].multiplicity-1, obj.molecular_weight.value_si)
     elif isinstance(obj, Reaction):
-        reactantinds = [species_list.index(spc) for spc in obj.reactants]
-        productinds = [species_list.index(spc) for spc in obj.products]
+        reactantinds = [species_names.index(spc.label) for spc in obj.reactants]
+        productinds = [species_names.index(spc.label) for spc in obj.products]
         reactants = [rms_species_list[i] for i in reactantinds]
         products = [rms_species_list[i] for i in productinds]
         kinetics = to_rms(obj.kinetics)
