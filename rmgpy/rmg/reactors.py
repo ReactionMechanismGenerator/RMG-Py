@@ -365,6 +365,10 @@ class Reactor:
 
         self.terminations = [to_rms(term) for term in terminations]
 
+    def get_const_spc_indices(self,spcs=None):
+        rms_species_names = [spc.name for spc in self.core_phase_system.get_rms_species_list()]
+        return [rms_species_names.index(name) for name in self.const_spc_names]
+
     def finish_termination_criteria(self):
         """
         Convert tuples into TerminationConversion objects
