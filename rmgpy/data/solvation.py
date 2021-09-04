@@ -476,6 +476,9 @@ class SoluteData(object):
         the contibutions in this function are in cm3/mol, and the division by 100 is done at the very end.
         """
         molecule = species.molecule[0]  # any will do, use the first.
+        if molecule.contains_surface_site():
+            molecule = molecule.get_desorbed_molecules()[0]
+            molecule.saturate_unfilled_valence()
         Vtot = 0.0
 
         for atom in molecule.atoms:
@@ -1066,6 +1069,11 @@ class SolvationDatabase(object):
         """
 
         # Check the library first
+        if species.molecule[0].contains_surface_site(): #desorb and saturate s
+            molecule = species.molecule[0].get_desorbed_molecules()[0]
+            molecule.saturate_unfilled_valence()
+            species = Species(molecule=[molecule])
+
         solute_data = None
         if not skip_library:
             solute_data = self.get_solute_data_from_library(species, self.libraries['solute'])
