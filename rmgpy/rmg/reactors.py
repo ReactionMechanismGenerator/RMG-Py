@@ -425,11 +425,16 @@ def to_rms(obj, species_names=None, rms_species_list=None):
             else:
                 atomnums[atm.element.symbol] = 1
         bondnum = len(obj.molecule[0].get_all_edges())
-        rad = rms.getspeciesradius(atomnums, bondnum)
-        diff = rms.StokesDiffusivity(rad)
-        th = obj.get_thermo_data()
-        thermo = to_rms(th)
-        return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, diff, rad, obj.molecule[0].multiplicity-1, obj.molecular_weight.value_si)
+        if not obj.molecule[0].contains_surface_site():
+            rad = rms.getspeciesradius(atomnums, bondnum)
+            diff = rms.StokesDiffusivity(rad)
+            th = obj.get_thermo_data()
+            thermo = to_rms(th)
+            return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, diff, rad, obj.molecule[0].multiplicity-1, obj.molecular_weight.value_si)
+        else:
+            th = obj.get_thermo_data()
+            thermo = to_rms(th)
+            return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, rms.EmptyDiffusivity(), 0.0, obj.molecule[0].multiplicity-1, 0.0)
     elif isinstance(obj, Reaction):
         reactantinds = [species_names.index(spc.label) for spc in obj.reactants]
         productinds = [species_names.index(spc.label) for spc in obj.products]
