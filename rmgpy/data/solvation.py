@@ -1198,6 +1198,9 @@ class SolvationDatabase(object):
         by gas-phase thermo estimate.
         """
         molecule = species.molecule[0]
+        if molecule.contains_surface_site():
+            molecule = molecule.get_desorbed_molecules()[0]
+            molecule.saturate_unfilled_valence()
         molecule.clear_labeled_atoms()
         molecule.update_atomtypes()
         solute_data = self.estimate_solute_via_group_additivity(molecule)
