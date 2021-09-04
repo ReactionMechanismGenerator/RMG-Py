@@ -412,7 +412,7 @@ def to_rms(obj, species_names=None, rms_species_list=None):
             A = obj._A.value_si
         n = obj._n.value_si
         Ea = obj._Ea.value_si
-        return rms.StickingCoefficient(A, n, Ea)
+        return rms.StickingCoefficient(A, n, Ea, rms.EmptyRateUncertainty())
     elif isinstance(obj, NASAPolynomial):
         return rms.NASApolynomial(obj.coeffs, obj.Tmin.value_si, obj.Tmax.value_si)
     elif isinstance(obj, NASA):
