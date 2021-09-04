@@ -450,6 +450,96 @@ def constant_V_ideal_gas_reactor(temperature,
                              'be negative in some cases which is not allowed, either reduce the maximum mole fractions '
                              'or dont use balanceSpecies')
 
+def liquid_cat_reactor(temperature,
+                   initialConcentrations,
+                   initialSurfaceCoverages,
+                   surfaceVolumeRatio,
+                   potential=None,
+                   terminationConversion=None,
+                   terminationTime=None,
+                   terminationRateRatio=None,
+                   constantSpecies=[]):
+    for spec, conc in initialConcentrations.items():
+        if not isinstance(conc, list):
+            concentration = Quantity(conc)
+            # check the dimensions are ok
+            # convert to mol/m^3 (or something numerically nice? or must it be SI)
+            initialConcentrations[spec] = concentration.value_si
+        else:
+            if len(conc) != 2:
+                raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
+                                 "entries of the same format")
+            initialConcentrations[spec] = [Quantity(conc[0]), Quantity(conc[1])]
+
+    if not isinstance(temperature, list) and all([not isinstance(x, list) for x in initialConcentrations.values()]):
+        nSims = 1
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.items():
+            termination.append(TerminationConversion(species_dict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
+
+    if constantSpecies is not None:
+        logging.debug('  Generation with constant species:')
+        for const_spc in constantSpecies:
+            logging.debug("  {0}".format(const_spc))
+            if const_spc not in species_dict:
+                raise InputError('Species {0} not found in the input file'.format(const_spc))
+
+    if not isinstance(temperature, list):
+        T = Quantity(temperature).value_si
+    else:
+        raise InputError("Condition ranges not supported for this reaction type")
+        if len(temperature) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
+
+    if not isinstance(temperature, list) and all(
+            [not isinstance(x, list) for x in initialConcentrations.values()]) and all(
+            [not isinstance(x, list) for x in initialSurfaceCoverages.values()]
+            ):
+        nSims = 1
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.items():
+            termination.append((species_dict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
+
+    initialCondLiq = dict()
+    V = 1.0
+    A = V*Quantity(surfaceVolumeRatio).value_si
+    for key,item in initialConcentrations.items():
+        initialCondLiq[key] = item*V
+    initialCondLiq["T"] = T
+    initialCondLiq["V"] = V
+    initialCondSurf = dict()
+    for key,item in initialSurfaceCoverages.items():
+        initialCondSurf[key] = item*rmg.surface_site_density.value_si*A
+    initialCondSurf["T"] = T
+    initialCondSurf["A"] = A
+    if potential:
+        initialCondSurf["phi"] = Quantity(potential).value_si
+    system = ConstantTLiquidSurfaceReactor(rmg.reaction_model.core.phase_system,
+                                           rmg.reaction_model.edge.phase_system,
+                                           {"liquid":initialCondLiq,"surface":initialCondSurf},termination,constantSpecies)
+    system.T = Quantity(T)
+    system.Trange = None
+    system.sensitive_species = []
+    rmg.reaction_systems.append(system)
+
 # Reaction systems
 def liquid_reactor(temperature,
                    initialConcentrations,
@@ -1065,6 +1155,7 @@ def read_input_file(path, rmg0):
         'react': react,
         'simpleReactor': simple_reactor,
         'constantVIdealGasReactor' : constant_V_ideal_gas_reactor,
+        'liquidSurfaceReactor' : liquid_cat_reactor,
         'liquidReactor': liquid_reactor,
         'surfaceReactor': surface_reactor,
         'mbsampledReactor': mb_sampled_reactor,
