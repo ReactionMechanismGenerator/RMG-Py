@@ -476,6 +476,9 @@ class SoluteData(object):
         the contibutions in this function are in cm3/mol, and the division by 100 is done at the very end.
         """
         molecule = species.molecule[0]  # any will do, use the first.
+        if molecule.contains_surface_site():
+            molecule = molecule.get_desorbed_molecules()[0]
+            molecule.saturate_unfilled_valence()
         Vtot = 0.0
 
         for atom in molecule.atoms:
@@ -1150,6 +1153,9 @@ class SolvationDatabase(object):
         by gas-phase thermo estimate.
         """
         molecule = species.molecule[0]
+        if molecule.contains_surface_site():
+            molecule = molecule.get_desorbed_molecules()[0]
+            molecule.saturate_unfilled_valence()
         molecule.clear_labeled_atoms()
         molecule.update_atomtypes()
         solute_data = self.estimate_solute_via_group_additivity(molecule)
