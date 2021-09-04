@@ -170,6 +170,12 @@ class PhaseSystem:
 
         return rms_species_list
 
+    def get_species_names(self):
+        names = []
+        for phase in self.phases.values():
+            names += phase.names
+        return names
+
 class Phase:
     """
     Class containing all species, reactions and properties necessary to describe
