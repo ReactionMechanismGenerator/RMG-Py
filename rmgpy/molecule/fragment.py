@@ -1406,8 +1406,10 @@ class Fragment(Graph):
         for ind, atom in enumerate(smiles_before.atoms):
             element_symbol = atom.symbol
             if isinstance(atom, CuttingLabel):
-                substi_name = 'Si'
-                substi = Atom(element=substi_name)
+                substi = Atom(element=get_element('Si'),
+                    radical_electrons=0,
+                    charge=0,
+                    lone_pairs=3)
                 substi.label = element_symbol
 
                 for bonded_atom, bond in atom.edges.items():
@@ -1418,8 +1420,6 @@ class Fragment(Graph):
 
                     substi.edges[bonded_atom] = new_bond
 
-                substi.radical_electrons = 3
-
                 final_vertices.append(substi)
             else:
                 final_vertices.append(atom)
@@ -1427,9 +1427,10 @@ class Fragment(Graph):
         smiles_before.vertices = final_vertices
         mol_repr = Molecule()
         mol_repr.atoms = smiles_before.vertices
+        mol_repr.update()
         smiles_after = mol_repr.to_smiles()
         import re
-        smiles = re.sub('\[Si\]', '', smiles_after)
+        smiles = re.sub('\[Si-3\]', '', smiles_after)
 
         return smiles
 
