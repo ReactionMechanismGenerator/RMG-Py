@@ -63,7 +63,9 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
     mol.sort_atoms()
     atoms = mol.vertices
     rd_atom_indices = {}  # dictionary of RDKit atom indices
-    rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
+
+    rdkitmol = Chem.rdchem.RWMol()
+    reset_num_electron = {}
     for index, atom in enumerate(mol.vertices):
         if atom.element.symbol == 'X':
             rd_atom = Chem.rdchem.Atom('Pt')  # not sure how to do this with linear scaling when this might not be Pt
@@ -71,22 +73,40 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
             rd_atom = Chem.rdchem.Atom(atom.element.symbol)
         if atom.element.isotope != -1:
             rd_atom.SetIsotope(atom.element.isotope)
+        if not remove_h:
+            rd_atom.SetNoImplicit(True)  # Avoid `SanitizeMol` adding undesired hydrogens
+        else:
+            explicit_Hs = [True for a, b in atom.edges.items()
+                           if a.is_hydrogen() and b.is_single()]
+            rd_atom.SetNumExplicitHs(sum(explicit_Hs))
+            rd_atom.SetNoImplicit(True)  # Avoid `SanitizeMol` adding undesired hydrogens
         rd_atom.SetNumRadicalElectrons(atom.radical_electrons)
         rd_atom.SetFormalCharge(atom.charge)
-        if atom.element.symbol == 'C' and atom.lone_pairs == 1 and mol.multiplicity == 1: rd_atom.SetNumRadicalElectrons(
-            2)
+
+        # There are cases requiring to reset electrons after sanitization
+        # for carbene, nitrene and atomic oxygen
+        # For other atoms, to be added once encountered
+        if atom.is_carbon() and atom.lone_pairs >= 1 and not atom.charge:
+            reset_num_electron[i] = atom.radical_electrons
+        elif atom.is_nitrogen() and atom.lone_pairs >= 2 and not atom.charge:
+            reset_num_electron[i] = atom.radical_electrons
+        elif atom.is_oxygen and atom.lone_pairs >= 3 and not atom.charge:
+            reset_num_electron[i] = atom.radical_electrons
         rdkitmol.AddAtom(rd_atom)
-        if remove_h and atom.symbol == 'H':
-            pass
-        else:
+        if not (remove_h and atom.symbol == 'H'):
             rd_atom_indices[atom] = index
 
     rd_bonds = Chem.rdchem.BondType
     orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE, 'T': rd_bonds.TRIPLE, 'B': rd_bonds.AROMATIC,
               'Q': rd_bonds.QUADRUPLE}
+
     # Add the bonds
     for atom1 in mol.vertices:
+        if remove_h and atom1.is_hydrogen():
+            continue
         for atom2, bond in atom1.edges.items():
+            if remove_h and atom2.is_hydrogen():
+                continue
             if bond.is_hydrogen_bond():
                 continue
             index1 = atoms.index(atom1)
@@ -96,12 +116,14 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
                 order = orders[order_string]
                 rdkitmol.AddBond(index1, index2, order)
 
-    # Make editable mol into a mol and rectify the molecule
-    rdkitmol = rdkitmol.GetMol()
-    if sanitize:
-        Chem.SanitizeMol(rdkitmol)
     if remove_h:
         rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
+    elif sanitize:
+        Chem.SanitizeMol(rdkitmol)
+
+    for key, val in reset_num_electron.items():
+        rdkitmol.GetAtomWithIdx(key).SetNumRadicalElectrons(val)
+
     if return_mapping:
         return rdkitmol, rd_atom_indices
     return rdkitmol
