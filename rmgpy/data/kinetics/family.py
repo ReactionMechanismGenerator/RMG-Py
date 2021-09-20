@@ -3658,7 +3658,7 @@ class KineticsFamily(Database):
         rxnlists = [(template_rxn_map[entry.label], entry.label)
                     if entry.label in template_rxn_map.keys() else [] for entry in entries]
         inputs = np.array([(self.forward_recipe.actions, rxns, Tref, fmax, label, [r.rank for r in rxns])
-                           for rxns, label in rxnlists])
+                           for rxns, label in rxnlists], dtype=object)
 
         inds = np.arange(len(inputs))
         np.random.shuffle(inds)  # want to parallelize in random order
@@ -3669,7 +3669,7 @@ class KineticsFamily(Database):
 
         kinetics_list = np.array(pool.map(_make_rule, inputs[inds])) # pass in compute_derivatives
         if compute_derivatives:
-            derivative_list = np.array(pool.map(_compute_rule_sensitivity, inputs[inds]))
+            derivative_list = np.array(pool.map(_compute_rule_sensitivity, inputs[inds]), dtype=object)
             derivative_list = derivative_list[revinds]
         kinetics_list = kinetics_list[revinds]  # fix order
 
@@ -4722,18 +4722,31 @@ def _compute_rule_sensitivity(rr):
             saved_A_value = rxn.kinetics.A.value_si
             rxn.kinetics.A.value_si *= SCALE_FACTOR
             kin_perturbed = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
-            kin_perturbed_onlyA = ArrheniusBM().fit_A_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
-            kin_perturbed_onlyE0 = ArrheniusBM().fit_E0_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
-            kin_perturbed_onlyn = ArrheniusBM().fit_n_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
+            # kin_perturbed_onlyA = ArrheniusBM().fit_A_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
+            # kin_perturbed_onlyE0 = ArrheniusBM().fit_E0_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
+            # kin_perturbed_onlyn = ArrheniusBM().fit_n_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
             rxn.kinetics.A.value_si = saved_A_value
             
-            sensitivity_A = (np.log(kin_perturbed.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
-            sensitivity_E0 = (kin_perturbed.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
-            sensitivity_n = (kin_perturbed.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
 
-            sensitivity_A_only = (np.log(kin_perturbed_onlyA.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
-            sensitivity_E0_only = (kin_perturbed_onlyE0.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
-            sensitivity_n_only = (kin_perturbed_onlyn.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
+            sensitivity_A = (np.log(kin_perturbed.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
+            
+            if kin.E0.value_si == 0:
+                sensitivity_E0 = (np.log(kin_perturbed.E0.value_si) - np.log(kin.E0.values_si)) / (SCALE_FACTOR - 1)
+            elif kin.E0.value_si is np.nan:
+                sensitivity_E0 = np.nan
+            else:
+                sensitivity_E0 = (kin_perturbed.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
+
+            if kin.n.value_si == 0:
+                sensitivity_n = (np.log(kin_perturbed.n.value_si) - np.log(kin.n.value_si)) / (SCALE_FACTOR - 1)
+            elif kin.n.value_si is np.nan:
+                sensitivity_n = np.nan
+            else:
+                sensitivity_n = (kin_perturbed.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
+
+            # sensitivity_A_only = (np.log(kin_perturbed_onlyA.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
+            # sensitivity_E0_only = (kin_perturbed_onlyE0.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
+            # sensitivity_n_only = (kin_perturbed_onlyn.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
             
 
             ## Compute dEa
@@ -4741,34 +4754,47 @@ def _compute_rule_sensitivity(rr):
             saved_Ea_value = rxn.kinetics.Ea.value_si
             rxn.kinetics.Ea.value_si *= SCALE_FACTOR
             kin_perturbed = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
-            kin_perturbed_onlyA = ArrheniusBM().fit_A_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
-            kin_perturbed_onlyE0 = ArrheniusBM().fit_E0_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
-            kin_perturbed_onlyn = ArrheniusBM().fit_n_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
+            # kin_perturbed_onlyA = ArrheniusBM().fit_A_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
+            # kin_perturbed_onlyE0 = ArrheniusBM().fit_E0_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
+            # kin_perturbed_onlyn = ArrheniusBM().fit_n_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
             rxn.kinetics.Ea.value_si = saved_Ea_value
 
 
             sensitivity_A_dEa = (np.log(kin_perturbed.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
-            sensitivity_E0_dEa = (kin_perturbed.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
-            sensitivity_n_dEa = (kin_perturbed.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
-            
-            sensitivity_A_only_dEa = (np.log(kin_perturbed_onlyA.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
-            sensitivity_E0_only_dEa = (kin_perturbed_onlyE0.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
-            sensitivity_n_only_dEa = (kin_perturbed_onlyn.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
+            if kin.E0.value_si == 0:
+                sensitivity_E0_dEa = (np.log(kin_perturbed.E0.value_si) - np.log(kin.E0.values_si)) / (SCALE_FACTOR - 1)
+            elif kin.E0.value_si is np.nan:
+                sensitivity_E0_dEa = np.nan
+            else:
+                sensitivity_E0_dEa = (kin_perturbed.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
+
+            if kin.n.value_si == 0:
+                sensitivity_n_dEa = (np.log(kin_perturbed.n.value_si) - np.log(kin.n.value_si)) / (SCALE_FACTOR - 1)
+            elif kin.n.value_si is np.nan:
+                sensitivity_n_dEa = np.nan
+            else:
+                sensitivity_n_dEa = (kin_perturbed.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
+
+
+
+            # sensitivity_A_only_dEa = (np.log(kin_perturbed_onlyA.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
+            # sensitivity_E0_only_dEa = (kin_perturbed_onlyE0.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
+            # sensitivity_n_only_dEa = (kin_perturbed_onlyn.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
             
 
 
             sensitivities.append({'dA': sensitivity_A,
-                                  'dA_only': sensitivity_A_only,
+                                #   'dA_only': sensitivity_A_only,
                                   'dE0': sensitivity_E0,
-                                  'dE0_only': sensitivity_E0_only,
+                                #   'dE0_only': sensitivity_E0_only,
                                   'dn': sensitivity_n,
-                                  'dn_only': sensitivity_n_only,
+                                #   'dn_only': sensitivity_n_only,
                                   'dA_dEa': sensitivity_A_dEa,
-                                  'dA_only_dEa': sensitivity_A_only_dEa,
+                                #   'dA_only_dEa': sensitivity_A_only_dEa,
                                   'dE0_dEa': sensitivity_E0_dEa,
-                                  'dE0_only_dEa': sensitivity_E0_only_dEa,
+                                #   'dE0_only_dEa': sensitivity_E0_only_dEa,
                                   'dn_dEa': sensitivity_n_dEa,
-                                  'dn_only_dEa': sensitivity_n_only_dEa,
+                                #   'dn_only_dEa': sensitivity_n_only_dEa,
                                   'name': str(rxn)})
 
         return sensitivities
