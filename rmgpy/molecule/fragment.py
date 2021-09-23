@@ -1529,6 +1529,226 @@ class Fragment(Graph):
 
         return self
 
+    def cut_molecule(self, mol_to_cut, cut_through = True, size_threshold=None):
+        """
+        For given input, output a list of cut fragments (either string or Fragment)
+        """
+        # if input is smiles string, output smiles
+        if isinstance(mol_to_cut, str):
+            mol = self.from_smiles_like_string(mol_to_cut)
+            mol = mol.generate_resonance_structures()[0]
+        # if input is fragment, output fragment
+        elif isinstance(mol_to_cut, Fragment):
+            mol = mol_to_cut.generate_resonance_structures()[0]
+        # if input is molecule, output fragment
+        elif isinstance(mol_to_cut, Molecule):
+            # transfer to Fragment
+            frag = Fragment()
+            frag.vertices = mol_to_cut.vertices
+            mol = frag.generate_resonance_structures()[0]
+
+        # slice mol
+        frag_smiles_list = []
+        if cut_through:
+            arom_cut_frag = self.sliceitup_arom(mol.to_smiles())
+            for frag in arom_cut_frag:
+                aliph_cut_frag = self.sliceitup_aliph(frag, size_threshold)
+                for ele in aliph_cut_frag:
+                    frag_smiles_list.append(ele)
+        else:
+            # if aromatic, only perform sliceitup_arom, if aliphatic, only sliceitup_aliph
+            if mol.is_aromatic() == True:
+                frag_smiles_list = self.sliceitup_arom(mol.to_smiles())
+            else:
+                frag_smiles_list = self.sliceitup_aliph(mol.to_smiles(), size_threshold)
+
+        frag_list_new = []
+        for frag_smiles in frag_smiles_list:
+            n_frag_smiles = frag_smiles.replace('F', 'R')
+            nn_frag_smiles = n_frag_smiles.replace('Cl', 'L')
+            # cutting position near aromatic
+            nnn_frag_smiles = nn_frag_smiles.replace('Br', 'R')
+            new_frag_smiles = nnn_frag_smiles.replace('I', 'L')
+
+            frag_list_new.append(new_frag_smiles)
+
+        if isinstance(mol_to_cut, str):
+            return frag_list_new
+        elif isinstance(mol_to_cut, (Fragment, Molecule)):
+            frag_list = []
+            for frag in frag_list_new:
+                frag = Fragment().from_smiles_like_string(frag)
+                res_frag = frag.generate_resonance_structures()[0]
+                frag_list.append(res_frag)
+            return frag_list
+
+    def sliceitup_arom(self, molecule):
+        """
+        Several specified aromatic patterns
+        """
+        # if input is smiles string, output smiles
+        if isinstance(molecule, str):
+            molecule_smiles = molecule
+        # if input is fragment, output frafgment
+        elif isinstance(molecule, Fragment):
+            mol = molecule.generate_resonance_structures()[0]
+            molecule_smiles = mol.to_smiles()
+
+        # if input is Fragment (with Cuttinglabel), need to transform to special Atom
+        import re
+        cutting_label_list = re.findall(r'([LR]\d?)', molecule_smiles)
+        if cutting_label_list != []:
+            n_frag_smiles = molecule_smiles.replace('R', '[Na]')
+            nn_frag_smiles = n_frag_smiles.replace('L', '[Mg]')
+            molecule_smiles = nn_frag_smiles
+
+        molecule1 = Chem.MolFromSmiles(molecule_smiles)
+        molecule_Br2 = Chem.MolFromSmiles('BrI')
+        molecule_I2 = Chem.MolFromSmiles('BrIIBr')
+
+        rxn_near_arom_1 = AllChem.ReactionFromSmarts("[C:1]-[C:2]-[C:3]-[C:4]-[C:5](-[c:6]1:[c:7]:[c:8]:[c:9]:[c:10]:[c:11]:1)-[C:12](-[C:13]-[C:14]-[C:15]-[C:16])-[c:17]1:[c:18]:[c:19]:[c:20]:[c:21]:[c:22]:1.[Br:23]-[I:24]-[I:25]-[Br:26]>>\
+        [Br:23]-[C:2]-[C:3]-[C:4]-[C:5](-[c:6]1:[c:7]:[c:8]:[c:9]:[c:10]:[c:11]:1)-[C:12](-[C:13]-[C:14]-[C:15]-[Br:26])-[c:17]1:[c:18]:[c:19]:[c:20]:[c:21]:[c:22]:1.[I:24]-[C:1].[I:25]-[C:16]")
+
+        rxn_near_arom_2 = AllChem.ReactionFromSmarts("[c:1]:[c:2]:[c:3]:[c:4]:[c:5]:[c:6]-[C:7](-[C:8]-[C:9]-[C:10]-[C:11])-[C:12]-[C:13]-[C:14]-[C:15].[Br:16]-[I:17]-[I:18]-[Br:19]>>\
+        [c:1]:[c:2]:[c:3]:[c:4]:[c:5]:[c:6]-[C:7](-[C:8]-[C:9]-[C:10]-[Br:19])-[C:12]-[C:13]-[C:14]-[Br:16].[I:17]-[C:15].[I:18]-[C:11]")
+
+        rxn_near_arom_3 = AllChem.ReactionFromSmarts("[C:1]=[C:2](-[C:3]-[C:4]-[C:5]-[C:6])-[c:7]1:[c:8]:[c:9]:[c:10]:[c:11]:[c:12]:1.[Br:13]-[I:14]>>\
+        [C:1]=[C:2](-[C:3]-[C:4]-[C:5]-[Br:13])-[c:7]1:[c:8]:[c:9]:[c:10]:[c:11]:[c:12]:1.[C:6]-[I:14]")
+
+        rxn_near_arom_4 = AllChem.ReactionFromSmarts("[c:1]:[c:2]:[c:3]:[c:4]:[c:5]:[c:6]-[C:7]-[C:8]-[C:9]-[C:10]-[C:11].[Br:12]-[I:13]>>\
+        [c:1]:[c:2]:[c:3]:[c:4]:[c:5]:[c:6]-[C:7]-[C:8]-[C:9]-[C:10]-[Br:12].[I:13]-[C:11]")
+
+        arom_rxn_list = [(rxn_near_arom_1,molecule_I2), (rxn_near_arom_2,molecule_I2), (rxn_near_arom_3,molecule_Br2), (rxn_near_arom_4,molecule_Br2)]
+
+        frag_list = []
+        for i, (arom_rxn,pseudo_spe) in enumerate(arom_rxn_list):
+            ps = arom_rxn.RunReactants((molecule1, pseudo_spe))
+            if len(ps) != 0:
+                for i in range(len(ps[0])):
+                    frag_list.append(Chem.MolToSmiles(ps[0][i]))
+                break
+
+        if frag_list == []:
+            frag_list.append(molecule_smiles)
+        else:
+            if cutting_label_list != []:
+                frag_list_replaced = []
+                # replace metal atom back to Cuttinglabel
+                for metal_frag in frag_list:
+                    n_frag_smiles = metal_frag.replace('[Na]', 'R')
+                    nn_frag_smiles = n_frag_smiles.replace('[Mg]', 'L')
+                    frag_list_replaced.append(nn_frag_smiles)
+                frag_list = frag_list_replaced
+
+        if isinstance(molecule, str):
+            frag_list_new = []
+            for frag in frag_list:
+                n_frag_smiles = frag.replace('[Na]', 'R')
+                nn_frag_smiles = n_frag_smiles.replace('[Mg]', 'L')
+                nnn_frag_smiles = nn_frag_smiles.replace('Br', 'R')
+                new_frag_smiles = nnn_frag_smiles.replace('I', 'L')
+                frag_list_new.append(new_frag_smiles)
+            return frag_list_new
+        elif isinstance(molecule, Fragment):
+            frag_list_new = []
+            for frag in frag_list:
+                n_frag_smiles = frag.replace('[Na]', 'R')
+                nn_frag_smiles = n_frag_smiles.replace('[Mg]', 'L')
+                nnn_frag_smiles = nn_frag_smiles.replace('Br', 'R')
+                new_frag_smiles = nnn_frag_smiles.replace('I', 'L')
+
+                frag = Fragment().from_smiles_like_string(new_frag_smiles)
+                res_frag = frag.generate_resonance_structures()[0]
+                frag_list_new.append(res_frag)
+            return frag_list_new
+
+    def sliceitup_aliph(self, molecule, size_threshold = None):
+        """
+        Several specified aliphatic patterns
+        """
+        # set min size for each aliphatic fragment size
+        if size_threshold != None:
+            size_threshold = size_threshold
+        else:
+            size_threshold = 5
+        # if input is smiles string, output smiles
+        if isinstance(molecule, str):
+            molecule_smiles = molecule
+        # if input is fragment, output frafgment
+        elif isinstance(molecule, Fragment):
+            mol = molecule.generate_resonance_structures()[0]
+            molecule_smiles = mol.to_smiles()
+
+        # if input is Fragment (with Cuttinglabel), need to transform to special Atom
+        import re
+        cutting_label_list = re.findall(r'([LR]\d?)', molecule_smiles)
+        if cutting_label_list != []:
+            n_frag_smiles = molecule_smiles.replace('R', '[Na]')
+            nn_frag_smiles = n_frag_smiles.replace('L', '[Mg]')
+            molecule_smiles = nn_frag_smiles
+
+        molecule1 = Chem.MolFromSmiles(molecule_smiles)
+        molecule_F2 = Chem.MolFromSmiles('FCl')
+
+        rxn_smallchain_1 = AllChem.ReactionFromSmarts("[C:1]-[C:2]-[!c;!R:3]=[!c;!R:4]-[C:5]-[C:6]-[C:7]-[C:8].[F:11]-[Cl:12]>>\
+        [C:1]-[C:2]-[!c;!R:3]=[!c;!R:4]-[C:5]-[C:6]-[C:7][F:11].[Cl:12]-[C:8]") # CCC=CCCC
+
+        rxn_smallchain_2 = AllChem.ReactionFromSmarts("[!c;!R:1]=[!c;!R:2]-[C:3]-[C:4]-[C:5]-[C:6].[F:7]-[Cl:8]>>\
+        [!c;!R:1]=[!c;!R:2]-[C:3]-[C:4]-[C:5]-[F:7].[Cl:8]-[C:6]") # C=CCCC
+
+        rxn_smallchain_3 = AllChem.ReactionFromSmarts("[C;!R:1]-[C;!R:2]-[C;!R:3]-[C;!R:4]-[C;!R:5]-[C;!R:6].[F:7]-[Cl:8]>>\
+        [C;!R:1]-[C;!R:2]-[C;!R:3]-[F:7].[Cl:8]-[C;!R:4]-[C;!R:5]-[C;!R:6]") # CCCCCC
+
+        aliph_rxn_list = [(rxn_smallchain_1,molecule_F2), (rxn_smallchain_2,molecule_F2), (rxn_smallchain_3,molecule_F2)]
+
+        frag_list = []
+
+        for i, (aliph_rxn,pseudo_spe) in enumerate(aliph_rxn_list):
+            ps = aliph_rxn.RunReactants((molecule1, pseudo_spe))
+            if len(ps) != 0:
+                for loop in range(1000):
+                    ind = np.random.randint(0, len(ps))
+                    if ps[ind][0].GetNumAtoms() > size_threshold and ps[ind][1].GetNumAtoms() > size_threshold:
+                        for i in range(len(ps[ind])):
+                            frag_list.append(Chem.MolToSmiles(ps[ind][i]))
+                        break
+                if frag_list != []:
+                    break
+
+        if frag_list == []:
+            frag_list.append(molecule_smiles)
+        else:
+            if cutting_label_list != []:
+                frag_list_replaced = []
+                # replace metal atom back to Cuttinglabel
+                for metal_frag in frag_list:
+                    n_frag_smiles = metal_frag.replace('[Na]', 'R')
+                    nn_frag_smiles = n_frag_smiles.replace('[Mg]', 'L')
+                    frag_list_replaced.append(nn_frag_smiles)
+                frag_list = frag_list_replaced
+
+        if isinstance(molecule, str):
+            frag_list_new = []
+            for frag in frag_list:
+                n_frag_smiles = frag.replace('[Na]', 'R')
+                nn_frag_smiles = n_frag_smiles.replace('[Mg]', 'L')
+                nnn_frag_smiles = nn_frag_smiles.replace('F', 'R')
+                new_frag_smiles = nnn_frag_smiles.replace('Cl', 'L')
+                frag_list_new.append(new_frag_smiles)
+            return frag_list_new
+        elif isinstance(molecule, Fragment):
+            frag_list_new = []
+            for frag in frag_list:
+                n_frag_smiles = frag.replace('[Na]', 'R')
+                nn_frag_smiles = n_frag_smiles.replace('[Mg]', 'L')
+                nnn_frag_smiles = nn_frag_smiles.replace('F', 'R')
+                new_frag_smiles = nnn_frag_smiles.replace('Cl', 'L')
+
+                frag = Fragment().from_smiles_like_string(new_frag_smiles)
+                res_frag = frag.generate_resonance_structures()[0]
+                frag_list_new.append(res_frag)
+            return frag_list_new
+
 # this variable is used to name atom IDs so that there are as few conflicts by 
 # using the entire space of integer objects
 atom_id_counter = -2**15
