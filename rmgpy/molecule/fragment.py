@@ -419,6 +419,32 @@ class Fragment(Graph):
         translator.from_inchi(self, inchistr, backend)
         return self
 
+    def from_smiles_like_string(self, smiles_like_string):
+
+        import re
+        smiles = smiles_like_string
+
+        cutting_label_list = re.findall(r'([LR]\d?)', smiles)
+
+        smiles_replace_dict = {}
+        metal_list = ['[Na]', '[K]', '[Cs]', '[Fr]', '[Be]', '[Mg]', '[Ca]', '[Sr]', '[Ba]']
+        for index, label_str in enumerate(cutting_label_list):
+            smiles_replace_dict[label_str] = metal_list[index]
+
+        atom_replace_dict = {}
+        for key, value in smiles_replace_dict.items():
+            atom_replace_dict[value] = key
+
+        for label_str, element in smiles_replace_dict.items():
+            smiles = smiles.replace(label_str, element)
+
+        from rdkit import Chem
+        rdkitmol = Chem.MolFromSmiles(smiles)
+
+        self.from_rdkit_mol(rdkitmol, atom_replace_dict)
+
+        return self
+
     def is_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False, strict=True):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
