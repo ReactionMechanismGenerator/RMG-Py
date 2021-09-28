@@ -37,6 +37,7 @@ try:
     from rdkit.Chem import AllChem
 except ImportError:
     logging.debug("To use QM calculations you must correctly install rdkit.")
+from cclib.method.nuclear import Nuclear
 
 
 import rmgpy.molecule
@@ -338,11 +339,13 @@ class QMMolecule(object):
         cclib_data.rotcons = parser.rotcons # this hack required because rotcons not part of a default cclib data object
         cclib_data.molmass = parser.molmass # this hack required because rotcons not part of a default cclib data object
 
+        nuc = Nuclear(cclib_data)
+        cclib_data.rotcons = [nuc.rotational_constants(units='invcm')]
         # Temporary fix for Gaussian parsers until cclib is updated.
         if parser.logname == 'Gaussian':
             if cclib_data.molmass is None or cclib_data.rotcons is []:  # Try parsing for these directly
                 molmass, rotcons = parse_gaussian_molmass_and_rotcons(self.output_file_path)
-                cclib_data.rotcons = rotcons
+                #cclib_data.rotcons = rotcons
                 cclib_data.molmass = molmass
 
         qm_data = parse_cclib_data(cclib_data, radical_number + 1)  # Should `radical_number+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
