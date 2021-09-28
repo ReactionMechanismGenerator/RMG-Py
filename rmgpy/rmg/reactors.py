@@ -38,6 +38,7 @@ import itertools
 try:
     from pyrms import rms
     from diffeqpy import de
+    from julia import Main
 except:
     pass
 
@@ -100,13 +101,15 @@ class PhaseSystem:
             if len(out) > 0:
                 phaseinv.append(phase)
 
+        rms_species_list = self.get_rms_species_list()
+
         if len(phaseinv) == 1:
-            phaseinv[0].add_reaction(rxn, species_list)
+            phaseinv[0].add_reaction(rxn, species_list, rms_species_list)
         else:
             phases = set(phaseinv)
             for interface in self.interfaces:
                 if interface.phaseset == phases:
-                    interface.add_reaction(rxn, species_list)
+                    interface.add_reaction(rxn, species_list, rms_species_list)
                     break
 
     def pass_species(self, label, phasesys):
@@ -162,12 +165,26 @@ class PhaseSystem:
         else:
             return None
 
+    def get_rms_species_list(self):
+        rms_species_list = []
+        for phase in self.phases.values():
+            rms_species_list += phase.species
+
+        return rms_species_list
+
+    def get_species_names(self):
+        names = []
+        for phase in self.phases.values():
+            names += phase.names
+        return names
+
 class Phase:
     """
     Class containing all species, reactions and properties necessary to describe
     kinetics within a specific phase of a simulation
     """
     def __init__(self, label="", solvent=None, site_density=None):
+        self.label = label
         self.species = []
         self.reactions = []
         self.names = []
@@ -184,7 +201,7 @@ class Phase:
         try:
             ind = self.names.index(label)
             return self.species[ind]
-        except IndexError:
+        except (IndexError, ValueError):
             return None
 
     def set_solvent(self, solvent):
@@ -193,11 +210,11 @@ class Phase:
         """
         self.solvent = to_rms(solvent)
 
-    def add_reaction(self, rxn, species_list):
+    def add_reaction(self, rxn):
         """
         add a reaction to the phase
         """
-        self.reactions.append(to_rms(rxn, species_list=species_list, rms_species_list=self.species))
+        self.reactions.append(to_rms(rxn, species_names=self.names, rms_species_list=self.species))
 
     def add_species(self, spc, edge_phase=None):
         """
@@ -253,11 +270,11 @@ class Interface:
         self.reactions = reactions or []
         self.phaseset = set(phases)
 
-    def add_reaction(self, rxn, species_list):
+    def add_reaction(self, rxn, species_names, rms_species_list):
         """
         add a reaction to the interface
         """
-        self.reactions.append(to_rms(rxn, species_list=species_list, rms_species_list=self.reactions))
+        self.reactions.append(to_rms(rxn, species_names=species_names, rms_species_list=rms_species_list))
 
     def remove_species(self, spc):
         """
@@ -279,10 +296,11 @@ class Reactor:
     Subclasses implement generate_reactor methods for
     generating the necessary RMS phase/domain/reactor objects
     """
-    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations):
+    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species=[]):
         self.core_phase_system = core_phase_system
         self.edge_phase_system = edge_phase_system
         self.initial_conditions = initial_conditions
+        self.const_spc_names = constant_species
         self.n_sims = 1
         self.tf = 1.0e6
         for term in terminations:
@@ -327,8 +345,8 @@ class Reactor:
         return terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x
 
 class ConstantVIdealGasReactor(Reactor):
-    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations):
-        super().__init__(core_phase_system, edge_phase_system, initial_conditions, terminations)
+    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species=[]):
+        super().__init__(core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species=[])
 
     def generate_reactor(self, phase_system):
         """
@@ -340,7 +358,31 @@ class ConstantVIdealGasReactor(Reactor):
         react = rms.Reactor(domain, y0, (0.0, self.tf), p)
         return react, domain, [], p
 
-def to_rms(obj, species_list=None, rms_species_list=None):
+class ConstantTLiquidSurfaceReactor(Reactor):
+    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species):
+        super().__init__(core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species)
+
+    def generate_reactor(self, phase_system):
+        """
+        Setup an RMS simulation for EdgeAnalysis
+        """
+        liq = phase_system.phases["Default"]
+        surf = phase_system.phases["Surface"]
+        interface = list(phase_system.interfaces.values())[0]
+        liq = rms.IdealDiluteSolution(liq.species, liq.reactions, liq.solvent, name="liquid")
+        surf = rms.IdealSurface(surf.species, surf.reactions, surf.site_density, name="surface")
+        liq_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in liq.species]]
+        cat_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in surf.species]]
+        domainliq,y0liq,pliq = rms.ConstantTVDomain(phase=liq,initialconds=self.initial_conditions["liquid"],constantspecies=liq_constant_species)
+        domaincat,y0cat,pcat  = rms.ConstantTAPhiDomain(phase=surf,initialconds=self.initial_conditions["surface"],constantspecies=cat_constant_species)
+        if interface.reactions == []:
+            inter,pinter = rms.ReactiveInternalInterfaceConstantTPhi(domainliq,domaincat,Main.eval("using ReactionMechanismSimulator; Vector{ElementaryReaction}()"),self.initial_conditions["liquid"]["T"],self.initial_conditions["surface"]["A"])
+        else:
+            inter,pinter = rms.ReactiveInternalInterfaceConstantTPhi(domainliq,domaincat,interface.reactions,self.initial_conditions["liquid"]["T"],self.initial_conditions["surface"]["A"])
+        react,y0,p = rms.Reactor((domainliq,domaincat), (y0liq,y0cat), (0.0, self.tf), [inter], (pliq,pcat,pinter))
+        return react, (domainliq,domaincat), [inter], p
+
+def to_rms(obj, species_names=None, rms_species_list=None):
     """
     Generate corresponding rms object
     """
@@ -394,7 +436,7 @@ def to_rms(obj, species_list=None, rms_species_list=None):
             A = obj._A.value_si
         n = obj._n.value_si
         Ea = obj._Ea.value_si
-        return rms.StickingCoefficient(A, n, Ea)
+        return rms.StickingCoefficient(A, n, Ea, rms.EmptyRateUncertainty())
     elif isinstance(obj, NASAPolynomial):
         return rms.NASApolynomial(obj.coeffs, obj.Tmin.value_si, obj.Tmax.value_si)
     elif isinstance(obj, NASA):
@@ -407,14 +449,19 @@ def to_rms(obj, species_list=None, rms_species_list=None):
             else:
                 atomnums[atm.element.symbol] = 1
         bondnum = len(obj.molecule[0].get_all_edges())
-        rad = rms.getspeciesradius(atomnums, bondnum)
-        diff = rms.StokesDiffusivity(rad)
-        th = obj.get_thermo_data()
-        thermo = to_rms(th)
-        return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, diff, rad, obj.molecule[0].multiplicity-1, obj.molecular_weight.value_si)
+        if not obj.molecule[0].contains_surface_site():
+            rad = rms.getspeciesradius(atomnums, bondnum)
+            diff = rms.StokesDiffusivity(rad)
+            th = obj.get_thermo_data()
+            thermo = to_rms(th)
+            return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, diff, rad, obj.molecule[0].multiplicity-1, obj.molecular_weight.value_si)
+        else:
+            th = obj.get_thermo_data()
+            thermo = to_rms(th)
+            return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, rms.EmptyDiffusivity(), 0.0, obj.molecule[0].multiplicity-1, 0.0)
     elif isinstance(obj, Reaction):
-        reactantinds = [species_list.index(spc) for spc in obj.reactants]
-        productinds = [species_list.index(spc) for spc in obj.products]
+        reactantinds = [species_names.index(spc.label) for spc in obj.reactants]
+        productinds = [species_names.index(spc.label) for spc in obj.products]
         reactants = [rms_species_list[i] for i in reactantinds]
         products = [rms_species_list[i] for i in productinds]
         kinetics = to_rms(obj.kinetics)
