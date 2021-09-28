@@ -71,7 +71,7 @@ Also returns the message as a string, should you want it for something.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.converter.from_ob_mol">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.converter.</span></span><span class="sig-name descname"><span class="pre">from_ob_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">obmol</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Molecule</span><a class="headerlink" href="#rmgpy.molecule.converter.from_ob_mol" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.converter.</span></span><span class="sig-name descname"><span class="pre">from_ob_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">obmol</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Molecule</span></span></span><a class="headerlink" href="#rmgpy.molecule.converter.from_ob_mol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a OpenBabel Mol object <cite>obmol</cite> to a molecular structure. Uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
 <p>It estimates radical placement based on undervalence of atoms,
@@ -80,7 +80,7 @@ and assumes overall spin multiplicity is radical count + 1</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.converter.from_rdkit_mol">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.converter.</span></span><span class="sig-name descname"><span class="pre">from_rdkit_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">rdkitmol</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Molecule</span><a class="headerlink" href="#rmgpy.molecule.converter.from_rdkit_mol" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.converter.</span></span><span class="sig-name descname"><span class="pre">from_rdkit_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">rdkitmol</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Molecule</span></span></span><a class="headerlink" href="#rmgpy.molecule.converter.from_rdkit_mol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a RDKit Mol object <cite>rdkitmol</cite> to a molecular structure. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 This Kekulizes everything, removing all aromatic atom types.</p>
@@ -157,7 +157,7 @@ atoms to RDKit’s atom indices.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -196,7 +196,7 @@ atoms to RDKit’s atom indices.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -180,7 +180,7 @@ and adjusts the preexponential factor accordingly.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.discrepancy">
-<span class="sig-name descname"><span class="pre">discrepancy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.discrepancy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">discrepancy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.discrepancy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns some measure of the discrepancy based on two different reaction models.</p>
 </dd></dl>
 
@@ -196,14 +196,14 @@ data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.get_rate_coefficient">
-<span class="sig-name descname"><span class="pre">get_rate_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">P=0.0</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_rate_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">P=0.0</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the rate coefficient in the appropriate combination of m^3,
 mol, and s at temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.is_identical_to">
-<span class="sig-name descname"><span class="pre">is_identical_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_identical_to" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_identical_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_identical_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if kinetics matches that of another kinetics model.  Must match temperature
 and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn’t have pressure
 range if it’s Arrhenius.) Otherwise returns <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
@@ -211,21 +211,21 @@ range if it’s Arrhenius.) Otherwise returns <code class="docutils literal notr
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.is_pressure_dependent">
-<span class="sig-name descname"><span class="pre">is_pressure_dependent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_pressure_dependent" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_pressure_dependent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_pressure_dependent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">False</span></code> since, by default, all objects derived from KineticsModel
 represent pressure-independent kinetics.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.is_similar_to">
-<span class="sig-name descname"><span class="pre">is_similar_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_similar_to" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_similar_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_similar_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if rates of reaction at temperatures 500,1000,1500,2000 K
 and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.is_temperature_valid">
-<span class="sig-name descname"><span class="pre">is_temperature_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_temperature_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the kinetic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
@@ -247,7 +247,7 @@ rate to a Cantera Arrhenius() object.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.to_arrhenius_ep">
-<span class="sig-name descname"><span class="pre">to_arrhenius_ep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">alpha=0.0</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">dHrxn=0.0</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ArrheniusEP</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.to_arrhenius_ep" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_arrhenius_ep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">alpha=0.0</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">dHrxn=0.0</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ArrheniusEP</span></span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.to_arrhenius_ep" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts an Arrhenius object to ArrheniusEP</p>
 <p>If setting alpha, you need to also input dHrxn, which must be given
 in J/mol (and vise versa).</p>
@@ -333,7 +333,7 @@ in J/mol (and vise versa).</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -372,7 +372,7 @@ in J/mol (and vise versa).</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

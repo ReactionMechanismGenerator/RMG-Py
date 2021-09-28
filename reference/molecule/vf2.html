@@ -66,7 +66,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 for graph and subgraph isomorphism.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.vf2.VF2.feasible">
-<span class="sig-name descname"><span class="pre">feasible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex1</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex2</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.feasible" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">feasible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex1</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex2</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.feasible" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if vertex <cite>vertex1</cite> from the first graph is a feasible
 match for vertex <cite>vertex2</cite> from the second graph, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.
 The semantic and structural relationship of the vertices is evaluated,
@@ -76,7 +76,7 @@ otherwise feasible pairs.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.vf2.VF2.find_isomorphism">
-<span class="sig-name descname"><span class="pre">find_isomorphism</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph1</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph2</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">initial_mapping</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.find_isomorphism" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find_isomorphism</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph1</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph2</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">initial_mapping</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.find_isomorphism" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of dicts of all valid isomorphism mappings from graph
 <cite>graph1</cite> to graph <cite>graph2</cite> with the optional initial mapping
 <cite>initial_mapping</cite>. If no valid isomorphisms are found, an empty list is
@@ -85,7 +85,7 @@ returned.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.vf2.VF2.find_subgraph_isomorphisms">
-<span class="sig-name descname"><span class="pre">find_subgraph_isomorphisms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph1</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph2</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">initial_mapping</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.find_subgraph_isomorphisms" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find_subgraph_isomorphisms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph1</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph2</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">initial_mapping</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.find_subgraph_isomorphisms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of dicts of all valid subgraph isomorphism mappings from
 graph <cite>graph1</cite> to subgraph <cite>graph2</cite> with the optional initial mapping
 <cite>initial_mapping</cite>. If no valid subgraph isomorphisms are found, an empty
@@ -94,14 +94,14 @@ list is returned.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.vf2.VF2.is_isomorphic">
-<span class="sig-name descname"><span class="pre">is_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph1</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph2</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">initial_mapping</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.is_isomorphic" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph1</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph2</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">initial_mapping</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.is_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if graph <cite>graph1</cite> is isomorphic to graph <cite>graph2</cite> with
 the optional initial mapping <cite>initial_mapping</cite>, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.vf2.VF2.is_subgraph_isomorphic">
-<span class="sig-name descname"><span class="pre">is_subgraph_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph1</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph2</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">initial_mapping</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.is_subgraph_isomorphic" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_subgraph_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph1</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">graph2</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">initial_mapping</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.vf2.VF2.is_subgraph_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if graph <cite>graph1</cite> is subgraph isomorphic to subgraph
 <cite>graph2</cite> with the optional initial mapping <cite>initial_mapping</cite>, or
 <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
@@ -163,7 +163,7 @@ the optional initial mapping <cite>initial_mapping</cite>, or <code class="docut
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -202,7 +202,7 @@ the optional initial mapping <cite>initial_mapping</cite>, or <code class="docut
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

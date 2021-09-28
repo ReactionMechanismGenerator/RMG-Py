@@ -121,7 +121,7 @@ quantum result. However, the classical limit is provided here for completeness:<
 \[Q_\mathrm{vib}^\mathrm{cl}(T) = \frac{k_\mathrm{B} T}{\hbar \omega}\]</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HarmonicOscillator.as_dict">
-<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.as_dict" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for dumping objects as dictionaries for YAML files</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -141,7 +141,7 @@ quantum result. However, the classical limit is provided here for completeness:<
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HarmonicOscillator.get_density_of_states">
-<span class="sig-name descname"><span class="pre">get_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dens_states_0=None</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.get_density_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dens_states_0=None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.get_density_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states <span class="math notranslate nohighlight">\(\rho(E) \ dE\)</span> at the specified
 energies <cite>e_list</cite> in J/mol above the ground state. If an initial density
 of states <cite>dens_states_0</cite> is given, the rotor density of states will be
@@ -150,35 +150,35 @@ convoluted into these states.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HarmonicOscillator.get_enthalpy">
-<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.get_enthalpy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.get_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol for the degree of freedom at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HarmonicOscillator.get_entropy">
-<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.get_entropy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.get_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K for the degree of freedom at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HarmonicOscillator.get_heat_capacity">
-<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K for the degree of freedom at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HarmonicOscillator.get_partition_function">
-<span class="sig-name descname"><span class="pre">get_partition_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.get_partition_function" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_partition_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.get_partition_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the partition function <span class="math notranslate nohighlight">\(Q(T)\)</span> at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HarmonicOscillator.get_sum_of_states">
-<span class="sig-name descname"><span class="pre">get_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">sum_states_0=None</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">sum_states_0=None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.HarmonicOscillator.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states <span class="math notranslate nohighlight">\(N(E)\)</span> at the specified energies <cite>e_list</cite>
 in J/mol above the ground state. If an initial sum of states
 <cite>sum_states_0</cite> is given, the rotor sum of states will be convoluted into
@@ -269,7 +269,7 @@ these states.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -308,7 +308,7 @@ these states.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

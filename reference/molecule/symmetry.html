@@ -61,20 +61,20 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.symmetry<a class="headerlink" href="#rmgpy-molecule-symmetry" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.symmetry.calculate_atom_symmetry_number">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.symmetry.</span></span><span class="sig-name descname"><span class="pre">calculate_atom_symmetry_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">molecule</span></em>, <em class="sig-param"><span class="pre">Atom</span> <span class="pre">atom</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">float</span><a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_atom_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.symmetry.</span></span><span class="sig-name descname"><span class="pre">calculate_atom_symmetry_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">molecule</span></em>, <em class="sig-param"><span class="pre">Atom</span> <span class="pre">atom</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_atom_symmetry_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the symmetry number centered at <cite>atom</cite> in the structure. The
 <cite>atom</cite> of interest must not be in a cycle.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.symmetry.calculate_bond_symmetry_number">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.symmetry.</span></span><span class="sig-name descname"><span class="pre">calculate_bond_symmetry_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">molecule</span></em>, <em class="sig-param"><span class="pre">Atom</span> <span class="pre">atom1</span></em>, <em class="sig-param"><span class="pre">Atom</span> <span class="pre">atom2</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">float</span><a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_bond_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.symmetry.</span></span><span class="sig-name descname"><span class="pre">calculate_bond_symmetry_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">molecule</span></em>, <em class="sig-param"><span class="pre">Atom</span> <span class="pre">atom1</span></em>, <em class="sig-param"><span class="pre">Atom</span> <span class="pre">atom2</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_bond_symmetry_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the symmetry number centered at <cite>bond</cite> in the structure.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.symmetry.calculate_axis_symmetry_number">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.symmetry.</span></span><span class="sig-name descname"><span class="pre">calculate_axis_symmetry_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">molecule</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">float</span><a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_axis_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.symmetry.</span></span><span class="sig-name descname"><span class="pre">calculate_axis_symmetry_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">molecule</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_axis_symmetry_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the axis symmetry number correction. The “axis” refers to a series
 of two or more cumulated double bonds (e.g. C=C=C, etc.). Corrections
 for single C=C bonds are handled in getBondSymmetryNumber().</p>
@@ -106,14 +106,14 @@ symmetry, then you have an axis symmetry number of 2:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.symmetry.calculate_cyclic_symmetry_number">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.symmetry.</span></span><span class="sig-name descname"><span class="pre">calculate_cyclic_symmetry_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">molecule</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">float</span><a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_cyclic_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.symmetry.</span></span><span class="sig-name descname"><span class="pre">calculate_cyclic_symmetry_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">molecule</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_cyclic_symmetry_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the symmetry number correction for cyclic regions of a molecule.
 For complicated fused rings the smallest set of smallest rings is used.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.symmetry.calculate_symmetry_number">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.symmetry.</span></span><span class="sig-name descname"><span class="pre">calculate_symmetry_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">molecule</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">float</span><a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.symmetry.</span></span><span class="sig-name descname"><span class="pre">calculate_symmetry_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">molecule</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#rmgpy.molecule.symmetry.calculate_symmetry_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the symmetry number for the structure. The symmetry number
 includes both external and internal modes.</p>
 </dd></dl>
@@ -172,7 +172,7 @@ includes both external and internal modes.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -211,7 +211,7 @@ includes both external and internal modes.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

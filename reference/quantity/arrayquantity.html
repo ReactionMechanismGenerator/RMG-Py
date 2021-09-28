@@ -103,13 +103,13 @@ attribute. This value is cached on the <a class="reference internal" href="#rmgp
 speed.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.quantity.ArrayQuantity.as_dict">
-<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.as_dict" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for YAML dumping</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.quantity.ArrayQuantity.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><span class="pre">ArrayQuantity</span></a><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.copy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><span class="pre">ArrayQuantity</span></a></span></span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of the quantity.</p>
 </dd></dl>
 
@@ -127,14 +127,14 @@ this will not be a problem.)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.quantity.ArrayQuantity.get_conversion_factor_from_si">
-<span class="sig-name descname"><span class="pre">get_conversion_factor_from_si</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.get_conversion_factor_from_si" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_conversion_factor_from_si</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.get_conversion_factor_from_si" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the conversion factor for converting a quantity to a given set
 of <cite>units</cite> from the SI equivalent units.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.quantity.ArrayQuantity.get_conversion_factor_from_si_to_cm_mol_s">
-<span class="sig-name descname"><span class="pre">get_conversion_factor_from_si_to_cm_mol_s</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.get_conversion_factor_from_si_to_cm_mol_s" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_conversion_factor_from_si_to_cm_mol_s</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.get_conversion_factor_from_si_to_cm_mol_s" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the conversion factor for converting into SI units
 only with all lengths in cm, instead of m.
 This is useful for outputting chemkin file kinetics.
@@ -147,21 +147,21 @@ moles (not molecules) and seconds (not minutes).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.quantity.ArrayQuantity.get_conversion_factor_to_si">
-<span class="sig-name descname"><span class="pre">get_conversion_factor_to_si</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.get_conversion_factor_to_si" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_conversion_factor_to_si</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.get_conversion_factor_to_si" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the conversion factor for converting a quantity in a given set
 of`units` to the SI equivalent units.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.quantity.ArrayQuantity.is_uncertainty_additive">
-<span class="sig-name descname"><span class="pre">is_uncertainty_additive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.is_uncertainty_additive" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_uncertainty_additive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.is_uncertainty_additive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the uncertainty is specified in additive format
 and <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.quantity.ArrayQuantity.is_uncertainty_multiplicative">
-<span class="sig-name descname"><span class="pre">is_uncertainty_multiplicative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.is_uncertainty_multiplicative" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_uncertainty_multiplicative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.is_uncertainty_multiplicative" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the uncertainty is specified in multiplicative
 format and <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
@@ -295,7 +295,7 @@ format and <code class="docutils literal notranslate"><span class="pre">False</s
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -334,7 +334,7 @@ format and <code class="docutils literal notranslate"><span class="pre">False</s
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

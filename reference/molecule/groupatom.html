@@ -191,14 +191,14 @@ required parameters. The available actions can be found
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Vertex</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.copy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Vertex</span></span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a deep copy of the <a class="reference internal" href="#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupAtom</span></code></a> object. Modifying the
 attributes of the copy will not affect the original.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.count_bonds">
-<span class="sig-name descname"><span class="pre">count_bonds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wildcards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.count_bonds" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">count_bonds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wildcards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.count_bonds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns: list of the number of bonds currently on the :class:GroupAtom</p>
 <p>If the argument wildcards is turned off then any bonds with multiple
 options for bond orders will not be counted</p>
@@ -217,7 +217,7 @@ options for bond orders will not be counted</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.equivalent">
-<span class="sig-name descname"><span class="pre">equivalent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">other</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.equivalent" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">equivalent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">other</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is equivalent to <cite>self</cite> or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not,
 where <cite>other</cite> can be either an <a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> or an <a class="reference internal" href="#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupAtom</span></code></a>
 object. When comparing two <a class="reference internal" href="#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupAtom</span></code></a> objects, this function
@@ -226,7 +226,7 @@ respects wildcards, e.g. <code class="docutils literal notranslate"><span class=
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.has_wildcards">
-<span class="sig-name descname"><span class="pre">has_wildcards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.has_wildcards" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">has_wildcards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.has_wildcards" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom has wildcards in any of the attributes:
 atomtype, radical electrons, lone pairs, charge, and bond order. Returns
 ‘’False’’ if no attribute has wildcards.</p>
@@ -245,7 +245,7 @@ atomtype, radical electrons, lone pairs, charge, and bond order. Returns
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.is_bonded_to_surface">
-<span class="sig-name descname"><span class="pre">is_bonded_to_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_bonded_to_surface" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_bonded_to_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_bonded_to_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom is bonded to a surface GroupAtom <cite>X</cite>
 <code class="docutils literal notranslate"><span class="pre">False</span></code> if it is not</p>
 </dd></dl>
@@ -258,7 +258,7 @@ atomtype, radical electrons, lone pairs, charge, and bond order. Returns
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.is_carbon">
-<span class="sig-name descname"><span class="pre">is_carbon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_carbon" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_carbon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_carbon" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a carbon atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
@@ -276,19 +276,19 @@ atomtype, radical electrons, lone pairs, charge, and bond order. Returns
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.is_nitrogen">
-<span class="sig-name descname"><span class="pre">is_nitrogen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_nitrogen" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_nitrogen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_nitrogen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a nitrogen atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.is_oxygen">
-<span class="sig-name descname"><span class="pre">is_oxygen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_oxygen" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_oxygen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_oxygen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an oxygen atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.is_specific_case_of">
-<span class="sig-name descname"><span class="pre">is_specific_case_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_specific_case_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">other</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> is the same as <cite>other</cite> or is a more
 specific case of <cite>other</cite>. Returns <code class="docutils literal notranslate"><span class="pre">False</span></code> if some of <cite>self</cite> is not
 included in <cite>other</cite> or they are mutually exclusive.</p>
@@ -296,13 +296,13 @@ included in <cite>other</cite> or they are mutually exclusive.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.is_sulfur">
-<span class="sig-name descname"><span class="pre">is_sulfur</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_sulfur" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_sulfur</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_sulfur" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an sulfur atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.is_surface_site">
-<span class="sig-name descname"><span class="pre">is_surface_site</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_surface_site" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_surface_site</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.is_surface_site" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a surface site or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
@@ -330,7 +330,7 @@ included in <cite>other</cite> or they are mutually exclusive.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.make_sample_atom">
-<span class="sig-name descname"><span class="pre">make_sample_atom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><span class="pre">Atom</span></a><a class="headerlink" href="#rmgpy.molecule.GroupAtom.make_sample_atom" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">make_sample_atom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><span class="pre">Atom</span></a></span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.make_sample_atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns: a class :Atom: object analagous to the GroupAtom</p>
 <p>This makes a sample, so it takes the first element when there are multiple options inside of
 self.atomtype, self.radical_electrons, self.lone_pairs, and self.charge</p>
@@ -486,7 +486,7 @@ self.atomtype, self.radical_electrons, self.lone_pairs, and self.charge</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -525,7 +525,7 @@ self.atomtype, self.radical_electrons, self.lone_pairs, and self.charge</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

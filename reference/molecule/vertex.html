@@ -135,7 +135,7 @@ useful for accelerating isomorphism searches, as proposed by
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Vertex.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex"><span class="pre">Vertex</span></a><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.copy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex"><span class="pre">Vertex</span></a></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of the vertex. The default implementation assumes that no
 semantic information is associated with each vertex, and therefore
 simply returns a new <a class="reference internal" href="#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex"><code class="xref py py-class docutils literal notranslate"><span class="pre">Vertex</span></code></a> object.</p>
@@ -154,7 +154,7 @@ simply returns a new <a class="reference internal" href="#rmgpy.molecule.graph.V
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Vertex.equivalent">
-<span class="sig-name descname"><span class="pre">equivalent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">other</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.equivalent" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">equivalent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">other</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if two vertices <cite>self</cite> and <cite>other</cite> are semantically
 equivalent, or <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code> if not. You should reimplement this
 function in a derived class if your vertices have semantic information.</p>
@@ -173,7 +173,7 @@ function in a derived class if your vertices have semantic information.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Vertex.is_specific_case_of">
-<span class="sig-name descname"><span class="pre">is_specific_case_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_specific_case_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">other</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Vertex.is_specific_case_of" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> is semantically more specific than <cite>other</cite>,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. You should reimplement this function in a derived
 class if your edges have semantic information.</p>
@@ -274,7 +274,7 @@ class if your edges have semantic information.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -313,7 +313,7 @@ class if your edges have semantic information.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

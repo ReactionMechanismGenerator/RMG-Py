@@ -109,7 +109,7 @@ molecular system.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer.as_dict">
-<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#rmgpy.statmech.Conformer.as_dict" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for dumping objects as dictionaries for YAML files</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -129,14 +129,14 @@ molecular system.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_active_modes">
-<span class="sig-name descname"><span class="pre">get_active_modes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">active_j_rotor=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">active_k_rotor=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_active_modes" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_active_modes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">active_j_rotor=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">active_k_rotor=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_active_modes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of the active molecular degrees of freedom of the
 molecular system.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_center_of_mass">
-<span class="sig-name descname"><span class="pre">get_center_of_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_center_of_mass" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_center_of_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_center_of_mass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the [three-dimensional] position of the center of
 mass of the conformer in m. If a list <cite>atoms</cite> of atoms is specified,
 only those atoms will be used to calculate the center of mass.
@@ -145,42 +145,42 @@ Otherwise, all atoms will be used.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_density_of_states">
-<span class="sig-name descname"><span class="pre">get_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_density_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_density_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states <span class="math notranslate nohighlight">\(\rho(E) \ dE\)</span> at the specified
 energies <cite>e_list</cite> above the ground state.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_enthalpy">
-<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_enthalpy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol for the system at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_entropy">
-<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_entropy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K for the system at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_free_energy">
-<span class="sig-name descname"><span class="pre">get_free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_free_energy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_free_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy in J/mol for the system at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_heat_capacity">
-<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K for the system at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_internal_reduced_moment_of_inertia">
-<span class="sig-name descname"><span class="pre">get_internal_reduced_moment_of_inertia</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_internal_reduced_moment_of_inertia" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_internal_reduced_moment_of_inertia</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_internal_reduced_moment_of_inertia" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the reduced moment of inertia for an internal
 torsional rotation around the axis defined by the two atoms in
 <cite>pivots</cite>. The list <cite>top1</cite> contains the atoms that should be considered
@@ -227,7 +227,7 @@ centers of mass of both groups</p></td>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_moment_of_inertia_tensor">
-<span class="sig-name descname"><span class="pre">get_moment_of_inertia_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_moment_of_inertia_tensor" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_moment_of_inertia_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_moment_of_inertia_tensor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the moment of inertia tensor for the conformer
 in kg*m^2. If the coordinates are not at the center of mass, they are
 temporarily shifted there for the purposes of this calculation.</p>
@@ -242,7 +242,7 @@ and raises an exception if it is not.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_partition_function">
-<span class="sig-name descname"><span class="pre">get_partition_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_partition_function" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_partition_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_partition_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the partition function <span class="math notranslate nohighlight">\(Q(T)\)</span> for the system at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
@@ -257,7 +257,7 @@ kg*m^2, while the principal axes have unit length.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_sum_of_states">
-<span class="sig-name descname"><span class="pre">get_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">ndarray</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states <span class="math notranslate nohighlight">\(N(E)\)</span> at the specified energies <cite>e_list</cite>
 in kJ/mol above the ground state.</p>
 </dd></dl>
@@ -276,7 +276,7 @@ constant and the J-rotor rotational constant.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer.get_total_mass">
-<span class="sig-name descname"><span class="pre">get_total_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_total_mass" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_total_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.get_total_mass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the total mass of the atoms in the conformer in
 kg. If a list <cite>atoms</cite> of atoms is specified, only those atoms will
 be used to calculate the center of mass. Otherwise, all atoms will be
@@ -401,7 +401,7 @@ used.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -440,7 +440,7 @@ used.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

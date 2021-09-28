@@ -141,20 +141,20 @@ temperature range.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.as_dict">
-<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#rmgpy.thermo.NASA.as_dict" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for YAML dumping</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.change_base_enthalpy">
-<span class="sig-name descname"><span class="pre">change_base_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">deltaH</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><span class="pre">NASA</span></a><a class="headerlink" href="#rmgpy.thermo.NASA.change_base_enthalpy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">change_base_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">deltaH</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><span class="pre">NASA</span></a></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.change_base_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add deltaH in J/mol to the base enthalpy of formation H298 and return the
 modified NASA object.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.change_base_entropy">
-<span class="sig-name descname"><span class="pre">change_base_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">deltaS</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><span class="pre">NASA</span></a><a class="headerlink" href="#rmgpy.thermo.NASA.change_base_entropy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">change_base_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">deltaS</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><span class="pre">NASA</span></a></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.change_base_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add deltaS in J/molK to the base entropy of formation S298 and return the
 modified NASA object</p>
 </dd></dl>
@@ -172,7 +172,7 @@ modified NASA object</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.discrepancy">
-<span class="sig-name descname"><span class="pre">discrepancy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASA.discrepancy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">discrepancy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.discrepancy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return some measure of how dissimilar <cite>self</cite> is from <cite>other</cite>.</p>
 <p>The measure is arbitrary, but hopefully useful for sorting purposes.
 Discrepancy of 0 means they are identical</p>
@@ -180,35 +180,35 @@ Discrepancy of 0 means they are identical</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.get_enthalpy">
-<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASA.get_enthalpy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.get_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy <span class="math notranslate nohighlight">\(H(T)\)</span> in J/mol at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.get_entropy">
-<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASA.get_entropy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.get_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy <span class="math notranslate nohighlight">\(S(T)\)</span> in J/mol*K at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.get_free_energy">
-<span class="sig-name descname"><span class="pre">get_free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASA.get_free_energy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.get_free_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy <span class="math notranslate nohighlight">\(G(T)\)</span> in J/mol at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.get_heat_capacity">
-<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">double</span><a class="headerlink" href="#rmgpy.thermo.NASA.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the constant-pressure heat capacity
 <span class="math notranslate nohighlight">\(C_\mathrm{p}(T)\)</span> in J/mol*K at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.is_identical_to">
-<span class="sig-name descname"><span class="pre">is_identical_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.NASA.is_identical_to" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_identical_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.is_identical_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report very similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
@@ -216,7 +216,7 @@ range of temperatures, or <code class="docutils literal notranslate"><span class
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.is_similar_to">
-<span class="sig-name descname"><span class="pre">is_similar_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.NASA.is_similar_to" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_similar_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">HeatCapacityModel</span> <span class="pre">other</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.is_similar_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
 range of temperatures, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
@@ -224,7 +224,7 @@ range of temperatures, or <code class="docutils literal notranslate"><span class
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.is_temperature_valid">
-<span class="sig-name descname"><span class="pre">is_temperature_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#rmgpy.thermo.NASA.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_temperature_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the thermodynamic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
 the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
@@ -300,7 +300,7 @@ returned.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.select_polynomial">
-<span class="sig-name descname"><span class="pre">select_polynomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="nasapolynomial.html#rmgpy.thermo.NASAPolynomial" title="rmgpy.thermo.NASAPolynomial"><span class="pre">NASAPolynomial</span></a><a class="headerlink" href="#rmgpy.thermo.NASA.select_polynomial" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">select_polynomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="nasapolynomial.html#rmgpy.thermo.NASAPolynomial" title="rmgpy.thermo.NASAPolynomial"><span class="pre">NASAPolynomial</span></a></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.select_polynomial" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -311,14 +311,14 @@ returned.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.to_thermo_data">
-<span class="sig-name descname"><span class="pre">to_thermo_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="thermodata.html#rmgpy.thermo.ThermoData" title="rmgpy.thermo.ThermoData"><span class="pre">ThermoData</span></a><a class="headerlink" href="#rmgpy.thermo.NASA.to_thermo_data" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_thermo_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="thermodata.html#rmgpy.thermo.ThermoData" title="rmgpy.thermo.ThermoData"><span class="pre">ThermoData</span></a></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.to_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the NASAPolynomial model to a <a class="reference internal" href="thermodata.html#rmgpy.thermo.ThermoData" title="rmgpy.thermo.ThermoData"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThermoData</span></code></a> object.</p>
 <p>If Cp0 and CpInf are omitted or 0, they are None in the returned ThermoData.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.to_wilhoit">
-<span class="sig-name descname"><span class="pre">to_wilhoit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="wilhoit.html#rmgpy.thermo.Wilhoit" title="rmgpy.thermo.Wilhoit"><span class="pre">Wilhoit</span></a><a class="headerlink" href="#rmgpy.thermo.NASA.to_wilhoit" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_wilhoit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="wilhoit.html#rmgpy.thermo.Wilhoit" title="rmgpy.thermo.Wilhoit"><span class="pre">Wilhoit</span></a></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.to_wilhoit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a <code class="xref py py-class docutils literal notranslate"><span class="pre">MultiNASA</span></code> object <cite>multiNASA</cite> to a <a class="reference internal" href="wilhoit.html#rmgpy.thermo.Wilhoit" title="rmgpy.thermo.Wilhoit"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wilhoit</span></code></a>
 object. You must specify the linearity of the molecule <cite>linear</cite>, the number
 of vibrational modes <cite>Nfreq</cite>, and the number of hindered rotor modes
@@ -415,7 +415,7 @@ limits at zero and infinite temperature.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -454,7 +454,7 @@ limits at zero and infinite temperature.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

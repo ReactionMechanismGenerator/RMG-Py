@@ -63,7 +63,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 representation formats, e.g. SMILES, InChI, SMARTS.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.translator.from_augmented_inchi">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">from_augmented_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">aug_inchi</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Molecule</span><a class="headerlink" href="#rmgpy.molecule.translator.from_augmented_inchi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">from_augmented_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">aug_inchi</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Molecule</span></span></span><a class="headerlink" href="#rmgpy.molecule.translator.from_augmented_inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a Molecule object from the augmented inchi.</p>
 <p>First, the inchi is converted into a Molecule using
 the backend parsers.</p>
@@ -75,7 +75,7 @@ is used to fix a number of parsing errors made by the backends.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.translator.from_inchi">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">from_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">inchistr</span></em>, <em class="sig-param"><span class="pre">backend=u'try-all'</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Molecule</span><a class="headerlink" href="#rmgpy.molecule.translator.from_inchi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">from_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">inchistr</span></em>, <em class="sig-param"><span class="pre">backend=u'try-all'</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Molecule</span></span></span><a class="headerlink" href="#rmgpy.molecule.translator.from_inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert an InChI string <cite>inchistr</cite> to a molecular structure. Uses
 a user-specified backend for conversion, currently supporting
 rdkit (default) and openbabel.</p>
@@ -83,7 +83,7 @@ rdkit (default) and openbabel.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.translator.from_smarts">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">from_smarts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">smartsstr</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">backend=u'rdkit'</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Molecule</span><a class="headerlink" href="#rmgpy.molecule.translator.from_smarts" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">from_smarts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">smartsstr</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">backend=u'rdkit'</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Molecule</span></span></span><a class="headerlink" href="#rmgpy.molecule.translator.from_smarts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a SMARTS string <cite>smartsstr</cite> to a molecular structure. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 This Kekulizes everything, removing all aromatic atom types.</p>
@@ -91,7 +91,7 @@ This Kekulizes everything, removing all aromatic atom types.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.translator.from_smiles">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">from_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">smilesstr</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">backend=u'try-all'</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Molecule</span><a class="headerlink" href="#rmgpy.molecule.translator.from_smiles" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">from_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">smilesstr</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">backend=u'try-all'</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">raise_atomtype_exception=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Molecule</span></span></span><a class="headerlink" href="#rmgpy.molecule.translator.from_smiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a SMILES string <cite>smilesstr</cite> to a molecular structure. Uses
 a user-specified backend for conversion, currently supporting
 rdkit (default) and openbabel.</p>
@@ -99,7 +99,7 @@ rdkit (default) and openbabel.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.translator.to_inchi">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">to_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">backend=u'rdkit-first'</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">aug_level=0</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">unicode</span><a class="headerlink" href="#rmgpy.molecule.translator.to_inchi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">to_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">backend=u'rdkit-first'</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">aug_level=0</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">unicode</span></span></span><a class="headerlink" href="#rmgpy.molecule.translator.to_inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an InChI string.
 For aug_level=0, generates the canonical InChI.
 For aug_level=1, appends the molecule multiplicity.
@@ -108,11 +108,11 @@ For aug_level=2, appends positions of unpaired and paired electrons.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>choice of backend</strong> (<em>backend</em>) – </p></li>
+<li><p><strong>backend</strong> (<em>backend     choice of</em>) – </p></li>
 <li><p><strong>'try-all'</strong> – </p></li>
 <li><p><strong>'rdkit'</strong> – </p></li>
 <li><p><strong>'openbabel'</strong> (<em>or</em>) – </p></li>
-<li><p><strong>level of augmentation</strong> (<em>aug_level</em>) – </p></li>
+<li><p><strong>augmentation</strong> (<em>aug_level   level of</em>) – </p></li>
 <li><p><strong>0</strong> – </p></li>
 <li><p><strong>1</strong> – </p></li>
 <li><p><strong>2</strong> (<em>or</em>) – </p></li>
@@ -123,7 +123,7 @@ For aug_level=2, appends positions of unpaired and paired electrons.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.translator.to_inchi_key">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">to_inchi_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">backend=u'rdkit-first'</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">aug_level=0</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">unicode</span><a class="headerlink" href="#rmgpy.molecule.translator.to_inchi_key" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">to_inchi_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">unicode</span> <span class="pre">backend=u'rdkit-first'</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">aug_level=0</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">unicode</span></span></span><a class="headerlink" href="#rmgpy.molecule.translator.to_inchi_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an InChI Key string.
 For aug_level=0, generates the canonical InChI.
 For aug_level=1, appends the molecule multiplicity.
@@ -132,11 +132,11 @@ For aug_level=2, appends positions of unpaired and paired electrons.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>choice of backend</strong> (<em>backend</em>) – </p></li>
+<li><p><strong>backend</strong> (<em>backend     choice of</em>) – </p></li>
 <li><p><strong>'try-all'</strong> – </p></li>
 <li><p><strong>'rdkit'</strong> – </p></li>
 <li><p><strong>'openbabel'</strong> (<em>or</em>) – </p></li>
-<li><p><strong>level of augmentation</strong> (<em>aug_level</em>) – </p></li>
+<li><p><strong>augmentation</strong> (<em>aug_level   level of</em>) – </p></li>
 <li><p><strong>0</strong> – </p></li>
 <li><p><strong>1</strong> – </p></li>
 <li><p><strong>2</strong> (<em>or</em>) – </p></li>
@@ -147,7 +147,7 @@ For aug_level=2, appends positions of unpaired and paired electrons.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.translator.to_smarts">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">to_smarts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">backend=u'rdkit'</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">unicode</span><a class="headerlink" href="#rmgpy.molecule.translator.to_smarts" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">to_smarts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">backend=u'rdkit'</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">unicode</span></span></span><a class="headerlink" href="#rmgpy.molecule.translator.to_smarts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an SMARTS string. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 Perceives aromaticity and removes Hydrogen atoms.</p>
@@ -155,7 +155,7 @@ Perceives aromaticity and removes Hydrogen atoms.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.translator.to_smiles">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">to_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">backend=u'default'</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">unicode</span><a class="headerlink" href="#rmgpy.molecule.translator.to_smiles" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">to_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">Molecule</span> <span class="pre">mol</span></em>, <em class="sig-param"><span class="pre">backend=u'default'</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">unicode</span></span></span><a class="headerlink" href="#rmgpy.molecule.translator.to_smiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an SMILES string.</p>
 <p>If there is a Nitrogen/Sulfur atom present it uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion,
@@ -220,7 +220,7 @@ and removes Hydrogen atoms.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -259,7 +259,7 @@ and removes Hydrogen atoms.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
