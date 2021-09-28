@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
     branches:
-      - master
+      - main
     types: [opened, synchronize, reopened, ready_for_review, review_requested]
 jobs:
   build-and-test-linux:
@@ -12,7 +12,7 @@ jobs:
     strategy:
       max-parallel: 5
     env: # update this if needed to match a pull request on the RMG-database
-      RMG_DATABASE_BRANCH: master
+      RMG_DATABASE_BRANCH: main
     defaults:
       run:
         shell: bash -l {0}
@@ -31,7 +31,7 @@ jobs:
           conda list  
       - name: Install and link Julia dependencies 
         run: |
-          julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"master\"))"
+          julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"))"
           julia -e "using Pkg; Pkg.add(\"PyCall\"); Pkg.add(\"DifferentialEquations\")"
           python -c "import julia; julia.install()"
           ln -sfn $(which python-jl) $(which python)
@@ -51,7 +51,7 @@ jobs:
           git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
           make
       - name: Trigger RMG-tests
-        if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/stable' }} # only push events to branches other than master and stable
+        if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/stable' }} # only push events to branches other than main and stable
         env:
           GH_TOKEN: ${{ secrets.RMG_DEV_TOKEN }}
         run: ./trigger-rmg-tests.sh

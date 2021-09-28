@@ -1,8 +1,8 @@
-# <img align="top" src="https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/documentation/source/_static/rmg-logo-small.png"> Reaction Mechanism Generator (RMG)
+# <img align="top" src="https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/main/documentation/source/_static/rmg-logo-small.png"> Reaction Mechanism Generator (RMG)
 
-[![Build status](https://img.shields.io/travis/ReactionMechanismGenerator/RMG-Py/master.svg)](https://travis-ci.org/ReactionMechanismGenerator/RMG-Py)
-[![Codecov report](https://img.shields.io/codecov/c/github/ReactionMechanismGenerator/RMG-Py/master.svg)](https://codecov.io/gh/ReactionMechanismGenerator/RMG-Py)
-[![Codacy report](https://img.shields.io/codacy/grade/5c12cecf3d01400a92ea20e14ca0b880/master.svg)](https://www.codacy.com/app/ReactionMechanismGenerator/RMG-Py/dashboard)
+[![Build status](https://img.shields.io/travis/ReactionMechanismGenerator/RMG-Py/main.svg)](https://travis-ci.org/ReactionMechanismGenerator/RMG-Py)
+[![Codecov report](https://img.shields.io/codecov/c/github/ReactionMechanismGenerator/RMG-Py/main.svg)](https://codecov.io/gh/ReactionMechanismGenerator/RMG-Py)
+[![Codacy report](https://img.shields.io/codacy/grade/5c12cecf3d01400a92ea20e14ca0b880/main.svg)](https://www.codacy.com/app/ReactionMechanismGenerator/RMG-Py/dashboard)
 [![GitHub release](https://img.shields.io/github/release/ReactionMechanismGenerator/RMG-Py.svg)](https://github.com/ReactionMechanismGenerator/RMG-Py/releases)
 [![Anconda](https://img.shields.io/conda/v/rmg/rmg.svg)](https://anaconda.org/rmg/rmg)
 [![Gitter](https://img.shields.io/gitter/room/ReactionMechanismGenerator/RMG-Py.svg)](https://gitter.im/ReactionMechanismGenerator/RMG-Py)
@@ -28,9 +28,9 @@ You can either download the source from GitHub and compile yourself, or download
 Please see the [Download and Install](http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html) page for detailed instructions.
 
 ## Documentation
-- [RMG Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/users/rmg/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/master/documentation/RMG-Py_and_Arkane_Documentation.pdf))
-- [Arkane Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/users/arkane/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/master/documentation/RMG-Py_and_Arkane_Documentation.pdf))
-- [RMG API Reference](http://reactionmechanismgenerator.github.io/RMG-Py/reference/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/master/documentation/RMG-Py_API_Reference.pdf))
+- [RMG Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/users/rmg/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_and_Arkane_Documentation.pdf))
+- [Arkane Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/users/arkane/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_and_Arkane_Documentation.pdf))
+- [RMG API Reference](http://reactionmechanismgenerator.github.io/RMG-Py/reference/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_API_Reference.pdf))
 
 ## How to Contribute
 Please see the [Contributor Guidelines](https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/RMG-Contributor-Guidelines)
