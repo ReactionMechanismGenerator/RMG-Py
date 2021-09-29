@@ -1086,6 +1086,9 @@ class CoreEdgeReactionModel:
                 # remove forbidden species from edge
                 logging.info("Species {0} was Forbidden and not added to Core...Removing from Edge.".format(spec))
                 self.remove_species_from_edge(self.reaction_systems, spec)
+                # remove any empty pdep networks as a result of species removal
+                if self.pressure_dependence:
+                    self.remove_empty_pdep_networks()
 
                 return []
 
@@ -1386,19 +1389,21 @@ class CoreEdgeReactionModel:
                 for rxn in network.path_reactions:
                     if spec in rxn.reactants or spec in rxn.products:
                         rxn_list.append(rxn)
-                if len(rxn_list) > 0:
-                    for rxn in rxn_list:
-                        network.path_reactions.remove(rxn)
-                    # Delete all net reactions involving the species
-                    rxn_list = []
-                    for rxn in network.net_reactions:
-                        if spec in rxn.reactants or spec in rxn.products:
-                            rxn_list.append(rxn)
-                    for rxn in rxn_list:
-                        network.net_reactions.remove(rxn)
+                for rxn in rxn_list:
+                    network.path_reactions.remove(rxn)
+                # Delete all net reactions involving the species
+                rxn_list = []
+                for rxn in network.net_reactions:
+                    if spec in rxn.reactants or spec in rxn.products:
+                        rxn_list.append(rxn)
+                for rxn in rxn_list:
+                    network.net_reactions.remove(rxn)
+                # Remove the species from list of explored
+                if spec in network.explored:
+                    network.explored.remove(spec)
 
-                    # Recompute the isomers, reactants, and products for this network
-                    network.update_configurations(self)
+                # Recompute the isomers, reactants, and products for this network
+                network.update_configurations(self)
 
         # Remove from the global list of reactions
         # also remove it from the global list of reactions

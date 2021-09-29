@@ -834,8 +834,6 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             job.save_input_file(
                 os.path.join(output_directory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))))
 
-        self.log_summary(level=logging.INFO)
-
         # Calculate the rate coefficients
         self.initialize(Tmin, Tmax, Pmin, Pmax, maximum_grain_size, minimum_grain_count, active_j_rotor, active_k_rotor,
                         rmgmode)
@@ -940,6 +938,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                                             '{3:g} bar'.format(net_reaction, K[t, p, i, j] / kinf, Tlist[t], Plist[p] / 1e5))
                             logging.info('    k(T,P) = {0:9.2e}    k(T) = {1:9.2e}'.format(K[t, p, i, j], kinf))
                         break
+
+        self.log_summary(level=logging.INFO)
 
         # Delete intermediate arrays to conserve memory
         self.cleanup()
