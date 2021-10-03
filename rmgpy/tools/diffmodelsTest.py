@@ -31,7 +31,9 @@ import os.path
 import shutil
 import unittest
 
+from rmgpy.rmg.model import ReactionModel
 from rmgpy.tools.diffmodels import execute
+from rmgpy.tools.diffmodels import identical_models
 from rmgpy.chemkin import load_chemkin_file
 
 
@@ -131,6 +133,13 @@ class DiffModelsTest(unittest.TestCase):
         n_species = len(gas_species_list) + len(surface_species_list)
         n_reactions = len(gas_reaction_list) + len(surface_reaction_list)
 
+        model1 = ReactionModel()
+        model1.species = gas_species_list + surface_species_list
+        model1.reactions = gas_reaction_list + surface_reaction_list
+        model2 = ReactionModel()
+        model2.species = gas_species_list + surface_species_list
+        model2.reactions = gas_reaction_list + surface_reaction_list
+        assert identical_models(model1, model2), "identical models do not match"
 
         kwargs = {
             'wd': folder,

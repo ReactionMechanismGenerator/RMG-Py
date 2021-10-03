@@ -66,6 +66,20 @@ from rmgpy.rmg.output import save_diff_html
 
 ################################################################################
 
+def identical_models(model1, model2):
+    """
+    Returns True if the models are identical and False otherwise
+    `model1` and `model2` both have :class:`ReactionModel`
+    """
+    common_species, unique_species1, unique_species2 = compare_model_species(model1, model2)
+    if len(unique_species1) > 0 or len(unique_species2) > 0:
+        return False
+    common_reactions, unique_reactions1, unique_reactions2 = compare_model_reactions(model1, model2)
+    if len(unique_reactions1) > 0 or len(unique_reactions2):
+        return False
+    return True
+
+
 def compare_model_kinetics(model1, model2):
     """
     Compare the kinetics of :class:`ReactionModel` objects `model1` and 
