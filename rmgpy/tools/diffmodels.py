@@ -337,11 +337,11 @@ def execute(chemkin1, species_dict1, thermo1, chemkin2, species_dict2, thermo2, 
     model2.species, model2.reactions = load_chemkin_file(chemkin2, species_dict2, thermo_path=thermo2)
 
     # Load in the surface portion of the model if provided
-    if kwargs['surface1']:
+    if 'surface1' in kwargs.keys():
         surf_species1, surf_reactions1 = load_chemkin_file(kwargs['surface1'], species_dict1, thermo_path=thermo1)
         model1.species += surf_species1
         model1.reactions += surf_reactions1
-    if kwargs['surface2']:
+    if 'surface2' in kwargs.keys():
         surf_species2, surf_reactions2 = load_chemkin_file(kwargs['surface2'], species_dict2, thermo_path=thermo2)
         model2.species += surf_species2
         model2.reactions += surf_reactions2

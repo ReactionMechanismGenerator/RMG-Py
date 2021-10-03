@@ -32,6 +32,7 @@ import shutil
 import unittest
 
 from rmgpy.tools.diffmodels import execute
+from rmgpy.chemkin import load_chemkin_file
 
 
 class DiffModelsTest(unittest.TestCase):
@@ -117,21 +118,24 @@ class DiffModelsTest(unittest.TestCase):
     def test_identical_surface_models(self):
         folder = os.path.join(os.getcwd(), 'rmgpy/tools/data/diffmodels')
 
-        chemkin1 = os.path.join(folder, 'chem_annotated-surface1.inp')
+        chemkin1 = os.path.join(folder, 'chem_annotated-gas1.inp')
+        surface1 = os.path.join(folder, 'chem_annotated-surface1.inp')
         species_dict1 = os.path.join(folder, 'surf_species_dictionary1.txt')
 
-        chemkin2 = os.path.join(folder, 'chem_annotated-surface1.inp')
+        chemkin2 = os.path.join(folder, 'chem_annotated-gas1.inp')
+        surface2 = os.path.join(folder, 'chem_annotated-surface1.inp')
         species_dict2 = os.path.join(folder, 'surf_species_dictionary1.txt')
-
-        from rmgpy.chemkin import load_chemkin_file
-
-        species_list, reaction_list = load_chemkin_file(chemkin1,
-                                                        dictionary_path=species_dict1)
-                                                        
+        
+        gas_species_list, gas_reaction_list = load_chemkin_file(chemkin1, dictionary_path=species_dict1)
+        surface_species_list, surface_reaction_list = load_chemkin_file(surface1, dictionary_path=species_dict1)
+        n_species = len(gas_species_list) + len(surface_species_list)
+        n_reactions = len(gas_reaction_list) + len(surface_reaction_list)
 
 
         kwargs = {
             'wd': folder,
+            'surface1': surface1,
+            'surface2': surface2
         }
 
         results = execute(chemkin1, species_dict1, None, chemkin2, species_dict2, None, **kwargs)
@@ -144,11 +148,11 @@ class DiffModelsTest(unittest.TestCase):
         unique_reactions1 = results[4]
         unique_reactions2 = results[5]
 
-        assert len(common_species) == 13, 'different number of expected common species'
+        assert len(common_species) == n_species, 'different number of expected common species'
         assert len(unique_species1) == 0, 'model 1 has unique species'
         assert len(unique_species2) == 0, 'model 2 has unique species'
 
-        assert len(common_reactions) == 20, 'different number of expected common reactions'
+        assert len(common_reactions) == n_reactions, 'different number of expected common reactions'
         assert len(unique_reactions1) == 0, 'model 1 has unique reactions'
         assert len(unique_reactions2) == 0, 'model 2 has unique reactions'
 
