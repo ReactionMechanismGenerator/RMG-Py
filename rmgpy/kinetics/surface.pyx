@@ -242,6 +242,19 @@ cdef class StickingCoefficient(KineticsModel):
         """
         self._A.value_si *= factor
 
+    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
+        """
+        Return the value of the rate coefficient :math:`k(T)` in units of ???
+        and at the specified temperature `T` in K. 
+        """
+        # TODO check units and conversion
+        # https://cantera.org/science/reactions.html
+        # gamma = self.get_sticking_coefficient(T)
+        return self.get_sticking_coefficient(T)
+
+        
+
+
 ################################################################################
 cdef class StickingCoefficientBEP(KineticsModel):
     """
@@ -422,6 +435,16 @@ cdef class StickingCoefficientBEP(KineticsModel):
         Sets a cantera ElementaryReaction() object in an Arrhenius form.
         """
         raise NotImplementedError('set_cantera_kinetics() is not implemented for StickingCoefficientBEP class kinetics.')
+
+    cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
+        """
+        Return the value of the rate coefficient :math:`k(T)` in units of ???
+        and at the specified temperature `T` in K. 
+        """
+        # TODO check units and conversion
+        # https://cantera.org/science/reactions.html
+        # gamma = self.get_sticking_coefficient(T)
+        return self.get_sticking_coefficient(T)
 
 ################################################################################
 
