@@ -281,6 +281,10 @@ def parse_command_line_arguments():
     parser.add_argument('--diffOnly', action='store_true', help='Do not show identical species thermo or reactions')
     parser.add_argument('--commonDiffOnly', action='store_true',
                         help='Only show species and reactions present in BOTH models which have different values')
+    parser.add_argument('--surface1', metavar='SURFACE1', type=str, nargs=1,
+                        help='the surface chemkin file of the first model')
+    parser.add_argument('--surface2', metavar='SURFACE2', type=str, nargs=1,
+                        help='the surface chemkin file of the second model')
 
     args = parser.parse_args()
 
@@ -305,12 +309,22 @@ def main():
         thermo2 = args.thermo2[0]
     else:
         thermo2 = None
+    if args.surface1:
+        surface1 = args.surface1[0]
+    else:
+        surface1 = None
+    if args.surface2:
+        surface2 = args.surface2[0]
+    else:
+        surface2 = None
 
     kwargs = {
         'web': args.web,
         'wd': os.getcwd(),
         'diffOnly': args.diffOnly,
         'commonDiffOnly': args.commonDiffOnly,
+        'surface1': surface1,  # TODO test with and without surface chemkin arguments
+        'surface2': surface2
     }
 
     execute(chemkin1, species_dict1, thermo1, chemkin2, species_dict2, thermo2, **kwargs)
@@ -321,6 +335,16 @@ def execute(chemkin1, species_dict1, thermo1, chemkin2, species_dict2, thermo2, 
     model1.species, model1.reactions = load_chemkin_file(chemkin1, species_dict1, thermo_path=thermo1)
     model2 = ReactionModel()
     model2.species, model2.reactions = load_chemkin_file(chemkin2, species_dict2, thermo_path=thermo2)
+
+    # Load in the surface portion of the model if provided
+    if kwargs['surface1']:
+        surf_species1, surf_reactions1 = load_chemkin_file(kwargs['surface1'], species_dict1, thermo_path=thermo1)
+        model1.species += surf_species1
+        model1.reactions += surf_reactions1
+    if kwargs['surface2']:
+        surf_species2, surf_reactions2 = load_chemkin_file(kwargs['surface2'], species_dict2, thermo_path=thermo2)
+        model2.species += surf_species2
+        model2.reactions += surf_reactions2
 
     common_species, unique_species1, unique_species2 = compare_model_species(model1, model2)
     common_reactions, unique_reactions1, unique_reactions2 = compare_model_reactions(model1, model2)
