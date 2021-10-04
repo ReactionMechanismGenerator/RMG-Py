@@ -83,6 +83,16 @@ def fails_species_constraints(species):
         if struct.is_isomorphic(molecule):
             return False
 
+    explicitly_forbidden_molecules = species_constraints.get('explicitlyForbiddenMolecules', [])
+    for molecule in explicitly_forbidden_molecules:
+        if struct.is_isomorphic(molecule):
+            return True
+
+    explicitly_forbidden_groups = species_constraints.get('explicitlyForbiddenGroups', [])
+    for group in explicitly_forbidden_groups:
+        if struct.is_subgraph_isomorphic(group):
+            return True
+
     max_carbon_atoms = species_constraints.get('maximumCarbonAtoms', -1)
     if max_carbon_atoms != -1:
         if struct.get_num_atoms('C') > max_carbon_atoms:
