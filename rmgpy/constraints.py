@@ -114,7 +114,7 @@ def fails_species_constraints(species):
             return True
 
     max_surface_bond_order = species_constraints.get('maximumSurfaceBondOrder', -1)
-    if max_surface_sites != -1:
+    if max_surface_bond_order != -1:
         for site in struct.get_surface_sites():
             if site.get_total_bond_order() > max_surface_bond_order:
                 return True
