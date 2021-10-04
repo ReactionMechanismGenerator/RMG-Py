@@ -390,7 +390,11 @@ def get_element_mass(input_element, isotope=None):
         number = input_element
     elif isinstance(input_element, str):
         symbol = input_element
-        number = next(key for key, value in symbol_by_number.items() if value == input_element)
+        try:
+            number = next(key for key, value in symbol_by_number.items() if value == input_element)
+        except:
+            symbol = input_element[0] + input_element[1].lower()
+            number = [key for key, value in symbol_by_number.items() if value == symbol][0]
 
     if symbol is None or number is None:
         raise ValueError('Could not identify element {0}'.format(input_element))
