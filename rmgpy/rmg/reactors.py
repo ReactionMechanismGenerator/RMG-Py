@@ -413,22 +413,22 @@ def to_rms(obj, species_names=None, rms_species_list=None):
         return rms.Chebyshev(coeffs, Tmin, Tmax, Pmin, Pmax, rms.EmptyRateUncertainty())
     elif isinstance(obj, ThirdBody):
         arr = to_rms(obj.arrheniusLow)
-        efficiencies = {spc.label: float(val) for spc, val in obj.efficiencies.items() if val != 1}
-        return rms.ThirdBody(arr, rms.EmptyRateUncertainty(), nameefficiencies=efficiencies)
+        efficiencies = {spc.smiles: float(val) for spc, val in obj.efficiencies.items() if val != 1}
+        return rms.ThirdBody(arr, unc=rms.EmptyRateUncertainty(), nameefficiencies=efficiencies)
     elif isinstance(obj, Lindemann):
         arrlow = to_rms(obj.arrheniusLow)
         arrhigh = to_rms(obj.arrheniusHigh)
-        efficiencies = {spc.label: float(val) for spc, val in obj.efficiencies.items() if val != 1}
-        return rms.Lindemann(arrhigh, arrlow, rms.EmptyRateUncertainty(), nameefficiencies=efficiencies)
+        efficiencies = {spc.smiles: float(val) for spc, val in obj.efficiencies.items() if val != 1}
+        return rms.Lindemann(arrhigh, arrlow, unc=rms.EmptyRateUncertainty(), nameefficiencies=efficiencies)
     elif isinstance(obj, Troe):
         arrlow = to_rms(obj.arrheniusLow)
         arrhigh = to_rms(obj.arrheniusHigh)
-        efficiencies = {spc.label: float(val) for spc, val in obj.efficiencies.items() if val != 1}
+        efficiencies = {spc.smiles: float(val) for spc, val in obj.efficiencies.items() if val != 1}
         alpha = obj.alpha
         T1 = obj._T1.value_si if obj._T1 is not None else 0.0
         T2 = obj._T2.value_si if obj._T2 is not None else 0.0
         T3 = obj._T3.value_si if obj._T3 is not None else 0.0
-        return rms.Troe(arrhigh, arrlow, alpha, T3, T1, T2, rms.EmptyRateUncertainty(), nameefficiencies=efficiencies)
+        return rms.Troe(arrhigh, arrlow, alpha, T3, T1, T2, unc=rms.EmptyRateUncertainty(), nameefficiencies=efficiencies)
     elif isinstance(obj, StickingCoefficient):
         if obj._T0.value_si != 1:
             A = obj._A.value_si / (obj._T0.value_si) ** obj._n.value_si
