@@ -35,7 +35,7 @@ import numpy as np
 
 from rmgpy import settings
 from rmgpy.exceptions import DatabaseError, InputError
-from rmgpy.molecule import Molecule
+from rmgpy.molecule import Molecule, Group
 from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
@@ -208,6 +208,9 @@ def inchi(string):
 
 def adjacency_list(string):
     return Molecule().from_adjacency_list(string)
+
+def group_adjacency_list(string):
+    return Group().from_adjacency_list(string)
 
 def react(tups):
     if not isinstance(tups, list):
@@ -1019,6 +1022,8 @@ def generated_species_constraints(**kwargs):
         'maximumSingletCarbenes',
         'maximumCarbeneRadicals',
         'allowSingletO2',
+        'explicitlyForbiddenMolecules',
+        'explicitlyForbiddenGroups',
     ]
 
     for key, value in kwargs.items():
@@ -1155,6 +1160,7 @@ def read_input_file(path, rmg0):
         'SMILES': smiles,
         'InChI': inchi,
         'adjacencyList': adjacency_list,
+        'groupAdjacencyList': group_adjacency_list,
         'react': react,
         'simpleReactor': simple_reactor,
         'constantVIdealGasReactor' : constant_V_ideal_gas_reactor,

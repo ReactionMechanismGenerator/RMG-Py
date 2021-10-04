@@ -64,7 +64,7 @@ from rmgpy.data.rmg import RMGDatabase
 from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError, InputError
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.kinetics import ThirdBody
-from rmgpy.molecule import Molecule
+from rmgpy.molecule import Molecule, Group
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
