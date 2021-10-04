@@ -399,6 +399,13 @@ class Atom(Vertex):
         """
         return self.element.number == 6
 
+    def is_lithium(self):
+        """
+        Return ``True`` if the atom represents a hydrogen atom or ``False`` if
+        not.
+        """
+        return self.element.number == 3
+
     def is_nitrogen(self):
         """
         Return ``True`` if the atom represents a nitrogen atom or ``False`` if
@@ -2357,7 +2364,7 @@ class Molecule(Graph):
         """
         cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=float)
         for atom1 in self.vertices:
-            if atom1.is_hydrogen() or atom1.is_surface_site() or atom1.is_electron():
+            if atom1.is_hydrogen() or atom1.is_surface_site() or atom1.is_electron() or atom1.is_lithium():
                 atom1.lone_pairs = 0
             else:
                 order = atom1.get_total_bond_order()
