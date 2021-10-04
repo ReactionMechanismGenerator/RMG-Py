@@ -397,29 +397,29 @@ def to_rms(obj, species_names=None, rms_species_list=None):
     elif isinstance(obj, PDepArrhenius):
         Ps = obj._pressures.value_si
         arrs = [to_rms(arr) for arr in obj.arrhenius]
-        return rms.PDepArrhenius(Ps, arrs)
+        return rms.PDepArrhenius(Ps, arrs, rms.EmptyRateUncertainty())
     elif isinstance(obj, MultiArrhenius):
         arrs = [to_rms(arr) for arr in obj.arrhenius]
-        return rms.MultiArrhenius(arrs)
+        return rms.MultiArrhenius(arrs, rms.EmptyRateUncertainty())
     elif isinstance(obj, MultiPDepArrhenius):
         parrs = [to_rms(parr) for parr in obj.arrhenius]
-        return rms.MultiPdepArrhenius(parrs)
+        return rms.MultiPdepArrhenius(parrs, rms.EmptyRateUncertainty())
     elif isinstance(obj, Chebyshev):
         Tmin = obj.Tmin.value_si
         Tmax = obj.Tmax.value_si
         Pmin = obj.Pmin.value_si
         Pmax = obj.Pmax.value_si
         coeffs = obj.coeffs.value_si.tolist()
-        return rms.Chebyshev(coeffs, Tmin, Tmax, Pmin, Pmax)
+        return rms.Chebyshev(coeffs, Tmin, Tmax, Pmin, Pmax, rms.EmptyRateUncertainty())
     elif isinstance(obj, ThirdBody):
         arr = to_rms(obj.arrheniusLow)
         efficiencies = {spc.label: float(val) for spc, val in obj.efficiencies.items() if val != 1}
-        return rms.ThirdBody(arr, nameefficiencies=efficiencies)
+        return rms.ThirdBody(arr, rms.EmptyRateUncertainty(), nameefficiencies=efficiencies)
     elif isinstance(obj, Lindemann):
         arrlow = to_rms(obj.arrheniusLow)
         arrhigh = to_rms(obj.arrheniusHigh)
         efficiencies = {spc.label: float(val) for spc, val in obj.efficiencies.items() if val != 1}
-        return rms.Lindemann(arrhigh, arrlow, nameefficiencies=efficiencies)
+        return rms.Lindemann(arrhigh, arrlow, rms.EmptyRateUncertainty(), nameefficiencies=efficiencies)
     elif isinstance(obj, Troe):
         arrlow = to_rms(obj.arrheniusLow)
         arrhigh = to_rms(obj.arrheniusHigh)
@@ -428,7 +428,7 @@ def to_rms(obj, species_names=None, rms_species_list=None):
         T1 = obj._T1.value_si if obj._T1 is not None else 0.0
         T2 = obj._T2.value_si if obj._T2 is not None else 0.0
         T3 = obj._T3.value_si if obj._T3 is not None else 0.0
-        return rms.Troe(arrhigh, arrlow, alpha, T3, T1, T2, nameefficiencies=efficiencies)
+        return rms.Troe(arrhigh, arrlow, alpha, T3, T1, T2, rms.EmptyRateUncertainty(), nameefficiencies=efficiencies)
     elif isinstance(obj, StickingCoefficient):
         if obj._T0.value_si != 1:
             A = obj._A.value_si / (obj._T0.value_si) ** obj._n.value_si
