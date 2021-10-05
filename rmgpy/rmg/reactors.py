@@ -426,23 +426,35 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         coeffs = obj.coeffs.value_si.tolist()
         return rms.Chebyshev(coeffs, Tmin, Tmax, Pmin, Pmax)
     elif isinstance(obj, ThirdBody):
-        arr = to_rms(obj.arrheniusLow)
-        efficiencies = {spc.label: float(val) for spc, val in obj.efficiencies.items() if val != 1}
-        return rms.ThirdBody(arr, nameefficiencies=efficiencies)
+        arrstr = arrhenius_to_julia_string(obj.arrheniusLow)
+        efficiencies = {species_names[i] : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
+        dstr = "Dict{String,Float64}(["
+        for key,value in efficiencies.items():
+            dstr += "\"" + key + "\"" "=>" + str(value) + ","
+        dstr += "])"
+        return Main.eval("using ReactionMechanismSimulator; ThirdBody("+arrstr+", Dict{Int64,Float64}([]), " + dstr + "," + "EmptyRateUncertainty())")
     elif isinstance(obj, Lindemann):
-        arrlow = to_rms(obj.arrheniusLow)
-        arrhigh = to_rms(obj.arrheniusHigh)
-        efficiencies = {spc.label: float(val) for spc, val in obj.efficiencies.items() if val != 1}
-        return rms.Lindemann(arrhigh, arrlow, nameefficiencies=efficiencies)
+        arrlow = arrhenius_to_julia_string(obj.arrheniusLow)
+        arrhigh = arrhenius_to_julia_string(obj.arrheniusHigh)
+        efficiencies = {species_names[i] : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
+        dstr = "Dict{String,Float64}(["
+        for key,value in efficiencies.items():
+            dstr += "\"" + key + "\"" "=>" + str(value) + ","
+        dstr += "])"
+        return Main.eval("using ReactionMechanismSimulator; Lindemann(" + arrhigh+"," + arrlow + "," + "Dict{Int64,Float64}([])," + dstr + "," + "EmptyRateUncertainty())")
     elif isinstance(obj, Troe):
-        arrlow = to_rms(obj.arrheniusLow)
-        arrhigh = to_rms(obj.arrheniusHigh)
-        efficiencies = {spc.label: float(val) for spc, val in obj.efficiencies.items() if val != 1}
+        arrlow = arrhenius_to_julia_string(obj.arrheniusLow)
+        arrhigh = arrhenius_to_julia_string(obj.arrheniusHigh)
+        efficiencies = {species_names[i] : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
         alpha = obj.alpha
         T1 = obj._T1.value_si if obj._T1 is not None else 0.0
         T2 = obj._T2.value_si if obj._T2 is not None else 0.0
         T3 = obj._T3.value_si if obj._T3 is not None else 0.0
-        return rms.Troe(arrhigh, arrlow, alpha, T3, T1, T2, nameefficiencies=efficiencies)
+        dstr = "Dict{String,Float64}(["
+        for key,value in efficiencies.items():
+            dstr += "\"" + key + "\"" "=>" + str(value) + ","
+        dstr += "])"
+        return Main.eval("using ReactionMechanismSimulator; Troe(" + arrhigh+"," + arrlow + "," + str(alpha) + "," + str(T3) + "," + str(T1) + "," + str(T2) + "," + "Dict{Int64,Float64}([])," + dstr + "," + "EmptyRateUncertainty())")
     elif isinstance(obj, StickingCoefficient):
         if obj._T0.value_si != 1:
             A = obj._A.value_si / (obj._T0.value_si) ** obj._n.value_si
@@ -495,3 +507,6 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     else:
         errortype = type(obj)
         raise ValueError(f"Couldn't convert object of type {errortype} to an RMS object")
+
+def arrhenius_to_julia_string(obj):
+    return "Arrhenius(" + str(obj.A.value_si) + "," + str(obj.n.value_si) + "," + str(obj.Ea.value_si) + ", EmptyRateUncertainty())"
