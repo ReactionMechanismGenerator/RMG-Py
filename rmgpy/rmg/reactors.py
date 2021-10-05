@@ -189,6 +189,7 @@ class Phase:
         self.reactions = []
         self.names = []
         self.species_dict = dict()
+        self.rmg_species = []
         if solvent:
             self.solvent = to_rms(solvent)
         if site_density:
@@ -227,6 +228,8 @@ class Phase:
             label = spc.label
             logging.debug(f"species {label} was already in phase skipping...")
             return
+
+        self.rmg_species.append(spc)
 
         label = spc.label
         spec = to_rms(spc)
@@ -382,7 +385,7 @@ class ConstantTLiquidSurfaceReactor(Reactor):
         react,y0,p = rms.Reactor((domainliq,domaincat), (y0liq,y0cat), (0.0, self.tf), [inter], (pliq,pcat,pinter))
         return react, (domainliq,domaincat), [inter], p
 
-def to_rms(obj, species_names=None, rms_species_list=None):
+def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     """
     Generate corresponding rms object
     """
