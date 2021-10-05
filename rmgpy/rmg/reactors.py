@@ -189,6 +189,7 @@ class Phase:
         self.reactions = []
         self.names = []
         self.species_dict = dict()
+        self.add_later_reactions = []
         self.rmg_species = []
         if solvent:
             self.solvent = to_rms(solvent)
@@ -215,7 +216,17 @@ class Phase:
         """
         add a reaction to the phase
         """
-        self.reactions.append(to_rms(rxn, species_names=self.names, rms_species_list=self.species))
+        if self.add_later_reactions != []:
+            for rxn in self.add_later_reactions:
+                try:
+                    self.reactions.append(to_rms(rxn, species_names=self.names, rms_species_list=self.species, rmg_species=self.rmg_species))
+                    self.add_later_reactions.remove(rxn)
+                except ValueError:
+                    pass
+        try:
+            self.reactions.append(to_rms(rxn, species_names=self.names, rms_species_list=self.species, rmg_species=self.rmg_species))
+        except ValueError: #often reactions with efficiencies from seed mechanisms can't be fully constructed until input species are added
+            self.add_later_reactions.append(rxn)
 
     def add_species(self, spc, edge_phase=None):
         """
@@ -467,7 +478,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         productinds = [species_names.index(spc.label) for spc in obj.products]
         reactants = [rms_species_list[i] for i in reactantinds]
         products = [rms_species_list[i] for i in productinds]
-        kinetics = to_rms(obj.kinetics)
+        kinetics = to_rms(obj.kinetics, species_names=species_names, rms_species_list=rms_species_list, rmg_species=rmg_species)
         radchange = sum([spc.molecule[0].multiplicity-1 for spc in obj.products]) - sum([spc.molecule[0].multiplicity-1 for spc in obj.reactants])
         electronchange = 0 #for now
         return rms.ElementaryReaction(obj.index, reactants, reactantinds, products, productinds, kinetics, electronchange, radchange, obj.reversible, [])
