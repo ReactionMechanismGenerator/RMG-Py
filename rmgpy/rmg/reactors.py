@@ -414,10 +414,10 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         return rms.PDepArrhenius(Ps, arrs)
     elif isinstance(obj, MultiArrhenius):
         arrs = [to_rms(arr) for arr in obj.arrhenius]
-        return rms.MultiArrhenius(arrs)
+        return rms.MultiArrhenius(arrs, rms.EmptyRateUncertainty())
     elif isinstance(obj, MultiPDepArrhenius):
         parrs = [to_rms(parr) for parr in obj.arrhenius]
-        return rms.MultiPdepArrhenius(parrs)
+        return rms.MultiPdepArrhenius(parrs, rms.EmptyRateUncertainty())
     elif isinstance(obj, Chebyshev):
         Tmin = obj.Tmin.value_si
         Tmax = obj.Tmax.value_si
