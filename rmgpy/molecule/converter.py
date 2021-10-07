@@ -87,11 +87,11 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
         # for carbene, nitrene and atomic oxygen
         # For other atoms, to be added once encountered
         if atom.is_carbon() and atom.lone_pairs >= 1 and not atom.charge:
-            reset_num_electron[i] = atom.radical_electrons
+            reset_num_electron[index] = atom.radical_electrons
         elif atom.is_nitrogen() and atom.lone_pairs >= 2 and not atom.charge:
-            reset_num_electron[i] = atom.radical_electrons
+            reset_num_electron[index] = atom.radical_electrons
         elif atom.is_oxygen and atom.lone_pairs >= 3 and not atom.charge:
-            reset_num_electron[i] = atom.radical_electrons
+            reset_num_electron[index] = atom.radical_electrons
         rdkitmol.AddAtom(rd_atom)
         if not (remove_h and atom.symbol == 'H'):
             rd_atom_indices[atom] = index
