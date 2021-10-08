@@ -66,7 +66,7 @@ from rmgpy.kinetics.kineticsdata import KineticsData
 from rmgpy.kinetics.falloff import Troe, ThirdBody, Lindemann
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.data.solvation import SolventData
-from rmgpy.kinetics.surface import StickingCoefficient
+from rmgpy.kinetics.surface import StickingCoefficient, SurfaceChargeTransfer
 from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.depository import DepositoryReaction
@@ -590,6 +590,16 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         n = obj._n.value_si
         Ea = obj._Ea.value_si
         return rms.Arrhenius(A, n, Ea, rms.EmptyRateUncertainty())
+    elif isinstance(obj, SurfaceChargeTransfer):
+        A = obj._A.value_si
+        if obj._T0.value_si != 1.0:
+            A /= ((obj._T0.value_si) ** obj._n.value_si)
+        if obj._V0.value_si != 0.0:
+            A *= np.exp(obj._alpha.value_si*obj._electrons.value_si*constants.F*obj.V0.value_si)
+        n = obj._n.value_si
+        Ea = obj._Ea.value_si
+        q = obj._alpha.value_si*obj._electrons.value_si
+        return rms.Arrheniusq(A, n, Ea, q, rms.EmptyRateUncertainty())
     elif isinstance(obj, PDepArrhenius):
         Ps = obj._pressures.value_si
         arrs = [to_rms(arr) for arr in obj.arrhenius]
