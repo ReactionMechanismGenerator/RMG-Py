@@ -444,10 +444,14 @@ def to_rms(obj, species_names=None, rms_species_list=None):
     elif isinstance(obj, Species):
         atomnums = dict()
         for atm in obj.molecule[0].atoms:
-            if atomnums.get(atm.element.symbol):
-                atomnums[atm.element.symbol] += 1
-            else:
-                atomnums[atm.element.symbol] = 1
+            try:
+                if atomnums.get(atm.element.symbol):
+                    atomnums[atm.element.symbol] += 1
+                else:
+                    atomnums[atm.element.symbol] = 1
+            except AttributeError:
+                # means it is fragment's cutting label
+                pass
         bondnum = len(obj.molecule[0].get_all_edges())
         if not obj.molecule[0].contains_surface_site():
             rad = rms.getspeciesradius(atomnums, bondnum)
