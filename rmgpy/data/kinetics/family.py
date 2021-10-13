@@ -3148,9 +3148,12 @@ class KineticsFamily(Database):
 
         if exts == [] and not gave_up_split:  # should only occur when all reactions at this node are identical
             rs = template_rxn_map[parent.label]
+            split_violation_flag = False
             for q, rxn in enumerate(rs):
+                if split_violation_flag:
+                    break
                 for j in range(q):
-                    if not same_species_lists(rxn.reactants, rs[j].reactants, generate_initial_map=True, save_order=self.save_order):
+                    if (not split_violation_flag) and (not same_species_lists(rxn.reactants, rs[j].reactants, generate_initial_map=True, save_order=self.save_order)):
                         for p, atm in enumerate(parent.item.atoms):
                             if atm.reg_dim_atm[0] != atm.reg_dim_atm[1]:
                                 logging.error('atom violation')
@@ -3193,11 +3196,21 @@ class KineticsFamily(Database):
                             for prod in rxn.products:
                                 logging.error(prod.label)
                                 logging.error(prod.to_adjacency_list())
-                        logging.error("Clearing Regularization Dimensions and Reattempting")  # this usually happens when node expansion breaks some symmetry
-                        parent.item.clear_reg_dims()  # this almost always solves the problem
-                        return True
+                        if 'split_violations' in parent.item.props:
+                            parent.item.props['split_violations'] += 1
+                        else:
+                            parent.item.props['split_violations'] = 1
+                        split_violation_flag = True
+                        if parent.item.props['split_violations'] >= 5:
+                            # give up
+                            # break the loop, and add facets to extend the tree
+                            logging.error(f"Exceeded max split violations for {parent.label}")
+                            return False
+                        else:
+                            logging.error("Clearing Regularization Dimensions and Reattempting")  # this usually happens when node expansion breaks some symmetry
+                            parent.item.clear_reg_dims()  # this almost always solves the problem
+                            return True
             return False
-        
         if gave_up_split:
             return False
         
