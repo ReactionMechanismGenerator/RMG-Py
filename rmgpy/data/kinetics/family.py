@@ -897,7 +897,12 @@ class KineticsFamily(Database):
                         continue
                     else:
                         spec_labeled_atoms = spec.molecule[0].get_all_labeled_atoms()
+                        spcs_labels = sorted(spec_labeled_atoms.keys())
                         ex_spec_labeled_atoms = ex_spec.molecule[0].get_all_labeled_atoms()
+                        ex_spcs_labels = sorted(ex_spec_labeled_atoms.keys())
+                        if spcs_labels != ex_spcs_labels:
+                            # the species have different labels, therefore not at match
+                            continue
                         initial_map = {}
                         try:
                             for atomLabel in spec_labeled_atoms:
