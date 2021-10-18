@@ -62,6 +62,7 @@ from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
 from rmgpy.tools.uncertainty import KineticParameterUncertainty
+from rmgpy.molecule.fragment import Fragment, CuttingLabel
 
 ################################################################################
 
@@ -1371,9 +1372,11 @@ class KineticsFamily(Database):
         # Also copy structures so we don't modify the originals
         # Since the tagging has already occurred, both the reactants and the
         # products will have tags
-        if isinstance(reactant_structures[0], Group):
+        if any(isinstance(reactant, Fragment) for reactant in reactant_structures):
+            reactant_structure = Fragment()
+        elif isinstance(reactant_structures[0], Group):
             reactant_structure = Group()
-        else:
+        elif isinstance(reactant_structures[0], Molecule):
             reactant_structure = Molecule()
         for s in reactant_structures:
             reactant_structure = reactant_structure.merge(s.copy(deep=True))
@@ -1446,7 +1449,7 @@ class KineticsFamily(Database):
         product_structure = reactant_structure
 
         if not product_structure.props['validAromatic']:
-            if isinstance(product_structure, Molecule):
+            if isinstance(product_structure, Molecule) or isinstance(product_structure, Fragment):
                 # For molecules, kekulize the product to redistribute bonds appropriately
                 product_structure.kekulize()
             else:
@@ -1600,6 +1603,8 @@ class KineticsFamily(Database):
             # (families with charged substances), the charge of structures will be updated
             if isinstance(struct, Molecule):
                 struct.update(sort_atoms=not self.save_order)
+            elif isinstance(struct, Fragment):
+                struct.update()
             elif isinstance(struct, Group):
                 struct.reset_ring_membership()
                 if label in ['1,2_insertion_co', 'r_addition_com', 'co_disproportionation',
