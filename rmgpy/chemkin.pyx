@@ -830,6 +830,8 @@ def load_species_dictionary(path, generate_resonance_structures=True):
     If `generate_resonance_structures` is True (default if omitted)
     then resonance isomers for each species are generated.
     """
+    from rmgpy.molecule.fragment import Fragment
+    import re
     species_dict = {}
 
     inerts = [Species().from_smiles(inert) for inert in ('[He]', '[Ne]', 'N#N', '[Ar]')]
@@ -838,7 +840,18 @@ def load_species_dictionary(path, generate_resonance_structures=True):
         for line in f:
             if line.strip() == '' and adjlist.strip() != '':
                 # Finish this adjacency list
-                species = Species().from_adjacency_list(adjlist)
+                if len(re.findall(r'([LR]\d?)', adjlist)) != 0:
+                    frag = Fragment().from_adjacency_list(adjlist)
+                    species = Species(molecule = [frag])
+                    for label in adjlist.splitlines():
+                        if label.strip():
+                            break
+                    else:
+                        label = ''
+                    if len(label.split()) > 0 and not label.split()[0].isdigit():
+                        species.label = label.strip()
+                else:
+                    species = Species().from_adjacency_list(adjlist)
                 if generate_resonance_structures:
                     species.generate_resonance_structures()
                 label = species.label
@@ -857,7 +870,18 @@ def load_species_dictionary(path, generate_resonance_structures=True):
                 adjlist += line
         else:  #reach end of file
             if adjlist.strip() != '':
-                species = Species().from_adjacency_list(adjlist)
+                if len(re.findall(r'([LR]\d?)', adjlist)) != 0:
+                    frag = Fragment().from_adjacency_list(adjlist)
+                    species = Species(molecule = [frag])
+                    for label in adjlist.splitlines():
+                        if label.strip():
+                            break
+                    else:
+                        label = ''
+                    if len(label.split()) > 0 and not label.split()[0].isdigit():
+                        species.label = label.strip()
+                else:
+                    species = Species().from_adjacency_list(adjlist)
                 if generate_resonance_structures:
                     species.generate_resonance_structures()
                 label = species.label
