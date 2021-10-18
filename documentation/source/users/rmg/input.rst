@@ -235,7 +235,7 @@ The following is an example of a typical species item, based on methane using SM
 Forbidden Structures
 =====================
 
-RMG exlores a wide varitey of structures as it builds a mechanism.
+RMG exlores a wide variety of structures as it builds a mechanism.
 Sometimes, RMG makes nonsensical, unphysical, or unstable species that make their way into the core.
 
 Luckily, RMG has a remedy to prevent these undesirable structures from making their way into your mechanism.
