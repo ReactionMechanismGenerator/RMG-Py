@@ -296,7 +296,12 @@ class CoreEdgeReactionModel:
 
         # If we're here then we're ready to make the new species
         if check_cut:
-            mols = molecule.cut_molecule(cut_through = False)
+            try:
+                mols = molecule.cut_molecule(cut_through = False)
+            except AttributeError:
+                # it's Molecule object
+                molecule = Fragment().from_adjacency_list(molecule.to_adjacency_list())
+                mols = molecule.cut_molecule(cut_through = False)
             if len(mols) == 1:
                 molecule = mols[0]
             else:
