@@ -62,7 +62,7 @@ jobs:
     env: 
       # if running on RMG-Py but requiring changes on an un-merged branch of RMG-database, replace
       # main with the name of the branch
-      RMG_DATABASE_BRANCH: main
+      RMG_DATABASE_BRANCH: update_atom_enthalpies
 
       # This is true only if this is a reference case for the regression testing:
       REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && matrix.os =='ubuntu-latest' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
