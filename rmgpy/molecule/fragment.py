@@ -1029,7 +1029,7 @@ class Fragment(Graph):
 
         _ , cutting_label_list = self.detect_cutting_label(smiles)
 
-        metal_list = ['[Cl]', '[I]', '[Si]', '[F]', '[Si+]', '[Si-]', '[Br]', '[He+]', '[Ne+]', '[Ar+]']
+        metal_list = ['[Cl]', '[I]', '[Si]', '[F]', '[Si+]', '[Si-]', '[Br]', '[He+]', '[Ne+]', '[Ar+]', '[He-]', '[Ne-]', '[Ar-]', '[P]', '[P+]', '[P-]']
 
         for index, element in enumerate(cutting_label_list):
             smiles = smiles.replace(element, metal_list[index], 1)
