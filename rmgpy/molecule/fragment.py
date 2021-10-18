@@ -1795,14 +1795,14 @@ class Fragment(Graph):
         molecule1 = Chem.MolFromSmiles(molecule_smiles)
         molecule_F2 = Chem.MolFromSmiles('FCl')
 
-        rxn_smallchain_1 = AllChem.ReactionFromSmarts("[!c;!R:1]-[!c;!R:2]-[!c;!R:3]=[!c;!R:4]-[!c;!R:5]-[!c;!R:6]-[!c;!R:7]-[!c;!R:8].[F:11]-[Cl:12]>>\
-        [!c;!R:1]-[!c;!R:2]-[!c;!R:3]=[!c;!R:4]-[!c;!R:5]-[!c;!R:6]-[!c;!R:7][F:11].[Cl:12]-[!c;!R:8]") # CCC=CCCC
+        rxn_smallchain_1 = AllChem.ReactionFromSmarts("[!c;!R:1]-[!c;!R:2]-[!c;!R:3]=[!c;!R:4]-[!c;!R:5]-[!c;!R:6]-[CX4;!c;!R:7]-[CX4;!c;!R:8].[F:11]-[Cl:12]>>\
+        [!c;!R:1]-[!c;!R:2]-[!c;!R:3]=[!c;!R:4]-[!c;!R:5]-[!c;!R:6]-[CX4;!c;!R:7][F:11].[Cl:12]-[CX4;!c;!R:8]") # CCC=CCCC
 
-        rxn_smallchain_2 = AllChem.ReactionFromSmarts("[!c;!R:1]=[!c;!R:2]-[!c;!R:3]-[!c;!R:4]-[!c;!R:5]-[!c;!R:6].[F:7]-[Cl:8]>>\
-        [!c;!R:1]=[!c;!R:2]-[!c;!R:3]-[!c;!R:4]-[!c;!R:5]-[F:7].[Cl:8]-[!c;!R:6]") # C=CCCC
+        rxn_smallchain_2 = AllChem.ReactionFromSmarts("[!c;!R:1]=[!c;!R:2]-[!c;!R:3]-[!c;!R:4]-[CX4;!c;!R:5]-[CX4;!c;!R:6].[F:7]-[Cl:8]>>\
+        [!c;!R:1]=[!c;!R:2]-[!c;!R:3]-[!c;!R:4]-[CX4;!c;!R:5]-[F:7].[Cl:8]-[CX4;!c;!R:6]") # C=CCCC
 
-        rxn_smallchain_3 = AllChem.ReactionFromSmarts("[C;!R:1]-[C;!R:2]-[C;!R:3]-[C;!R:4]-[C;!R:5]-[C;!R:6].[F:7]-[Cl:8]>>\
-        [C;!R:1]-[C;!R:2]-[C;!R:3]-[F:7].[Cl:8]-[C;!R:4]-[C;!R:5]-[C;!R:6]") # CCCCCC
+        rxn_smallchain_3 = AllChem.ReactionFromSmarts("[CX4;!R:1]-[CX4;!R:2]-[CX4;!R:3]-[CX4;!R:4]-[CX4;!R:5]-[CX4;!R:6].[F:7]-[Cl:8]>>\
+        [CX4;!R:1]-[CX4;!R:2]-[CX4;!R:3]-[F:7].[Cl:8]-[CX4;!R:4]-[CX4;!R:5]-[CX4;!R:6]") # CCCCCC
 
         aliph_rxn_list = [(rxn_smallchain_1,molecule_F2), (rxn_smallchain_2,molecule_F2), (rxn_smallchain_3,molecule_F2)]
 
