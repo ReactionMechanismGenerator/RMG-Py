@@ -51,7 +51,9 @@ import numpy as np
 
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import SpeciesError, StatmechError
+from rmgpy.molecule.graph import Vertex, Edge, Graph
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
+from rmgpy.molecule.fragment import CuttingLabel, Fragment
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
@@ -289,7 +291,7 @@ class Species(object):
             save_order (bool, optional):           if ``True``, reset atom order after performing atom isomorphism
             strict (bool, optional):               If ``False``, perform isomorphism ignoring electrons.
         """
-        if isinstance(other, Molecule):
+        if isinstance(other, Molecule) or isinstance(other, Fragment):
             for molecule in self.molecule:
                 if molecule.is_isomorphic(other, generate_initial_map=generate_initial_map,
                                           save_order=save_order, strict=strict):
