@@ -40,6 +40,7 @@ from rmgpy.molecule.atomtype import get_atomtype
 from rmgpy.molecule.element import get_element, PeriodicSystem
 from rmgpy.molecule.group import GroupAtom, GroupBond
 from rmgpy.molecule.molecule import Atom, Bond
+from rmgpy.molecule.fragment import CuttingLabel
 
 
 class Saturator(object):
@@ -57,6 +58,7 @@ class Saturator(object):
         """
         new_atoms = []
         for atom in atoms:
+            if not isinstance(atom, Atom): continue
             try:
                 max_number_of_valence_electrons = PeriodicSystem.valence_electrons[atom.symbol]
             except KeyError:
@@ -695,9 +697,12 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
         if group:
             atom = GroupAtom(atom_type, unpaired_electrons, partial_charges, label, lone_pairs, props)
         else:
-            atom = Atom(atom_type[0], unpaired_electrons[0], partial_charges[0], label, lone_pairs[0])
-            if isotope != -1:
-                atom.element = get_element(atom.number, isotope)
+            try:
+                atom = Atom(atom_type[0], unpaired_electrons[0], partial_charges[0], label, lone_pairs[0])
+                if isotope != -1:
+                    atom.element = get_element(atom.number, isotope)
+            except KeyError:
+                atom = CuttingLabel(name=atom_type[0], label=label)
 
         # Add the atom to the list
         atoms.append(atom)
@@ -769,7 +774,8 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
         # Molecule consistency check
         # Electron and valency consistency check for each atom
         for atom in atoms:
-            ConsistencyChecker.check_partial_charge(atom)
+            if isinstance(atom, Atom):
+                ConsistencyChecker.check_partial_charge(atom)
 
         n_rad = sum([atom.radical_electrons for atom in atoms])
         absolute_spin_per_electron = 1 / 2.
@@ -822,7 +828,7 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
     atom_numbers = {}
     index = 0
     for atom in atoms:
-        if remove_h and atom.element.symbol == 'H' and atom.label == '':
+        if remove_h and atom.symbol == 'H' and atom.label == '':
             continue
         atom_numbers[atom] = '{0:d}'.format(index + 1)
         index += 1
@@ -877,7 +883,7 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
     else:
         for atom in atom_numbers:
             # Atom type
-            atom_types[atom] = '{0}'.format(atom.element.symbol)
+            atom_types[atom] = '{0}'.format(atom.symbol)
             # Unpaired Electron(s)
             atom_unpaired_electrons[atom] = '{0}'.format(atom.radical_electrons)
             # Lone Electron Pair(s)
