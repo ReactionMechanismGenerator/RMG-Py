@@ -759,7 +759,7 @@ def generate_aryne_resonance_structures(mol):
     """
     cython.declare(rings=list, ring=list, new_mol_list=list, bond_list=list,
                    i=cython.int, j=cython.int, bond_orders=str, new_orders=str,
-                   ind=cython.int, bond=Bond, new_mol=Molecule)
+                   ind=cython.int, bond=Edge, new_mol=Graph)
 
     rings = mol.get_relevant_cycles()
     rings = [ring for ring in rings if len(ring) == 6]
