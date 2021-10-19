@@ -885,7 +885,11 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
             # Partial Charge(s)
             atom_charge[atom] = '+' + str(atom.charge) if atom.charge > 0 else '' + str(atom.charge)
             # Isotopes
-            atom_isotope[atom] = atom.element.isotope
+            if isinstance(atom, Atom):
+                atom_isotope[atom] = atom.element.isotope
+            else:
+                # cutting labels in fragment cases
+                atom_isotope[atom] = atom.isotope
 
     # Determine field widths
     atom_number_width = max([len(s) for s in atom_numbers.values()]) + 1
