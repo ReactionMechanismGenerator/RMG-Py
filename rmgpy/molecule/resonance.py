@@ -903,8 +903,8 @@ def generate_clar_structures(mol):
 
     Returns a list of :class:`Molecule` objects corresponding to the Clar structures.
     """
-    cython.declare(output=list, mol_list=list, new_mol=Molecule, aromatic_rings=list, bonds=list, solution=list,
-                   y=list, x=list, index=cython.int, bond=Bond, ring=list)
+    cython.declare(output=list, mol_list=list, new_mol=Graph, aromatic_rings=list, bonds=list, solution=list,
+                   y=list, x=list, index=cython.int, bond=Edge, ring=list)
 
     if not mol.is_cyclic():
         return []
@@ -971,7 +971,7 @@ def _clar_optimization(mol, constraints=None, max_num=None):
         Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
             J. Math. Chem. 1994, 15 (1), 93–107.
     """
-    cython.declare(molecule=Molecule, aromatic_rings=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
+    cython.declare(molecule=Graph, aromatic_rings=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
                    a=list, objective=list, status=cython.int, solution=list, innerSolutions=list)
 
     from lpsolve55 import lpsolve
@@ -1104,7 +1104,7 @@ def _clar_transformation(mol, aromatic_ring):
 
     This function directly modifies the input molecule and does not return anything.
     """
-    cython.declare(bondList=list, i=cython.int, atom1=Atom, atom2=Atom, bond=Bond)
+    cython.declare(bondList=list, i=cython.int, atom1=Vertex, atom2=Vertex, bond=Edge)
 
     bond_list = []
 
