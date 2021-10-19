@@ -32,6 +32,7 @@ This module provides methods for converting molecules between RMG, RDKit, and Op
 """
 
 import logging
+import re
 import sys
 
 import cython
@@ -63,6 +64,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
     mol.sort_atoms()
     atoms = mol.vertices
     rd_atom_indices = {}  # dictionary of RDKit atom indices
+    label_dict = {} # store label of atom for Framgent
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
     for index, atom in enumerate(mol.vertices):
         if atom.element.symbol == 'X':
@@ -81,6 +83,14 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
         else:
             rd_atom_indices[atom] = index
 
+        # Check if a cutting label is present. If preserve this so that it is added to the SMILES string
+        if re.match(r'^[LR][0-9]*$', atom.label):  # Valid cutting labels include R, L, R#, L#, where # is any int
+            saved_index = index
+            label = atom.label
+            if label in label_dict:
+                label_dict[label].append(saved_index)
+            else:
+                label_dict[label] = [saved_index]
     rd_bonds = Chem.rdchem.BondType
     orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE, 'T': rd_bonds.TRIPLE, 'B': rd_bonds.AROMATIC,
               'Q': rd_bonds.QUADRUPLE}
@@ -98,6 +108,10 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
 
     # Make editable mol into a mol and rectify the molecule
     rdkitmol = rdkitmol.GetMol()
+    if label_dict:
+        for label, ind_list in label_dict.items():
+            for ind in ind_list:
+                Chem.SetSupplementalSmilesLabel(rdkitmol.GetAtomWithIdx(ind), label)
     if sanitize:
         Chem.SanitizeMol(rdkitmol)
     if remove_h:
