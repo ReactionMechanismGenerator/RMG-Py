@@ -50,6 +50,7 @@ from rmgpy.util import as_list
 from rmgpy.data.surface import MetalDatabase
 from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor
 from rmgpy.data.vaporLiquidMassTransfer import liquidVolumetricMassTransferCoefficientPowerLaw
+from rmgpy.molecule.fragment import Fragment
 
 ################################################################################
 
@@ -228,7 +229,13 @@ def react(tups):
             if not isinstance(it, str):
                 raise InputError("React takes a list of tuples of species strings.")
     rmg.init_react_tuples = tups
-            
+
+def fragment_adj(string):
+    return Fragment().from_adjacency_list(string)
+
+def fragment_smiles(string):
+    return Fragment().from_smiles_like_string(string)
+
 # Reaction systems
 def simple_reactor(temperature,
                    pressure,
@@ -1346,6 +1353,8 @@ def read_input_file(path, rmg0):
         'species': species,
         'forbidden': forbidden,
         'SMARTS': smarts,
+        'fragment_adj': fragment_adj,
+        'fragment_SMILES': fragment_smiles,
         'SMILES': smiles,
         'InChI': inchi,
         'adjacencyList': adjacency_list,
