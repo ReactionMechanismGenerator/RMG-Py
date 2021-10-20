@@ -156,8 +156,17 @@ def evaluator(spc, solvent_name=''):
     """
     logging.debug("Evaluating spc %s ", spc)
 
-    spc.generate_resonance_structures()
-    thermo = generate_thermo_data(spc, solvent_name=solvent_name)
+    from rmgpy.molecule import Molecule
+
+    if isinstance(spc.molecule[0], Molecule):
+        spc.generate_resonance_structures()
+        thermo = generate_thermo_data(spc, solvent_name=solvent_name)
+    else:
+        # assume it's a species for Fragment
+        spc.molecule[0].assign_representative_species()
+        spc_repr = spc.molecule[0].species_repr
+        spc_repr.generate_resonance_structures()
+        thermo = generate_thermo_data(spc_repr, solvent_name=solvent_name)
 
     return thermo
 
