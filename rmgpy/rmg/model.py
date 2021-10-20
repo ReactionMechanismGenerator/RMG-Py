@@ -57,6 +57,7 @@ from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.rmg.decay import decay_species
 from rmgpy.rmg.reactors import PhaseSystem, Phase, Interface
+from rmgpy.molecule.fragment import Fragment
 
 ################################################################################
 
@@ -864,8 +865,12 @@ class CoreEdgeReactionModel:
             submit(spc, self.solvent_name)
 
             if rename and spc.thermo and spc.thermo.label != '':  # check if thermo libraries have a name for it
-                logging.info('Species {0} renamed {1} based on thermo library name'.format(spc.label, spc.thermo.label))
-                spc.label = spc.thermo.label
+                if isinstance(spc.molecule[0], Fragment):
+                    logging.info('Species {0} NOT renamed {1} but get thermo based on thermo library'.format(spc.label, spc.thermo.label))
+                    spc.label = spc.smiles
+                else:
+                    logging.info('Species {0} renamed {1} based on thermo library name'.format(spc.label, spc.thermo.label))
+                    spc.label = spc.thermo.label
 
         spc.generate_energy_transfer_model()
 
