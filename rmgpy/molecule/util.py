@@ -31,6 +31,7 @@ import itertools
 import re
 
 from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.fragment import Fragment
 
 
 def get_element_count(obj):
@@ -60,7 +61,7 @@ def get_element_count(obj):
 
         return element_count
 
-    elif isinstance(obj, Molecule):
+    elif isinstance(obj, Molecule) or isinstance(obj, Fragment):
         return obj.get_element_count()
 
     else:
