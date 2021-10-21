@@ -897,7 +897,12 @@ class KineticsFamily(Database):
                         continue
                     else:
                         spec_labeled_atoms = spec.molecule[0].get_all_labeled_atoms()
+                        spcs_labels = sorted(spec_labeled_atoms.keys())
                         ex_spec_labeled_atoms = ex_spec.molecule[0].get_all_labeled_atoms()
+                        ex_spcs_labels = sorted(ex_spec_labeled_atoms.keys())
+                        if spcs_labels != ex_spcs_labels:
+                            # the species have different labels, therefore not a match
+                            continue
                         initial_map = {}
                         try:
                             for atomLabel in spec_labeled_atoms:
@@ -2775,13 +2780,15 @@ class KineticsFamily(Database):
 
         return template
 
-    def get_labeled_reactants_and_products(self, reactants, products):
+    def get_labeled_reactants_and_products(self, reactants, products, relabel_atoms=True):
         """
         Given `reactants`, a list of :class:`Molecule` objects, and products, a list of 
         :class:`Molecule` objects, return two new lists of :class:`Molecule` objects with 
         atoms labeled: one for reactants, one for products. Returned molecules are totally 
         new entities in memory so input molecules `reactants` and `products` won't be affected.
         If RMG cannot find appropriate labels, (None, None) will be returned.
+        If ``relabel_atoms`` is ``True``, product atom labels of reversible families
+        will be reversed to assist in identifying forbidden structures.
         """
         template = self.forward_template
         reactants0 = [reactant.copy(deep=True) for reactant in reactants]
@@ -2840,7 +2847,7 @@ class KineticsFamily(Database):
 
         for mapping in mappings:
             try:
-                product_structures = self._generate_product_structures(reactant_structures, mapping, forward=True)
+                product_structures = self._generate_product_structures(reactant_structures, mapping, forward=True, relabel_atoms=relabel_atoms)
             except ForbiddenStructureException:
                 pass
             else:
@@ -2857,7 +2864,7 @@ class KineticsFamily(Database):
 
         return None, None
 
-    def add_atom_labels_for_reaction(self, reaction, output_with_resonance=True, save_order=False):
+    def add_atom_labels_for_reaction(self, reaction, output_with_resonance=True, save_order=False, relabel_atoms=False):
         """
         Apply atom labels on a reaction using the appropriate atom labels from
         this reaction family.
@@ -2867,6 +2874,8 @@ class KineticsFamily(Database):
         are generated with labels. If false, only the first resonance structure
         successfully able to map to the reaction is used. None is returned.
         If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
+        If ``relabel_atoms`` is ``True``, product atom labels of reversible families
+        will be reversed to assist in identifying forbidden structures.
         """
         # make sure we start with reaction with species objects
         reaction.ensure_species(reactant_resonance=False, product_resonance=False, save_order=save_order)
@@ -2890,7 +2899,7 @@ class KineticsFamily(Database):
         for reactant_pair, product_pair in itertools.product(reactant_pairs, product_pairs):
             try:
                 # see if we obtain proper labeling
-                labeled_reactants, labeled_products = self.get_labeled_reactants_and_products(reactant_pair, product_pair)
+                labeled_reactants, labeled_products = self.get_labeled_reactants_and_products(reactant_pair, product_pair, relabel_atoms=relabel_atoms)
                 if labeled_reactants is not None:
                     break
             except ActionError:
