@@ -2176,7 +2176,7 @@ class KineticsFamily(Database):
                                 try:
                                     if save_adjacency_lists:
                                         product_structures, reaction_adjacency_list = self._generate_product_structures(reactant_structures,
-                                                                                           [map_b, map_a], forward, rrelabel_atoms, eturn_adjacency_lists=True)
+                                                                                           [map_b, map_a], forward, relabel_atoms, return_adjacency_lists=True)
                                     else:
                                         product_structures = self._generate_product_structures(reactant_structures,
                                                                                            [map_b, map_a], forward, relabel_atoms, return_adjacency_lists=False)
