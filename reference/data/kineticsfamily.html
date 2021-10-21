@@ -141,14 +141,16 @@ abstraction and intramolecular hydrogen migration); for these
 <cite>reverseTemplate</cite> and <cite>reverseRecipe</cite> will both be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.add_atom_labels_for_reaction">
-<span class="sig-name descname"><span class="pre">add_atom_labels_for_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_with_resonance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.add_atom_labels_for_reaction" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_atom_labels_for_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_with_resonance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relabel_atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.add_atom_labels_for_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply atom labels on a reaction using the appropriate atom labels from
 this reaction family.</p>
 <p>The reaction is modified in place containing species objects with the
 atoms labeled. If output_with_resonance is True, all resonance structures
 are generated with labels. If false, only the first resonance structure
 successfully able to map to the reaction is used. None is returned.
-If <code class="docutils literal notranslate"><span class="pre">save_order</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> the atom order is reset after performing atom isomorphism.</p>
+If <code class="docutils literal notranslate"><span class="pre">save_order</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> the atom order is reset after performing atom isomorphism.
+If <code class="docutils literal notranslate"><span class="pre">relabel_atoms</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, product atom labels of reversible families
+will be reversed to assist in identifying forbidden structures.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -484,12 +486,14 @@ direction.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.get_labeled_reactants_and_products">
-<span class="sig-name descname"><span class="pre">get_labeled_reactants_and_products</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reactants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_labeled_reactants_and_products" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_labeled_reactants_and_products</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reactants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relabel_atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_labeled_reactants_and_products" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given <cite>reactants</cite>, a list of <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> objects, and products, a list of
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> objects, return two new lists of <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> objects with
 atoms labeled: one for reactants, one for products. Returned molecules are totally
 new entities in memory so input molecules <cite>reactants</cite> and <cite>products</cite> won’t be affected.
-If RMG cannot find appropriate labels, (None, None) will be returned.</p>
+If RMG cannot find appropriate labels, (None, None) will be returned.
+If <code class="docutils literal notranslate"><span class="pre">relabel_atoms</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, product atom labels of reversible families
+will be reversed to assist in identifying forbidden structures.</p>
 </dd></dl>
 
 <dl class="py method">
