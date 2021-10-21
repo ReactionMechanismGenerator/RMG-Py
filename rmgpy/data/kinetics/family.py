@@ -1379,35 +1379,12 @@ class KineticsFamily(Database):
             reactant_structure = reactant_structure.merge(s.copy(deep=True))
 
         if forward:
-            # Hardcoding of reaction family for peroxyl disproportionation
-            # '*1' and '*2' have to be changed to '*3' and '*4' for the second reactant
-            if label == 'peroxyl_disproportionation':
-                identical_center_counter1 = identical_center_counter2 = 0
-                for atom in reactant_structure.atoms:
-                    if atom.label == '*1':
-                        identical_center_counter1 += 1
-                        if identical_center_counter1 > 1:
-                            atom.label = '*3'
-                    elif atom.label == '*2':
-                        identical_center_counter2 += 1
-                        if identical_center_counter2 > 1:
-                            atom.label = '*4'
-                msg = 'Trying to apply recipe for reaction family {}:'.format(label)
-                error = False
-                if identical_center_counter1 != 2:
-                    msg += ' Only one occurrence of "*1" found.'
-                    error = True
-                if identical_center_counter2 != 2:
-                    msg += ' Only one occurrence of "*2" found.'
-                    error = True
-                if error:
-                    raise KineticsError(msg)
             # Hardcoding of reaction family for bimolecular hydroperoxide decomposition
             # '*2' has to be changed to '*4' for the second reactant and '*1' has to be
             # changed to '*6'. '*3' has to be changed to '*5' for the first reactant.
             # '*5' and '*6' do no participate in the reaction but are required for
             # relabeling in the reverse direction.
-            elif label == 'bimolec_hydroperoxide_decomposition':
+            if label == 'bimolec_hydroperoxide_decomposition':
                 identical_center_counter1 = identical_center_counter2 = identical_center_counter3 = 0
                 for atom in reactant_structure.atoms:
                     if atom.label == '*1':
@@ -1456,18 +1433,10 @@ class KineticsFamily(Database):
                 return []
 
         if not forward:
-            # Hardcoding of reaction family for reverse of peroxyl disproportionation
-            # Labels '*3' and '*4' have to be changed back to '*1' and '*2'
-            if label == 'peroxyl_disproportionation':
-                for atom in product_structure.atoms:
-                    if atom.label == '*3':
-                        atom.label = '*1'
-                    elif atom.label == '*4':
-                        atom.label = '*2'
             # Hardcoding of reaction family for bimolecular hydroperoxide decomposition
             # '*5' has to be changed back to '*3', '*6' has to be changed to '*1', and
             # '*4' has to be changed to '*2'
-            elif label == 'bimolec_hydroperoxide_decomposition':
+            if label == 'bimolec_hydroperoxide_decomposition':
                 for atom in product_structure.atoms:
                     if atom.label == '*5':
                         atom.label = '*3'
