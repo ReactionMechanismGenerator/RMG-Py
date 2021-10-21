@@ -217,10 +217,10 @@ class Phase:
         add a reaction to the phase
         """
         if self.add_later_reactions != []:
-            for rxn in self.add_later_reactions:
+            for reaction in self.add_later_reactions[:]:
                 try:
-                    self.reactions.append(to_rms(rxn, species_names=self.names, rms_species_list=self.species, rmg_species=self.rmg_species))
-                    self.add_later_reactions.remove(rxn)
+                    self.reactions.append(to_rms(reaction, species_names=self.names, rms_species_list=self.species, rmg_species=self.rmg_species))
+                    self.add_later_reactions.remove(reaction)
                 except ValueError:
                     pass
         try:
