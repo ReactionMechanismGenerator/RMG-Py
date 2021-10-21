@@ -51,7 +51,7 @@ For example, if you wish to use the GRI-Mech 3.0 mechanism [GRIMech3.0]_ as a Th
 
 	thermoLibraries = ['primaryThermoLibrary','GRI-Mech3.0']
 
-.. [GRIMech3.0] Gregory P. Smith, David M. Golden, Michael Frenklach, Nigel W. Moriarty, Boris Eiteneer, Mikhail Goldenberg, C. Thomas Bowman, Ronald K. Hanson, Soonho Song, William C. Gardiner, Jr., Vitali V. Lissianski, and Zhiwei Qin http://www.me.berkeley.edu/gri_mech/
+.. [GRIMech3.0] Gregory P. Smith, David M. Golden, Michael Frenklach, Nigel W. Moriarty, Boris Eiteneer, Mikhail Goldenberg, C. Thomas Bowman, Ronald K. Hanson, Soonho Song, William C. Gardiner, Jr., Vitali V. Lissianski, and Zhiwei Qin http://combustion.berkeley.edu/gri-mech/
 
 This library is located in the
 :file:`$RMG/RMG-database/input/thermo/libraries` directory.  All "Locations" for the

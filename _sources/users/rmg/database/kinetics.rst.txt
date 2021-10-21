@@ -211,7 +211,7 @@ Each reaction family contains the files:
 * training.py containing a training set for the family
 * rules.py containing kinetic parameters for rules
 
-There are currently 58 reaction families in RMG:
+There are currently 77 reaction families in RMG:
 
 .. |f00| image:: images/kinetics_families/1+2_Cycloaddition.png
     :scale: 40%
@@ -234,6 +234,8 @@ There are currently 58 reaction families in RMG:
 .. |f09| image:: images/kinetics_families/1,3_Insertion_RSR.png
     :scale: 40%
 .. |f10| image:: images/kinetics_families/1,3_NH3_elimination.png
+    :scale: 40%
+.. |f75| image:: images/kinetics_families/1,3_sigmatropic_rearrangement.png
     :scale: 40%
 .. |f11| image:: images/kinetics_families/1,4_Cyclic_birad_scission.png
     :scale: 40%
@@ -363,8 +365,6 @@ There are currently 58 reaction families in RMG:
     :scale: 40%
 .. |f74| image:: images/kinetics_families/intra_substitutionS_isomerization.png
     :scale: 40%
-.. |f75| image:: images/kinetics_families/ketoenol.png
-    :scale: 40%
 .. |f76| image:: images/kinetics_families/lone_electron_pair_bond.png
     :scale: 40%
 
@@ -383,6 +383,7 @@ There are currently 58 reaction families in RMG:
     **1,3_Insertion_ROR**                                 |f08|
     **1,3_Insertion_RSR**                                 |f09|
     **1,3_NH3_elimination**                               |f10|
+    **1,3_sigmatropic_rearrangement**                     |f75|
     **1,4_Cyclic_birad_scission**                         |f11|
     **1,4_Linear_birad_scission**                         |f12|
     **2+2_cycloaddition_CCO**                             |f13|
@@ -447,7 +448,6 @@ There are currently 58 reaction families in RMG:
     **intra_substitutionCS_isomerization**                |f72|
     **intra_substitutionS_cyclization**                   |f73|
     **intra_substitutionS_isomerization**                 |f74|
-    **ketoenol**                                          |f75|
     **lone_electron_pair_bond**                           |f76|
     ===================================================== =====
 
