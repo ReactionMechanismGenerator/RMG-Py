@@ -301,6 +301,35 @@ for new users to better understand the options of rmg input files</p>
     <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;O=C=O&quot;</span><span class="p">)</span>
 <span class="p">)</span>
 
+<span class="c1"># You can also list forbidden structures to forbid a certain molecule or set of molecules from your model</span>
+<span class="c1"># To prevent a single molecule from your model, use SMILES or adjacencyList to define the strucutre </span>
+<span class="c1"># For example, if you do not want cyclopropyne in your model, you can forbid it using SMILES</span>
+<span class="c1"># forbidden(</span>
+<span class="c1">#     label=&#39;cyclopropyne&#39;,</span>
+<span class="c1">#     structure=SMILES(&quot;C1#CC1&quot;)</span>
+<span class="c1"># )</span>
+<span class="c1"># or adjacencyList</span>
+<span class="c1"># forbidden(</span>
+<span class="c1">#     label=&#39;cyclopropyne&#39;,</span>
+<span class="c1">#     structure=adjacencyList(&quot;&quot;&quot;</span>
+<span class="c1">#     1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}</span>
+<span class="c1">#     2 C u0 p0 c0 {1,S} {3,T}</span>
+<span class="c1">#     3 C u0 p0 c0 {1,S} {2,T}</span>
+<span class="c1">#     4 H u0 p0 c0 {1,S}</span>
+<span class="c1">#     5 H u0 p0 c0 {1,S}</span>
+<span class="c1">#     &quot;&quot;&quot;),</span>
+<span class="c1"># )</span>
+<span class="c1"># If you want to exclude not just cyclopropyne but all three member rings, use `adjacencyListGroup` </span>
+<span class="c1"># to define the forbidden group structure</span>
+<span class="c1"># forbidden(</span>
+<span class="c1">#     label=&#39;Three-member Ring&#39;,</span>
+<span class="c1">#     structure=adjacencyListGroup(&quot;&quot;&quot;</span>
+<span class="c1">#     1 R ux {2,[S,D,T]} {3,[S,D,T]}</span>
+<span class="c1">#     2 R ux {1,[S,D,T]} {3,[S,D,T]}</span>
+<span class="c1">#     3 R ux {1,[S,D,T]} {2,[S,D,T]}</span>
+<span class="c1">#     &quot;&quot;&quot;),</span>
+<span class="c1"># )</span>
+
 <span class="c1"># Reaction systems</span>
 <span class="c1"># currently RMG models only constant temperature and pressure as homogeneous batch reactors.</span>
 <span class="c1"># two options are: simpleReactor for gas phase or liquidReactor for liquid phase</span>

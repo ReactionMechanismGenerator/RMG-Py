@@ -632,7 +632,7 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
     <span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;surfaceThermoPt111&#39;</span><span class="p">,</span> <span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;thermo_DFT_CCSDTF12_BAC&#39;</span><span class="p">,</span><span class="s1">&#39;DFT_QCI_thermo&#39;</span><span class="p">],</span> <span class="c1"># &#39;surfaceThermoPt&#39; is the default. Thermo data is derived using bindingEnergies for other metals </span>
-    <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Surface/CPOX_Pt/Deutschmann2006&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)],</span> <span class="c1"># when Ni is used change the library to Surface/Deutschmann_Ni </span>
+    <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Surface/CPOX_Pt/Deutschmann2006_adjusted&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)],</span> <span class="c1"># when Ni is used change the library to Surface/Deutschmann_Ni </span>
     <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
     <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>
     <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;surface&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">],</span>
@@ -671,6 +671,14 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">&quot;1 X u0&quot;</span><span class="p">),</span>
 <span class="p">)</span>
+
+<span class="c1"># If you would like to forbid the bidentate form of absorbed CO2 from your model,</span>
+<span class="c1"># use the following `CO2_bidentate` forbidden structure</span>
+<span class="c1"># forbidden(</span>
+<span class="c1">#     label=&#39;CO2_bidentate&#39;,</span>
+<span class="c1">#     structure=SMILES(&quot;O=C(*)O*&quot;),</span>
+<span class="c1"># )</span>
+
 <span class="c1">#----------</span>
 <span class="c1"># Reaction systems</span>
 <span class="n">surfaceReactor</span><span class="p">(</span>
