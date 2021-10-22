@@ -610,6 +610,9 @@ class TestGetAtomType(unittest.TestCase):
                                                        11 H u0 p0 {5,S}
                                                        12 H u0 p0 {6,S}''')
 
+        self.mol95 = Molecule().from_adjacency_list('''1 C u0 p0 c+1 {2,T}
+                                                       2 C u0 p1 c-1 {1,T}''')
+
     def atom_type(self, mol, atom_id):
         atom = mol.atoms[atom_id]
         atom_type = get_atomtype(atom, mol.get_bonds(atom))
@@ -645,6 +648,7 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atom_type(self.mol60, 2), 'C2dc')
         self.assertEqual(self.atom_type(self.mol20, 0), 'C2tc')
         self.assertEqual(self.atom_type(self.mol29, 0), 'C2tc')  # todo: add in a ciq unit test?
+        self.assertEqual(self.atom_type(self.mol95, 0), 'Ctc')
 
     def test_nitrogen_types(self):
         """
