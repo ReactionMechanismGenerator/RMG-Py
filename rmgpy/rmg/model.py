@@ -40,7 +40,7 @@ import numpy as np
 
 import rmgpy.data.rmg
 from rmgpy import settings
-from rmgpy.constraints import fails_species_constraints
+from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
@@ -270,7 +270,7 @@ class CoreEdgeReactionModel:
         # At this point we can conclude that the species is new
         return None
 
-    def make_new_species(self, object, label='', reactive=True, check_existing=True, generate_thermo=True, check_decay=False):
+    def make_new_species(self, object, label='', reactive=True, check_existing=True, generate_thermo=True, check_decay=False, check_cut=False):
         """
         Formally create a new species from the specified `object`, which can be
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
@@ -295,6 +295,18 @@ class CoreEdgeReactionModel:
                 return spec, False
 
         # If we're here then we're ready to make the new species
+        if check_cut:
+            try:
+                mols = molecule.cut_molecule(cut_through = False)
+            except AttributeError:
+                # it's Molecule object, change it to Fragment and then cut
+                molecule = Fragment().from_adjacency_list(molecule.to_adjacency_list())
+                mols = molecule.cut_molecule(cut_through = False)
+            if len(mols) == 1:
+                molecule = mols[0]
+            else:
+                return [self.make_new_species(mol, check_decay=check_decay) for mol in mols]
+
         try:
             spec = Species(label=label,molecule=[molecule],reactive=reactive,thermo=object.thermo, transport_data=object.transport_data)
         except AttributeError:
@@ -433,7 +445,7 @@ class CoreEdgeReactionModel:
 
         return False, None
 
-    def make_new_reaction(self, forward, check_existing=True, generate_thermo=True, generate_kinetics=True):
+    def make_new_reaction(self, forward, check_existing=True, generate_thermo=True, generate_kinetics=True, perform_cut=True):
         """
         Make a new reaction given a :class:`Reaction` object `forward`.
         The reaction is added to the global list of reactions.
@@ -452,12 +464,26 @@ class CoreEdgeReactionModel:
         if forward.family and forward.is_forward:
             reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
             products = []
+            if perform_cut:
+                # check if the product is too large so that we can cut
+                # maybe species do not contain element C
+                try:
+                    if forward.family in ['R_Recombination', 'R_Addition_MultipleBond'] and pass_cutting_threshold(forward.products[0]):
+                        # need to cut
+                        check_cut=True
+                    else:
+                        check_cut=False
+                except KeyError:
+                    check_cut=False
             for product in forward.products:
-                spcs = self.make_new_species(product, generate_thermo=generate_thermo,check_decay=True)
+                spcs = self.make_new_species(product, generate_thermo=generate_thermo, check_decay=True, check_cut=check_cut)
                 if type(spcs) == tuple:
                     products.append(spcs[0])
                 elif type(spcs) == list:
                     products.extend([spc[0] for spc in spcs])
+            # change the reaction to irreversible if we cut the product into fragments
+            if len(products) != 1 and check_cut:
+                forward.reversible = False
         else:
             try:
                 reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
