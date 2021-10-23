@@ -1158,6 +1158,46 @@ class Fragment(Graph):
 
             return mol_repr, mapping
 
+    def to_rdkit_mol(self, remove_h=False, return_mapping=True):
+        """
+        Convert a molecular structure to a RDKit rdmol object.
+        """
+        if remove_h:
+            # because we're replacing
+            # cutting labels with hydrogens
+            # so do not allow removeHs to be True
+            raise "Currently fragment to_rdkit_mol only allows keeping all the hydrogens."
+
+        mol0, mapping = self.get_representative_molecule('minimal', update=False)
+
+        rdmol, rdAtomIdx_mol0 = converter.to_rdkit_mol(mol0, remove_h=remove_h,
+                                                     return_mapping=return_mapping,
+                                                     sanitize=True)
+
+        rdAtomIdx_frag = {}
+        for frag_atom, mol0_atom in mapping.items():
+            rd_idx = rdAtomIdx_mol0[mol0_atom]
+            rdAtomIdx_frag[frag_atom] = rd_idx
+
+        # sync the order of fragment vertices with the order
+        # of mol0.atoms since mol0.atoms is changed/sorted in 
+        # converter.to_rdkit_mol().
+        # Since the rdmol's atoms order is same as the order of mol0's atoms,
+        # the synchronization between fragment.atoms order and mol0.atoms order
+        # is necessary to make sure the order of fragment vertices
+        # reflects the order of rdmol's atoms
+        vertices_order = []
+        for v in self.vertices:
+            a = mapping[v]
+            idx = mol0.atoms.index(a)
+            vertices_order.append((v, idx))
+
+        adapted_vertices = [tup[0] for tup in sorted(vertices_order, key=lambda tup: tup[1])]
+
+        self.vertices = adapted_vertices
+
+        return rdmol, rdAtomIdx_frag
+
     def to_adjacency_list(self, 
                         label='', 
                         remove_h=False, 
@@ -1454,6 +1494,76 @@ class Fragment(Graph):
                     if vertex.element.symbol == element:
                         num_atoms += 1
         return num_atoms
+
+    def from_rdkit_mol(self, rdkitmol, atom_replace_dict = None):
+        """
+        Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
+        `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        This Kekulizes everything, removing all aromatic atom types.
+        """
+
+        from rdkit import Chem
+
+        self.vertices = []
+
+        # Add hydrogen atoms to complete molecule if needed
+        rdkitmol.UpdatePropertyCache(strict=False)
+        rdkitmol = Chem.AddHs(rdkitmol)
+        Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
+
+        # iterate through atoms in rdkitmol
+        for i in range(rdkitmol.GetNumAtoms()):
+            rdkitatom = rdkitmol.GetAtomWithIdx(i)
+
+            # Use atomic number as key for element
+            number = rdkitatom.GetAtomicNum()
+            element = get_element(number)
+
+            # Process charge
+            charge = rdkitatom.GetFormalCharge()
+            radical_electrons = rdkitatom.GetNumRadicalElectrons()
+
+            ELE = element.symbol
+            if '[' + ELE + ']' in atom_replace_dict:
+                cutting_label_name = atom_replace_dict['[' + ELE + ']']
+                cutting_label = CuttingLabel(name=cutting_label_name)
+                self.vertices.append(cutting_label)
+            else:
+                atom = Atom(element, radical_electrons, charge, '', 0)
+                self.vertices.append(atom)
+
+            # Add bonds by iterating again through atoms
+            for j in range(0, i):
+                rdkitbond = rdkitmol.GetBondBetweenAtoms(i, j)
+                if rdkitbond is not None:
+                    order = 0
+
+                    # Process bond type
+                    rdbondtype = rdkitbond.GetBondType()
+                    if rdbondtype.name == 'SINGLE':
+                        order = 1
+                    elif rdbondtype.name == 'DOUBLE':
+                        order = 2
+                    elif rdbondtype.name == 'TRIPLE':
+                        order = 3
+                    elif rdbondtype.name == 'AROMATIC':
+                        order = 1.5
+
+                    bond = Bond(self.vertices[i], self.vertices[j], order)
+                    self.add_bond(bond)
+
+        # We need to update lone pairs first because the charge was set by RDKit
+        self.update_lone_pairs()
+        # Set atom types and connectivity values
+        self.update()
+
+        # Assume this is always true
+        # There are cases where 2 radicalElectrons is a singlet, but
+        # the triplet is often more stable,
+        self.update_multiplicity()
+        # mol.update_atomtypes()
+
+        return self
 
 # this variable is used to name atom IDs so that there are as few conflicts by 
 # using the entire space of integer objects
