@@ -418,6 +418,102 @@ class Fragment(Graph):
         translator.from_inchi(self, inchistr, backend)
         return self
 
+    def detect_cutting_label(self, smiles):
+
+        import re
+        from rmgpy.molecule.element import element_list
+        # store elements' symbol
+        all_element_list = []
+        for element in element_list[1:]:
+            all_element_list.append(element.symbol)
+
+        # store the tuple of matched indexes, however,
+        # the index might contain redundant elements such as C, Ra, (), Li, ...
+        index_indicator = [x.span() for x in re.finditer(r'(\w?[LR][^:()]?)', smiles)]
+        possible_cutting_label_list = re.findall(r'(\w?[LR][^:()]?)', smiles)
+
+        cutting_label_list = []
+        ind_ranger = []
+
+        # check if the matched items are cutting labels indeed
+        for i, strs in enumerate(possible_cutting_label_list):
+            # initialize "add" for every possible cutting label
+            add = False
+            if len(strs) == 1:
+                # it should be a cutting label either R or L
+                # add it to cutting label list
+                add = True
+                # add the index span
+                new_index_ranger = index_indicator[i]
+            elif len(strs)==2:
+                # it's possible to be L+digit, L+C, C+L, R+a
+                # check if it is a metal, if yes then don't add to cutting_label_list
+                if strs in all_element_list:
+                    # do not add it to cutting label list
+                    add = False
+                else:
+                    add = True
+                    # keep digit and remove the other non-metalic elements such as C
+                    if strs[0] in ['L','R'] and strs[1].isdigit() == True:
+                        # keep strs as it is
+                        strs = strs
+                        new_index_ranger = index_indicator[i]
+                    elif strs[0] in ['L','R'] and strs[1].isdigit() != True:
+                        strs = strs[0]
+                        # keep the first index but subtract 1 for the end index
+                        ind_tup = index_indicator[i]
+                        int_ind = ind_tup[0]
+                        end_ind = ind_tup[1]-1
+                        new_index_ranger = (int_ind,end_ind)
+                    else:
+                        strs = strs[1]
+                        # add 1 for the start index and keep the end index
+                        ind_tup = index_indicator[i]
+                        int_ind = ind_tup[0]+1
+                        end_ind = ind_tup[1]
+                        new_index_ranger = (int_ind,end_ind)
+            elif len(strs)==3:
+                # it's possible to be C+R+digit, C+L+i(metal), C+R+a(metal)
+                # only C+R+digit has cutting label
+                if strs[2].isdigit() == True:
+                    add = True
+                    strs = strs.replace(strs[0],"")
+                    # add 1 for the start index and keep the end index
+                    ind_tup = index_indicator[i]
+                    int_ind = ind_tup[0]+1
+                    end_ind = ind_tup[1]
+                    new_index_ranger = (int_ind,end_ind)
+                else:
+                    # do not add this element to cutting_label_list
+                    add = False
+            if add == True:
+                cutting_label_list.append(strs)
+                ind_ranger.append(new_index_ranger)
+        return ind_ranger, cutting_label_list
+
+    def replace_cutting_label(self, smiles, ind_ranger, cutting_label_list, smiles_replace_dict):
+
+        last_end_ind = 0
+        new_smi = ""
+
+        for ind, label_str in enumerate(cutting_label_list):
+            tup = ind_ranger[ind]
+            int_ind = tup[0]
+            end_ind = tup[1]
+
+            element = smiles_replace_dict[label_str]
+
+            if ind == len(cutting_label_list)-1:
+                new_smi = new_smi + smiles[last_end_ind:int_ind] + element + smiles[end_ind:]
+            else:
+                new_smi = new_smi + smiles[last_end_ind:int_ind] + element
+
+            last_end_ind = end_ind
+        # if the smiles does not include cutting label
+        if new_smi == "":
+            return smiles
+        return new_smi
+
     def is_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False, strict=True):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
