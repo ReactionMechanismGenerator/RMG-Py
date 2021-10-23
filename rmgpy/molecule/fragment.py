@@ -978,6 +978,40 @@ class Fragment(Graph):
         # currently linear fragment will be treated as non-linear molecule
         return self.mol_repr.calculate_cpinf()
 
+    def get_symmetry_number(self):
+        """
+        Returns the symmetry number of Fragment.
+        First checks whether the value is stored as an attribute of Fragment.
+        If not, it calls the calculateSymmetryNumber method.
+        """
+        if self.symmetry_number == -1:
+            self.calculate_symmetry_number()
+        return self.symmetry_number
+
+    def calculate_symmetry_number(self):
+        """
+        Return the symmetry number for the structure. The symmetry number
+        includes both external and internal modes. First replace Cuttinglabel
+        with different elements and then calculate symmetry number
+        """
+        import re
+        from rmgpy.molecule.symmetry import calculate_symmetry_number
+
+        smiles = self.to_smiles()
+
+        _ , cutting_label_list = self.detect_cutting_label(smiles)
+
+        metal_list = ['[Cl]', '[I]', '[Si]', '[F]', '[Si+]', '[Si-]', '[Br]', '[He+]', '[Ne+]', '[Ar+]', '[He-]', '[Ne-]', '[Ar-]', '[P]', '[P+]', '[P-]']
+
+        for index, element in enumerate(cutting_label_list):
+            smiles = smiles.replace(element, metal_list[index], 1)
+
+        frag_sym = Molecule().from_smiles(smiles)
+
+        frag_sym.update_connectivity_values() # for consistent results
+        self.symmetry_number = calculate_symmetry_number(frag_sym)
+        return self.symmetry_number
+
     def is_radical(self):
         """
         Return ``True`` if the fragment contains at least one radical electron,
