@@ -1394,6 +1394,46 @@ class Fragment(Graph):
             # The molecules don't have the same set of indices, so they are not identical
             return False
 
+    def to_smiles(self):
+
+        cutting_label_list = []
+        for vertex in self.vertices:
+            if isinstance(vertex, CuttingLabel):
+                cutting_label_list.append(vertex.symbol)
+
+        smiles_before = self.copy(deep=True)
+        final_vertices = []
+        for ind, atom in enumerate(smiles_before.atoms):
+            element_symbol = atom.symbol
+            if isinstance(atom, CuttingLabel):
+                substi = Atom(element=get_element('Si'),
+                    radical_electrons=0,
+                    charge=0,
+                    lone_pairs=3)
+                substi.label = element_symbol
+
+                for bonded_atom, bond in atom.edges.items():
+                    new_bond = Bond(bonded_atom, substi, order=bond.order)
+
+                    bonded_atom.edges[substi] = new_bond
+                    del bonded_atom.edges[atom]
+
+                    substi.edges[bonded_atom] = new_bond
+
+                final_vertices.append(substi)
+            else:
+                final_vertices.append(atom)
+
+        smiles_before.vertices = final_vertices
+        mol_repr = Molecule()
+        mol_repr.atoms = smiles_before.vertices
+        mol_repr.update()
+        smiles_after = mol_repr.to_smiles()
+        import re
+        smiles = re.sub('\[Si-3\]', '', smiles_after)
+
+        return smiles
+
     def get_element_count(self):
         """
         Returns the element count for the fragment as a dictionary.
