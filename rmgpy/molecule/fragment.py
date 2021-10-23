@@ -418,6 +418,34 @@ class Fragment(Graph):
         translator.from_inchi(self, inchistr, backend)
         return self
 
+    def from_smiles_like_string(self, smiles_like_string):
+
+        smiles = smiles_like_string
+
+        # input: smiles
+        # output: ind_ranger & cutting_label_list
+        ind_ranger , cutting_label_list = self.detect_cutting_label(smiles)
+
+        smiles_replace_dict = {}
+        metal_list = ['[Na]', '[K]', '[Cs]', '[Fr]', '[Be]', '[Mg]', '[Ca]', '[Sr]', '[Ba]', '[Hf]', '[Nb]', '[Ta]', '[Db]', '[Mo]']
+        for index, label_str in enumerate(cutting_label_list):
+            smiles_replace_dict[label_str] = metal_list[index]
+
+        atom_replace_dict = {}
+        for key, value in smiles_replace_dict.items():
+            atom_replace_dict[value] = key
+
+        # replace cutting labels with elements in smiles
+        # to generate rdkit compatible SMILES
+        new_smi = self.replace_cutting_label(smiles, ind_ranger, cutting_label_list, smiles_replace_dict)
+
+        from rdkit import Chem
+        rdkitmol = Chem.MolFromSmiles(new_smi)
+
+        self.from_rdkit_mol(rdkitmol, atom_replace_dict)
+
+        return self
+
     def detect_cutting_label(self, smiles):
 
         import re
