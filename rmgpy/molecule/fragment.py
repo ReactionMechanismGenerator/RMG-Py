@@ -1124,6 +1124,49 @@ class Fragment(Graph):
 
             return mol_repr, mapping
 
+    def to_adjacency_list(self, 
+                        label='', 
+                        remove_h=False, 
+                        remove_lone_pairs=False,
+                        old_style=False):
+        """
+        Convert the molecular structure to a string adjacency list.
+        """
+        from rmgpy.molecule.adjlist import to_adjacency_list
+        result = to_adjacency_list(self.vertices, 
+                                 self.multiplicity,  
+                                 label=label, 
+                                 group=False, 
+                                 remove_h=remove_h,
+                                 remove_lone_pairs=remove_lone_pairs,
+                                 old_style=old_style)
+        return result
+
+    def from_adjacency_list(self, adjlist, saturate_h=False, raise_atomtype_exception=True,
+                            raise_charge_exception=True):
+        """
+        Convert a string adjacency list `adjlist` to a fragment structure.
+        Skips the first line (assuming it's a label) unless `withLabel` is
+        ``False``.
+        """
+        from rmgpy.molecule.adjlist import from_adjacency_list
+        
+        self.vertices, self.multiplicity = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h)
+        self.update_atomtypes(raise_exception=raise_atomtype_exception)
+        
+        # Check if multiplicity is possible
+        n_rad = self.get_radical_count() 
+        multiplicity = self.multiplicity
+        if not (n_rad + 1 == multiplicity or n_rad - 1 == multiplicity or
+                n_rad - 3 == multiplicity or n_rad - 5 == multiplicity):
+            raise ValueError('Impossible multiplicity for molecule\n{0}\n multiplicity = {1} and number of '
+                             'unpaired electrons = {2}'.format(self.to_adjacency_list(), multiplicity, n_rad))
+        if raise_charge_exception:
+            if self.get_net_charge() != 0:
+                raise ValueError('Non-neutral molecule encountered. '
+                                 'Currently, AFM does not support ion chemistry.\n {0}'.format(adjlist))
+        return self
+
     def get_aromatic_rings(self, rings=None):
         """
         Returns all aromatic rings as a list of atoms and a list of bonds.
