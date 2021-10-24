@@ -392,6 +392,7 @@ class GaussianLog(ESSAdapter):
         rigid_scan = False
 
         vlist = []  # The array of potentials at each scan angle
+        non_optimized = [] # The array of indexes of non-optimized point
 
         # Parse the Gaussian log file, extracting the energies of each
         # optimized conformer in the scan
@@ -417,6 +418,11 @@ class GaussianLog(ESSAdapter):
                 # to the optimized geometry
                 if 'Optimization completed' in line:
                     vlist.append(energy)
+                # In some cases, the optimization cannot converge within the given steps.
+                # Then, the geometry is not optimized. we need to exclude these values.
+                if 'Optimization stopped' in line:
+                    non_optimized.append(len(vlist))
+                    vlist.append(energy)
                 line = f.readline()
 
         # give warning in case this assumption is not true
@@ -440,6 +446,12 @@ class GaussianLog(ESSAdapter):
         # This assumes that all of the angles are evenly spaced with a constant step size
         scan_res = math.pi / 180 * self._load_scan_angle()
         angle = np.arange(0.0, scan_res * (len(vlist) - 1) + 0.00001, scan_res, np.float64)
+
+        if non_optimized:
+            logging.warning(f'Scan results for angles at {angle[non_optimized]} are discarded '
+                            f'due to non-converged optimization.')
+            vlist = np.delete(vlist, non_optimized)
+            angle = np.delete(angle, non_optimized)
 
         return vlist, angle
 
