@@ -550,18 +550,12 @@ class HinderedRotorClassicalND(Mode):
             self.atnums = self.conformer.number
             rootD = self.conformer.get_internal_reduced_moment_of_inertia(self.pivots[0], self.tops[0]) ** 0.5
             self.rootDs = [rootD for i in range(len(self.Es))]
-
-            phis = self.phis.tolist()
-
-            for j, phi in enumerate(self.phis):  # add the negative values to improve fit near 0.0
-                if phi != 2.0 * np.pi:
-                    phis.append(phi - 2.0 * np.pi)
-
-            phis = np.array(phis)
+            # add the negative values to improve fit near 0.0
+            phis = np.concatenate((self.phis, self.phis[:-1] - 2.0 * np.pi), axis=0)
             inds = np.argsort(phis)
             self.phis = phis[inds]
             Es = self.Es.tolist()
-            Es.extend(Es[1:])
+            Es.extend(Es[:-1])
             self.Es = np.array(Es)[inds]
             self.rootDs.extend(self.rootDs[1:])
             self.rootDs = np.array(self.rootDs)[inds].tolist()
