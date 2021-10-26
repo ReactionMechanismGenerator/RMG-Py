@@ -11,12 +11,12 @@ To update your source code, you can "pull" the latest changes from the official 
 Command Prompt ::
 
     cd RMG-Py
-    git pull https://github.com/ReactionMechanismGenerator/RMG-Py.git master
+    git pull https://github.com/ReactionMechanismGenerator/RMG-Py.git main
 
 We also recommend updating the RMG-database regularly.  The repo itself can be found at https://github.com/ReactionMechanismGenerator/RMG-database/ ::
 
     cd RMG-database
-    git pull https://github.com/ReactionMechanismGenerator/RMG-database.git master
+    git pull https://github.com/ReactionMechanismGenerator/RMG-database.git main
 
 For more information about how to use the Git workflow to make changes to the source code, please
 refer to the handy `Git Tutorial <http://git-scm.com/docs/gittutorial>`_
