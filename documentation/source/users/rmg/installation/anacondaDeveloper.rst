@@ -4,12 +4,12 @@
 Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX
 *******************************************************************************************
 
-#. Download and install the `Anaconda Python Platform <https://www.anaconda.com/download/>`_ for Python 3.7.
+#. Download and install `Anaconda Individual Edition <https://www.anaconda.com/products/individual/>`.
 
-   The download will be a .sh file with a name like ``Anaconda3-2019.07-Linux-x86_64.sh``. Open a terminal in the same
+   The download will be a .sh file with a name like ``Anaconda3-2021.05-Linux-x86_64.sh``. Open a terminal in the same
    directory as this file, and type the following to install Anaconda (replace the name of your .sh file below). ::
 
-    bash Anaconda3-2019.07-Linux-x86_64.sh
+    bash Anaconda3-2021.05-Linux-x86_64.sh
 
    **When prompted to append Anaconda to your PATH, select or type Yes**.  Install the Anaconda folder inside your home
    directory (typically ``/home/YourUsername/`` in Linux and ``/Users/YourUsername`` in Mac). When prompted, you do not
