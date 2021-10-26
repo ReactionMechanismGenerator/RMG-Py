@@ -211,7 +211,7 @@ Each reaction family contains the files:
 * training.py containing a training set for the family
 * rules.py containing kinetic parameters for rules
 
-There are currently 77 reaction families in RMG:
+There are currently 74 reaction families in RMG:
 
 .. |f00| image:: images/kinetics_families/1+2_Cycloaddition.png
     :scale: 40%
@@ -241,13 +241,7 @@ There are currently 77 reaction families in RMG:
     :scale: 40%
 .. |f12| image:: images/kinetics_families/1,4_Linear_birad_scission.png
     :scale: 40%
-.. |f13| image:: images/kinetics_families/2+2_cycloaddition_CCO.png
-    :scale: 40%
-.. |f14| image:: images/kinetics_families/2+2_cycloaddition_CO.png
-    :scale: 40%
-.. |f15| image:: images/kinetics_families/2+2_cycloaddition_CS.png
-    :scale: 40%
-.. |f16| image:: images/kinetics_families/2+2_cycloaddition_Cd.png
+.. |f13| image:: images/kinetics_families/2+2_cycloaddition.png
     :scale: 40%
 .. |f17| image:: images/kinetics_families/6_membered_central_C-C_shift.png
     :scale: 40%
@@ -386,10 +380,7 @@ There are currently 77 reaction families in RMG:
     **1,3_sigmatropic_rearrangement**                     |f75|
     **1,4_Cyclic_birad_scission**                         |f11|
     **1,4_Linear_birad_scission**                         |f12|
-    **2+2_cycloaddition_CCO**                             |f13|
-    **2+2_cycloaddition_CO**                              |f14|
-    **2+2_cycloaddition_CS**                              |f15|
-    **2+2_cycloaddition_Cd**                              |f16|
+    **2+2_cycloaddition**                                 |f13|
     **6_membered_central_C-C_shift**                      |f17|
     **Baeyer-Villiger_step1_cat**                         |f18|
     **Baeyer-Villiger_step2**                             |f19|
