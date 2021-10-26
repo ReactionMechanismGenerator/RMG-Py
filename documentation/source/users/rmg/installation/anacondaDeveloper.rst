@@ -77,7 +77,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     cd RMG-Py
     conda env create -f environment.yml
 
-   If the command returns an error due to being unable to find the ``conda`` command, try either close and reopen your terminal to refresh your environment variables, or type the following command.
+   If the command returns an error due to being unable to find the ``conda`` command, try to either close and reopen your terminal to refresh your environment variables or type the following command.
 
    If on Linux or pre-Catalina MacOS ::
 
@@ -96,17 +96,6 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    standardize operation across different operating systems. However, a prerequisite to using the new syntax is having
    run the ``conda init`` setup routine, which can be done at the end of the install procedure if the user requests.
     
-#. Install and Link Julia dependencies ::
-
-     python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
-
-     julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",version="0.4")); using ReactionMechanismSimulator;'
-
-   Note that this links your python to python-jl enabling calls to Julia through pyjulia. Occasionally programs will
-   interact with python-jl differently than the default python. If this occurs for you we recommend doing that operation
-   in a different conda environment. However, if convenient you can undo this linking by replacing python-jl with
-   python3 in the second command above. Just make sure to rerun the linking command once you are done.
-
 #. Compile RMG-Py after activating the conda environment ::
 
     make
@@ -126,6 +115,16 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    Be sure to either close and reopen your terminal to refresh your environment variables (``source ~/.bashrc`` or ``source ~/.zshrc``).
 
+#. Install and Link Julia dependencies ::
+
+     python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
+
+     julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",version="0.4")); using ReactionMechanismSimulator;'
+
+   Note that this links your python to python-jl enabling calls to Julia through pyjulia. Occasionally programs will
+   interact with python-jl differently than the default python. If this occurs for you we recommend doing that operation
+   in a different conda environment. However, if convenient you can undo this linking by replacing python-jl with
+   python3 in the second command above. Just make sure to rerun the linking command once you are done.
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
@@ -156,7 +155,7 @@ There are a number of basic tests you can run on the newly installed RMG.  It is
     make test-functional
 
 
-#. **Database test suite**: this will run the database unit tests to ensure that groups, rate rules, and libraries are well formed ::
+#. **Database test suite**: this will run the database unit tests to ensure that groups, rate rules, and libraries are well-formed ::
 
     cd RMG-Py
     make test-database
