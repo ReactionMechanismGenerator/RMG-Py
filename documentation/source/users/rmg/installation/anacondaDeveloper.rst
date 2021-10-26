@@ -57,17 +57,27 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    For linux users julia will be installed automatically.
 
 #. Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an
-   appropriate local directory where you want both RMG-Py and RMG-database folders to exist. ::
+   appropriate local directory where you want both RMG-Py and RMG-database folders to exist.
+   Github has deprecated password authentication from the command line, so it
+   is preferred to clone the repositories using ``ssh``::
 
+    git clone git@github.com:ReactionMechanismGenerator/RMG-Py.git
+    git clone git@github.com:ReactionMechanismGenerator/RMG-database.git
+
+   It is still possible to clone the repositories using ``https`` if you are
+   unfamiliar with ``ssh``::
+   
     git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
     git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+
+   For information on using ``ssh`` with GitHub see the `Connecting to GitHub with SSH <https://docs.github.com/en/authentication/connecting-to-github-with-ssh>`_
 
 #. Now create the conda environment for RMG-Py ::
 
     cd RMG-Py
     conda env create -f environment.yml
 
-   If the command errors due to being unable to find the `conda` command, try either close and reopen your terminal to refresh your environment variables, or type the following command.
+   If the command returns an error due to being unable to find the ``conda`` command, try either close and reopen your terminal to refresh your environment variables, or type the following command.
 
    If on Linux or pre-Catalina MacOS ::
 
