@@ -268,7 +268,11 @@ def _write_qm_files(quantum_mechanics, mol):
     """
     If quantum_mechanics is turned on thermo is calculated in parallel here.
     """
-    quantum_mechanics.get_thermo_data(mol)
+    try:
+        quantum_mechanics.get_thermo_data(mol)
+    except ValueError as e:  # rdkit fails to generate conformers
+        logging.error("Quantum Mechanics calculation failed for species: %s with ValueError: %s", mol, e.args[0])
+        logging.error("Falling back to ML (If turned on) or GAV (If not)")
 
 
 def save(rmg):
