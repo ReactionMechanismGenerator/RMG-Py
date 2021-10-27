@@ -1,11 +1,11 @@
 import numpy as np
 
 def matches_resolve(matches, rr_ll_list):
-    """
-    Sort out the pair of fragments and correct the amount. If the pair 
+	"""
+	Sort out the pair of fragments and correct the amount. If the pair 
 	contains additional cutting label, it will be added into new_r_l_moles
 	for further matching with other pairs.
-    """
+	"""
 	new_matches = []
 	new_r_l_moles = []
 	for match in matches:
@@ -31,9 +31,9 @@ def matches_resolve(matches, rr_ll_list):
 	return new_matches, new_r_l_moles
 
 def shuffle(conc, seed=None):
-    """
-    Randomly shuffle a list of fragments
-    """
+	"""
+	Randomly shuffle a list of fragments
+	"""
 	idx_arr = np.arange(len(conc))
 
 	if seed is not None:
@@ -43,9 +43,9 @@ def shuffle(conc, seed=None):
 	return [conc[idx] for idx in idx_arr]
 
 def grind(conc, size):
-    """
-    Split fragment concentrations into several repeating concentration units with specified size 
-    """
+	"""
+	Split fragment concentrations into several repeating concentration units with specified size 
+	"""
 	grinded_conc = []
 	for label, c in conc:
 		times = int(c/size)
