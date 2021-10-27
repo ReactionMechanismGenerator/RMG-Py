@@ -476,6 +476,8 @@ class CoreEdgeReactionModel:
                         check_cut=False
                 except KeyError:
                     check_cut=False
+            else:
+                check_cut=False
             for product in forward.products:
                 spcs = self.make_new_species(product, generate_thermo=generate_thermo, check_decay=True, check_cut=check_cut)
                 if type(spcs) == tuple:
