@@ -411,7 +411,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     elif isinstance(obj, PDepArrhenius):
         Ps = obj._pressures.value_si
         arrs = [to_rms(arr) for arr in obj.arrhenius]
-        return rms.PdepArrhenius(Ps, arrs)
+        return rms.PdepArrhenius(Ps, arrs, rms.EmptyRateUncertainty())
     elif isinstance(obj, MultiArrhenius):
         arrs = [to_rms(arr) for arr in obj.arrhenius]
         return rms.MultiArrhenius(arrs, rms.EmptyRateUncertainty())
