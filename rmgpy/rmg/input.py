@@ -931,6 +931,37 @@ def ml_estimator(thermo=True,
         logging.warning('"onlyCyclics" should be True when "onlyHeterocyclics" is True. '
                         'Machine learning estimator is restricted to only heterocyclic species thermo')
 
+def gnn_estimator(
+    thermo=True,
+    model_type="attn_mpn",
+    minHeavyAtoms=1,
+    maxHeavyAtoms=None,
+    H298UncertaintyCutoff=(5.0, "kcal/mol"),
+    S298UncertaintyCutoff=(5.0, "cal/(mol*K)"),
+    CpUncertaintyCutoff=(5.0, "cal/(mol*K)"),
+):
+    from rmgpy.ml.estimator import GNNEstimator
+
+    # Currently only support thermo
+    if thermo:
+        if not model_type in ["attn_mpn", "mpnn", "dmpnn", "dimenetpp"]:
+            raise RuntimeError(
+                f"Given ML estimator model {model_type} is not supported"
+            )
+
+    rmg.ml_estimator = GNNEstimator(model_type)
+
+    uncertainty_cutoffs = dict(
+        H298=Quantity(*H298UncertaintyCutoff),
+        S298=Quantity(*S298UncertaintyCutoff),
+        Cp=Quantity(*CpUncertaintyCutoff),
+    )
+    rmg.ml_settings = dict(
+        model_type=model_type,
+        min_heavy_atoms=minHeavyAtoms,
+        max_heavy_atoms=maxHeavyAtoms,
+        uncertainty_cutoffs=uncertainty_cutoffs,
+    )
 
 def pressure_dependence(
         method,
@@ -1176,6 +1207,7 @@ def read_input_file(path, rmg0):
         'model': model,
         'quantumMechanics': quantum_mechanics,
         'mlEstimator': ml_estimator,
+        'gnnEstimator': gnn_estimator,
         'pressureDependence': pressure_dependence,
         'options': options,
         'generatedSpeciesConstraints': generated_species_constraints,
