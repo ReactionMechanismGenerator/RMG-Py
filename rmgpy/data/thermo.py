@@ -44,7 +44,7 @@ import rmgpy.constants as constants
 import rmgpy.molecule
 import rmgpy.quantity
 from rmgpy.data.base import Database, Entry, make_logic_node, DatabaseError
-from rmgpy.ml.estimator import MLEstimator
+from rmgpy.ml.estimator import MLEstimator, GNNEstimator
 from rmgpy.molecule import Molecule, Bond, Group
 from rmgpy.species import Species
 from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
@@ -1394,12 +1394,24 @@ class ThermoDatabase(object):
                 # only if the molecule is made up of H, C, N, and O atoms and
                 # is not a singlet carbene. ML settings are checked in
                 # `self.get_thermo_data_from_ml`.
-                if (ml_estimator is not None
-                        and all(a.element.number in {1, 6, 7, 8} for a in species.molecule[0].atoms)
-                        and species.molecule[0].get_singlet_carbene_count() == 0):
-                    thermo0 = self.get_thermo_data_from_ml(species,
-                                                           ml_estimator,
-                                                           ml_settings)
+                if ml_estimator is not None:
+                    if isinstance(ml_estimator, MLEstimator):
+                        if (all(a.element.number in {1, 6, 7, 8} for a in species.molecule[0].atoms)
+                            and species.molecule[0].get_singlet_carbene_count() == 0):
+                            thermo0 = self.get_thermo_data_from_ml(species,
+                                                        ml_estimator,
+                                                        ml_settings)
+                    elif isinstance(ml_estimator, GNNEstimator):
+                        if (all(a.element.number in {1, 6, 8, 9, 17, 35} for a in species.molecule[0].atoms)
+                            and species.molecule[0].get_singlet_carbene_count() == 0):
+                            try:
+                                thermo0 = self.get_thermo_data_from_ml(
+                                species, ml_estimator, ml_settings
+                                )
+                            except Exception as exc:
+                                logging.info(f"Thermo estimation failed for {species.molecule[0].smiles} with error \n {str(exc)}")
+                                thermo0 = None
+                                # make it none so it can be estimated with group additivity
 
             if thermo0 is None:
                 # And lastly, resort back to group additivity to determine thermo for molecule
@@ -1918,41 +1930,53 @@ class ThermoDatabase(object):
         """
         molecule = species.molecule[0]
 
-        min_heavy = ml_settings['min_heavy_atoms'] or 1
-        max_heavy = ml_settings['max_heavy_atoms'] or np.inf
-        min_carbon = ml_settings['min_carbon_atoms'] or 0
-        max_carbon = ml_settings['max_carbon_atoms'] or np.inf
-        min_oxygen = ml_settings['min_oxygen_atoms'] or 0
-        max_oxygen = ml_settings['max_oxygen_atoms'] or np.inf
-        min_nitrogen = ml_settings['min_nitrogen_atoms'] or 0
-        max_nitrogen = ml_settings['max_nitrogen_atoms'] or np.inf
+        if isinstance(ml_estimator, MLEstimator):
+            min_heavy = ml_settings['min_heavy_atoms'] or 1
+            max_heavy = ml_settings['max_heavy_atoms'] or np.inf
+            min_carbon = ml_settings['min_carbon_atoms'] or 0
+            max_carbon = ml_settings['max_carbon_atoms'] or np.inf
+            min_oxygen = ml_settings['min_oxygen_atoms'] or 0
+            max_oxygen = ml_settings['max_oxygen_atoms'] or np.inf
+            min_nitrogen = ml_settings['min_nitrogen_atoms'] or 0
+            max_nitrogen = ml_settings['max_nitrogen_atoms'] or np.inf
 
-        element_count = molecule.get_element_count()
-        n_heavy = sum(count for element, count in element_count.items() if element != 'H')
+            element_count = molecule.get_element_count()
+            n_heavy = sum(count for element, count in element_count.items() if element != 'H')
 
-        if not (min_heavy <= n_heavy <= max_heavy):
-            return None
-        if not (min_carbon <= element_count.get('C', 0) <= max_carbon):
-            return None
-        if not (min_oxygen <= element_count.get('O', 0) <= max_oxygen):
-            return None
-        if not (min_nitrogen <= element_count.get('N', 0) <= max_nitrogen):
-            return None
-        if ml_settings['only_heterocyclics'] and not molecule.is_heterocyclic():
-            return None
-        if ml_settings['only_cyclics'] and not molecule.is_cyclic():
-            return None
-        min_cycle_overlap = ml_settings['min_cycle_overlap']
-        if min_cycle_overlap > 0 and molecule.get_max_cycle_overlap() < min_cycle_overlap:
-            return None
+            if not (min_heavy <= n_heavy <= max_heavy):
+                return None
+            if not (min_carbon <= element_count.get('C', 0) <= max_carbon):
+                return None
+            if not (min_oxygen <= element_count.get('O', 0) <= max_oxygen):
+                return None
+            if not (min_nitrogen <= element_count.get('N', 0) <= max_nitrogen):
+                return None
+            if ml_settings['only_heterocyclics'] and not molecule.is_heterocyclic():
+                return None
+            if ml_settings['only_cyclics'] and not molecule.is_cyclic():
+                return None
+            min_cycle_overlap = ml_settings['min_cycle_overlap']
+            if min_cycle_overlap > 0 and molecule.get_max_cycle_overlap() < min_cycle_overlap:
+                return None
 
-        if molecule.is_radical():
-            thermo = [self.estimate_radical_thermo_via_hbi(mol, ml_estimator.get_thermo_data) for mol in species.molecule]
-            H298 = np.array([tdata.H298.value_si for tdata in thermo])
-            indices = H298.argsort()
-            species.molecule = [species.molecule[ind] for ind in indices]
-            thermo0 = thermo[indices[0]]
-        else:
+            if molecule.is_radical():
+                thermo = [self.estimate_radical_thermo_via_hbi(mol, ml_estimator.get_thermo_data) for mol in species.molecule]
+                H298 = np.array([tdata.H298.value_si for tdata in thermo])
+                indices = H298.argsort()
+                species.molecule = [species.molecule[ind] for ind in indices]
+                thermo0 = thermo[indices[0]]
+            else:
+                thermo0 = ml_estimator.get_thermo_data_for_species(species)
+
+        elif isinstance(ml_estimator, GNNEstimator):
+            min_heavy = ml_settings["min_heavy_atoms"] or 1
+            max_heavy = ml_settings["max_heavy_atoms"] or np.inf
+            element_count = molecule.get_element_count()
+            n_heavy = sum(
+                count for element, count in element_count.items() if element != "H"
+            )
+            if not (min_heavy <= n_heavy <= max_heavy):
+                return None
             thermo0 = ml_estimator.get_thermo_data_for_species(species)
 
         # The keys for this dictionary should match the keys in
