@@ -1,4 +1,4 @@
-name: rmg_env
+name: rmg_env_ml_jl
 channels:
   - defaults
   - rmg
@@ -7,8 +7,7 @@ dependencies:
   - cairo
   - cairocffi
   - rmg::cantera >=2.3.0
-  - conda-forge::cclib >=1.6.3
-  - rmg::chemprop
+  - conda-forge::cclib=1.7
   - coolprop
   - coverage
   - cython >=0.25.2
@@ -29,7 +28,7 @@ dependencies:
   - nomkl
   - nose
   - rmg::numdifftools
-  - numpy >=1.10.0
+  - numpy=1.15
   - conda-forge::openbabel >= 3
   - pandas
   - psutil
@@ -41,12 +40,39 @@ dependencies:
   - pyparsing
   - rmg::pyrdl
   - rmg::pyrms
-  - python >=3.7
+  - python=3.7
   - pyyaml
   - rmg::quantities
-  - rmg::rdkit >=2020.03.3.0
-  - scikit-learn
-  - scipy
+  - rmg::rdkit==2020.03.3.0
+  - scikit-learn=0.23
+  - scipy=1.5
   - rmg::symmetry
   - xlrd
   - xlwt
+  #dimenetpp featurization 
+#  - ase # to run geometry optimization
+#  - xtb-python==20.2 #to get forces and energies from xTB
+  #ml
+  #oldest version of torch compatible with dgl 
+  #and doesn't result in segfaults or numpy errors
+  #better kernels
+  - dglteam::dgl=0.6
+  #for dimenetpp
+  - sympy
+  # utilities
+  - typer
+  - pydantic
+  - tqdm
+  # for gnns thermo tests
+  - pytest
+  # just in case
+  - make
+  - cmake
+  - pip
+  - pip:
+    #lots of cheminformatics utilities 
+      - dgllife==0.2.6
+      # if conda fails to install torch+cpu 
+      # do it manually after the conda env is built and activate it before running 
+      # pip install torch==1.5.0 -f https://download.pytorch.org/whl/torch_stable.html
+      - torch==1.5.0 -f https://download.pytorch.org/whl/torch_stable.html
