@@ -1217,6 +1217,48 @@ multiplicity 2
         res2 = generate_resonance_structures(mol2)
         self.assertEqual(res1, res2)
 
+    def test_resonance_without_changing_atom_order(self):
+        """Test generating resonance structures without changing the atom order"""
+        mol = Molecule().from_adjacency_list("""
+multiplicity 2
+1  C u1 p0 c0 {2,S} {8,S} {9,S}
+2  C u0 p0 c0 {1,S} {3,S} {4,D}
+3  C u0 p0 c0 {2,S} {10,S} {11,S} {12,S}
+4  C u0 p0 c0 {2,D} {5,S} {6,S}
+5  C u0 p0 c0 {4,S} {13,S} {14,S} {15,S}
+6  C u0 p0 c0 {4,S} {7,S} {16,S} {17,S}
+7  O u0 p2 c0 {6,S} {18,S}
+8  H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {3,S}
+13 H u0 p0 c0 {5,S}
+14 H u0 p0 c0 {5,S}
+15 H u0 p0 c0 {5,S}
+16 H u0 p0 c0 {6,S}
+17 H u0 p0 c0 {6,S}
+18 H u0 p0 c0 {7,S}""")
+
+        # Note: if save_order = False, atoms will be sorted
+        # and the O atom will be reindexed to 1, which should be
+        # true regardless of RMG's version and environment.
+        # A copy is used to avoid the original mol's atoms are sorted.
+        res_mols = mol.copy(deep=True).generate_resonance_structures(save_order=True)
+
+        # Assign atom ids
+        for molecule in [mol] + res_mols:
+            for idx, atom in enumerate(molecule.atoms):
+                atom.id = idx
+
+        # Comparing atom symbol as its nearest neighbors
+        for res_mol in res_mols:
+            for atom1, atom2 in zip(mol.atoms, res_mol.atoms):
+                self.assertEqual(atom1.element.symbol, atom2.element.symbol)
+                atom1_nb = {nb.id for nb in list(atom1.bonds.keys())}
+                atom2_nb = {nb.id for nb in list(atom2.bonds.keys())}
+                self.assertEqual(atom1_nb, atom2_nb)
+
 
 class ClarTest(unittest.TestCase):
     """
