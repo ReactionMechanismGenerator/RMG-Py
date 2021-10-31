@@ -200,7 +200,7 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
 
     # Use generate_optimal_aromatic_resonance_structures to check for false positives and negatives
     if features['is_aromatic'] or (features['is_cyclic'] and features['is_radical'] and not features['is_aryl_radical']):
-        new_mol_list = generate_optimal_aromatic_resonance_structures(mol, features)
+        new_mol_list = generate_optimal_aromatic_resonance_structures(mol, features, save_order=save_order)
         if len(new_mol_list) == 0:
             # Encountered false positive, ie. the molecule is not actually aromatic
             features['is_aromatic'] = False
@@ -211,7 +211,12 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
                 features['isPolycyclicAromatic'] = True
             for new_mol in new_mol_list:
                 # Append to structure list if unique
-                if not keep_isomorphic and mol.is_isomorphic(new_mol):
+                if not keep_isomorphic and mol.is_isomorphic(new_mol,
+                                                             initial_map=None,
+                                                             generate_initial_map=False,
+                                                             save_order=save_order):
+                    # Note: `initial_map` and `generagenerate_initial_map` is using default values.
+                    # They are required in compilation before assigning `save_order`.
                     continue
                 elif keep_isomorphic and mol.is_identical(new_mol):
                     continue
@@ -222,20 +227,24 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
     if features['is_aromatic']:
         if features['is_radical'] and not features['is_aryl_radical']:
             _generate_resonance_structures(mol_list, [generate_kekule_structure],
-                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+                                           keep_isomorphic=keep_isomorphic,
+                                           save_order=save_order)
             _generate_resonance_structures(mol_list, [generate_allyl_delocalization_resonance_structures],
-                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+                                           keep_isomorphic=keep_isomorphic,
+                                           save_order=save_order)
         if features['isPolycyclicAromatic'] and clar_structures:
             _generate_resonance_structures(mol_list, [generate_clar_structures],
-                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+                                           keep_isomorphic=keep_isomorphic,
+                                           save_order=save_order)
         else:
             _generate_resonance_structures(mol_list, [generate_aromatic_resonance_structure],
-                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+                                           keep_isomorphic=keep_isomorphic,
+                                           save_order=save_order)
 
     # Generate remaining resonance structures
     method_list = populate_resonance_algorithms(features)
     _generate_resonance_structures(mol_list, method_list, keep_isomorphic=keep_isomorphic,
-                                   filter_structures=filter_structures)
+                                   save_order=save_order)
 
     if filter_structures:
         return filtration.filter_structures(mol_list, features=features, save_order=save_order)
@@ -243,7 +252,8 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
     return mol_list
 
 
-def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False, copy=False, filter_structures=True):
+def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False, copy=False,
+                                   save_order=False):
     """
     Iteratively generate all resonance structures for a list of starting molecules using the specified methods.
 
@@ -291,7 +301,12 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         for new_mol in new_mol_list:
             # Append to structure list if unique
             for mol in mol_list:
-                if not keep_isomorphic and mol.is_isomorphic(new_mol):
+                if not keep_isomorphic and mol.is_isomorphic(new_mol,
+                                                             initial_map=None,
+                                                             generate_initial_map=False,
+                                                             save_order=save_order):
+                    # Note: `initial_map` and `generagenerate_initial_map` is using default values.
+                    # They are required in compilation before assigning `save_order`.
                     break
                 elif keep_isomorphic and mol.is_identical(new_mol):
                     break
@@ -583,7 +598,7 @@ def generate_N5dc_radical_resonance_structures(mol):
     return structures
 
 
-def generate_optimal_aromatic_resonance_structures(mol, features=None):
+def generate_optimal_aromatic_resonance_structures(mol, features=None, save_order=False):
     """
     Generate the aromatic form of the molecule. For radicals, generates the form with the most aromatic rings.
 
@@ -616,7 +631,7 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None):
     else:
         kekule_list = [molecule]
 
-    _generate_resonance_structures(kekule_list, res_list)
+    _generate_resonance_structures(kekule_list, res_list, save_order=save_order)
 
     # Sort all of the generated structures by number of perceived aromatic rings
     mol_dict = {}
@@ -641,7 +656,10 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None):
                 continue
 
             for mol1 in new_mol_list:
-                if mol1.is_isomorphic(mol0):
+                if mol1.is_isomorphic(mol0, initial_map=None,
+                                      generate_initial_map=False, save_order=save_order):
+                    # Note: `initial_map` and `generagenerate_initial_map` is using default values.
+                    # They are required in compilation before assigning `save_order`.
                     break
             else:
                 new_mol_list.append(mol0)
