@@ -228,27 +228,23 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
         if features['is_radical'] and not features['is_aryl_radical']:
             _generate_resonance_structures(mol_list, [generate_kekule_structure],
                                            keep_isomorphic=keep_isomorphic,
-                                           filter_structures=filter_structures,
                                            save_order=save_order)
             _generate_resonance_structures(mol_list, [generate_allyl_delocalization_resonance_structures],
                                            keep_isomorphic=keep_isomorphic,
-                                           filter_structures=filter_structures,
                                            save_order=save_order)
         if features['isPolycyclicAromatic'] and clar_structures:
             _generate_resonance_structures(mol_list, [generate_clar_structures],
                                            keep_isomorphic=keep_isomorphic,
-                                           filter_structures=filter_structures,
                                            save_order=save_order)
         else:
             _generate_resonance_structures(mol_list, [generate_aromatic_resonance_structure],
                                            keep_isomorphic=keep_isomorphic,
-                                           filter_structures=filter_structures,
                                            save_order=save_order)
 
     # Generate remaining resonance structures
     method_list = populate_resonance_algorithms(features)
     _generate_resonance_structures(mol_list, method_list, keep_isomorphic=keep_isomorphic,
-                                   filter_structures=filter_structures, save_order=save_order)
+                                   save_order=save_order)
 
     if filter_structures:
         return filtration.filter_structures(mol_list, features=features, save_order=save_order)
@@ -257,7 +253,7 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
 
 
 def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False, copy=False,
-                                   filter_structures=True, save_order=False):
+                                   save_order=False):
     """
     Iteratively generate all resonance structures for a list of starting molecules using the specified methods.
 
