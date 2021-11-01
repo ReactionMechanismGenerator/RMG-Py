@@ -197,7 +197,6 @@ class GNNEstimator:
         from gnns_thermo.inference import (
             GNNCalculator,
             EnsembleGNNCalculator,
-            EnsembleDimeNetPPCalculator,
         )
         from gnns_thermo.testing import get_chkpt
         from gnns_thermo.config.enums import ModelInferenceEnum
@@ -216,8 +215,8 @@ class GNNEstimator:
         if inference_type == ModelInferenceEnum.ensemble:
             if model_type in ["attn_mpn", "mpnn", "dmpnn"]:
                 calculator_type = EnsembleGNNCalculator
-            elif model_type == "dimenetpp":
-                calculator_type = EnsembleDimeNetPPCalculator
+            # elif model_type == "dimenetpp":
+            #     calculator_type = EnsembleDimeNetPPCalculator
             else:
                 raise NotImplementedError(
                     f"Given model type {model_type} is not implemented"
@@ -271,15 +270,18 @@ class GNNEstimator:
         else:
             uhf = None
         # need to find
-        hf298_pred = self.hf298_estimator.calculate(
-            input, uhf=uhf, feat=self.dimenetpp_featurizer
-        )
-        s298_pred = self.s298_estimator.calculate(
-            input, uhf=uhf, feat=self.dimenetpp_featurizer
-        )
-        cp_pred = self.cp_estimator.calculate(
-            input, uhf=uhf, feat=self.dimenetpp_featurizer
-        )
+        hf298_pred = self.hf298_estimator.calculate(input)
+        s298_pred = self.s298_estimator.calculate(input)
+        cp_pred = self.cp_estimator.calculate(input)
+        # hf298_pred = self.hf298_estimator.calculate(
+        #     input, uhf=uhf, feat=self.dimenetpp_featurizer
+        # )
+        # s298_pred = self.s298_estimator.calculate(
+        #     input, uhf=uhf, feat=self.dimenetpp_featurizer
+        # )
+        # cp_pred = self.cp_estimator.calculate(
+        #     input, uhf=uhf, feat=self.dimenetpp_featurizer
+        # )
         if self.inference_type == "ensemble":
             hf298, hf298_std = hf298_pred.mean(0), hf298_pred.std(0)
             s298, s298_std = s298_pred.mean(0), s298_pred.std(0)
