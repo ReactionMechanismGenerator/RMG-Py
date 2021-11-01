@@ -89,11 +89,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             self.compat_func_name = test_name
             yield test, None
 
-            test = lambda x: self.kinetics_check_groups_nonidentical(family_name)
-            test_name = "Kinetics family {0}: groups are not identical?".format(family_name)
-            test.description = test_name
-            self.compat_func_name = test_name
-            yield test, family_name
+            if not family.auto_generated:
+                test = lambda x: self.kinetics_check_groups_nonidentical(family_name)
+                test_name = "Kinetics family {0}: groups are not identical?".format(family_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
 
             test = lambda x: self.kinetics_check_child_parent_relationships(family_name)
             test_name = "Kinetics family {0}: parent-child relationships are correct?".format(family_name)
