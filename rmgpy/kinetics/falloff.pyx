@@ -396,5 +396,8 @@ cdef class Troe(PDepKineticsModel):
         A = self.alpha
         T3 = self.T3.value_si
         T1 = self.T1.value_si
-        T2 = self.T2.value_si
-        ct_reaction.falloff = ct.TroeFalloff(params=[A, T3, T1, T2])
+        if self.T2 is None:
+            ct_reaction.falloff = ct.TroeFalloff(params=[A, T3, T1]) 
+        else:
+            T2 = self.T2.value_si
+            ct_reaction.falloff = ct.TroeFalloff(params=[A, T3, T1, T2])
