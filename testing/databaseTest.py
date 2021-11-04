@@ -1428,26 +1428,6 @@ Origin Group AdjList:
                     # Just check none of this throws errors
                     species = rmgpy.species.Species(index=1,molecule=[molecule])
                     species.generate_resonance_structures()
-        elif len(sample_reactants) == 1 and len(family.forward_template.reactants) == 2:
-            # eg. Bimolec_Hydroperoxide_Decomposition and Peroxyl_Disproportionation
-            # use the same group twice.
-            reactant_lists = [sample_reactants[k] for k in family.forward_template.reactants ]
-            pairs = zip(*reactant_lists)
-            for reactant1, reactant2 in pairs:
-                try:
-                    products = family.apply_recipe([reactant1, reactant2])
-                except Exception as e:
-                    test1.append(make_error_message([reactant1, reactant2],
-                          message=f"During apply_recipe had an {type(e)!s}: {e!s}"))
-                    continue
-                if products is None:
-                    test1.append(make_error_message([reactant1, reactant2],
-                        message="apply_recipe returned None, indicating wrong number of products or a charged product."))
-                    continue
-                for molecule in products:
-                    # Just check none of this throws errors
-                    species = rmgpy.species.Species(index=1,molecule=[molecule])
-                    species.generate_resonance_structures()
         elif len(sample_reactants) == 2:
             sr = list(sample_reactants.values())
             # Every combination may be prohibitively slow (N*M reactions),

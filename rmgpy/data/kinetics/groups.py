@@ -131,9 +131,8 @@ class KineticsGroups(Database):
 
         # Descend reactant trees as far as possible
         template = []
-        special_cases = ['bimolec_hydroperoxide_decomposition']
         if (len(forward_template) == 1 and len(reaction.reactants) > len(forward_template) and
-                self.label.lower().split('/')[0] not in special_cases):
+                self.label.lower().split('/')[0]):
             entry = forward_template[0]
             group = entry.item
 
@@ -184,8 +183,6 @@ class KineticsGroups(Database):
 
             # Get fresh templates (with duplicate nodes back in)
             forward_template = self.top[:]
-            if self.label.lower().startswith('bimolec_hydroperoxide_decomposition'):
-                forward_template.append(forward_template[0])
 
         # Check that we were able to match the template.
         # template is a list of the actual matched nodes
