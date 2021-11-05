@@ -140,7 +140,8 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 yield test, family_name
 
             # these families have some sort of difficulty which prevents us from testing accessibility right now
-            difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', 'Retroene']
+            # See RMG-Py PR #2232 for reason why adding Bimolec_Hydroperoxide_Decomposition here. Bsically some nodes need to be in a ring, but the sampled molecule is not.
+            difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', 'Retroene','Bimolec_Hydroperoxide_Decomposition']
 
             if len(family.forward_template.reactants) < len(family.groups.top) and family_name not in difficult_families:
                 test = lambda x: self.kinetics_check_unimolecular_groups(family_name)
@@ -1422,26 +1423,6 @@ Origin Group AdjList:
                     continue
                 if products is None:
                     test1.append(make_error_message([reactant],
-                        message="apply_recipe returned None, indicating wrong number of products or a charged product."))
-                    continue
-                for molecule in products:
-                    # Just check none of this throws errors
-                    species = rmgpy.species.Species(index=1,molecule=[molecule])
-                    species.generate_resonance_structures()
-        elif len(sample_reactants) == 1 and len(family.forward_template.reactants) == 2:
-            # eg. Bimolec_Hydroperoxide_Decomposition and Peroxyl_Disproportionation
-            # use the same group twice.
-            reactant_lists = [sample_reactants[k] for k in family.forward_template.reactants ]
-            pairs = zip(*reactant_lists)
-            for reactant1, reactant2 in pairs:
-                try:
-                    products = family.apply_recipe([reactant1, reactant2])
-                except Exception as e:
-                    test1.append(make_error_message([reactant1, reactant2],
-                          message=f"During apply_recipe had an {type(e)!s}: {e!s}"))
-                    continue
-                if products is None:
-                    test1.append(make_error_message([reactant1, reactant2],
                         message="apply_recipe returned None, indicating wrong number of products or a charged product."))
                     continue
                 for molecule in products:
