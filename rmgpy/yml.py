@@ -57,6 +57,7 @@ def convert_chemkin_to_yml(chemkin_path, dictionary_path=None, output="chem.rms"
 
 
 def write_yml(spcs, rxns, solvent=None, solvent_data=None, path="chem.yml"):
+    spcs = sorted(spcs, key=lambda species: species.index)
     result_dict = get_mech_dict(spcs, rxns, solvent=solvent, solvent_data=solvent_data)
     with open(path, 'w') as f:
         yaml.dump(result_dict, stream=f)
