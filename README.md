@@ -54,3 +54,13 @@ perform thermodynamics and kinetics searches
 [Massachusetts Institute of Technology](http://web.mit.edu/) 
 - [Professor Richard H. West's research group](http://www.northeastern.edu/comocheng/) at 
 [Northeastern University](http://www.northeastern.edu/). 
+
+## Resources and References
+
+The resources and relevant publications are listed [here](https://rmg.mit.edu/resources) on the RMG-website. 
+Please at least cite our latest publication on Reaction Mechanism Generator v3.0 and other
+relevant publications when publishing the results using our software.
+
+## License Information
+
+RMG is a free, open-source software package (distributed under the [MIT/X11 license](https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/LICENSE.txt)).
