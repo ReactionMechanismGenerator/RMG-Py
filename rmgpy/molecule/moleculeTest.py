@@ -263,6 +263,18 @@ class TestAtom(unittest.TestCase):
             else:
                 self.assertFalse(atom.is_surface_site())
 
+    def test_is_bonded_to_surface(self):
+        """
+        Test the Atom.is_bonded_to_surface_site() method.
+        """
+
+        adsorbate = Molecule(smiles='*=O') # X=O
+        for atom in adsorbate.atoms:
+            if atom.is_surface_site():
+                self.assertFalse(atom.is_bonded_to_surface())
+            else:
+                self.assertTrue(atom.is_bonded_to_surface())
+
     def test_is_bonded_to_halogen(self):
         """
         Test the Atom.is_bonded_to_halogen() method.
