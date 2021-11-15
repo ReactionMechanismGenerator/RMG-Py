@@ -263,6 +263,23 @@ class TestAtom(unittest.TestCase):
             else:
                 self.assertFalse(atom.is_surface_site())
 
+    def test_is_bonded_to_halogen(self):
+        """
+        Test the Atom.is_bonded_to_halogen() method.
+        """
+
+        cf4 = Molecule(smiles='FC(F)(F)F') # CF4
+        ch4 = Molecule(smiles='C')         # CH4
+
+        for atom in cf4.atoms:
+            if atom.is_halogen():
+                self.assertFalse(atom.is_bonded_to_halogen())
+            else:
+                self.assertTrue(atom.is_bonded_to_halogen())
+
+        for atom in ch4.atoms:
+            self.assertFalse(atom.is_bonded_to_halogen())
+
     def test_increment_radical(self):
         """
         Test the Atom.increment_radical() method.
