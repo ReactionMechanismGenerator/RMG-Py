@@ -387,6 +387,17 @@ class Atom(Vertex):
                 return True
         return False
 
+    def is_bonded_to_halogen(self):
+        """
+        Return ``True`` if the atom is bonded to at least one halogen (F, Cl, Br, or I)
+        ``False`` if it is not
+        """
+        cython.declare(bonded_atom=Atom)
+        for bonded_atom in self.bonds.keys():
+            if bonded_atom.is_halogen():
+                return True
+        return False
+
     def is_silicon(self):
         """
         Return ``True`` if the atom represents a silicon atom or ``False`` if
