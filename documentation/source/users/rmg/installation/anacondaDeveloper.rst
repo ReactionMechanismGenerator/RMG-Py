@@ -4,7 +4,7 @@
 Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX
 *******************************************************************************************
 
-#. Download and install `Anaconda Individual Edition <https://www.anaconda.com/products/individual/>`.
+#. Download and install `Anaconda Individual Edition <https://www.anaconda.com/products/individual#Downloads>`.
 
    The download will be a .sh file with a name like ``Anaconda3-2021.05-Linux-x86_64.sh``. Open a terminal in the same
    directory as this file, and type the following to install Anaconda (replace the name of your .sh file below). ::
