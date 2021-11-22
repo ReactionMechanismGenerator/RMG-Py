@@ -4,12 +4,12 @@
 Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX
 *******************************************************************************************
 
-#. Download and install the `Anaconda Python Platform <https://www.anaconda.com/download/>`_ for Python 3.7.
+#. Download and install `Anaconda Individual Edition <https://www.anaconda.com/products/individual#Downloads>`.
 
-   The download will be a .sh file with a name like ``Anaconda3-2019.07-Linux-x86_64.sh``. Open a terminal in the same
+   The download will be a .sh file with a name like ``Anaconda3-2021.05-Linux-x86_64.sh``. Open a terminal in the same
    directory as this file, and type the following to install Anaconda (replace the name of your .sh file below). ::
 
-    bash Anaconda3-2019.07-Linux-x86_64.sh
+    bash Anaconda3-2021.05-Linux-x86_64.sh
 
    **When prompted to append Anaconda to your PATH, select or type Yes**.  Install the Anaconda folder inside your home
    directory (typically ``/home/YourUsername/`` in Linux and ``/Users/YourUsername`` in Mac). When prompted, you do not
@@ -57,17 +57,27 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    For linux users julia will be installed automatically.
 
 #. Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an
-   appropriate local directory where you want both RMG-Py and RMG-database folders to exist. ::
+   appropriate local directory where you want both RMG-Py and RMG-database folders to exist.
+   Github has deprecated password authentication from the command line, so it
+   is preferred to clone the repositories using ``ssh``::
 
+    git clone git@github.com:ReactionMechanismGenerator/RMG-Py.git
+    git clone git@github.com:ReactionMechanismGenerator/RMG-database.git
+
+   It is still possible to clone the repositories using ``https`` if you are
+   unfamiliar with ``ssh``::
+   
     git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
     git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+
+   For information on using ``ssh`` with GitHub see the `Connecting to GitHub with SSH <https://docs.github.com/en/authentication/connecting-to-github-with-ssh>`_
 
 #. Now create the conda environment for RMG-Py ::
 
     cd RMG-Py
     conda env create -f environment.yml
 
-   If the command errors due to being unable to find the `conda` command, try either close and reopen your terminal to refresh your environment variables, or type the following command.
+   If the command returns an error due to being unable to find the ``conda`` command, try to either close and reopen your terminal to refresh your environment variables or type the following command.
 
    If on Linux or pre-Catalina MacOS ::
 
@@ -86,17 +96,6 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    standardize operation across different operating systems. However, a prerequisite to using the new syntax is having
    run the ``conda init`` setup routine, which can be done at the end of the install procedure if the user requests.
     
-#. Install and Link Julia dependencies ::
-
-     python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
-
-     julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",version="0.4")); using ReactionMechanismSimulator;'
-
-   Note that this links your python to python-jl enabling calls to Julia through pyjulia. Occasionally programs will
-   interact with python-jl differently than the default python. If this occurs for you we recommend doing that operation
-   in a different conda environment. However, if convenient you can undo this linking by replacing python-jl with
-   python3 in the second command above. Just make sure to rerun the linking command once you are done.
-
 #. Compile RMG-Py after activating the conda environment ::
 
     make
@@ -116,6 +115,16 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    Be sure to either close and reopen your terminal to refresh your environment variables (``source ~/.bashrc`` or ``source ~/.zshrc``).
 
+#. Install and Link Julia dependencies ::
+
+     python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
+
+     julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",version="0.4")); using ReactionMechanismSimulator;'
+
+   Note that this links your python to python-jl enabling calls to Julia through pyjulia. Occasionally programs will
+   interact with python-jl differently than the default python. If this occurs for you we recommend doing that operation
+   in a different conda environment. However, if convenient you can undo this linking by replacing python-jl with
+   python3 in the second command above. Just make sure to rerun the linking command once you are done.
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
@@ -146,7 +155,7 @@ There are a number of basic tests you can run on the newly installed RMG.  It is
     make test-functional
 
 
-#. **Database test suite**: this will run the database unit tests to ensure that groups, rate rules, and libraries are well formed ::
+#. **Database test suite**: this will run the database unit tests to ensure that groups, rate rules, and libraries are well-formed ::
 
     cd RMG-Py
     make test-database
