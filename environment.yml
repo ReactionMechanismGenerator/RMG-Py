@@ -1,52 +1,42 @@
-name: rmg_env
+name: rmg_new
 channels:
   - defaults
-  - rmg
   - conda-forge
+  - pytorch
+  - dglteam
 dependencies:
+  - python=3.9
+  - pandas
+  - mamba
+  - numpy
+  - cantera
+  - ca-certificates
+  - certifi
+  - openssl
   - cairo
   - cairocffi
-  - rmg::cantera >=2.3.0
-  - conda-forge::cclib >=1.6.3
-  - rmg::chemprop
+  - cclib
+  - jupyter
+  - pytorch==1.7.1
+  - torchvision==0.8.2
+  - torchaudio==0.7.2
   - coolprop
   - coverage
-  - cython >=0.25.2
-  - rmg::diffeqpy
+  - cython
   - ffmpeg
-  - rmg::gprof2dot
-  - graphviz
-  - h5py
-  - jinja2
-  - jupyter
-  - rmg::lpsolve55
-  - markupsafe
-  - matplotlib >=1.5
-  - rmg::mopac
+  - dglteam::dgl>0.6
+  - matplotlib
+  - lpsolve55
   - mpmath
-  - rmg::muq2
-  - networkx
-  - nomkl
   - nose
-  - rmg::numdifftools
-  - numpy >=1.10.0
-  - conda-forge::openbabel >= 3
-  - pandas
-  - psutil
-  - rmg::pydas >=1.0.2
-  - pydot
-  - rmg::pydqed >=1.0.1
-  - rmg::pyjulia
-  - pymongo
-  - pyparsing
-  - rmg::pyrdl
-  - rmg::pyrms
-  - python >=3.7
-  - pyyaml
-  - rmg::quantities
-  - rmg::rdkit >=2020.03.3.0
+  - openbabel
+  - rdkit
   - scikit-learn
-  - scipy
-  - rmg::symmetry
   - xlrd
   - xlwt
+  - pyyaml
+  - pymongo
+  - pydot
+  - psutil
+  - chemprop
+
