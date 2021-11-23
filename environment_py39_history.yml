@@ -1,0 +1,43 @@
+name: rmg_env_py39
+channels:
+  - defaults
+  - conda-forge
+  - pytorch
+  - dglteam
+dependencies:
+  - pandas
+  - mamba
+  - numpy
+  - python=3.9
+  - cantera
+  - ca-certificates
+  - certifi
+  - openssl
+  - cairo
+  - cairocffi
+  - cclib
+  - jupyter
+  - pytorch==1.7.1
+  - torchvision==0.8.2
+  - torchaudio==0.7.2
+  - coolprop
+  - coverage
+  - cython
+  - ffmpeg
+  - dglteam::dgl>0.6
+  - matplotlib
+  - lpsolve55
+  - mpmath
+  - nose
+  - openbabel
+  - rdkit
+  - scikit-learn
+  - xlrd
+  - xlwt
+  - pyyaml
+  - pymongo
+  - pydot
+  - psutil
+  - chemprop
+prefix: /Users/farina.d/opt/anaconda3/envs/rmg_env_py310
+
