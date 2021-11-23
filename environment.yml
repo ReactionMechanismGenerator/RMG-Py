@@ -37,4 +37,13 @@ dependencies:
   - pydot
   - psutil
   - chemprop
-
+  - dgllife
+  - typer
+  - symmetry
+  - quantities
+  - mopac
+  - gprof2dot
+  - muq
+  - numdifftools
+  - pydantic
+  - pytest
