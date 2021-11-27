@@ -4,22 +4,26 @@
 Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX
 *******************************************************************************************
 
-#. Download and install `Anaconda Individual Edition <https://www.anaconda.com/products/individual#Downloads>`.
+#. Install the `conda` package manager. Select one of the following options:
 
-   The download will be a .sh file with a name like ``Anaconda3-2023.03-Linux-x86_64.sh``. Open a terminal in the same
+   a. Users of Fedora Linux and Red Hat derivatives (RHEL, CentOS Stream) may install from the official repositories and EPEL, respectively, with the command ::
+
+    sudo dnf install conda
+
+   b. All other users, download and install `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`.
+
+   The download will be a .sh file with a name like ``Miniconda3-latest-Linux-x86_64.sh``. Open a terminal in the same
    directory as this file, and type the following to install Anaconda (replace the name of your .sh file below). ::
 
-    bash Anaconda3-2023.03-Linux-x86_64.sh
+    bash Miniconda3-latest-Linux-x86_64.sh
 
-   **When prompted to append Anaconda to your PATH, select or type Yes**.  Install the Anaconda folder inside your home
-   directory (typically ``/home/YourUsername/`` in Linux and ``/Users/YourUsername`` in Mac). When prompted, you do not
-   need to install Microsoft VSCode (but feel free to if you are looking for a lightweight IDE).
+   **When prompted to append Anaconda to your PATH, select or type Yes**.  Install the Conda folder inside your home
+   directory (typically ``/home/YourUsername/`` in Linux and ``/Users/YourUsername`` in Mac).
 
-   Note that you should restart your terminal in order for the changes to take effect, as the installer will tell you.
+   Note that you should reinitialize or restart your terminal in order for the changes to take effect, as the installer will tell you.
 
-#. There are a few system-level dependencies which are required and should not be installed via Anaconda. These include
-   `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, 
-   and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG.
+#. There are a few system-level dependencies which are required and should not be installed via Conda. These include
+   `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG.
 
    For Linux users, you can check whether these are already installed by simply calling them via the command line, which
    will let you know if they are missing. To install any missing packages, you should use the appropriate package manager
