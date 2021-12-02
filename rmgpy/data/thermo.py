@@ -2190,14 +2190,17 @@ class ThermoDatabase(object):
                 # Potentially we could include other.py in this database, but it's a little confusing how to label atoms for the entries in other.py
                 if not molecule.is_atom_in_cycle(atom):
                     for atom_2 in molecule.get_nth_neighbor([atom], [1, 2]):
-                        if not molecule.is_atom_in_cycle(atom_2):
-                            # This is the correction for noncyclic structure. If `atom` or `atom_2` is in a cycle, do not apply this correction.
-                            # Note that previously we do not do gauche for cyclic molecule, which is unreasonable for cyclic molecule with a long tail.
-                            try:
-                                self._add_group_thermo_data(thermo_data, self.groups['longDistanceInteraction_noncyclic'],
-                                                            molecule, {'*1': atom, '*2': atom_2})
-                            except KeyError:
-                                pass
+                        if molecule.is_atom_in_cycle(atom_2) and not atom_2.is_bonded_to_halogen():
+                            continue
+                        # This is the correction for noncyclic structure. 
+                        # If `atom_2` is bonded to a halogen, we apply noncyclic corrections regardless if `atom_2` is in a cycle or not.
+                        # If `atom_2` is not bonded to a halogen, and `atom` or `atom_2` is in a cycle, do not apply this correction.
+                        # Note that previously we do not do gauche for cyclic molecule, which is unreasonable for cyclic molecule with a long tail.
+                        try:
+                            self._add_group_thermo_data(thermo_data, self.groups['longDistanceInteraction_noncyclic'],
+                                                        molecule, {'*1': atom, '*2': atom_2})
+                        except KeyError:
+                            pass
                 try:
                     self._add_group_thermo_data(thermo_data, self.groups['other'], molecule, {'*': atom})
                 except KeyError:

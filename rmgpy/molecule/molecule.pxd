@@ -81,7 +81,9 @@ cdef class Atom(Vertex):
     cpdef bint is_surface_site(self)
 
     cpdef bint is_bonded_to_surface(self)
-    
+
+    cpdef bint is_bonded_to_halogen(self)
+
     cpdef increment_radical(self)
 
     cpdef decrement_radical(self)
