@@ -591,7 +591,7 @@ cdef class ArrheniusBM(KineticsModel):
         assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
 
         if Ts is None:
-            Ts = [300.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1100.0, 1200.0, 1500.0]
+            Ts = [300.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1100.0, 1200.0, 1500.0, 2000.0]
         if w0 is None:
             #estimate w0
             w0s = get_w0s(recipe, rxns)
