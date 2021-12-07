@@ -64,12 +64,14 @@ def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True,
     if not all([(mol.multiplicity == mol_list[0].multiplicity) for mol in mol_list]):
         raise ValueError("Cannot filter structures with different multiplicities!")
 
+    #Remove structures that try to put negative charges on metal ions
+    filtered_list = ionic_bond_filteration(mol_list)
+
     # Get an octet deviation list
     octet_deviation_list = get_octet_deviation_list(mol_list, allow_expanded_octet=allow_expanded_octet)
 
     # Filter mol_list using the octet rule and the respective octet deviation list
-    filtered_list, charge_span_list = octet_filtration(mol_list, octet_deviation_list)
-
+    filtered_list, charge_span_list = octet_filtration(filtered_list, octet_deviation_list)
     # Filter by charge
     filtered_list = charge_filtration(filtered_list, charge_span_list)
 
@@ -90,6 +92,21 @@ def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True,
 
     return filtered_list
 
+
+def ionic_bond_filteration(mol_list):
+    """
+    Returns a filtered list removing structures that put a negative charge on lithium
+    which is ionically bonded and thus cannot donate/recieve electrons covalently
+    """
+    filtered_list  = []
+    for mol in mol_list:
+        for atom in mol.atoms:
+            if atom.is_lithium() and atom.charge < 0:
+                break
+        else:
+            filtered_list.append(mol)
+
+    return filtered_list
 
 def get_octet_deviation_list(mol_list, allow_expanded_octet=True):
     """
@@ -113,7 +130,7 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
 
     octet_deviation = 0  # This is the overall "score" for the molecule, summed across all non-H atoms
     for atom in mol.vertices:
-        if isinstance(atom, CuttingLabel) or atom.is_hydrogen():
+        if isinstance(atom, CuttingLabel) or atom.is_hydrogen() or atom.is_lithium():
             continue
         val_electrons = 2 * (int(atom.get_total_bond_order()) + atom.lone_pairs) + atom.radical_electrons
         if atom.is_carbon() or atom.is_nitrogen() or atom.is_oxygen():
