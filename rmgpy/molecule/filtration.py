@@ -68,10 +68,11 @@ def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True,
     filtered_list = ionic_bond_filteration(mol_list)
 
     # Get an octet deviation list
-    octet_deviation_list = get_octet_deviation_list(mol_list, allow_expanded_octet=allow_expanded_octet)
+    octet_deviation_list = get_octet_deviation_list(filtered_list, allow_expanded_octet=allow_expanded_octet)
 
     # Filter mol_list using the octet rule and the respective octet deviation list
     filtered_list, charge_span_list = octet_filtration(filtered_list, octet_deviation_list)
+
     # Filter by charge
     filtered_list = charge_filtration(filtered_list, charge_span_list)
 
