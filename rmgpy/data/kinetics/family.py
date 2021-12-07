@@ -3579,7 +3579,7 @@ class KineticsFamily(Database):
             if entry.index != -1 and entry.parent is None and entry.label != root.label:
                 pname = "_".join(label.split('_')[:-1])
                 while pname not in self.groups.entries.keys():
-                    pname = "_".join(label.split('_')[:-1])
+                    pname = "_".join(pname.split('_')[:-1])
                 entry.parent = self.groups.entries[pname]
                 entry.parent.children.append(entry)
 
