@@ -336,12 +336,14 @@ element_list = [
 # P=P value is from: https://www2.chemistry.msu.edu/faculty/reusch/OrgPage/bndenrgy.htm
 # C#S is the value for [C+]#[S-] from 10.1002/chem.201002840 referenced relative to 0 K
 # X-O and X-X (X=F,Cl,Br) taken from https://labs.chem.ucsb.edu/zakarian/armen/11---bonddissociationenergy.pdf
+# Li-C and Li-S are taken referenced from 0K from from http://staff.ustc.edu.cn/~luo971/2010-91-CRC-BDEs-Tables.pdf
+# Li-N is a G3 calculation taken from https://doi.org/10.1021/jp050857o
 # The reference state is gaseous state at 298 K, but some of the values in the bde_dict might be coming from 0 K.
 # The bond dissociation energy at 298 K is greater than the bond dissociation energy at 0 K by 0.6 to 0.9 kcal/mol
 # (between RT and 3/2 RT), and this difference is usually much smaller than the uncertainty in the bond dissociation
 # energy itself. Therefore, the discrepancy between 0 K and 298 K shouldn't matter too much.
 # But for any new entries, try to use the consistent reference state of 298 K.
-bde_elements = ['C', 'N', 'H', 'O', 'S', 'Cl', 'Si', 'P', 'F', 'Br', 'I']  # elements supported by BDE
+bde_elements = ['C', 'N', 'H', 'O', 'S', 'Cl', 'Si', 'P', 'F', 'Br', 'I', 'Li']  # elements supported by BDE
 bde_dict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol'),
             ('H', 'N', 1): (386.0, 'kJ/mol'), ('H', 'O', 1.0): (459.0, 'kJ/mol'),
             ('H', 'P', 1): (322.0, 'kJ/mol'), ('H', 'S', 1): (363.0, 'kJ/mol'),
@@ -382,7 +384,9 @@ bde_dict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol')
             ('Br', 'F', 1): (233.8, 'kJ/mol'), ('Br', 'Cl', 1): (218.84, 'kJ/mol'),
             ('Li', 'Br', 1): (423.0, 'kJ/mol'), ('Li', 'F', 1): (577.0, 'kJ/mol'),
             ('Li', 'Cl', 1): (469.0, 'kJ/mol'), ('Li', 'H', 1): (247.0, 'kJ/mol'),
-            ('Li', 'I', 1): (352.0, 'kJ/mol'), ('Li', 'O', 1): (341.6, 'kJ/mol'),}
+            ('Li', 'I', 1): (352.0, 'kJ/mol'), ('Li', 'O', 1): (341.6, 'kJ/mol'),
+            ('Li', 'C', 1): (214.6, 'kJ/mol'), ('Li', 'S', 1): (312.5, 'kJ/mol'),
+            ('Li', 'N', 1): (302.4, 'kJ/mol')}
 
 bdes = {}
 for key, value in bde_dict.items():
