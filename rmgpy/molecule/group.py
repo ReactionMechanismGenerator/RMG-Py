@@ -612,6 +612,14 @@ class GroupAtom(Vertex):
         check_list = [x in all_bromine for x in self.atomtype]
         return all(check_list)
 
+    def is_lithium(self):
+        """
+        Return ``True`` if the atom represents a bromine atom or ``False`` if not.
+        """
+        all_lithium = [ATOMTYPES['Li']] + ATOMTYPES['Li'].specific
+        check_list = [x in all_lithium for x in self.atomtype]
+        return all(check_list)
+
     def has_wildcards(self):
         """
         Return ``True`` if the atom has wildcards in any of the attributes:
