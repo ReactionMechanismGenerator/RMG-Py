@@ -470,7 +470,7 @@ class SoluteData(object):
     """
     # Set class variable with McGowan volumes
     mcgowan_volumes = {
-        1: 8.71, 2: 6.75,
+        1: 8.71, 2: 6.75, 3: 22.23,
         6: 16.35, 7: 14.39, 8: 12.43, 9: 10.47, 10: 8.51,
         14: 26.83, 15: 24.87, 16: 22.91, 17: 20.95, 18: 18.99,
         35: 26.21, 53: 34.53,
@@ -491,7 +491,7 @@ class SoluteData(object):
 
     def get_stokes_diffusivity(self, T, solvent_viscosity):
         """
-        Get diffusivity of solute using the Stokes-Einstein sphere relation. 
+        Get diffusivity of solute using the Stokes-Einstein sphere relation.
         Radius is found from the McGowan volume.
         solvent_viscosity should be given in  kg/s/m which equals Pa.s
         (water is about 9e-4 Pa.s at 25C, propanol is 2e-3 Pa.s)
@@ -510,7 +510,7 @@ class SoluteData(object):
         doi: 10.1007/BF02311772
         Also see Table 1 in Zhao et al., J. Chem. Inf. Comput. Sci. Vol. 43, p.1848. 2003
         doi: 10.1021/ci0341114
-        
+
         "V is scaled to have similar values to the other
         descriptors by division by 100 and has units of (cm3mol−1/100)."
         the contibutions in this function are in cm3/mol, and the division by 100 is done at the very end.
@@ -859,7 +859,7 @@ class SolvationDatabase(object):
         """
         Load the solvation database from the given `path` on disk, where `path`
         points to the top-level folder of the solvation database.
-        
+
         Load the solvent and solute libraries, then the solute groups.
         """
 
@@ -1154,8 +1154,8 @@ class SolvationDatabase(object):
         Return all possible sets of Abraham solute descriptors for a given
         :class:`Species` object `species`. The hits from the library come
         first, then the group additivity  estimate. This method is useful
-        for a generic search job. Right now, there should either be 1 or 
-        2 sets of descriptors, depending on whether or not we have a 
+        for a generic search job. Right now, there should either be 1 or
+        2 sets of descriptors, depending on whether or not we have a
         library entry.
         """
         solute_data_list = []
@@ -1192,7 +1192,7 @@ class SolvationDatabase(object):
         :class:`Species` object `species` by estimation using the group
         additivity method. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
-        
+
         It estimates the solute data for the first item in the species's
         molecule list because it is the most stable resonance structure found
         by gas-phase thermo estimate.
@@ -1922,7 +1922,7 @@ class SolvationDatabase(object):
         return delS
 
     def get_solvation_correction(self, solute_data, solvent_data):
-        """ 
+        """
         Given a solute_data and solvent_data object, calculates the enthalpy, entropy,
         and Gibbs free energy of solvation at 298 K. Returns a SolvationCorrection
         object
@@ -2133,7 +2133,7 @@ class SolvationDatabase(object):
         kfactor_parameters.T_transition = T_transition
 
         return kfactor_parameters
-    
+
     def check_solvent_in_initial_species(self, rmg, solvent_structure):
         """
         Given the instance of RMG class and the solvent_structure, it checks whether the solvent is listed as one
