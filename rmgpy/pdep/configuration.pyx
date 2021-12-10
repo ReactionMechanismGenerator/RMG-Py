@@ -60,6 +60,7 @@ cdef class Configuration(object):
         self.sum_states = None
         self.active_j_rotor = False
         self.active_k_rotor = False
+        self.energy_correction = 0.0
 
     def __str__(self):
         return ' + '.join([str(spec) for spec in self.species])
@@ -78,7 +79,7 @@ cdef class Configuration(object):
     property E0:
         """The ground-state energy of the configuration in J/mol."""
         def __get__(self):
-            return sum([float(spec.conformer.E0.value_si) for spec in self.species])
+            return sum([float(spec.conformer.E0.value_si) for spec in self.species]) + self.energy_correction 
 
     cpdef cleanup(self):
         """
@@ -147,6 +148,7 @@ cdef class Configuration(object):
         cdef double h = 0.0
         for spec in self.species:
             h += spec.get_enthalpy(T)
+        h += self.energy_correction
         return h
 
     cpdef double get_entropy(self, double T) except -100000000:
@@ -166,6 +168,7 @@ cdef class Configuration(object):
         cdef double g = 0.0
         for spec in self.species:
             g += spec.get_free_energy(T)
+        g += self.energy_correction
         return g
 
     cpdef double calculate_collision_frequency(self, double T, double P, dict bath_gas) except -1:

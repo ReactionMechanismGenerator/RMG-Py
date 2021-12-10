@@ -379,7 +379,7 @@ class RMG(util.Subject):
             seed_mechanisms=self.seed_mechanisms,
             kinetics_families=self.kinetics_families,
             kinetics_depositories=self.kinetics_depositories,
-            # frequenciesLibraries = self.statmech_libraries,
+            statmech_libraries = self.statmech_libraries,
             depository=False,  # Don't bother loading the depository information, as we don't use it
         )
 
