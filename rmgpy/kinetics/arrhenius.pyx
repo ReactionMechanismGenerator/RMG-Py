@@ -658,6 +658,9 @@ cdef class ArrheniusBM(KineticsModel):
             xdata = []
             ydata = []
             sigmas = []
+            E0 = 0.0
+            lnA = 0.0
+            n = 0.0
             for rxn in rxns:
                 # approximately correct the overall uncertainties to std deviations
                 s = rank_accuracy_map[rxn.rank].value_si/2.0
@@ -666,6 +669,17 @@ cdef class ArrheniusBM(KineticsModel):
                     xdata.append([T, dHrxn])
                     ydata.append(np.log(rxn.get_rate_coefficient(T)))
                     sigmas.append(s / (8.314 * T))
+                # Use BEP with alpha = 0.25 for inital guess of E0
+                E0 += rxn.kinetics._Ea.value_si - 0.25 * dHrxn
+                lnA += np.log(rxn.kinetics.A.value_si)
+                n += rxn.kinetics.n.value_si
+            # Use the averages as intial guess
+            E0 /= len(rxns)
+            lnA /= len(rxns)
+            n /= len(rxns)
+            E0 = min(E0, w0)
+            if E0 < 0:
+                E0 = w0 / 100.0
 
             xdata = np.array(xdata)
             ydata = np.array(ydata)
@@ -677,7 +691,7 @@ cdef class ArrheniusBM(KineticsModel):
             while keep_trying:
                 keep_trying = False
                 try:
-                    params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[1.0, 1.0, w0 / 10.0], xtol=xtol, ftol=ftol)
+                    params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[lnA, n, E0], xtol=xtol, ftol=ftol)
                 except RuntimeError:
                     if xtol < 1.0:
                         keep_trying = True
