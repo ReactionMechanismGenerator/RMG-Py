@@ -619,11 +619,12 @@ cdef class ArrheniusBM(KineticsModel):
         assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
 
         if Ts is None:
-            Ts = [300.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1100.0, 1200.0, 1500.0, 2000.0]
+            Ts = np.array([300.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1100.0, 1200.0, 1500.0, 2000.0])
         if w0 is None:
             #estimate w0
             w0s = get_w0s(recipe, rxns)
             w0 = sum(w0s) / len(w0s)
+        self.w0 = (w0 * 0.001, 'kJ/mol')
 
         if len(rxns) == 1:
             rxn = rxns[0]
@@ -688,10 +689,18 @@ cdef class ArrheniusBM(KineticsModel):
             keep_trying = True
             xtol = 1e-8
             ftol = 1e-8
+            attempts = 0
             while keep_trying:
                 keep_trying = False
                 try:
                     params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[lnA, n, E0], xtol=xtol, ftol=ftol)
+                    lnA, n, E0 = params[0].tolist()
+                    if abs(E0/self.w0.value_si) > 1 and attempts < 5:
+                        keep_trying = True
+                        if attempts > 0:
+                            self.w0.value_si *= 1.25
+                        attempts += 1
+                        E0 = self.w0.value_si / 10.0
                 except RuntimeError:
                     if xtol < 1.0:
                         keep_trying = True
@@ -700,7 +709,6 @@ cdef class ArrheniusBM(KineticsModel):
                     else:
                         raise ValueError("Could not fit BM arrhenius to reactions with xtol<1.0")
 
-            lnA, n, E0 = params[0].tolist()
             A = np.exp(lnA)
 
             self.Tmin = (np.min(Ts), "K")
@@ -716,8 +724,7 @@ cdef class ArrheniusBM(KineticsModel):
         self.A = (A, A_units[order])
 
         self.n = n
-        self.w0 = (w0, 'J/mol')
-        self.E0 = (E0, 'J/mol')
+        self.E0 = (E0 * 0.001, 'kJ/mol')
 
         return self
 
