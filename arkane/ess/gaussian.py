@@ -327,8 +327,28 @@ class GaussianLog(ESSAdapter):
                     elect_energy_source = 'CCSD(T)'
                 elif 'CBS-QB3 (0 K)' in line:
                     e0_composite = float(line.split()[3]) * constants.E_h * constants.Na
+                elif 'E(CBS-QB3)=' in line:
+                    # CBS-QB3 calculation without opt and freq calculation
+                    # Keyword in Gaussian CBS-QB3(SP), No zero-point or thermal energies are included.
+                    e_elect = float(line.split()[1]) * constants.E_h * constants.Na
                 elif 'G3(0 K)' in line:
                     e0_composite = float(line.split()[2]) * constants.E_h * constants.Na
+                elif 'G3 Energy=' in line:
+                    # G3 calculation without opt and freq calculation
+                    # Keyword in Gaussian G3(SP), No zero-point or thermal energies are included.
+                    e_elect = float(line.split()[2]) * constants.E_h * constants.Na
+                elif 'G4(0 K)' in line:
+                    e0_composite = float(line.split()[2]) * constants.E_h * constants.Na
+                elif 'G4 Energy=' in line:
+                    # G4 calculation without opt and freq calculation
+                    # Keyword in Gaussian G4(SP), No zero-point or thermal energies are included.
+                    e_elect = float(line.split()[2]) * constants.E_h * constants.Na
+                elif 'G4MP2(0 K)' in line:
+                    e0_composite = float(line.split()[2]) * constants.E_h * constants.Na
+                elif 'G4MP2 Energy=' in line:
+                    # G4MP2 calculation without opt and freq calculation
+                    # Keyword in Gaussian G4MP2(SP), No zero-point or thermal energies are included.
+                    e_elect = float(line.split()[2]) * constants.E_h * constants.Na
 
                 # Read the ZPE from the "E(ZPE)=" line, as this is the scaled version.
                 # Gaussian defines the following as
