@@ -339,7 +339,7 @@ class StatmechGroups(Database):
         for atom in molecule.atoms:
             # Iterate over heavy (non-hydrogen) atoms
             if atom.is_hydrogen() or atom.is_halogen(): continue
-            if molecule.is_atom_in_cycle(atom):
+            if molecule.is_atom_in_cycle(atom) and not atom.is_bonded_to_halogen():
                 # Atom is in cycle
                 # Add each C-H bond to the ringCH group
                 # This is hardcoding of functional groups!
