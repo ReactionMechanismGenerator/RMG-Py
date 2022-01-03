@@ -1124,8 +1124,12 @@ class CoreEdgeReactionModel:
             if not self.core.phase_system.in_nose:
                 if spec.molecule[0].contains_surface_site():
                     self.core.phase_system.phases["Surface"].add_species(spec,edge_phase=self.edge.phase_system.phases["Surface"])
+                    self.edge.phase_system.species_dict[spec.label] = spec 
+                    self.core.phase_system.species_dict[spec.label] = spec
                 else:
                     self.core.phase_system.phases["Default"].add_species(spec,edge_phase=self.edge.phase_system.phases["Default"])
+                    self.edge.phase_system.species_dict[spec.label] = spec
+                    self.core.phase_system.species_dict[spec.label] = spec
             
         return rxn_list
 
