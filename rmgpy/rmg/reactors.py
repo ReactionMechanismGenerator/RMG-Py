@@ -140,10 +140,13 @@ class PhaseSystem:
 
         rxnlist = []
         for i, rxn in enumerate(self.phases[phase_label].reactions):
-            if (spc in rxn.reactants or spc in rxn.products) and all([spec in phasesys.phases[phase_label].species for spec in rxn.reactants]) and all([spec in phasesys.phases[phase_label].species for spec in rxn.products]):
+            if (spc.name in [spec.name for spec in rxn.reactants+rxn.products]) and all([spec.name in phasesys.species_dict for spec in rxn.reactants+rxn.products]):
                 rxnlist.append(rxn)
 
-        phasesys.phases[phase_label].reactions.extend(rxnlist)
+        for i, rxn in enumerate(rxnlist):
+            phasesys.phases[phase_label].reactions.append(rxn)
+            self.phases[phase_label].reactions.remove(rxn)
+            self.phases[phase_label].reactions.insert(len(phasesys.phases[phase_label].reactions)-1, rxn)
 
         for key, interface in self.interfaces.items():
             rxnlist = []
