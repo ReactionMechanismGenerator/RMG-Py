@@ -216,21 +216,43 @@ class Phase:
         """
         self.solvent = to_rms(solvent)
 
-    def add_reaction(self, rxn):
+    def add_reaction(self, rxn, edge_phase=None):
         """
         add a reaction to the phase
         """
+        reactions_to_remove = []
         if self.add_later_reactions != []:
-            for reaction in self.add_later_reactions[:]:
+            for reaction in self.add_later_reactions:
+                added = False
                 try:
-                    self.reactions.append(to_rms(reaction, species_names=self.names, rms_species_list=self.species, rmg_species=self.rmg_species))
-                    self.add_later_reactions.remove(reaction)
+                    rms_rxn = to_rms(reaction, species_names=self.names, rms_species_list=self.species, rmg_species=self.rmg_species)
+                    self.reactions.append(rms_rxn)
+                    reactions_to_remove.append(reaction)
+                    added = True
                 except ValueError:
                     pass
+
+                if added and edge_phase is not None:
+                    # If edge phase is provided, then self is the core phase, and this rxn was directly added to the core so not yet exist in edge
+                    # Only add the corresponding rms_rxn to edge if it's successfully added to the core, otherwise this edge phase reaction maybe passed from the edge phase to core phase in pass_species and double added here again
+                    edge_phase.reactions.insert(len(self.reactions)-1,rms_rxn)
+
+            for reaction in reactions_to_remove:
+                self.add_later_reactions.remove(reaction)
+
+        added = False
         try:
-            self.reactions.append(to_rms(rxn, species_names=self.names, rms_species_list=self.species, rmg_species=self.rmg_species))
+            rms_rxn = to_rms(rxn, species_names=self.names, rms_species_list=self.species, rmg_species=self.rmg_species)
+            self.reactions.append(rms_rxn)
+            added = True
         except ValueError: #often reactions with efficiencies from seed mechanisms can't be fully constructed until input species are added
-            self.add_later_reactions.append(rxn)
+            if rxn not in self.add_later_reactions:
+                self.add_later_reactions.append(rxn)
+
+        if added and edge_phase is not None:
+            edge_phase.reactions.insert(len(self.reactions)-1,rms_rxn)
+
+        return
 
     def add_species(self, spc, edge_phase=None):
         """
