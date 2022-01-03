@@ -83,10 +83,11 @@ class PhaseSystem:
         for key, phase in self.phases.items():
             rms_spc = phase.remove_species(spc.label)
 
-        if rms_spc:
-            for key, interface in self.interfaces.items():
-                interface.remove_species(rms_spc)
+            if rms_spc:
+                for key, interface in self.interfaces.items():
+                    interface.remove_species(rms_spc)
 
+        if spc.label in self.species_dict:
             del self.species_dict[spc.label]
 
     def add_reaction(self, rxn, species_list):
