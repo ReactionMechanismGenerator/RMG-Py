@@ -941,7 +941,7 @@ class RMG(util.Subject):
                             if not resurrected:
                                 try:
                                     if isinstance(reaction_system, Reactor):
-                                        terminated,obj,unimolecular_threshold,bimolecular_threshold,trimolecular_threshold,max_edge_species_rate_ratios,t,x = reaction_system.simulate(model_settings=model_settings,
+                                        terminated,resurrected,obj,unimolecular_threshold,bimolecular_threshold,trimolecular_threshold,max_edge_species_rate_ratios,t,x = reaction_system.simulate(model_settings=model_settings,
                                             simulator_settings=simulator_settings,
                                             conditions=self.rmg_memories[index].get_cond()
                                         )
