@@ -876,10 +876,11 @@ class RMG(util.Subject):
                                     if hasattr(item,"name"):
                                         obj_temp.append(self.reaction_model.edge.phase_system.species_dict[item.name])
                                     else: #Reaction
-                                        for val in item.reactants:
-                                            obj_temp.append(self.reaction_model.edge.phase_system.species_dict[val.name])
-                                        for val in item.products:
-                                            obj_temp.append(self.reaction_model.edge.phase_system.species_dict[val.name])
+                                        for val in item.reactants+item.products:
+                                            spc = self.reaction_model.edge.phase_system.species_dict[val.name]
+                                            if spc not in self.reaction_model.core.species:
+                                                obj_temp.append(spc)
+                                        assert len(obj_temp) > 0
                                 obj = obj_temp
                             else:
                                 terminated, resurrected, obj, new_surface_species, new_surface_reactions, t, x = reaction_system.simulate(
