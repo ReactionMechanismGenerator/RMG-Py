@@ -56,7 +56,7 @@ from rmgpy.rmg.react import react_all
 from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.rmg.decay import decay_species
-from rmgpy.rmg.reactors import PhaseSystem, Phase, Interface
+from rmgpy.rmg.reactors import PhaseSystem, Phase, Interface, Reactor
 
 ################################################################################
 
@@ -1362,19 +1362,20 @@ class CoreEdgeReactionModel:
 
         # clean up species references in reaction_systems
         for reaction_system in reaction_systems:
-            try:
-                reaction_system.species_index.pop(spec)
-            except KeyError:
-                pass
+            if not isinstance(reaction_system,Reactor):
+                try:
+                    reaction_system.species_index.pop(spec)
+                except KeyError:
+                    pass
 
-            # identify any reactions it's involved in
-            rxn_list = []
-            for rxn in reaction_system.reaction_index:
-                if spec in rxn.reactants or spec in rxn.products:
-                    rxn_list.append(rxn)
+                # identify any reactions it's involved in
+                rxn_list = []
+                for rxn in reaction_system.reaction_index:
+                    if spec in rxn.reactants or spec in rxn.products:
+                        rxn_list.append(rxn)
 
-            for rxn in rxn_list:
-                reaction_system.reaction_index.pop(rxn)
+                for rxn in rxn_list:
+                    reaction_system.reaction_index.pop(rxn)
 
         # identify any reactions it's involved in
         rxn_list = []
