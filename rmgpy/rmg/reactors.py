@@ -455,7 +455,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         return rms.Chebyshev(coeffs, Tmin, Tmax, Pmin, Pmax)
     elif isinstance(obj, ThirdBody):
         arrstr = arrhenius_to_julia_string(obj.arrheniusLow)
-        efficiencies = {species_names[i] : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
+        efficiencies = {rmg_species[i].label : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
         dstr = "Dict{String,Float64}(["
         for key,value in efficiencies.items():
             dstr += "\"" + key + "\"" "=>" + str(value) + ","
@@ -464,7 +464,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     elif isinstance(obj, Lindemann):
         arrlow = arrhenius_to_julia_string(obj.arrheniusLow)
         arrhigh = arrhenius_to_julia_string(obj.arrheniusHigh)
-        efficiencies = {species_names[i] : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
+        efficiencies = {rmg_species[i].label : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
         dstr = "Dict{String,Float64}(["
         for key,value in efficiencies.items():
             dstr += "\"" + key + "\"" "=>" + str(value) + ","
@@ -473,7 +473,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     elif isinstance(obj, Troe):
         arrlow = arrhenius_to_julia_string(obj.arrheniusLow)
         arrhigh = arrhenius_to_julia_string(obj.arrheniusHigh)
-        efficiencies = {species_names[i] : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
+        efficiencies = {rmg_species[i].label : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
         alpha = obj.alpha
         T1 = obj._T1.value_si if obj._T1 is not None else 0.0
         T2 = obj._T2.value_si if obj._T2 is not None else 0.0
