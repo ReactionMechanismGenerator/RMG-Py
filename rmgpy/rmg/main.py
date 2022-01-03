@@ -958,19 +958,6 @@ class RMG(util.Subject):
                                             reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios_temp
                                         else:
                                             reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios
-                                        new_surface_species = []
-                                        new_surface_reactions =  []
-                                        resurrected = False
-                                        obj_temp = []
-                                        for item in obj:
-                                            if hasattr(item,"name"):
-                                                obj_temp.append(self.reaction_model.edge.phase_system.species_dict[item.name])
-                                            else: #Reaction
-                                                for val in item.reactants:
-                                                    obj_temp.append(self.reaction_model.edge.phase_system.species_dict[val.name])
-                                                for val in item.products:
-                                                    obj_temp.append(self.reaction_model.edge.phase_system.species_dict[val.name])
-                                        obj = obj_temp
                                     else:
                                         reaction_system.simulate(
                                             core_species=self.reaction_model.core.species,
