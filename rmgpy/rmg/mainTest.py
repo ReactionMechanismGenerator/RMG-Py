@@ -77,11 +77,12 @@ class TestMain(unittest.TestCase):
         rmgpy.data.rmg.database = None
 
         # Remove output directory
-        shutil.rmtree(os.path.join(cls.testDir, cls.outputDir))
+        shutil.rmtree(os.path.join(cls.testDir, cls.outputDir),
+                ignore_errors=True)
 
         # Delete the seed libraries created in database
-        shutil.rmtree(cls.seedKinetics)
-        shutil.rmtree(cls.seedKineticsEdge)
+        shutil.rmtree(cls.seedKinetics, ignore_errors=True)
+        shutil.rmtree(cls.seedKineticsEdge, ignore_errors=True)
 
     def test_rmg_execute(self):
         """Test that RMG.execute completed successfully."""
@@ -219,7 +220,7 @@ class TestRestartWithFilters(unittest.TestCase):
         rmgpy.data.rmg.database = None
 
         # Remove output directory
-        shutil.rmtree(cls.outputDir)
+        shutil.rmtree(cls.outputDir, ignore_errors=True)
 
 
 @attr('functional')
@@ -254,7 +255,7 @@ class TestRestartNoFilters(unittest.TestCase):
         rmgpy.data.rmg.database = None
 
         # Remove output directory
-        shutil.rmtree(cls.outputDir)
+        shutil.rmtree(cls.outputDir, ignore_errors=True)
 
 
 @attr('functional')
@@ -304,7 +305,7 @@ class TestMainFunctions(unittest.TestCase):
         rmgpy.data.rmg.database = None
 
         # Remove output directory
-        shutil.rmtree(cls.outputDir)
+        shutil.rmtree(cls.outputDir, ignore_errors=True)
 
 
 class TestProfiling(unittest.TestCase):
@@ -515,4 +516,4 @@ CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! G
 
             # clean up
             os.chdir(originalPath)
-            shutil.rmtree(self.dir_name)
+            shutil.rmtree(self.dir_name, ignore_errors=True)
