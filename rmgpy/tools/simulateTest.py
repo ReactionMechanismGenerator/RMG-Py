@@ -60,7 +60,7 @@ class SimulateTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(simfile))
         self.assertTrue(os.path.isfile(sensfile))
 
-        shutil.rmtree(os.path.join(folder, 'solver'))
+        shutil.rmtree(os.path.join(folder, 'solver'), ignore_errors=True)
         os.remove(os.path.join(folder, 'simulate.log'))
 
     def test_liquid(self):
@@ -79,7 +79,7 @@ class SimulateTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(simfile))
         self.assertTrue(os.path.isfile(sensfile))
 
-        shutil.rmtree(os.path.join(folder, 'solver'))
+        shutil.rmtree(os.path.join(folder, 'solver'), ignore_errors=True)
         os.remove(os.path.join(folder, 'simulate.log'))
 
     def test_mb_sampled(self):
@@ -96,7 +96,7 @@ class SimulateTest(unittest.TestCase):
 
         self.assertTrue(os.path.isfile(simfile))
 
-        shutil.rmtree(os.path.join(folder, 'solver'))
+        shutil.rmtree(os.path.join(folder, 'solver'), ignore_errors=True)
         os.remove(os.path.join(folder, 'simulate.log'))
 
     def tearDown(self):
