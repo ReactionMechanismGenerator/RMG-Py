@@ -99,7 +99,9 @@ def database(
         if not isinstance(kineticsFamilies, list):
             raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. "
                              "['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
-        rmg.kinetics_families = kineticsFamilies
+        # rmg.kinetics_families = kineticsFamilies
+        rmg.kinetics_families = dict((name, False) if not isinstance(
+            name, tuple) else name for name in kineticsFamilies)
 
 
 def catalyst_properties(bindingEnergies=None,

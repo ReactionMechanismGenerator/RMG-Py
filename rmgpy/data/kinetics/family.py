@@ -697,7 +697,7 @@ class KineticsFamily(Database):
                 if entry.nodal_distance is None:
                     entry.nodal_distance = tree_distances[top_entry.label]
 
-    def load(self, path, local_context=None, global_context=None, depository_labels=None):
+    def load(self, path, local_context=None, global_context=None, depository_labels=None, exclude_training=False):
         """
         Load a kinetics database from a file located at `path` on disk.
         
@@ -707,6 +707,7 @@ class KineticsFamily(Database):
         
         If depository_labels is None then load 'training' first then everything else.
         If depository_labels is not None then load in the order specified in depository_labels.
+        if exclude_training is True then exclude the training data depository for this family
         """
         local_context['recipe'] = self.load_recipe
         local_context['template'] = self.load_template
@@ -805,7 +806,7 @@ class KineticsFamily(Database):
                     depository_labels.append('training')
 
         for name in depository_labels:
-            if name == '!training':
+            if name == '!training' or exclude_training:
                 continue
             label = '{0}/{1}'.format(self.label, name)
             # f = name+'.py'

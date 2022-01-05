@@ -378,9 +378,11 @@ class RMG(util.Subject):
             path=self.database_directory,
             thermo_libraries=self.thermo_libraries,
             transport_libraries=self.transport_libraries,
-            reaction_libraries=[library for library, option in self.reaction_libraries],
+            reaction_libraries=[library for library, option in self.reaction_libraries], 
             seed_mechanisms=self.seed_mechanisms,
             kinetics_families=self.kinetics_families,
+            # kinetics_families=[family for family,option in self.kinetics_families],
+            # kinetics_families_options=dict(self.kinetics_families),
             kinetics_depositories=self.kinetics_depositories,
             statmech_libraries = self.statmech_libraries,
             depository=False,  # Don't bother loading the depository information, as we don't use it
@@ -438,24 +440,28 @@ class RMG(util.Subject):
                 # Temporarily remove species constraints for the training reactions
                 copy_species_constraints = copy.copy(self.species_constraints)
                 self.species_constraints = {}
-                for family in self.database.kinetics.families.values():
-                    if not family.auto_generated:
-                        family.add_rules_from_training(thermo_database=self.database.thermo)
+                for name,family in self.database.kinetics.families.items():
+                    if not self.kinetics_families[name]:
+                        if self.kinetics_depositories:
+                            if not family.auto_generated:
+                                family.add_rules_from_training(thermo_database=self.database.thermo)
 
-                    # If requested by the user, write a text file for each kinetics family detailing the source of each entry
-                    if self.kinetics_datastore:
+                            # If requested by the user, write a text file for each kinetics family detailing the source of each entry
+                            if self.kinetics_datastore:
+                                logging.info(
+                                    'Writing sources of kinetic entries in family {0} to text file'.format(family.label))
+                                path = os.path.join(self.output_directory, 'kinetics_database', family.label + '.txt')
+                                with open(path, 'w') as f:
+                                    for template_label, entries in family.rules.entries.items():
+                                        f.write("Template [{0}] uses the {1} following source(s):\n".format(template_label,
+                                                                                                            str(len(entries))))
+                                        for entry_index, entry in enumerate(entries):
+                                            f.write(str(entry_index+1) + ". " + entry.short_desc + "\n" + entry.long_desc + "\n")
+                                        f.write('\n')
+                                    f.write('\n')
+                    else: 
                         logging.info(
-                            'Writing sources of kinetic entries in family {0} to text file'.format(family.label))
-                        path = os.path.join(self.output_directory, 'kinetics_database', family.label + '.txt')
-                        with open(path, 'w') as f:
-                            for template_label, entries in family.rules.entries.items():
-                                f.write("Template [{0}] uses the {1} following source(s):\n".format(template_label,
-                                                                                                    str(len(entries))))
-                                for entry_index, entry in enumerate(entries):
-                                    f.write(str(entry_index+1) + ". " + entry.short_desc + "\n" + entry.long_desc + "\n")
-                                f.write('\n')
-                            f.write('\n')
-
+                            'Training set explicitly not added to rate rules in {0} kinetics family...'.format(name))
                 self.species_constraints = copy_species_constraints
             else:
                 logging.info('Training set explicitly not added to rate rules in kinetics families...')

@@ -149,11 +149,13 @@ class KineticsDatabase(object):
         Load the kinetics families from the given `path` on disk, where `path`
         points to the top-level folder of the kinetics families.
 
-        The `families` argument accepts a single item or list of the following:
+        The `families` argument accepts a single item or list/dict of the following:
             - Specific kinetics family labels
             - Names of family sets defined in recommended.py
             - 'all'
             - 'none'
+        if a dictionary is specified, the items are "True" or "False". True indicated that 
+        the training data for that family is excluded. 
 
         If all items begin with a `!` (e.g. ['!H_Abstraction']), then the
         selection will be inverted to families NOT in the list.
@@ -163,21 +165,61 @@ class KineticsDatabase(object):
         all_families.discard('__pycache__')
 
         # Convert input to a list to simplify processing
-        if not isinstance(families, list):
-            families = [families]
+        # if a dictionary is specified, determine whether 
+        # to include all, exclude all, or selictively 
+        # include/exclude training data
 
+        if isinstance(families, dict):
+            family_names = list(families.keys())
+
+            # decision to include, exclude, or selectively 
+            # exclude training data
+            # 0 = include all
+            # 1 = exclude all
+            # 2 = selectively include or exclude data
+            # an empty dict {} returns 0
+
+            # all values in the dict are False
+            if all(not value for value in families.values()):
+                training_data = 0
+
+            # All values in dict are True
+            elif all(value for value in families.values()):
+                training_data = 1
+
+            # mix of True and False
+            else:
+                training_data = 2
+
+        # if it a list or single entry, include all training data
+        else:
+            training_data = 0
+            if isinstance(families, list):
+                family_names = families
+            else: 
+                family_names = [families]
+        
         # Check for ! syntax, which allows specification of undesired families
-        if all(item.startswith('!') for item in families):
+        if all(item.startswith('!') for item in family_names):
             inverse = True
-            families = [family[1:] for family in families]
-        elif not any(item.startswith('!') for item in families):
+            family_names = [family[1:] for family in family_names]
+
+            # if values in the families dict are not all True
+            # or all False, raise a database error
+            if training_data == 2: 
+                raise DatabaseError(
+                    "Training data argument for kinetic families must be \
+                        either all True or all False when using '!' syntax"
+                        )
+
+        elif not any(item.startswith('!') for item in family_names):
             inverse = False
         else:
             raise DatabaseError('Families list must either all or none have prefix "!", but not a mix.')
 
         # Compile the set of selected families
         selected_families = set()
-        for item in families:
+        for item in family_names:
             if item.lower() == 'all':
                 selected_families = all_families
                 break
@@ -191,6 +233,13 @@ class KineticsDatabase(object):
                     raise DatabaseError('Unable to load recommended set "{0}", '
                                         'some families could not be found: {1}'.format(item, missing_fams))
                 selected_families.update(family_set)
+
+                # update family dictionary dictionary with "exclude_training" values
+                # for items in the "recommended" category
+                if training_data == 2: 
+                    families.update({i: families[item] for i in family_set})
+                    del families[item]
+
             elif item in all_families:
                 selected_families.add(item)
             else:
@@ -211,8 +260,21 @@ class KineticsDatabase(object):
         for label in selected_families:
             family_path = os.path.join(path, label)
             family = KineticsFamily(label=label)
+
+            if training_data == 0:
+                exclude_training = False
+            elif training_data == 1:
+                exclude_training = True
+            elif training_data == 2:
+                exclude_training = families[label]
+
             try:
-                family.load(family_path, self.local_context, self.global_context, depository_labels=depositories)
+                family.load(
+                    family_path, 
+                    self.local_context, 
+                    self.global_context, 
+                    depository_labels=depositories,
+                    exclude_training=exclude_training)
             except:
                 logging.error("Error when loading reaction family {!r}".format(family_path))
                 raise
