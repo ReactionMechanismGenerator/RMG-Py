@@ -613,10 +613,10 @@ multiplicity 2
     def test_identifying_missing_group(self):
         """Test identifying a missing GAV group"""
         # this test should be updated once data is added to the missing group
-        spc = Species(smiles='C[N+]#[C-]')
+        spc = Species(smiles='S[N+]#[C-]')
         spc.generate_resonance_structures()
         thermo_gav = self.database.get_thermo_data_from_groups(spc)
-        self.assertIn('missing(N5tc-C2tcCs)', thermo_gav.comment)
+        self.assertIn('missing(N5tc-C2tcS2s)', thermo_gav.comment)
 
     def test_adsorbate_thermo_generation_gav(self):
         """Test thermo generation for adsorbate from Group Additivity value.
