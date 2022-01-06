@@ -102,6 +102,8 @@ class TestKineticsDatabase(unittest.TestCase):
             database.load_families(path, families=['!H_Abstraction', 'Disproportionation'])
         with self.assertRaises(DatabaseError):
             database.load_families(path, families=['fake_family'])
+        with self.assertRaises(DatabaseError):
+            database.load_families(path, families={'!H_Abstraction':True, '!Disproportionation':False})
 
     def test_load_families_correct(self):
         """Test valid methods for loading kinetics families."""
@@ -149,6 +151,25 @@ class TestKineticsDatabase(unittest.TestCase):
         except DatabaseError:
             self.fail("Unable to load families using list ['H_Abstraction', 'pah']")
 
+        try:
+            database.load_families(path, families={'H_Abstraction':False, 'pah':True})
+        except DatabaseError:
+            self.fail(
+                "Unable to load families using dict {'H_Abstraction':False, 'pah':True}")
+        
+        try:
+            database.load_families(
+                path, families={'R_Addition_MultipleBond': False, 'default': True})
+        except DatabaseError:
+            self.fail(
+                "Unable to load families using dict {'R_Addition_MultipleBond':False, 'default':True}")
+        
+        try:
+            database.load_families(
+                path, families={'!H_Abstraction': True, '!pah': True})
+        except DatabaseError:
+            self.fail(
+                "Unable to load families using dict {'!H_Abstraction':True, '!pah':True}")
 
 class TestReactionDegeneracy(unittest.TestCase):
 
