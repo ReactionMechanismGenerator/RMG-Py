@@ -400,6 +400,8 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     """
     Generate corresponding rms object
     """
+    if isinstance(obj, ThermoData):
+        obj = obj.to_nasa(Tmin=298, Tmax=2500, Tint=1000)
     if isinstance(obj, Arrhenius):
         if obj._T0.value_si != 1:
             A = obj._A.value_si / (obj._T0.value_si) ** obj._n.value_si
