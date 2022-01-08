@@ -331,6 +331,8 @@ class GaussianLog(ESSAdapter):
                     # CBS-QB3 calculation without opt and freq calculation
                     # Keyword in Gaussian CBS-QB3(SP), No zero-point or thermal energies are included.
                     e_elect = float(line.split()[1]) * constants.E_h * constants.Na
+                elif 'CBS-4 (0 K)=' in line:
+                    e0_composite = float(line.split()[3]) * constants.E_h * constants.Na
                 elif 'G3(0 K)' in line:
                     e0_composite = float(line.split()[2]) * constants.E_h * constants.Na
                 elif 'G3 Energy=' in line:
