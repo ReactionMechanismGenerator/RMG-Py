@@ -36,7 +36,7 @@ import os.path
 import shutil
 import string
 import time
-from typing import List
+from typing import List, Union
 
 import numpy as np
 import yaml
@@ -725,3 +725,20 @@ def clean_dir(base_dir_path: str = '',
             if os.path.split(item_path)[-1] in sub_dir_to_keep:
                 continue
             shutil.rmtree(item_path)
+
+
+def convert_imaginary_freq_to_negative_float(freq: Union[str, float, int]):
+    """
+    Convert a string representation of an imaginary frequency into a negative float representation, e.g.:
+        '635.0i' -> -635.0
+        '500.0' -> 500.0
+
+    Args:
+        freq (str): The imaginary frequency representation.
+
+    Returns:
+        float: A float representation of the frequency value.
+    """
+    if isinstance(freq, str) and freq.endswith('i'):
+        freq = float(freq[:-1]) * -1
+    return float(freq)
