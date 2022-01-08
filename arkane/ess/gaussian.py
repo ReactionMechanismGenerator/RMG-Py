@@ -62,7 +62,7 @@ class GaussianLog(ESSAdapter):
         Checks for common errors in a Gaussian log file.
         If any are found, this method will raise an error and crash.
         """
-        with open(os.path.join(self.path), 'r') as f:
+        with open(self.path, 'r') as f:
             lines = f.readlines()[-100:]
             error = None
             terminated = False
@@ -595,5 +595,6 @@ class GaussianLog(ESSAdapter):
         except IndexError:
             raise LogError(f'Unable to find imaginary frequency in Gaussian output file {self.path}')
         return frequency
+
 
 register_ess_adapter("GaussianLog", GaussianLog)

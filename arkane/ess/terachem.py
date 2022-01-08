@@ -371,4 +371,5 @@ class TeraChemLog(ESSAdapter):
         """Not implemented for TeraChem"""
         raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for TeraChem Logs')
 
+
 register_ess_adapter("TeraChemLog", TeraChemLog)
