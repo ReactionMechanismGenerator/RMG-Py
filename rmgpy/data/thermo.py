@@ -1501,8 +1501,8 @@ class ThermoDatabase(object):
         for atom in molecule.atoms:
             if atom.is_surface_site():
                 surface_sites.append(atom)
-        normalized_bonds = {'C': 0., 'O': 0., 'N': 0., 'H': 0., 'F': 0.}
-        max_bond_order = {'C': 4., 'O': 2., 'N': 3., 'H': 1., 'F': 1}
+        normalized_bonds = {'C': 0., 'O': 0., 'N': 0., 'H': 0., 'F': 0., 'Li': 0.}
+        max_bond_order = {'C': 4., 'O': 2., 'N': 3., 'H': 1., 'F': 1, 'Li': 1.}
         for site in surface_sites:
             numbonds = len(site.bonds)
             if numbonds == 0:
