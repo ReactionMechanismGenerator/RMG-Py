@@ -608,10 +608,12 @@ class ThermoDepository(Database):
         Method for parsing entries in database files.
         Note that these argument names are retained for backward compatibility.
         """
+        mol = Molecule().from_adjacency_list(molecule)
+        mol.update_atomtypes()
         entry = Entry(
             index=index,
             label=label,
-            item=Molecule().from_adjacency_list(molecule),
+            item=mol,
             data=thermo,
             reference=reference,
             reference_type=referenceType,
@@ -666,6 +668,7 @@ class ThermoLibrary(Database):
             molecule = Molecule().from_adjacency_list(molecule)
         except TypeError:
             molecule = Fragment().from_adjacency_list(molecule)
+        molecule.update_atomtypes()
 
         # Internal checks for adding entry to the thermo library
         if label in list(self.entries.keys()):
