@@ -157,4 +157,26 @@ cdef class ArrheniusChargeTransfer(KineticsModel):
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
 
 
+################################################################################
+
+cdef class ArrheniusChargeTransferBM(KineticsModel):
+
+    cdef public ScalarQuantity _A
+    cdef public ScalarQuantity _n
+    cdef public ScalarQuantity _E0
+    cdef public ScalarQuantity _w0
+    cdef public ScalarQuantity _V0
+    cdef public ScalarQuantity _alpha
+    cdef public ScalarQuantity _electrons
+
+    cpdef change_v0(self, double V0)
+
+    cpdef double get_activation_energy(self, double dGrxn) except -1
+
+    cpdef double get_rate_coefficient_from_potential(self, double T, double V, double dGrxn) except -1
+
+    cpdef ArrheniusChargeTransfer to_arrhenius_charge_transfer(self, double dGrxn)
+
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
+
     cpdef change_rate(self, double factor)
