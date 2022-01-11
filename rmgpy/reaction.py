@@ -53,7 +53,7 @@ import rmgpy.constants as constants
 from rmgpy.exceptions import ReactionError, KineticsError
 from rmgpy.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, \
     PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, get_rate_coefficient_units_from_reaction_order, \
-    SurfaceArrheniusBEP, StickingCoefficientBEP
+    SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusChargeTransfer, ArrheniusChargeTransferBM
 from rmgpy.kinetics.arrhenius import Arrhenius  # Separate because we cimport from rmgpy.kinetics.arrhenius
 from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient, SurfaceChargeTransfer, SurfaceChargeTransferBEP  # Separate because we cimport from rmgpy.kinetics.surface
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
@@ -1015,7 +1015,18 @@ class Reaction:
                     logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(
                         self, self.kinetics.Ea.value_si / 1000., Ea / 1000.))
                     self.kinetics.Ea.value_si = Ea
-            if isinstance(self.kinetics, (Arrhenius, StickingCoefficient)):  # SurfaceArrhenius is a subclass of Arrhenius
+            if isinstance(self.kinetics, ArrheniusChargeTransferBM):
+                Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
+                self.kinetics = self.kinetics.to_arrhenius_charge_transfer(H298)
+                if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
+                    # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
+                    Ea = min(0.0, Ea)  # (the lowest we want it to be)
+                    self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(
+                        self.kinetics.Ea.value_si / 1000., Ea / 1000.)
+                    logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(
+                        self, self.kinetics.Ea.value_si / 1000., Ea / 1000.))
+                    self.kinetics.Ea.value_si = Ea
+            if isinstance(self.kinetics, (Arrhenius, StickingCoefficient, ArrheniusChargeTransfer)):  # SurfaceArrhenius is a subclass of Arrhenius
                 Ea = self.kinetics.Ea.value_si
                 if H0 >= 0 and Ea < H0:
                     self.kinetics.Ea.value_si = H0
@@ -1135,7 +1146,30 @@ class Reaction:
         klist = np.zeros_like(Tlist)
         for i in range(len(Tlist)):
             klist[i] = kf.get_rate_coefficient(Tlist[i],V0) / self.get_equilibrium_constant(Tlist[i],V0)
-        kr = SurfaceChargeTransfer(alpha=1-kf.alpha.value, electrons=-1*self.electrons, V0=(V0,'V'))
+        kr = SurfaceChargeTransfer(alpha=kf.alpha.value, electrons=-1*self.electrons, V0=(V0,'V'))
+        kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
+        return kr
+
+    def reverse_arrhenius_charge_transfer_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
+        """
+        Reverses the given k_forward, which must be a SurfaceChargeTransfer type.
+        You must supply the correct units for the reverse rate.
+        The equilibrium constant is evaluated from the current reaction instance (self).
+        """
+        cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int, V0=cython.double)
+        kf = k_forward
+        if not isinstance(kf, ArrheniusChargeTransfer): # Only reverse SurfaceChargeTransfer rates
+            raise TypeError(f'Expected a ArrheniusChargeTransfer object for k_forward but received {kf}')
+        if Tmin is not None and Tmax is not None:
+            Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
+        else:
+            Tlist = np.linspace(298, 500, 30)
+
+        V0 = self.kinetics.V0.value_si
+        klist = np.zeros_like(Tlist)
+        for i in range(len(Tlist)):
+            klist[i] = kf.get_rate_coefficient(Tlist[i],V0) / self.get_equilibrium_constant(Tlist[i],V0)
+        kr = ArrheniusChargeTransfer(alpha=kf.alpha.value, electrons=-1*self.electrons, V0=(V0,'V'))
         kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
         return kr
 
@@ -1166,6 +1200,7 @@ class Reaction:
             Lindemann.__name__,
             Troe.__name__,
             StickingCoefficient.__name__,
+            ArrheniusChargeTransfer.__name__,
         )
 
         # Get the units for the reverse rate coefficient
@@ -1184,6 +1219,9 @@ class Reaction:
 
         if isinstance(kf, SurfaceChargeTransfer):
             return self.reverse_surface_charge_transfer_rate(kf, kunits, Tmin, Tmax)
+
+        elif isinstance(kf, ArrheniusChargeTransfer):
+            return self.reverse_arrhenius_charge_transfer_rate(kf, kunits, Tmin, Tmax)
 
         elif isinstance(kf, KineticsData):
 
@@ -1412,9 +1450,6 @@ class Reaction:
             reactants_net_charge += self.electrons
         elif self.electrons > 0:
             products_net_charge -= self.electrons
-
-        if reactants_net_charge != products_net_charge:
-            return False
 
         return True
 
