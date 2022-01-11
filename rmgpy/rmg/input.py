@@ -633,7 +633,8 @@ def liquid_cat_reactor(temperature,
                    initialConcentrations,
                    initialSurfaceCoverages,
                    surfaceVolumeRatio,
-                   potential=None,
+                   surfPotential=None,
+                   liqPotential=None,
                    terminationConversion=None,
                    terminationTime=None,
                    terminationRateRatio=None,
@@ -709,8 +710,10 @@ def liquid_cat_reactor(temperature,
         initialCondSurf[key] = item*rmg.surface_site_density.value_si*A
     initialCondSurf["T"] = T
     initialCondSurf["A"] = A
-    if potential:
-        initialCondSurf["phi"] = Quantity(potential).value_si
+    if surfPotential:
+        initialCondSurf["Phi"] = Quantity(surfPotential).value_si
+    if liqPotential:
+        initialCondLiq["Phi"] = Quantity(liqPotential).value_si
     system = ConstantTLiquidSurfaceReactor(rmg.reaction_model.core.phase_system,
                                            rmg.reaction_model.edge.phase_system,
                                            {"liquid":initialCondLiq,"surface":initialCondSurf},termination,constantSpecies)
