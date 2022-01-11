@@ -327,7 +327,7 @@ class Atom(Vertex):
         not.
         """
         return self.element.number == -1
-    
+
     def is_proton(self):
         """
         Return ``True`` if the atom represents a proton or ``False`` if
@@ -578,7 +578,7 @@ class Atom(Vertex):
         This helper function is to help calculate total bond orders for an
         input atom.
 
-        Some special consideration for the order `B` bond. For atoms having 
+        Some special consideration for the order `B` bond. For atoms having
         three `B` bonds, the order for each is 4/3.0, while for atoms having other
         than three `B` bonds, the order for  each is 3/2.0
         """
@@ -791,7 +791,7 @@ class Bond(Edge):
 
     def is_van_der_waals(self):
         """
-        Return ``True`` if the bond represents a van der Waals bond or 
+        Return ``True`` if the bond represents a van der Waals bond or
         ``False`` if not.
         """
         return self.is_order(0)
@@ -800,7 +800,7 @@ class Bond(Edge):
         """
         Return ``True`` if the bond is of order other_order or ``False`` if
         not. This compares floats that takes into account floating point error
-        
+
         NOTE: we can replace the absolute value relation with math.isclose when
         we swtich to python 3.5+
         """
@@ -1235,7 +1235,7 @@ class Molecule(Graph):
             element_dict[symbol] = element_dict.get(symbol, 0) + 1
 
         # Use the Hill system to generate the formula.
-        # If you change this algorithm consider also updating 
+        # If you change this algorithm consider also updating
         # the chemkin.write_thermo_entry method
         formula = ''
 
@@ -1424,7 +1424,7 @@ class Molecule(Graph):
         Iterate through the atoms in the structure, checking their atom types
         to ensure they are correct (i.e. accurately describe their local bond
         environment) and complete (i.e. are as detailed as possible).
-        
+
         If `raise_exception` is `False`, then the generic atomtype 'R' will
         be prescribed to any atom when get_atomtype fails. Currently used for
         resonance hybrid atom types.
@@ -1449,7 +1449,7 @@ class Molecule(Graph):
         """
         # Assume this is always true
         # There are cases where 2 radical_electrons is a singlet, but
-        # the triplet is often more stable, 
+        # the triplet is often more stable,
         self.multiplicity = self.get_radical_count() + 1
 
     def clear_labeled_atoms(self):
@@ -1541,7 +1541,7 @@ class Molecule(Graph):
         # check multiplicity
         if self.multiplicity != other.multiplicity:
             return False
-        
+
         # if given an initial map, ensure that it's valid.
         if initial_map:
             if not self.is_mapping_valid(other, initial_map, equivalent=True):
@@ -1819,7 +1819,7 @@ class Molecule(Graph):
     def to_single_bonds(self, raise_atomtype_exception=True):
         """
         Returns a copy of the current molecule, consisting of only single bonds.
-        
+
         This is useful for isomorphism comparison against something that was made
         via from_xyz, which does not attempt to perceive bond orders
         """
@@ -1844,9 +1844,9 @@ class Molecule(Graph):
         Convert a molecular structure to an InChI string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity.
-        
+
         or
-        
+
         Convert a molecular structure to an InChI string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
         """
@@ -1860,7 +1860,7 @@ class Molecule(Graph):
         """
         Adds an extra layer to the InChI denoting the multiplicity
         of the molecule.
-        
+
         Separate layer with a forward slash character.
         """
         try:
@@ -1873,9 +1873,9 @@ class Molecule(Graph):
         """
         Convert a molecular structure to an InChI Key string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
-        
-        or 
-        
+
+        or
+
         Convert a molecular structure to an InChI Key string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         """
@@ -1909,13 +1909,13 @@ class Molecule(Graph):
 
     def to_smiles(self):
         """
-        Convert a molecular structure to an SMILES string. 
-        
+        Convert a molecular structure to an SMILES string.
+
         If there is a Nitrogen atom present it uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion,
         and the SMILES may or may not be canonical.
-        
-        Otherwise, it uses `RDKit <http://rdkit.org/>`_ to perform the 
+
+        Otherwise, it uses `RDKit <http://rdkit.org/>`_ to perform the
         conversion, so it will be canonical SMILES.
         While converting to an RDMolecule it will perceive aromaticity
         and removes Hydrogen atoms.
@@ -1980,8 +1980,8 @@ class Molecule(Graph):
             1) An atom can only be hydrogen bonded to one other atom
             2) Only two H-bonds can exist in a given molecule
 
-        the second is done to avoid explosive growth in the number of 
-        structures as without this constraint the number of possible 
+        the second is done to avoid explosive growth in the number of
+        structures as without this constraint the number of possible
         structures grows 2^n where n is the number of possible H-bonds
         """
         structs = []
@@ -2059,10 +2059,10 @@ class Molecule(Graph):
         return False
 
     def is_aromatic(self):
-        """ 
-        Returns ``True`` if the molecule is aromatic, or ``False`` if not.  
-        Iterates over the SSSR's and searches for rings that consist solely of Cb 
-        atoms.  Assumes that aromatic rings always consist of 6 atoms. 
+        """
+        Returns ``True`` if the molecule is aromatic, or ``False`` if not.
+        Iterates over the SSSR's and searches for rings that consist solely of Cb
+        atoms.  Assumes that aromatic rings always consist of 6 atoms.
         In cases of naphthalene, where a 6 + 4 aromatic system exists,
         there will be at least one 6 membered aromatic ring so this algorithm
         will not fail for fused aromatic rings.
@@ -2180,7 +2180,7 @@ class Molecule(Graph):
             if atom.lone_pairs > 0:
                 return True
         return False
-    
+
     def has_charge(self):
         for atom in self.vertices:
             if atom.charge != 0:
@@ -2291,7 +2291,7 @@ class Molecule(Graph):
 
     def saturate_radicals(self, raise_atomtype_exception=True):
         """
-        Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
+        Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.
         """
         cython.declare(added=dict, atom=Atom, i=int, H=Atom, bond=Bond)
         added = {}
@@ -2373,6 +2373,11 @@ class Molecule(Graph):
         cython.declare(rc=list, atom=Atom, ring=list)
 
         # Get the set of relevant cycles
+        if len(self.atoms) < 3:
+            for atom in self.atoms:
+                atom.props['inRing'] = False
+            return
+
         rc = self.get_relevant_cycles()
         # Identify whether each atom is in a ring
         for atom in self.atoms:
@@ -2488,7 +2493,7 @@ class Molecule(Graph):
         by short length and then high atomic number instead of just short length (for cases where
         multiple cycles with same length are found, `get_smallest_set_of_smallest_rings` outputs
         non-determinstically).
-        
+
         For instance, molecule with this smiles: C1CC2C3CSC(CO3)C2C1, will have non-deterministic
         output from `get_smallest_set_of_smallest_rings`, which leads to non-deterministic bicyclic decomposition.
         Using this new method can effectively prevent this situation.
@@ -2731,7 +2736,7 @@ class Molecule(Graph):
     def get_desorbed_molecules(self):
         """
         Get a list of desorbed molecules by desorbing the molecule from the surface.
-        
+
         Returns a list of Molecules.  Each molecule's atoms will be labeled corresponding to
         the bond order with the surface:
         '*1' - Single bond
@@ -2806,7 +2811,7 @@ class Molecule(Graph):
                             atom1.decrement_radical()
                             desorbed_molecules.append(desorbed_molecule.copy(deep=True))
                         if (atom0.lone_pairs and
-                                atom1.lone_pairs and 
+                                atom1.lone_pairs and
                                 bond.order < 3):
                             # X#C-C#X will end up with .:C-C:. in gas phase
                             # and we want to get to .C#C. but not :C=C:
@@ -2817,8 +2822,8 @@ class Molecule(Graph):
                             atom1.increment_radical()
                             desorbed_molecules.append(desorbed_molecule.copy(deep=True))
                     #For bidentate CO because we want C[-1]#O[+1] but not .C#O.
-                    if (bond.order == 3 and atom0.radical_electrons and 
-                        atom1.radical_electrons and 
+                    if (bond.order == 3 and atom0.radical_electrons and
+                        atom1.radical_electrons and
                         (atom0.lone_pairs or atom1.lone_pairs)):
                         atom0.decrement_radical()
                         atom1.decrement_radical()
@@ -2840,6 +2845,6 @@ class Molecule(Graph):
 
         return desorbed_molecules
 
-# this variable is used to name atom IDs so that there are as few conflicts by 
+# this variable is used to name atom IDs so that there are as few conflicts by
 # using the entire space of integer objects
 atom_id_counter = -2 ** 15
