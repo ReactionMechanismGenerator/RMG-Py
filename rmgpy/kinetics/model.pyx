@@ -117,16 +117,18 @@ cdef class KineticsModel:
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `solute`        Solute data for the transition state
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
 
     """
 
-    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, comment=''):
+    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, solute=None, comment=''):
         self.Tmin = Tmin
         self.Tmax = Tmax
         self.Pmin = Pmin
         self.Pmax = Pmax
+        self.solute = solute
         self.uncertainty = uncertainty
         self.comment = comment
 
@@ -136,13 +138,13 @@ cdef class KineticsModel:
         KineticsModel object.
         """
         return 'KineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={2!r}, Pmax={3!r}, uncertainty={4!r}, comment="""{5}""")'.format(
-            self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment)
+            self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.solute, self.uncertainty, self.comment)
 
     def __reduce__(self):
         """
         A helper function used when pickling a KineticsModel object.
         """
-        return (KineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment))
+        return (KineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.solute, self.uncertainty, self.comment))
 
     property Tmin:
         """The minimum temperature at which the model is valid, or ``None`` if not defined."""
