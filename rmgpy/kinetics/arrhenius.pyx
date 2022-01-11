@@ -58,15 +58,16 @@ cdef class Arrhenius(KineticsModel):
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `solute`        Transition state solute data
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
 
     """
 
     def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0, "K"), Tmin=None, Tmax=None, Pmin=None, Pmax=None,
-                 uncertainty=None, comment=''):
+                 uncertainty=None, solute=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty,
-                               comment=comment)
+                               solute=solute, comment=comment)
         self.A = A
         self.n = n
         self.Ea = Ea
@@ -83,6 +84,7 @@ cdef class Arrhenius(KineticsModel):
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
         if self.uncertainty: string += ', uncertainty={0!r}'.format(self.uncertainty)
+        if self.solute: string += ', solute={0!r}'.format(self.solute)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -92,7 +94,7 @@ cdef class Arrhenius(KineticsModel):
         A helper function used when pickling an Arrhenius object.
         """
         return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
-                            self.uncertainty, self.comment))
+                            self.uncertainty, self.solute, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -196,6 +198,7 @@ cdef class Arrhenius(KineticsModel):
         self.T0 = (T0, "K")
         self.Tmin = (np.min(Tlist), "K")
         self.Tmax = (np.max(Tlist), "K")
+        self.solute = None
         self.comment = 'Fitted to {0:d} data points; dA = *|/ {1:g}, dn = +|- {2:g}, dEa = +|- {3:g} kJ/mol'.format(
             len(Tlist),
             exp(sqrt(cov[0, 0])),
@@ -295,6 +298,7 @@ cdef class Arrhenius(KineticsModel):
                           Pmin=self.Pmin,
                           Pmax=self.Pmax,
                           uncertainty=self.uncertainty,
+                          solute=self.solute,
                           comment=self.comment)
         return aep
 ################################################################################
@@ -317,15 +321,16 @@ cdef class ArrheniusEP(KineticsModel):
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `solute`        Transition state solute data
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
 
     """
 
     def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None,
-                 comment=''):
+                 solute=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty,
-                               comment=comment)
+                               solute=solute, comment=comment)
         self.A = A
         self.n = n
         self.alpha = alpha
@@ -342,6 +347,7 @@ cdef class ArrheniusEP(KineticsModel):
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
         if self.uncertainty is not None: string += ', uncertainty={0!r}'.format(self.uncertainty)
+        if self.solute is not None: string += ', solute={0!r}'.format(self.solute)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -351,7 +357,7 @@ cdef class ArrheniusEP(KineticsModel):
         A helper function used when pickling an ArrheniusEP object.
         """
         return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
-                              self.uncertainty, self.comment))
+                              self.uncertainty, self.solute, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -422,6 +428,7 @@ cdef class ArrheniusEP(KineticsModel):
             Pmin=self.Pmin,
             Pmax=self.Pmax,
             uncertainty=self.uncertainty,
+            solute=self.solute,
             comment=self.comment,
         )
 
@@ -475,15 +482,16 @@ cdef class ArrheniusBM(KineticsModel):
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `solute`        Transition state solute data
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
 
     """
 
     def __init__(self, A=None, n=0.0, w0=(0.0, 'J/mol'), E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None,
-                 uncertainty=None, comment=''):
+                 uncertainty=None, solute=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty,
-                               comment=comment)
+                               solute=solute, comment=comment)
         self.A = A
         self.n = n
         self.w0 = w0
@@ -500,6 +508,7 @@ cdef class ArrheniusBM(KineticsModel):
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
         if self.uncertainty is not None: string += ', uncertainty={0!r}'.format(self.uncertainty)
+        if self.solute is not None: string += ', solute={0!r}'.format(self.solute)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -509,7 +518,7 @@ cdef class ArrheniusBM(KineticsModel):
         A helper function used when pickling an ArrheniusEP object.
         """
         return (ArrheniusBM, (self.A, self.n, self.w0, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
-                              self.uncertainty, self.comment))
+                              self.uncertainty, self.solute, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -580,6 +589,7 @@ cdef class ArrheniusBM(KineticsModel):
             Tmin=self.Tmin,
             Tmax=self.Tmax,
             uncertainty=self.uncertainty,
+            solute=self.solute,
             comment=self.comment,
         )
 
@@ -617,6 +627,7 @@ cdef class ArrheniusBM(KineticsModel):
 
             self.Tmin = rxn.kinetics.Tmin
             self.Tmax = rxn.kinetics.Tmax
+            self.solute = None
             self.comment = 'Fitted to {0} reaction at temperature: {1} K'.format(len(rxns), T)
         else:
             # define optimization function            
@@ -666,6 +677,7 @@ cdef class ArrheniusBM(KineticsModel):
 
             self.Tmin = (np.min(Ts), "K")
             self.Tmax = (np.max(Ts), "K")
+            self.solute = None
             self.comment = 'Fitted to {0} reactions at temperatures: {1}'.format(len(rxns), Ts)
 
         # fill in parameters
