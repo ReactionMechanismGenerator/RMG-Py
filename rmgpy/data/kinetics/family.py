@@ -3621,9 +3621,12 @@ class KineticsFamily(Database):
         inds = inds.tolist()
         revinds = [inds.index(x) for x in np.arange(len(inputs))]
 
-        pool = mp.Pool(nprocs)
+        if nprocs > 1:
+            pool = mp.Pool(nprocs)
+            kinetics_list = np.array(pool.map(_make_rule, inputs[inds]))
+        else:
+            kinetics_list = np.array(list(map(_make_rule, inputs[inds])))
 
-        kinetics_list = np.array(pool.map(_make_rule, inputs[inds]))
         kinetics_list = kinetics_list[revinds]  # fix order
 
         for i, kinetics in enumerate(kinetics_list):
