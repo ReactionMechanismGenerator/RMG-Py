@@ -40,7 +40,7 @@ from rmgpy.species import Species
 from rmgpy.reaction import Reaction
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.wilhoit import Wilhoit
-from rmgpy.kinetics.arrhenius import Arrhenius, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
+from rmgpy.kinetics.arrhenius import Arrhenius, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, ArrheniusChargeTransfer
 from rmgpy.kinetics.falloff import Troe, ThirdBody, Lindemann
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.data.solvation import SolventData
@@ -146,14 +146,21 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
         result_dict["A"] = obj.A.value_si
         result_dict["Ea"] = obj.Ea.value_si
         result_dict["n"] = obj.n.value_si
-    elif isinstance(obj, SurfaceChargeTransfer):
-        result_dict["type"] = "SurfaceChargeTransfer"
+    elif isinstance(obj, ArrheniusChargeTransfer):
+        obj.change_t0(1.0)
+        obj.change_v0(0.0)
+        result_dict["type"] = "Arrheniusq"
         result_dict["A"] = obj.A.value_si
         result_dict["Ea"] = obj.Ea.value_si
         result_dict["n"] = obj.n.value_si
-        result_dict["electrons"] = obj.electrons.value_si
-        result_dict["V0"] = obj.V0.value_si
-        result_dict["alpha"] = obj.alpha.value_si
+        result_dict["q"] = obj._alpha.value_si*obj._electrons.value_si
+    elif isinstance(obj, SurfaceChargeTransfer):
+        obj.change_v0(0.0)
+        result_dict["type"] = "Arrheniusq"
+        result_dict["A"] = obj.A.value_si
+        result_dict["Ea"] = obj.Ea.value_si
+        result_dict["n"] = obj.n.value_si
+        result_dict["q"] = obj._alpha.value_si*obj._electrons.value_si
     elif isinstance(obj, StickingCoefficient):
         obj.change_t0(1.0)
         result_dict["type"] = "StickingCoefficient"
