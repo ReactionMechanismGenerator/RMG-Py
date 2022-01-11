@@ -4653,3 +4653,80 @@ def _child_make_tree_nodes(family, child_conn, template_rxn_map, obj, T, nprocs,
                            extension_iter_max=extension_iter_max, extension_iter_item_cap=extension_iter_item_cap)
 
     child_conn.send(list(family.groups.entries.values()))
+
+def average_kinetics(kinetics_list):
+    """
+    Based on averaging log k.
+    Hence we average n, Ea, arithmetically, but we
+    average log A (geometric average)
+    """
+    logA = 0.0
+    n = 0.0
+    Ea = 0.0
+    alpha = 0.5
+    electrons = None
+    if isinstance(kinetics_list[0], SurfaceChargeTransfer) or isinstance(kinetics_list[0], ArrheniusChargeTransfer):
+        if electrons is None:
+            electrons = kinetics_list[0].electrons.value_si
+        assert all(np.abs(k.V0.value_si) < 0.0001 for k in kinetics_list), [k.V0.value_si for k in kinetics_list]
+        assert all(np.abs(k.alpha.value_si - 0.5) < 0.001 for k in kinetics_list), [k.alpha for k in kinetics_list]
+    V0 = 0.0
+    count = 0
+    for kinetics in kinetics_list:
+        count += 1
+        logA += np.log10(kinetics.A.value_si)
+        n += kinetics.n.value_si
+        Ea += kinetics.Ea.value_si
+
+    logA /= count
+    n /= count
+    alpha /= count
+    Ea /= count
+    Aunits = kinetics_list[0].A.units
+    if Aunits == 'cm^3/(mol*s)' or Aunits == 'cm^3/(molecule*s)' or Aunits == 'm^3/(molecule*s)':
+        Aunits = 'm^3/(mol*s)'
+    elif Aunits == 'cm^6/(mol^2*s)' or Aunits == 'cm^6/(molecule^2*s)' or Aunits == 'm^6/(molecule^2*s)':
+        Aunits = 'm^6/(mol^2*s)'
+    elif Aunits == 's^-1' or Aunits == 'm^3/(mol*s)' or Aunits == 'm^6/(mol^2*s)':
+        # they were already in SI
+        pass
+    elif Aunits in ['m^2/(mol*s)', 'cm^2/(mol*s)', 'm^2/(molecule*s)', 'cm^2/(molecule*s)']:
+        # surface: bimolecular (Langmuir-Hinshelwood)
+        Aunits = 'm^2/(mol*s)'
+    elif Aunits in ['m^5/(mol^2*s)', 'cm^5/(mol^2*s)', 'm^5/(molecule^2*s)', 'cm^5/(molecule^2*s)']:
+        # surface: dissociative adsorption
+        Aunits = 'm^5/(mol^2*s)'
+    elif Aunits == '':
+        # surface: sticking coefficient
+        pass
+    else:
+        raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
+
+    if type(kinetics) not in [Arrhenius,SurfaceChargeTransfer,ArrheniusChargeTransfer]:
+        raise Exception('Invalid kinetics type {0!r} for {1!r}.'.format(type(kinetics), self))
+
+    if isinstance(kinetics, SurfaceChargeTransfer):
+        averaged_kinetics = SurfaceChargeTransfer(
+            A=(10 ** logA, Aunits),
+            n=n,
+            electrons=electrons,
+            alpha=alpha,
+            V0=(V0,'V'),
+            Ea=(Ea * 0.001, "kJ/mol"),
+            )
+    elif isinstance(kinetics, ArrheniusChargeTransfer):
+        averaged_kinetics = ArrheniusChargeTransfer(
+            A=(10 ** logA, Aunits),
+            n=n,
+            electrons=electrons,
+            alpha=alpha,
+            V0=(V0,'V'),
+            Ea=(Ea * 0.001, "kJ/mol"),
+            )
+    else:
+        averaged_kinetics = Arrhenius(
+            A=(10 ** logA, Aunits),
+            n=n,
+            Ea=(Ea * 0.001, "kJ/mol"),
+        )
+    return averaged_kinetics
