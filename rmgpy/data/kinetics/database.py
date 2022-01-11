@@ -48,7 +48,7 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
 from rmgpy.molecule import Molecule, Group
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
-
+from rmgpy.data.solvation import SoluteData
 
 ################################################################################
 
@@ -79,7 +79,8 @@ class KineticsDatabase(object):
             'SurfaceArrhenius': SurfaceArrhenius,
             'SurfaceArrheniusBEP': SurfaceArrheniusBEP,
             'R': constants.R,
-            'ArrheniusBM': ArrheniusBM
+            'ArrheniusBM': ArrheniusBM,
+            'SoluteData': SoluteData,
         }
         self.global_context = {}
 
