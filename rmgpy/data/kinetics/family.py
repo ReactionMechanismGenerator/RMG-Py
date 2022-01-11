@@ -4451,17 +4451,51 @@ def _make_rule(rr):
     rxns = np.array(rxns)
     data_mean = np.mean(np.log([r.kinetics.get_rate_coefficient(Tref) for r in rxns]))
     if n > 0:
-        kin = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
-        if n == 1:
-            kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
+        if isinstance(rxns[0].kinetics, Arrhenius):
+            arr = ArrheniusBM
         else:
-            dlnks = np.array([
-                np.log(
-                    ArrheniusBM().fit_to_reactions(rxns[list(set(range(len(rxns))) - {i})], recipe=recipe)
+            arr = ArrheniusChargeTransferBM
+        kin = arr().fit_to_reactions(rxns, recipe=recipe)
+        if kin.E0.value_si < 0.0 or kin.A.value_si > 1.0e30 or abs(kin.n.value_si) > 5.0:
+            kin = average_kinetics([r.kinetics for r in rxns])
+            kin.comment = "E0<0 in the Arrhenius BM fit. Instead averaged from {} reactions.".format(n)
+            if n == 1:
+                kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
+            else:
+                dlnks = np.array([
+                    np.log(
+                            average_kinetics([r.kinetics for r in rxns[list(set(range(len(rxns))) - {i})]]).get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                        ) for i, rxn in enumerate(rxns)
+                    ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
+                varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rxns]) / (2.0 * 8.314 * Tref)) ** 2
+                # weighted average calculations
+                ws = 1.0 / varis
+                V1 = ws.sum()
+                V2 = (ws ** 2).sum()
+                mu = np.dot(ws, dlnks) / V1
+                s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
+                kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
+                return kin
+        else:
+            if n == 1:
+                kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
+            else:
+                if isinstance(rxns[0].kinetics, Arrhenius):
+                    dlnks = np.array([
+                        np.log(
+                            arr().fit_to_reactions(rxns[list(set(range(len(rxns))) - {i})], recipe=recipe)
                     .to_arrhenius(rxn.get_enthalpy_of_reaction(Tref))
                     .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
                 ) for i, rxn in enumerate(rxns)
             ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
+                else:
+                    dlnks = np.array([
+                        np.log(
+                            arr().fit_to_reactions(rxns[list(set(range(len(rxns))) - {i})], recipe=recipe)
+                            .to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(Tref))
+                            .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                        ) for i, rxn in enumerate(rxns)
+                    ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
             varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rxns]) / (2.0 * 8.314 * Tref)) ** 2
             # weighted average calculations
             ws = 1.0 / varis
