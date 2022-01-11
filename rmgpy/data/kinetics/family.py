@@ -3737,8 +3737,8 @@ class KineticsFamily(Database):
         revinds = [inds.index(x) for x in np.arange(len(inputs))]
 
         if nprocs > 1:
-        pool = mp.Pool(nprocs)
-        kinetics_list = np.array(pool.map(_make_rule, inputs[inds]))
+            pool = mp.Pool(nprocs)
+            kinetics_list = np.array(pool.map(_make_rule, inputs[inds]))
         else:
             kinetics_list = np.array(list(map(_make_rule, inputs[inds])))
 
