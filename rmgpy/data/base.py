@@ -42,6 +42,7 @@ from collections import OrderedDict
 from rmgpy.data.reference import Reference, Article, Book, Thesis
 from rmgpy.exceptions import DatabaseError, InvalidAdjacencyListError
 from rmgpy.kinetics.uncertainties import RateUncertainty
+from rmgpy.kinetics.arrhenius import ArrheniusChargeTransfer, ArrheniusChargeTransferBM
 from rmgpy.molecule import Molecule, Group
 
 
@@ -228,6 +229,8 @@ class Database(object):
         local_context['shortDesc'] = self.short_desc
         local_context['longDesc'] = self.long_desc
         local_context['RateUncertainty'] = RateUncertainty
+        local_context['ArrheniusChargeTransfer'] = ArrheniusChargeTransfer
+        local_context['ArrheniusChargeTransferBM'] = ArrheniusChargeTransferBM
         local_context['metal'] = self.metal
         local_context['site'] = self.site
         local_context['facet'] = self.facet
