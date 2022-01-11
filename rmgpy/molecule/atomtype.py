@@ -268,7 +268,7 @@ ATOMTYPES['Xo']   = AtomType('Xo', generic=['X'], specific=[],
 # Non-surface atomTypes, R being the most generic:
 ATOMTYPES['R']    = AtomType(label='R', generic=[], specific=[
     'H','H0','H+',
-    'Li',
+    'Li','Li0','Li+',
     'R!H',
     'R!H!Val7',
     'Val4','Val5','Val6','Val7',
@@ -287,12 +287,8 @@ ATOMTYPES['R']    = AtomType(label='R', generic=[], specific=[
 ATOMTYPES['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
     'Val4','Val5','Val6','Val7',
     'He','Ne','Ar',
-<<<<<<< HEAD
-    'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ctc','Ct','Cb','Cbf','Cq','C2s','C2sc','C2d','C2dc','C2tc',
-=======
-    'Li',
+    'Li','Li0','Li+',
     'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ct','Cb','Cbf','Cq','C2s','C2sc','C2d','C2dc','C2tc',
->>>>>>> 533dd4d9f (add Li to R and R!H lists)
     'N','N0sc','N1s','N1sc','N1dc','N3s','N3sc','N3d','N3t','N3b','N5sc','N5dc','N5ddc','N5dddc','N5tc','N5b','N5bd',
     'O','Oa','O0sc','O2s','O2sc','O2d','O4sc','O4dc','O4tc','O4b',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf','Siq',
@@ -306,12 +302,8 @@ ATOMTYPES['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
 ATOMTYPES['R!H!Val7']  = AtomType(label='R!H!Val7', generic=['R'], specific=[
     'Val4','Val5','Val6',
     'He','Ne','Ar',
-<<<<<<< HEAD
-    'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ctc','Ct','Cb','Cbf','Cq','C2s','C2sc','C2d','C2dc','C2tc',
-=======
-    'Li',
+    'Li','Li0','Li+',
     'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ct','Cb','Cbf','Cq','C2s','C2sc','C2d','C2dc','C2tc',
->>>>>>> 533dd4d9f (add Li to R and R!H lists)
     'N','N0sc','N1s','N1sc','N1dc','N3s','N3sc','N3d','N3t','N3b','N5sc','N5dc','N5ddc','N5dddc','N5tc','N5b','N5bd',
     'O','Oa','O0sc','O2s','O2sc','O2d','O4sc','O4dc','O4tc','O4b',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf','Siq',
@@ -344,8 +336,12 @@ ATOMTYPES['H0'] = AtomType('H0', generic=['R','H'], specific=[], single=[0,1], a
 ATOMTYPES['H+'] = AtomType('H+', generic=['R','H'], specific=[], single=[0], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0],
                             quadruple=[0], benzene=[0], lone_pairs=[0], charge=[+1])
 
-ATOMTYPES['Li'] = AtomType('Li', generic=['R', 'R!H', 'R!H!Val7'], specific=[],
+ATOMTYPES['Li'] = AtomType('Li', generic=['R', 'R!H', 'R!H!Val7'], specific=['Li0','Li+'],
+                            single=[0,1], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[0], charge=[0,1])
+ATOMTYPES['Li0'] = AtomType('Li', generic=['Li','R', 'R!H', 'R!H!Val7'], specific=[],
                             single=[0,1], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[0], charge=[0])
+ATOMTYPES['Li+'] = AtomType('Li+', generic=['Li','R', 'R!H', 'R!H!Val7'], specific=[],
+                            single=[0], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[0], charge=[1])
 
 ATOMTYPES['He'] = AtomType('He', generic=['R', 'R!H', 'R!H!Val7'], specific=[])
 ATOMTYPES['Ne'] = AtomType('Ne', generic=['R', 'R!H', 'R!H!Val7'], specific=[])
@@ -686,6 +682,8 @@ ATOMTYPES['H0'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['H0
 ATOMTYPES['H+'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=[], decrement_charge=['H0'])
 
 ATOMTYPES['Li'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Li'], break_bond=['Li'], increment_radical=['Li'], decrement_radical=['Li'], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=['Li'], decrement_charge=['Li'])
+ATOMTYPES['Li0'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Li0'], break_bond=['Li0'], increment_radical=['Li0'], decrement_radical=['H0'], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=['Li+'], decrement_charge=[])
+ATOMTYPES['Li+'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=[], decrement_charge=['Li0'])
 
 ATOMTYPES['He'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=['He'], decrement_radical=['He'], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=[], decrement_charge=[])
 ATOMTYPES['Ne'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=['Ne'], decrement_radical=['Ne'], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=[], decrement_charge=[])
@@ -814,7 +812,7 @@ ATOMTYPES['F1s'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['F
 # these are ordered in priority of picking if a more general atomtype is encountered
 allElements = ['H', 'C', 'O', 'N', 'S', 'P', 'Si', 'F', 'Cl', 'Br', 'I', 'Li', 'Ne', 'Ar', 'He', 'X', 'e', ]
 # list of elements that do not have more specific atomTypes
-nonSpecifics = ['He', 'Ne', 'Ar', 'e', 'Li']
+nonSpecifics = ['He', 'Ne', 'Ar', 'e']
 
 for atomtype in ATOMTYPES.values():
     for items in [atomtype.generic, atomtype.specific,
