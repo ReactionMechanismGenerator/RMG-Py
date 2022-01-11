@@ -724,7 +724,7 @@ def read_reaction_comments(reaction, comments, read=True):
                     raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs '
                                        'for reaction {1}.'.format(prod_str, reaction))
                 reaction.pairs.append((reactant, product))
-            assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
+            #assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
 
         elif isinstance(reaction, TemplateReaction) and 'rate rule ' in line:
             bracketed_rule = tokens[-1]
