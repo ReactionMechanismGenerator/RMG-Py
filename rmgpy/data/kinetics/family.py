@@ -3510,7 +3510,7 @@ class KineticsFamily(Database):
 
                 index += 1
 
-    def cross_validate(self, folds=5, template_rxn_map=None, test_rxn_inds=None, T=1000.0, iters=0, random_state=1, ascend=False):
+    def cross_validate(self, folds=5, template_rxn_map=None, test_rxn_inds=None, T=1000.0, iters=0, random_state=1):
         """
         Perform K-fold cross validation on an automatically generated tree at temperature T
         after finding an appropriate node for kinetics estimation it will move up the tree
@@ -3566,47 +3566,43 @@ class KineticsFamily(Database):
                     if entry.parent:
                         entry = entry.parent
 
+                boo = True
+
+                while boo:
+                    if entry.parent is None:
+                        break
+                    kin = self.rules.entries[entry.label][0].data
+                    kinparent = self.rules.entries[entry.parent.label][0].data
+                    err_parent = abs(kinparent.uncertainty.data_mean + kinparent.uncertainty.mu - kin.uncertainty.data_mean) + np.sqrt(2.0*kinparent.uncertainty.var/np.pi)
+                    err_entry = abs(kin.uncertainty.mu) + np.sqrt(2.0*kin.uncertainty.var/np.pi)
+                    if err_entry <= err_parent:
+                        break
+                    else:
+                        entry = entry.parent
+
                 uncertainties[rxn] = self.rules.entries[entry.label][0].data.uncertainty
 
-                if not ascend:
-                    L = list(set(template_rxn_map[entry.label]) - set(rxns_test))
 
-                    if L != []:
-                        if isinstance(L[0].kinetics,Arrhenius):
+                L = list(set(template_rxn_map[entry.label]) - set(rxns_test))
+
+                if L != []:
+                    if isinstance(L[0].kinetics, Arrhenius):
                         kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
-                        kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(T))
+                        if kinetics.E0.value_si < 0.0 or len(L) == 1:
+                            kinetics = average_kinetics([r.kinetics for r in L])
                         else:
-                            kinetics = ArrheniusChargeTransferBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
-                            kinetics = kinetics.to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(T))
-                        k = kinetics.get_rate_coefficient(T)
-                        errors[rxn] = np.log(k / krxn)
+                            kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(298.0))
                     else:
-                        raise ValueError('only one piece of kinetics information in the tree?')
-                else:
-                    boo = True
-                    rlist = list(set(template_rxn_map[entry.label]) - set(rxns_test))
-                    kinetics = _make_rule((self.forward_recipe.actions,rlist,T,1.0e3,"",[rxn.rank for rxn in rlist]))
-                    logging.error("determining fold rate")
-                    c = 1
-                    while boo:
-                        parent = entry.parent
-                        if parent is None:
-                            break
-                        rlistparent = list(set(template_rxn_map[parent.label]) - set(rxns_test))
-                        kineticsparent = _make_rule((self.forward_recipe.actions,rlistparent,T,1.0e3,"",[rxn.rank for rxn in rlistparent]))
-                        err_parent = abs(kineticsparent.uncertainty.data_mean + kineticsparent.uncertainty.mu - kinetics.uncertainty.data_mean) + np.sqrt(2.0*kineticsparent.uncertainty.var/np.pi)
-                        err_entry = abs(kinetics.uncertainty.mu) + np.sqrt(2.0*kinetics.uncertainty.var/np.pi)
-                        if err_entry > err_parent:
-                            entry = entry.parent
-                            kinetics = kineticsparent
-                            logging.error("recursing {}".format(c))
-                            c += 1
+                        kinetics = ArrheniusChargeTransferBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
+                        if kinetics.E0.value_si < 0.0 or len(L) == 1:
+                            kinetics = average_kinetics([r.kinetics for r in L])
                         else:
-                            boo = False
+                            kinetics = kinetics.to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(298.0))
 
-                    kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(T))
                     k = kinetics.get_rate_coefficient(T)
                     errors[rxn] = np.log(k / krxn)
+                else:
+                    raise ValueError('only one piece of kinetics information in the tree?')
 
         return errors, uncertainties
 
