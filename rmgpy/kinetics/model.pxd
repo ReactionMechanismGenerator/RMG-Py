@@ -29,7 +29,7 @@ cimport numpy as np
 
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 from rmgpy.kinetics.uncertainties cimport RateUncertainty
-
+from rmgpy.data.solvation import SoluteData
 ################################################################################
 
 cpdef str get_rate_coefficient_units_from_reaction_order(n_gas, n_surf=?)
@@ -43,6 +43,7 @@ cdef class KineticsModel:
     cdef public ScalarQuantity _Tmin, _Tmax
     cdef public ScalarQuantity _Pmin, _Pmax
     cdef public RateUncertainty uncertainty
+    cdef public object solute
 
     cdef public str comment
     
