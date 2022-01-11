@@ -30,8 +30,8 @@
 """
 This module contains classes and functions for working with chemical reactions.
 
-From the `IUPAC Compendium of Chemical Terminology 
-<https://doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that 
+From the `IUPAC Compendium of Chemical Terminology
+<https://doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that
 results in the interconversion of chemical species".
 
 In RMG Py, a chemical reaction is represented in memory as a :class:`Reaction`
@@ -53,7 +53,7 @@ import rmgpy.constants as constants
 from rmgpy.exceptions import ReactionError, KineticsError
 from rmgpy.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, \
     PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, get_rate_coefficient_units_from_reaction_order, \
-    SurfaceArrheniusBEP, StickingCoefficientBEP
+    SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusChargeTransfer, ArrheniusChargeTransferBM
 from rmgpy.kinetics.arrhenius import Arrhenius  # Separate because we cimport from rmgpy.kinetics.arrhenius
 from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient  # Separate because we cimport from rmgpy.kinetics.surface
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
@@ -68,7 +68,7 @@ from rmgpy.species import Species
 class Reaction:
     """
     A chemical reaction. The attributes are:
-    
+
     =================== =========================== ============================
     Attribute           Type                        Description
     =================== =========================== ============================
@@ -92,7 +92,7 @@ class Reaction:
     `is_forward`        ``bool``                    Indicates if the reaction was generated in the forward (true) or reverse (false)
     `rank`              ``int``                     Integer indicating the accuracy of the kinetics for this reaction
     =================== =========================== ============================
-    
+
     """
 
     def __init__(self,
@@ -169,7 +169,7 @@ class Reaction:
 
     def to_labeled_str(self, use_index=False):
         """
-        the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than 
+        the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than
         the labels plus the index in parentheses
         """
         arrow = ' <=> ' if self.reversible else ' => '
@@ -234,7 +234,7 @@ class Reaction:
     def to_chemkin(self, species_list=None, kinetics=True):
         """
         Return the chemkin-formatted string for this reaction.
-        
+
         If `kinetics` is set to True, the chemkin format kinetics will also
         be returned (requires the `species_list` to figure out third body colliders.)
         Otherwise, only the reaction string will be returned.
@@ -321,9 +321,9 @@ class Reaction:
             if isinstance(ct_reaction, list):
                 for rxn in ct_reaction:
                     rxn.reversible = self.reversible
-                    # Set the duplicate flag to true since this reaction comes from multiarrhenius or multipdeparrhenius 
+                    # Set the duplicate flag to true since this reaction comes from multiarrhenius or multipdeparrhenius
                     rxn.duplicate = True
-                    # Set the ID flag to the original rmg index 
+                    # Set the ID flag to the original rmg index
                     rxn.ID = str(self.index)
             else:
                 ct_reaction.reversible = self.reversible
@@ -662,7 +662,7 @@ class Reaction:
         Return the overall rate coefficient for the forward reaction at
         temperature `T` in K and pressure `P` in Pa, including any reaction
         path degeneracies.
-        
+
         If diffusion_limiter is enabled, the reaction is in the liquid phase and we use
         a diffusion limitation to correct the rate. If not, then use the intrinsic rate
         coefficient.
@@ -672,7 +672,7 @@ class Reaction:
         """
         if isinstance(self.kinetics, StickingCoefficient):
             if surface_site_density <= 0:
-                raise ValueError("Please provide a postive surface site density in mol/m^2 " 
+                raise ValueError("Please provide a postive surface site density in mol/m^2 "
                                 f"for calculating the rate coefficient of {StickingCoefficient.__name__} kinetics")
             else:
                 return self.get_surface_rate_coefficient(T, surface_site_density)
@@ -757,7 +757,7 @@ class Reaction:
         """
         Turns the kinetics into Arrhenius (if they were ArrheniusEP)
         and ensures the activation energy is at least the endothermicity
-        for endothermic reactions, and is not negative only as a result 
+        for endothermic reactions, and is not negative only as a result
         of using Evans Polanyi with an exothermic reaction.
         If `force_positive` is True, then all reactions
         are forced to have a non-negative barrier.
@@ -766,47 +766,44 @@ class Reaction:
 
         if self.kinetics is None:
             raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
-
-        H298 = self.get_enthalpy_of_reaction(298)
-        H0 = sum([spec.get_thermo_data().E0.value_si for spec in self.products]) \
-             - sum([spec.get_thermo_data().E0.value_si for spec in self.reactants])
-        if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusBM)):
-            Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
-            self.kinetics = self.kinetics.to_arrhenius(H298)
-            if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
-                # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
-                Ea = min(0.0, Ea)  # (the lowest we want it to be)
-                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(
-                    self.kinetics.Ea.value_si / 1000., Ea / 1000.)
-                logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(
-                    self, self.kinetics.Ea.value_si / 1000., Ea / 1000.))
-                self.kinetics.Ea.value_si = Ea
-        if isinstance(self.kinetics, (Arrhenius, StickingCoefficient)):  # SurfaceArrhenius is a subclass of Arrhenius
-            Ea = self.kinetics.Ea.value_si
-            if H0 >= 0 and Ea < H0:
-                self.kinetics.Ea.value_si = H0
-                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of " \
-                                         "reaction.".format( Ea / 1000., H0 / 1000.)
-                logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match "
-                             "endothermicity of reaction.".format( Ea / 1000., H0 / 1000., self))
-        if force_positive and isinstance(self.kinetics, (Arrhenius, StickingCoefficient)) and self.kinetics.Ea.value_si < 0:
-            self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si / 1000.)
-            logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(
-                self.kinetics.Ea.value_si / 1000., self))
-            self.kinetics.Ea.value_si = 0
-        if self.kinetics.is_pressure_dependent() and self.network_kinetics is not None:
-            Ea = self.network_kinetics.Ea.value_si
-            if H0 >= 0 and Ea < H0:
-                self.network_kinetics.Ea.value_si = H0
-                self.network_kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of" \
-                                                 " reaction.".format(Ea / 1000., H0 / 1000.)
-                logging.info("For reaction {2!s}, Ea of the high pressure limit kinetics raised from {0:.1f} to {1:.1f}"
-                             " kJ/mol to match endothermicity of reaction.".format(Ea / 1000., H0 / 1000., self))
-            if force_positive and isinstance(self.kinetics, Arrhenius) and self.kinetics.Ea.value_si < 0:
-                self.network_kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(
-                    self.kinetics.Ea.value_si / 1000.)
-                logging.info("For reaction {1!s} Ea of the high pressure limit kinetics raised from {0:.1f} to 0"
-                             " kJ/mol.".format(self.kinetics.Ea.value_si / 1000., self))
+        else:
+            H298 = self.get_enthalpy_of_reaction(298)
+            H0 = sum([spec.get_thermo_data().E0.value_si for spec in self.products]) \
+                - sum([spec.get_thermo_data().E0.value_si for spec in self.reactants])
+            if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusBM)):
+                Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
+                self.kinetics = self.kinetics.to_arrhenius(H298)
+                if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
+                    # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
+                    Ea = min(0.0, Ea)  # (the lowest we want it to be)
+                    self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(
+                        self.kinetics.Ea.value_si / 1000., Ea / 1000.)
+                    logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(
+                        self, self.kinetics.Ea.value_si / 1000., Ea / 1000.))
+                    self.kinetics.Ea.value_si = Ea
+            if isinstance(self.kinetics, ArrheniusChargeTransferBM):
+                Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
+                self.kinetics = self.kinetics.to_arrhenius_charge_transfer(H298)
+                if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
+                    # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
+                    Ea = min(0.0, Ea)  # (the lowest we want it to be)
+                    self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(
+                        self.kinetics.Ea.value_si / 1000., Ea / 1000.)
+                    logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(
+                        self, self.kinetics.Ea.value_si / 1000., Ea / 1000.))
+                    self.kinetics.Ea.value_si = Ea
+            if isinstance(self.kinetics, (Arrhenius, StickingCoefficient, ArrheniusChargeTransfer)):  # SurfaceArrhenius is a subclass of Arrhenius
+                Ea = self.kinetics.Ea.value_si
+                if H0 >= 0 and Ea < H0:
+                    self.kinetics.Ea.value_si = H0
+                    self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of " \
+                                            "reaction.".format( Ea / 1000., H0 / 1000.)
+                    logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match "
+                                "endothermicity of reaction.".format( Ea / 1000., H0 / 1000., self))
+            if force_positive and isinstance(self.kinetics, (Arrhenius, StickingCoefficient)) and self.kinetics.Ea.value_si < 0:
+                self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si / 1000.)
+                logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(
+                    self.kinetics.Ea.value_si / 1000., self))
                 self.kinetics.Ea.value_si = 0
 
     def reverse_arrhenius_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
@@ -880,9 +877,60 @@ class Reaction:
         kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
         return kr
 
+<<<<<<< HEAD
+=======
+    def reverse_surface_charge_transfer_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
+        """
+        Reverses the given k_forward, which must be a SurfaceChargeTransfer type.
+        You must supply the correct units for the reverse rate.
+        The equilibrium constant is evaluated from the current reaction instance (self).
+        """
+        cython.declare(kf=SurfaceChargeTransfer, kr=SurfaceChargeTransfer)
+        cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int, V0=cython.double)
+        kf = k_forward
+        self.set_reference_potential(298)
+        if not isinstance(kf, SurfaceChargeTransfer): # Only reverse SurfaceChargeTransfer rates
+            raise TypeError(f'Expected a SurfaceChargeTransfer object for k_forward but received {kf}')
+        if Tmin is not None and Tmax is not None:
+            Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
+        else:
+            Tlist = np.linspace(298, 500, 30)
+
+        V0 = self.kinetics.V0.value_si
+        klist = np.zeros_like(Tlist)
+        for i in range(len(Tlist)):
+            klist[i] = kf.get_rate_coefficient(Tlist[i],V0) / self.get_equilibrium_constant(Tlist[i],V0)
+        kr = SurfaceChargeTransfer(alpha=kf.alpha.value, electrons=-1*self.electrons, V0=(V0,'V'))
+        kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
+        return kr
+
+    def reverse_arrhenius_charge_transfer_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
+        """
+        Reverses the given k_forward, which must be a SurfaceChargeTransfer type.
+        You must supply the correct units for the reverse rate.
+        The equilibrium constant is evaluated from the current reaction instance (self).
+        """
+        cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int, V0=cython.double)
+        kf = k_forward
+        if not isinstance(kf, ArrheniusChargeTransfer): # Only reverse SurfaceChargeTransfer rates
+            raise TypeError(f'Expected a ArrheniusChargeTransfer object for k_forward but received {kf}')
+        if Tmin is not None and Tmax is not None:
+            Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
+        else:
+            Tlist = np.linspace(298, 500, 30)
+
+        V0 = self.kinetics.V0.value_si
+        klist = np.zeros_like(Tlist)
+        for i in range(len(Tlist)):
+            klist[i] = kf.get_rate_coefficient(Tlist[i],V0) / self.get_equilibrium_constant(Tlist[i],V0)
+        kr = ArrheniusChargeTransfer(alpha=kf.alpha.value, electrons=-1*self.electrons, V0=(V0,'V'))
+        kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
+        return kr
+
+>>>>>>> 3afc9cc91 (handle ChargeTransfer kinetics with in reaction.py)
     def generate_reverse_rate_coefficient(self, network_kinetics=False, Tmin=None, Tmax=None, surface_site_density=0):
         """
-        Generate and return a rate coefficient model for the reverse reaction. 
+        Generate and return a rate coefficient model for the reverse reaction.
         Currently this only works if the `kinetics` attribute is one of several
         (but not necessarily all) kinetics types.
 
@@ -905,6 +953,7 @@ class Reaction:
             Lindemann.__name__,
             Troe.__name__,
             StickingCoefficient.__name__,
+            ArrheniusChargeTransfer.__name__,
         )
 
         # Get the units for the reverse rate coefficient
@@ -912,7 +961,7 @@ class Reaction:
             surf_prods = [spcs for spcs in self.products if spcs.contains_surface_site()]
         except IndexError:
             surf_prods = []
-            logging.warning(f"Species do not have an rmgpy.molecule.Molecule "  
+            logging.warning(f"Species do not have an rmgpy.molecule.Molecule "
                             "Cannot determine phases of species. We will assume gas"
                             )
         n_surf = len(surf_prods)
@@ -920,7 +969,18 @@ class Reaction:
         kunits = get_rate_coefficient_units_from_reaction_order(n_gas, n_surf)
 
         kf = self.kinetics
+<<<<<<< HEAD
         if isinstance(kf, KineticsData):
+=======
+
+        if isinstance(kf, SurfaceChargeTransfer):
+            return self.reverse_surface_charge_transfer_rate(kf, kunits, Tmin, Tmax)
+
+        elif isinstance(kf, ArrheniusChargeTransfer):
+            return self.reverse_arrhenius_charge_transfer_rate(kf, kunits, Tmin, Tmax)
+
+        elif isinstance(kf, KineticsData):
+>>>>>>> 3afc9cc91 (handle ChargeTransfer kinetics with in reaction.py)
 
             Tlist = kf.Tdata.value_si
             klist = np.zeros_like(Tlist)
@@ -939,7 +999,7 @@ class Reaction:
 
         elif isinstance(kf, StickingCoefficient):
             if surface_site_density <= 0:
-                raise ValueError("Please provide a postive surface site density in mol/m^2 " 
+                raise ValueError("Please provide a postive surface site density in mol/m^2 "
                                 f"for calculating the rate coefficient of {StickingCoefficient.__name__} kinetics")
             else:
                 return self.reverse_sticking_coeff_rate(kf, kunits, surface_site_density, Tmin, Tmax)
@@ -1068,14 +1128,14 @@ class Reaction:
         reactant density of states is required; if the reaction is reversible, then
         both are required. This function will try to use the best method that it
         can based on the input data available:
-        
+
         * If detailed information has been provided for the transition state (i.e.
           the molecular degrees of freedom), then RRKM theory will be used.
-        
+
         * If the above is not possible but high-pressure limit kinetics
-          :math:`k_\\infty(T)` have been provided, then the inverse Laplace 
+          :math:`k_\\infty(T)` have been provided, then the inverse Laplace
           transform method will be used.
-    
+
         The density of states for the product `prod_dens_states` and the temperature
         of interest `T` in K can also be provided. For isomerization and association
         reactions `prod_dens_states` is required; for dissociation reactions it is
@@ -1118,6 +1178,14 @@ class Reaction:
             if reactant_elements[element] != product_elements[element]:
                 return False
 
+<<<<<<< HEAD
+=======
+        if self.electrons < 0:
+            reactants_net_charge += self.electrons
+        elif self.electrons > 0:
+            products_net_charge -= self.electrons
+
+>>>>>>> 3afc9cc91 (handle ChargeTransfer kinetics with in reaction.py)
         return True
 
     def generate_pairs(self):
@@ -1125,7 +1193,7 @@ class Reaction:
         Generate the reactant-product pairs to use for this reaction when
         performing flux analysis. The exact procedure for doing so depends on
         the reaction type:
-        
+
         =================== =============== ========================================
         Reaction type       Template        Resulting pairs
         =================== =============== ========================================
@@ -1134,8 +1202,8 @@ class Reaction:
         Association         A + B -> C      (A,C), (B,C)
         Bimolecular         A + B -> C + D  (A,C), (B,D) *or* (A,D), (B,C)
         =================== =============== ========================================
-        
-        There are a number of ways of determining the correct pairing for 
+
+        There are a number of ways of determining the correct pairing for
         bimolecular reactions. Here we try a simple similarity analysis by comparing
         the number of heavy atoms. This should work most of the time, but a more
         rigorous algorithm may be needed for some cases.
@@ -1195,9 +1263,9 @@ class Reaction:
     # Build the transition state geometry
     def generate_3d_ts(self, reactants, products):
         """
-        Generate the 3D structure of the transition state. Called from 
+        Generate the 3D structure of the transition state. Called from
         model.generate_kinetics().
-        
+
         self.reactants is a list of reactants
         self.products is a list of products
         """
@@ -1207,7 +1275,7 @@ class Reaction:
         atoms involved in the reaction. If a radical is involved, can find the atom
         with radical electrons. If a more reliable method can be found, would greatly
         improve the method.
-        
+
         Repeat for the products
         """
         for i in range(0, len(reactants)):
