@@ -3829,8 +3829,8 @@ class KineticsFamily(Database):
 
                     if L != []:
                         if isinstance(L[0].kinetics,Arrhenius):
-                        kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
-                        kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(T))
+                            kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
+                            kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(T))
                         else:
                             kinetics = ArrheniusChargeTransferBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
                             kinetics = kinetics.to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(T))
