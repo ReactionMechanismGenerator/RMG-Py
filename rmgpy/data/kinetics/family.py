@@ -55,7 +55,8 @@ from rmgpy.data.kinetics.rules import KineticsRules
 from rmgpy.exceptions import ActionError, DatabaseError, InvalidActionError, KekulizationError, KineticsError, \
                              ForbiddenStructureException, UndeterminableKineticsError
 from rmgpy.kinetics import Arrhenius, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficient, \
-                           StickingCoefficientBEP, ArrheniusBM, SurfaceChargeTransfer
+                           StickingCoefficientBEP, ArrheniusBM, SurfaceChargeTransfer, ArrheniusChargeTransfer, \
+                           ArrheniusChargeTransferBM
 from rmgpy.kinetics.uncertainties import RateUncertainty, rank_accuracy_map
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
@@ -1607,6 +1608,9 @@ class KineticsFamily(Database):
             product_num = self.product_num or len(template.products)
 
         # Split product structure into multiple species if necessary
+        if self.auto_generated and isinstance(reactant_structures[0],Group) and self.product_num == 1:
+            product_structures = [product_structure]
+        else:
         product_structures = product_structure.split()
 
         # Make sure we've made the expected number of products
@@ -3824,8 +3828,12 @@ class KineticsFamily(Database):
                     L = list(set(template_rxn_map[entry.label]) - set(rxns_test))
 
                     if L != []:
+                        if isinstance(L[0].kinetics,Arrhenius):
                         kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
                         kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(T))
+                        else:
+                            kinetics = ArrheniusChargeTransferBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
+                            kinetics = kinetics.to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(T))
                         k = kinetics.get_rate_coefficient(T)
                         errors[rxn] = np.log(k / krxn)
                     else:
@@ -4253,6 +4261,8 @@ class KineticsFamily(Database):
                 else:
                     mol = deepcopy(react.molecule[0])
 
+            mol.update_atomtypes()
+
             if fix_labels:
                 for prod in rxns[i].products:
                     fix_labels_mol(prod.molecule[0], root_labels)
@@ -4337,6 +4347,8 @@ class KineticsFamily(Database):
                         mol = mol.merge(react.molecule[0])
                     else:
                         mol = deepcopy(react.molecule[0])
+
+                mol.update_atomtypes()
 
                 if (mol.is_subgraph_isomorphic(root, generate_initial_map=True) or
                         (not fix_labels and
