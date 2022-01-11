@@ -1102,6 +1102,267 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
         for i, arr in enumerate(self.arrhenius):
             arr.set_cantera_kinetics(ct_reaction[i], species_list)
 
+################################################################################
+
+cdef class ArrheniusChargeTransfer(KineticsModel):
+
+    """
+    A kinetics model for surface charge transfer reactions
+
+    It is very similar to the :class:`SurfaceArrhenius`, but the Ea is potential-dependent
+
+
+    The attributes are:
+
+    =============== =============================================================
+    Attribute       Description
+    =============== =============================================================
+    `A`             The preexponential factor
+    `T0`            The reference temperature
+    `n`             The temperature exponent
+    `Ea`            The activation energy
+    `electrons`     The stochiometry coeff for electrons (negative if reactant, positive if product)
+    `V0`            The reference potential
+    `alpha`         The charge transfer coefficient
+    `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `solute`        The transition state solute data
+    `comment`       Information about the model (e.g. its source)
+    =============== =============================================================
+
+    """
+
+    def __init__(self, A=None, n=0.0, Ea=None, V0=None, alpha=0.5, electrons=-1, T0=(1.0, "K"), Tmin=None, Tmax=None,
+                Pmin=None, Pmax=None, solute=None, uncertainty=None, comment=''):
+
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, solute=solute, uncertainty=uncertainty,
+                 comment=comment)
+
+        self.alpha = alpha
+        self.A = A
+        self.n = n
+        self.Ea = Ea
+        self.T0 = T0
+        self.electrons = electrons
+        self.V0 = V0
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        Arrhenius object.
+        """
+        string = 'ArrheniusChargeTransfer(A={0!r}, n={1!r}, Ea={2!r}, V0={3!r}, alpha={4!r}, electrons={5!r}, T0={6!r}'.format(
+            self.A, self.n, self.Ea, self.V0, self.alpha, self.electrons, self.T0)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.solute: string += ', solute={0!r}'.format(self.solute)
+        if self.uncertainty: string += ', uncertainty={0!r}'.format(self.uncertainty)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling a ArrheniusChargeTransfer object.
+        """
+        return (ArrheniusChargeTransfer, (self.A, self.n, self.Ea, self.V0, self.alpha, self.electrons, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
+                            self.solute, self.uncertainty, self.comment))
+
+    property A:
+        """The preexponential factor."""
+        def __get__(self):
+            return self._A
+        def __set__(self, value):
+            self._A = quantity.SurfaceRateCoefficient(value)
+
+    property n:
+        """The temperature exponent."""
+        def __get__(self):
+            return self._n
+        def __set__(self, value):
+            self._n = quantity.Dimensionless(value)
+
+    property Ea:
+        """The activation energy."""
+        def __get__(self):
+            return self._Ea
+        def __set__(self, value):
+            self._Ea = quantity.Energy(value)
+
+    property T0:
+        """The reference temperature."""
+        def __get__(self):
+            return self._T0
+        def __set__(self, value):
+            self._T0 = quantity.Temperature(value)
+
+    property V0:
+        """The reference potential."""
+        def __get__(self):
+            return self._V0
+        def __set__(self, value):
+            self._V0 = quantity.Potential(value)
+
+    property electrons:
+        """The number of electrons transferred."""
+        def __get__(self):
+            return self._electrons
+        def __set__(self, value):
+            self._electrons = quantity.Dimensionless(value)
+
+    property alpha:
+        """The charge transfer coefficient."""
+        def __get__(self):
+            return self._alpha
+        def __set__(self, value):
+            self._alpha = quantity.Dimensionless(value)
+
+    cpdef double get_activation_energy_from_potential(self, double V=0.0, bint non_negative=True):
+        """
+        Return the effective activation energy (in J/mol) at specificed potential (in Volts).
+        """
+        cdef double  electrons, alpha, Ea, V0
+
+        electrons = self._electrons.value_si
+        alpha = self._alpha.value_si
+        Ea = self._Ea.value_si
+        V0 = self._V0.value_si
+
+        Ea -= alpha * electrons * constants.F * (V-V0)
+
+        if non_negative is True:
+            if Ea < 0:
+                Ea = 0.0
+
+        return Ea
+
+    cpdef double get_rate_coefficient(self, double T, double V=0.0) except -1:
+        """
+        Return the rate coefficient in the appropriate combination of m^2,
+        mol, and s at temperature `T` in K.
+        """
+        cdef double A, n, V0, T0, Ea
+
+        A = self._A.value_si
+        n = self._n.value_si
+        V0 = self._V0.value_si
+        T0 = self._T0.value_si
+
+        if V != V0:
+            Ea = self.get_activation_energy_from_potential(V)
+        else:
+            Ea = self._Ea.value_si
+
+        return A * (T / T0) ** n * exp(-Ea / (constants.R * T))
+
+    cpdef change_t0(self, double T0):
+        """
+        Changes the reference temperature used in the exponent to `T0` in K,
+        and adjusts the preexponential factor accordingly.
+        """
+        self._A.value_si /= (self._T0.value_si / T0) ** self._n.value_si
+        self._T0.value_si = T0
+
+    cpdef change_v0(self, double V0):
+        """
+        Changes the reference potential to `V0` in volts, and adjusts the
+        activation energy `Ea` accordingly.
+        """
+
+        self._Ea.value_si = self.get_activation_energy_from_potential(V0)
+        self._V0.value_si = V0
+
+    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=1,
+                      np.ndarray weights=None, bint three_params=False):
+        """
+        Fit the Arrhenius parameters to a set of rate coefficient data `klist`
+        in units of `kunits` corresponding to a set of temperatures `Tlist` in
+        K. A linear least-squares fit is used, which guarantees that the
+        resulting parameters provide the best possible approximation to the
+        data.
+        """
+        import scipy.stats
+        if not all(np.isfinite(klist)):
+            raise  ValueError("Rates must all be finite, not inf or NaN")
+        if any(klist<0):
+            if not all(klist<0):
+                raise ValueError("Rates must all be positive or all be negative.")
+            rate_sign_multiplier = -1
+            klist = -1 * klist
+        else:
+            rate_sign_multiplier = 1
+
+        assert len(Tlist) == len(klist), "length of temperatures and rates must be the same"
+        if len(Tlist) < 3 + three_params:
+            raise KineticsError('Not enough degrees of freedom to fit this Arrhenius expression')
+        if three_params:
+            A = np.zeros((len(Tlist), 3), np.float64)
+            A[:, 0] = np.ones_like(Tlist)
+            A[:, 1] = np.log(Tlist / T0)
+            A[:, 2] = -1.0 / constants.R / Tlist
+        else:
+            A = np.zeros((len(Tlist), 2), np.float64)
+            A[:, 0] = np.ones_like(Tlist)
+            A[:, 1] = -1.0 / constants.R / Tlist
+        b = np.log(klist)
+        if weights is not None:
+            for n in range(b.size):
+                A[n, :] *= weights[n]
+                b[n] *= weights[n]
+        x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
+
+        # Determine covarianace matrix to obtain parameter uncertainties
+        count = klist.size
+        cov = residues[0] / (count - 3) * np.linalg.inv(np.dot(A.T, A))
+        t = scipy.stats.t.ppf(0.975, count - 3)
+
+        if not three_params:
+            x = np.array([x[0], 0, x[1]])
+            cov = np.array([[cov[0, 0], 0, cov[0, 1]], [0, 0, 0], [cov[1, 0], 0, cov[1, 1]]])
+
+        self.A = (rate_sign_multiplier * exp(x[0]), kunits)
+        self.n = x[1]
+        self.Ea = (x[2] * 0.001, "kJ/mol")
+        self.T0 = (T0, "K")
+        self.Tmin = (np.min(Tlist), "K")
+        self.Tmax = (np.max(Tlist), "K")
+        self.solute = None,
+        self.comment = 'Fitted to {0:d} data points; dA = *|/ {1:g}, dn = +|- {2:g}, dEa = +|- {3:g} kJ/mol'.format(
+            len(Tlist),
+            exp(sqrt(cov[0, 0])),
+            sqrt(cov[1, 1]),
+            sqrt(cov[2, 2]) * 0.001,
+        )
+
+        return self
+
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
+        and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
+        range if it's Arrhenius.) Otherwise returns ``False``.
+        """
+        if not isinstance(other_kinetics, ArrheniusChargeTransfer):
+            return False
+        if not KineticsModel.is_identical_to(self, other_kinetics):
+            return False
+        if (not self.A.equals(other_kinetics.A) or not self.n.equals(other_kinetics.n)
+                or not self.Ea.equals(other_kinetics.Ea) or not self.T0.equals(other_kinetics.T0)
+                or not self.alpha.equals(other_kinetics.alpha) or not self.electrons.equals(other_kinetics.electrons)
+                or not self.V0.equals(other_kinetics.V0)):
+            return False
+
+        return True
+
+    cpdef change_rate(self, double factor):
+        """
+        Changes A factor in Arrhenius expression by multiplying it by a ``factor``.
+        """
+        self._A.value_si *= factor
 def get_w0(actions, rxn):
     """
     calculates the w0 for Blower Masel kinetics by calculating wf (total bond energy of bonds formed)
