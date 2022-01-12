@@ -372,8 +372,13 @@ class Reactor:
         """
         Run edge analysis of the reactor system
         """
-        core_react, core_domains, core_interfaces, core_p = self.generate_reactor(self.core_phase_system)
+
+        # We have to build the edge phase first, because the efficiencies dictionary in any kinetics that has
+        # efficiencies gets re-written every time we build a phase. If we build the edge phase later, the
+        # nameefficiencies will contain edge species, and the efficienies dictionary will have edge species index,
+        # which ultimately cause the core simulation to crash.
         edge_react, edge_domains, edge_interfaces, edge_p = self.generate_reactor(self.edge_phase_system)
+        core_react, core_domains, core_interfaces, core_p = self.generate_reactor(self.core_phase_system)
 
         terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x = rms.selectobjects(core_react,
                                                 edge_domains, edge_interfaces, core_domains, core_interfaces, core_p, edge_p, model_settings.tol_move_to_core,
