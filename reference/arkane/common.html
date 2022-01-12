@@ -157,6 +157,27 @@ if its extension is also in file_extensions_to_delete.</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="arkane.common.convert_imaginary_freq_to_negative_float">
+<span class="sig-prename descclassname"><span class="pre">arkane.common.</span></span><span class="sig-name descname"><span class="pre">convert_imaginary_freq_to_negative_float</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.convert_imaginary_freq_to_negative_float" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Convert a string representation of an imaginary frequency into a negative float representation, e.g.:</dt><dd><p>‘635.0i’ -&gt; -635.0
+‘500.0’ -&gt; 500.0</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>freq</strong> (<em>str</em>) – The imaginary frequency representation.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A float representation of the frequency value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="arkane.common.get_center_of_mass">
 <span class="sig-prename descclassname"><span class="pre">arkane.common.</span></span><span class="sig-name descname"><span class="pre">get_center_of_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numbers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.get_center_of_mass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the 3D position of the center of mass of the current geometry.
@@ -361,7 +382,7 @@ Search for knows phrases which were replace, and fix the format on the fly.</p>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
+        &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
 <script type="text/javascript">

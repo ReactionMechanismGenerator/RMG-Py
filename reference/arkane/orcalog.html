@@ -85,7 +85,8 @@ Should be implemented by the relevant subclass.</p>
 <dt class="sig sig-object py" id="arkane.ess.OrcaLog.get_T1_diagnostic">
 <span class="sig-name descname"><span class="pre">get_T1_diagnostic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the T1 diagnostic from output log.
-If multiple occurrences exist, returns the last occurrence</p>
+If multiple occurrences exist, returns the last occurrence.
+T1 diagnostic only available in Coupled Cluster calculations.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -115,13 +116,10 @@ and the third element is the point group identified.</p>
 <dt class="sig sig-object py" id="arkane.ess.OrcaLog.load_conformer">
 <span class="sig-name descname"><span class="pre">load_conformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin_multiplicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optical_isomers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_conformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the molecular degree of freedom data from a log file created as
-the result of a Orca “Freq” quantum chemistry calculation.</p>
-<p>CAUTION: The rotational entropy is not quite correctly treated here
-because it includes a symmetry number that is not yet correctly
-implemented in ORCA. Orca does not provide Rotational temperatures;
-only E(rot) and E(trans) energies.</p>
-<p>Consider using another supported software (such as Gaussian or QChem)
-to calculate the frequencies and derive E0</p>
+the result of an Orca “Freq” quantum chemistry calculation. As
+Orca’s guess of the external symmetry number is not always correct,
+you can use the <cite>symmetry</cite> parameter to substitute your own value; if
+not provided, the value in the Orca log file will be adopted.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -135,7 +133,11 @@ the returned value.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arkane.ess.OrcaLog.load_force_constant_matrix">
 <span class="sig-name descname"><span class="pre">load_force_constant_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_force_constant_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>not implemented in orca</p>
+<dd><p>Return the force constant matrix from the Orca log file.
+Orca prints the Hessian matrix as a ‘.hess’ file which must be located
+in the same folder as the log file for this method to parse it.
+The units of the returned force constants are J/m^2.
+If no force constant matrix can be found, <code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -149,8 +151,8 @@ last is returned.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arkane.ess.OrcaLog.load_negative_frequency">
 <span class="sig-name descname"><span class="pre">load_negative_frequency</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.OrcaLog.load_negative_frequency" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the imaginary frequency from a transition state frequency
-calculation in cm^-1.</p>
+<dd><p>Return the imaginary frequency from a transition state frequency calculation in cm^-1.
+Since there can be many imaginary frequencies, only the first one is returned.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -271,7 +273,7 @@ calculation in cm^-1.</p>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2021, William H. Green, Richard H. West, and the RMG Team.
+        &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
     </div>
 <script type="text/javascript">
