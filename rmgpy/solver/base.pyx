@@ -183,6 +183,10 @@ cdef class ReactionSystem(DASx):
         self.bimolecular_threshold = None
         self.trimolecular_threshold = None
 
+        # number of allowed model resurrections
+        self.retry = 0
+        self.max_retries = 5
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -617,6 +621,8 @@ cdef class ReactionSystem(DASx):
         cdef np.ndarray[np.float64_t, ndim=1] mole_sens, dVdk, norm_sens
         cdef list time_array, norm_sens_array, new_surface_reactions, new_surface_reaction_inds, new_objects, new_object_inds
 
+
+
         zero_production = False
         zero_consumption = False
         pdep_networks = pdep_networks or []
@@ -734,8 +740,14 @@ cdef class ReactionSystem(DASx):
                     if np.isnan(self.y).any():
                         raise DASxError("nans in moles")
                 except DASxError as e:
+                    self.retry += 1
                     logging.error("Trying to step from time {0} to {1} resulted in a solver (DASPK) error: "
                                   "{2!s}".format(prev_time, step_time, e))
+
+                    if self.retry > self.max_retries:
+                        raise RuntimeError(
+                            'Reached the maximum permitted number of retries due to solver errors ({0}), ending simulation'.format(self.max_retries))
+
 
                     logging.info('Resurrecting Model...')
 
@@ -746,20 +758,23 @@ cdef class ReactionSystem(DASx):
                             conversion = 1 - (y_core_species[index] / y0[index])
 
                     if invalid_objects == []:
+                        
                         #species flux criterion
                         if len(edge_species_rate_ratios) > 0:
                             ind = np.argmax(edge_species_rate_ratios)
                             obj = edge_species[ind]
                             logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} was added to model core '
-                                         'in model resurrection process'.format(self.t, obj,edge_species_rates[ind]))
+                                            'in model resurrection process.'.format(self.t, obj, edge_species_rates[ind]))
                             invalid_objects.append(obj)
+
 
                         if total_div_accum_nums and len(total_div_accum_nums) > 0:  #if dynamics data available
                             ind = np.argmax(total_div_accum_nums)
                             obj = edge_reactions[ind]
                             logging.info('At time {0:10.4e} s, Reaction {1} at dynamics number {2} was added to model core '
-                                         'in model resurrection process'.format(self.t, obj,total_div_accum_nums[ind]))
+                                            'in model resurrection process.'.format(self.t, obj, total_div_accum_nums[ind]))
                             invalid_objects.append(obj)
+
 
                         if pdep_networks != [] and network_leak_rate_ratios != []:
                             ind = np.argmax(network_leak_rate_ratios)
@@ -768,6 +783,9 @@ cdef class ReactionSystem(DASx):
                                          'was sent for exploring during model resurrection process'
                                          ''.format(self.t, obj.index, network_leak_rate_ratios[ind]))
                             invalid_objects.append(obj)
+                            
+                        logging.info('Retry # {0} of {1}'.format(
+                            self.retry, self.max_retries))
 
                     if invalid_objects != []:
                         return False, True, invalid_objects, surface_species, surface_reactions, self.t, conversion

@@ -955,6 +955,8 @@ Setting ``trimolecularProductReversible`` to ``False`` will not allow families w
 
 Setting ``saveSeedModulus`` to ``-1`` will only save the seed from the last iteration at the end of an RMG job. Alternatively, the seed can be saved every ``n`` iterations by setting ``saveSeedModulus`` to ``n``.
 
+Setting ``solverRetries`` to an integer establishes a limit on how many retries RMG will attempt after a solver error. By default this is 5.
+
 Species Constraints
 =====================
 

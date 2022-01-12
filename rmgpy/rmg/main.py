@@ -146,6 +146,7 @@ class RMG(util.Subject):
     `ml_settings`                       Settings for ML estimation
     `walltime`                          The maximum amount of CPU time in the form DD:HH:MM:SS to expend on this job; used to stop gracefully so we can still get profiling information
     `max_iterations`                    The maximum number of RMG iterations allowed, after which the job will terminate
+    `solver_retries`                    the maximum allowable DASPK solver errors that RMG will try to resurrect. Default is 5.
     `kinetics_datastore`                ``True`` if storing details of each kinetic database entry in text file, ``False`` otherwise
     ----------------------------------- ------------------------------------------------
     `initialization_time`               The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
@@ -227,6 +228,7 @@ class RMG(util.Subject):
         self.walltime = '00:00:00:00'
         self.save_seed_modulus = -1
         self.max_iterations = None
+        self.solver_retries = None
         self.initialization_time = 0
         self.kinetics_datastore = None
         self.restart = False
@@ -269,7 +271,6 @@ class RMG(util.Subject):
             self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
             self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
         self.reaction_model.coverage_dependence = self.coverage_dependence
-            
         self.reaction_model.verbose_comments = self.verbose_comments
         self.reaction_model.save_edge_species = self.save_edge_species
 
@@ -278,6 +279,7 @@ class RMG(util.Subject):
 
         for reaction_system in self.reaction_systems:
             self.reaction_model.reaction_systems.append(reaction_system)
+            reaction_system.max_retries = self.solver_retries
 
     def load_thermo_input(self, path=None):
         """

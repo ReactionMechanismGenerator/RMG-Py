@@ -985,7 +985,7 @@ def pressure_dependence(
 def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=False, units='si', saveRestartPeriod=None,
             generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False,
             saveEdgeSpecies=False, keepIrreversible=False, trimolecularProductReversible=True, wallTime='00:00:00:00',
-            saveSeedModulus=-1):
+            saveSeedModulus=-1, solverRetries=5):
     if saveRestartPeriod:
         logging.warning("`saveRestartPeriod` flag was set in the input file, but this feature has been removed. Please "
                         "remove this line from the input file. This will throw an error after RMG-Py 3.1. For "
@@ -1010,6 +1010,7 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
     rmg.trimolecular_product_reversible = trimolecularProductReversible
     rmg.walltime = wallTime
     rmg.save_seed_modulus = saveSeedModulus
+    rmg.solver_retries = solverRetries
 
 
 def generated_species_constraints(**kwargs):
@@ -1440,6 +1441,7 @@ def save_input_file(path, rmg):
     f.write('    trimolecularProductReversible = {0},\n'.format(rmg.trimolecular_product_reversible))
     f.write('    verboseComments = {0},\n'.format(rmg.verbose_comments))
     f.write('    wallTime = {0},\n'.format(rmg.walltime))
+    f.write('    solverRetries = {0}\n'.format(rmg.solver_retries))
     f.write(')\n\n')
 
     f.close()
