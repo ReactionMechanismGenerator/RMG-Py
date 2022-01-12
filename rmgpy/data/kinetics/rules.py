@@ -750,7 +750,13 @@ class KineticsRules(Database):
         kinetics.A.value_si *= degeneracy
         if degeneracy > 1:
             kinetics.comment += "\n"
-            kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
+            # Ensure sticking coefficient reactions do not exceed 1
+            if isinstance(kinetics, StickingCoefficientBEP) and kinetics.A.value_si > 1:
+                kinetics.A.value_si = 1
+                kinetics.comment += "Reaction path degeneracy ({0}) resulted in sticking coefficient > 1. resetting to 1".format(
+                    degeneracy)
+            else:
+                kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
 
         kinetics.comment += "\n"
         kinetics.comment += "family: {0}".format(self.label.replace('/rules', ''))
