@@ -48,8 +48,8 @@ def register_ess_adapter(ess: str,
     A register for the ESS adapters.
 
     Args:
-        ess: A string representation for an ESS adapter
-        ess_class: The ESS adapter class
+        ess: A string representation for an ESS adapter.
+        ess_class: The ESS adapter class.
 
     Raises:
         TypeError: If ``ess_class`` is not an ``ESSAdapter`` instance.
@@ -65,7 +65,7 @@ def ess_factory(fullpath: str,
     """
     A factory generating the ESS adapter corresponding to ``ess_adapter``.
     Given a path to the log file of a QM software, determine whether it is
-    Gaussian, Molpro, QChem, Orca, or TeraChem
+    Gaussian, Molpro, Orca, Psi4, QChem, or TeraChem.
 
     Args:
         fullpath (str): The disk location of the output file of interest.
@@ -81,26 +81,29 @@ def ess_factory(fullpath: str,
         ess_name = 'TeraChemLog'
     else:
         with open(fullpath, 'r') as f:
-            line = f.readline()
+            line = f.readline().lower()
             while ess_name is None and line != '':
-                if 'gaussian' in line.lower():
+                if 'gaussian' in line:
                     ess_name = 'GaussianLog'
                     break
-                elif 'molpro' in line.lower():
+                elif 'molpro' in line:
                     ess_name = 'MolproLog'
                     break
-                elif 'O   R   C   A' in line or 'orca' in line.lower():
+                elif 'o   r   c   a' in line or 'orca' in line:
                     ess_name = 'OrcaLog'
                     break
-                elif 'qchem' in line.lower():
+                elif 'psi4' in line or 'rob parrish' in line:
+                    ess_name = 'Psi4Log'
+                    break
+                elif 'qchem' in line:
                     ess_name = 'QChemLog'
                     break
-                elif 'terachem' in line.lower():
+                elif 'terachem' in line:
                     ess_name = 'TeraChemLog'
                     break
-                line = f.readline()
+                line = f.readline().lower()
     if ess_name is None:
         raise InputError(f'The file at {fullpath} could not be identified as a '
-                         f'Gaussian, Molpro, Orca, QChem, or TeraChem log file.')
+                         f'Gaussian, Molpro, Orca, Psi4, QChem, or TeraChem log file.')
 
     return _registered_ess_adapters[ess_name](path=fullpath, check_for_errors=check_for_errors)
