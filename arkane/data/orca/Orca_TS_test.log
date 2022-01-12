@@ -112,7 +112,7 @@ INFO   : the flag for use of LIBINT has been found!
 ================================================================================
                                        INPUT FILE
 ================================================================================
-NAME = TS_test.inp
+NAME = Orca_TS_test.inp
 |  1> ! PM3 OptTS NumFreq
 |  2> 
 |  3> *xyz -1 1
@@ -338,7 +338,7 @@ Hamiltonian:
 
 
 General Settings:
- Integral files         IntName         .... TS_test
+ Integral files         IntName         .... Orca_TS_test
  Hartree-Fock type      HFTyp           .... RHF
  Total Charge           Charge          ....   -1
  Multiplicity           Mult            ....    1
@@ -391,8 +391,8 @@ Smallest eigenvalue                        ... 2.028e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.006 sec
-Total time needed                          ...    0.006 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.000 sec
 
 -------------------------------
 INITIAL GUESS: EXTENDED HUECKEL
@@ -466,9 +466,9 @@ SCF CONVERGENCE
   Last Orbital Gradient      ...    1.6816e-06  Tolerance :   1.0000e-05
   Last Orbital Rotation      ...    3.8050e-06  Tolerance :   1.0000e-05
 
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 ----------------
 ORBITAL ENERGIES
 ----------------
@@ -588,18 +588,18 @@ TIMINGS
 
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
-Total time                  ....       0.443 sec
-Sum of individual times     ....       0.195 sec  ( 44.1%)
+Total time                  ....       0.109 sec
+Sum of individual times     ....       0.101 sec  ( 93.3%)
 
-Fock matrix formation       ....       0.091 sec  ( 20.6%)
-Diagonalization             ....       0.003 sec  (  0.7%)
-Density matrix formation    ....       0.000 sec  (  0.0%)
-Population analysis         ....       0.020 sec  (  4.4%)
-Initial guess               ....       0.003 sec  (  0.7%)
+Fock matrix formation       ....       0.094 sec  ( 87.0%)
+Diagonalization             ....       0.002 sec  (  2.1%)
+Density matrix formation    ....       0.000 sec  (  0.1%)
+Population analysis         ....       0.001 sec  (  1.0%)
+Initial guess               ....       0.000 sec  (  0.2%)
 Orbital Transformation      ....       0.000 sec  (  0.0%)
 Orbital Orthonormalization  ....       0.000 sec  (  0.0%)
-DIIS solution               ....       0.073 sec  ( 16.4%)
-SOSCF solution              ....       0.006 sec  (  1.3%)
+DIIS solution               ....       0.001 sec  (  1.4%)
+SOSCF solution              ....       0.002 sec  (  1.5%)
 
 -------------------------   --------------------
 FINAL SINGLE POINT ENERGY       -33.865529214590
@@ -843,8 +843,8 @@ Smallest eigenvalue                        ... 2.050e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.002 sec
-Total time needed                          ...    0.002 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.001 sec
 
 
  InCore treatment chosen:
@@ -880,9 +880,9 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -33.86430281 Eh            -921.49453 eV
   Last Energy change         ...   -1.1005e-10  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    3.8711e-06  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 -------------------------   --------------------
@@ -1126,8 +1126,8 @@ Smallest eigenvalue                        ... 2.038e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.004 sec
-Total time needed                          ...    0.005 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.001 sec
 
 
  InCore treatment chosen:
@@ -1163,9 +1163,9 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -33.86153600 Eh            -921.41924 eV
   Last Energy change         ...   -5.6153e-10  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    1.2414e-05  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 -------------------------   --------------------
@@ -1410,8 +1410,8 @@ Smallest eigenvalue                        ... 2.021e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.005 sec
-Total time needed                          ...    0.005 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.001 sec
 
 
  InCore treatment chosen:
@@ -1452,9 +1452,9 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -33.85738257 Eh            -921.30622 eV
   Last Energy change         ...   -1.6087e-09  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    1.2148e-06  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 -------------------------   --------------------
@@ -1700,8 +1700,8 @@ Smallest eigenvalue                        ... 2.034e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.004 sec
-Total time needed                          ...    0.005 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.000 sec
 
 
  InCore treatment chosen:
@@ -1742,9 +1742,9 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -33.85206496 Eh            -921.16152 eV
   Last Energy change         ...   -4.5457e-09  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    6.1819e-06  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 -------------------------   --------------------
@@ -1990,8 +1990,8 @@ Smallest eigenvalue                        ... 2.063e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.004 sec
-Total time needed                          ...    0.004 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.000 sec
 
 
  InCore treatment chosen:
@@ -2033,9 +2033,9 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -33.84737272 Eh            -921.03384 eV
   Last Energy change         ...   -2.7541e-10  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    9.7667e-06  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 -------------------------   --------------------
@@ -2281,8 +2281,8 @@ Smallest eigenvalue                        ... 2.102e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.002 sec
-Total time needed                          ...    0.002 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.001 sec
 
 
  InCore treatment chosen:
@@ -2324,9 +2324,9 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -33.85160227 Eh            -921.14893 eV
   Last Energy change         ...   -3.9527e-10  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    1.1857e-05  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 -------------------------   --------------------
@@ -2573,8 +2573,8 @@ Smallest eigenvalue                        ... 2.089e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.005 sec
-Total time needed                          ...    0.005 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.001 sec
 
 
  InCore treatment chosen:
@@ -2616,9 +2616,9 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -33.85291661 Eh            -921.18469 eV
   Last Energy change         ...   -2.0994e-10  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    8.6586e-06  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 -------------------------   --------------------
@@ -2864,8 +2864,8 @@ Smallest eigenvalue                        ... 2.070e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.004 sec
-Total time needed                          ...    0.004 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.001 sec
 
 
  InCore treatment chosen:
@@ -2906,9 +2906,9 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -33.85582332 Eh            -921.26379 eV
   Last Energy change         ...   -4.5328e-09  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    5.0499e-06  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 -------------------------   --------------------
@@ -3152,8 +3152,8 @@ Smallest eigenvalue                        ... 2.073e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.105 sec
-Total time needed                          ...    0.106 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.001 sec
 
 
  InCore treatment chosen:
@@ -3189,9 +3189,9 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -33.86119084 Eh            -921.40985 eV
   Last Energy change         ...   -5.6119e-10  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    1.5774e-05  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 -------------------------   --------------------
@@ -3438,8 +3438,8 @@ Smallest eigenvalue                        ... 2.032e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.002 sec
-Total time needed                          ...    0.003 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.001 sec
 
 
  InCore treatment chosen:
@@ -3480,9 +3480,9 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -33.86193943 Eh            -921.43022 eV
   Last Energy change         ...   -6.8380e-09  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    5.9102e-06  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 -------------------------   --------------------
@@ -3728,8 +3728,8 @@ Smallest eigenvalue                        ... 2.030e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.001 sec
-Total time needed                          ...    0.002 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.001 sec
 
 
  InCore treatment chosen:
@@ -3765,9 +3765,9 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -33.86460919 Eh            -921.50286 eV
   Last Energy change         ...   -2.7204e-09  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    2.5781e-05  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 -------------------------   --------------------
@@ -4011,8 +4011,8 @@ Smallest eigenvalue                        ... 2.024e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.004 sec
-Total time needed                          ...    0.005 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.000 sec
 
 
  InCore treatment chosen:
@@ -4049,9 +4049,9 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -33.86538341 Eh            -921.52393 eV
   Last Energy change         ...   -1.0160e-09  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    2.8442e-06  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 -------------------------   --------------------
@@ -4293,8 +4293,8 @@ Smallest eigenvalue                        ... 2.025e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.005 sec
-Total time needed                          ...    0.005 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.001 sec
 
 
  InCore treatment chosen:
@@ -4328,9 +4328,9 @@ ITER      Energy       Delta-E        Grad      Rot      Max-DP    RMS-DP
 Total Energy       :          -33.86540870 Eh            -921.52462 eV
   Last Energy change         ...   -8.3437e-09  Tolerance :   1.0000e-08
   Last MAX-Density change    ...    1.3121e-05  Tolerance :   1.0000e-07
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
 -------------------------   --------------------
@@ -4614,7 +4614,7 @@ Hamiltonian:
 
 
 General Settings:
- Integral files         IntName         .... TS_test
+ Integral files         IntName         .... Orca_TS_test
  Hartree-Fock type      HFTyp           .... RHF
  Total Charge           Charge          ....   -1
  Multiplicity           Mult            ....    1
@@ -4667,13 +4667,13 @@ Smallest eigenvalue                        ... 2.026e-01
 Time for diagonalization                   ...    0.000 sec
 Threshold for overlap eigenvalues          ... 1.000e-08
 Number of eigenvalues below threshold      ... 0
-Time for construction of square roots      ...    0.005 sec
-Total time needed                          ...    0.006 sec
+Time for construction of square roots      ...    0.000 sec
+Total time needed                          ...    0.001 sec
 
 ---------------------
 INITIAL GUESS: MOREAD
 ---------------------
-Guess MOs are being read from file: TS_test.gbw
+Guess MOs are being read from file: Orca_TS_test.gbw
 Input Geometry matches current geometry (good)
 Input basis set matches current basis set (good)
                       ------------------
@@ -4732,9 +4732,9 @@ SCF CONVERGENCE
   Last Orbital Gradient      ...    1.2062e-06  Tolerance :   1.0000e-05
   Last Orbital Rotation      ...    2.5529e-06  Tolerance :   1.0000e-05
 
-             **** THE GBW FILE WAS UPDATED (TS_test.gbw) ****
-             **** DENSITY FILE WAS UPDATED (TS_test.scfp.tmp) ****
-             **** ENERGY FILE WAS UPDATED (TS_test.en.tmp) ****
+             **** THE GBW FILE WAS UPDATED (Orca_TS_test.gbw) ****
+             **** DENSITY FILE WAS UPDATED (Orca_TS_test.scfp.tmp) ****
+             **** ENERGY FILE WAS UPDATED (Orca_TS_test.en.tmp) ****
 ----------------
 ORBITAL ENERGIES
 ----------------
@@ -4854,18 +4854,18 @@ TIMINGS
 
 Total SCF time: 0 days 0 hours 0 min 0 sec 
 
-Total time                  ....       0.218 sec
-Sum of individual times     ....       0.070 sec  ( 32.0%)
+Total time                  ....       0.055 sec
+Sum of individual times     ....       0.049 sec  ( 89.3%)
 
-Fock matrix formation       ....       0.044 sec  ( 20.4%)
-Diagonalization             ....       0.000 sec  (  0.1%)
-Density matrix formation    ....       0.000 sec  (  0.0%)
-Population analysis         ....       0.016 sec  (  7.2%)
-Initial guess               ....       0.004 sec  (  1.7%)
+Fock matrix formation       ....       0.046 sec  ( 82.5%)
+Diagonalization             ....       0.000 sec  (  0.5%)
+Density matrix formation    ....       0.000 sec  (  0.1%)
+Population analysis         ....       0.001 sec  (  1.9%)
+Initial guess               ....       0.000 sec  (  0.6%)
 Orbital Transformation      ....       0.000 sec  (  0.0%)
 Orbital Orthonormalization  ....       0.000 sec  (  0.0%)
 DIIS solution               ....       0.000 sec  (  0.0%)
-SOSCF solution              ....       0.006 sec  (  2.6%)
+SOSCF solution              ....       0.002 sec  (  3.6%)
 
 -------------------------   --------------------
 FINAL SINGLE POINT ENERGY       -33.865407694733
@@ -4890,8 +4890,8 @@ FINAL SINGLE POINT ENERGY       -33.865407694733
 Dipole Moment Calculation                       ... on
 Quadrupole Moment Calculation                   ... off
 Polarizability Calculation                      ... off
-GBWName                                         ... TS_test.gbw
-Electron density file                           ... TS_test.scfp.tmp
+GBWName                                         ... Orca_TS_test.gbw
+Electron density file                           ... Orca_TS_test.scfp.tmp
 The origin for moment calculation is the CENTER OF MASS  = (-2.855722, -0.827998  0.011907)
 
 -------------
@@ -4920,10 +4920,10 @@ Raman-spectrum generation      ... off
 Surface Crossing Hessian       ... off
 
 The output will be reduced. Please look at the following files:
-SCF program output             ... >TS_test.lastscf
-Integral program output        ... >TS_test.lastint
-Gradient program output        ... >TS_test.lastgrad
-Dipole moment program output   ... >TS_test.lastmom
+SCF program output             ... >Orca_TS_test.lastscf
+Integral program output        ... >Orca_TS_test.lastint
+Gradient program output        ... >Orca_TS_test.lastgrad
+Dipole moment program output   ... >Orca_TS_test.lastmom
 
 
          <<<Energy and Gradient at the input geometry>>>
@@ -5216,14 +5216,14 @@ For completeness - the Gibbs free enthalpy minus the electronic energy
 G-E(el)                           ...      0.00956462 Eh      6.00 kcal/mol
 
 
-Total Time for Numerical Frequencies  :        18.913 sec
+Total Time for Numerical Frequencies  :        15.883 sec
 
 Timings for individual modules:
 
-Sum of individual times         ...        6.739 sec (=   0.112 min)
-STO integral calculation        ...        0.747 sec (=   0.012 min)  11.1 %
-SCF iterations                  ...        4.850 sec (=   0.081 min)  72.0 %
-SCF Gradient evaluation         ...        0.391 sec (=   0.007 min)   5.8 %
-Geometry relaxation             ...        0.751 sec (=   0.013 min)  11.2 %
+Sum of individual times         ...        2.739 sec (=   0.046 min)
+STO integral calculation        ...        0.441 sec (=   0.007 min)  16.1 %
+SCF iterations                  ...        1.566 sec (=   0.026 min)  57.2 %
+SCF Gradient evaluation         ...        0.307 sec (=   0.005 min)  11.2 %
+Geometry relaxation             ...        0.425 sec (=   0.007 min)  15.5 %
                              ****ORCA TERMINATED NORMALLY****
-TOTAL RUN TIME: 0 days 0 hours 0 minutes 26 seconds 770 msec
+TOTAL RUN TIME: 0 days 0 hours 0 minutes 19 seconds 73 msec

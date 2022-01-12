@@ -62,7 +62,7 @@ class GaussianLog(ESSAdapter):
         Checks for common errors in a Gaussian log file.
         If any are found, this method will raise an error and crash.
         """
-        with open(os.path.join(self.path), 'r') as f:
+        with open(self.path, 'r') as f:
             lines = f.readlines()[-100:]
             error = None
             terminated = False
@@ -331,6 +331,8 @@ class GaussianLog(ESSAdapter):
                     # CBS-QB3 calculation without opt and freq calculation
                     # Keyword in Gaussian CBS-QB3(SP), No zero-point or thermal energies are included.
                     e_elect = float(line.split()[1]) * constants.E_h * constants.Na
+                elif 'CBS-4 (0 K)=' in line:
+                    e0_composite = float(line.split()[3]) * constants.E_h * constants.Na
                 elif 'G3(0 K)' in line:
                     e0_composite = float(line.split()[2]) * constants.E_h * constants.Na
                 elif 'G3 Energy=' in line:
@@ -595,5 +597,6 @@ class GaussianLog(ESSAdapter):
         except IndexError:
             raise LogError(f'Unable to find imaginary frequency in Gaussian output file {self.path}')
         return frequency
+
 
 register_ess_adapter("GaussianLog", GaussianLog)

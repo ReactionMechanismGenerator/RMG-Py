@@ -99,7 +99,7 @@ class GaussianLogTest(unittest.TestCase):
 
     def test_gaussian_energies(self):
         """
-        test parsing double hydride, MP2, CCSD, CCSD(T) form Gaussian log
+        test parsing double hydride, MP2, CCSD, CCSD(T), cbs-qb3, cbs-4m, g4, g4mp2 form Gaussian log
         """
         log_doublehybrid = GaussianLog(os.path.join(self.data_path, 'B2PLYP.LOG'))
         log_mp2 = GaussianLog(os.path.join(self.data_path, 'UMP2_C_ATOM.LOG'))
@@ -107,6 +107,11 @@ class GaussianLogTest(unittest.TestCase):
         log_ccsdt = GaussianLog(os.path.join(self.data_path, 'UCCSDT_C_ATOM.LOG'))
         log_qb3 = GaussianLog(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                            '../examples/arkane/species/C2H5/', 'ethyl_cbsqb3.log'))
+        log_cbs4m = GaussianLog(os.path.join(self.data_path, 'cbs-4m_85_methanol.out'))
+        log_g4 = GaussianLog(os.path.join(self.data_path, 'g4_85_methanol.out'))
+        log_g4mp2 = GaussianLog(os.path.join(self.data_path, 'g4mp2_85_methanol.out'))
+        log_rocbsqb3 = GaussianLog(os.path.join(self.data_path, 'rocbs-qb3_85_methanol.out'))
+
 
         self.assertAlmostEqual(log_doublehybrid.load_energy() / constants.Na / constants.E_h, -0.40217794572194e+02,
                                delta=1e-6)
@@ -117,6 +122,14 @@ class GaussianLogTest(unittest.TestCase):
         self.assertAlmostEqual(log_ccsdt.load_energy() / constants.Na / constants.E_h, -0.37517454469e+02,
                                delta=1e-6)
         self.assertAlmostEqual(log_qb3.load_energy() / constants.Na / constants.E_h, -79.029798,
+                               delta=1e-6)
+        self.assertAlmostEqual(log_cbs4m.load_energy() / constants.Na / constants.E_h, -115.613180,
+                               delta=1e-6)
+        self.assertAlmostEqual(log_g4.load_energy() / constants.Na / constants.E_h, -115.698896,
+                               delta=1e-6)
+        self.assertAlmostEqual(log_g4mp2.load_energy() / constants.Na / constants.E_h, -115.617241,
+                               delta=1e-6)
+        self.assertAlmostEqual(log_rocbsqb3.load_energy() / constants.Na / constants.E_h, -115.590540,
                                delta=1e-6)
 
     def test_load_oxygen_from_gaussian_log(self):

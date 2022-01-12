@@ -479,4 +479,5 @@ class MolproLog(ESSAdapter):
         """Not implemented for Molpro"""
         raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for Molpro Logs')
 
+
 register_ess_adapter("MolproLog", MolproLog)

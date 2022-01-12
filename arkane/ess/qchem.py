@@ -401,4 +401,5 @@ class QChemLog(ESSAdapter):
         """Not implemented for QChem"""
         raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for QChem Logs')
 
+
 register_ess_adapter("QChemLog", QChemLog)
