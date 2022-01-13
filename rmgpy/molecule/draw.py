@@ -153,7 +153,7 @@ class MoleculeDrawer(object):
         png. If `path` is given, the drawing is saved to that location on disk. The
         `options` dict is an optional set of key-value pairs that can be used to
         control the generated drawing.
-        
+
         This function returns the Cairo surface and context used to create the
         drawing, as well as a bounding box for the molecule being drawn as the
         tuple (`left`, `top`, `width`, `height`).
@@ -195,7 +195,9 @@ class MoleculeDrawer(object):
         # Handle carbon monoxide special case
         if self.molecule.get_formula() == 'CO' and len(atoms_to_remove) == 0:
             # RDKit does not accept atom type O4tc
-            self.molecule.remove_atom(self.molecule.atoms[-1])
+            for atom in self.molecule.atoms:
+                if atom.symbol == 'O':
+                    self.molecule.remove_atom(atom)
             self.symbols = ['CO']
             self.molecule.atoms[0].charge = 0  # don't label the C as - if you're not drawing the O with a +
             self.coordinates = np.array([[0, 0]], np.float64)
