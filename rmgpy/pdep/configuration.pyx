@@ -334,7 +334,7 @@ cdef class Configuration(object):
                 # interpolation in the steepest descents algorithm
                 import scipy.interpolate
 
-                log_t_data = np.linspace(log(10.), log(10000.), 250.)
+                log_t_data = np.linspace(log(10.), log(10000.), 250)
                 t_data = np.exp(log_t_data)
                 q_data = np.ones_like(t_data)
                 for i in range(t_data.shape[0]):
