@@ -603,82 +603,78 @@ cdef class ArrheniusBM(KineticsModel):
         assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
 
         if Ts is None:
-            Ts = [300.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1100.0, 1200.0, 1500.0, 2000.0]
+            Ts = np.array([300.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1100.0, 1200.0, 1500.0, 2000.0])
         if w0 is None:
             #estimate w0
             w0s = get_w0s(recipe, rxns)
             w0 = sum(w0s) / len(w0s)
-
-        if len(rxns) == 1:
-            T = 1000.0
-            rxn = rxns[0]
-            dHrxn = rxn.get_enthalpy_of_reaction(T)
-            A = rxn.kinetics.A.value_si
-            n = rxn.kinetics.n.value_si
-            Ea = rxn.kinetics.Ea.value_si
+        self.w0 = (w0 * 0.001, 'kJ/mol')
+          
+        def kfcn(xs, lnA, n, E0):
+            T = xs[:,0]
+            dHrxn = xs[:,1]
+            self.E0 = (E0, 'J/mol')
+            Ea = np.array([self.get_activation_energy(dHrxn[i]) for i in range(len(dHrxn))])
+            return lnA + np.log(T ** n * np.exp(-Ea / (constants.R * T)))
             
-            def kfcn(E0):
-                Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
-                out = Ea - (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
-                return out
+        # get (T,dHrxn(T)) -> (Ln(k) mappings
+        xdata = []
+        ydata = []
+        sigmas = []
+        E0 = 0.0
+        lnA = 0.0
+        n = 0.0
+        for rxn in rxns:
+            # approximately correct the overall uncertainties to std deviations
+            s = rank_accuracy_map[rxn.rank].value_si/2.0
+            # Use BEP with alpha = 0.25 for inital guess of E0
+            E0 += rxn.kinetics._Ea.value_si - 0.25 * rxn.get_enthalpy_of_reaction(298)
+            lnA += np.log(rxn.kinetics.A.value_si)
+            n += rxn.kinetics.n.value_si
+            for T in Ts:
+                xdata.append([T, rxn.get_enthalpy_of_reaction(298)])
+                ydata.append(np.log(rxn.get_rate_coefficient(T)))
+                sigmas.append(s / (constants.R * T))
+        # Use the average of the E0s as intial guess
+        E0 /= len(rxns)
+        lnA /= len(rxns)
+        n /= len(rxns)
+        E0 = min(E0, w0)
+        if E0 < 0:
+            E0 = w0 / 100.0
 
-            if abs(dHrxn) > 4 * w0 / 10.0:
-                E0 = w0 / 10.0
-            else:
-                E0 = fsolve(kfcn, w0 / 10.0)[0]
+        xdata = np.array(xdata)
+        ydata = np.array(ydata)
 
-            self.Tmin = rxn.kinetics.Tmin
-            self.Tmax = rxn.kinetics.Tmax
-            self.comment = 'Fitted to {0} reaction at temperature: {1} K'.format(len(rxns), T)
-        else:
-            # define optimization function            
-            def kfcn(xs, lnA, n, E0):
-                T = xs[:,0]
-                dHrxn = xs[:,1]
-                Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
-                Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
-                Ea = np.where(dHrxn< -4.0*E0, 0.0, Ea)
-                Ea = np.where(dHrxn > 4.0*E0, dHrxn, Ea)
-                return lnA + np.log(T ** n * np.exp(-Ea / (8.314 * T)))
-              
-            # get (T,dHrxn(T)) -> (Ln(k) mappings
-            xdata = []
-            ydata = []
-            sigmas = []
-            for rxn in rxns:
-                # approximately correct the overall uncertainties to std deviations
-                s = rank_accuracy_map[rxn.rank].value_si/2.0
-                for T in Ts:
-                    xdata.append([T, rxn.get_enthalpy_of_reaction(T)])
-                    ydata.append(np.log(rxn.get_rate_coefficient(T)))
+        # fit parameters
+        boo = True
+        xtol = 1e-8
+        ftol = 1e-8
+        attempts = 0
+        while boo:
+            boo = False
+            try:
+                params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[lnA, n, E0], xtol=xtol, ftol=ftol)
+                lnA, n, E0 = params[0].tolist()
+                if abs(E0/self.w0.value_si) > 1 and attempts < 5:
+                    boo = True
+                    if attempts > 0:
+                        self.w0.value_si *= 1.25
+                    attempts += 1
+                    E0 = self.w0.value_si / 10.0
+            except RuntimeError:
+                if xtol < 1.0:
+                    boo = True
+                    xtol *= 10.0
+                    ftol *= 10.0
+                else:
+                    raise ValueError("Could not fit BM arrhenius to reactions with xtol<1.0")
 
-                    sigmas.append(s / (8.314 * T))
+        A = np.exp(lnA)
 
-            xdata = np.array(xdata)
-            ydata = np.array(ydata)
-
-            # fit parameters
-            boo = True
-            xtol = 1e-8
-            ftol = 1e-8
-            while boo:
-                boo = False
-                try:
-                    params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[1.0, 1.0, w0 / 10.0], xtol=xtol, ftol=ftol)
-                except RuntimeError:
-                    if xtol < 1.0:
-                        boo = True
-                        xtol *= 10.0
-                        ftol *= 10.0
-                    else:
-                        raise ValueError("Could not fit BM arrhenius to reactions with xtol<1.0")
-
-            lnA, n, E0 = params[0].tolist()
-            A = np.exp(lnA)
-
-            self.Tmin = (np.min(Ts), "K")
-            self.Tmax = (np.max(Ts), "K")
-            self.comment = 'Fitted to {0} reactions at temperatures: {1}'.format(len(rxns), Ts)
+        self.Tmin = (np.min(Ts), "K")
+        self.Tmax = (np.max(Ts), "K")
+        self.comment = 'Fitted to {0} reactions at temperatures: {1}'.format(len(rxns), Ts)
 
         # fill in parameters
         A_units = ['', 's^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)']
@@ -686,8 +682,7 @@ cdef class ArrheniusBM(KineticsModel):
         self.A = (A, A_units[order])
 
         self.n = n
-        self.w0 = (w0, 'J/mol')
-        self.E0 = (E0, 'J/mol')
+        self.E0 = (E0 * 0.001, 'kJ/mol')
 
         return self
 
