@@ -65,7 +65,7 @@ def ess_factory(fullpath: str,
     """
     A factory generating the ESS adapter corresponding to ``ess_adapter``.
     Given a path to the log file of a QM software, determine whether it is
-    Gaussian, Molpro, Orca, Psi4, QChem, or TeraChem.
+    Gaussian, Molpro, Orca, Psi4, QChem, Quantum Espresso, or TeraChem.
 
     Args:
         fullpath (str): The disk location of the output file of interest.
@@ -97,6 +97,9 @@ def ess_factory(fullpath: str,
                     break
                 elif 'qchem' in line:
                     ess_name = 'QChemLog'
+                    break
+                elif 'espresso' in line:
+                    ess_name = 'QuantumEspressoLog'
                     break
                 elif 'terachem' in line:
                     ess_name = 'TeraChemLog'

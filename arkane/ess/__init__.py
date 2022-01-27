@@ -38,4 +38,5 @@ from arkane.ess.molpro import MolproLog
 from arkane.ess.orca import OrcaLog
 from arkane.ess.psi4 import Psi4Log
 from arkane.ess.qchem import QChemLog
+from arkane.ess.qe import QuantumEspressoLog
 from arkane.ess.terachem import TeraChemLog

@@ -285,7 +285,8 @@ _valid_software_names = {
     'orca': ('orca',),
     'terachem': ('terachem',),
     'mopac': ('mopac',),
-    'psi4': ('psi4',)
+    'psi4': ('psi4',),
+    'qe': ('qe',),
 }
 _software_ids = {_name: _id for _id, _names in _valid_software_names.items() for _name in _names}
 
