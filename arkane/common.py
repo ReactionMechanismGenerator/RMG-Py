@@ -421,6 +421,12 @@ def get_element_mass(input_element, isotope=None):
                     mass = iso_mass[1]
     return mass, number
 
+def get_element_number(element_symbol):
+    """
+    Returns the atomic number for a given element symbol
+    """
+    return number_by_symbol[element_symbol]
+
 
 symbol_by_number = {1: 'H', 2: 'He', 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8: 'O', 9: 'F', 10: 'Ne', 11: 'Na',
                     12: 'Mg', 13: 'Al', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl', 18: 'Ar', 19: 'K', 20: 'Ca', 21: 'Sc',
@@ -434,6 +440,12 @@ symbol_by_number = {1: 'H', 2: 'He', 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8
                     92: 'U', 93: 'Np', 94: 'Pu', 95: 'Am', 96: 'Cm', 97: 'Bk', 98: 'Cf', 99: 'Es', 100: 'Fm', 101: 'Md',
                     102: 'No', 103: 'Lr', 104: 'Rf', 105: 'Db', 106: 'Sg', 107: 'Bh', 108: 'Hs', 109: 'Mt', 110: 'Ds',
                     111: 'Rg', 112: 'Cn', 113: 'Nh', 114: 'Fl', 115: 'Mc', 116: 'Lv', 117: 'Ts', 118: 'Og'}
+
+# reverse lookup number by symbol
+number_by_symbol = {}
+for number in symbol_by_number.keys():
+    symbol = symbol_by_number[number]
+    number_by_symbol[symbol] = number
 
 # Structure of mass_by_symbol items: list(list(isotope1, mass1, weight1), list(isotope2, mass2, weight2), ...)
 mass_by_symbol = {

@@ -42,7 +42,7 @@ import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, \
     HarmonicOscillator, Conformer
 
-from arkane.common import check_conformer_energy, get_element_mass
+from arkane.common import check_conformer_energy, get_element_mass, get_element_number
 from arkane.exceptions import LogError
 from arkane.ess.adapter import ESSAdapter
 from arkane.ess.factory import register_ess_adapter
@@ -152,15 +152,24 @@ class QuantumEspressoLog(ESSAdapter):
             line = f.readline()
             while line != '':
                 # Automatically finds the last set
-                if 'site' in line:
+                if 'site' in line and 'cryst' not in line:
                     number, coord = [], []
-                    line = f.readline()
-                    while line !='\n':
-                        data = line.split()
-                        number.append(int(data[1]))
-                        coord.append([float(data[6]), float(data[7]), float(data[8])])
-                        mass.append(float(data[2]))
+                    if len(line.split()) == 7:  # PH.X includes mass
                         line = f.readline()
+                        while line !='\n':
+                            data = line.split()
+                            number.append(get_element_number(data[1]))
+                            coord.append([float(data[7]), float(data[8]), float(data[9])])
+                            line = f.readline()
+                    elif len(line.split()) == 6:  # PW.X excludes mass
+                        line = f.readline()
+                        while line !='\n':
+                            data = line.split()
+                            number.append(get_element_number(data[1]))
+                            coord.append([float(data[6]), float(data[7]), float(data[8])])
+                            line = f.readline()
+                    else:
+                        raise NotImplementedError('Geometry file format not recognized')
                 line = f.readline()
 
         # Assign appropriate mass to each atom in the molecule

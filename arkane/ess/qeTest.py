@@ -62,15 +62,57 @@ class QuantumEspressoLogTest(unittest.TestCase):
         to test if errors are properly parsed.
         """
         with self.assertRaises(LogError):
-            QuantumEspressoLog(os.path.join(self.data_path, 'incomplete.out'))
+            QuantumEspressoLog(os.path.join(self.data_path, 'incomplete.log'))
 
-    # def test_load_ethylene_from_gaussian_log_cbsqb3(self):
-    #     """
-    #     Uses a Gaussian03 log file for ethylene (C2H4) to test that its
-    #     molecular degrees of freedom can be properly read.
-    #     """
+    def test_get_number_of_atoms(self):
+        """
+        Uses a Quantum Espresso log file for ethylene (C2H4) to check that the number of atoms is read.
+        """
+        log = QuantumEspressoLog(os.path.join(self.data_path, 'C2H4_phonon.log'))
+        self.assertEqual(log.get_number_of_atoms(), 6)
+        log = QuantumEspressoLog(os.path.join(self.data_path, 'C2H4.pwo'))
+        self.assertEqual(log.get_number_of_atoms(), 6)
 
-    #     log = GaussianLog(os.path.join(self.data_path, 'ethylene.log'))
+
+    # def test_load_force_constant_matrix(self):
+    #     self.fail()
+
+    def test_load_geometry(self):
+        """
+        Check that geometry is loaded correctly for ph.x and pw.x log files
+        """
+        coord_ref = np.array(
+            [
+                [0.50000,    1.11522,    1.80533],
+                [0.50000,    1.11522,    0.84493],
+                [0.50000,    1.77274,    2.12919],
+                [0.50000,    0.45770,    2.12919],
+                [0.50000,    1.77274,    0.52107],
+                [0.50000,    0.45770,    0.52107],
+            ]
+        )
+        number_ref = [6, 6, 1, 1, 1, 1]
+        mass_ref = [12.0000000, 12.0000000, 1.00782503224, 1.00782503224, 1.00782503224, 1.00782503224]
+        ph_log = QuantumEspressoLog(os.path.join(self.data_path, 'C2H4_phonon.log'))
+        coord, number, mass = ph_log.load_geometry()
+        np.testing.assert_array_almost_equal(coord, coord_ref)
+        np.testing.assert_array_equal(number, number_ref)
+        np.testing.assert_array_almost_equal(mass, mass_ref)
+
+        pw_log = QuantumEspressoLog(os.path.join(self.data_path, 'C2H4.pwo'))
+        coord, number, mass = pw_log.load_geometry()
+        np.testing.assert_array_almost_equal(coord, coord_ref, decimal=5)
+        np.testing.assert_array_equal(number, number_ref)
+        np.testing.assert_array_almost_equal(mass, mass_ref)
+
+
+    def test_load_ethylene_from_ph_log(self):
+        """
+        Uses a Quantum Espresso PH.x log file for ethylene (C2H4) to test that its
+        molecular degrees of freedom can be properly read.
+        """
+
+        log = QuantumEspressoLog(os.path.join(self.data_path, 'C2H4_phonon.log'))
     #     conformer, unscaled_frequencies = log.load_conformer()
     #     e0 = log.load_energy()
 
