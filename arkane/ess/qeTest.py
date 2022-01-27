@@ -54,19 +54,15 @@ class QuantumEspressoLogTest(unittest.TestCase):
         """
         A method that is run before all unit tests in this class.
         """
-        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'gaussian')
+        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'qe')
 
     def test_check_for_errors(self):
         """
-        Uses Gaussian log files that had various errors
+        Uses Quantum Espresso log files that had various errors
         to test if errors are properly parsed.
         """
         with self.assertRaises(LogError):
-            QuantumEspressoLog(os.path.join(self.data_path, 'l913.out'))
-        with self.assertRaises(LogError):
-            QuantumEspressoLog(os.path.join(self.data_path, 'l9999.out'))
-        with self.assertRaises(LogError):
-            QuantumEspressoLog(os.path.join(self.data_path, 'error_termination.out'))
+            QuantumEspressoLog(os.path.join(self.data_path, 'incomplete.out'))
 
     # def test_load_ethylene_from_gaussian_log_cbsqb3(self):
     #     """
@@ -109,7 +105,6 @@ class QuantumEspressoLogTest(unittest.TestCase):
     #     log_g4 = GaussianLog(os.path.join(self.data_path, 'g4_85_methanol.out'))
     #     log_g4mp2 = GaussianLog(os.path.join(self.data_path, 'g4mp2_85_methanol.out'))
     #     log_rocbsqb3 = GaussianLog(os.path.join(self.data_path, 'rocbs-qb3_85_methanol.out'))
-
 
     #     self.assertAlmostEqual(log_doublehybrid.load_energy() / constants.Na / constants.E_h, -0.40217794572194e+02,
     #                            delta=1e-6)

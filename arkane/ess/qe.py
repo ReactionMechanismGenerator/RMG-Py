@@ -35,7 +35,7 @@ Used to parse Quantum Espresso output files
 import logging
 import math
 import os.path
-
+import re
 import numpy as np
 
 import rmgpy.constants as constants
@@ -62,7 +62,7 @@ class QuantumEspressoLog(ESSAdapter):
 
     def check_for_errors(self):
         """
-        Checks for common errors in a Quantum Espresso .pwo log file.
+        Checks for common errors in a Quantum Espresso log file (output of ph.x).
         If any are found, this method will raise an error and crash.
         """
         with open(self.path, 'r') as f:
@@ -71,31 +71,10 @@ class QuantumEspressoLog(ESSAdapter):
             terminated = False
             for line in reversed(lines):
                 # check for common error messages
-                if 'termination' in line:
+                # TODO determine common errors for QE
+                if 'JOB DONE' in line:
                     terminated = True
-                    if 'l9999.exe' in line or 'link 9999' in line:
-                        error = 'Unconverged'
-                    elif 'l101.exe' in line:
-                        error = 'The blank line after the coordinate section is missing, ' \
-                                'or charge/multiplicity was not specified correctly.'
-                    elif 'l103.exe' in line:
-                        error = 'Internal coordinate error'
-                    elif 'l108.exe' in line:
-                        error = 'There are two blank lines between z-matrix and ' \
-                                'the variables, expected only one.'
-                    elif 'l202.exe' in line:
-                        error = 'During the optimization process, either the standard ' \
-                                'orientation or the point group of the molecule has changed.'
-                    elif 'l502.exe' in line:
-                        error = 'Unconverged SCF.'
-                    elif 'l716.exe' in line:
-                        error = 'Angle in z-matrix outside the allowed range 0 < x < 180.'
-                    elif 'l906.exe' in line:
-                        error = 'The MP2 calculation has failed. It may be related to pseudopotential. ' \
-                                'Basis sets (CEP-121G*) that are used with polarization functions, ' \
-                                'where no polarization functions actually exist.'
-                    elif 'l913.exe' in line:
-                        error = 'Maximum optimization cycles reached.'
+                    
                     if error:
                         raise LogError(f'There was an error ({error}) with Gaussian output file {self.path} '
                                        f'due to line:\n{line}')
@@ -103,69 +82,68 @@ class QuantumEspressoLog(ESSAdapter):
                         # no need to continue parsing if terminated without errors
                         break
             if not terminated:
-                raise LogError(f'Gaussian output file {self.path} did not terminate')
+                raise LogError(f'Quantum Espresso output file {self.path} did not terminate')
 
     def get_number_of_atoms(self):
         """
         Return the number of atoms in the molecular configuration used in
-        the Gaussian log file.
+        the Quantum Espresso log file.
         """
         n_atoms = 0
 
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '' and n_atoms == 0:
-                # Automatically determine the number of atoms
-                if 'Input orientation:' in line and n_atoms == 0:
-                    for i in range(5):
-                        line = f.readline()
-                    while '---------------------------------------------------------------------' not in line:
-                        n_atoms += 1
-                        line = f.readline()
+                matches = re.search('number of atoms/cell\s*=\s*(.*)', line)
+                if matches:
+                    n_atoms = int(matches[1])
                 line = f.readline()
+            
+        # TODO maybe check that this matches the number of lines in the geometry block
 
         return n_atoms
 
     def load_force_constant_matrix(self):
-        """
-        Return the force constant matrix from the Gaussian log file. The job
-        that generated the log file must have the option ``iop(7/33=1)`` in
-        order for the proper force constant matrix (in Cartesian coordinates)
-        to be printed in the log file. If multiple such matrices are identified,
-        only the last is returned. The units of the returned force constants
-        are J/m^2. If no force constant matrix can be found in the log file,
-        ``None`` is returned.
-        """
-        force = None
+        return NotImplementedError
+        # """
+        # Return the force constant matrix from the Gaussian log file. The job
+        # that generated the log file must have the option ``iop(7/33=1)`` in
+        # order for the proper force constant matrix (in Cartesian coordinates)
+        # to be printed in the log file. If multiple such matrices are identified,
+        # only the last is returned. The units of the returned force constants
+        # are J/m^2. If no force constant matrix can be found in the log file,
+        # ``None`` is returned.
+        # """
+        # force = None
 
-        n_atoms = self.get_number_of_atoms()
-        n_rows = n_atoms * 3
+        # n_atoms = self.get_number_of_atoms()
+        # n_rows = n_atoms * 3
 
-        with open(self.path, 'r') as f:
-            line = f.readline()
-            while line != '':
-                # Read force constant matrix
-                if 'Force constants in Cartesian coordinates:' in line:
-                    force = np.zeros((n_rows, n_rows), np.float64)
-                    for i in range(int(math.ceil(n_rows / 5.0))):
-                        # Header row
-                        line = f.readline()
-                        # Matrix element rows
-                        for j in range(i * 5, n_rows):
-                            data = f.readline().split()
-                            for k in range(len(data) - 1):
-                                force[j, i * 5 + k] = float(data[k + 1].replace('D', 'E'))
-                                force[i * 5 + k, j] = force[j, i * 5 + k]
-                    # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
-                    force *= 4.35974417e-18 / 5.291772108e-11 ** 2
-                line = f.readline()
+        # with open(self.path, 'r') as f:
+        #     line = f.readline()
+        #     while line != '':
+        #         # Read force constant matrix
+        #         if 'Force constants in Cartesian coordinates:' in line:
+        #             force = np.zeros((n_rows, n_rows), np.float64)
+        #             for i in range(int(math.ceil(n_rows / 5.0))):
+        #                 # Header row
+        #                 line = f.readline()
+        #                 # Matrix element rows
+        #                 for j in range(i * 5, n_rows):
+        #                     data = f.readline().split()
+        #                     for k in range(len(data) - 1):
+        #                         force[j, i * 5 + k] = float(data[k + 1].replace('D', 'E'))
+        #                         force[i * 5 + k, j] = force[j, i * 5 + k]
+        #             # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
+        #             force *= 4.35974417e-18 / 5.291772108e-11 ** 2
+        #         line = f.readline()
 
-        return force
+        # return force
 
     def load_geometry(self):
         """
         Return the optimum geometry of the molecular configuration from the
-        Gaussian log file. If multiple such geometries are identified, only the
+        log file. If multiple such geometries are identified, only the
         last is returned.
         """
         number, coord, mass = [], [], []
@@ -173,15 +151,15 @@ class QuantumEspressoLog(ESSAdapter):
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
-                # Automatically determine the number of atoms
-                if 'Input orientation:' in line:
+                # Automatically finds the last set
+                if 'site' in line:
                     number, coord = [], []
-                    for i in range(5):
-                        line = f.readline()
-                    while '---------------------------------------------------------------------' not in line:
+                    line = f.readline()
+                    while line !='\n':
                         data = line.split()
                         number.append(int(data[1]))
-                        coord.append([float(data[3]), float(data[4]), float(data[5])])
+                        coord.append([float(data[6]), float(data[7]), float(data[8])])
+                        mass.append(float(data[2]))
                         line = f.readline()
                 line = f.readline()
 
@@ -194,10 +172,8 @@ class QuantumEspressoLog(ESSAdapter):
         number = np.array(number, np.int)
         mass = np.array(mass, np.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
-            raise LogError('Unable to read atoms from Gaussian geometry output file {0}. '
-                           'Make sure the output file is not corrupt.\nNote: if your species has '
-                           '50 or more atoms, you will need to add the `iop(2/9=2000)` keyword to your '
-                           'input file so Gaussian will print the input orientation geometry.'.format(self.path))
+            raise LogError('Unable to read atoms from Quantum Espresso geometry output file {0}. '
+                           'Make sure the output file is not corrupt.\n'.format(self.path))
 
         return coord, number, mass
 
@@ -252,13 +228,13 @@ class QuantumEspressoLog(ESSAdapter):
                             inertia = [float(d) for d in line.split()[-3:]]
                             for i in range(3):
                                 inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) \
-                                             * constants.Na * 1e23
+                                    * constants.Na * 1e23
                             rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
                         elif 'Rotational constant (GHZ):' in line:
                             inertia = [float(line.split()[3])]
                             inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9) \
-                                         * constants.Na * 1e23
+                                * constants.Na * 1e23
                             rotation = LinearRotor(inertia=(inertia[0], "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
 
@@ -299,10 +275,10 @@ class QuantumEspressoLog(ESSAdapter):
         return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spin_multiplicity,
                          optical_isomers=optical_isomers), unscaled_frequencies
 
-    def load_energy(self, zpe_scale_factor=1.):
+    def load_energy(self, zpe_scale_factor=1.0):
         """
-        Load the energy in J/mol from a Gaussian log file. The file is checked 
-        for a complete basis set extrapolation; if found, that value is 
+        Load the energy in J/mol from a Gaussian log file. The file is checked
+        for a complete basis set extrapolation; if found, that value is
         returned. Only the last energy in the file is returned. The zero-point
         energy is *not* included in the returned value; it is removed from the
         CBS-QB3 value.
@@ -410,7 +386,7 @@ class QuantumEspressoLog(ESSAdapter):
 
     def load_scan_energies(self):
         """
-        Extract the optimized energies in J/mol from a log file, e.g. the 
+        Extract the optimized energies in J/mol from a log file, e.g. the
         result of a Gaussian "Scan" quantum chemistry calculation.
         """
         opt_freq = False
@@ -533,7 +509,7 @@ class QuantumEspressoLog(ESSAdapter):
                         # specified type explicitly
                         if terms[action_index] == letter_spec:
                             if get_after_letter_spec:
-                                output.append(terms[action_index+1:])
+                                output.append(terms[action_index + 1:])
                             else:
                                 output.append(terms[1:action_index])
                     else:
@@ -602,4 +578,4 @@ class QuantumEspressoLog(ESSAdapter):
         return frequency
 
 
-register_ess_adapter("GaussianLog", GaussianLog)
+register_ess_adapter("QuantumEspressoLog", QuantumEspressoLog)
