@@ -54,7 +54,7 @@ cdef class Vertex(object):
     `connectivity2`     ``int``         The sum of the neighbors' `connectivity1` values
     `connectivity3`     ``int``         The sum of the neighbors' `connectivity2` values
     `edges`             ``dict``        Dictionary of edges with keys being neighboring vertices
-    `sorting_label`      ``int``         An integer label used to sort the vertices
+    `sorting_label`     ``int``         An integer label used to sort the vertices
     =================== =============== ========================================
     
     """
