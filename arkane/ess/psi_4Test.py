@@ -28,7 +28,7 @@
 ###############################################################################
 
 """
-This module contains unit tests of the :mod:`arkane.ess.psi4` module.
+This module contains unit tests of the :mod:`arkane.ess.psi_4` module.
 """
 
 import os
@@ -39,7 +39,7 @@ import numpy as np
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
 from arkane.exceptions import LogError
-from arkane.ess.psi4 import Psi4Log
+from arkane.ess.psi_4 import Psi4Log
 
 ################################################################################
 
