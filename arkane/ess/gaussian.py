@@ -523,6 +523,13 @@ class GaussianLog(ESSAdapter):
                         action_index = 4  # valance angle with three terms
                     elif terms[0] == 'B':
                         action_index = 3  # bond length with 2 terms
+                    elif terms[0] == 'L':
+                        # Can be either L 1 2 3 B or L 1 2 3 -1 B
+                        # It defines a linear bend which is helpful in calculating
+                        # molecules with ~180 degree bond angles. As no other module
+                        # now depends on this information, simply skipping this line.
+                        line = f.readline()
+                        continue
                     else:
                         raise LogError('This file has an option not supported by Arkane. '
                                        'Unable to read scan specs for line: {0}'.format(line))
