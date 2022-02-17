@@ -194,6 +194,84 @@ rotors = [HinderedRotor(scanLog=Log('{scan}'), pivots=[1, 2], top=[1, 3], symmet
         self.assertAlmostEqual(h2o2.conformer.E0.value_si, -146031.49933673252)
         os.remove(h2o2_path)
 
+    def test_hinder_rotor_from_1d_array(self):
+        """Test assigning hindered rotor 1D PES profile directly to HinderedRotor1DArray"""
+        h2o2_input = """#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+bonds = {{'H-O': 2, 'O-O': 1}}
+
+externalSymmetry = 2
+
+spinMultiplicity = 1
+
+opticalIsomers = 1
+
+energy = {{'b3lyp/6-311+g(3df,2p)': Log('{energy}')}}
+
+geometry = Log('{freq}')
+
+frequencies = Log('{freq}')
+
+rotors = [HinderedRotor1DArray(
+    angles=[0.        , 0.17453293, 0.34906585, 0.52359878, 0.6981317 ,
+            0.87266463, 1.04719755, 1.22173048, 1.3962634 , 1.57079633,
+            1.74532925, 1.91986218, 2.0943951 , 2.26892803, 2.44346095,
+            2.61799388, 2.7925268 , 2.96705973, 3.14159265, 3.31612558,
+            3.4906585 , 3.66519143, 3.83972435, 4.01425728, 4.1887902 ,
+            4.36332313, 4.53785606, 4.71238898, 4.88692191, 5.06145483,
+            5.23598776, 5.41052068, 5.58505361, 5.75958653, 5.93411946,
+            6.10865238, 6.28318531],
+    energies=[0.00000000e+00, 3.09449290e+02, 1.07459871e+03, 2.05925305e+03,
+            3.02877926e+03, 3.79724994e+03, 4.23486826e+03, 4.26190303e+03,
+            3.88196432e+03, 3.15173930e+03, 2.20016363e+03, 1.20431941e+03,
+            3.94499732e+02, 7.23850312e+00, 2.77854025e+02, 1.40711827e+03,
+            3.50375319e+03, 6.57899330e+03, 1.05208190e+04, 1.50847596e+04,
+            1.99269611e+04, 2.46164740e+04, 2.86972097e+04, 3.17430074e+04,
+            3.34148312e+04, 3.35267510e+04, 3.20643922e+04, 2.91936786e+04,
+            2.52325029e+04, 2.06007483e+04, 1.57531541e+04, 1.11268684e+04,
+            7.08120679e+03, 3.87554760e+03, 1.63995547e+03, 3.80256396e+02,
+            6.14367036e-01],
+    pivots=[1, 2], top=[1, 3], symmetry=1, fit='fourier')]
+"""
+        angles = np.array([0.        , 0.17453293, 0.34906585, 0.52359878, 0.6981317 ,
+            0.87266463, 1.04719755, 1.22173048, 1.3962634 , 1.57079633,
+            1.74532925, 1.91986218, 2.0943951 , 2.26892803, 2.44346095,
+            2.61799388, 2.7925268 , 2.96705973, 3.14159265, 3.31612558,
+            3.4906585 , 3.66519143, 3.83972435, 4.01425728, 4.1887902 ,
+            4.36332313, 4.53785606, 4.71238898, 4.88692191, 5.06145483,
+            5.23598776, 5.41052068, 5.58505361, 5.75958653, 5.93411946,
+            6.10865238, 6.28318531])
+        energies = np.array([0.00000000e+00, 3.09449290e+02, 1.07459871e+03, 2.05925305e+03,
+            3.02877926e+03, 3.79724994e+03, 4.23486826e+03, 4.26190303e+03,
+            3.88196432e+03, 3.15173930e+03, 2.20016363e+03, 1.20431941e+03,
+            3.94499732e+02, 7.23850312e+00, 2.77854025e+02, 1.40711827e+03,
+            3.50375319e+03, 6.57899330e+03, 1.05208190e+04, 1.50847596e+04,
+            1.99269611e+04, 2.46164740e+04, 2.86972097e+04, 3.17430074e+04,
+            3.34148312e+04, 3.35267510e+04, 3.20643922e+04, 2.91936786e+04,
+            2.52325029e+04, 2.06007483e+04, 1.57531541e+04, 1.11268684e+04,
+            7.08120679e+03, 3.87554760e+03, 1.63995547e+03, 3.80256396e+02,
+            6.14367036e-01])
+        abs_arkane_path = os.path.abspath(os.path.dirname(__file__))  # this is the absolute path to `.../RMG-Py/arkane`
+        energy_path = os.path.join('arkane', 'data', 'H2O2', 'sp_a19032.out')
+        freq_path = os.path.join('arkane', 'data', 'H2O2', 'freq_a19031.out')
+        h2o2_input = h2o2_input.format(energy=energy_path, freq=freq_path, angles=angles, energies=energies)
+        h2o2_path = os.path.join(abs_arkane_path, 'data', 'H2O2', 'H2O2_PES.py')
+        os.makedirs(os.path.dirname(h2o2_path), exist_ok=True)
+        with open(h2o2_path, 'w') as f:
+            f.write(h2o2_input)
+        h2o2 = Species(label='H2O2', smiles='OO')
+        self.assertIsNone(h2o2.conformer)
+        statmech_job = StatMechJob(species=h2o2, path=h2o2_path)
+        statmech_job.level_of_theory = LevelOfTheory('b3lyp', '6-311+g(3df,2p)')
+        statmech_job.load(pdep=False, plot=False)
+        self.assertEqual(len(statmech_job.raw_hindered_rotor_data), 1)
+        self.assertTrue(np.allclose(statmech_job.raw_hindered_rotor_data[0][3], angles, atol=1e-6))
+        self.assertTrue(np.allclose(statmech_job.raw_hindered_rotor_data[0][4], energies, atol=1e-6))
+        self.assertAlmostEqual(h2o2.conformer.E0.value_si, -146031.49933673252)
+        os.remove(h2o2_path)
+
+
 ################################################################################
 
 
