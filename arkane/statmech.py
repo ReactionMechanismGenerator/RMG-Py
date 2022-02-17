@@ -158,6 +158,9 @@ def hinderedRotor(scanLog, pivots, top, symmetry=None, fit='best'):
     """Read a hindered rotor directive, and return the attributes in a list"""
     return [scanLog, pivots, top, symmetry, fit]
 
+def hinderedRotor1DArray(angles, energies, pivots, top, symmetry=None, fit='best'):
+    """Read a hindered rotor PES profile, and return the attributes in a list"""
+    return [angles, energies, pivots, top, symmetry, fit]
 
 def freeRotor(pivots, top, symmetry):
     """Read a free rotor directive, and return the attributes in a list"""
@@ -273,6 +276,7 @@ class StatMechJob(object):
             'True': True,
             'False': False,
             'HinderedRotor': hinderedRotor,
+            'HinderedRotor1DArray': hinderedRotor1DArray,
             'FreeRotor': freeRotor,
             'HinderedRotor2D': hinderedRotor2D,
             'HinderedRotorClassicalND': hinderedRotorClassicalND,
@@ -673,13 +677,24 @@ class StatMechJob(object):
                 rotor.run()
                 conformer.modes.append(rotor)
                 rotor_count += len(pivots)
-            elif len(q) in [4, 5]:
+            elif len(q) in [4, 5, 6]:
                 # This is a hindered rotor
-                if len(q) == 5:
+                if len(q) == 5 and isinstance(q[0], (ESSAdapter, ScanLog)):
+                    # A hindered rotor PES from a log file with symmetry assigned
                     scan_log, pivots, top, symmetry, fit = q
+                elif len(q) == 5:
+                    # A hindered rotor PES from user input arrays with symmetry not assigned
+                    # the symmetry number will be derived from the scan
+                    angle, v_list, pivots, top, fit = q
+                    scan_log = -1
                 elif len(q) == 4:
+                    # A hindered rotor PES from a log file without symmetry assigned
                     # the symmetry number will be derived from the scan
                     scan_log, pivots, top, fit = q
+                elif len(q) == 6:
+                    # A hindered rotor PES from user input arrays with symmetry assigned
+                    angle, v_list, pivots, top, symmetry, fit = q
+                    scan_log = -1
                 # Load the hindered rotor scan energies
                 if isinstance(scan_log, ScanLog):
                     if not os.path.isfile(scan_log.path):
@@ -705,6 +720,12 @@ class StatMechJob(object):
                     angle, v_list = scan_log.load()
                     # no way to find pivot atoms or frozen atoms from ScanLog
                     pivot_atoms = 'N/A'
+                    frozen_atoms = 'N/A'
+                elif scan_log == -1:
+                    # Assuming no user may input -1 in the input file. None and '' are not used since they are more likely
+                    # to be some input generated from a failure of automatic scripts
+                    angle, v_list = np.array(angle), np.array(v_list)
+                    pivot_atoms = 'N/A',
                     frozen_atoms = 'N/A'
                 else:
                     raise InputError('Invalid log file type {0} for scan log.'.format(scan_log.__class__))
@@ -1042,10 +1063,12 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
     for i, rotor in enumerate(rotors):
         if len(rotor) == 5 and isinstance(rotor[1][0], list):
             scan_dir, pivots_list, tops, sigmas, semiclassical = rotor
-        elif len(rotor) == 5:
+        elif len(rotor) == 5 and isinstance(rotor[0], (ESSAdapter, ScanLog)):
             scanLog, pivots, top, symmetry, fit = rotor
-            pivots_list = [pivots]
-            tops = [top]
+            pivots_list, tops = [pivots], [top]
+        elif len(rotor) == 5:
+            _, _, pivots, top, _ = rotor
+            pivots_list, tops = [pivots], [top]
         elif len(rotor) == 3:
             pivots, top, symmetry = rotor
             pivots_list = [pivots]
@@ -1054,6 +1077,9 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             scan_dir, pivots1, top1, symmetry1, pivots2, top2, symmetry2, symmetry = rotor
             pivots_list = [pivots1, pivots2]
             tops = [top1, top2]
+        elif len(rotor) == 6:
+            _, _, pivots, top, _, _ = rotor
+            pivots_list, tops = [pivots], [top]
         else:
             raise ValueError("{} not a proper rotor format".format(rotor))
         for k in range(len(tops)):
