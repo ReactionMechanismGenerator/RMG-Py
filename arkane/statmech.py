@@ -36,9 +36,12 @@ information for a single species or transition state.
 import logging
 import math
 import os
+import pathlib
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import yaml
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import InputError, ElementError, StatmechError
@@ -69,13 +72,13 @@ class ScanLog(object):
     scan energies.
     """
 
-    angleFactors = {
+    angle_factors = {
         'radians': 1.0,
         'rad': 1.0,
         'degrees': 180.0 / math.pi,
         'deg': 180.0 / math.pi,
     }
-    energyFactors = {
+    energy_factors = {
         'J/mol': 1.0,
         'kJ/mol': 1.0 / 1000.,
         'cal/mol': 1.0 / 4.184,
@@ -92,38 +95,115 @@ class ScanLog(object):
         Load the scan energies from the file. Returns arrays containing the
         angles (in radians) and energies (in J/mol).
         """
-        angles, energies = [], []
-        angle_units, energy_units, angle_factor, energy_factor = None, None, None, None
+        file_ext = pathlib.Path(self.path).suffix
+        if file_ext.lower() == '.csv':
+            angle_unit, energy_unit, angles, energies = self.load_csv()
+        elif file_ext.lower() in ['.yml', '.yaml']:
+            angle_unit, energy_unit, angles, energies = self.load_yaml()
+        else:
+            angle_unit, energy_unit, angles, energies = self.load_text()
 
+        try:
+            angle_factor = self.angle_factors[angle_unit]
+        except KeyError:
+            raise ValueError(f'Invalid angle unit {angle_unit}.')
+        try:
+            energy_factor = self.energy_factors[energy_unit]
+        except KeyError:
+            raise ValueError(f'Invalid energy units {energy_unit}.')
+
+        angles = np.array(angles) / angle_factor
+        energies = np.array(energies) / energy_factor
+        energies -= energies[0]
+
+        return angles, energies
+
+    def load_csv(self):
+        """
+        Load scan energies from a CSV file. The CSV file should at least contain
+        two columns `'Angle (angle unit)'` and `'Energy (energy unit)'` with
+        corresponding values. For the headers, both 'units' should be replaced
+        by the units supported in `ScanLog.angle_factors` and `ScanLog.energy_factors`.
+        """
+        # Example format
+        # Angle (radians),Energy (kJ/mol)
+        # 0.000000,0.014725
+        # 0.174533,0.722311
+        df = pd.read_csv(self.path, header='infer')
+        # In case, the user's csv file has no header. Use the default header and units.
+        if df.columns[0][0].isnumeric():
+            df = pd.read_csv(self.path, names=['Angle (radians)', 'Energy (J/mol)'])
+        for column in df.columns:
+            if 'angle' in column.lower():
+                try:
+                    angle_unit = column.split()[1][1:-1]
+                except IndexError:
+                    raise ValueError(f'Invalid headers ({column}) in the csv file.')
+                angles = df[column]
+            elif 'energy' in column.lower():
+                try:
+                    energy_unit = column.split()[1][1:-1]
+                except IndexError:
+                    raise ValueError(f'Invalid headers ({column}) in the csv file.')
+                energies = df[column]
+        return angle_unit, energy_unit, angles, energies
+
+    def load_yaml(self):
+        """
+        Load scan energies from a YAML file. The YAML file should at least two fields
+        `angles` and `energies`. If `angle_unit` or `energy_unit` is not provided, 'rad'
+        and 'J/mol' will be used by default.
+        """
+        # Example format
+        # angle_unit: 'radians'
+        # energy_unit: 'J/mol'
+        # angles:
+        # - 0.000000
+        # - 0.174533
+        # ...
+        # energies:
+        # - 0.014725
+        # - 0.722311
+        with open(self.path, 'r') as f:
+            content = yaml.load(stream=f, Loader=yaml.FullLoader)
+            angle_unit = content.get('angle_unit', 'radians')
+            energy_unit = content.get('energy_unit', 'J/mol')
+            angles = content.get('angles', [])
+            energies = content.get('energies', [])
+        return angle_unit, energy_unit, angles, energies
+
+    def load_text(self):
+        """
+        Load scan energies from a text file. The text file should contain
+        two columns `'Angle (angle unit)'` and `'Energy (energy unit)'` with
+        corresponding values. For the headers, both 'units' should be replaced
+        by the units supported in `ScanLog.angle_factors` and `ScanLog.energy_factors`.
+        """
+        # Example format
+        #    Angle (radians)  Energy (kJ/mol)
+        #        0.000000         0.014725
+        #        0.174533         0.722311
+        angles, energies = [], []
+        angle_unit, energy_unit = None, None
         with open(self.path, 'r') as stream:
             for line in stream:
                 line = line.strip()
                 if line == '':
                     continue
-
                 tokens = line.split()
-                if angle_units is None or energy_units is None:
-                    angle_units = tokens[1][1:-1]
-                    energy_units = tokens[3][1:-1]
-
+                if angle_unit is None or energy_unit is None:
                     try:
-                        angle_factor = ScanLog.angleFactors[angle_units]
-                    except KeyError:
-                        raise ValueError('Invalid angle units {0!r}.'.format(angle_units))
-                    try:
-                        energy_factor = ScanLog.energyFactors[energy_units]
-                    except KeyError:
-                        raise ValueError('Invalid energy units {0!r}.'.format(energy_units))
-
-                else:
-                    angles.append(float(tokens[0]) / angle_factor)
-                    energies.append(float(tokens[1]) / energy_factor)
-
-        angles = np.array(angles)
-        energies = np.array(energies)
-        energies -= energies[0]
-
-        return angles, energies
+                        angle_unit = tokens[1][1:-1]
+                        energy_unit = tokens[3][1:-1]
+                    except IndexError:
+                        # It is possible that the user doesn't put a header there
+                        angle_unit = 'radians'
+                        energy_unit = 'J/mol'
+                    else:
+                        continue
+                angles.append(float(tokens[0]))
+                energies.append(float(tokens[1]))
+        return angle_unit, energy_unit, angles, energies
 
     def save(self, angles, energies, angle_units='radians', energy_units='kJ/mol'):
         """
