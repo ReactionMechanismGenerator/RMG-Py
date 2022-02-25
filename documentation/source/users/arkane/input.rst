@@ -353,21 +353,53 @@ Therefore, the proper workflow for generating the ``geometry/frequencies`` log f
 
 The output of step 2 is the correct log file to use for ``geometry/frequencies``.
 
-``rotors`` is a list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects. Each :class:`HinderedRotor()`
+``rotors`` is a list of :class:`HinderedRotor()` and/or :class:`HinderedRotor1DArray()` and/or :class:`FreeRotor()` objects. Each :class:`HinderedRotor()`
 object requires the following parameters:
 
 ======================= =========================== ====================================
 Parameter               Required?                   Description
 ======================= =========================== ====================================
-``scanLog``             yes                         The path to the Gaussian/Qchem log file, or a text file containing the scan energies
+``scanLog``             yes                         The path to the Gaussian/Qchem log file, or a text/csv/yaml file containing the scan energies
 ``pivots``              yes                         The indices of the atoms in the hindered rotor torsional bond
 ``top``                 yes                         The indices of all atoms on one side of the torsional bond (including the pivot atom)
 ``symmetry``            optional                    The symmetry number for the torsional rotation (number of indistinguishable energy minima)
 ``fit``                 optional                    Fit to the scan data. Can be either ``fourier``, ``cosine`` or ``best`` (default).
 ======================= =========================== ====================================
 
-``scanLog`` can either point to a ``Log`` file, or simply a ``ScanLog``, with the path to a text file summarizing the
-scan in the following format::
+``scanLog`` can either point to a ``Log`` file from a QM calculation, or simply a ``ScanLog``, with the path to a file summarizing the
+scan. If a yaml file is feeded, it should satisfy the the following format::
+
+    angle_unit: radians
+    energy_unit: kJ/mol
+    angles:
+    - 0.0000000000
+    - 0.1745329252
+    - 0.3490658504
+            .
+            .
+            .
+    - 6.2831853072
+    energies:
+    - 0.0147251160
+    - 0.7223109804
+    - 2.6856059517
+            .
+            .
+            .
+    - 0.0000000000
+
+If a csv file is feeded, it should satisfy the following format::
+
+    Angle (radians),Energy (kJ/mol)
+    0.0000000000,0.0147251160
+    0.1745329252,0.7223109804
+    0.3490658504,2.6856059517
+        .       ,    .
+        .       ,    .
+        .       ,    .
+    6.2831853072,0.0000000000
+
+If a text file is feeded, it should satisfy the the following format::
 
           Angle (radians)          Energy (kJ/mol)
            0.0000000000            0.0147251160
@@ -378,11 +410,26 @@ scan in the following format::
                  .                       .
            6.2831853072            0.0000000000
 
-The ``Energy`` can be in units of ``kJ/mol``, ``J/mol`` (default), ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``,
-and the ``Angle`` can be either in ``radians`` (default) or in ``degrees``. Units must be specified in parenthesis
-if different than the default.
+For all above options, the ``Energy`` can be in units of ``kJ/mol``, ``J/mol`` (default), ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``,
+and the ``Angle`` can be either in ``radians`` (default) or in ``degrees``. If ``angle_unit`` or ``energy_unit`` is not provided in the yaml file,
+the default unit will be used. If a header is included in either the csv file or the text file, units must be specified in parenthesis; otherwise,
+the column sequence will be assumed to be [angles, energies], and the default units will be used.
 
-The ``symmetry`` parameter will usually equal either 1, 2 or 3. It could be determined automatically by Arkane
+:class:`HinderedRotor1DArray()` is an alternative way to define a hindered rotor without the need of a scan log file.
+The object requires the following parameters:
+
+======================= =========================== ====================================
+Parameter               Required?                   Description
+======================= =========================== ====================================
+``angles``              yes                         The angle values of the PES scan in unit of radians.
+``energies``            yes                         The energy values of the PES scan in unit of J/mol.
+``pivots``              yes                         The indices of the atoms in the hindered rotor torsional bond
+``top``                 yes                         The indices of all atoms on one side of the torsional bond (including the pivot atom)
+``symmetry``            optional                    The symmetry number for the torsional rotation (number of indistinguishable energy minima)
+``fit``                 optional                    Fit to the scan data. Can be either ``fourier``, ``cosine`` or ``best`` (default).
+======================= =========================== ====================================
+
+For the above two objects, ``symmetry`` parameter will usually equal either 1, 2 or 3. It could be determined automatically by Arkane
 (by simply not specifying it altogether), however it is always better to explicitly specify it if it is known. If it is
 determined by Arkane, the log file will specify the determined value and what it was based on. Below are examples of
 internal rotor scans with these commonly encountered symmetry numbers. First, ``symmetry = 3``:
