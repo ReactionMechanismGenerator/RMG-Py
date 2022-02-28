@@ -2151,7 +2151,7 @@ class SolvationDatabase(object):
         if not any([spec.is_solvent for spec in rmg.initial_species]):
             if solvent_structure is not None:
                 logging.info('One of the initial species must be the solvent')
-                raise ValueError('One of the initial species must be the solvent')
+                logging.warning("Solvent is not an initial species")
             else:
                 logging.info('One of the initial species must be the solvent with the same string name')
-                raise ValueError('One of the initial species must be the solvent with the same string name')
+                logging.warning("Solvent is not an initial species with the same string name")
