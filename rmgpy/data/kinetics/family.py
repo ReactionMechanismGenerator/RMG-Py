@@ -4653,5 +4653,6 @@ def average_kinetics(kinetics_list):
             A=(10 ** logA, Aunits),
             n=n,
             Ea=(Ea * 0.001, "kJ/mol"),
+            comment=f"Averaged from {len(kinetics_list)} rate expressions.",
         )
     return averaged_kinetics
