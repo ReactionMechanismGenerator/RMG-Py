@@ -38,8 +38,8 @@ import numpy as np
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 
-from arkane.encorr.isodesmic import ErrorCancelingScheme, ErrorCancelingSpecies, ErrorCancelingReaction, \
-    IsodesmicScheme, SpeciesConstraints
+from arkane.encorr.isodesmic import AtomConstraint, BondConstraint, Connection, ErrorCancelingScheme, \
+    ErrorCancelingSpecies, ErrorCancelingReaction, IsodesmicScheme, SpeciesConstraints, bond_centric_constraints
 from arkane.modelchem import LevelOfTheory
 
 ################################################################################
@@ -104,6 +104,152 @@ class TestErrorCancelingReactionAndSpecies(unittest.TestCase):
         # This should throw an exception because the model chemistry is different
         with self.assertRaises(ValueError):
             ErrorCancelingReaction(ethane, {methyl: 2})
+
+
+class TestConstraintObjects(unittest.TestCase):
+    """
+    A class for testing AtomConstraint, BondConstraint, and Connection objects
+    """
+    @classmethod
+    def setUpClass(cls):
+        # Simple Atoms
+        cls.c4_1 = AtomConstraint(label='C4')
+        cls.c4_2 = AtomConstraint(label='C4')
+        cls.c3 = AtomConstraint(label='C3')
+        cls.h1 = AtomConstraint(label='H1')
+        cls.o2 = AtomConstraint(label='O2')
+        cls.c = AtomConstraint(label='C')
+        cls.h = AtomConstraint(label='H')
+        cls.o = AtomConstraint(label='O')
+
+        # Simple Bonds
+        cls.ch_bond1 = BondConstraint(atom1=cls.c4_1, atom2=cls.h1, bond_order=1)
+        cls.ch_bond2 = BondConstraint(atom1=cls.h1, atom2=cls.c4_1, bond_order=1)
+        cls.ch_bond3 = BondConstraint(atom1=cls.c4_2, atom2=cls.h1, bond_order=1)
+        cls.hh_bond = BondConstraint(atom1=cls.h1, atom2=cls.h1, bond_order=1)
+
+        # Simple Connections
+        cls.cs_connect_1 = Connection(atom=cls.c4_1, bond_order=1)
+        cls.cs_connect_2 = Connection(atom=cls.c4_2, bond_order=1)
+        cls.cd_connect = Connection(atom=cls.c4_1, bond_order=2)
+        cls.h_connect = Connection(atom=cls.h1, bond_order=1)
+        cls.os_connect = Connection(atom=cls.o2, bond_order=1)
+
+        # Complex Atoms
+        cls.c_chho_1 = AtomConstraint(label='C4', connections=[cls.cs_connect_1, cls.h_connect,
+                                                               cls.h_connect, cls.os_connect])
+        cls.c_chho_2 = AtomConstraint(label='C4', connections=[cls.cs_connect_2, cls.h_connect,
+                                                               cls.h_connect, cls.os_connect])
+        cls.c_choo = AtomConstraint(label='C4', connections=[cls.cs_connect_1, cls.h_connect,
+                                                             cls.os_connect, cls.os_connect])
+
+        # Complex Bonds
+        cls.chho_chho = BondConstraint(atom1=cls.c_chho_1, atom2=cls.c_chho_2, bond_order=1)
+        cls.chho_choo = BondConstraint(atom1=cls.c_chho_1, atom2=cls.c_choo, bond_order=1)
+        cls.choo_chho = BondConstraint(atom1=cls.c_choo, atom2=cls.c_chho_2, bond_order=1)
+        cls.chho_choo_d = BondConstraint(atom1=cls.c_chho_1, atom2=cls.c_choo, bond_order=2)
+
+        # Trial molecules
+        hf = (100.0, 'J/mol')
+        lot = LevelOfTheory('test')
+        cls.ethane = ErrorCancelingSpecies(Molecule(smiles='CC'), hf, lot)
+        cls.ethanol = ErrorCancelingSpecies(Molecule(smiles='CCO'), hf, lot)
+        cls.benzene = ErrorCancelingSpecies(Molecule(smiles='c1ccccc1'), hf, lot)
+
+        # RC2 constraints
+        cls.rc2_cc = BondConstraint(atom1=cls.c, atom2=cls.c, bond_order=1)
+        cls.rc2_ch = BondConstraint(atom1=cls.c, atom2=cls.h, bond_order=1)
+        cls.rc2_co = BondConstraint(atom1=cls.c, atom2=cls.o, bond_order=1)
+        cls.rc2_oh = BondConstraint(atom1=cls.o, atom2=cls.h, bond_order=1)
+        cls.rc2_ccd = BondConstraint(atom1=cls.c, atom2=cls.c, bond_order=2)
+
+        # RC3 constraints
+        cls.rc3_cc = BondConstraint(atom1=cls.c4_1, atom2=cls.c4_1, bond_order=1)
+        cls.rc3_c3c3 = BondConstraint(atom1=cls.c3, atom2=cls.c3, bond_order=1)
+        cls.rc3_ch = BondConstraint(atom1=cls.c4_1, atom2=cls.h1, bond_order=1)
+        cls.rc3_c3h = BondConstraint(atom1=cls.c3, atom2=cls.h1, bond_order=1)
+        cls.rc3_co = BondConstraint(atom1=cls.c4_1, atom2=cls.o2, bond_order=1)
+        cls.rc3_oh = BondConstraint(atom1=cls.o2, atom2=cls.h1, bond_order=1)
+        cls.rc3_ccd = BondConstraint(atom1=cls.c3, atom2=cls.c3, bond_order=2)
+
+        # RC4 constraints
+        cls.c_chhh = AtomConstraint(label='C4', connections=[cls.cs_connect_1, cls.h_connect,
+                                                             cls.h_connect, cls.h_connect])
+
+        cls.chho_chhh = BondConstraint(atom1=cls.c_chho_1, atom2=cls.c_chhh, bond_order=1)
+        cls.chhh_chhh = BondConstraint(atom1=cls.c_chhh, atom2=cls.c_chhh, bond_order=1)
+
+    def test_simple_atom_constraints(self):
+        self.assertEqual(self.c4_1, self.c4_2)
+        self.assertNotEqual(self.c4_1, self.h1)
+
+    def test_simple_bond_constraints(self):
+        self.assertEqual(self.ch_bond1, self.ch_bond2)
+        self.assertEqual(self.ch_bond1, self.ch_bond3)
+        self.assertNotEqual(self.ch_bond1, self.hh_bond)
+
+    def test_connection(self):
+        self.assertEqual(self.cs_connect_1, self.cs_connect_2)
+        self.assertNotEqual(self.cs_connect_1, self.cd_connect)
+        self.assertNotEqual(self.cs_connect_1, self.h_connect)
+
+    def test_multiple_connection_constraints(self):
+        self.assertEqual(self.c_chho_1, self.c_chho_2)
+        self.assertNotEqual(self.c_chho_1, self.c_choo)
+
+        self.assertEqual(self.chho_choo, self.choo_chho)
+        self.assertNotEqual(self.chho_choo, self.chho_chho)
+        self.assertNotEqual(self.chho_choo, self.chho_choo_d)
+
+    def test_constraint_repr(self):
+        self.assertEqual(repr(self.chho_choo), 'C4(-C4)(-H1)(-H1)(-O2)-C4(-C4)(-H1)(-O2)(-O2)')
+
+    def test_bond_centric_constraints(self):
+        constraints = bond_centric_constraints(species=self.ethane, constraint_class='rc2')
+        self.assertEqual(len(constraints), 7)
+        self.assertIn(self.rc2_cc, constraints)
+        self.assertIn(self.rc2_ch, constraints)
+
+        constraints = bond_centric_constraints(species=self.ethanol, constraint_class='rc2')
+        self.assertEqual(len(constraints), 8)
+        self.assertIn(self.rc2_cc, constraints)
+        self.assertIn(self.rc2_ch, constraints)
+        self.assertIn(self.rc2_co, constraints)
+        self.assertIn(self.rc2_oh, constraints)
+
+        constraints = bond_centric_constraints(species=self.benzene, constraint_class='rc2')
+        self.assertEqual(len(constraints), 12)
+        self.assertIn(self.rc2_cc, constraints)
+        self.assertIn(self.rc2_ch, constraints)
+        self.assertIn(self.rc2_ccd, constraints)
+
+    def test_buerger_rc3(self):
+        constraints = bond_centric_constraints(species=self.ethane, constraint_class='rc3')
+        self.assertEqual(len(constraints), 7)
+        self.assertIn(self.rc3_cc, constraints)
+        self.assertIn(self.rc3_ch, constraints)
+
+        constraints = bond_centric_constraints(species=self.ethanol, constraint_class='rc3')
+        self.assertEqual(len(constraints), 8)
+        self.assertIn(self.rc3_cc, constraints)
+        self.assertIn(self.rc3_ch, constraints)
+        self.assertIn(self.rc3_co, constraints)
+        self.assertIn(self.rc3_oh, constraints)
+
+        constraints = bond_centric_constraints(species=self.benzene, constraint_class='rc3')
+        self.assertEqual(len(constraints), 12)
+        self.assertIn(self.rc3_c3c3, constraints)
+        self.assertIn(self.rc3_c3h, constraints)
+        self.assertIn(self.rc3_ccd, constraints)
+
+    def test_buerger_rc4(self):
+        constraints = bond_centric_constraints(species=self.ethane, constraint_class='rc4')
+        self.assertEqual(len(constraints), 7)
+        self.assertIn(self.chhh_chhh, constraints)
+
+        constraints = bond_centric_constraints(species=self.ethanol, constraint_class='rc4')
+        self.assertEqual(len(constraints), 8)
+        self.assertIn(self.chho_chhh, constraints)
 
 
 class TestSpeciesConstraints(unittest.TestCase):
