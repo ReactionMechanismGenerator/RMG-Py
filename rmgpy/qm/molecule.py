@@ -52,11 +52,11 @@ from rmgpy.thermo import ThermoData
 class Geometry(object):
     """
     A geometry, used for quantum calculations.
-    
+
     Created from a molecule. Geometry estimated by RDKit.
-    
+
     The attributes are:
-    
+
     =================== ======================= ====================================
     Attribute           Type                    Description
     =================== ======================= ====================================
@@ -65,7 +65,7 @@ class Geometry(object):
     `molecule`          :class:`Molecule`       RMG Molecule object
     `unique_id_long`      ``str``                 A long, truly unique ID such as an augmented InChI
     =================== ======================= ====================================
-    
+
     """
 
     def __init__(self, settings, unique_id, molecule, unique_id_long=None):
@@ -99,7 +99,7 @@ class Geometry(object):
     def get_file_path(self, extension, scratch=True):
         """
         Returns the path to the file with the given extension.
-        
+
         The provided extension should include the leading dot.
         If called with `scratch=False` then it will be in the `fileStore` directory,
         else `scratch=True` is assumed and it will be in the `scratchDirectory` directory.
@@ -206,9 +206,9 @@ class Geometry(object):
 def load_thermo_data_file(file_path):
     """
     Load the specified thermo data file and return the dictionary of its contents.
-    
+
     Returns `None` if the file is invalid or missing.
-    
+
     Checks that the returned dictionary contains at least InChI, adjacencyList, thermoData.
     """
     if not os.path.exists(file_path):
@@ -248,18 +248,18 @@ def load_thermo_data_file(file_path):
 
 
 class QMMolecule(object):
-    """ 
+    """
     A base class for QM Molecule calculations.
-    
+
     Specific programs and methods should inherit from this and define some
     extra attributes and methods:
-    
+
      * outputFileExtension
      * inputFileExtension
      * generate_qm_data() ...and whatever else is needed to make this method work.
-     
+
     The attributes are:
-    
+
     =================== ======================= ====================================
     Attribute           Type                    Description
     =================== ======================= ====================================
@@ -268,7 +268,7 @@ class QMMolecule(object):
     `unique_id`         ``str``                 A short ID such as an augmented InChI Key
     `unique_id_long`    ``str``                 A long, truly unique ID such as an augmented InChI
     =================== ======================= ====================================
-    
+
     """
 
     def __init__(self, molecule, settings):
@@ -281,7 +281,7 @@ class QMMolecule(object):
     def get_file_path(self, extension, scratch=True):
         """
         Returns the path to the file with the given extension.
-        
+
         The provided extension should include the leading dot.
         If called with `scratch=False` then it will be in the `fileStore` directory,
         else `scratch=True` is assumed and it will be in the `scratchDirectory` directory.
@@ -372,8 +372,8 @@ class QMMolecule(object):
 
     def generate_thermo_data(self):
         """
-        Generate Thermo Data via a QM calc. 
-        
+        Generate Thermo Data via a QM calc.
+
         Returns None if it fails.
         """
         self.initialize()
@@ -452,7 +452,7 @@ class QMMolecule(object):
     def get_mol_file_path_for_calculation(self, attempt):
         """
         Get the path to the MOL file of the geometry to use for calculation `attempt`.
-        
+
         If attempt <= self.script_attempts then we use the refined coordinates,
         then we start to use the crude coordinates.
         """
@@ -464,7 +464,7 @@ class QMMolecule(object):
     def determine_point_group(self):
         """
         Determine point group using the SYMMETRY Program
-        
+
         Stores the resulting :class:`PointGroup` in self.point_group
         """
         assert self.qm_data, "Need QM Data first in order to calculate point group."
@@ -483,7 +483,7 @@ class QMMolecule(object):
     def calculate_thermo_data(self):
         """
         Calculate the thermodynamic properties.
-        
+
         Stores and returns a ThermoData object as self.thermo.
         self.qm_data and self.point_group need to be generated before this method is called.
         """
