@@ -1777,7 +1777,7 @@ class Group(Graph):
             if len(atom.radical_electrons) >= 1:
                 self.radicalCount += atom.radical_electrons[0]
 
-    def is_isomorphic(self, other, initial_map=None, save_order=False, strict=True):
+    def is_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False, strict=True):
         """
         Returns ``True`` if two graphs are isomorphic and ``False``
         otherwise. The `initial_map` attribute can be used to specify a required
@@ -1793,7 +1793,7 @@ class Group(Graph):
             raise TypeError(
                 'Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
-        return Graph.is_isomorphic(self, other, initial_map, save_order=save_order)
+        return Graph.is_isomorphic(self, other, initial_map, generate_initial_map, save_order=save_order)
 
     def find_isomorphism(self, other, initial_map=None, save_order=False, strict=True):
         """

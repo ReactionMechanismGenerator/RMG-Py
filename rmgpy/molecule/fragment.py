@@ -582,21 +582,8 @@ class Fragment(Graph):
         if self.multiplicity != other.multiplicity:
             return False
 
-        if generate_initial_map:
-            initial_map = dict()
-            for atom in self.vertices:
-                if atom.label and atom.label != '':
-                    for a in other.vertices:
-                        if a.label == atom.label:
-                            initial_map[atom] = a
-                            break
-                    else:
-                        return False
-            if not self.is_mapping_valid(other, initial_map, equivalent=True):
-                return False
-
         # Do the full isomorphism comparison
-        result = Graph.is_isomorphic(self, other, initial_map, save_order=save_order, strict=strict)
+        result = Graph.is_isomorphic(self, other, initial_map, generate_initial_map, save_order=save_order, strict=strict)
         return result
 
     def is_subgraph_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False):
