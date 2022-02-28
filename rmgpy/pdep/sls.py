@@ -42,3 +42,36 @@ import rmgpy.constants as constants
 from rmgpy.pdep.reaction import calculate_microcanonical_rate_coefficient
 from rmgpy.pdep.me import generate_full_me_matrix
 from rmgpy.statmech.translation import IdealGasTranslation
+
+def get_initial_condition(network,x0,indices):
+
+    e_list = network.e_list
+    j_list = network.j_list
+    dens_states = network.dens_states
+
+    n_isom = network.n_isom
+    n_reac = network.n_reac
+    n_prod = network.n_prod
+    n_grains = len(e_list)
+    n_j = len(j_list)
+
+    # Get equilibrium distributions
+    eq_dist = np.zeros_like(dens_states)
+    for i in range(n_isom):
+        for s in range(n_j):
+            eq_dist[i, :, s] = dens_states[i, :, s] * (2 * j_list[s] + 1) * np.exp(-e_list / constants.R / network.T)
+        eq_dist[i, :, :] /= sum(eq_dist[i, :, :])
+
+    # Set initial conditions
+    p0 = np.zeros(np.sum(indices >= 0.0)+n_reac+n_prod, float)
+    for i in range(n_isom):
+        for r in range(n_grains):
+            for s in range(n_j):
+                index = indices[i, r, s]
+                if indices[i, r, s] > 0:
+                    p0[index] = x0[i] * eq_dist[i, r, s]
+    for i in range(n_reac + n_prod):
+        p0[-n_reac - n_prod + i] = x0[i + n_isom]
+
+    return p0
+
