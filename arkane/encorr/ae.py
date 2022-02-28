@@ -196,11 +196,11 @@ class AE:
         n = len(y)  # Ndata
         k = len(w)  # Nparam
         ypred = x @ w
-        sigma2 = np.sum((y - ypred)**2) / (n - k - 1)  # MSE
+        sigma2 = np.sum((y - ypred)**2) / (n - k)  # MSE
         cov = sigma2 * np.linalg.inv(x.T @ x)  # covariance matrix
         se = np.sqrt(np.diag(cov))  # standard error
         alpha = 0.05  # 95% confidence level
-        tdist = distributions.t.ppf(1 - alpha/2, n - k - 1)  # student-t
+        tdist = distributions.t.ppf(1 - alpha/2, n - k)  # student-t
         ci = tdist * se  # confidence interval half-width
         self.confidence_intervals = dict(zip(elements, ci))  # Parameter estimates are w +/- ci
 
