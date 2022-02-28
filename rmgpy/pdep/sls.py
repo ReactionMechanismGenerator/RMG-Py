@@ -101,3 +101,25 @@ def solve_me_fcns(f,jac,M,p0,t):
     sol = de.solve(prob,solver=de.CVODE_BDF(),abstol=1e-16,reltol=1e-6)
     return sol
 
+def states_to_configurations(network,indices,state,exclude_association=False):
+    """
+    sum full master equation state into total species concentrations
+    """
+    if exclude_association:
+        xs = np.zeros(network.n_isom)
+    else:
+        xs = np.zeros(network.n_isom+network.n_reac+network.n_prod)
+    for i in range(network.n_isom):
+        cum = np.float64(0.0)
+        for r in range(network.n_grains):
+            for s in range(network.n_j):
+                index = indices[i,r,s]
+                if index == -1:
+                    continue
+                cum += state[index]
+        xs[i] += cum
+    if not exclude_association:
+        for i in range(network.n_reac+network.n_prod):
+            xs[i+network.n_isom] += state[-network.n_reac-network.n_prod+i]
+    return xs
+
