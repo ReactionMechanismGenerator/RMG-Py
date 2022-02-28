@@ -44,7 +44,11 @@ from rmgpy.pdep.me import generate_full_me_matrix
 from rmgpy.statmech.translation import IdealGasTranslation
 
 def get_initial_condition(network,x0,indices):
-
+    """
+    generates a master equation initial condition
+    from total species concentrations x0
+    distributes population boltzmann within each well
+    """
     e_list = network.e_list
     j_list = network.j_list
     dens_states = network.dens_states
