@@ -173,3 +173,19 @@ def unravel_ks(ks,keqs,n_isomreac):
                 kmat[j,i] = kmat[i,j]/keqs[i,j]
     return kmat
 
+def get_names(channel):
+    return [x.label for x in channel.species]
+
+def calcfluxes(kmat,xs):
+    """
+    calculate fluxes from phenomenological rate coefficients
+    """
+    fluxes = np.zeros(len(xs))
+    for i in range(kmat.shape[0]):
+        for j in range(i):
+            if i != j:
+                flux = kmat[j,i]*xs[i]-kmat[i,j]*xs[j]
+                fluxes[j] += flux
+                fluxes[i] -= flux
+    return fluxes
+
