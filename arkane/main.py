@@ -434,7 +434,6 @@ def get_conda_package(module):
     """
     Check the version of any conda package.
     """
-    import subprocess
     try:
         lines = subprocess.check_output(['conda', 'list', '-f', module]).splitlines()
 
