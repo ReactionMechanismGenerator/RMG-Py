@@ -81,3 +81,6 @@ RMG_Py.egg-info/*
 
 # deleted files
 **/.fuse_hidden*
+
+# RMG configuration file
+rmgpy/rmgrc

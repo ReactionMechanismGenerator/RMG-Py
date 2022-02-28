@@ -2,10 +2,11 @@
 #
 #   This is a configuration file for RMG-Py. 
 #
-#   A copy of this file is always available from site-packages/rmgpy/rmgrc. 
-#   Note that any changes made to that file will likely be overridden when 
-#   installing an updated version of RMG-Py. If you want to keep a permanent 
-#   local copy that will not be over-written, place it in $HOME/.rmg/rmgrc 
+#   A copy of this file is always available from rmgpy/rmgrc_template.
+#   To use this file, make a copy and place in rmgpy/rmgrc.
+#   Do not make any changes to the template file, which will be overridden when
+#   installing an updated version of RMG-Py. If you want to keep a user-wide
+#   local copy, you can also copy the template to $HOME/.rmg/rmgrc
 #   (Unix-based systems) or C:\Documents and Settings\yourname\.rmg\rmgrc 
 #   (Windows systems).
 #
