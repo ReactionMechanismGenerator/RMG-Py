@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>Torsional degrees of freedom<a class="headerlink" href="#torsional-degrees-of-freedom" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.statmech.</span></span><span class="sig-name descname"><span class="pre">HinderedRotor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inertia</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barrier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fourier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotationalConstant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">semiclassical</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.statmech.</span></span><span class="sig-name descname"><span class="pre">HinderedRotor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inertia</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barrier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fourier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotationalConstant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">semiclassical</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor" title="Permalink to this definition">¶</a></dt>
 <dd><p>A statistical mechanical model of a one-dimensional hindered rotor.
 The attributes are:</p>
 <table class="docutils align-default">
@@ -165,7 +165,7 @@ rotor:</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.fit_cosine_potential_to_data">
-<span class="sig-name descname"><span class="pre">fit_cosine_potential_to_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">angle</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">V</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.fit_cosine_potential_to_data" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">fit_cosine_potential_to_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">V</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.fit_cosine_potential_to_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit the given angles in radians and corresponding potential energies in
 J/mol to the cosine potential. For best results, the angle should
 begin at zero and end at <span class="math notranslate nohighlight">\(2 \pi\)</span>, with the minimum energy
@@ -176,7 +176,7 @@ order to determine which one is correct.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.fit_fourier_potential_to_data">
-<span class="sig-name descname"><span class="pre">fit_fourier_potential_to_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">angle</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">V</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.fit_fourier_potential_to_data" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">fit_fourier_potential_to_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">V</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.fit_fourier_potential_to_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit the given angles in radians and corresponding potential energies in
 J/mol to the Fourier series potential. For best results, the angle
 should begin at zero and end at <span class="math notranslate nohighlight">\(2 \pi\)</span>, with the minimum energy
@@ -202,7 +202,7 @@ conformation having a potential of zero be placed at zero angle.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.get_density_of_states">
-<span class="sig-name descname"><span class="pre">get_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dens_states_0=None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_density_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">dens_states_0=None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_density_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the density of states <span class="math notranslate nohighlight">\(\rho(E) \ dE\)</span> at the specified
 energies <cite>e_list</cite> in J/mol above the ground state. If an initial density
 of states <cite>dens_states_0</cite> is given, the rotor density of states will be
@@ -211,14 +211,14 @@ convoluted into these states.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.get_enthalpy">
-<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_enthalpy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in J/mol for the degree of freedom at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.get_entropy">
-<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_entropy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K for the degree of freedom at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
@@ -232,7 +232,7 @@ harmonic oscillation.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.get_hamiltonian">
-<span class="sig-name descname"><span class="pre">get_hamiltonian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">n_basis</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_hamiltonian" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_hamiltonian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">n_basis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_hamiltonian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the to the Hamiltonian matrix for the hindered rotor for the
 given number of basis functions <cite>n_basis</cite>. The Hamiltonian matrix is
 returned in banded lower triangular form and with units of J/mol.</p>
@@ -240,40 +240,40 @@ returned in banded lower triangular form and with units of J/mol.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.get_heat_capacity">
-<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the heat capacity in J/mol*K for the degree of freedom at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.get_level_degeneracy">
-<span class="sig-name descname"><span class="pre">get_level_degeneracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">J</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_level_degeneracy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_level_degeneracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">J</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_level_degeneracy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the degeneracy of level <cite>J</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.get_level_energy">
-<span class="sig-name descname"><span class="pre">get_level_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">J</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_level_energy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_level_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">J</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_level_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the energy of level <cite>J</cite> in J.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.get_partition_function">
-<span class="sig-name descname"><span class="pre">get_partition_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_partition_function" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_partition_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_partition_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the partition function <span class="math notranslate nohighlight">\(Q(T)\)</span> at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.get_potential">
-<span class="sig-name descname"><span class="pre">get_potential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">phi</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_potential" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_potential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">phi</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_potential" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the hindered rotor potential <span class="math notranslate nohighlight">\(V(\phi)\)</span>
 in J/mol at the angle <cite>phi</cite> in radians.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.get_sum_of_states">
-<span class="sig-name descname"><span class="pre">get_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">sum_states_0=None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">sum_states_0=None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.get_sum_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the sum of states <span class="math notranslate nohighlight">\(N(E)\)</span> at the specified energies <cite>e_list</cite>
 in J/mol above the ground state. If an initial sum of states
 <cite>sum_states_0</cite> is given, the rotor sum of states will be convoluted into
@@ -288,7 +288,7 @@ these states.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.make_object">
-<span class="sig-name descname"><span class="pre">make_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">data</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">class_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.make_object" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">make_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">class_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.make_object" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -321,7 +321,7 @@ these states.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.statmech.HinderedRotor.solve_schrodinger_equation">
-<span class="sig-name descname"><span class="pre">solve_schrodinger_equation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">n_basis=401</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.solve_schrodinger_equation" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">solve_schrodinger_equation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">n_basis=401</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.statmech.HinderedRotor.solve_schrodinger_equation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solves the one-dimensional time-independent Schrodinger equation to
 determine the energy levels of a one-dimensional hindered rotor with a
 Fourier series potential using <cite>n_basis</cite> basis functions. For the
@@ -375,12 +375,16 @@ Hamiltonian matrix in J/mol.</p>
         <div class="menuitem">
         </div>
         <div class="menuitem">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="harmonicoscillator.html"
-                        title="previous chapter">rmgpy.statmech.HarmonicOscillator</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="schrodinger.html"
-                        title="next chapter">rmgpy.statmech.schrodinger</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="harmonicoscillator.html"
+                          title="previous chapter">rmgpy.statmech.HarmonicOscillator</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="schrodinger.html"
+                          title="next chapter">rmgpy.statmech.schrodinger</a></p>
+  </div>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -436,7 +440,7 @@ Hamiltonian matrix in J/mol.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

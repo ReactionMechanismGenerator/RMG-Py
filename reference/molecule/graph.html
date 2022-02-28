@@ -61,7 +61,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.graph.Graph<a class="headerlink" href="#rmgpy-molecule-graph-graph" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.graph.</span></span><span class="sig-name descname"><span class="pre">Graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.graph.</span></span><span class="sig-name descname"><span class="pre">Graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph" title="Permalink to this definition">¶</a></dt>
 <dd><p>A graph data type. The vertices of the graph are stored in a list
 <cite>vertices</cite>; this provides a consistent traversal order. A single edge can
 be accessed using the <a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_edge" title="rmgpy.molecule.graph.Graph.get_edge"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_edge()</span></code></a> method or by accessing specific
@@ -70,20 +70,20 @@ will be raised if the edge does not exist. All edges of a vertex can be
 accessed using the <a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_edges" title="rmgpy.molecule.graph.Graph.get_edges"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_edges()</span></code></a> method or <code class="docutils literal notranslate"><span class="pre">vertex.edges</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.add_edge">
-<span class="sig-name descname"><span class="pre">add_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Edge</span> <span class="pre">edge</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="edge.html#rmgpy.molecule.graph.Edge" title="rmgpy.molecule.graph.Edge"><span class="pre">Edge</span></a></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.add_edge" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Edge</span> <span class="pre">edge</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="edge.html#rmgpy.molecule.graph.Edge" title="rmgpy.molecule.graph.Edge"><span class="pre">Edge</span></a></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.add_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add an <cite>edge</cite> to the graph. The two vertices in the edge must already
 exist in the graph, or a <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code> is raised.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.add_vertex">
-<span class="sig-name descname"><span class="pre">add_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="vertex.html#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex"><span class="pre">Vertex</span></a></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.add_vertex" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vertex</span> <span class="pre">vertex</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="vertex.html#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex"><span class="pre">Vertex</span></a></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.add_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a <cite>vertex</cite> to the graph. The vertex is initialized with no edges.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">deep=False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rmgpy.molecule.graph.Graph" title="rmgpy.molecule.graph.Graph"><span class="pre">Graph</span></a></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.copy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">deep=False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rmgpy.molecule.graph.Graph" title="rmgpy.molecule.graph.Graph"><span class="pre">Graph</span></a></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a copy of the current graph. If <cite>deep</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, a deep copy
 is made: copies of the vertices and edges are used in the new graph.
 If <cite>deep</cite> is <code class="docutils literal notranslate"><span class="pre">False</span></code> or not specified, a shallow copy is made: the
@@ -99,7 +99,7 @@ original vertices and edges are used in the new graph.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.find_isomorphism">
-<span class="sig-name descname"><span class="pre">find_isomorphism</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">other</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">initial_map=None</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.find_isomorphism" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find_isomorphism</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Graph</span> <span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">initial_map=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">save_order=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">strict=True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.find_isomorphism" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is subgraph isomorphic and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code>
 otherwise, and the matching mapping.
 Uses the VF2 algorithm of Vento and Foggia.</p>
@@ -116,7 +116,7 @@ Uses the VF2 algorithm of Vento and Foggia.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.find_subgraph_isomorphisms">
-<span class="sig-name descname"><span class="pre">find_subgraph_isomorphisms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">other</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">initial_map=None</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.find_subgraph_isomorphisms" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find_subgraph_isomorphisms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Graph</span> <span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">initial_map=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">save_order=False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.find_subgraph_isomorphisms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is subgraph isomorphic and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. Also returns the lists all of valid mappings.</p>
 <p>Uses the VF2 algorithm of Vento and Foggia.</p>
@@ -124,7 +124,7 @@ otherwise. Also returns the lists all of valid mappings.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.get_all_cycles">
-<span class="sig-name descname"><span class="pre">get_all_cycles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">starting_vertex</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_all_cycles" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_all_cycles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vertex</span> <span class="pre">starting_vertex</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_all_cycles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a starting vertex, returns a list of all the cycles containing
 that vertex.</p>
 <p>This function returns a duplicate of each cycle because [0,1,2,3]
@@ -133,7 +133,7 @@ is counted as separate from [0,3,2,1]</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.get_all_cycles_of_size">
-<span class="sig-name descname"><span class="pre">get_all_cycles_of_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">size</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_all_cycles_of_size" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_all_cycles_of_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">size</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_all_cycles_of_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of the all non-duplicate rings with length ‘size’. The
 algorithm implements was adapted from a description by Fan, Panaye,
 Doucet, and Barbu (doi: 10.1021/ci00015a002)</p>
@@ -163,7 +163,7 @@ p. 657-662 (1993).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.get_all_simple_cycles_of_size">
-<span class="sig-name descname"><span class="pre">get_all_simple_cycles_of_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">int</span> <span class="pre">size</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_all_simple_cycles_of_size" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_all_simple_cycles_of_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">size</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_all_simple_cycles_of_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of all non-duplicate monocyclic rings with length ‘size’.</p>
 <p>Naive approach by eliminating polycyclic rings that are returned by
 <code class="docutils literal notranslate"><span class="pre">getAllCyclicsOfSize</span></code>.</p>
@@ -179,19 +179,19 @@ Takes the RC and recursively merges all cycles which share vertices.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.get_edge">
-<span class="sig-name descname"><span class="pre">get_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex1</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex2</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="edge.html#rmgpy.molecule.graph.Edge" title="rmgpy.molecule.graph.Edge"><span class="pre">Edge</span></a></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_edge" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vertex</span> <span class="pre">vertex1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vertex</span> <span class="pre">vertex2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="edge.html#rmgpy.molecule.graph.Edge" title="rmgpy.molecule.graph.Edge"><span class="pre">Edge</span></a></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the edge connecting vertices <cite>vertex1</cite> and <cite>vertex2</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.get_edges">
-<span class="sig-name descname"><span class="pre">get_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_edges" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vertex</span> <span class="pre">vertex</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_edges" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a dictionary of the edges involving the specified <cite>vertex</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.get_edges_in_cycle">
-<span class="sig-name descname"><span class="pre">get_edges_in_cycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">vertices</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">sort=False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_edges_in_cycle" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_edges_in_cycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list</span> <span class="pre">vertices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">sort=False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_edges_in_cycle" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given list of atoms comprising a ring, return the set of bonds
 connecting them, in order around the ring.</p>
 <p>If <cite>sort=True</cite>, then sort the vertices to match their connectivity.
@@ -201,7 +201,7 @@ cycles returned by get_relevant_cycles or get_smallest_set_of_smallest_rings.</p
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.get_largest_ring">
-<span class="sig-name descname"><span class="pre">get_largest_ring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_largest_ring" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_largest_ring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vertex</span> <span class="pre">vertex</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_largest_ring" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns the largest ring containing vertex. This is typically
 useful for finding the longest path in a polycyclic ring, since
 the polycyclic rings returned from get_polycycles are not necessarily
@@ -266,14 +266,14 @@ J. Chem. Inf. Model., 2017, 57 (2), pp 122-126</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.has_edge">
-<span class="sig-name descname"><span class="pre">has_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex1</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex2</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.has_edge" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">has_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vertex</span> <span class="pre">vertex1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vertex</span> <span class="pre">vertex2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.has_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if vertices <cite>vertex1</cite> and <cite>vertex2</cite> are connected
 by an edge, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.has_vertex">
-<span class="sig-name descname"><span class="pre">has_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.has_vertex" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">has_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vertex</span> <span class="pre">vertex</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.has_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>vertex</cite> is a vertex in the graph, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
@@ -287,14 +287,14 @@ not.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.is_edge_in_cycle">
-<span class="sig-name descname"><span class="pre">is_edge_in_cycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Edge</span> <span class="pre">edge</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.is_edge_in_cycle" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_edge_in_cycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Edge</span> <span class="pre">edge</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.is_edge_in_cycle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if the edge between vertices <cite>vertex1</cite> and <cite>vertex2</cite>
 is in one or more cycles in the graph, or <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.is_isomorphic">
-<span class="sig-name descname"><span class="pre">is_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">other</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">initial_map=None</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.is_isomorphic" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Graph</span> <span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">initial_map=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">save_order=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">strict=True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.is_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if two graphs are isomorphic and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. Uses the VF2 algorithm of Vento and Foggia.</p>
 <dl class="field-list simple">
@@ -310,7 +310,7 @@ otherwise. Uses the VF2 algorithm of Vento and Foggia.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.is_mapping_valid">
-<span class="sig-name descname"><span class="pre">is_mapping_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">other</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">mapping</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">equivalent=True</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">strict=True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.is_mapping_valid" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_mapping_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Graph</span> <span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">equivalent=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">strict=True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.is_mapping_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that a proposed <cite>mapping</cite> of vertices from <cite>self</cite> to <cite>other</cite>
 is valid by checking that the vertices and edges involved in the
 mapping are mutually equivalent.  If equivalent is <code class="docutils literal notranslate"><span class="pre">True</span></code> it checks
@@ -321,21 +321,21 @@ and bond orders are considered, and ignored if <code class="docutils literal not
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.is_subgraph_isomorphic">
-<span class="sig-name descname"><span class="pre">is_subgraph_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">other</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">initial_map=None</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.is_subgraph_isomorphic" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_subgraph_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Graph</span> <span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">initial_map=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">save_order=False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.is_subgraph_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is subgraph isomorphic and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. Uses the VF2 algorithm of Vento and Foggia.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.is_vertex_in_cycle">
-<span class="sig-name descname"><span class="pre">is_vertex_in_cycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.is_vertex_in_cycle" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_vertex_in_cycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vertex</span> <span class="pre">vertex</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.is_vertex_in_cycle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the given <cite>vertex</cite> is contained in one or more
 cycles in the graph, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.merge">
-<span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Graph</span> <span class="pre">other</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rmgpy.molecule.graph.Graph" title="rmgpy.molecule.graph.Graph"><span class="pre">Graph</span></a></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.merge" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Graph</span> <span class="pre">other</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rmgpy.molecule.graph.Graph" title="rmgpy.molecule.graph.Graph"><span class="pre">Graph</span></a></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge two graphs so as to store them in a single Graph object.</p>
 </dd></dl>
 
@@ -352,7 +352,7 @@ cycles in the graph, or <code class="docutils literal notranslate"><span class="
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.remove_edge">
-<span class="sig-name descname"><span class="pre">remove_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Edge</span> <span class="pre">edge</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.remove_edge" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">remove_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Edge</span> <span class="pre">edge</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.remove_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove the specified <cite>edge</cite> from the graph.
 Does not remove vertices that no longer have any edges as a result of
 this removal.</p>
@@ -360,7 +360,7 @@ this removal.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.remove_vertex">
-<span class="sig-name descname"><span class="pre">remove_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">Vertex</span> <span class="pre">vertex</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.remove_vertex" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">remove_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vertex</span> <span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.remove_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove <cite>vertex</cite> and all edges associated with it from the graph. Does
 not remove vertices that no longer have any edges as a result of this
 removal.</p>
@@ -382,7 +382,7 @@ if you saved the order</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.sort_cyclic_vertices">
-<span class="sig-name descname"><span class="pre">sort_cyclic_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">list</span> <span class="pre">vertices</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.sort_cyclic_vertices" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">sort_cyclic_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list</span> <span class="pre">vertices</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.sort_cyclic_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a list of vertices comprising a cycle, sort them such that adjacent
 entries in the list are connected to each other.
 Warning: Assumes that the cycle is elementary, ie. no bridges.</p>
@@ -390,7 +390,7 @@ Warning: Assumes that the cycle is elementary, ie. no bridges.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph.sort_vertices">
-<span class="sig-name descname"><span class="pre">sort_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">save_order=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.sort_vertices" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">sort_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">save_order=False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.sort_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort the vertices in the graph. This can make certain operations, e.g.
 the isomorphism functions, much more efficient.</p>
 </dd></dl>
@@ -454,12 +454,16 @@ used to accelerate the isomorphism checking.</p>
         <div class="menuitem">
         </div>
         <div class="menuitem">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="edge.html"
-                        title="previous chapter">rmgpy.molecule.graph.Edge</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="vf2.html"
-                        title="next chapter">rmgpy.molecule.vf2.VF2</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="edge.html"
+                          title="previous chapter">rmgpy.molecule.graph.Edge</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="vf2.html"
+                          title="next chapter">rmgpy.molecule.vf2.VF2</a></p>
+  </div>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -515,7 +519,7 @@ used to accelerate the isomorphism checking.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

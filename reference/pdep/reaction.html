@@ -64,7 +64,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2>Microcanonical rate coefficients<a class="headerlink" href="#microcanonical-rate-coefficients" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.pdep.reaction.</span></span><span class="sig-name descname"><span class="pre">calculate_microcanonical_rate_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">reaction</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">j_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">reac_dens_states</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">prod_dens_states=None</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T=0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.pdep.reaction.</span></span><span class="sig-name descname"><span class="pre">calculate_microcanonical_rate_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">j_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">reac_dens_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">prod_dens_states=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T=0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the microcanonical rate coefficient <span class="math notranslate nohighlight">\(k(E)\)</span> for the reaction
 <cite>reaction</cite> at the energies <cite>e_list</cite> in J/mol. <cite>reac_dens_states</cite> and
 <cite>prod_dens_states</cite> are the densities of states of the reactant and product
@@ -92,7 +92,7 @@ inverse Laplace transform method.</p>
 <h2>RRKM theory<a class="headerlink" href="#rrkm-theory" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.pdep.reaction.apply_rrkm_theory">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.pdep.reaction.</span></span><span class="sig-name descname"><span class="pre">apply_rrkm_theory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">transition_state</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">j_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dens_states</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_rrkm_theory" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.pdep.reaction.</span></span><span class="sig-name descname"><span class="pre">apply_rrkm_theory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transition_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">j_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">dens_states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_rrkm_theory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the microcanonical rate coefficient for a reaction using RRKM
 theory, where <cite>transition_state</cite> is the transition state of the reaction,
 <cite>e_list</cite> is the array of energies in J/mol at which to evaluate the
@@ -122,7 +122,7 @@ than the inverse Laplace transform method.</p>
 <h2>Inverse Laplace transform method<a class="headerlink" href="#inverse-laplace-transform-method" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.pdep.reaction.apply_inverse_laplace_transform_method">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.pdep.reaction.</span></span><span class="sig-name descname"><span class="pre">apply_inverse_laplace_transform_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">transition_state</span></em>, <em class="sig-param"><span class="pre">Arrhenius</span> <span class="pre">kinetics</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">j_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dens_states</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T=0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_inverse_laplace_transform_method" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.pdep.reaction.</span></span><span class="sig-name descname"><span class="pre">apply_inverse_laplace_transform_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transition_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Arrhenius</span> <span class="pre">kinetics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">j_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">dens_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T=0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_inverse_laplace_transform_method" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the microcanonical rate coefficient for a reaction using the
 inverse Laplace transform method, where <cite>kinetics</cite> is the high pressure
 limit rate coefficient, <cite>E0</cite> is the ground-state energy of the transition
@@ -185,8 +185,9 @@ the reaction barrier <span class="math notranslate nohighlight">\(E_0^\ddagger -
           </a>
         </div>
         <div class="menuitem">
-  <h3><a href="../../contents.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Reaction events</a><ul>
 <li><a class="reference internal" href="#microcanonical-rate-coefficients">Microcanonical rate coefficients</a></li>
 <li><a class="reference internal" href="#rrkm-theory">RRKM theory</a></li>
@@ -195,14 +196,19 @@ the reaction barrier <span class="math notranslate nohighlight">\(E_0^\ddagger -
 </li>
 </ul>
 
+  </div>
         </div>
         <div class="menuitem">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="singleexponentialdown.html"
-                        title="previous chapter">rmgpy.pdep.SingleExponentialDown</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="configuration.html"
-                        title="next chapter">rmgpy.pdep.Configuration</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="singleexponentialdown.html"
+                          title="previous chapter">rmgpy.pdep.SingleExponentialDown</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="configuration.html"
+                          title="next chapter">rmgpy.pdep.Configuration</a></p>
+  </div>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -258,7 +264,7 @@ the reaction barrier <span class="math notranslate nohighlight">\(E_0^\ddagger -
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

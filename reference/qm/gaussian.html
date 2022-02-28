@@ -61,12 +61,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.qm.gaussian<a class="headerlink" href="#rmgpy-qm-gaussian" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.Gaussian">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.gaussian.</span></span><span class="sig-name descname"><span class="pre">Gaussian</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.gaussian.</span></span><span class="sig-name descname"><span class="pre">Gaussian</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base class for all QM calculations that use Gaussian.</p>
 <p>Classes such as <a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol" title="rmgpy.qm.gaussian.GaussianMol"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianMol</span></code></a> will inherit from this class.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.Gaussian.failureKeys">
-<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"> <span class="pre">=</span> <span class="pre">['ERROR</span> <span class="pre">TERMINATION',</span> <span class="pre">'IMAGINARY</span> <span class="pre">FREQUENCIES']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian.failureKeys" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['ERROR</span> <span class="pre">TERMINATION',</span> <span class="pre">'IMAGINARY</span> <span class="pre">FREQUENCIES']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian.failureKeys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases that indicate failure
 NONE of these must be present in a succesful job.</p>
 </dd></dl>
@@ -79,7 +79,7 @@ NONE of these must be present in a succesful job.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.Gaussian.successKeys">
-<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"> <span class="pre">=</span> <span class="pre">['Normal</span> <span class="pre">termination</span> <span class="pre">of</span> <span class="pre">Gaussian']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian.successKeys" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Normal</span> <span class="pre">termination</span> <span class="pre">of</span> <span class="pre">Gaussian']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian.successKeys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases to indicate success.
 ALL of these must be present in a successful job.</p>
 </dd></dl>
@@ -104,7 +104,7 @@ If all are satisfied, it will return True.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMol">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.gaussian.</span></span><span class="sig-name descname"><span class="pre">GaussianMol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.gaussian.</span></span><span class="sig-name descname"><span class="pre">GaussianMol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base Class for calculations of molecules using Gaussian.</p>
 <p>Inherits from both <code class="xref py py-class docutils literal notranslate"><span class="pre">QMMolecule</span></code> and <a class="reference internal" href="#rmgpy.qm.gaussian.Gaussian" title="rmgpy.qm.gaussian.Gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gaussian</span></code></a>.</p>
 <dl class="py method">
@@ -209,7 +209,7 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMol.input_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.input_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
@@ -221,13 +221,13 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMol.max_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.max_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMol.output_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.output_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
@@ -245,7 +245,7 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMol.script_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.script_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
@@ -276,7 +276,7 @@ for the <cite>attempt</cite>.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM3">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.gaussian.</span></span><span class="sig-name descname"><span class="pre">GaussianMolPM3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.gaussian.</span></span><span class="sig-name descname"><span class="pre">GaussianMolPM3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gaussian PM3 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
 but for now it’s only the ‘pm3’ in the keywords that differs.</p>
@@ -382,13 +382,13 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM3.input_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.input_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM3.keywords">
-<span class="sig-name descname"><span class="pre">keywords</span></span><em class="property"> <span class="pre">=</span> <span class="pre">['#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">IOP(4/21=2)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,calcfc,maxcyc=200)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,calcfc,maxcyc=200)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis,small)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,nolinear,calcfc,small)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis,maxcyc=200)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=tight</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=tight</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(tight,nolinear,calcfc,small,maxcyc=200)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">IOP(4/21=200)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100)</span> <span class="pre">freq=(numerical,step=10)</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(tight,gdiis,small,maxcyc=200,maxstep=100)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis,calcall)</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis,calcall,small,maxcyc=200)</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">IOP(4/21=2)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis,calcall,small)</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(calcall,small,maxcyc=100)</span> <span class="pre">IOP(2/16=3)']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.keywords" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">keywords</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">IOP(4/21=2)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,calcfc,maxcyc=200)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,calcfc,maxcyc=200)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis,small)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,nolinear,calcfc,small)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis,maxcyc=200)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=tight</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=tight</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(tight,nolinear,calcfc,small,maxcyc=200)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">IOP(4/21=200)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100)</span> <span class="pre">freq=(numerical,step=10)</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(tight,gdiis,small,maxcyc=200,maxstep=100)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis,calcall)</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis,calcall,small,maxcyc=200)</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">IOP(4/21=2)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(verytight,gdiis,calcall,small)</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm3</span> <span class="pre">opt=(calcall,small,maxcyc=100)</span> <span class="pre">IOP(2/16=3)']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keywords that will be added at the top of the qm input file</p>
 </dd></dl>
 
@@ -400,13 +400,13 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM3.max_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.max_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM3.output_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.output_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
@@ -424,7 +424,7 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM3.script_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.script_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
@@ -455,7 +455,7 @@ for the <cite>attempt</cite>.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM6">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.gaussian.</span></span><span class="sig-name descname"><span class="pre">GaussianMolPM6</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.gaussian.</span></span><span class="sig-name descname"><span class="pre">GaussianMolPM6</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gaussian PM6 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
 but for now it’s only the ‘pm6’ in the keywords that differs.</p>
@@ -561,13 +561,13 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM6.input_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.input_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM6.keywords">
-<span class="sig-name descname"><span class="pre">keywords</span></span><em class="property"> <span class="pre">=</span> <span class="pre">['#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">IOP(4/21=2)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,calcfc,maxcyc=200)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,calcfc,maxcyc=200)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis,small)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,nolinear,calcfc,small)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis,maxcyc=200)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=tight</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=tight</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(tight,nolinear,calcfc,small,maxcyc=200)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">IOP(4/21=200)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100)</span> <span class="pre">freq=(numerical,step=10)</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(tight,gdiis,small,maxcyc=200,maxstep=100)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis,calcall)</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis,calcall,small,maxcyc=200)</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">IOP(4/21=2)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis,calcall,small)</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(calcall,small,maxcyc=100)</span> <span class="pre">IOP(2/16=3)']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.keywords" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">keywords</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">IOP(4/21=2)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,calcfc,maxcyc=200)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,calcfc,maxcyc=200)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis,small)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,nolinear,calcfc,small)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis,maxcyc=200)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=tight</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=tight</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(tight,nolinear,calcfc,small,maxcyc=200)</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt</span> <span class="pre">freq</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">IOP(4/21=200)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(calcfc,verytight,newton,notrustupdate,small,maxcyc=100,maxstep=100)</span> <span class="pre">freq=(numerical,step=10)</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(tight,gdiis,small,maxcyc=200,maxstep=100)</span> <span class="pre">freq=numerical</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis,calcall)</span> <span class="pre">IOP(2/16=3)',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis,calcall,small,maxcyc=200)</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">IOP(4/21=2)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(verytight,gdiis,calcall,small)</span> <span class="pre">IOP(2/16=3)</span> <span class="pre">nosymm',</span> <span class="pre">'#</span> <span class="pre">pm6</span> <span class="pre">opt=(calcall,small,maxcyc=100)</span> <span class="pre">IOP(2/16=3)']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keywords that will be added at the top of the qm input file</p>
 </dd></dl>
 
@@ -579,13 +579,13 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM6.max_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.max_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM6.output_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.output_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
@@ -603,7 +603,7 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM6.script_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.script_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
@@ -664,12 +664,16 @@ for the <cite>attempt</cite>.</p>
         <div class="menuitem">
         </div>
         <div class="menuitem">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="symmetry.html"
-                        title="previous chapter">rmgpy.qm.symmetry</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="mopac.html"
-                        title="next chapter">rmgpy.qm.mopac</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="symmetry.html"
+                          title="previous chapter">rmgpy.qm.symmetry</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="mopac.html"
+                          title="next chapter">rmgpy.qm.mopac</a></p>
+  </div>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -725,7 +729,7 @@ for the <cite>attempt</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

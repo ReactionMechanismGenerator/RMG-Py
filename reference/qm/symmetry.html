@@ -61,7 +61,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.qm.symmetry<a class="headerlink" href="#rmgpy-qm-symmetry" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.qm.symmetry.PointGroup">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.symmetry.</span></span><span class="sig-name descname"><span class="pre">PointGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetry_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chiral</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.PointGroup" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.symmetry.</span></span><span class="sig-name descname"><span class="pre">PointGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetry_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chiral</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.PointGroup" title="Permalink to this definition">¶</a></dt>
 <dd><p>A symmetry Point Group.</p>
 <p>Attributes are:</p>
 <blockquote>
@@ -76,14 +76,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.qm.symmetry.PointGroupCalculator">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.symmetry.</span></span><span class="sig-name descname"><span class="pre">PointGroupCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">settings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qm_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.PointGroupCalculator" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.symmetry.</span></span><span class="sig-name descname"><span class="pre">PointGroupCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">settings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qm_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.PointGroupCalculator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper type to determine molecular symmetry point groups based on 3D coords information.</p>
 <p>Will point to a specific algorithm, like SYMMETRY that is able to do this.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.qm.symmetry.SymmetryJob">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.symmetry.</span></span><span class="sig-name descname"><span class="pre">SymmetryJob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">settings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qm_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.symmetry.</span></span><span class="sig-name descname"><span class="pre">SymmetryJob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">settings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qm_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the point group using the SYMMETRY program</p>
 <dl class="simple">
 <dt>(Originally <code class="docutils literal notranslate"><span class="pre">http://www.cobalt.chem.ucalgary.ca/ps/symmetry/</span></code></dt><dd><p>now mirrored at <a class="reference external" href="https://github.com/nquesada/symmetry">https://github.com/nquesada/symmetry</a>).</p>
@@ -105,7 +105,7 @@ with different parameters, until a point group is found and returned.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.symmetry.SymmetryJob.input_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob.input_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.symmetry.SymmetryJob.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>The input file’s path</p>
 </dd></dl>
 
@@ -167,12 +167,16 @@ with different parameters, until a point group is found and returned.</p>
         <div class="menuitem">
         </div>
         <div class="menuitem">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="qmverifier.html"
-                        title="previous chapter">rmgpy.qm.qmverifier</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="gaussian.html"
-                        title="next chapter">rmgpy.qm.gaussian</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="qmverifier.html"
+                          title="previous chapter">rmgpy.qm.qmverifier</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="gaussian.html"
+                          title="next chapter">rmgpy.qm.gaussian</a></p>
+  </div>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -228,7 +232,7 @@ with different parameters, until a point group is found and returned.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -61,12 +61,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.qm.mopac<a class="headerlink" href="#rmgpy-qm-mopac" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.Mopac">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.mopac.</span></span><span class="sig-name descname"><span class="pre">Mopac</span></span><a class="headerlink" href="#rmgpy.qm.mopac.Mopac" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.mopac.</span></span><span class="sig-name descname"><span class="pre">Mopac</span></span><a class="headerlink" href="#rmgpy.qm.mopac.Mopac" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base class for all QM calculations that use MOPAC.</p>
 <p>Classes such as <a class="reference internal" href="#rmgpy.qm.mopac.MopacMol" title="rmgpy.qm.mopac.MopacMol"><code class="xref py py-class docutils literal notranslate"><span class="pre">MopacMol</span></code></a> will inherit from this class.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.Mopac.failureKeys">
-<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"> <span class="pre">=</span> <span class="pre">['IMAGINARY</span> <span class="pre">FREQUENCIES',</span> <span class="pre">'EXCESS</span> <span class="pre">NUMBER</span> <span class="pre">OF</span> <span class="pre">OPTIMIZATION</span> <span class="pre">CYCLES',</span> <span class="pre">'NOT</span> <span class="pre">ENOUGH</span> <span class="pre">TIME</span> <span class="pre">FOR</span> <span class="pre">ANOTHER</span> <span class="pre">CYCLE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.failureKeys" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['IMAGINARY</span> <span class="pre">FREQUENCIES',</span> <span class="pre">'EXCESS</span> <span class="pre">NUMBER</span> <span class="pre">OF</span> <span class="pre">OPTIMIZATION</span> <span class="pre">CYCLES',</span> <span class="pre">'NOT</span> <span class="pre">ENOUGH</span> <span class="pre">TIME</span> <span class="pre">FOR</span> <span class="pre">ANOTHER</span> <span class="pre">CYCLE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.failureKeys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases that indicate failure
 NONE of these must be present in a succesful job.</p>
 </dd></dl>
@@ -79,14 +79,14 @@ NONE of these must be present in a succesful job.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.Mopac.successKeys">
-<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"> <span class="pre">=</span> <span class="pre">['DESCRIPTION</span> <span class="pre">OF</span> <span class="pre">VIBRATIONS',</span> <span class="pre">'MOPAC</span> <span class="pre">DONE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.successKeys" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['DESCRIPTION</span> <span class="pre">OF</span> <span class="pre">VIBRATIONS',</span> <span class="pre">'MOPAC</span> <span class="pre">DONE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.successKeys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases to indicate success.
 ALL of these must be present in a successful job.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.Mopac.usePolar">
-<span class="sig-name descname"><span class="pre">usePolar</span></span><em class="property"> <span class="pre">=</span> <span class="pre">False</span></em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.usePolar" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">usePolar</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.usePolar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keywords for the multiplicity</p>
 </dd></dl>
 
@@ -110,7 +110,7 @@ If all succeed, then it will return True.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMol">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.mopac.</span></span><span class="sig-name descname"><span class="pre">MopacMol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.mopac.</span></span><span class="sig-name descname"><span class="pre">MopacMol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base Class for calculations of molecules using MOPAC.</p>
 <p>Inherits from both <code class="xref py py-class docutils literal notranslate"><span class="pre">QMMolecule</span></code> and <a class="reference internal" href="#rmgpy.qm.mopac.Mopac" title="rmgpy.qm.mopac.Mopac"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mopac</span></code></a>.</p>
 <dl class="py method">
@@ -214,13 +214,13 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMol.input_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.input_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMol.keywords">
-<span class="sig-name descname"><span class="pre">keywords</span></span><em class="property"> <span class="pre">=</span> <span class="pre">[{'top':</span> <span class="pre">'precise</span> <span class="pre">nosym</span> <span class="pre">THREADS=1',</span> <span class="pre">'bottom':</span> <span class="pre">'oldgeo</span> <span class="pre">thermo</span> <span class="pre">nosym</span> <span class="pre">precise</span> <span class="pre">THREADS=1</span> <span class="pre">'},</span> <span class="pre">{'top':</span> <span class="pre">'precise</span> <span class="pre">nosym</span> <span class="pre">gnorm=0.0</span> <span class="pre">nonr</span> <span class="pre">THREADS=1',</span> <span class="pre">'bottom':</span> <span class="pre">'oldgeo</span> <span class="pre">thermo</span> <span class="pre">nosym</span> <span class="pre">precise</span> <span class="pre">THREADS=1</span> <span class="pre">'},</span> <span class="pre">{'top':</span> <span class="pre">'precise</span> <span class="pre">nosym</span> <span class="pre">gnorm=0.0</span> <span class="pre">THREADS=1',</span> <span class="pre">'bottom':</span> <span class="pre">'oldgeo</span> <span class="pre">thermo</span> <span class="pre">nosym</span> <span class="pre">precise</span> <span class="pre">THREADS=1</span> <span class="pre">'},</span> <span class="pre">{'top':</span> <span class="pre">'precise</span> <span class="pre">nosym</span> <span class="pre">gnorm=0.0</span> <span class="pre">bfgs</span> <span class="pre">THREADS=1',</span> <span class="pre">'bottom':</span> <span class="pre">'oldgeo</span> <span class="pre">thermo</span> <span class="pre">nosym</span> <span class="pre">precise</span> <span class="pre">THREADS=1</span> <span class="pre">'},</span> <span class="pre">{'top':</span> <span class="pre">'precise</span> <span class="pre">nosym</span> <span class="pre">recalc=10</span> <span class="pre">dmax=0.10</span> <span class="pre">nonr</span> <span class="pre">cycles=2000</span> <span class="pre">t=2000</span> <span class="pre">THREADS=1',</span> <span class="pre">'bottom':</span> <span class="pre">'oldgeo</span> <span class="pre">thermo</span> <span class="pre">nosym</span> <span class="pre">precise</span> <span class="pre">THREADS=1</span> <span class="pre">'}]</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.keywords" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">keywords</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[{'top':</span> <span class="pre">'precise</span> <span class="pre">nosym</span> <span class="pre">THREADS=1',</span> <span class="pre">'bottom':</span> <span class="pre">'oldgeo</span> <span class="pre">thermo</span> <span class="pre">nosym</span> <span class="pre">precise</span> <span class="pre">THREADS=1</span> <span class="pre">'},</span> <span class="pre">{'top':</span> <span class="pre">'precise</span> <span class="pre">nosym</span> <span class="pre">gnorm=0.0</span> <span class="pre">nonr</span> <span class="pre">THREADS=1',</span> <span class="pre">'bottom':</span> <span class="pre">'oldgeo</span> <span class="pre">thermo</span> <span class="pre">nosym</span> <span class="pre">precise</span> <span class="pre">THREADS=1</span> <span class="pre">'},</span> <span class="pre">{'top':</span> <span class="pre">'precise</span> <span class="pre">nosym</span> <span class="pre">gnorm=0.0</span> <span class="pre">THREADS=1',</span> <span class="pre">'bottom':</span> <span class="pre">'oldgeo</span> <span class="pre">thermo</span> <span class="pre">nosym</span> <span class="pre">precise</span> <span class="pre">THREADS=1</span> <span class="pre">'},</span> <span class="pre">{'top':</span> <span class="pre">'precise</span> <span class="pre">nosym</span> <span class="pre">gnorm=0.0</span> <span class="pre">bfgs</span> <span class="pre">THREADS=1',</span> <span class="pre">'bottom':</span> <span class="pre">'oldgeo</span> <span class="pre">thermo</span> <span class="pre">nosym</span> <span class="pre">precise</span> <span class="pre">THREADS=1</span> <span class="pre">'},</span> <span class="pre">{'top':</span> <span class="pre">'precise</span> <span class="pre">nosym</span> <span class="pre">recalc=10</span> <span class="pre">dmax=0.10</span> <span class="pre">nonr</span> <span class="pre">cycles=2000</span> <span class="pre">t=2000</span> <span class="pre">THREADS=1',</span> <span class="pre">'bottom':</span> <span class="pre">'oldgeo</span> <span class="pre">thermo</span> <span class="pre">nosym</span> <span class="pre">precise</span> <span class="pre">THREADS=1</span> <span class="pre">'}]</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keywords that will be added at the top and bottom of the qm input file</p>
 </dd></dl>
 
@@ -232,13 +232,13 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMol.max_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.max_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMol.output_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.output_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
@@ -256,7 +256,7 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMol.script_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.script_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
@@ -287,7 +287,7 @@ for the <cite>attempt</cite>.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM3">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.mopac.</span></span><span class="sig-name descname"><span class="pre">MopacMolPM3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.mopac.</span></span><span class="sig-name descname"><span class="pre">MopacMolPM3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mopac PM3 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
 but for now it’s the same as all the MOPAC PMn calculations, only pm3</p>
@@ -393,7 +393,7 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM3.input_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.input_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
@@ -405,13 +405,13 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM3.max_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.max_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM3.output_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.output_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
@@ -429,7 +429,7 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM3.script_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.script_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
@@ -460,7 +460,7 @@ for the <cite>attempt</cite>.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM6">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.mopac.</span></span><span class="sig-name descname"><span class="pre">MopacMolPM6</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.mopac.</span></span><span class="sig-name descname"><span class="pre">MopacMolPM6</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mopac PM6 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
 but for now it’s the same as all the MOPAC PMn calculations, only pm6</p>
@@ -566,7 +566,7 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM6.input_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.input_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
@@ -578,13 +578,13 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM6.max_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.max_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM6.output_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.output_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
@@ -602,7 +602,7 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM6.script_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.script_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
@@ -633,7 +633,7 @@ for the <cite>attempt</cite>.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM7">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.mopac.</span></span><span class="sig-name descname"><span class="pre">MopacMolPM7</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.mopac.</span></span><span class="sig-name descname"><span class="pre">MopacMolPM7</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mopac PM7 calculations for molecules</p>
 <p>This is a class of its own in case you wish to do anything differently,
 but for now it’s the same as all the MOPAC PMn calculations, only pm7</p>
@@ -739,7 +739,7 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM7.input_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.input_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.input_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the input file name.</p>
 </dd></dl>
 
@@ -751,13 +751,13 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM7.max_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.max_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.max_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of attempts to try</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM7.output_file_path">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.output_file_path" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_file_path</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.output_file_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the output file name.</p>
 </dd></dl>
 
@@ -775,7 +775,7 @@ then we start to use the crude coordinates.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM7.script_attempts">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.script_attempts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">script_attempts</span></span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.script_attempts" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
@@ -836,12 +836,16 @@ for the <cite>attempt</cite>.</p>
         <div class="menuitem">
         </div>
         <div class="menuitem">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="gaussian.html"
-                        title="previous chapter">rmgpy.qm.gaussian</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../quantity/index.html"
-                        title="next chapter">Physical quantities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.quantity</span></code>)</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="gaussian.html"
+                          title="previous chapter">rmgpy.qm.gaussian</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../quantity/index.html"
+                          title="next chapter">Physical quantities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.quantity</span></code>)</a></p>
+  </div>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -897,7 +901,7 @@ for the <cite>attempt</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

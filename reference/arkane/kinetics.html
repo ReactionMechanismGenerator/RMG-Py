@@ -61,7 +61,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>arkane.KineticsJob<a class="headerlink" href="#arkane-kineticsjob" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="arkane.KineticsJob">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">arkane.</span></span><span class="sig-name descname"><span class="pre">KineticsJob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tlist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tcount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">three_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arkane.</span></span><span class="sig-name descname"><span class="pre">KineticsJob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tlist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tcount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">three_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of an Arkane kinetics job. This job is used to compute
 and save the high-pressure-limit kinetics information for a single reaction.</p>
 <dl class="simple">
@@ -73,19 +73,19 @@ equation is used.</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="arkane.KineticsJob.Tlist">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">Tlist</span></span><a class="headerlink" href="#arkane.KineticsJob.Tlist" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Tlist</span></span><a class="headerlink" href="#arkane.KineticsJob.Tlist" title="Permalink to this definition">¶</a></dt>
 <dd><p>The temperatures at which the k(T) values are computed.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arkane.KineticsJob.Tmax">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">Tmax</span></span><a class="headerlink" href="#arkane.KineticsJob.Tmax" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Tmax</span></span><a class="headerlink" href="#arkane.KineticsJob.Tmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum temperature at which the computed k(T) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arkane.KineticsJob.Tmin">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">Tmin</span></span><a class="headerlink" href="#arkane.KineticsJob.Tmin" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Tmin</span></span><a class="headerlink" href="#arkane.KineticsJob.Tmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum temperature at which the computed k(T) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
@@ -176,12 +176,16 @@ in <cite>output_directory</cite>.</p>
         <div class="menuitem">
         </div>
         <div class="menuitem">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="input.html"
-                        title="previous chapter">Arkane input files</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="main.html"
-                        title="next chapter">arkane.Arkane</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="input.html"
+                          title="previous chapter">Arkane input files</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="main.html"
+                          title="next chapter">arkane.Arkane</a></p>
+  </div>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -237,7 +241,7 @@ in <cite>output_directory</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>arkane.PressureDependenceJob<a class="headerlink" href="#arkane-pressuredependencejob" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="arkane.PressureDependenceJob">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">arkane.</span></span><span class="sig-name descname"><span class="pre">PressureDependenceJob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">network</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tcount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tlist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pcount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Plist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximumGrainSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimumGrainCount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolationModel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximumAtoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activeKRotor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activeJRotor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmgmode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arkane.</span></span><span class="sig-name descname"><span class="pre">PressureDependenceJob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">network</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tcount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tlist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pcount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Plist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximumGrainSize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimumGrainCount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolationModel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximumAtoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activeKRotor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activeJRotor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmgmode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a pressure dependence job. The attributes are:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -152,37 +152,37 @@ from the forward k(E) for each path reaction</p></li>
 <p>RMG mode should be turned off by default except in RMG jobs.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arkane.PressureDependenceJob.Plist">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">Plist</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.Plist" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Plist</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.Plist" title="Permalink to this definition">¶</a></dt>
 <dd><p>The pressures at which the k(T,P) values are computed.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arkane.PressureDependenceJob.Pmax">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">Pmax</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.Pmax" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Pmax</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.Pmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum pressure at which the computed k(T,P) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arkane.PressureDependenceJob.Pmin">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">Pmin</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.Pmin" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Pmin</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.Pmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum pressure at which the computed k(T,P) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arkane.PressureDependenceJob.Tlist">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">Tlist</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.Tlist" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Tlist</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.Tlist" title="Permalink to this definition">¶</a></dt>
 <dd><p>The temperatures at which the k(T,P) values are computed.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arkane.PressureDependenceJob.Tmax">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">Tmax</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.Tmax" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Tmax</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.Tmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum temperature at which the computed k(T,P) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arkane.PressureDependenceJob.Tmin">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">Tmin</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.Tmin" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Tmin</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.Tmin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum temperature at which the computed k(T,P) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
@@ -252,7 +252,7 @@ valid up to these values.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arkane.PressureDependenceJob.maximum_grain_size">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">maximum_grain_size</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.maximum_grain_size" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">maximum_grain_size</span></span><a class="headerlink" href="#arkane.PressureDependenceJob.maximum_grain_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum allowed energy grain size, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
@@ -308,12 +308,16 @@ valid up to these values.</p>
         <div class="menuitem">
         </div>
         <div class="menuitem">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="output.html"
-                        title="previous chapter">Saving Arkane output</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="statmech.html"
-                        title="next chapter">arkane.StatMechJob</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="output.html"
+                          title="previous chapter">Saving Arkane output</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="statmech.html"
+                          title="next chapter">arkane.StatMechJob</a></p>
+  </div>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -369,7 +373,7 @@ valid up to these values.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

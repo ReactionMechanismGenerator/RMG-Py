@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.kinetics.Eckart<a class="headerlink" href="#rmgpy-kinetics-eckart" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Eckart">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.kinetics.</span></span><span class="sig-name descname"><span class="pre">Eckart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0_reac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0_TS</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0_prod</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Eckart" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.kinetics.</span></span><span class="sig-name descname"><span class="pre">Eckart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0_reac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0_TS</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0_prod</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Eckart" title="Permalink to this definition">¶</a></dt>
 <dd><p>A tunneling model based on the Eckart model. The attributes are:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -159,14 +159,14 @@ better result than the Wigner correction.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Eckart.calculate_tunneling_factor">
-<span class="sig-name descname"><span class="pre">calculate_tunneling_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.kinetics.Eckart.calculate_tunneling_factor" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calculate_tunneling_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.kinetics.Eckart.calculate_tunneling_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the value of the Eckart tunneling correction for
 the reaction at the temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Eckart.calculate_tunneling_function">
-<span class="sig-name descname"><span class="pre">calculate_tunneling_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">Elist</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.kinetics.Eckart.calculate_tunneling_function" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calculate_tunneling_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">Elist</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.kinetics.Eckart.calculate_tunneling_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the value of the Eckart tunneling function for
 the reaction at the energies <cite>e_list</cite> in J/mol.</p>
 </dd></dl>
@@ -211,12 +211,16 @@ the reaction at the energies <cite>e_list</cite> in J/mol.</p>
         <div class="menuitem">
         </div>
         <div class="menuitem">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="wigner.html"
-                        title="previous chapter">rmgpy.kinetics.Wigner</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../molecule/index.html"
-                        title="next chapter">Molecular representations (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="wigner.html"
+                          title="previous chapter">rmgpy.kinetics.Wigner</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../molecule/index.html"
+                          title="next chapter">Molecular representations (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a></p>
+  </div>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -272,7 +276,7 @@ the reaction at the energies <cite>e_list</cite> in J/mol.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

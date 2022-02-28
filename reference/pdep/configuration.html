@@ -61,7 +61,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.pdep.Configuration<a class="headerlink" href="#rmgpy-pdep-configuration" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rmgpy.pdep.</span></span><span class="sig-name descname"><span class="pre">Configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.pdep.</span></span><span class="sig-name descname"><span class="pre">Configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a molecular configuration on a potential energy surface.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.E0">
@@ -93,7 +93,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.calculate_collision_frequency">
-<span class="sig-name descname"><span class="pre">calculate_collision_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">P</span></em>, <em class="sig-param"><span class="pre">dict</span> <span class="pre">bath_gas</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.calculate_collision_frequency" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calculate_collision_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">bath_gas</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.calculate_collision_frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the collision frequency in Hz at the given
 temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa. If a dictionary <cite>bath_gas</cite>
 of bath gas species and corresponding mole fractions is given, the
@@ -104,7 +104,7 @@ of the species before computing the collision frequency.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.calculate_density_of_states">
-<span class="sig-name descname"><span class="pre">calculate_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">active_j_rotor=True</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">active_k_rotor=True</span></em>, <em class="sig-param"><span class="pre">bool</span> <span class="pre">rmgmode=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.calculate_density_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calculate_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">active_j_rotor=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">active_k_rotor=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">rmgmode=False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.calculate_density_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the density (and sum) of states for the configuration at the
 given energies above the ground state <cite>e_list</cite> in J/mol. The
 <cite>active_j_rotor</cite> and <cite>active_k_rotor</cite> flags control whether the J-rotor
@@ -154,7 +154,7 @@ arrays are stored on the object for future use.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.generate_collision_matrix">
-<span class="sig-name descname"><span class="pre">generate_collision_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">dens_states</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">j_list=None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.generate_collision_matrix" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate_collision_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">dens_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">j_list=None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.generate_collision_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the collisional energy transfer probabilities matrix for the
 configuration at the given temperature <cite>T</cite> in K using the given
 energies <cite>e_list</cite> in kJ/mol and total angular momentum quantum numbers
@@ -164,26 +164,26 @@ mol/kJ is also required.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.get_enthalpy">
-<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_enthalpy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in kJ/mol at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.get_entropy">
-<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_entropy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.get_free_energy">
-<span class="sig-name descname"><span class="pre">get_free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_free_energy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_free_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy in kJ/mol at the specified temperature
 <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.get_heat_capacity">
-<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">double</span> <span class="pre">T</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the constant-pressure heat capacity in J/mol*K at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
@@ -232,7 +232,7 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.map_density_of_states">
-<span class="sig-name descname"><span class="pre">map_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">j_list=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.map_density_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">map_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">j_list=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.map_density_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a mapping of the density of states for the configuration to the
 given energies <cite>e_list</cite> in J/mol and, if the J-rotor is not active, the
 total angular momentum quantum numbers <cite>j_list</cite>.</p>
@@ -240,7 +240,7 @@ total angular momentum quantum numbers <cite>j_list</cite>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.map_sum_of_states">
-<span class="sig-name descname"><span class="pre">map_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">e_list</span></em>, <em class="sig-param"><span class="pre">ndarray</span> <span class="pre">j_list=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.map_sum_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">map_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">j_list=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.map_sum_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a mapping of the density of states for the configuration to the
 given energies <cite>e_list</cite> in J/mol and, if the J-rotor is not active, the
 total angular momentum quantum numbers <cite>j_list</cite>.</p>
@@ -302,12 +302,16 @@ total angular momentum quantum numbers <cite>j_list</cite>.</p>
         <div class="menuitem">
         </div>
         <div class="menuitem">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="reaction.html"
-                        title="previous chapter">Reaction events</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="network.html"
-                        title="next chapter">rmgpy.pdep.Network</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="reaction.html"
+                          title="previous chapter">Reaction events</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="network.html"
+                          title="next chapter">rmgpy.pdep.Network</a></p>
+  </div>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -363,7 +367,7 @@ total angular momentum quantum numbers <cite>j_list</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
