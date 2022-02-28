@@ -325,6 +325,19 @@ end""")
 
     return kmat,u
 
+def get_uncertainties(kmat,xssource,dxdtsource):
+    """
+    approximate the independent factor uncertainty in individual
+    rate coefficients
+    """
+    u = np.zeros(kmat.shape)
+    for i,x in enumerate(xssource):
+        flux = calcfluxes(kmat,x)
+        dxdt = dxdtssource[i]
+        for j in range(len(xssource)):
+            u[j,i] = np.exp(np.abs(np.log(dxdt[j]/flux[j])))
+    return u
+
 def ravel_kmat(kmat,n_isomreac):
     """
     reduce rate coefficient matrix to a vector
