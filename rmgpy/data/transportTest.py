@@ -148,6 +148,8 @@ class TestTransportDatabase(unittest.TestCase):
             ['acetone', 'CC(=O)C', Length(5.36421, 'angstroms'), Energy(3.20446, 'kJ/mol'), "Epsilon & sigma estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)"],
             ['cyclopenta-1,2-diene', 'C1=C=CCC1', None, None, None],  # not sure what to expect, we just want to make sure it doesn't crash
             ['benzene', 'c1ccccc1', None, None, None],
+            ['N-methylmethanamine', 'CNC', None, None, None],
+            ['imidazole', 'c1ncc[nH]1', None, None, None],
         ]
 
         # values calculate from joback's estimations
