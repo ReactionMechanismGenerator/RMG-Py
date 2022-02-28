@@ -123,6 +123,208 @@ def states_to_configurations(network,indices,state,exclude_association=False):
             xs[i+network.n_isom] += state[-network.n_reac-network.n_prod+i]
     return xs
 
+def get_rate_coefficients_SLS(network,T,P,method="mexp",neglect_high_energy_collisions=False,high_energy_rate_tol=0.01):
+    """
+    Generate phenomenological rate coefficients using the simulation least squares method
+    """
+    if network.T != T or network.P != P:
+        network.set_conditions(T,P)
+        network.calculate_equilibrium_ratios()
+
+    M, indices = generate_full_me_matrix(network, products=False,
+                                                neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                                 high_energy_rate_tol=high_energy_rate_tol)
+
+    if method == "eigen":
+        eigvals,eigvecs = np.linalg.eig(M)
+        omega = np.real(eigvals)
+    else:
+        omega = np.real(scipy.linalg.eigvals(M))
+
+    n_chem = network.n_isom + network.n_reac
+
+    # We can't assume that eigh returns them in sorted order
+    ind = omega.argsort()
+
+    #Find timescale
+    n_cse = 0
+    for i in range(n_chem):
+        if abs(omega[ind[-n_chem - 1]] / omega[ind[-1 - i]]) > 3.0:
+            n_cse += 1
+
+    slowest_energy = omega[ind[-n_chem-1]]
+    fastest_reaction = omega[ind[-n_chem]]
+    #tau = np.sqrt(1.0/slowest_energy*1.0/fastest_reaction)
+    tau = np.abs(1.0/fastest_reaction)
+
+    if method == "ode":
+        f = Main.eval("""
+function f(u,M,t)
+    return M*u
+end""")
+        jac = Main.eval("""
+function jac(u,M,t)
+    return M
+end""")
+        def run_single_source(network,channel):
+            i = (network.isomers+network.reactants+network.products).index(channel)
+            x0 = np.zeros(len(network.isomers+network.reactants+network.products))
+            x0[i] = 1.0
+            p0 = get_initial_condition(network,x0,indices)
+            sol = solve_me_fcns(f,jac,M,p0,tau)
+            out =  sol.u[-1]
+            xsout = states_to_configurations(network,indices,out)
+            ddt = states_to_configurations(network,indices,np.dot(M,out))
+            return xsout,ddt
+
+        def run_equilibrium(network,channel):
+            i = (network.isomers+network.reactants+network.products).index(channel)
+            x0 = network.eq_ratios/np.sum(network.eq_ratios)
+            x0[i] = 0.0
+            p0 = get_initial_condition(network,x0,indices)
+            sol = solve_me_fcns(f,jac,M,p0,tau)
+            out =  sol.u[-1]
+            xsout = states_to_configurations(network,indices,out)
+            ddt = states_to_configurations(network,indices,np.dot(M,out))
+            return xsout,ddt
+
+    elif method == "mexp":
+        etM = scipy.linalg.expm(M*tau)
+        def run_single_source(network,channel):
+            i = (network.isomers+network.reactants+network.products).index(channel)
+            x0 = np.zeros(len(network.isomers+network.reactants+network.products))
+            x0[i] = 1.0
+            p0 = get_initial_condition(network,x0,indices)
+            out = etM @ p0
+            xsout = states_to_configurations(network,indices,out)
+            ddt = states_to_configurations(network,indices,np.dot(M,out))
+            return xsout,ddt
+
+        def run_equilibrium(network,channel):
+            i = (network.isomers+network.reactants+network.products).index(channel)
+            x0 = network.eq_ratios/np.sum(network.eq_ratios)
+            x0[i] = 0.0
+            p0 = get_initial_condition(network,x0,indices)
+            out = etM @ p0
+            xsout = states_to_configurations(network,indices,out)
+            ddt = states_to_configurations(network,indices,np.dot(M,out))
+            return xsout,ddt
+
+    elif method == "eigen":
+        def run_single_source(network,channel):
+            i = (network.isomers+network.reactants+network.products).index(channel)
+            x0 = np.zeros(len(network.isomers+network.reactants+network.products))
+            x0[i] = 1.0
+            p0 = get_initial_condition(network,x0,indices)
+            c0 = np.linalg.solve(eigvecs,p0)
+            cf = np.exp(eigvals*tau) * c0
+            out = eigvecs @ cf
+            xsout = states_to_configurations(network,indices,out)
+            ddt = states_to_configurations(network,indices,np.dot(M,out))
+            return xsout,ddt
+
+        def run_equilibrium(network,channel):
+            i = (network.isomers+network.reactants+network.products).index(channel)
+            x0 = network.eq_ratios/np.sum(network.eq_ratios)
+            x0[i] = 0.0
+            p0 = get_initial_condition(network,x0,indices)
+            c0 = np.linalg.solve(eigvecs,p0)
+            cf = np.exp(eigvals*tau) * c0
+            out = eigvecs @ cf
+            xsout = states_to_configurations(network,indices,out)
+            ddt = states_to_configurations(network,indices,np.dot(M,out))
+            return xsout,ddt
+    else:
+        raise ValueError
+
+    isomers = network.isomers[:]
+    reactants = network.reactants[:]
+    products = network.products[:]
+    xsorder = isomers+reactants+products
+    n_isomreac = len(isomers+reactants)
+    xssource = []
+    dxdtssource = []
+    xseq = []
+    dxdtseq = []
+
+    #Single domainant source simulations
+    for i,isomer in enumerate(isomers):
+        xsout,dxdtout = run_single_source(network,isomer)
+        for j in range(len(xsout)):
+            if j >= n_isomreac:
+                xsout[j] = 0.0
+        xssource.append(xsout)
+        dxdtssource.append(dxdtout)
+    for i,prod in enumerate(reactants):
+        xsout,dxdtout = run_single_source(network,prod)
+        for j in range(len(xsout)):
+            if j >= n_isomreac:
+                xsout[j] = 0.0
+        xssource.append(xsout)
+        dxdtssource.append(dxdtout)
+
+    #Equillibrium single loss simulations
+    for i,isomer in enumerate(isomers):
+        xsout,dxdtout = run_equilibrium(network,isomer)
+        for j in range(len(xsout)):
+            if j >= n_isomreac:
+                xsout[j] = 0.0
+        xseq.append(xsout)
+        dxdtseq.append(dxdtout)
+    for i,prod in enumerate(reactants+products):
+        xsout,dxdtout = run_equilibrium(network,prod)
+        for j in range(len(xsout)):
+            if j >= n_isomreac:
+                xsout[j] = 0.0
+        xseq.append(xsout)
+        dxdtseq.append(dxdtout)
+
+    keqs = np.outer(network.eq_ratios,1.0/network.eq_ratios)
+
+    #Generate initial guess
+    kmat = np.zeros((len(xsorder),len(xsorder)))
+    ks = np.zeros((len(xsorder)**2-len(xsorder)-len(products)**2+len(products))//2)
+
+    for i,x in enumerate(xssource):
+        dxdt = dxdtssource[i]
+        kmat[:,i] = dxdt/x[i]
+        kmat[i,i] = 0.0
+
+    for i in range(kmat.shape[0]):
+        for j in range(kmat.shape[1]):
+            if i != j and kmat[i,j] == 0.0 and kmat[j,i] != 0.0:
+                kmat[i,j] = kmat[j,i]/keqs[j,i]
+
+    ks = ravel_kmat(kmat,n_isomreac)
+
+    ks = np.abs(ks)
+
+    #Do optimization
+    def fcn(ks):
+        kmat = unravel_ks(np.exp(ks),keqs,n_isomreac)
+        s = np.zeros(len(xssource)*(len(isomers)+len(reactants)+len(products)-1)+len(xseq))
+        ind = 0
+        for i,x in enumerate(xssource):
+            flux = calcfluxes(kmat,x)
+            dxdt = dxdtssource[i]
+            res = [(dxdt[j]-flux[j])/dxdt[j] for j in range(len(flux)) if i != j]
+            s[ind:ind+len(res)] = res[:]
+            ind = ind + len(res)
+        for i,x in enumerate(xseq):
+            flux = calcfluxes(kmat,x)
+            dxdt = dxdtseq[i]
+            s[ind] = (dxdt[i] - flux[i])/dxdt[i]
+            ind += 1
+        return s
+
+    out = opt.least_squares(fcn,np.log(ks),ftol=1e-15,xtol=1e-15,gtol=1e-15)
+
+    kmat = unravel_ks(np.exp(out.x),keqs,len(network.isomers+network.reactants))
+
+    u = get_uncertainties(kmat,xssource,dxdtsource)
+
+    return kmat,u
+
 def ravel_kmat(kmat,n_isomreac):
     """
     reduce rate coefficient matrix to a vector
@@ -189,3 +391,6 @@ def calcfluxes(kmat,xs):
                 fluxes[i] -= flux
     return fluxes
 
+def apply_simulation_least_squares_method(network, method='mexp', neglect_high_energy_collisions=False, high_energy_rate_tol=0.01):
+    return get_rate_coefficients_SLS(network, network.T, network.P, method=method,
+                                     neglect_high_energy_collisions=neglect_high_energy_collisions, high_energy_rate_tol=high_energy_rate_tol)
