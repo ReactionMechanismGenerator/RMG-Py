@@ -154,7 +154,8 @@ def run(benchmarkDir, testDir, title, observables, setups, tol):
         title=title,
         old_dir=benchmarkDir,
         new_dir=testDir,
-        observables={'species': observables}
+        observables={'species': observables},
+        ck2cti=False,
     )
 
     reactor_types, temperatures, pressures, initial_mole_fractions_list, termination_times = setups
