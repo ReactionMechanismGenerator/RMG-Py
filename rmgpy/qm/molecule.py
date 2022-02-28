@@ -146,6 +146,29 @@ class Geometry(object):
         """
         AllChem.EmbedMultipleConfs(rdmol, num_conf_attempts, randomSeed=1)
 
+        if rdmol.GetNumConformers() == 0:
+            # Occasionally, ETKDG fails to embed some molecules
+            # Try to embed using random coordinates. However, there
+            # are still cases that it can fails:
+            # https://github.com/rdkit/rdkit/issues/2996
+            AllChem.EmbedMultipleConfs(rdmol, num_conf_attempts, useRandomCoords=True, randomSeed=1)
+
+            if rdmol.GetNumConformers() == 0:
+                # As a workaround, one can also build a molecule using its 2D Geometry
+                # and optimize the molecule from the 2D geometry.
+                for _ in range(num_conf_attempts):
+                    # Since it can only add one conformer at a time, clearConfs is set to False
+                    # to keep the previously generated 2D geometries
+                    AllChem.Compute2DCoords(rdmol, nSample=10, sampleSeed=1, clearConfs=False)
+
+                if rdmol.GetNumConformers() == 0:
+                    # EDKTG + random coords + 2D should be able to cover almost all
+                    # the cases. This is to check and report if further workaround
+                    # needs to be implemented
+                    raise RuntimeError(f'RDKit has issue in embedding the conformer of {self.molecule}.'
+                                       f' Please raise an issue on the RMG Github page mentioning the'
+                                       f' error and the molecule.')
+
         energy = 0.0
         min_e_id = 0
         min_e = 9.999999e99  # start with a very high number, which would never be reached
