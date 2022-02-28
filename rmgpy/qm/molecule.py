@@ -144,9 +144,13 @@ class Geometry(object):
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
+        # `good_embed` is a flag to indicate conformers are not from random coordinates or 2D coordinates
+        # `good_opt` is a flag to indicate at least one conformer is successfully optimized using force field
+        good_embed, good_opt = True, False
         AllChem.EmbedMultipleConfs(rdmol, num_conf_attempts, randomSeed=1)
 
         if rdmol.GetNumConformers() == 0:
+            good_embed = False
             # Occasionally, ETKDG fails to embed some molecules
             # Try to embed using random coordinates. However, there
             # are still cases that it can fails:
@@ -176,11 +180,24 @@ class Geometry(object):
         crude = Chem.Mol(rdmol.ToBinary())
 
         for i in range(rdmol.GetNumConformers()):
-            AllChem.UFFOptimizeMolecule(rdmol, confId=i)
+            try:
+                AllChem.UFFOptimizeMolecule(rdmol, confId=i)
+            except RuntimeError:
+                # The optimization fails usually due to a failure in the linearSearch step.
+                # Skip the optimization for this conformer
+                pass
+            else:
+                good_opt = True
             energy = AllChem.UFFGetMoleculeForceField(rdmol, confId=i).CalcEnergy()
             if energy < min_e:
                 min_e_id = i
                 min_e = energy
+
+        if not good_embed and not good_opt:
+            # TODO: Probably add something to prevent the following QM calculation if a molecule
+            # cannot embed and force field opt correctly.
+            logging.debug(f"Encounted a molecule {AllChem.MolToInchi(rdmol)} that cannot be embedded"
+                          f" and optimized correctly.")
 
         with open(self.get_crude_mol_file_path(), 'w') as out_3d_crude:
             out_3d_crude.write(Chem.MolToMolBlock(crude, confId=min_e_id))
