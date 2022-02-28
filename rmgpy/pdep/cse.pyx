@@ -45,7 +45,7 @@ from rmgpy.pdep.me import generate_full_me_matrix
 ################################################################################
 
 
-def apply_chemically_significant_eigenvalues_method(network, list lumping_order=None):
+def apply_chemically_significant_eigenvalues_method(network, list lumping_order=None, neglect_high_energy_collisions=False, high_energy_rate_tol=0.01):
     """A method for applying the Chemically Significant Eigenvalues approach for solving the master equation."""
     cdef np.ndarray[np.int_t, ndim=1] j_list
     cdef np.ndarray[np.int_t, ndim=3] indices
@@ -70,17 +70,19 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
     n_prod = network.n_prod
     n_grains = network.n_grains
     n_j = network.n_j
-    
+
     n_grains = len(e_list)
     n_chem = n_isom + n_reac
-    
+
     ym_b = 1.0e-6 * pressure / (constants.R * temperature)
-    
+
     # Generate the full master equation matrix
-    me_mat, indices = generate_full_me_matrix(network, products=False)
+    me_mat, indices = generate_full_me_matrix(network, products=False,
+                                              neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
     n_rows = me_mat.shape[0]
     me_mat[:, n_rows-n_reac:] *= ym_b
-    
+
     # Generate symmetrization matrix and its inverse
     s_mat = np.zeros(n_rows, np.float64)
     s_mat_inv = np.zeros_like(s_mat)

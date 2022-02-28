@@ -39,11 +39,11 @@ import rmgpy.constants as constants
 ################################################################################
 
 
-cpdef generate_full_me_matrix(network, bint products=True):
+cpdef generate_full_me_matrix(network, bint products=True, bint exclude_association=False, bint neglect_high_energy_collisions=False, high_energy_rate_tol=0.01):
     """
     Generate the full master equation matrix for the network.
     """
-    
+
     cdef np.ndarray[np.int_t,ndim=1] j_list
     cdef np.ndarray[np.int_t,ndim=3] indices
     cdef np.ndarray[np.float64_t,ndim=1] e_list
@@ -51,9 +51,9 @@ cpdef generate_full_me_matrix(network, bint products=True):
     cdef np.ndarray[np.float64_t,ndim=3] dens_states
     cdef np.ndarray[np.float64_t,ndim=4] k_ij, g_nj, f_im
     cdef np.ndarray[np.float64_t,ndim=5] m_coll
-    cdef double temperature, pressure, beta, val
+    cdef double temperature, pressure, beta, val, ktot
     cdef int n_isom, n_reac, n_prod, n_grains, n_j
-    cdef int i, n, r, s, u, v
+    cdef int i, n, r, s, u, v, ind1, ind2, ind
 
     temperature = network.T
     # pressure = network.P  # not used in this module
@@ -123,10 +123,42 @@ cpdef generate_full_me_matrix(network, bint products=True):
                             me_mat[u, u] -= g_nj[n, i, r, s]
                             if n < n_reac or products:
                                 me_mat[v, u] = g_nj[n, i, r, s]
-                            if n < n_reac:
+                            if n < n_reac and not exclude_association:
                                 val = f_im[i, n, r, s] * dens_states[n + n_isom, r, s] \
                                       * (2 * j_list[s] + 1) * exp(-e_list[r] * beta)
                                 me_mat[u,v] = val
                                 me_mat[v,v] -= val
 
+    if neglect_high_energy_collisions:
+        for i in range(n_isom):
+            for Eind in range(1,n_grains):
+                for Jind in range(n_j):
+                    ind1 = indices[i, Eind, Jind]
+                    if ind1 > -1: #we're handling the loss, but what about production?
+                        w = 0.0 #loss due to collisions
+                        ktot = 0.0
+                        for eind in range(n_grains):
+                            ind = indices[i, eind, Jind]
+                            if ind > -1 and ind != ind1:
+                                w += me_mat[ind,ind1]
+                        for j in range(n_isom):
+                            if i != j:
+                                ind = indices[j,Eind,Jind]
+                                ktot += me_mat[ind,ind1]
+                        for k in range(n_reac+n_prod):
+                            ind = -k-1
+                            ktot += me_mat[ind,ind1]
+                        if ktot*high_energy_rate_tol > w:
+                            for eind in range(n_grains):
+                                if ind != ind1:
+                                    ind = indices[i, eind, Jind]
+                                    me_mat[ind,ind] -= me_mat[ind1,ind]
+                                    me_mat[ind1,ind] = 0.0
+                                    me_mat[ind,ind1] = 0.0
+
+                            me_mat[ind1,ind1] = -ktot
+
+    if exclude_association:
+        return me_mat[:-(n_reac+n_prod),:-(n_reac+n_prod)], indices
+    else:
     return me_mat, indices
