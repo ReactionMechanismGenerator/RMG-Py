@@ -223,3 +223,163 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
 
     # Return the matrix of k(T,P) values and the pseudo-steady population distributions
     return k, pa
+
+def get_rate_coefficients_CSE_Advanced(network,T,P,neglect_high_energy_collisions=False,high_energy_rate_tol=0.01):
+    """
+    CSE using the Georgievskii et al. 2013 method
+    """
+    if network.T != T or network.P != P:
+        network.set_conditions(T,P)
+        network.calculate_equilibrium_ratios()
+
+    lumping_order = None
+
+    temperature = network.T
+    pressure = network.P
+    beta = 1.0/(constants.R*temperature)
+    e_list = network.e_list
+    j_list = network.j_list
+    dens_states = network.dens_states
+    g_nj = network.Gnj
+    f_im = network.Fim
+    eq_ratios = network.eq_ratios
+    n_isom = network.n_isom
+    n_reac = network.n_reac
+    n_prod = network.n_prod
+    n_grains = network.n_grains
+    n_j = network.n_j
+    n_channels = n_isom+n_reac
+
+    channels = network.isomers+network.reactants
+
+    n_grains = len(e_list)
+    n_chem = n_isom #+ n_reac
+
+
+    # Generate the full master equation matrix
+    me_mat, indices = generate_full_me_matrix(network, products=False, exclude_association=True,
+                                                  neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                                  high_energy_rate_tol=high_energy_rate_tol)
+    n_rows = me_mat.shape[0]
+
+    # Generate symmetrization matrix and its inverse
+    s_mat = np.zeros(n_rows, np.float64)
+    s_mat_inv = np.zeros_like(s_mat)
+    for i in range(n_isom):
+        for r in range(n_grains):
+            for s in range(n_j):
+                index = indices[i, r, s]
+                if index > -1:
+                    s_mat[index] = sqrt(dens_states[i, r, s] * (2 * j_list[s] + 1) \
+                                            * exp(-e_list[r] / (constants.R * temperature)) * eq_ratios[i])
+                    s_mat_inv[index] = 1.0 / s_mat[index]
+
+    # Symmetrize master equation matrix: me_mat = s_mat * m_symm * s_mat_inv
+    # Since s_mat and s_mat_inv are diagonal we can do this very efficiently
+    for r in range(n_rows):
+        for s in range(n_rows):
+            me_mat[r, s] = s_mat_inv[r] * me_mat[r, s] * s_mat[s]
+
+    # DEBUG: Check that the matrix has been properly symmetrized
+    properly_symmetrized = True
+    for r in range(n_rows):
+        for s in range(r):
+            if me_mat[r, s] != 0:
+                if abs(me_mat[r, s] - me_mat[s, r]) > 0.01 * min(me_mat[r, s], me_mat[s, r]) \
+                    and max(me_mat[r, s], me_mat[s, r]) > 1e-200:
+                        properly_symmetrized = False
+    if not properly_symmetrized:
+        raise ChemicallySignificantEigenvaluesError('Master equation matrix not properly symmetrized.')
+
+    try:
+        omega0, eigen_vectors0 = scipy.linalg.eigh(me_mat, overwrite_a=True, overwrite_b=True)
+    except np.linalg.LinAlgError:
+        raise ChemicallySignificantEigenvaluesError('Eigenvalue calculation failed to converge.')
+
+    ind = omega0.argsort()[::-1]
+
+    n_cse = n_chem
+    eigratio = abs(omega0[ind[n_chem]]/omega0[ind[n_chem-1]])
+    if eigratio < 3.0:
+        logging.warning("eigratio of {} was less than 3.0".format(eigratio))
+
+    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float64)
+
+    # Extract the chemically-significant eigenvalues and eigenvectors
+    omega = np.real(omega0.take(ind[:]))
+
+    cse_omega = np.real(omega0.take(ind[:n_cse]))
+    eigen_vectors = np.real(eigen_vectors0.take(ind[:], axis=1))
+
+    for j in range(eigen_vectors.shape[1]):
+        eigen_vectors[:, j] *= s_mat
+        eigen_vectors[:, j] /= np.linalg.norm(eigen_vectors[:, j])
+
+    cse_eigen_vectors = eigen_vectors[:,:n_cse]
+
+    bi = np.zeros((n_reac,n_grains,n_j))
+    biunnormed = np.zeros((n_reac,n_grains,n_j))
+    for n in range(n_reac):
+        for eind in range(n_grains):
+            for jind in range(n_j):
+                bi[n,eind,jind] = dens_states[n+n_isom,eind,jind]*(2 * j_list[jind] + 1) * exp(-e_list[eind] * beta)
+
+    biunnormed[:,:,:] = bi[:,:,:]
+
+    for n in range(n_reac):
+        bi[n,:,:] /= np.sum(bi[n,:,:]) #normalize
+
+
+    Pv = np.zeros((me_mat.shape[0],n_reac))
+    k2v = np.zeros((me_mat.shape[0],n_reac))
+    for n in range(n_reac):
+        for i in range(n_isom):
+            for eind in range(n_grains):
+                for jind in range(n_j):
+                    index = indices[i,eind,jind]
+                    if index > -1:
+                        Pv[index,n] += f_im[i,n,eind,jind]*bi[n,eind,jind]
+                        k2v[index,n] += g_nj[n,i,eind,jind]
+
+
+    pvlmbd = np.linalg.solve(eigen_vectors,Pv)
+    Gvlmbd = eigen_vectors.T @ k2v
+
+    W = np.zeros((n_isom,n_isom))
+    for k in range(n_chem):
+        W[:,k] = states_to_configurations(network,indices,cse_eigen_vectors[:,k],exclude_association=True)
+
+    Winv = np.linalg.inv(W)
+
+
+    transformed_omega = W @ sparse.diags(omega[:n_chem]) @ Winv
+
+    kmat = np.zeros((n_channels,n_channels))
+
+    for i in range(n_isom):
+        for j in range(n_isom):
+            kmat[i,j] = transformed_omega[i,j]
+
+    for i,react in enumerate(channels):
+        for j,prod in enumerate(channels):
+            if i == j:
+                continue
+            if len(react.species) == 2 and len(prod.species) == 2:
+                kmat[j,i] = 0.0
+                for k,lmbd in enumerate(omega[n_cse:]):
+                    kmat[j,i] += -pvlmbd[k+n_cse,i-n_isom]*Gvlmbd[k+n_cse,j-n_isom]/lmbd
+
+            elif len(react.species) == 2:
+                kmat[j,i] = 0.0
+                kmat[j,i] = (W @ pvlmbd[:n_cse,i-n_isom])[j]
+
+            elif len(prod.species) == 2:
+                kmat[j,i] = 0.0
+                kmat[j,i] = (Gvlmbd[:n_cse,j-n_isom] @ Winv[:,i])
+
+    return kmat
+
+def apply_chemically_significant_eigenvalues_method_georgievskii(network, neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                                                 high_energy_rate_tol=high_energy_rate_tol):
+    return get_rate_coefficients_CSE_Advanced(network, network.T, network.P, neglect_high_energy_collisions=False,
+                                              high_energy_rate_tol=0.01)
