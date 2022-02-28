@@ -75,3 +75,25 @@ def get_initial_condition(network,x0,indices):
 
     return p0
 
+def solve_me(M,p0,t):
+    f = Main.eval("""
+function f(u,M,t)
+    return M*u
+end""")
+    jac = Main.eval("""
+function jac(u,M,t)
+    return M
+end""")
+    tspan = (0.0,t)
+    fcn = de.ODEFunction(f,jac=jac)
+    prob = de.ODEProblem(fcn,p0,tspan,M)
+    sol = de.solve(prob,solver=de.CVODE_BDF(),abstol=1e-16,reltol=1e-6)
+    return sol
+
+def solve_me_fcns(f,jac,M,p0,t):
+    tspan = (0.0,t)
+    fcn = de.ODEFunction(f,jac=jac)
+    prob = de.ODEProblem(fcn,p0,tspan,M)
+    sol = de.solve(prob,solver=de.CVODE_BDF(),abstol=1e-16,reltol=1e-6)
+    return sol
+
