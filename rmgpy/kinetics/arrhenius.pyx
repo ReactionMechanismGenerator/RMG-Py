@@ -611,27 +611,24 @@ cdef class ArrheniusBM(KineticsModel):
         if len(rxns) == 1:
             T = 1000.0
             rxn = rxns[0]
-            dHrxn = rxn.get_enthalpy_of_reaction(T)
+            dHrxn = rxn.get_enthalpy_of_reaction(298.0)
             A = rxn.kinetics.A.value_si
             n = rxn.kinetics.n.value_si
             Ea = rxn.kinetics.Ea.value_si
-            
+
             def kfcn(E0):
                 Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
                 out = Ea - (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
                 return out
 
-            if abs(dHrxn) > 4 * w0 / 10.0:
-                E0 = w0 / 10.0
-            else:
-                E0 = fsolve(kfcn, w0 / 10.0)[0]
+            E0 = fsolve(kfcn, w0 / 10.0)[0]
 
             self.Tmin = rxn.kinetics.Tmin
             self.Tmax = rxn.kinetics.Tmax
             self.solute = None
             self.comment = 'Fitted to {0} reaction at temperature: {1} K'.format(len(rxns), T)
         else:
-            # define optimization function            
+            # define optimization function
             def kfcn(xs, lnA, n, E0):
                 T = xs[:,0]
                 dHrxn = xs[:,1]
@@ -640,7 +637,7 @@ cdef class ArrheniusBM(KineticsModel):
                 Ea = np.where(dHrxn< -4.0*E0, 0.0, Ea)
                 Ea = np.where(dHrxn > 4.0*E0, dHrxn, Ea)
                 return lnA + np.log(T ** n * np.exp(-Ea / (8.314 * T)))
-              
+
             # get (T,dHrxn(T)) -> (Ln(k) mappings
             xdata = []
             ydata = []
@@ -649,7 +646,7 @@ cdef class ArrheniusBM(KineticsModel):
                 # approximately correct the overall uncertainties to std deviations
                 s = rank_accuracy_map[rxn.rank].value_si/2.0
                 for T in Ts:
-                    xdata.append([T, rxn.get_enthalpy_of_reaction(T)])
+                    xdata.append([T, rxn.get_enthalpy_of_reaction(298.0)])
                     ydata.append(np.log(rxn.get_rate_coefficient(T)))
 
                     sigmas.append(s / (8.314 * T))
@@ -1547,9 +1544,8 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
             w0 = sum(w0s) / len(w0s)
 
         if len(rxns) == 1:
-            T = 1000.0
             rxn = rxns[0]
-            dHrxn = rxn.get_enthalpy_of_reaction(T)
+            dHrxn = rxn.get_enthalpy_of_reaction(298.0)
             A = rxn.kinetics.A.value_si
             n = rxn.kinetics.n.value_si
             Ea = rxn.kinetics.Ea.value_si
@@ -1559,14 +1555,11 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
                 out = Ea - (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
                 return out
 
-            if abs(dHrxn) > 4 * w0 / 10.0:
-                E0 = w0 / 10.0
-            else:
-                E0 = fsolve(kfcn, w0 / 10.0)[0]
+            E0 = fsolve(kfcn, w0 / 10.0)[0]
 
             self.Tmin = rxn.kinetics.Tmin
             self.Tmax = rxn.kinetics.Tmax
-            self.comment = 'Fitted to {0} reaction at temperature: {1} K'.format(len(rxns), T)
+            self.comment = 'Fitted to 1 reaction'
         else:
             # define optimization function
             def kfcn(xs, lnA, n, E0):
@@ -1586,7 +1579,7 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
                 # approximately correct the overall uncertainties to std deviations
                 s = rank_accuracy_map[rxn.rank].value_si/2.0
                 for T in Ts:
-                    xdata.append([T, rxn.get_enthalpy_of_reaction(T)])
+                    xdata.append([T, rxn.get_enthalpy_of_reaction(298.0)])
                     ydata.append(np.log(rxn.get_rate_coefficient(T)))
 
                     sigmas.append(s / (8.314 * T))
