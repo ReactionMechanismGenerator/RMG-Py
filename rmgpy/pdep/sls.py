@@ -101,3 +101,52 @@ def solve_me_fcns(f, jac, M, p0, t):
     sol = de.solve(prob, solver=de.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
     return sol
 
+def ravel_kmat(kmat, n_isomreac):
+    """
+    reduce rate coefficient matrix to a vector
+    """
+    ks = []
+    ind = 0
+    for i in range(kmat.shape[0]):
+        if i < n_isomreac:
+            indval = i
+        else:
+            indval = n_isomreac
+        ks.extend(kmat[i,:indval].tolist())
+        ind += indval
+    return np.array(ks)
+
+def ravel_kmat_mult(kmat, n_isomreac, keqs, bits):
+    """
+    reduce rate coefficient matrix to a vector in different ways
+    """
+    ks = []
+    indk = 0
+    for i in range(kmat.shape[0]):
+        for j in range(i):
+            if i > j and i < n_isomreac:
+                if bits[indk]:
+                    ks.append(kmat[i,j])
+                else:
+                    ks.append(kmat[j,i]/keqs[j,i])
+                indk += 1
+    return np.array(ks)
+
+def unravel_ks(ks, keqs, n_isomreac):
+    """
+    convert SLS rate coefficient vector to rate coefficient matrix
+    """
+    kmat = np.zeros((keqs.shape[0],keqs.shape[0]))
+    ind = 0
+    for i in range(keqs.shape[0]):
+        if i < n_isomreac:
+            indval = i
+        else:
+            indval = n_isomreac
+        kmat[i,:indval] = ks[ind:ind+indval]
+        ind += i
+    for i in range(keqs.shape[0]):
+        for j in range(keqs.shape[0]):
+            if i != j and kmat[j,i] == 0.0:
+                kmat[j,i] = kmat[i,j]/keqs[i,j]
+    return kmat
