@@ -33,13 +33,11 @@ This script contains unit tests of the :mod:`arkane.isodesmic` module.
 
 import unittest
 
-import numpy as np
-
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 
 from arkane.encorr.isodesmic import AtomConstraint, BondConstraint, Connection, ErrorCancelingScheme, \
-    ErrorCancelingSpecies, ErrorCancelingReaction, IsodesmicScheme, SpeciesConstraints, bond_centric_constraints
+    ErrorCancelingSpecies, ErrorCancelingReaction, IsodesmicScheme, bond_centric_constraints
 from arkane.modelchem import LevelOfTheory
 
 ################################################################################

@@ -47,7 +47,7 @@ from copy import deepcopy
 from pyutilib.common import ApplicationError
 from typing import List, Union
 
-from lpsolve55 import lpsolve, EQ, LE
+from lpsolve55 import lpsolve, EQ
 import numpy as np
 
 from rmgpy.molecule import Bond, Molecule
