@@ -734,23 +734,31 @@ class RMG(util.Subject):
             # Update react flags
             if self.filter_reactions:
                 # Run the reaction system to update threshold and react flags
-                reaction_system.initialize_model(
-                    core_species=self.reaction_model.core.species,
-                    core_reactions=self.reaction_model.core.reactions,
-                    edge_species=[],
-                    edge_reactions=[],
-                    pdep_networks=self.reaction_model.network_list,
-                    atol=self.simulator_settings_list[0].atol,
-                    rtol=self.simulator_settings_list[0].rtol,
-                    filter_reactions=True,
-                    conditions=self.rmg_memories[index].get_cond(),
-                )
+                if isinstance(reaction_system, Reactor):
+                    self.update_reaction_threshold_and_react_flags(
+                        rxn_sys_unimol_threshold=np.zeros((len(self.reaction_model.core.species),),bool),
+                        rxn_sys_bimol_threshold=np.zeros((len(self.reaction_model.core.species),len(self.reaction_model.core.species)),bool),
+                        rxn_sys_trimol_threshold=np.zeros((len(self.reaction_model.core.species),len(self.reaction_model.core.species),len(self.reaction_model.core.species)),bool),
+                    )
 
-                self.update_reaction_threshold_and_react_flags(
-                    rxn_sys_unimol_threshold=reaction_system.unimolecular_threshold,
-                    rxn_sys_bimol_threshold=reaction_system.bimolecular_threshold,
-                    rxn_sys_trimol_threshold=reaction_system.trimolecular_threshold,
-                )
+                else:
+                    reaction_system.initialize_model(
+                        core_species=self.reaction_model.core.species,
+                        core_reactions=self.reaction_model.core.reactions,
+                        edge_species=[],
+                        edge_reactions=[],
+                        pdep_networks=self.reaction_model.network_list,
+                        atol=self.simulator_settings_list[0].atol,
+                        rtol=self.simulator_settings_list[0].rtol,
+                        filter_reactions=True,
+                        conditions=self.rmg_memories[index].get_cond(),
+                    )
+
+                    self.update_reaction_threshold_and_react_flags(
+                        rxn_sys_unimol_threshold=reaction_system.unimolecular_threshold,
+                        rxn_sys_bimol_threshold=reaction_system.bimolecular_threshold,
+                        rxn_sys_trimol_threshold=reaction_system.trimolecular_threshold,
+                    )
 
                 logging.info('Generating initial reactions for reaction system {0}...'.format(index + 1))
             else:
@@ -868,10 +876,11 @@ class RMG(util.Subject):
                                     if hasattr(item,"name"):
                                         obj_temp.append(self.reaction_model.edge.phase_system.species_dict[item.name])
                                     else: #Reaction
-                                        for val in item.reactants:
-                                            obj_temp.append(self.reaction_model.edge.phase_system.species_dict[val.name])
-                                        for val in item.products:
-                                            obj_temp.append(self.reaction_model.edge.phase_system.species_dict[val.name])
+                                        for val in item.reactants+item.products:
+                                            spc = self.reaction_model.edge.phase_system.species_dict[val.name]
+                                            if spc not in self.reaction_model.core.species:
+                                                obj_temp.append(spc)
+                                        assert len(obj_temp) > 0
                                 obj = obj_temp
                             else:
                                 terminated, resurrected, obj, new_surface_species, new_surface_reactions, t, x = reaction_system.simulate(
@@ -932,7 +941,7 @@ class RMG(util.Subject):
                             if not resurrected:
                                 try:
                                     if isinstance(reaction_system, Reactor):
-                                        terminated,obj,unimolecular_threshold,bimolecular_threshold,trimolecular_threshold,max_edge_species_rate_ratios,t,x = reaction_system.simulate(model_settings=model_settings,
+                                        terminated,resurrected,obj,unimolecular_threshold,bimolecular_threshold,trimolecular_threshold,max_edge_species_rate_ratios,t,x = reaction_system.simulate(model_settings=model_settings,
                                             simulator_settings=simulator_settings,
                                             conditions=self.rmg_memories[index].get_cond()
                                         )
@@ -949,19 +958,6 @@ class RMG(util.Subject):
                                             reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios_temp
                                         else:
                                             reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios
-                                        new_surface_species = []
-                                        new_surface_reactions =  []
-                                        resurrected = False
-                                        obj_temp = []
-                                        for item in obj:
-                                            if hasattr(item,"name"):
-                                                obj_temp.append(self.reaction_model.edge.phase_system.species_dict[item.name])
-                                            else: #Reaction
-                                                for val in item.reactants:
-                                                    obj_temp.append(self.reaction_model.edge.phase_system.species_dict[val.name])
-                                                for val in item.products:
-                                                    obj_temp.append(self.reaction_model.edge.phase_system.species_dict[val.name])
-                                        obj = obj_temp
                                     else:
                                         reaction_system.simulate(
                                             core_species=self.reaction_model.core.species,

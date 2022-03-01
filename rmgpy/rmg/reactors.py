@@ -83,10 +83,11 @@ class PhaseSystem:
         for key, phase in self.phases.items():
             rms_spc = phase.remove_species(spc.label)
 
-        if rms_spc:
-            for key, interface in self.interfaces.items():
-                interface.remove_species(rms_spc)
+            if rms_spc:
+                for key, interface in self.interfaces.items():
+                    interface.remove_species(rms_spc)
 
+        if spc.label in self.species_dict:
             del self.species_dict[spc.label]
 
     def add_reaction(self, rxn, species_list):
@@ -139,10 +140,13 @@ class PhaseSystem:
 
         rxnlist = []
         for i, rxn in enumerate(self.phases[phase_label].reactions):
-            if (spc in rxn.reactants or spc in rxn.products) and all([spec in phasesys.phases[phase_label].species for spec in rxn.reactants]) and all([spec in phasesys.phases[phase_label].species for spec in rxn.products]):
+            if (spc.name in [spec.name for spec in rxn.reactants+rxn.products]) and all([spec.name in phasesys.species_dict for spec in rxn.reactants+rxn.products]):
                 rxnlist.append(rxn)
 
-        phasesys.phases[phase_label].reactions.extend(rxnlist)
+        for i, rxn in enumerate(rxnlist):
+            phasesys.phases[phase_label].reactions.append(rxn)
+            self.phases[phase_label].reactions.remove(rxn)
+            self.phases[phase_label].reactions.insert(len(phasesys.phases[phase_label].reactions)-1, rxn)
 
         for key, interface in self.interfaces.items():
             rxnlist = []
@@ -212,21 +216,43 @@ class Phase:
         """
         self.solvent = to_rms(solvent)
 
-    def add_reaction(self, rxn):
+    def add_reaction(self, rxn, edge_phase=None):
         """
         add a reaction to the phase
         """
+        reactions_to_remove = []
         if self.add_later_reactions != []:
-            for reaction in self.add_later_reactions[:]:
+            for reaction in self.add_later_reactions:
+                added = False
                 try:
-                    self.reactions.append(to_rms(reaction, species_names=self.names, rms_species_list=self.species, rmg_species=self.rmg_species))
-                    self.add_later_reactions.remove(reaction)
+                    rms_rxn = to_rms(reaction, species_names=self.names, rms_species_list=self.species, rmg_species=self.rmg_species)
+                    self.reactions.append(rms_rxn)
+                    reactions_to_remove.append(reaction)
+                    added = True
                 except ValueError:
                     pass
+
+                if added and edge_phase is not None:
+                    # If edge phase is provided, then self is the core phase, and this rxn was directly added to the core so not yet exist in edge
+                    # Only add the corresponding rms_rxn to edge if it's successfully added to the core, otherwise this edge phase reaction maybe passed from the edge phase to core phase in pass_species and double added here again
+                    edge_phase.reactions.insert(len(self.reactions)-1,rms_rxn)
+
+            for reaction in reactions_to_remove:
+                self.add_later_reactions.remove(reaction)
+
+        added = False
         try:
-            self.reactions.append(to_rms(rxn, species_names=self.names, rms_species_list=self.species, rmg_species=self.rmg_species))
+            rms_rxn = to_rms(rxn, species_names=self.names, rms_species_list=self.species, rmg_species=self.rmg_species)
+            self.reactions.append(rms_rxn)
+            added = True
         except ValueError: #often reactions with efficiencies from seed mechanisms can't be fully constructed until input species are added
-            self.add_later_reactions.append(rxn)
+            if rxn not in self.add_later_reactions:
+                self.add_later_reactions.append(rxn)
+
+        if added and edge_phase is not None:
+            edge_phase.reactions.insert(len(self.reactions)-1,rms_rxn)
+
+        return
 
     def add_species(self, spc, edge_phase=None):
         """
@@ -346,8 +372,13 @@ class Reactor:
         """
         Run edge analysis of the reactor system
         """
-        core_react, core_domains, core_interfaces, core_p = self.generate_reactor(self.core_phase_system)
+
+        # We have to build the edge phase first, because the efficiencies dictionary in any kinetics that has
+        # efficiencies gets re-written every time we build a phase. If we build the edge phase later, the
+        # nameefficiencies will contain edge species, and the efficienies dictionary will have edge species index,
+        # which ultimately cause the core simulation to crash.
         edge_react, edge_domains, edge_interfaces, edge_p = self.generate_reactor(self.edge_phase_system)
+        core_react, core_domains, core_interfaces, core_p = self.generate_reactor(self.core_phase_system)
 
         terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x = rms.selectobjects(core_react,
                                                 edge_domains, edge_interfaces, core_domains, core_interfaces, core_p, edge_p, model_settings.tol_move_to_core,
@@ -429,7 +460,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         return rms.Chebyshev(coeffs, Tmin, Tmax, Pmin, Pmax)
     elif isinstance(obj, ThirdBody):
         arrstr = arrhenius_to_julia_string(obj.arrheniusLow)
-        efficiencies = {species_names[i] : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
+        efficiencies = {rmg_species[i].label : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
         dstr = "Dict{String,Float64}(["
         for key,value in efficiencies.items():
             dstr += "\"" + key + "\"" "=>" + str(value) + ","
@@ -438,7 +469,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     elif isinstance(obj, Lindemann):
         arrlow = arrhenius_to_julia_string(obj.arrheniusLow)
         arrhigh = arrhenius_to_julia_string(obj.arrheniusHigh)
-        efficiencies = {species_names[i] : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
+        efficiencies = {rmg_species[i].label : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
         dstr = "Dict{String,Float64}(["
         for key,value in efficiencies.items():
             dstr += "\"" + key + "\"" "=>" + str(value) + ","
@@ -447,7 +478,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     elif isinstance(obj, Troe):
         arrlow = arrhenius_to_julia_string(obj.arrheniusLow)
         arrhigh = arrhenius_to_julia_string(obj.arrheniusHigh)
-        efficiencies = {species_names[i] : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
+        efficiencies = {rmg_species[i].label : float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
         alpha = obj.alpha
         T1 = obj._T1.value_si if obj._T1 is not None else 0.0
         T2 = obj._T2.value_si if obj._T2 is not None else 0.0
