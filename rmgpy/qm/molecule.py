@@ -52,11 +52,11 @@ from rmgpy.thermo import ThermoData
 class Geometry(object):
     """
     A geometry, used for quantum calculations.
-    
+
     Created from a molecule. Geometry estimated by RDKit.
-    
+
     The attributes are:
-    
+
     =================== ======================= ====================================
     Attribute           Type                    Description
     =================== ======================= ====================================
@@ -65,7 +65,7 @@ class Geometry(object):
     `molecule`          :class:`Molecule`       RMG Molecule object
     `unique_id_long`      ``str``                 A long, truly unique ID such as an augmented InChI
     =================== ======================= ====================================
-    
+
     """
 
     def __init__(self, settings, unique_id, molecule, unique_id_long=None):
@@ -99,7 +99,7 @@ class Geometry(object):
     def get_file_path(self, extension, scratch=True):
         """
         Returns the path to the file with the given extension.
-        
+
         The provided extension should include the leading dot.
         If called with `scratch=False` then it will be in the `fileStore` directory,
         else `scratch=True` is assumed and it will be in the `scratchDirectory` directory.
@@ -144,7 +144,34 @@ class Geometry(object):
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
+        # `good_embed` is a flag to indicate conformers are not from random coordinates or 2D coordinates
+        # `good_opt` is a flag to indicate at least one conformer is successfully optimized using force field
+        good_embed, good_opt = True, False
         AllChem.EmbedMultipleConfs(rdmol, num_conf_attempts, randomSeed=1)
+
+        if rdmol.GetNumConformers() == 0:
+            good_embed = False
+            # Occasionally, ETKDG fails to embed some molecules
+            # Try to embed using random coordinates. However, there
+            # are still cases that it can fails:
+            # https://github.com/rdkit/rdkit/issues/2996
+            AllChem.EmbedMultipleConfs(rdmol, num_conf_attempts, useRandomCoords=True, randomSeed=1)
+
+            if rdmol.GetNumConformers() == 0:
+                # As a workaround, one can also build a molecule using its 2D Geometry
+                # and optimize the molecule from the 2D geometry.
+                for _ in range(num_conf_attempts):
+                    # Since it can only add one conformer at a time, clearConfs is set to False
+                    # to keep the previously generated 2D geometries
+                    AllChem.Compute2DCoords(rdmol, nSample=10, sampleSeed=1, clearConfs=False)
+
+                if rdmol.GetNumConformers() == 0:
+                    # EDKTG + random coords + 2D should be able to cover almost all
+                    # the cases. This is to check and report if further workaround
+                    # needs to be implemented
+                    raise RuntimeError(f'RDKit has issue in embedding the conformer of {self.molecule}.'
+                                       f' Please raise an issue on the RMG Github page mentioning the'
+                                       f' error and the molecule.')
 
         energy = 0.0
         min_e_id = 0
@@ -153,11 +180,24 @@ class Geometry(object):
         crude = Chem.Mol(rdmol.ToBinary())
 
         for i in range(rdmol.GetNumConformers()):
-            AllChem.UFFOptimizeMolecule(rdmol, confId=i)
+            try:
+                AllChem.UFFOptimizeMolecule(rdmol, confId=i)
+            except RuntimeError:
+                # The optimization fails usually due to a failure in the linearSearch step.
+                # Skip the optimization for this conformer
+                pass
+            else:
+                good_opt = True
             energy = AllChem.UFFGetMoleculeForceField(rdmol, confId=i).CalcEnergy()
             if energy < min_e:
                 min_e_id = i
                 min_e = energy
+
+        if not good_embed and not good_opt:
+            # TODO: Probably add something to prevent the following QM calculation if a molecule
+            # cannot embed and force field opt correctly.
+            logging.debug(f"Encounted a molecule {AllChem.MolToInchi(rdmol)} that cannot be embedded"
+                          f" and optimized correctly.")
 
         with open(self.get_crude_mol_file_path(), 'w') as out_3d_crude:
             out_3d_crude.write(Chem.MolToMolBlock(crude, confId=min_e_id))
@@ -183,9 +223,9 @@ class Geometry(object):
 def load_thermo_data_file(file_path):
     """
     Load the specified thermo data file and return the dictionary of its contents.
-    
+
     Returns `None` if the file is invalid or missing.
-    
+
     Checks that the returned dictionary contains at least InChI, adjacencyList, thermoData.
     """
     if not os.path.exists(file_path):
@@ -225,18 +265,18 @@ def load_thermo_data_file(file_path):
 
 
 class QMMolecule(object):
-    """ 
+    """
     A base class for QM Molecule calculations.
-    
+
     Specific programs and methods should inherit from this and define some
     extra attributes and methods:
-    
+
      * outputFileExtension
      * inputFileExtension
      * generate_qm_data() ...and whatever else is needed to make this method work.
-     
+
     The attributes are:
-    
+
     =================== ======================= ====================================
     Attribute           Type                    Description
     =================== ======================= ====================================
@@ -245,7 +285,7 @@ class QMMolecule(object):
     `unique_id`         ``str``                 A short ID such as an augmented InChI Key
     `unique_id_long`    ``str``                 A long, truly unique ID such as an augmented InChI
     =================== ======================= ====================================
-    
+
     """
 
     def __init__(self, molecule, settings):
@@ -258,7 +298,7 @@ class QMMolecule(object):
     def get_file_path(self, extension, scratch=True):
         """
         Returns the path to the file with the given extension.
-        
+
         The provided extension should include the leading dot.
         If called with `scratch=False` then it will be in the `fileStore` directory,
         else `scratch=True` is assumed and it will be in the `scratchDirectory` directory.
@@ -349,8 +389,8 @@ class QMMolecule(object):
 
     def generate_thermo_data(self):
         """
-        Generate Thermo Data via a QM calc. 
-        
+        Generate Thermo Data via a QM calc.
+
         Returns None if it fails.
         """
         self.initialize()
@@ -429,7 +469,7 @@ class QMMolecule(object):
     def get_mol_file_path_for_calculation(self, attempt):
         """
         Get the path to the MOL file of the geometry to use for calculation `attempt`.
-        
+
         If attempt <= self.script_attempts then we use the refined coordinates,
         then we start to use the crude coordinates.
         """
@@ -441,7 +481,7 @@ class QMMolecule(object):
     def determine_point_group(self):
         """
         Determine point group using the SYMMETRY Program
-        
+
         Stores the resulting :class:`PointGroup` in self.point_group
         """
         assert self.qm_data, "Need QM Data first in order to calculate point group."
@@ -460,7 +500,7 @@ class QMMolecule(object):
     def calculate_thermo_data(self):
         """
         Calculate the thermodynamic properties.
-        
+
         Stores and returns a ThermoData object as self.thermo.
         self.qm_data and self.point_group need to be generated before this method is called.
         """
