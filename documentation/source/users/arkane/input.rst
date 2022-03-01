@@ -1118,11 +1118,14 @@ Parameter              Required?    Description
 ``level_of_theory``    Yes          Calculated data will be extracted from the reference database using this level of theory
 ``bac_type``           No           BAC type: 'p' for Petersson (default), 'm' for Melius
 ``train_names``        No           Names of training data folders in the RMG database (default: 'main')
+``crossval_n_folds``   No           If 1, perform no cross-validation. If -1, perform leave-one-out cross-validation. If any other positive integer, perfrom k-fold cross-validation. (default: 1)
+``idxs``               No           Only include reference species with these indices in the training data (default: None)
+``exclude_idxs``       No           Exclude reference species with these indices from the training data (default: None)
 ``exclude_elements``   No           Exclude molecules with the elements in this list from the training data (default: None)
 ``charge``             No           Set the allowed charges ('neutral', 'positive', 'negative', or integers) for molecules in the training data (default: 'all')
 ``multiplicity``       No           Set the allowed multiplicities for molecules in the training data (default: 'all')
 ``weighted``           No           Weight the data to diversify substructures (default: False)
-``write_to_database``  No           Write the BACs to the database (default: False)
+``write_to_database``  No           Write the BACs to the database; has no effect if doing cross-validation (default: False)
 ``overwrite``          No           If BACs already exist, overwrite them (default: False)
 ``fit_mol_corr``       No           Fit the optional molecular correction term (Melius only, default: True)
 ``global_opt``         No           Perform a global optimization (Melius only, default: True)
