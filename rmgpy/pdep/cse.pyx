@@ -379,7 +379,6 @@ def get_rate_coefficients_CSE_Advanced(network,T,P,neglect_high_energy_collision
 
     return kmat
 
-def apply_chemically_significant_eigenvalues_method_georgievskii(network, neglect_high_energy_collisions=neglect_high_energy_collisions,
-                                                                 high_energy_rate_tol=high_energy_rate_tol):
-    return get_rate_coefficients_CSE_Advanced(network, network.T, network.P, neglect_high_energy_collisions=False,
-                                              high_energy_rate_tol=0.01)
+def apply_chemically_significant_eigenvalues_method_georgievskii(network, neglect_high_energy_collisions, high_energy_rate_tol):
+    return get_rate_coefficients_CSE_Advanced(network, network.T, network.P, neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
