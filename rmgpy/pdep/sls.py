@@ -67,15 +67,15 @@ def get_initial_condition(network,x0,indices):
         eq_dist[i, :, :] /= sum(eq_dist[i, :, :])
 
     # Set initial conditions
-    p0 = np.zeros(np.sum(indices >= 0.0)+n_reac+n_prod, float)
+    p0 = np.zeros(np.sum(indices >= 0.0)+n_reac, float)
     for i in range(n_isom):
         for r in range(n_grains):
             for s in range(n_j):
                 index = indices[i, r, s]
                 if indices[i, r, s] > 0:
                     p0[index] = x0[i] * eq_dist[i, r, s]
-    for i in range(n_reac + n_prod):
-        p0[-n_reac - n_prod + i] = x0[i + n_isom]
+    for i in range(n_reac):
+        p0[-n_reac + i] = x0[i + n_isom]
 
     return p0
 
