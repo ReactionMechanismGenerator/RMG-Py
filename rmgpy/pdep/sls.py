@@ -299,11 +299,11 @@ end""")
 
     kmat = unravel_ks(np.exp(out.x),keqs,len(network.isomers+network.reactants))
 
-    u = get_uncertainties(kmat,xssource,dxdtsource)
+    u = get_uncertainties(kmat,xssource,dxdtssource)
 
     return kmat,u
 
-def get_uncertainties(kmat,xssource,dxdtsource):
+def get_uncertainties(kmat,xssource,dxdtssource):
     """
     approximate the independent factor uncertainty in individual
     rate coefficients
