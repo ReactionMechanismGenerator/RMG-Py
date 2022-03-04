@@ -161,7 +161,7 @@ cpdef generate_full_me_matrix(network, bint products=True, bint exclude_associat
     if exclude_association:
         return me_mat[:-(n_reac+n_prod),:-(n_reac+n_prod)], indices
     else:
-    return me_mat, indices
+        return me_mat, indices
 
 def states_to_configurations(network,indices,state,exclude_association=False):
     """
