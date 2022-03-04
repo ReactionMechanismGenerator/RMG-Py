@@ -32,7 +32,7 @@ method.
 """
 
 import logging
-
+import scipy.sparse as sparse
 import numpy as np
 cimport numpy as np
 import scipy.linalg
@@ -343,7 +343,7 @@ def get_rate_coefficients_CSE_Advanced(network,T,P,neglect_high_energy_collision
 
 
     pvlmbd = np.linalg.solve(eigen_vectors,Pv)
-    Gvlmbd = eigen_vectors.T @ k2v
+    Gvlmbd = np.matmul(eigen_vectors.T, k2v)
 
     W = np.zeros((n_isom,n_isom))
     for k in range(n_chem):
@@ -352,7 +352,7 @@ def get_rate_coefficients_CSE_Advanced(network,T,P,neglect_high_energy_collision
     Winv = np.linalg.inv(W)
 
 
-    transformed_omega = W @ sparse.diags(omega[:n_chem]) @ Winv
+    transformed_omega = np.matmul(W, np.matmul(sparse.diags(omega[:n_chem]), Winv))
 
     kmat = np.zeros((n_channels,n_channels))
 
@@ -371,11 +371,11 @@ def get_rate_coefficients_CSE_Advanced(network,T,P,neglect_high_energy_collision
 
             elif len(react.species) == 2:
                 kmat[j,i] = 0.0
-                kmat[j,i] = (W @ pvlmbd[:n_cse,i-n_isom])[j]
+                kmat[j,i] = np.matmul(W, pvlmbd[:n_cse,i-n_isom])[j]
 
             elif len(prod.species) == 2:
                 kmat[j,i] = 0.0
-                kmat[j,i] = (Gvlmbd[:n_cse,j-n_isom] @ Winv[:,i])
+                kmat[j,i] = np.matmul(Gvlmbd[:n_cse,j-n_isom], Winv[:,i])
 
     return kmat
 
