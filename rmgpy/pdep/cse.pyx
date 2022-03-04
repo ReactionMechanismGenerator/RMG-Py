@@ -40,7 +40,7 @@ from libc.math cimport exp, sqrt
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import ChemicallySignificantEigenvaluesError
-from rmgpy.pdep.me import generate_full_me_matrix
+from rmgpy.pdep.me import generate_full_me_matrix, states_to_configurations
 
 ################################################################################
 
