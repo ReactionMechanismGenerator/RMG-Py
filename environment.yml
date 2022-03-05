@@ -18,6 +18,7 @@ dependencies:
   - graphviz
   - h5py
   - jinja2
+  - conda-forge::julia
   - jupyter
   - rmg::lpsolve55
   - markupsafe
