@@ -540,7 +540,7 @@ cdef class HinderedRotor(Torsion):
                 A[:-1, m] = np.cos(m * angle)
                 A[:-1, numterms + m - 1] = np.sin(m * angle)
             # This row forces dV/dangle = 0 at angle = 0
-            A[N, numterms:] = 1
+            A[N, numterms:] = np.arange(1., numterms)
             b = np.concatenate((V, np.array([0.])))
 
             x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
