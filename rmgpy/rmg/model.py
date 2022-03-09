@@ -907,6 +907,10 @@ class CoreEdgeReactionModel:
             spc.get_liquid_volumetric_mass_transfer_coefficient_data()
             spc.get_henry_law_constant_data()
 
+        if self.liquid_volumetric_mass_transfer_coefficient_power_law:
+                spc.get_liquid_volumetric_mass_transfer_coefficient_data(self.liquid_volumetric_mass_transfer_coefficient_power_law)
+                spc.get_henry_law_constant_data()
+
         spc.generate_energy_transfer_model()
 
     def process_coverage_dependence(self, kinetics):
@@ -1164,13 +1168,13 @@ class CoreEdgeReactionModel:
             if not self.core.phase_system.in_nose:
                 if spec.molecule[0].contains_surface_site():
                     self.core.phase_system.phases["Surface"].add_species(spec,edge_phase=self.edge.phase_system.phases["Surface"])
-                    self.edge.phase_system.species_dict[spec.label] = spec 
+                    self.edge.phase_system.species_dict[spec.label] = spec
                     self.core.phase_system.species_dict[spec.label] = spec
                 else:
                     self.core.phase_system.phases["Default"].add_species(spec,edge_phase=self.edge.phase_system.phases["Default"])
                     self.edge.phase_system.species_dict[spec.label] = spec
                     self.core.phase_system.species_dict[spec.label] = spec
-            
+
         return rxn_list
 
     def add_species_to_edge(self, spec):
@@ -1185,7 +1189,7 @@ class CoreEdgeReactionModel:
             else:
                 self.edge.phase_system.phases["Default"].add_species(spec)
                 self.edge.phase_system.species_dict[spec.label] = spec
-                
+
 
     def set_thermodynamic_filtering_parameters(self, Tmax, thermo_tol_keep_spc_in_edge,
                                                min_core_size_for_prune, maximum_edge_species, reaction_systems):
@@ -1483,7 +1487,7 @@ class CoreEdgeReactionModel:
         """
         if rxn not in self.core.reactions:
             self.core.reactions.append(rxn)
-            if rxn not in self.edge.reactions: 
+            if rxn not in self.edge.reactions:
                 #If a reaction is not in edge but is going to add to core, it is either a seed mechanism or a newly generated reaction where all reactants and products are already in core
                 #If the reaction is in edge, then the corresponding rms_rxn was moved from edge phase to core phase in pass_species already.
                 if not self.core.phase_system.in_nose:
