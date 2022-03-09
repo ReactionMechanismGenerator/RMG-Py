@@ -266,6 +266,8 @@ class RMG(util.Subject):
             self.reaction_model.pressure_dependence = self.pressure_dependence
         if self.solvent:
             self.reaction_model.solvent_name = self.solvent
+        if self.liquid_volumetric_mass_transfer_coefficient_power_law:
+            self.reaction_model.liquid_volumetric_mass_transfer_coefficient_power_law = self.liquid_volumetric_mass_transfer_coefficient_power_law
 
         if self.surface_site_density:
             self.reaction_model.surface_site_density = self.surface_site_density
