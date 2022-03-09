@@ -553,11 +553,19 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
             diff = rms.StokesDiffusivity(rad)
             th = obj.get_thermo_data()
             thermo = to_rms(th)
-            return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, diff, rad, obj.molecule[0].multiplicity-1, obj.molecular_weight.value_si)
+            if obj.henry_law_constant_data:
+                kH = rms.TemperatureDependentHenryLawConstant(Ts=obj.henry_law_constant_data.Ts, kHs=obj.henry_law_constant_data.kHs)
+            else:
+                kH = rms.EmptyHenryLawConstant()
+            if obj.liquid_volumetric_mass_transfer_coefficient_data:
+                kLA = rms.TemperatureDependentLiquidVolumetricMassTransferCoefficient(Ts=obj.liquid_volumetric_mass_transfer_coefficient_data.Ts,kLAs=obj.liquid_volumetric_mass_transfer_coefficient_data.kLAs)
+            else:
+                kLA = rms.EmptyLiquidVolumetricMassTransferCoefficient()
+            return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, diff, rad, obj.molecule[0].multiplicity-1, obj.molecular_weight.value_si, kH, kLA)
         else:
             th = obj.get_thermo_data()
             thermo = to_rms(th)
-            return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, rms.EmptyDiffusivity(), 0.0, obj.molecule[0].multiplicity-1, 0.0)
+            return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, rms.EmptyDiffusivity(), 0.0, obj.molecule[0].multiplicity-1, 0.0, rms.EmptyHenryLawConstant(), rms.EmptyLiquidVolumetricMassTransferCoefficient())
     elif isinstance(obj, Reaction):
         reactantinds = [species_names.index(spc.label) for spc in obj.reactants]
         productinds = [species_names.index(spc.label) for spc in obj.products]
