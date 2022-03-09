@@ -55,6 +55,7 @@ from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
+from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1: 'S', 2: 'D', 3: 'T', 4: 'Q', 5: 'V', }
@@ -92,7 +93,8 @@ class Species(object):
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, transport_data=None,
                  molecular_weight=None, energy_transfer_model=None, reactive=True, props=None, smiles='', inchi='',
-                 aug_inchi=None, symmetry_number=-1, creation_iteration=0, explicitly_allowed=False):
+                 aug_inchi=None, symmetry_number=-1, creation_iteration=0, explicitly_allowed=False,
+                 liquid_volumetric_mass_transfer_coefficient_data=None,henry_law_constant_data=None):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -111,6 +113,8 @@ class Species(object):
         self._fingerprint = None
         self._inchi = None
         self._smiles = None
+        self.liquid_volumetric_mass_transfer_coefficient_data = liquid_volumetric_mass_transfer_coefficient_data
+        self.henry_law_constant_data = henry_law_constant_data
 
         if inchi and smiles:
             logging.warning('Both InChI and SMILES provided for Species instantiation, '
@@ -148,6 +152,10 @@ class Species(object):
             string += 'molecule={0!r}, '.format(self.molecule)
         if self.transport_data is not None:
             string += 'transport_data={0!r}, '.format(self.transport_data)
+        if self.liquid_volumetric_mass_transfer_coefficient_data is not None:
+            string += f'liquid_volumetric_mass_transfer_coefficient_data={self.liquid_volumetric_mass_transfer_coefficient_data}'
+        if self.henry_law_constant_data is not None:
+            string += f'henry_law_constant_data={self.henry_law_constant_data}'
         if not self.reactive:
             string += 'reactive={0}, '.format(self.reactive)
         if self.molecular_weight is not None:
@@ -838,6 +846,40 @@ class Species(object):
                                   "interpret it as SMILES nor as adjacency list".format(structure, self.label))
                     raise
             self.generate_resonance_structures()
+
+    def get_henry_law_constant_data(self, Ts=[]):
+
+        if self.henry_law_constant_data:
+            return self.henry_law_constant_data
+
+        if diffusion_limiter.enabled:
+
+            self.henry_law_constant_data = diffusion_limiter.get_henry_law_constant_data(self, Ts=Ts)
+
+            return self.henry_law_constant_data
+        else:
+            raise Exception('Unable to calculate henry law constant when the diffusion limiter isn\'t enabled.')
+        
+
+    def get_liquid_volumetric_mass_transfer_coefficient_data(self, liquid_volumetric_mass_transfer_coefficient_power_law=None, Ts=[]):
+
+        if self.liquid_volumetric_mass_transfer_coefficient_data:
+            return self.liquid_volumetric_mass_transfer_coefficient_data
+
+        if diffusion_limiter.enabled and liquid_volumetric_mass_transfer_coefficient_power_law:
+
+            prefactor = liquid_volumetric_mass_transfer_coefficient_power_law.prefactor
+            diffusion_coefficient_power = liquid_volumetric_mass_transfer_coefficient_power_law.diffusion_coefficient_power
+            solvent_viscosity_power = liquid_volumetric_mass_transfer_coefficient_power_law.solvent_viscosity_power
+            solvent_density_power = liquid_volumetric_mass_transfer_coefficient_power_law.solvent_density_power
+
+            self.liquid_volumetric_mass_transfer_coefficient_data = diffusion_limiter.get_liquid_volumetric_mass_transfer_coefficient_data(self, Ts=Ts, prefactor=prefactor, diffusion_coefficient_power=diffusion_coefficient_power,
+                                                                                        solvent_viscosity_power=solvent_viscosity_power, solvent_density_power=solvent_density_power)
+
+            return self.liquid_volumetric_mass_transfer_coefficient_data
+        else:
+            raise Exception('Unable to calculate liquid volumetric mass transfer coefficient when the diffusion limiter is not enabled '
+                            'or liquid volumetric mass transfer coefficient power law is not provided.')
 
 
 ################################################################################
