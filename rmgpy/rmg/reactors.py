@@ -430,6 +430,43 @@ class ConstantTLiquidSurfaceReactor(Reactor):
         react,y0,p = rms.Reactor((domainliq,domaincat), (y0liq,y0cat), (0.0, self.tf), [inter], (pliq,pcat,pinter))
         return react, (domainliq,domaincat), [inter], p
 
+class ConstantTVLiquidReactor(Reactor):
+    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species=[],
+        inlet_conditions=dict(), outlet_conditions=dict(), evap_cond_conditions=dict()):
+        super().__init__(core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species=constant_species)
+
+        self.inlet_conditions = inlet_conditions
+        self.outlet_conditions = outlet_conditions
+        self.evap_cond_conditions = evap_cond_conditions
+
+    def generate_reactor(self, phase_system):
+        """
+        Setup an RMS simulation for EdgeAnalysis
+        """
+        phase = phase_system.phases["Default"]
+        liq = rms.IdealDiluteSolution(phase.species, phase.reactions, phase.solvent)
+        domain, y0, p = rms.ConstantTVDomain(phase=liq, initialconds=self.initial_conditions, constantspecies=self.const_spc_names)
+
+        interfaces = []
+
+        if self.inlet_conditions:
+            inlet_conditions = {key: value for (key,value) in self.inlet_conditions.items() if key!="F"}
+            total_molar_flow_rate = self.inlet_conditions["F"]
+            inlet = rms.Inlet(domain,inlet_conditions,Main.eval("x->"+str(total_molar_flow_rate)))
+            interfaces.append(inlet)
+
+        if self.outlet_conditions:
+            total_volumetric_flow_rate = self.outlet_conditions["Vout"]
+            outlet = rms.VolumetricFlowRateOutlet(domain,Main.eval("x->"+str(total_volumetric_flow_rate)))
+            interfaces.append(outlet)
+
+        if self.evap_cond_conditions:
+            kLA_kH_evap_cond = rms.kLAkHCondensationEvaporationWithReservoir(domain,self.evap_cond_conditions)
+            interfaces.append(kLA_kH_evap_cond)
+            
+        react = rms.Reactor(domain, y0, (0.0, self.tf), interfaces, p=p)
+        return react, domain, interfaces, p
+
 def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     """
     Generate corresponding rms object
