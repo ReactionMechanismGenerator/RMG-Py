@@ -30,9 +30,9 @@
 """
 This module contains classes and functions for working with chemical species.
 
-From the `IUPAC Compendium of Chemical Terminology 
-<https://doi.org/10.1351/goldbook>`_, a chemical species is "an 
-ensemble of chemically identical molecular entities that can explore the same 
+From the `IUPAC Compendium of Chemical Terminology
+<https://doi.org/10.1351/goldbook>`_, a chemical species is "an
+ensemble of chemically identical molecular entities that can explore the same
 set of molecular energy levels on the time scale of the experiment". This
 definition is purposefully vague to allow the user flexibility in application.
 
@@ -361,7 +361,7 @@ class Species(object):
     def from_adjacency_list(self, adjlist, raise_atomtype_exception=True, raise_charge_exception=True):
         """
         Load the structure of a species as a :class:`Molecule` object from the
-        given adjacency list `adjlist` and store it as the first entry of a 
+        given adjacency list `adjlist` and store it as the first entry of a
         list in the `molecule` attribute. Does not generate resonance isomers
         of the loaded molecule.
         """
@@ -389,7 +389,7 @@ class Species(object):
     def from_smiles(self, smiles):
         """
         Load the structure of a species as a :class:`Molecule` object from the
-        given SMILES string `smiles` and store it as the first entry of a 
+        given SMILES string `smiles` and store it as the first entry of a
         list in the `molecule` attribute. Does not generate resonance isomers
         of the loaded molecule.
         """
@@ -464,7 +464,7 @@ class Species(object):
 
     def has_thermo(self):
         """
-        Return ``True`` if the species has thermodynamic parameters, or 
+        Return ``True`` if the species has thermodynamic parameters, or
         ``False`` otherwise.
         """
         return self.thermo is not None
@@ -585,7 +585,7 @@ class Species(object):
     def get_symmetry_number(self):
         """
         Get the symmetry number for the species, which is the highest symmetry number amongst
-        its resonance isomers and the resonance hybrid.  
+        its resonance isomers and the resonance hybrid.
         This function is currently used for website purposes and testing only as it
         requires additional calculate_symmetry_number calls.
         """
@@ -607,7 +607,7 @@ class Species(object):
 
     def get_resonance_hybrid(self):
         """
-        Returns a molecule object with bond orders that are the average 
+        Returns a molecule object with bond orders that are the average
         of all the resonance structures.
         """
         # get labeled resonance isomers
@@ -693,8 +693,8 @@ class Species(object):
 
     def copy(self, deep=False):
         """
-        Create a copy of the current species. If the 
-        kw argument 'deep' is True, then a deep copy will be made of the 
+        Create a copy of the current species. If the
+        kw argument 'deep' is True, then a deep copy will be made of the
         Molecule objects in self.molecule.
 
         For other complex attributes, a deep copy will always be made.
@@ -756,7 +756,7 @@ class Species(object):
         then it is converted into a NASA format.
 
         If it is a Future, then a blocking call is made to retrieve the NASA object.
-        If the thermo object did not exist yet, the thermo object is generated.        
+        If the thermo object did not exist yet, the thermo object is generated.
         """
 
         from rmgpy.thermo.thermoengine import submit
@@ -883,7 +883,7 @@ class Species(object):
         else:
             raise Exception('Unable to calculate Henry\'s law coefficients when the vapor liquid mass transfer is not enabled '
                             'or liquid volumetric mass transfer coefficient power law is not provided.')
-        
+
 
     def get_liquid_volumetric_mass_transfer_coefficient_data(self, Ts=[]):
 
@@ -1058,7 +1058,7 @@ class TransitionState(object):
 
     def calculate_tunneling_factor(self, T):
         """
-        Calculate and return the value of the canonical tunneling correction 
+        Calculate and return the value of the canonical tunneling correction
         factor for the reaction at the given temperature `T` in K.
         """
         if self.tunneling is not None:
@@ -1069,7 +1069,7 @@ class TransitionState(object):
 
     def calculate_tunneling_function(self, e_list):
         """
-        Calculate and return the value of the microcanonical tunneling 
+        Calculate and return the value of the microcanonical tunneling
         correction for the reaction at the given energies `e_list` in J/mol.
         """
         if self.tunneling is not None:

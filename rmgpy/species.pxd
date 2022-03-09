@@ -38,7 +38,7 @@ from rmgpy.molecule.graph cimport Graph
 ################################################################################
 
 cdef class Species:
-    
+
     cdef public int index
     cdef public str label
     cdef public object thermo
@@ -61,19 +61,19 @@ cdef class Species:
     cdef str _smiles
 
     cpdef generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?, bint save_order=?)
-    
+
     cpdef bint is_isomorphic(self, other, bint generate_initial_map=?, bint save_order=?, bint strict=?) except -2
 
     cpdef bint is_identical(self, other, bint strict=?) except -2
 
     cpdef bint is_structure_in_list(self, list species_list) except -2
-    
+
     cpdef from_adjacency_list(self, adjlist, bint raise_atomtype_exception=?, bint raise_charge_exception=?)
 
     cpdef from_smiles(self, smiles)
-    
+
     cpdef to_adjacency_list(self)
-    
+
     cpdef bint contains_surface_site(self) except -2
 
     cpdef bint is_surface_site(self) except -2
@@ -113,7 +113,7 @@ cdef class Species:
 ################################################################################
 
 cdef class TransitionState:
-    
+
     cdef public str label
     cdef public Conformer conformer
     cdef public ScalarQuantity _frequency
@@ -133,7 +133,7 @@ cdef class TransitionState:
     cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list)
 
     cpdef np.ndarray get_density_of_states(self, np.ndarray e_list)
-    
+
     cpdef double calculate_tunneling_factor(self, double T) except -1
-    
+
     cpdef np.ndarray calculate_tunneling_function(self, np.ndarray e_list)
