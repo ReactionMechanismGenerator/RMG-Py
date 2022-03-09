@@ -647,6 +647,9 @@ class RMG(util.Subject):
 
         for spec in self.initial_species:
             submit(spec, self.solvent)
+            if self.liquid_volumetric_mass_transfer_coefficient_power_law:
+                spec.get_liquid_volumetric_mass_transfer_coefficient_data(self.liquid_volumetric_mass_transfer_coefficient_power_law)
+                spec.get_henry_law_constant_data()
 
         # Add nonreactive species (e.g. bath gases) to core first
         # This is necessary so that the PDep algorithm can identify the bath gas
