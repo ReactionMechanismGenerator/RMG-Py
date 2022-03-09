@@ -274,7 +274,7 @@ class RMG(util.Subject):
             self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
             self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
         self.reaction_model.coverage_dependence = self.coverage_dependence
-            
+
         self.reaction_model.verbose_comments = self.verbose_comments
         self.reaction_model.save_edge_species = self.save_edge_species
 
@@ -2330,7 +2330,7 @@ class RMG_Memory(object):
                 assert key != 'T' and key != 'P', 'naming a species T or P is forbidden'
                 if isinstance(value, list):
                     self.Ranges[key] = [v.value_si for v in value]
-        
+
         if isinstance(reaction_system, Reactor):
             self.tmax = reaction_system.tf
         else:
