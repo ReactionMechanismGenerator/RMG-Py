@@ -154,7 +154,10 @@ class PhaseSystem:
                 if (spc in rxn.reactants or spc in rxn.products) and all([spec in phasesys.interfaces[key].species for spec in rxn.reactants]) and all([spec in phasesys.interfaces[key].species for spec in rxn.products]):
                     rxnlist.append(rxn)
 
-            phasesys.interfaces[key].reactions.extend(rxnlist)
+            for i, rxn in enumerate(rxnlist):
+                phasesys.interfaces[key].reactions.append(rxn)
+                self.interfaces[key].reactions.remove(rxn)
+                self.interfaces[key].reactions.insert(len(phasesys.interfaces[key].reactions)-1, rxn)
 
         return
 
