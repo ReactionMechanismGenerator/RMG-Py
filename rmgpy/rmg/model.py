@@ -173,6 +173,7 @@ class CoreEdgeReactionModel:
     `network_count`            A counter for the number of pressure-dependent networks created
     `index_species_dict`       A dictionary with a unique index pointing to the species objects
     `solvent_name`             String describing solvent name for liquid reactions. Empty for non-liquid estimation
+    `liquid_volumetric_mass_transfer_coefficient_power_law` Power law for estimating kLA
     `surface_site_density`     The surface site density (a SurfaceConcentration quantity) or None if no heterogeneous catalyst.
     =========================  ==============================================================
 
@@ -235,6 +236,7 @@ class CoreEdgeReactionModel:
             3  R!H u1 px c0 {2,S}
             4  H u0 p0  c0 {1,S}
             """)]
+        self.liquid_volumetric_mass_transfer_coefficient_power_law = None
 
     def check_for_existing_species(self, molecule):
         """
