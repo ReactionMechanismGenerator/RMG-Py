@@ -142,7 +142,8 @@ You may now use RMG-Py, Arkane, as well as any of the :ref:`Standalone Modules <
 Test Suite
 ==========
 
-There are a number of basic tests you can run on the newly installed RMG.  It is recommended to run them regularly to ensure the code and databases are behaving normally.  
+There are a number of basic tests you can run on the newly installed RMG.  It is recommended to run them regularly to ensure the code and databases are behaving normally.
+Make sure that the environment is active before running the tests: ``conda activate rmg_env``.
 
 #. **Unit test suite**: this will run all the unit tests in the ``rmgpy`` and ``arkane`` packages ::
 
