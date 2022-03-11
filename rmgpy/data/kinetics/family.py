@@ -2133,10 +2133,6 @@ class KineticsFamily(Database):
                     # No reaction with these reactants in this template
                     return []
 
-                if adsorbate_molecules[0].contains_surface_site():
-                    # An adsorbed molecule can't adsorb again
-                    return []
-
                 for r in template_reactants:
                     if not r.is_surface_site():
                         template_adsorbate = r
@@ -2170,8 +2166,9 @@ class KineticsFamily(Database):
         elif len(reactants) == 3 and len(template_reactants) == 3:
             """
             This could be a surface reaction
-                A + X + X <=> BX + CX  (dissociative adsorption)
-                A + X + X <=> AXX      (bidentate adsorption)
+                A + X + X <=> BX + CX    (dissociative adsorption)
+                A + X + X <=> AXX        (bidentate adsorption)
+                ABX + X + X <=> AXX + BX (bidentate dissociation)
             or a termolecular gas phase reaction
                 A + B + C <=> stuff
             We check the two scenarios in that order.
@@ -2199,10 +2196,6 @@ class KineticsFamily(Database):
                     adsorbate_molecules = reactants[0]
                 else:
                     # Three reactants not containing two surface sites
-                    return []
-
-                if adsorbate_molecules[0].contains_surface_site():
-                    # An adsorbed molecule can't adsorb again
                     return []
 
                 for r in template_reactants:
