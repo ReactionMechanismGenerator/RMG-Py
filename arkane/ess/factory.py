@@ -60,7 +60,7 @@ def register_ess_adapter(ess: str,
 
 
 def ess_factory(fullpath: str,
-                check_for_errors: bool = True,
+                check_for_errors: bool = False,
                 ) -> Type[ESSAdapter]:
     """
     A factory generating the ESS adapter corresponding to ``ess_adapter``.
