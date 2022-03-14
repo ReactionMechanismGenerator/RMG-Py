@@ -45,7 +45,7 @@ class ESSAdapter(ABC):
     An abstract ESS Adapter class
     """
 
-    def __init__(self, path, check_for_errors=True):
+    def __init__(self, path, check_for_errors=False):
         self.path = path
         if check_for_errors:
             self.check_for_errors()
