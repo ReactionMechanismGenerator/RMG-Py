@@ -2168,7 +2168,7 @@ class KineticsFamily(Database):
             This could be a surface reaction
                 A + X + X <=> BX + CX    (dissociative adsorption)
                 A + X + X <=> AXX        (bidentate adsorption)
-                ABX + X + X <=> AXX + BX (bidentate dissociation)
+                ABX + X + X <=> AXX + BX (dissociation to bidentate)
             or a termolecular gas phase reaction
                 A + B + C <=> stuff
             We check the two scenarios in that order.
