@@ -463,9 +463,22 @@ class ConstantTVLiquidReactor(Reactor):
         if self.evap_cond_conditions:
             kLA_kH_evap_cond = rms.kLAkHCondensationEvaporationWithReservoir(domain,self.evap_cond_conditions)
             interfaces.append(kLA_kH_evap_cond)
-            
+
         react = rms.Reactor(domain, y0, (0.0, self.tf), interfaces, p=p)
         return react, domain, interfaces, p
+
+class ConstantTPIdealGasReactor(Reactor):
+    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species=[]):
+        super().__init__(core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species=[])
+    def generate_reactor(self, phase_system):
+        """
+        Setup an RMS simulation for EdgeAnalysis
+        """
+        phase = phase_system.phases["Default"]
+        ig = rms.IdealGas(phase.species, phase.reactions)
+        domain, y0, p = rms.ConstantTPDomain(phase=ig, initialconds=self.initial_conditions)
+        react = rms.Reactor(domain, y0, (0.0, self.tf), p)
+        return react, domain, [], p
 
 def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     """
