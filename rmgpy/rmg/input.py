@@ -48,7 +48,7 @@ from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.util import as_list
 from rmgpy.data.surface import MetalDatabase
-from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor
+from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor, ConstantTPIdealGasReactor
 from rmgpy.data.vaporLiquidMassTransfer import liquidVolumetricMassTransferCoefficientPowerLaw
 from rmgpy.molecule.fragment import Fragment
 
@@ -502,6 +502,107 @@ def constant_V_ideal_gas_reactor(temperature,
     initial_cond["T"] = T 
     initial_cond["P"] = P
     system = ConstantVIdealGasReactor(rmg.reaction_model.core.phase_system,rmg.reaction_model.edge.phase_system,initial_cond,termination)
+    system.T = Quantity(T)
+    system.P = Quantity(P)
+    system.Trange = None
+    system.Prange = None
+    system.sensitive_species = []
+    rmg.reaction_systems.append(system)
+
+    assert balanceSpecies is None or isinstance(balanceSpecies, str), 'balanceSpecies should be the string corresponding to a single species'
+    rmg.balance_species = balanceSpecies
+    if balanceSpecies:  # check that the balanceSpecies can't be taken to zero
+        total = 0.0
+        for key, item in initialMoleFractions.items():
+            if key == balanceSpecies:
+                assert not isinstance(item, list), 'balanceSpecies must not have a defined range'
+                xbspcs = item
+            if isinstance(item, list):
+                total += item[1] - item[0]
+
+        if total > xbspcs:
+            raise ValueError('The sum of the differences in the ranged mole fractions is greater than the mole '
+                             'fraction of the balance species, this would require the balanceSpecies mole fraction to '
+                             'be negative in some cases which is not allowed, either reduce the maximum mole fractions '
+                             'or dont use balanceSpecies')
+
+def constant_TP_ideal_gas_reactor(temperature,
+                   pressure,
+                   initialMoleFractions,
+                   terminationConversion=None,
+                   terminationTime=None,
+                   terminationRateRatio=None,
+                   balanceSpecies=None):
+    logging.debug('Found ConstantTPIdealGasReactor reaction system')
+
+    for key, value in initialMoleFractions.items():
+        if not isinstance(value, list):
+            initialMoleFractions[key] = float(value)
+            if value < 0:
+                raise InputError('Initial mole fractions cannot be negative.')
+        else:
+            if len(value) != 2:
+                raise InputError("Initial mole fraction values must either be a number or a list with 2 entries")
+            initialMoleFractions[key] = [float(value[0]), float(value[1])]
+            if value[0] < 0 or value[1] < 0:
+                raise InputError('Initial mole fractions cannot be negative.')
+            elif value[1] < value[0]:
+                raise InputError('Initial mole fraction range out of order: {0}'.format(key))
+
+    if not isinstance(temperature, list):
+        T = Quantity(temperature).value_si
+    else:
+        raise InputError("Condition ranges not supported for this reaction type")
+        if len(temperature) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
+
+    if not isinstance(pressure, list):
+        P = Quantity(pressure).value_si
+    else:
+        raise InputError("Condition ranges not supported for this reaction type")
+        if len(pressure) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
+        P = [Quantity(p) for p in pressure]
+
+    if not isinstance(temperature, list) and not isinstance(pressure, list) and all(
+            [not isinstance(x, list) for x in initialMoleFractions.values()]):
+        nSims = 1
+
+    # normalize mole fractions if not using a mole fraction range
+    if all([not isinstance(x, list) for x in initialMoleFractions.values()]):
+        total_initial_moles = sum(initialMoleFractions.values())
+        if total_initial_moles != 1:
+            logging.warning('Initial mole fractions do not sum to one; normalizing.')
+            logging.info('')
+            logging.info('Original composition:')
+            for spec, molfrac in initialMoleFractions.items():
+                logging.info('{0} = {1}'.format(spec, molfrac))
+            for spec in initialMoleFractions:
+                initialMoleFractions[spec] /= total_initial_moles
+            logging.info('')
+            logging.info('Normalized mole fractions:')
+            for spec, molfrac in initialMoleFractions.items():
+                logging.info('{0} = {1}'.format(spec, molfrac))
+            logging.info('')
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.items():
+            termination.append((species_dict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
+
+    initial_cond = initialMoleFractions
+    initial_cond["T"] = T
+    initial_cond["P"] = P
+    system = ConstantTPIdealGasReactor(rmg.reaction_model.core.phase_system,rmg.reaction_model.edge.phase_system,initial_cond,termination)
     system.T = Quantity(T)
     system.P = Quantity(P)
     system.Trange = None
@@ -1422,6 +1523,7 @@ def read_input_file(path, rmg0):
         'react': react,
         'simpleReactor': simple_reactor,
         'constantVIdealGasReactor' : constant_V_ideal_gas_reactor,
+        'constantTPIdealGasReactor' : constant_TP_ideal_gas_reactor,
         'liquidSurfaceReactor' : liquid_cat_reactor,
         'constantTVLiquidReactor': constant_T_V_liquid_reactor,
         'liquidReactor': liquid_reactor,
