@@ -388,7 +388,7 @@ class Reactor:
                                                 model_settings.tol_interrupt_simulation, model_settings.ignore_overall_flux_criterion,
                                                 model_settings.filter_reactions, model_settings.max_num_objects_per_iter, model_settings.tol_branch_rxn_to_core,
                                                 model_settings.branching_ratio_max, model_settings.branching_index, model_settings.terminate_at_max_objects,
-                                                self.terminations, model_settings.filter_threshold, atol=simulator_settings.atol, rtol=simulator_settings.rtol, solver=de.CVODE_BDF())
+                                                self.terminations, model_settings.filter_threshold, model_settings.transitory_tol_dict, atol=simulator_settings.atol, rtol=simulator_settings.rtol, solver=de.CVODE_BDF())
 
         return terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x
 
