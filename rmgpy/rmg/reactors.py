@@ -383,12 +383,13 @@ class Reactor:
         edge_react, edge_domains, edge_interfaces, edge_p = self.generate_reactor(self.edge_phase_system)
         core_react, core_domains, core_interfaces, core_p = self.generate_reactor(self.core_phase_system)
 
-        terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x = rms.selectobjects(core_react,
+        terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x = rms.selectobjects(core_react, edge_react,
                                                 edge_domains, edge_interfaces, core_domains, core_interfaces, core_p, edge_p, model_settings.tol_move_to_core,
                                                 model_settings.tol_interrupt_simulation, model_settings.ignore_overall_flux_criterion,
                                                 model_settings.filter_reactions, model_settings.max_num_objects_per_iter, model_settings.tol_branch_rxn_to_core,
                                                 model_settings.branching_ratio_max, model_settings.branching_index, model_settings.terminate_at_max_objects,
-                                                self.terminations, model_settings.filter_threshold, model_settings.transitory_tol_dict, atol=simulator_settings.atol, rtol=simulator_settings.rtol, solver=de.CVODE_BDF())
+                                                self.terminations, model_settings.filter_threshold, model_settings.transitory_tol_dict,
+                                                model_settings.transitory_step_period, atol=simulator_settings.atol, rtol=simulator_settings.rtol, solver=de.CVODE_BDF())
 
         return terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x
 

@@ -52,6 +52,7 @@ This module contains settings classes for manipulation of RMG run parameters
     `max_num_species`                         Number of core species at which a stage/job will terminate
     `maxNumObjPerIter`                        Maximum number of objects that can be sent for enlargement from a single simulation
     `transitory_tol_dict`                     Dictionary mapping species names to transitory sensitivity tolerances
+    `transitory_step_period`                  Number of steps between transitory edge analyses
 ==================================================================================================================================================
 """
 import numpy as np
@@ -74,7 +75,8 @@ class ModelSettings(object):
                  ignore_overall_flux_criterion=False, max_num_species=None, max_num_objects_per_iter=1,
                  terminate_at_max_objects=False, thermo_tol_keep_spc_in_edge=np.inf,
                  dynamics_time_scale=Quantity((0.0, 'sec')),
-                 tol_branch_rxn_to_core=0.0, branching_index=0.5, branching_ratio_max=1.0,transitory_tol_dict=dict()):
+                 tol_branch_rxn_to_core=0.0, branching_index=0.5, branching_ratio_max=1.0,transitory_tol_dict=dict(),
+                 transitory_step_period=20):
 
         self.tol_keep_in_edge = tol_keep_in_edge
         self.tol_move_to_core = tol_move_to_core
@@ -96,6 +98,7 @@ class ModelSettings(object):
         self.branching_index = branching_index
         self.branching_ratio_max = branching_ratio_max
         self.transitory_tol_dict = transitory_tol_dict
+        self.transitory_step_period = transitory_step_period
 
         if tol_interrupt_simulation:
             self.tol_interrupt_simulation = tol_interrupt_simulation
