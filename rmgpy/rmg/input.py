@@ -49,8 +49,12 @@ from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.util import as_list
 from rmgpy.data.surface import MetalDatabase
 from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor, ConstantTPIdealGasReactor
+<<<<<<< HEAD
 from rmgpy.data.vaporLiquidMassTransfer import liquidVolumetricMassTransferCoefficientPowerLaw
 from rmgpy.molecule.fragment import Fragment
+=======
+from rmgpy.kLAkH import liquidVolumetricMassTransferCoefficientPowerLaw
+>>>>>>> e45e08081 (fix thing)
 
 ################################################################################
 
