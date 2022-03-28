@@ -1172,7 +1172,7 @@ class Reaction:
 
             def get_sorting_key(spc):
                 # List of elements to sort by, order is intentional
-                numbers = [6, 8, 7, 14, 16, 17, 53, 9, 35]  # C, O, N, Si, S, Cl, I, F, Br
+                numbers = [6, 8, 7, 14, 16, 15, 17, 53, 9, 35]  # C, O, N, Si, S, P, Cl, I, F, Br
                 num_ele = []
                 for n in numbers:
                     ele = 0
