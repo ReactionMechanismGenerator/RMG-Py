@@ -177,6 +177,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 self.compat_func_name = test_name
                 yield test, depository.label
 
+                test = lambda x: self.kinetics_check_have_Tmin_Tmax(depository)
+                test_name = "Kinetics depository {0}: check Tmin and Tmax?".format(depository.label)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, depository.label
+
         for library_name, library in self.database.kinetics.libraries.items():
             test = lambda x: self.kinetics_check_adjlists_nonidentical(library)
             test_name = "Kinetics library {0}: check adjacency lists are nonidentical?".format(library_name)
@@ -192,6 +198,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
             test = lambda x: self.kinetics_check_library_rates_are_reasonable(library)
             test_name = "Kinetics library {0}: check rates are reasonable?".format(library_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, library_name
+
+            test = lambda x: self.kinetics_check_have_Tmin_Tmax(library)
+            test_name = "Kinetics depository {0}: check Tmin and Tmax?".format(library_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, library_name
@@ -760,6 +772,25 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                     boo = True
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
+
+    def kinetics_check_have_Tmin_Tmax(self, database):
+        """
+        This test ensures that every kinetics data has Tmin and Tmax.
+        """
+        boo = False
+
+        for entry in database.entries.values():
+            k = entry.data
+            if not k.Tmin:
+                logging.error(f'Entry {entry.index} from {database.label} does not have Tmin')
+                boo = True
+            if not k.Tmax:
+                logging.error(f'Entry {entry.index} from {database.label} does not have Tmax')
+                boo = True
+
+        if boo:
+            raise ValueError(f'{database.label} has entries that are missing Tmin or Tmax')
+
 
     def kinetics_check_rate_units_are_correct(self, database, tag='library'):
         """
