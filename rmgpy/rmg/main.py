@@ -63,6 +63,7 @@ from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError, InputError
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
+from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 from rmgpy.kinetics import ThirdBody
 from rmgpy.molecule import Molecule
 from rmgpy.qm.main import QMDatabaseWriter
@@ -557,6 +558,10 @@ class RMG(util.Subject):
 
             diffusion_limiter.enable(solvent_data, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent))
+
+            if self.liquid_volumetric_mass_transfer_coefficient_power_law:
+                vapor_liquid_mass_transfer.enable(solvent_data, self.database.solvation, self.liquid_volumetric_mass_transfer_coefficient_power_law)
+                logging.info("Setting vapor liquid mass transfer with {0} as solvent".format(self.solvent))
 
             # Set solvent viscosity for reaction filtering
             for reaction_system in self.reaction_systems:
