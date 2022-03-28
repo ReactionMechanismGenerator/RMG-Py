@@ -115,6 +115,16 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
         result_dict["smiles"] = obj.molecule[0].to_smiles()
         result_dict["thermo"] = obj_to_dict(obj.thermo, spcs)
         result_dict["radicalelectrons"] = get_radicals(obj)
+        if obj.liquid_volumetric_mass_transfer_coefficient_data:
+            result_dict["liquidvolumetricmasstransfercoefficient"] = dict()
+            result_dict["liquidvolumetricmasstransfercoefficient"]["type"] = "TemperatureDependentLiquidVolumetricMassTransferCoefficient"
+            result_dict["liquidvolumetricmasstransfercoefficient"]["Ts"] = obj.liquid_volumetric_mass_transfer_coefficient_data.Ts
+            result_dict["liquidvolumetricmasstransfercoefficient"]["kLAs"] = obj.liquid_volumetric_mass_transfer_coefficient_data.kLAs
+        if obj.henry_law_constant_data:
+            result_dict["henrylawconstant"] = dict()
+            result_dict["henrylawconstant"]["type"] = "TemperatureDependentHenryLawConstant"
+            result_dict["henrylawconstant"]["Ts"] = obj.henry_law_constant_data.Ts
+            result_dict["henrylawconstant"]["kHs"] = obj.henry_law_constant_data.kHs
     elif isinstance(obj, NASA):
         result_dict["polys"] = [obj_to_dict(k, spcs) for k in obj.polynomials]
         result_dict["type"] = "NASA"

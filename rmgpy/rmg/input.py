@@ -48,7 +48,8 @@ from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.util import as_list
 from rmgpy.data.surface import MetalDatabase
-from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor
+from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor
+from rmgpy.data.vaporLiquidMassTransfer import liquidVolumetricMassTransferCoefficientPowerLaw
 
 ################################################################################
 
@@ -545,6 +546,185 @@ def liquid_cat_reactor(temperature,
     system = ConstantTLiquidSurfaceReactor(rmg.reaction_model.core.phase_system,
                                            rmg.reaction_model.edge.phase_system,
                                            {"liquid":initialCondLiq,"surface":initialCondSurf},termination,constantSpecies)
+    system.T = Quantity(T)
+    system.Trange = None
+    system.sensitive_species = []
+    rmg.reaction_systems.append(system)
+
+def constant_T_V_liquid_reactor(temperature,
+                    initialConcentrations,
+                    liquidVolume=None,
+                    residenceTime=None,
+                    inletVolumetricFlowRate=None,
+                    outletVolumetricFlowRate=None,
+                    inletConcentrations=None,
+                    vaporPressure=None,
+                    vaporMoleFractions=None,
+                    terminationConversion=None,
+                    terminationTime=None,
+                    terminationRateRatio=None,
+                    constantSpecies=[]):
+
+
+    ################################################# check input ########################################################
+
+    if not isinstance(temperature, list):
+        T = Quantity(temperature).value_si
+    else:
+        raise InputError("Condition ranges not supported for this reaction type")
+        if len(temperature) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
+
+    for spec, conc in initialConcentrations.items():
+        if not isinstance(conc, list):
+            concentration = Quantity(conc)
+            initialConcentrations[spec] = concentration.value_si
+        else:
+            raise InputError("Condition ranges not supported for this reaction type")
+            if len(conc) != 2:
+                raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
+                                 "entries of the same format")
+            initialConcentrations[spec] = [Quantity(conc[0]), Quantity(conc[1])]
+
+    V = 1.0
+    if liquidVolume:
+        V = Quantity(liquidVolume).value_si
+    logging.debug(f'  Generation with liquid volume {V}')
+
+    inlet_volumetric_flow_rate = None
+    outlet_volumetric_flow_rate = None
+    residence_time = None
+    if residenceTime:
+        residence_time = Quantity(residenceTime).value_si
+        inlet_volumetric_flow_rate = V/residence_time
+        outlet_volumetric_flow_rate = V/residence_time
+        logging.debug(f'  Generation with residence time {residence_time} s. Calculated inlet/outlet volumetric flow rate is {inlet_volumetric_flow_rate} m^3/s')
+
+    if inletVolumetricFlowRate:
+        if inlet_volumetric_flow_rate:
+            if inlet_volumetric_flow_rate != inletVolumetricFlowRate:
+                raise InputError('  Inconsistent residence time and inlet volumetric flow rate')
+
+        inlet_volumetric_flow_rate = Quantity(inletVolumetricFlowRate).value_si
+
+    if outletVolumetricFlowRate:
+        if outlet_volumetric_flow_rate:
+            if outlet_volumetric_flow_rate != outletVolumetricFlowRate:
+                raise InputError('  Inconsistent residence time and inlet volumetric flow rate')
+            
+        outlet_volumetric_flow_rate = Quantity(outletVolumetricFlowRate).value_si
+
+    if inletConcentrations:
+        if not inlet_volumetric_flow_rate:
+            raise InputError("Inlet volumetric flow rate or residence time must be provided when inlet concentrations are specified")
+
+        for spec, conc in inletConcentrations.items():
+            if not isinstance(conc, list):
+                concentration = Quantity(conc)
+                inletConcentrations[spec] = concentration.value_si
+            else:
+                raise InputError("Condition ranges not supported for this reaction type")
+                if len(conc) != 2:
+                    raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
+                                    "entries of the same format")
+                inletConcentrations[spec] = [Quantity(conc[0]), Quantity(conc[1])]
+    else:
+        if residence_time or inlet_volumetric_flow_rate:
+            inletConcentrations = initialConcentrations
+            logging.debug(f'  Inlet concentrations not provided. Using initial concentrations as inlet concentrations.')
+
+    vapor_pressure = None
+    if vaporPressure or vaporMoleFractions:
+
+        if not (vaporPressure and vaporMoleFractions):
+            raise ImportError("Vapor pressure, vapor mole fractions and liquid volumetric mass transfer coefficient power law"
+                              "must be provided to simulate evaporation/condensation with kLA.")
+
+        if len(vaporPressure) != 2:
+            raise InputError("Vapor pressure value must be in the form of (number, units).")
+        vapor_pressure = Quantity(vaporPressure).value_si
+        logging.debug(f'  Generation with vapor pressure {vapor_pressure} Pa')
+
+        for spec in vaporMoleFractions:
+            vaporMoleFractions[spec] = float(vaporMoleFractions[spec])
+
+        total_vapor_moles = sum(vaporMoleFractions.values())
+        if total_vapor_moles != 1:
+            logging.warning('Initial mole fractions do not sum to one; normalizing.')
+            logging.info('')
+            logging.info('Original composition:')
+            for spec, molfrac in vaporMoleFractions.items():
+                logging.info(f"{spec} = {molfrac}")
+            for spec in vaporMoleFractions:
+                vaporMoleFractions[spec] /= total_vapor_moles
+            logging.info('')
+            logging.info('Normalized mole fractions:')
+            for spec, molfrac in vaporMoleFractions.items():
+                logging.info(f"{spec} = {molfrac}")
+
+    if not isinstance(temperature, list) and all([not isinstance(x, list) for x in initialConcentrations.values()]):
+        nSims = 1
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.items():
+            termination.append(TerminationConversion(species_dict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
+
+    if constantSpecies is not None:
+        logging.debug('  Generation with constant species:')
+        for const_spc in constantSpecies:
+            logging.debug("  {0}".format(const_spc))
+            if const_spc not in species_dict:
+                raise InputError('Species {0} not found in the input file'.format(const_spc))
+
+    ############################################### process inputs ##############################################
+
+    initial_conditions = dict()
+    for key, item in initialConcentrations.items():
+        initial_conditions[key] = item*V
+    initial_conditions["T"] = T
+    initial_conditions["V"] = V
+
+    inlet_conditions = dict()
+    if inletConcentrations:
+        total_molar_flow_rate = 0
+        for key, item in inletConcentrations.items():
+            inlet_conditions[key] = item*inlet_volumetric_flow_rate
+            total_molar_flow_rate += inlet_conditions[key]
+        for key, item in inlet_conditions.items():
+            inlet_conditions[key] = item/total_molar_flow_rate #molar fraction for each species
+        inlet_conditions["T"] = initial_conditions["T"]
+        inlet_conditions["P"] = 1e8
+        inlet_conditions["F"] = total_molar_flow_rate
+
+    outlet_conditions = dict()
+    if outlet_volumetric_flow_rate:
+        outlet_conditions["Vout"] = outlet_volumetric_flow_rate
+
+    evap_cond_conditions = dict()
+    if vaporMoleFractions:
+        for key, item in vaporMoleFractions.items():
+            evap_cond_conditions[key] = item
+        evap_cond_conditions["P"] = vapor_pressure
+        evap_cond_conditions["T"] = initial_conditions["T"]
+    
+    system = ConstantTVLiquidReactor(rmg.reaction_model.core.phase_system,
+                                           rmg.reaction_model.edge.phase_system,
+                                           initial_conditions,
+                                           termination,
+                                           constantSpecies,
+                                           inlet_conditions,
+                                           outlet_conditions,
+                                           evap_cond_conditions,
+                                           )
     system.T = Quantity(T)
     system.Trange = None
     system.sensitive_species = []
@@ -1113,6 +1293,12 @@ def restart_from_seed(path=None, coreSeed=None, edgeSeed=None, filters=None, spe
                              'mechanism: {0}. See the RMG documentation at {1} for more information'.format(path_errors,
                                                                                                             doc_link))
 
+def liquid_volumetric_mass_transfer_coefficient_power_law(prefactor=(0,"1/s"), diffusionCoefficientPower=0, solventViscosityPower=0, solventDensityPower=0):
+
+    rmg.liquid_volumetric_mass_transfer_coefficient_power_law = liquidVolumetricMassTransferCoefficientPowerLaw(prefactor=Quantity(prefactor).value_si,
+                                                                                                                diffusion_coefficient_power=diffusionCoefficientPower,
+                                                                                                                solvent_viscosity_power=solventViscosityPower,
+                                                                                                                solvent_density_power=solventDensityPower)
 
 ################################################################################
 
@@ -1168,11 +1354,13 @@ def read_input_file(path, rmg0):
         'simpleReactor': simple_reactor,
         'constantVIdealGasReactor' : constant_V_ideal_gas_reactor,
         'liquidSurfaceReactor' : liquid_cat_reactor,
+        'constantTVLiquidReactor': constant_T_V_liquid_reactor,
         'liquidReactor': liquid_reactor,
         'surfaceReactor': surface_reactor,
         'mbsampledReactor': mb_sampled_reactor,
         'simulator': simulator,
         'solvation': solvation,
+        'liquidVolumetricMassTransferCoefficientPowerLaw': liquid_volumetric_mass_transfer_coefficient_power_law,
         'model': model,
         'quantumMechanics': quantum_mechanics,
         'mlEstimator': ml_estimator,
