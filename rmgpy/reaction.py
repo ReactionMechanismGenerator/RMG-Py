@@ -1110,8 +1110,7 @@ class Reaction:
             elif isinstance(reactant, Molecule):
                 molecule = reactant
                 for atom in molecule.atoms:
-                    if not isinstance(atom, CuttingLabel):
-                        reactant_elements[atom.element] += 1
+                    reactant_elements[atom.element] += 1
             elif isinstance(reactant, Fragment):
                 for atom in reactant.atoms:
                     if not isinstance(atom, CuttingLabel):
@@ -1125,8 +1124,7 @@ class Reaction:
             elif isinstance(product, Molecule):
                 molecule = product
                 for atom in molecule.atoms:
-                    if not isinstance(atom, CuttingLabel):
-                        product_elements[atom.element] += 1
+                    product_elements[atom.element] += 1
             elif isinstance(product, Fragment):
                 for atom in product.atoms:
                     if not isinstance(atom, CuttingLabel):
