@@ -49,6 +49,7 @@ from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.util import as_list
 from rmgpy.data.surface import MetalDatabase
 from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor
+from rmgpy.data.vaporLiquidMassTransfer import liquidVolumetricMassTransferCoefficientPowerLaw
 
 ################################################################################
 
@@ -1292,6 +1293,12 @@ def restart_from_seed(path=None, coreSeed=None, edgeSeed=None, filters=None, spe
                              'mechanism: {0}. See the RMG documentation at {1} for more information'.format(path_errors,
                                                                                                             doc_link))
 
+def liquid_volumetric_mass_transfer_coefficient_power_law(prefactor=(0,"1/s"), diffusionCoefficientPower=0, solventViscosityPower=0, solventDensityPower=0):
+
+    rmg.liquid_volumetric_mass_transfer_coefficient_power_law = liquidVolumetricMassTransferCoefficientPowerLaw(prefactor=Quantity(prefactor).value_si,
+                                                                                                                diffusion_coefficient_power=diffusionCoefficientPower,
+                                                                                                                solvent_viscosity_power=solventViscosityPower,
+                                                                                                                solvent_density_power=solventDensityPower)
 
 ################################################################################
 
@@ -1353,6 +1360,7 @@ def read_input_file(path, rmg0):
         'mbsampledReactor': mb_sampled_reactor,
         'simulator': simulator,
         'solvation': solvation,
+        'liquidVolumetricMassTransferCoefficientPowerLaw': liquid_volumetric_mass_transfer_coefficient_power_law,
         'model': model,
         'quantumMechanics': quantum_mechanics,
         'mlEstimator': ml_estimator,
