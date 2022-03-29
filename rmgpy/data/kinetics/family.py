@@ -62,7 +62,7 @@ from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
 from rmgpy.tools.uncertainty import KineticParameterUncertainty
-from rmgpy.molecule.fragment import Fragment, CuttingLabel
+from rmgpy.molecule.fragment import Fragment
 
 ################################################################################
 

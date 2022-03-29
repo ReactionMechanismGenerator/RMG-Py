@@ -51,7 +51,7 @@ import numpy as np
 
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import SpeciesError, StatmechError
-from rmgpy.molecule.graph import Vertex, Edge, Graph
+from rmgpy.molecule.graph import Graph
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.molecule.fragment import CuttingLabel, Fragment
 from rmgpy.pdep import SingleExponentialDown

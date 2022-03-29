@@ -52,10 +52,10 @@ and the process continues until the entire molecule can be solved.
 
 import logging
 
-from .graph cimport Graph, Vertex, Edge
+from rmgpy.molecule.graph cimport Graph, Vertex, Edge
 from rmgpy.exceptions import KekulizationError, AtomTypeError
 from rmgpy.molecule.element import PeriodicSystem
-from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
+from rmgpy.molecule.molecule cimport Atom, Bond
 
 
 cpdef kekulize(Graph mol):
