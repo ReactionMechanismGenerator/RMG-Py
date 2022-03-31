@@ -3,10 +3,11 @@ channels:
   - defaults
   - rmg
   - conda-forge
+  - cantera
 dependencies:
   - cairo
   - cairocffi
-  - rmg::cantera >=2.3.0
+  - cantera::cantera=2.6
   - conda-forge::cclib >=1.6.3
   - rmg::chemprop
   - coolprop
