@@ -1519,6 +1519,9 @@ def save_input_file(path, rmg):
             f.write('    initialMoleFractions={\n')
             for spcs, molfrac in system.initial_gas_mole_fractions.items():
                 f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
+            f.write('    initialSurfaceCoverages={\n')
+            for spcs, molfrac in system.initial_surface_coverages.items():
+                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
         f.write('    },\n')
 
         # Termination criteria
