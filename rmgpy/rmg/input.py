@@ -1485,7 +1485,7 @@ def save_input_file(path, rmg):
 
     if rmg.surface_site_density or rmg.binding_energies:
         f.write('catalystProperties(\n')
-        if rmg.surfaceSiteDenisty:
+        if rmg.surface_site_density:
             f.write('    surface_site_density = {0!r},'.format(rmg.surface_site_density))
         if rmg.binding_energies:
             f.write('    binding_energies = {0!r},'.format(rmg.binding_energies))
@@ -1515,9 +1515,9 @@ def save_input_file(path, rmg):
             f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
             # Convert the pressure from SI pascal units to bar here
             # Do something more fancy later for converting to user's desired units for both T and P..
-            f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.value, system.P.units))
+            f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P_initial.value, system.P_initial.units))
             f.write('    initialMoleFractions={\n')
-            for spcs, molfrac in system.initial_mole_fractions.items():
+            for spcs, molfrac in system.initial_gas_mole_fractions.items():
                 f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
         f.write('    },\n')
 
@@ -1527,8 +1527,12 @@ def save_input_file(path, rmg):
             if isinstance(term, TerminationTime):
                 f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.value, term.time.units))
 
-            else:
+            elif isinstance(term,TerminationConversion):
                 conversions += '        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion)
+
+            elif isinstance(term, TerminationRateRatio):
+                f.write('    terminationRateRatio = {0:g},\n'.format(term.ratio))
+
         if conversions:
             f.write('    terminationConversion = {\n')
             f.write(conversions)
