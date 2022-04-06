@@ -1486,9 +1486,12 @@ def save_input_file(path, rmg):
     if rmg.surface_site_density or rmg.binding_energies:
         f.write('catalystProperties(\n')
         if rmg.surface_site_density:
-            f.write('    surface_site_density = {0!r},'.format(rmg.surface_site_density))
+            f.write('    surface_site_density = {0!r},\n'.format(rmg.surface_site_density))
         if rmg.binding_energies:
-            f.write('    binding_energies = {0!r},'.format(rmg.binding_energies))
+            f.write('    binding_energies = {\n')
+            for elem, be in rmg.binding_energies.items():
+                f.write('     {0!r}:{1!r},\n'.format(elem, be))
+            f.write('    },\n')
         f.write(')\n\n')
 
     # Species
