@@ -331,7 +331,7 @@ class Species(object):
 
         If ``strict=False``, performs the check ignoring electrons and resonance structures.
         """
-        if isinstance(other, Molecule):
+        if isinstance(other, Molecule) or isinstance(other, Fragment):
             for molecule in self.molecule:
                 if molecule.is_identical(other, strict=strict):
                     return True
@@ -688,7 +688,7 @@ class Species(object):
         """
         `True` if the species has at least one reactive molecule, `False` otherwise
         """
-        cython.declare(molecule=Molecule)
+        cython.declare(molecule=Graph)
         return any([molecule.reactive for molecule in self.molecule])
 
     def copy(self, deep=False):
