@@ -1492,6 +1492,8 @@ def save_input_file(path, rmg):
             for elem, be in rmg.binding_energies.items():
                 f.write('     {0!r}:{1!r},\n'.format(elem, be))
             f.write('    },\n')
+        if rmg.coverage_dependence:
+            f.write('    coverageDependence = {0},\n'.format(rmg.coverage_dependence))
         f.write(')\n\n')
 
     # Species
