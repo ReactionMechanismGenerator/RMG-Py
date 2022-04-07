@@ -1664,7 +1664,7 @@ def save_input_file(path, rmg):
     if rmg.species_constraints:
         f.write('generatedSpeciesConstraints(\n')
         for constraint, value in sorted(list(rmg.species_constraints.items()), key=lambda constraint: constraint[0]):
-            if value is not None:
+            if value is not None and constraint is not "explicitlyAllowedMolecules":
                 f.write('    {0} = {1},\n'.format(constraint, value))
         f.write(')\n\n')
 
