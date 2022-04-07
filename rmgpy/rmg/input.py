@@ -1513,12 +1513,51 @@ def save_input_file(path, rmg):
             f.write('    initialConcentrations={\n')
             for spcs, conc in system.initial_concentrations.items():
                 f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs.label, conc.value, conc.units))
-        else:
-            f.write('simpleReactor(\n')
-            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
+
+        elif isinstance(system, SurfaceReactor):
+            f.write('surfaceReactor(\n')
+            # determine if it is a ranged reactor
+            if system.T:
+                f.write('    temperature = ({0:g}, {1!s}),\n'.format(system.T.value, system.T.units))
+            else: 
+                Trange_lo = (system.Trange[0].value, system.Trange[0].units)
+                Trange_hi = (system.Trange[1].value, system.Trange[1].units)
+                f.write('    temperature = [{0}, {1}],\n'.format(Trange_lo, Trange_hi))
+
             # Convert the pressure from SI pascal units to bar here
             # Do something more fancy later for converting to user's desired units for both T and P..
-            f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P_initial.value, system.P_initial.units))
+            if system.P_initial:
+                f.write('    pressure = ({0:g}, {1!s}),\n'.format(system.P_initial.value, system.P_initial.units))
+            else:
+                Prange_lo = (system.Prange[0].value, system.Prange[0].units)
+                Prange_hi = (system.Prange[1].value, system.Prange[1].units)
+                f.write('    temperature = [{0}, {1}],\n'.format(Prange_lo, Prange_hi))
+
+
+            f.write('    initialMoleFractions={\n')
+            for spcs, molfrac in system.initial_gas_mole_fractions.items():
+                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
+            f.write('    initialSurfaceCoverages={\n')
+            for spcs, molfrac in system.initial_surface_coverages.items():
+                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
+        else:
+            f.write('simpleReactor(\n')
+            if system.T:
+                f.write('    temperature = ({0:g}, {1!s}),\n'.format(system.T.value, system.T.units))
+            else: 
+                Trange_lo = (system.Trange[0].value, system.Trange[0].units)
+                Trange_hi = (system.Trange[1].value, system.Trange[1].units)
+                f.write('    temperature = [{0}, {1}],\n'.format(Trange_lo, Trange_hi))
+
+            # Convert the pressure from SI pascal units to bar here
+            # Do something more fancy later for converting to user's desired units for both T and P..
+            if system.P_initial:
+                f.write('    pressure = ({0:g}, {1!s}),\n'.format(system.P_initial.value, system.P_initial.units))
+            else:
+                Prange_lo = (system.Prange[0].value, system.Prange[0].units)
+                Prange_hi = (system.Prange[1].value, system.Prange[1].units)
+                f.write('    temperature = [{0}, {1}],\n'.format(Prange_lo, Prange_hi))
+            
             f.write('    initialMoleFractions={\n')
             for spcs, molfrac in system.initial_gas_mole_fractions.items():
                 f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
