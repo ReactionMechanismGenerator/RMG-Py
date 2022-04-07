@@ -1478,7 +1478,7 @@ def save_input_file(path, rmg):
     f.write('    thermoLibraries = {0!r},\n'.format(rmg.thermo_libraries))
     f.write('    reactionLibraries = {0!r},\n'.format(rmg.reaction_libraries))
     f.write('    seedMechanisms = {0!r},\n'.format(rmg.seed_mechanisms))
-    f.write('    kinetics_depositories = {0!r},\n'.format(rmg.kinetics_depositories))
+    f.write('    kineticsDepositories = {0!r},\n'.format(rmg.kinetics_depositories))
     f.write('    kineticsFamilies = {0!r},\n'.format(rmg.kinetics_families))
     f.write('    kineticsEstimator = {0!r},\n'.format(rmg.kinetics_estimator))
     f.write(')\n\n')
@@ -1486,9 +1486,9 @@ def save_input_file(path, rmg):
     if rmg.surface_site_density or rmg.binding_energies:
         f.write('catalystProperties(\n')
         if rmg.surface_site_density:
-            f.write('    surface_site_density = {0!r},\n'.format(rmg.surface_site_density))
+            f.write('    surfaceSiteDensity = {0!r},\n'.format(rmg.surface_site_density))
         if rmg.binding_energies:
-            f.write('    binding_energies = {\n')
+            f.write('    bindingEnergies = {\n')
             for elem, be in rmg.binding_energies.items():
                 f.write('     {0!r}:{1!r},\n'.format(elem, be))
             f.write('    },\n')
@@ -1527,19 +1527,24 @@ def save_input_file(path, rmg):
             # Convert the pressure from SI pascal units to bar here
             # Do something more fancy later for converting to user's desired units for both T and P..
             if system.P_initial:
-                f.write('    pressure = ({0:g}, {1!s}),\n'.format(system.P_initial.value, system.P_initial.units))
+                f.write('    initialPressure = ({0:g}, "{1!s}"),\n'.format(system.P_initial.value, system.P_initial.units))
             else:
                 Prange_lo = (system.Prange[0].value, system.Prange[0].units)
                 Prange_hi = (system.Prange[1].value, system.Prange[1].units)
                 f.write('    temperature = [{0}, {1}],\n'.format(Prange_lo, Prange_hi))
 
-
-            f.write('    initialMoleFractions={\n')
+            f.write('    initialGasMoleFractions={\n')
             for spcs, molfrac in system.initial_gas_mole_fractions.items():
                 f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
+            f.write('    },\n')
+
             f.write('    initialSurfaceCoverages={\n')
             for spcs, molfrac in system.initial_surface_coverages.items():
                 f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
+            f.write('    },\n')
+
+            f.write('    surfaceVolumeRatio=({0:g},"{1!s}"),\n'.format(system.surface_volume_ratio.value, system.surface_volume_ratio.units))
+
         else:
             f.write('simpleReactor(\n')
             if system.T:
@@ -1561,10 +1566,7 @@ def save_input_file(path, rmg):
             f.write('    initialMoleFractions={\n')
             for spcs, molfrac in system.initial_gas_mole_fractions.items():
                 f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
-            f.write('    initialSurfaceCoverages={\n')
-            for spcs, molfrac in system.initial_surface_coverages.items():
-                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
-        f.write('    },\n')
+            f.write('    },\n')
 
         # Termination criteria
         conversions = ''
@@ -1676,8 +1678,18 @@ def save_input_file(path, rmg):
     f.write('    keepIrreversible = {0},\n'.format(rmg.keep_irreversible))
     f.write('    trimolecularProductReversible = {0},\n'.format(rmg.trimolecular_product_reversible))
     f.write('    verboseComments = {0},\n'.format(rmg.verbose_comments))
-    f.write('    wallTime = {0},\n'.format(rmg.walltime))
+    f.write('    wallTime = "{0!s}",\n'.format(rmg.walltime))
     f.write(')\n\n')
+
+    if rmg.forbidden_structures:
+        for struct in rmg.forbidden_structures:
+            f.write('forbidden(\n')
+            f.write('    label="{0!s}",\n'.format(struct.label))
+            f.write('    structure=adjacencyList(\n')
+            f.write('"""\n')
+            f.write(struct.item.to_adjacency_list())
+            f.write('"""),\n')
+            f.write(')\n\n')
 
     f.close()
 
