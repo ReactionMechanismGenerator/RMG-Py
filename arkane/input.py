@@ -124,9 +124,7 @@ def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=No
     for family in rmg_database.kinetics.families.values():  # load training
         if not family.auto_generated:
             family.add_rules_from_training(thermo_database=rmg_database.thermo)
-
-    for family in rmg_database.kinetics.families.values():
-        family.fill_rules_by_averaging_up(verbose=True)
+            family.fill_rules_by_averaging_up(verbose=True)
 
 
 def species(label, *args, **kwargs):
