@@ -1167,6 +1167,13 @@ class KineticsFamily(Database):
         For each reaction involving real reactants and products in the training
         set, add a rate rule for that reaction.
         """
+        if self.auto_generated:
+            warnings.warn(f'add_rules_from_training should be only called for non-ATG families, '
+                          f'but {self.label} is an ATG family. Skip this function call. '
+                          f'Calling add_rules_from_training on ATG families may be deprecated in RMG-Py 3.2',
+                          DeprecationWarning)
+            return
+
         try:
             depository = self.get_training_depository()
         except:
@@ -1354,7 +1361,12 @@ class KineticsFamily(Database):
         Fill in gaps in the kinetics rate rules by averaging child nodes
         recursively starting from the top level root template.
         """
-
+        if self.auto_generated:
+            warnings.warn(f'fill_rules_by_averaging_up should be only called for non-ATG families, '
+                          f'but {self.label} is an ATG family. Skip this function call. '
+                          f'Calling fill_rules_by_averaging_up on ATG families may be deprecated in RMG-Py 3.2',
+                          DeprecationWarning)
+            return
         self.rules.fill_rules_by_averaging_up(self.get_root_template(), {}, verbose)
 
     def apply_recipe(self, reactant_structures, forward=True, unique=True, relabel_atoms=True):
