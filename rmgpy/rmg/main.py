@@ -1200,8 +1200,9 @@ class RMG(util.Subject):
                 # Temporarily remove species constraints for the training reactions
                 self.species_constraints, speciesConstraintsCopy = {}, self.species_constraints
                 for family in self.database.kinetics.families.values():
-                    family.add_rules_from_training(thermo_database=self.database.thermo)
-                    family.fill_rules_by_averaging_up(verbose=True)
+                    if not family.auto_generated:
+                        family.add_rules_from_training(thermo_database=self.database.thermo)
+                        family.fill_rules_by_averaging_up(verbose=True)
                 self.species_constraints = speciesConstraintsCopy
 
             for correlated in correlation:

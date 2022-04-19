@@ -396,7 +396,9 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
     def kinetics_check_surface_training_reactions_can_be_used(self, family_name):
         """Test that surface training reactions can be averaged and used for generating rate rules"""
         family = self.database.kinetics.families[family_name]
-        family.add_rules_from_training(thermo_database=self.database.thermo)
+        if not family.auto_generated:
+            family.add_rules_from_training(thermo_database=self.database.thermo)
+            family.fill_rules_by_averaging_up(verbose=True)
 
     def general_check_metal_database_has_catalyst_properties(self, library):
         """Test that each entry has catalyst properties"""

@@ -66,8 +66,9 @@ class TestUncertainty(unittest.TestCase):
 
         # Prepare the database by loading training reactions and averaging the rate rules verbosely
         for family in cls.uncertainty.database.kinetics.families.values():
-            family.add_rules_from_training(thermo_database=cls.uncertainty.database.thermo)
-            family.fill_rules_by_averaging_up(verbose=True)
+            if not family.auto_generated:
+                family.add_rules_from_training(thermo_database=cls.uncertainty.database.thermo)
+                family.fill_rules_by_averaging_up(verbose=True)
 
     @classmethod
     def tearDownClass(cls):
