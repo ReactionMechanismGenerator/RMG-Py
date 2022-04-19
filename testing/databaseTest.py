@@ -119,6 +119,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             self.compat_func_name = test_name
             yield test, family_name
 
+            test = lambda x: self.kinetics_check_num_reactant_and_product(family_name)
+            test_name = "Kinetics family {0}: number of reactant and product defined?".format(family_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, family_name
+
             # tests for surface families
             if 'surface' in family_name.lower():
                 test = lambda x: self.kinetics_check_surface_training_reactions_can_be_used(family_name)
@@ -968,6 +974,20 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                     boo = True
 
             if boo:
+                raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
+
+    def kinetics_check_num_reactant_and_product(self, family_name):
+        """
+        This test checks that if the number of reactants and products are specified in the groups.py for
+        rate rules that are generated from the ATG.
+        """
+        family = self.database.kinetics.families[family_name]
+        if family.auto_generated:
+            if not getattr(family, 'reactant_num'):
+                logging.error(f'The number of reactants is not defined in the family {family_name}')
+            if not getattr(family, 'product_num'):
+                logging.error(f'The number of products is not defined in the family {family_name}')
+            if not getattr(family, 'reactant_num') or not getattr(family, 'product_num'):
                 raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_check_cd_atom_type(self, family_name):
