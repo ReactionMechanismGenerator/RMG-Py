@@ -398,6 +398,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         family = self.database.kinetics.families[family_name]
         if not family.auto_generated:
             family.add_rules_from_training(thermo_database=self.database.thermo)
+            family.fill_rules_by_averaging_up(verbose=True)
 
     def general_check_metal_database_has_catalyst_properties(self, library):
         """Test that each entry has catalyst properties"""
