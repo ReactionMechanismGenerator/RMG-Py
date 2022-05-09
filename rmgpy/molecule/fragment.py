@@ -1664,21 +1664,11 @@ class Fragment(Graph):
             else:
                 frag_smiles_list = self.sliceitup_aliph(mol.to_smiles(), size_threshold=size_threshold)
 
-        frag_list_new = []
-        for frag_smiles in frag_smiles_list:
-            n_frag_smiles = frag_smiles.replace('F', 'R')
-            nn_frag_smiles = n_frag_smiles.replace('Cl', 'L')
-            # cutting position near aromatic
-            nnn_frag_smiles = nn_frag_smiles.replace('Br', 'R')
-            new_frag_smiles = nnn_frag_smiles.replace('I', 'L')
-
-            frag_list_new.append(new_frag_smiles)
-
         if output_smiles == True:
-            return frag_list_new
+            return frag_smiles_list
         else:
             frag_list = []
-            for frag in frag_list_new:
+            for frag in frag_smiles_list:
                 frag = Fragment().from_smiles_like_string(frag)
                 res_frag = frag.generate_resonance_structures()[0]
                 frag_list.append(res_frag)
@@ -1701,40 +1691,76 @@ class Fragment(Graph):
             mol = molecule.generate_resonance_structures()[0]
             molecule_smiles = mol.to_smiles()
 
-        # if input is Fragment (with Cuttinglabel), need to transform to special Atom
-        ind_ranger , cutting_label_list = self.detect_cutting_label(molecule_smiles)
-        smiles_replace_dict = {'R': '[Na]', 'L': '[Mg]'}
-        if cutting_label_list != []:
-            molecule_smiles = self.replace_cutting_label(molecule_smiles, ind_ranger, cutting_label_list, smiles_replace_dict)
+        # if input has Cuttinglabel, need to transform to later
+        _, cutting_label_list = self.detect_cutting_label(molecule_smiles)
+        # transfer to rdkit molecule for substruct matching
+        f = self.from_smiles_like_string(molecule_smiles)
+        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol()
 
-        molecule1 = Chem.MolFromSmiles(molecule_smiles)
-        molecule_Br2 = Chem.MolFromSmiles('BrI')
-        molecule_I2 = Chem.MolFromSmiles('BrIIBr')
+        # replace CuttingLabel to special Atom (metal) in rdkit
+        for atom, idx in rdAtomIdx_frag.items():
+            if isinstance(atom,CuttingLabel):
+                cuttinglabel_atom = molecule_to_cut.GetAtomWithIdx(idx)
+                if atom.symbol == 'R':
+                    cuttinglabel_atom.SetAtomicNum(11) #[Na], will replace back to CuttingLabel later
+                else:
+                    cuttinglabel_atom.SetAtomicNum(19) #[K]
 
-        rxn_near_arom_1 = AllChem.ReactionFromSmarts("[!c;!R:1]-[!c;!R:2]-[!c;!R:3]-[!c;!R:4]-[!c;!R:5](-[c:6]1:[c:7]:[c:8]:[c:9]:[c:10]:[c:11]:1)-[!c;!R:12](-[!c;!R:13]-[!c;!R:14]-[!c;!R:15]-[!c;!R:16])-[c:17]1:[c:18]:[c:19]:[c:20]:[c:21]:[c:22]:1.[Br:23]-[I:24]-[I:25]-[Br:26]>>\
-        [Br:23]-[!c;!R:2]-[!c;!R:3]-[!c;!R:4]-[!c;!R:5](-[c:6]1:[c:7]:[c:8]:[c:9]:[c:10]:[c:11]:1)-[!c;!R:12](-[!c;!R:13]-[!c;!R:14]-[!c;!R:15]-[Br:26])-[c:17]1:[c:18]:[c:19]:[c:20]:[c:21]:[c:22]:1.[I:24]-[!c;!R:1].[I:25]-[!c;!R:16]")
-
-        rxn_near_arom_2 = AllChem.ReactionFromSmarts("[c:1]:[c:2]:[c:3]:[c:4]:[c:5]:[c:6]-[!c;!R:7](-[!c;!R:8]-[!c;!R:9]-[!c;!R:10]-[!c;!R:11])-[!c;!R:12]-[!c;!R:13]-[!c;!R:14]-[!c;!R:15].[Br:16]-[I:17]-[I:18]-[Br:19]>>\
-        [c:1]:[c:2]:[c:3]:[c:4]:[c:5]:[c:6]-[!c;!R:7](-[!c;!R:8]-[!c;!R:9]-[!c;!R:10]-[Br:19])-[!c;!R:12]-[!c;!R:13]-[!c;!R:14]-[Br:16].[I:17]-[!c;!R:15].[I:18]-[!c;!R:11]")
-
-        rxn_near_arom_3 = AllChem.ReactionFromSmarts("[C:1]=[!c;!R:2](-[!c;!R:3]-[!c;!R:4]-[!c;!R:5]-[!c;!R:6])-[c:7]1:[c:8]:[c:9]:[c:10]:[c:11]:[c:12]:1.[Br:13]-[I:14]>>\
-        [C:1]=[!c;!R:2](-[!c;!R:3]-[!c;!R:4]-[!c;!R:5]-[Br:13])-[c:7]1:[c:8]:[c:9]:[c:10]:[c:11]:[c:12]:1.[!c;!R:6]-[I:14]")
-
-        rxn_near_arom_4 = AllChem.ReactionFromSmarts("[c:1]:[c:2]:[c:3]:[c:4]:[c:5]:[c:6]-[!c;!R:7]-[!c;!R:8]-[!c;!R:9]-[!c;!R:10]-[!c;!R:11].[Br:12]-[I:13]>>\
-        [c:1]:[c:2]:[c:3]:[c:4]:[c:5]:[c:6]-[!c;!R:7]-[!c;!R:8]-[!c;!R:9]-[!c;!R:10]-[Br:12].[I:13]-[!c;!R:11]")
-
-        arom_rxn_list = [(rxn_near_arom_1,molecule_I2), (rxn_near_arom_2,molecule_I2), (rxn_near_arom_3,molecule_Br2), (rxn_near_arom_4,molecule_Br2)]
-
+        # substructure matching
+        pattern_list = ['pattern_1','pattern_2','pattern_3','pattern_4']
         frag_list = []
-        for i, (arom_rxn,pseudo_spe) in enumerate(arom_rxn_list):
-            ps = arom_rxn.RunReactants((molecule1, pseudo_spe))
-            if len(ps) != 0:
-                if all( ps_i.GetNumAtoms() >= size_threshold for ps_i in ps[0] ):
-                    for i in range(len(ps[0])):
-                        frag_list.append(Chem.MolToSmiles(ps[0][i]))
-                    break
+        for pattern in pattern_list:
+            emol, atom_map_index = self.pattern_call('Arom', pattern)
+            # start pattern matching
+            atom_map = molecule_to_cut.GetSubstructMatches(emol)
+            if atom_map:
+                # go through all matches and see if it agree with size threshold
+                for matched_atom_map in atom_map:
+                    # find the correct bond to break
+                    bonds_to_cut = []
+                    for ind in atom_map_index:
+                        b1 = matched_atom_map[ind]
+                        b2 = matched_atom_map[ind+1]
+                        bond = molecule_to_cut.GetBondBetweenAtoms(b1, b2)
+                        bonds_to_cut.append(bond)
+                    # Break bonds
+                    newmol = Chem.RWMol(molecule_to_cut)
+                    # fragmentize
+                    new_mol = Chem.FragmentOnBonds(newmol, [bond.GetIdx() for bond in bonds_to_cut], dummyLabels=[(0,0)]*len(bonds_to_cut))
+                    # mol_set contains new set of fragments
+                    mol_set = Chem.GetMolFrags(new_mol,asMols=True)
+                    # check all fragments' size
+                    if all( sum(1 for atom in mol.GetAtoms() if atom.GetAtomicNum() == 6) >= size_threshold for mol in mol_set):
+                        # replace * at cutting position with cutting label
+                        for ind,rdmol in enumerate(mol_set):
+                            frag=Chem.MolToSmiles(rdmol)
+                            if len(mol_set) > 2: # means it cut into 3 fragments
+                                if frag.count('*') > 1:
+                                    # replace both with R
+                                    frag_smi = frag.replace('*','R')
+                                else:
+                                    frag_smi = frag.replace('*','L')
+                            else: # means it only cut once, generate 2 fragments
+                                if ind == 0:
+                                    frag_smi = frag.replace('*','R')
+                                else:
+                                    frag_smi = frag.replace('*','L')
+                            frag_list.append(frag_smi)
+                        break
+                    else:
+                        # turn to next matched_atom_map
+                        continue
+            else:
+                # no match for this pattern
+                # cannot cut this molecule with this pattern
+                continue
+            # if there is appropariate cutting, stop further pattern matching
+            if frag_list != []:
+                break
 
         if frag_list == []:
+            # this means no appropriate match for all patterns
+            # cannot cut this molecule
             frag_list.append(molecule_smiles)
         else:
             if cutting_label_list != []:
@@ -1742,7 +1768,7 @@ class Fragment(Graph):
                 # replace metal atom back to Cuttinglabel
                 for metal_frag in frag_list:
                     n_frag_smiles = metal_frag.replace('[Na]', 'R')
-                    nn_frag_smiles = n_frag_smiles.replace('[Mg]', 'L')
+                    nn_frag_smiles = n_frag_smiles.replace('[K]', 'L')
                     frag_list_replaced.append(nn_frag_smiles)
                 frag_list = frag_list_replaced
 
@@ -1750,18 +1776,14 @@ class Fragment(Graph):
             frag_list_new = []
             for frag in frag_list:
                 n_frag_smiles = frag.replace('[Na]', 'R')
-                nn_frag_smiles = n_frag_smiles.replace('[Mg]', 'L')
-                nnn_frag_smiles = nn_frag_smiles.replace('Br', 'R')
-                new_frag_smiles = nnn_frag_smiles.replace('I', 'L')
+                new_frag_smiles = n_frag_smiles.replace('[K]', 'L')
                 frag_list_new.append(new_frag_smiles)
             return frag_list_new
         elif isinstance(molecule, Fragment):
             frag_list_new = []
             for frag in frag_list:
                 n_frag_smiles = frag.replace('[Na]', 'R')
-                nn_frag_smiles = n_frag_smiles.replace('[Mg]', 'L')
-                nnn_frag_smiles = nn_frag_smiles.replace('Br', 'R')
-                new_frag_smiles = nnn_frag_smiles.replace('I', 'L')
+                new_frag_smiles = n_frag_smiles.replace('[K]', 'L')
 
                 frag = Fragment().from_smiles_like_string(new_frag_smiles)
                 res_frag = frag.generate_resonance_structures()[0]
@@ -1785,41 +1807,79 @@ class Fragment(Graph):
             mol = molecule.generate_resonance_structures()[0]
             molecule_smiles = mol.to_smiles()
 
-        # if input is Fragment (with Cuttinglabel), need to transform to special Atom
-        ind_ranger , cutting_label_list = self.detect_cutting_label(molecule_smiles)
-        smiles_replace_dict = {'R': '[Na]', 'L': '[Mg]'}
-        if cutting_label_list != []:
-            molecule_smiles = self.replace_cutting_label(molecule_smiles, ind_ranger, cutting_label_list, smiles_replace_dict)
+        # if input has Cuttinglabel, need to transform to later
+        _, cutting_label_list = self.detect_cutting_label(molecule_smiles)
+        # transfer to rdkit molecule for substruct matching
+        f = self.from_smiles_like_string(molecule_smiles)
+        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol()
 
-        molecule1 = Chem.MolFromSmiles(molecule_smiles)
-        molecule_F2 = Chem.MolFromSmiles('FCl')
+        # replace CuttingLabel to special Atom (metal) in rdkit
+        for atom, idx in rdAtomIdx_frag.items():
+            if isinstance(atom,CuttingLabel):
+                cuttinglabel_atom = molecule_to_cut.GetAtomWithIdx(idx)
+                if atom.symbol == 'R':
+                    cuttinglabel_atom.SetAtomicNum(11) #[Na], will replace back to CuttingLabel later
+                else:
+                    cuttinglabel_atom.SetAtomicNum(19) #[K]
 
-        rxn_smallchain_1 = AllChem.ReactionFromSmarts("[!c;!R:1]-[!c;!R:2]-[!c;!R:3]=[!c;!R:4]-[!c;!R:5]-[!c;!R:6]-[CX4;!c;!R:7]-[CX4;!c;!R:8].[F:11]-[Cl:12]>>\
-        [!c;!R:1]-[!c;!R:2]-[!c;!R:3]=[!c;!R:4]-[!c;!R:5]-[!c;!R:6]-[CX4;!c;!R:7][F:11].[Cl:12]-[CX4;!c;!R:8]") # CCC=CCCC
-
-        rxn_smallchain_2 = AllChem.ReactionFromSmarts("[!c;!R:1]=[!c;!R:2]-[!c;!R:3]-[!c;!R:4]-[CX4;!c;!R:5]-[CX4;!c;!R:6].[F:7]-[Cl:8]>>\
-        [!c;!R:1]=[!c;!R:2]-[!c;!R:3]-[!c;!R:4]-[CX4;!c;!R:5]-[F:7].[Cl:8]-[CX4;!c;!R:6]") # C=CCCC
-
-        rxn_smallchain_3 = AllChem.ReactionFromSmarts("[CX4;!R:1]-[CX4;!R:2]-[CX4;!R:3]-[CX4;!R:4]-[CX4;!R:5]-[CX4;!R:6].[F:7]-[Cl:8]>>\
-        [CX4;!R:1]-[CX4;!R:2]-[CX4;!R:3]-[F:7].[Cl:8]-[CX4;!R:4]-[CX4;!R:5]-[CX4;!R:6]") # CCCCCC
-
-        aliph_rxn_list = [(rxn_smallchain_1,molecule_F2), (rxn_smallchain_2,molecule_F2), (rxn_smallchain_3,molecule_F2)]
-
+        # substructure matching
+        pattern_list = ['pattern_1','pattern_2','pattern_3']
         frag_list = []
-
-        for i, (aliph_rxn,pseudo_spe) in enumerate(aliph_rxn_list):
-            ps = aliph_rxn.RunReactants((molecule1, pseudo_spe))
-            if len(ps) != 0:
-                for loop in range(1000):
-                    ind = np.random.randint(0, len(ps))
-                    if ps[ind][0].GetNumAtoms() > size_threshold and ps[ind][1].GetNumAtoms() > size_threshold:
-                        for i in range(len(ps[ind])):
-                            frag_list.append(Chem.MolToSmiles(ps[ind][i]))
+        for pattern in pattern_list:
+            emol, atom_map_index = self.pattern_call('Aliph', pattern)
+            # start pattern matching
+            atom_map = molecule_to_cut.GetSubstructMatches(emol)
+            if atom_map:
+                # go through all matches and see if it agree with size threshold or in ring
+                for matched_atom_map in atom_map:
+                    if self.check_in_ring(molecule_to_cut, matched_atom_map):
+                        # do not cut ring
+                        continue
+                    # find the correct bond to break
+                    bonds_to_cut = []
+                    for ind in atom_map_index:
+                        b1 = matched_atom_map[ind]
+                        b2 = matched_atom_map[ind+1]
+                        bond = molecule_to_cut.GetBondBetweenAtoms(b1, b2)
+                        bonds_to_cut.append(bond)
+                    # Break bonds
+                    newmol = Chem.RWMol(molecule_to_cut)
+                    # fragmentize
+                    new_mol = Chem.FragmentOnBonds(newmol, [bond.GetIdx() for bond in bonds_to_cut], dummyLabels=[(0,0)]*len(bonds_to_cut))
+                    # mol_set contains new set of fragments
+                    mol_set = Chem.GetMolFrags(new_mol,asMols=True)
+                    # check all fragments' size
+                    if all( sum(1 for atom in mol.GetAtoms() if atom.GetAtomicNum() == 6) >= size_threshold for mol in mol_set):
+                        # replace * at cutting position with cutting label
+                        for ind,rdmol in enumerate(mol_set):
+                            frag=Chem.MolToSmiles(rdmol)
+                            if len(mol_set) > 2: # means it cut into 3 fragments
+                                if frag.count('*') > 1:
+                                    # replace both with R
+                                    frag_smi = frag.replace('*','R')
+                                else:
+                                    frag_smi = frag.replace('*','L')
+                            else: # means it only cut once, generate 2 fragments
+                                if ind == 0:
+                                    frag_smi = frag.replace('*','R')
+                                else:
+                                    frag_smi = frag.replace('*','L')
+                            frag_list.append(frag_smi)
                         break
-                if frag_list != []:
-                    break
+                    else:
+                        # turn to next matched_atom_map
+                        continue
+            else:
+                # no match for this pattern
+                # cannot cut this molecule with this pattern
+                continue
+            # if there is appropariate cutting, stop further pattern matching
+            if frag_list != []:
+                break
 
         if frag_list == []:
+            # this means no appropriate match for all patterns
+            # cannot cut this molecule
             frag_list.append(molecule_smiles)
         else:
             if cutting_label_list != []:
@@ -1827,7 +1887,7 @@ class Fragment(Graph):
                 # replace metal atom back to Cuttinglabel
                 for metal_frag in frag_list:
                     n_frag_smiles = metal_frag.replace('[Na]', 'R')
-                    nn_frag_smiles = n_frag_smiles.replace('[Mg]', 'L')
+                    nn_frag_smiles = n_frag_smiles.replace('[K]', 'L')
                     frag_list_replaced.append(nn_frag_smiles)
                 frag_list = frag_list_replaced
 
@@ -1835,23 +1895,114 @@ class Fragment(Graph):
             frag_list_new = []
             for frag in frag_list:
                 n_frag_smiles = frag.replace('[Na]', 'R')
-                nn_frag_smiles = n_frag_smiles.replace('[Mg]', 'L')
-                nnn_frag_smiles = nn_frag_smiles.replace('F', 'R')
-                new_frag_smiles = nnn_frag_smiles.replace('Cl', 'L')
+                new_frag_smiles = n_frag_smiles.replace('[K]', 'L')
                 frag_list_new.append(new_frag_smiles)
             return frag_list_new
         elif isinstance(molecule, Fragment):
             frag_list_new = []
             for frag in frag_list:
                 n_frag_smiles = frag.replace('[Na]', 'R')
-                nn_frag_smiles = n_frag_smiles.replace('[Mg]', 'L')
-                nnn_frag_smiles = nn_frag_smiles.replace('F', 'R')
-                new_frag_smiles = nnn_frag_smiles.replace('Cl', 'L')
+                new_frag_smiles = n_frag_smiles.replace('[K]', 'L')
 
                 frag = Fragment().from_smiles_like_string(new_frag_smiles)
                 res_frag = frag.generate_resonance_structures()[0]
                 frag_list_new.append(res_frag)
             return frag_list_new
+
+    def pattern_call(self, pattern_type, pattern):
+        """
+        pattern_type currently only supports 'Aliph' and 'Arom', specifying which pattern will
+        give output as pattern in rdkit mol and atom_map_index for substructure matching
+        """
+        if pattern_type == 'Arom':
+            if pattern == 'pattern_1':
+                mol = Chem.MolFromSmiles('c1ccccc1C(C(c2ccccc2)CCCCC)CCCCC')
+                emol = Chem.RWMol(mol)
+                # add some H at terminal aliphatic C to avoid cutting at potential allylic C
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(16,24,Chem.rdchem.BondType.SINGLE)
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(16,25,Chem.rdchem.BondType.SINGLE)
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(21,26,Chem.rdchem.BondType.SINGLE)
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(21,27,Chem.rdchem.BondType.SINGLE)
+                atom_map_index = [16,21]
+
+            if pattern == 'pattern_2':
+                mol = Chem.MolFromSmiles('c1ccccc1C(CCCCC)CCCCC')
+                emol = Chem.RWMol(mol)
+                # add some H at terminal aliphatic C to avoid cutting at potential allylic C
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(14,17,Chem.rdchem.BondType.SINGLE)
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(14,18,Chem.rdchem.BondType.SINGLE)
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(9,19,Chem.rdchem.BondType.SINGLE)
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(9,20,Chem.rdchem.BondType.SINGLE)
+                atom_map_index = [9,14]
+
+            if pattern == 'pattern_3':
+                mol = Chem.MolFromSmiles('c1ccccc1C(=C)CCCCCC')
+                emol = Chem.RWMol(mol)
+                # add some H at terminal aliphatic C to avoid cutting at potential allylic C
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(11,14,Chem.rdchem.BondType.SINGLE)
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(11,15,Chem.rdchem.BondType.SINGLE)
+                atom_map_index = [11]
+
+            if pattern == 'pattern_4':
+                mol = Chem.MolFromSmiles('c1ccccc1CCCCCC')
+                emol = Chem.RWMol(mol)
+                # add some H at terminal aliphatic C to avoid cutting at potential allylic C
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(9,12,Chem.rdchem.BondType.SINGLE)
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(9,13,Chem.rdchem.BondType.SINGLE)
+                atom_map_index = [9]
+
+        elif pattern_type == 'Aliph':
+            if pattern == 'pattern_1':
+                mol = Chem.MolFromSmiles('CCC=CCCCCC')
+                emol = Chem.RWMol(mol)
+                # add some H at terminal aliphatic C to avoid cutting at potential allylic C
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(6,9,Chem.rdchem.BondType.SINGLE)
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(6,10,Chem.rdchem.BondType.SINGLE)
+                atom_map_index = [6]
+
+            if pattern == 'pattern_2':
+                mol = Chem.MolFromSmiles('C=CCCCCC')
+                emol = Chem.RWMol(mol)
+                # add some H at terminal aliphatic C to avoid cutting at potential allylic C
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(4,7,Chem.rdchem.BondType.SINGLE)
+                emol.AddAtom(Chem.rdchem.Atom('H'))
+                emol.AddBond(4,8,Chem.rdchem.BondType.SINGLE)
+                atom_map_index = [4]
+
+            if pattern == 'pattern_3':
+                mol = Chem.MolFromSmiles('CCCCCC')
+                mol = Chem.AddHs(mol,onlyOnAtoms=[2,3])
+                emol = Chem.RWMol(mol)
+                atom_map_index = [2]
+        else:
+            raise NameError("Currently only Arom or Aliph type patterns are included")
+
+        return emol, atom_map_index
+
+    def check_in_ring(self, rd_mol, mapped_atom_idx):
+        """
+        Check if the mapped structure is in ring
+        """
+        for idx in mapped_atom_idx:
+            atom = rd_mol.GetAtomWithIdx(idx)
+            if atom.IsInRing():
+                return True
+        return False
 
 # this variable is used to name atom IDs so that there are as few conflicts by 
 # using the entire space of integer objects
