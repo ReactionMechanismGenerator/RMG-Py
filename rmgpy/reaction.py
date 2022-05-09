@@ -1567,10 +1567,10 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
                     return True
     elif len_list1 <= maximum_length:
         def inlist(x,list0):
-	        for y in list0:
-		        if same(x,y):
-			        return True
-	        return False
+            for y in list0:
+                if same(x,y):
+                    return True
+            return False
         return len([x for x in list1 if not(inlist(x,list2))])==0
     else:
         # List is too long
