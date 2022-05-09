@@ -1501,7 +1501,7 @@ class Reaction:
 
 
 def same_species_lists(list1, list2, check_identical=False, only_check_label=False, generate_initial_map=False,
-                       strict=True, save_order=False, maximum_length=10):
+                       strict=True, save_order=False):
     """
     This method compares whether two lists of species or molecules are the same,
     given the comparison options provided. It is used for the `is_same` method
@@ -1529,6 +1529,7 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
         else:
             return object1.is_isomorphic(object2, generate_initial_map=_generate_initial_map,
                                          strict=_strict, save_order=_save_order)
+    maximum_length = 10
     len_list1 = len(list1)
     if len_list1 != len(list2):
         return False
@@ -1566,25 +1567,23 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
                 if same(list1[2], list2[0]):
                     return True
     elif len_list1 <= maximum_length:
-        def issamelist(l1,l2):
-            # Copy list to prevent changes to original input
-            l1=l1[:]
-            l2=l2[:]
-            x=0
-            while x<len(l1):
-                found_y = False
-                for y in range(len(l2)):
-                    if same(l1[x],l2[y]):
-                        found_y = True
-                        del l1[x]
-                        x-=1
-                        del l2[y]
-                        break
-                if not(found_y):
-                    return False
-                x+=1
-            return (len(l1)==0) and (len(l2)==0)
-        return issamelist(list1,list2)
+        # Copy list to prevent changes to original input
+        l1=l1[:]
+        l2=l2[:]
+        x=0
+        while x<len(l1):
+            found_y = False
+            for y in range(len(l2)):
+                if same(l1[x],l2[y]):
+                    found_y = True
+                    del l1[x]
+                    x-=1
+                    del l2[y]
+                    break
+            if not(found_y):
+                return False
+            x+=1
+        return (len(l1)==0) and (len(l2)==0)
     else:
         # List is too long
         raise NotImplementedError("Can't check isomorphism of lists with {0} species/molecules".format(len_list1))
