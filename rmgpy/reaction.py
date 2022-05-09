@@ -1566,12 +1566,21 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
                 if same(list1[2], list2[0]):
                     return True
     elif len_list1 <= maximum_length:
-        def inlist(x,list0):
-            for y in list0:
-                if same(x,y):
-                    return True
-            return False
-        return len([x for x in list1 if not(inlist(x,list2))])==0
+        def issamelist(l1,l2):
+            # Copy list to prevent changes to original input
+            l1=l1[:]
+            l2=l2[:]
+            x=0
+            while x<len(l1):
+                for y in range(len(l2)):
+                    if same(l1[x],l2[y]):
+                        del l1[x]
+                        x-=1
+                        del l2[y]
+                        break
+                x+=1
+            return (len(l1)==0) and (len(l2)==0)
+        return issamelist(list1,list2)
     else:
         # List is too long
         raise NotImplementedError("Can't check isomorphism of lists with {0} species/molecules".format(len_list1))
