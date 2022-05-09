@@ -1572,12 +1572,16 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
             l2=l2[:]
             x=0
             while x<len(l1):
+                found_y = False
                 for y in range(len(l2)):
                     if same(l1[x],l2[y]):
+                        found_y = True
                         del l1[x]
                         x-=1
                         del l2[y]
                         break
+                if not(found_y):
+                    return False
                 x+=1
             return (len(l1)==0) and (len(l2)==0)
         return issamelist(list1,list2)
