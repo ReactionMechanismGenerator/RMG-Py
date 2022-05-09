@@ -1568,8 +1568,8 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
                     return True
     elif len_list1 <= maximum_length:
         # Copy list to prevent changes to original input
-        l1=l1[:]
-        l2=l2[:]
+        l1=list1[:]
+        l2=list2[:]
         x=0
         while x<len(l1):
             found_y = False
