@@ -1508,20 +1508,22 @@ class KineticsFamily(Database):
             product_num = self.product_num or len(template.products)
 
         # Split product structure into multiple species if necessary
-        product_structures = product_structure.split()
-
-        # Make sure we've made the expected number of products
-        if product_num != len(product_structures):
-            # We have a different number of products than expected by the template.
-            # By definition this means that the template is not a match, so
-            # we return None to indicate that we could not generate the product
-            # structures
-            # We need to think this way in order to distinguish between
-            # intermolecular and intramolecular versions of reaction families,
-            # which will have very different kinetics
-            # Unfortunately this may also squash actual errors with malformed
-            # reaction templates
-            return None
+        if (isinstance(product_structure, Group) and self.auto_generated and self.label in ["Intra_R_Add_Endocyclic","Intra_R_Add_Exocyclic"]):
+            product_structures = [product_structure]
+        else:
+            product_structures = product_structure.split()
+            # Make sure we've made the expected number of products
+            if product_num != len(product_structures):
+                # We have a different number of products than expected by the template.
+                # By definition this means that the template is not a match, so
+                # we return None to indicate that we could not generate the product
+                # structures
+                # We need to think this way in order to distinguish between
+                # intermolecular and intramolecular versions of reaction families,
+                # which will have very different kinetics
+                # Unfortunately this may also squash actual errors with malformed
+                # reaction templates
+                return None
 
         # Remove vdW bonds
         for struct in product_structures:
