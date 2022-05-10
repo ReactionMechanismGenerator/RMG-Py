@@ -830,6 +830,8 @@ def load_species_dictionary(path, generate_resonance_structures=True):
     If `generate_resonance_structures` is True (default if omitted)
     then resonance isomers for each species are generated.
     """
+    from rmgpy.molecule.fragment import Fragment
+    import re
     species_dict = {}
 
     inerts = [Species().from_smiles(inert) for inert in ('[He]', '[Ne]', 'N#N', '[Ar]')]

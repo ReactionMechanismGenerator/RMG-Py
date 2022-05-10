@@ -44,6 +44,8 @@ from rmgpy.data.base import Database, Entry, Group, LogicNode, get_all_combinati
 from rmgpy.exceptions import KineticsError, UndeterminableKineticsError, DatabaseError
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, KineticsData
 from rmgpy.species import Species
+from rmgpy.molecule import Molecule
+from rmgpy.molecule.fragment import Fragment
 
 # Prior to np 1.14, `np.linalg.lstsq` does not accept None as a value
 RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
@@ -141,7 +143,10 @@ class KineticsGroups(Database):
                 if isinstance(react, Species):
                     react = react.molecule[0]
                 if r:
-                    r = r.merge(react)
+                    if isinstance(r, Molecule) and isinstance(react,Fragment):
+                        r = react.merge(r)
+                    else:
+                        r = r.merge(react)
                 else:
                     r = deepcopy(react)
 

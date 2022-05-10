@@ -1485,7 +1485,7 @@ class Molecule(Graph):
         """
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, Molecule):
+        if not isinstance(other, Graph):
             raise TypeError(
                 'Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         # Do the quick isomorphism comparison using the fingerprint
@@ -1502,21 +1502,8 @@ class Molecule(Graph):
             if not self.is_mapping_valid(other, initial_map, equivalent=True):
                 return False
 
-        if generate_initial_map:
-            initial_map = dict()
-            for atom in self.atoms:
-                if atom.label and atom.label != '':
-                    for a in other.atoms:
-                        if a.label == atom.label:
-                            initial_map[atom] = a
-                            break
-                    else:
-                        return False
-            if not self.is_mapping_valid(other, initial_map, equivalent=True):
-                return False
-
         # Do the full isomorphism comparison
-        result = Graph.is_isomorphic(self, other, initial_map, save_order=save_order, strict=strict)
+        result = Graph.is_isomorphic(self, other, initial_map, generate_initial_map, save_order=save_order, strict=strict)
         return result
 
     def find_isomorphism(self, other, initial_map=None, save_order=False, strict=True):
@@ -2593,8 +2580,9 @@ class Molecule(Graph):
         If ``strict=False``, performs the check ignoring electrons and resonance structures.
         """
         cython.declare(atom_ids=set, other_ids=set, atom_list=list, other_list=list, mapping=dict)
+        from rmgpy.molecule.fragment import Fragment
 
-        if not isinstance(other, Molecule):
+        if not isinstance(other, (Molecule, Fragment)):
             raise TypeError(
                 'Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
 

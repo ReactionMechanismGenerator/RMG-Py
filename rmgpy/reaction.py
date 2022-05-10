@@ -1090,7 +1090,10 @@ class Reaction:
         Return ``True`` if the reaction has the same number of each atom on
         each side of the reaction equation, or ``False`` if not.
         """
-        cython.declare(reactantElements=dict, productElements=dict, molecule=Molecule, atom=Atom, element=Element)
+        from rmgpy.molecule.element import element_list
+        from rmgpy.molecule.fragment import CuttingLabel, Fragment
+
+        cython.declare(reactant_elements=dict, product_elements=dict, molecule=Graph, atom=Vertex, element=Element)
 
         reactant_elements = {}
         product_elements = {}
@@ -1101,18 +1104,31 @@ class Reaction:
         for reactant in self.reactants:
             if isinstance(reactant, Species):
                 molecule = reactant.molecule[0]
+                for atom in molecule.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        reactant_elements[atom.element] += 1
             elif isinstance(reactant, Molecule):
                 molecule = reactant
-            for atom in molecule.atoms:
-                reactant_elements[atom.element] += 1
-
+                for atom in molecule.atoms:
+                    reactant_elements[atom.element] += 1
+            elif isinstance(reactant, Fragment):
+                for atom in reactant.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        reactant_elements[atom.element] += 1
         for product in self.products:
             if isinstance(product, Species):
                 molecule = product.molecule[0]
+                for atom in molecule.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        product_elements[atom.element] += 1
             elif isinstance(product, Molecule):
                 molecule = product
-            for atom in molecule.atoms:
-                product_elements[atom.element] += 1
+                for atom in molecule.atoms:
+                    product_elements[atom.element] += 1
+            elif isinstance(product, Fragment):
+                for atom in product.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        product_elements[atom.element] += 1
 
         for element in element_list:
             if reactant_elements[element] != product_elements[element]:
@@ -1155,8 +1171,11 @@ class Reaction:
             def get_sorting_key(spc):
                 # List of elements to sort by, order is intentional
                 numbers = [6, 8, 7, 14, 16, 15, 17, 53, 9, 35]  # C, O, N, Si, S, P, Cl, I, F, Br
-                return tuple(sum([1 for atom in spc.molecule[0].atoms if atom.element.number == n]) for n in numbers)
-
+                ele_count = dict([(n,0) for n in numbers])
+                for atom in spc.molecule[0].atoms:
+                    if isinstance(atom, Atom) and atom.element.number in numbers:
+                        ele_count[atom.element.number] += 1
+                return tuple(ele_count[n] for n in numbers)
             # Sort the reactants and products by element counts
             reactants.sort(key=get_sorting_key)
             products.sort(key=get_sorting_key)

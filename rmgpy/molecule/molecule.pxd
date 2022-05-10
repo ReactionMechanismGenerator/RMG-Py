@@ -277,7 +277,7 @@ cdef class Molecule(Graph):
 
     cpdef bint atom_ids_valid(self)
 
-    cpdef bint is_identical(self, Molecule other, bint strict=?) except -2
+    cpdef bint is_identical(self, Graph other, bint strict=?) except -2
 
     cpdef dict enumerate_bonds(self)
 

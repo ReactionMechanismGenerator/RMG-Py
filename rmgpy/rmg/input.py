@@ -50,6 +50,7 @@ from rmgpy.util import as_list
 from rmgpy.data.surface import MetalDatabase
 from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor
 from rmgpy.data.vaporLiquidMassTransfer import liquidVolumetricMassTransferCoefficientPowerLaw
+from rmgpy.molecule.fragment import Fragment
 
 ################################################################################
 
@@ -174,7 +175,7 @@ def convert_binding_energies(binding_energies):
     return new_dict
 
 
-def species(label, structure, reactive=True):
+def species(label, structure, reactive=True, cut=False, size_threshold=None):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive',
                                                          label,
                                                          structure.to_smiles()))
@@ -182,17 +183,39 @@ def species(label, structure, reactive=True):
     if '+' in label:
         raise InputError('species {0} label cannot include a + sign'.format(label))
 
-    try:
-        spec, is_new = rmg.reaction_model.make_new_species(structure, label=label, reactive=reactive)
-    except:
-        logging.error(f'Error when reading species "{label}" from input file.')
-        raise
-    if not is_new:
-        raise InputError("Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,
-                                                                                                          spec.label))
+    if cut:
+        mol_to_frag[label] = {} # key:original molecule label, value:created fragment label
+        cut_frag_list = structure.cut_molecule(size_threshold=size_threshold)
+        logging.info('The original molecule {0} is divided into several fragments:'.format(label))
+        for initial_frag in cut_frag_list:
+            frag_label = initial_frag.to_smiles()
 
-    rmg.initial_species.append(spec)
-    species_dict[label] = spec
+            logging.info(frag_label)
+
+            if frag_label not in mol_to_frag[label]:
+                mol_to_frag[label][frag_label] = 1
+            else:
+                mol_to_frag[label][frag_label] += 1
+
+            spec, is_new = rmg.reaction_model.make_new_species(initial_frag, label=frag_label, reactive=reactive)
+            # if duplicated fragment is created, combine and add to initialMoleFractions
+            if not is_new:
+                continue
+
+            rmg.initial_species.append(spec)
+            species_dict[frag_label] = spec
+    else:
+        try:
+            spec, is_new = rmg.reaction_model.make_new_species(structure, label=label, reactive=reactive)
+        except:
+            logging.error(f'Error when reading species "{label}" from input file.')
+            raise
+        if not is_new:
+            raise InputError("Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,
+                                                                                                            spec.label))
+
+        rmg.initial_species.append(spec)
+        species_dict[label] = spec
 
 def forbidden(label, structure):
 
@@ -228,7 +251,13 @@ def react(tups):
             if not isinstance(it, str):
                 raise InputError("React takes a list of tuples of species strings.")
     rmg.init_react_tuples = tups
-            
+
+def fragment_adj(string):
+    return Fragment().from_adjacency_list(string)
+
+def fragment_smiles(string):
+    return Fragment().from_smiles_like_string(string)
+
 # Reaction systems
 def simple_reactor(temperature,
                    pressure,
@@ -245,6 +274,36 @@ def simple_reactor(temperature,
                    sensitivityMoleFractions=None,
                    constantSpecies=None):
     logging.debug('Found SimpleReactor reaction system')
+
+    try:
+        if mol_to_frag:
+            # calculate total as denominator
+            total = float(0)
+            for initial_mol, value in initialMoleFractions.items():
+                if initial_mol not in mol_to_frag: # there might be other species which set cut to be False but in initialMoleFractions
+                    mol_to_frag[initial_mol] = {initial_mol: 1}
+                total += value * sum(mol_to_frag[initial_mol].values())
+            for key, frag_dict in mol_to_frag.items():
+                # if not perform cutting, no need to modify initialMoleFractions
+                # only 1 species in system and it does not get cut, then no need to modify initialMoleFractions
+                if len(mol_to_frag.keys())==1 and len(frag_dict.keys()) == 1 and key == list(frag_dict)[0]:
+                    continue
+                # probably this species does not get cut but other speceis are cut,
+                # so it still requires to re-calculate and normalize molar fraction
+                elif len(frag_dict.keys()) == 1 and key == list(frag_dict)[0]:
+                    initialMoleFractions[key] = initialMoleFractions[key] * frag_dict[key] / total
+                    continue
+                for frag_label, number in frag_dict.items():
+                    if frag_label in initialMoleFractions:
+                        initialMoleFractions[frag_label] += initialMoleFractions[key] * number / total
+                    else:
+                        initialMoleFractions[frag_label] = initialMoleFractions[key] * number / total
+                del initialMoleFractions[key]
+            logging.info('After cutting, new compositions:')
+            for spec, molfrac in initialMoleFractions.items():
+                logging.info('{0} = {1}'.format(spec, molfrac))
+    except NameError:
+        pass
 
     for key, value in initialMoleFractions.items():
         if not isinstance(value, list):
@@ -300,7 +359,13 @@ def simple_reactor(temperature,
     termination = []
     if terminationConversion is not None:
         for spec, conv in terminationConversion.items():
-            termination.append(TerminationConversion(species_dict[spec], conv))
+            # check whether key is in species_dict (not if molecule cut provided)
+            if spec not in species_dict:
+                # select first fragment as species used for terminationConversion
+                repr_frag = sorted(mol_to_frag[spec].keys())[0]
+                termination.append(TerminationConversion(species_dict[repr_frag], conv))
+            else:
+                termination.append(TerminationConversion(species_dict[spec], conv))
     if terminationTime is not None:
         termination.append(TerminationTime(Quantity(terminationTime)))
     if terminationRateRatio is not None:
@@ -1206,6 +1271,7 @@ def generated_species_constraints(**kwargs):
         'maximumSingletCarbenes',
         'maximumCarbeneRadicals',
         'allowSingletO2',
+        'speciesCuttingThreshold',
     ]
 
     for key, value in kwargs.items():
@@ -1316,7 +1382,7 @@ def read_input_file(path, rmg0):
     Read an RMG input file at `path` on disk into the :class:`RMG` object 
     `rmg`.
     """
-    global rmg, species_dict
+    global rmg, species_dict, mol_to_frag
 
     full_path = os.path.abspath(os.path.expandvars(path))
     try:
@@ -1335,6 +1401,7 @@ def read_input_file(path, rmg0):
     rmg.initial_species = []
     rmg.reaction_systems = []
     species_dict = {}
+    mol_to_frag = {}
 
     global_context = {'__builtins__': None}
     local_context = {
@@ -1346,6 +1413,8 @@ def read_input_file(path, rmg0):
         'species': species,
         'forbidden': forbidden,
         'SMARTS': smarts,
+        'fragment_adj': fragment_adj,
+        'fragment_SMILES': fragment_smiles,
         'SMILES': smiles,
         'InChI': inchi,
         'adjacencyList': adjacency_list,
