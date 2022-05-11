@@ -84,3 +84,7 @@ RMG_Py.egg-info/*
 
 # RMG configuration file
 rmgpy/rmgrc
+
+scripts/treegen.log
+
+scripts/treegen_backup.log
