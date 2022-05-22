@@ -522,7 +522,7 @@ cdef class SurfaceArrhenius(Arrhenius):
         if self.coverage_dependence:
             string += ", coverage_dependence={"
             for species, parameters in self.coverage_dependence.items():
-                string += f"{species.to_chemkin()!r}: {{'a':{parameters['a']}, 'm':{parameters['m']}, 'E':({parameters['E'].value}, '{parameters['E'].units}')}},"
+                string += f"{species.to_chemkin()!r}: {{'a':{parameters['a']}, 'm':{parameters['m']}, 'E':({parameters['E']}}},"
             string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)

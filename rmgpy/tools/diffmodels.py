@@ -62,6 +62,7 @@ import matplotlib.pyplot as plt
 from rmgpy.chemkin import load_chemkin_file
 from rmgpy.rmg.model import ReactionModel
 from rmgpy.rmg.output import save_diff_html
+from rmgpy.kinetics.surface import StickingCoefficient, SurfaceArrhenius
 
 
 ################################################################################
@@ -97,11 +98,19 @@ def compare_model_kinetics(model1, model2):
     kinetics1 = []
     kinetics2 = []
     for rxn1, rxn2 in common_reactions.items():
-        kinetics1.append(rxn1.get_rate_coefficient(T, P))
+        stick = isinstance(rxn1.kinetics, StickingCoefficient)
+        if stick:
+            rate1 = rxn1.get_sticking_coefficient(T)
+            rate2 = rxn1.get_sticking_coefficient(T)
+        else: 
+            rate1 = rxn1.get_rate_coefficient(T, P)
+            rate2 = rxn1.get_rate_coefficient(T, P)
+
+        kinetics1.append(rate1)
         if rxn1.is_isomorphic(rxn2, either_direction=False):
-            kinetics2.append(rxn2.get_rate_coefficient(T, P))
+            kinetics2.append(rate2)
         else:
-            kinetics2.append(rxn2.get_rate_coefficient(T, P) / rxn2.get_equilibrium_constant(T))
+            kinetics2.append(rate2 / rxn2.get_equilibrium_constant(T))
     fig, ax = plt.subplots(1, 1, figsize=(8, 6))
     plt.loglog(kinetics1, kinetics2, 'o', picker=5)
     xlim = plt.xlim()
@@ -390,27 +399,50 @@ def execute(chemkin1, species_dict1, thermo1, chemkin2, species_dict2, thermo2, 
         logging.info('{0:d} reactions were found in both models:'.format(len(common_reactions)))
         for rxn1, rxn2 in common_reactions:
             logging.info('    {0!s}'.format(rxn1))
+            stick = isinstance(rxn1.kinetics, StickingCoefficient)
             if rxn1.kinetics and rxn2.kinetics:
-                logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
-                    math.log10(rxn1.kinetics.get_rate_coefficient(300, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(400, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(500, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(600, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(800, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(1000, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(1500, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(2000, 1e5)),
-                ))
-                logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
-                    math.log10(rxn2.kinetics.get_rate_coefficient(300, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(400, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(500, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(600, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(800, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(1000, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(1500, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(2000, 1e5)),
-                ))
+                if not stick:
+                    logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                        math.log10(rxn1.kinetics.get_rate_coefficient(300, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(400, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(500, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(600, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(800, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(1000, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(1500, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(2000, 1e5)),
+                    ))
+                    logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                        math.log10(rxn2.kinetics.get_rate_coefficient(300, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(400, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(500, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(600, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(800, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(1000, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(1500, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(2000, 1e5)),
+                    ))
+                else: 
+                    logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(300)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(400)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(500)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(600)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(800)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(1000)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(1500)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(2000)),
+                    ))
+                    logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(300)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(400)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(500)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(600)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(800)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(1000)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(1500)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(2000)),
+                    ))
         logging.info('{0:d} reactions were only found in the first model:'.format(len(unique_reactions1)))
         for rxn in unique_reactions1:
             logging.info('    {0!s}'.format(rxn))
