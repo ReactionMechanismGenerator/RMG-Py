@@ -310,7 +310,7 @@ def update_headers():
     start of each file, be sure to double-check the results to make sure
     important lines aren't accidentally overwritten.
     """
-    shebang = """#!/usr/bin/env python3
+    shebang = """#!/usr/bin/env python-jl
 
 """
 
