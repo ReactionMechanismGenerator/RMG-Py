@@ -107,7 +107,7 @@ class GroupAtom(Vertex):
         atomtype = self.atomtype
         if atomtype is not None:
             atomtype = [a.label for a in atomtype]
-        return (GroupAtom, (atomtype, self.radical_electrons, self.charge, self.label, self.lone_pairs), d)
+        return (GroupAtom, (atomtype, self.radical_electrons, self.charge, self.label, self.lone_pairs, self.props), d)
 
     def __setstate__(self, d):
         """
