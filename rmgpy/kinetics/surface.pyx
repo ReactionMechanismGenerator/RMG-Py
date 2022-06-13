@@ -285,6 +285,34 @@ cdef class StickingCoefficient(KineticsModel):
 
         return string
 
+    def to_cantera_kinetics(self):
+        """
+        Converts the Arrhenius object to a cantera Arrhenius object
+
+        Arrhenius(A,b,E) where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol
+        """
+
+        import cantera as ct
+
+        A = self._A.value_si
+        b = self._n.value_si
+        Ea = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
+
+        return ct.StickingArrheniusRate(A, b, Ea)
+
+
+    def set_cantera_kinetics(self, ct_reaction, species_list):
+            """
+            Passes in a cantera Reaction() object and sets its
+            rate using to_cantera_kinetics().
+            """
+            import cantera as ct
+
+            # Set the rate parameter to a cantera Arrhenius() object
+            ct_reaction.rate = self.to_cantera_kinetics()
+
+    
+
 ################################################################################
 cdef class StickingCoefficientBEP(KineticsModel):
     """
@@ -569,6 +597,32 @@ cdef class SurfaceArrhenius(Arrhenius):
         """
         return (SurfaceArrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
                                    self.coverage_dependence, self.uncertainty, self.comment))
+
+    def to_cantera_kinetics(self):
+        """
+        Converts the Arrhenius object to a cantera Arrhenius object
+
+        Arrhenius(A,b,E) where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol
+        """
+
+        import cantera as ct
+
+        A = self._A.value_si
+        b = self._n.value_si
+        Ea = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
+
+        return ct.Arrhenius(A, b, Ea)
+
+
+    def set_cantera_kinetics(self, ct_reaction, species_list):
+            """
+            Passes in a cantera Reaction() object and sets its
+            rate using to_cantera_kinetics().
+            """
+            import cantera as ct
+
+            # Set the rate parameter to a cantera Arrhenius() object
+            ct_reaction.rate = self.to_cantera_kinetics()
 
 ################################################################################
 
