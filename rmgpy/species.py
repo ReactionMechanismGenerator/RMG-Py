@@ -443,9 +443,17 @@ class Species(object):
             else:
                 element_dict[symbol] += 1
         if use_chemkin_identifier:
-            ct_species = ct.Species(self.to_chemkin(), element_dict)
+            label = self.to_chemkin()
         else:
-            ct_species = ct.Species(self.label, element_dict)
+            label = self.label
+
+        if self.contains_surface_site() and element_dict["X"] > 1:
+            # for multidentate adsorbates, 'size' is the same as 'sites'? for some reason, cantera won't take the input 'size,' so will need to use 'sites'
+            ct_species = ct.Species(label, element_dict, size=element_dict["X"])
+            # hopefully this will be fixed soon, so that ct.Species can take a 'sites' parameter or that cantera can read input files with 'size' specified
+        else:
+            ct_species = ct.Species(label, element_dict)
+
         if self.thermo:
             try:
                 ct_species.thermo = self.thermo.to_cantera()
