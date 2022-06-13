@@ -70,7 +70,7 @@ cdef class Reaction:
 
     cpdef bint is_surface_reaction(self)
 
-    cpdef bint has_template(self, list reactants, list products)
+    cpdef bint has_template(self, list ct_reactants, list ct_products)
 
     cpdef bint matches_species(self, list reactants, list products=?)
 

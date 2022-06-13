@@ -245,6 +245,19 @@ class Reaction:
         else:
             return rmgpy.chemkin.write_reaction_string(self)
 
+    def fix_reaction(self, ct_reactions, ct_products):
+        """
+        Fixes the formatting of StickingCoefficients reaction equations
+        """
+        rxn_stoic = [f"{v} {k}" for k, v in ct_reactions.items() if v != 1]
+        rxn_stoic.extend([k for k, v in ct_reactions.items() if v == 1])
+
+        prod_stoic = [f"{v} {k}" for k, v in ct_products.items() if v != 1]
+        prod_stoic.extend([k for k, v in ct_products.items() if v == 1])
+
+        equation = " + ".join(rxn_stoic) + " <=> " + " + ".join(prod_stoic)
+        return equation
+
     def to_cantera(self, species_list=None, use_chemkin_identifier=False):
         """
         Converts the RMG Reaction object to a Cantera Reaction object
@@ -313,6 +326,8 @@ class Reaction:
             elif isinstance(self.kinetics, Troe):
                 high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
                 low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
+                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics()
+                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics()
                 A = self.kinetics.alpha
                 T3 = self.kinetics.T3.value_si
                 T1 = self.kinetics.T1.value_si
@@ -339,9 +354,27 @@ class Reaction:
                         reactants=ct_reactants, products=ct_products, rate=rate
                     )
 
+            elif isinstance(self.kinetics, SurfaceArrhenius):
+                # Create an surface reaction
+                A = self.kinetics._A.value_si
+                b = self.kinetics._n.value_si
+                Ea = self.kinetics._Ea.value_si * 1000  # convert from J/mol to J/kmol
+                rate = ct.ArrheniusRate(A, b, Ea)
+                ct_reaction = ct.InterfaceReaction(equation=str(self), rate=rate)
+
+            elif isinstance(self.kinetics, StickingCoefficient):
+                A = self.kinetics._A.value_si
+                b = self.kinetics._n.value_si
+                Ea = self.kinetics._Ea.value_si * 1000  # convert from J/mol to J/kmol
+                rate = ct.StickingArrheniusRate(A, b, Ea)
+                equation = self.fix_reaction(ct_reactants, ct_products)
+                ct_reaction = ct.Reaction(equation=equation, rate=rate)
+
             elif isinstance(self.kinetics, Lindemann):
                 high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
+                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics()
                 low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
+                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics()
                 falloff = []
                 rate = ct.LindemannRate(low_rate, high_rate, falloff)
                 if ct_collider is not None:
@@ -355,6 +388,7 @@ class Reaction:
                     ct_reaction = ct.FalloffReaction(
                         reactants=ct_reactants, products=ct_products, rate=rate
                     )
+
 
             else:
                 raise NotImplementedError('Unable to set cantera kinetics for {0}'.format(self.kinetics))
