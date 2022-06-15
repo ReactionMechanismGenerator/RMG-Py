@@ -48,7 +48,7 @@ from rmgpy.kinetics.surface import StickingCoefficient
 from rmgpy.util import make_output_subdirectory
 
 
-def convert_chemkin_to_yml(chemkin_path, dictionary_path=None, output="chem.rms"):
+def convert_chemkin_to_rms(chemkin_path, dictionary_path=None, output="chem.rms"):
     if dictionary_path:
         spcs, rxns = load_chemkin_file(chemkin_path, dictionary_path=dictionary_path)
     else:
@@ -56,7 +56,7 @@ def convert_chemkin_to_yml(chemkin_path, dictionary_path=None, output="chem.rms"
     write_yml(spcs, rxns, path=output)
 
 
-def write_yml(spcs, rxns, solvent=None, solvent_data=None, path="chem.yml"):
+def write_rms(spcs, rxns, solvent=None, solvent_data=None, path="chem.rms"):
     result_dict = get_mech_dict(spcs, rxns, solvent=solvent, solvent_data=solvent_data)
     with open(path, 'w') as f:
         yaml.dump(result_dict, stream=f)
@@ -253,5 +253,5 @@ class RMSWriter(object):
         solvent_data = None
         if rmg.solvent:
             solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
-        write_yml(rmg.reaction_model.core.species, rmg.reaction_model.core.reactions, solvent=rmg.solvent, solvent_data=solvent_data,
+        write_rms(rmg.reaction_model.core.species, rmg.reaction_model.core.reactions, solvent=rmg.solvent, solvent_data=solvent_data,
                   path=os.path.join(self.output_directory, 'rms', 'chem{}.rms').format(len(rmg.reaction_model.core.species)))

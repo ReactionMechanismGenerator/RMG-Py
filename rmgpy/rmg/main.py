@@ -79,7 +79,7 @@ from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.plot import plot_sensitivity
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
-from rmgpy.yml import RMSWriter
+from rmgpy.rms import RMSWriter
 from rmgpy.rmg.reactors import Reactor
 
 ################################################################################
