@@ -16,16 +16,16 @@ from rmgpy.util import make_output_subdirectory
 from datetime import datetime
 from rmgpy.chemkin import get_species_identifier
 
-
 #make final chem.yml file with newest model
-def convert_chemkin_to_yml(chemkin_path, dictionary_path=None, output="chem.yml"):
+def convert_chemkin_to_cantera(chemkin_path, dictionary_path=None, output="chem.yml"):
     if dictionary_path:
         spcs, rxns = load_chemkin_file(chemkin_path, dictionary_path=dictionary_path)
     else:
         spcs, rxns = load_chemkin_file(chemkin_path)
-    write_yml(spcs, rxns, path=output)
+    write_cantera(spcs, rxns, path=output)
 
-def write_yml(spcs, rxns, solvent=None, solvent_data=None, path="chem.yml"):
+
+def write_cantera(spcs, rxns, solvent=None, solvent_data=None, path="chem.yml"):
     result_dict = get_mech_dict(spcs, rxns, solvent=solvent, solvent_data=solvent_data)
     with open(path, 'w') as f:
         #generator line
@@ -131,11 +131,7 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
     return result_dict
 
 
-
-
-
-
-class YAMLWriter(object):
+class CanteraWriter(object):
     """
     This class listens to a RMG subject
     and writes an YAML file with the current state of the RMG model,
@@ -145,7 +141,7 @@ class YAMLWriter(object):
     A new instance of the class can be appended to a subject as follows:
 
     rmg = ...
-    listener = YAMLWriter(outputDirectory)
+    listener = CanteraWriter(outputDirectory)
     rmg.attach(listener)
 
     Whenever the subject calls the .notify() method, the
@@ -158,13 +154,13 @@ class YAMLWriter(object):
 
     """
     def __init__(self, output_directory=''):
-        super(YAMLWriter, self).__init__()
+        super(CanteraWriter, self).__init__()
         self.output_directory = output_directory
-        make_output_subdirectory(output_directory, 'yaml')
+        make_output_subdirectory(output_directory, 'cantera')
 
     def update(self, rmg):
         solvent_data = None
         if rmg.solvent:
             solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
-        write_yml(rmg.reaction_model.core.species, rmg.reaction_model.core.reactions, solvent=rmg.solvent, solvent_data=solvent_data,
-                  path=os.path.join(self.output_directory, 'yaml', 'chem{}.yaml').format(len(rmg.reaction_model.core.species)))
+        write_cantera(rmg.reaction_model.core.species, rmg.reaction_model.core.reactions, solvent=rmg.solvent, solvent_data=solvent_data,
+                  path=os.path.join(self.output_directory, 'cantera', 'chem{}.yaml').format(len(rmg.reaction_model.core.species)))
