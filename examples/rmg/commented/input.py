@@ -32,7 +32,7 @@ database(
     # in addition to species listed in this input file.
     # This is helpful for reducing run time for species you know will appear in
     # the mechanism.
-    seedMechanisms=['BurkeH2O2inN2', 'ERC-FoundationFuelv0.9'],
+    seedMechanisms=['primaryH2O2', 'ERC-FoundationFuelv0.9'],
     # lists specific families used to generate the model. 'default' uses a list of
     # families from RMG-Database/input/kinetics/families/recommended.py
     # a visual list of families is available in PDF form at RMG-database/families
