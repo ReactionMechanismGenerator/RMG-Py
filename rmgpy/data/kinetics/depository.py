@@ -107,12 +107,34 @@ class DepositoryReaction(Reaction):
         """
         return self.depository.label
 
+    def apply_solvent_correction(self, solvent):
+        """
+        apply kinetic solvent correction
+        """
+        from rmgpy.data.rmg import get_db
+        solvation_database = get_db('solvation')
+        solvent_data = solvation_database.get_solvent_data(solvent)
+        solute_data = self.kinetics.solute
+        correction = solvation_database.get_solvation_correction(solute_data, solvent_data)
+        dHR = 0.0
+        dSR = 0.0
+        for spc in self.reactants:
+            spc_solute_data = solvation_database.get_solute_data(spc)
+            spc_correction = solvation_database.get_solvation_correction(spc_solute_data, solvent_data)
+            dHR += spc_correction.enthalpy
+            dSR += spc_correction.entropy
+
+        dH = correction.enthalpy-dHR
+        dA = np.exp((correction.entropy-dSR)/constants.R)
+        self.kinetics.Ea.value_si += dH
+        self.kinetics.A.value_si *= dA
+        self.kinetics.comment += "\nsolvation correction raised barrier by {0} kcal/mol and prefactor by factor of {1}".format(dH/4184.0,dA)
 
 ################################################################################
 
 class KineticsDepository(Database):
     """
-    A class for working with an RMG kinetics depository. Each depository 
+    A class for working with an RMG kinetics depository. Each depository
     corresponds to a reaction family (a :class:`KineticsFamily` object). Each
     entry in a kinetics depository involves a reaction defined either by a
     real reactant and product species (as in a kinetics library).
