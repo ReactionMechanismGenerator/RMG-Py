@@ -1713,7 +1713,7 @@ class CoreEdgeReactionModel:
                                       reversible=rxn.reversible
                                       )
             r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.newReactionlist
-            if getattr(r.kinetics, 'coverage_dependence', None):
+            if r and getattr(r.kinetics, 'coverage_dependence', None):
                 self.process_coverage_dependence(r.kinetics)
             if not isNew:
                 logging.info("This library reaction was not new: {0}".format(rxn))
