@@ -4574,7 +4574,6 @@ def _make_rule(rr):
                 mu = np.dot(ws, dlnks) / V1
                 s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
                 kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
-                return kin
         else:
             if n == 1:
                 kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
@@ -4597,13 +4596,33 @@ def _make_rule(rr):
                     ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
                 varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rxns]) / (2.0 * 8.314 * Tref)) ** 2
                 # weighted average calculations
-
                 ws = 1.0 / varis
                 V1 = ws.sum()
                 V2 = (ws ** 2).sum()
                 mu = np.dot(ws, dlnks) / V1
                 s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
                 kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
+
+        #site solute parameters
+        site_datas = [get_site_solute_data(rxn) for rxn in rxns]
+        site_datas = [sdata for sdata in site_datas if sdata is not None]
+        if len(site_datas) > 0:
+            site_data = SoluteData(
+            S=0.0,
+            B=0.0,
+            E=0.0,
+            L=0.0,
+            A=0.0,
+            )
+            for sdata in site_datas:
+                add_solute_data(site_data,sdata)
+            site_data.S /= len(site_datas)
+            site_data.B /= len(site_datas)
+            site_data.E /= len(site_datas)
+            site_data.L /= len(site_datas)
+            site_data.A /= len(site_datas)
+            kin.solute = site_data
+
         return kin
     else:
         return None
@@ -4722,3 +4741,60 @@ def average_kinetics(kinetics_list):
             comment=f"Averaged from {len(kinetics_list)} rate expressions.",
         )
     return averaged_kinetics
+
+def get_site_solute_data(rxn):
+    """
+    apply kinetic solvent correction in this case the parameters are dGTSsite instead of GTS
+    """
+    from rmgpy.data.rmg import get_db
+    solvation_database = get_db('solvation')
+    ts_data = rxn.kinetics.solute
+    if ts_data:
+        site_data = SoluteData(
+            S=ts_data.S,
+            B=ts_data.B,
+            E=ts_data.E,
+            L=ts_data.L,
+            A=ts_data.A,
+        )
+
+        #compute x from gas phase
+        GR = 0.0
+        GP = 0.0
+
+        for reactant in rxn.reactants:
+            try:
+                GR += reactant.thermo.get_free_energy(298.0)
+            except Exception:
+                logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, rxn))
+                raise
+        for product in rxn.products:
+            try:
+                GP += product.thermo.get_free_energy(298.0)
+            except Exception:
+                logging.error("Problem with product {!r} in reaction {!s}".format(reactant, rxn))
+                raise
+
+        GTS = rxn.kinetics.Ea.value_si + GR
+
+        x = abs(GTS - GR) / (abs(GP - GTS) + abs(GR - GTS))
+
+        for spc in rxn.reactants:
+            spc_solute_data = solvation_database.get_solute_data(spc.copy(deep=True))
+            site_data.S -= (1.0-x) * spc_solute_data.S
+            site_data.B -= (1.0-x) * spc_solute_data.B
+            site_data.E -= (1.0-x) * spc_solute_data.E
+            site_data.L -= (1.0-x) * spc_solute_data.L
+            site_data.A -= (1.0-x) * spc_solute_data.A
+
+        for spc in rxn.products:
+            spc_solute_data = solvation_database.get_solute_data(spc.copy(deep=True))
+            site_data.S -= x * spc_solute_data.S
+            site_data.B -= x * spc_solute_data.B
+            site_data.E -= x * spc_solute_data.E
+            site_data.L -= x * spc_solute_data.L
+            site_data.A -= x * spc_solute_data.A
+
+        return site_data
+    else:
+        return None
