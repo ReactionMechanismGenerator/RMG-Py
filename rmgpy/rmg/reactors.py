@@ -55,13 +55,14 @@ else:
     from diffeqpy import de
     from julia import Main
 
+from rmgpy import constants
 from rmgpy.species import Species
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.reaction import Reaction
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.wilhoit import Wilhoit
 from rmgpy.thermo.thermodata import ThermoData
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, ArrheniusBM, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
+from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, ArrheniusBM, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, ArrheniusChargeTransfer
 from rmgpy.kinetics.kineticsdata import KineticsData
 from rmgpy.kinetics.falloff import Troe, ThirdBody, Lindemann
 from rmgpy.kinetics.chebyshev import Chebyshev
@@ -590,6 +591,16 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         n = obj._n.value_si
         Ea = obj._Ea.value_si
         return rms.Arrhenius(A, n, Ea, rms.EmptyRateUncertainty())
+    elif isinstance(obj, ArrheniusChargeTransfer):
+        A = obj._A.value_si
+        if obj._T0.value_si != 1.0:
+            A /= ((obj._T0.value_si) ** obj._n.value_si)
+        if obj._V0.value_si != 0.0:
+            A *= np.exp(obj._alpha.value_si*obj._electrons.value_si*constants.F*obj.V0.value_si)
+        n = obj._n.value_si
+        Ea = obj._Ea.value_si
+        q = obj._alpha.value_si*obj._electrons.value_si
+        return rms.Arrheniusq(A, n, Ea, q, rms.EmptyRateUncertainty())
     elif isinstance(obj, SurfaceChargeTransfer):
         A = obj._A.value_si
         if obj._T0.value_si != 1.0:
