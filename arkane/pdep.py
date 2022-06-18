@@ -42,7 +42,7 @@ import numpy as np
 import rmgpy.quantity as quantity
 from rmgpy.chemkin import write_kinetics_entry
 from rmgpy.data.kinetics.library import LibraryReaction
-from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongCollisionError, PressureDependenceError
+from rmgpy.exceptions import InputError, InvalidMicrocanonicalRateError, ModifiedStrongCollisionError, PressureDependenceError
 from rmgpy.kinetics import Chebyshev, PDepArrhenius
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics.tunneling import Wigner, Eckart
@@ -56,7 +56,7 @@ from arkane.sensitivity import PDepSensitivity as SensAnalysis
 class PressureDependenceJob(object):
     """
     A representation of a pressure dependence job. The attributes are:
-    
+
     ======================= ====================================================
     Attribute               Description
     ======================= ====================================================
@@ -82,23 +82,23 @@ class PressureDependenceJob(object):
     `Plist`                 An array of pressures at which to compute :math:`k(T,P)` values
     `Elist`                 An array of energies to use to compute :math:`k(T,P)` values
     ======================= ====================================================
-    
+
     In RMG mode, several alterations to the k(T,P) algorithm are made both for
     speed and due to the nature of the approximations used:
-    
+
     * Densities of states are not computed for product channels
-    
+
     * Arbitrary rigid rotor moments of inertia are included in the active modes;
       these cancel in the ILT and equilibrium expressions
-    
+
     * k(E) for each path reaction is computed in the direction A -> products,
       where A is always an explored isomer; the high-P kinetics are reversed
       if necessary for this purpose
-    
+
     * Thermodynamic parameters are always used to compute the reverse k(E)
       from the forward k(E) for each path reaction
-    
-    RMG mode should be turned off by default except in RMG jobs.    
+
+    RMG mode should be turned off by default except in RMG jobs.
     """
 
     def __init__(self, network,
@@ -107,6 +107,17 @@ class PressureDependenceJob(object):
                  maximumGrainSize=None, minimumGrainCount=0,
                  method=None, interpolationModel=None, maximumAtoms=None,
                  activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None):
+
+        if len(network.products) > 0:
+            if "simulation least squares" in method:
+                raise InputError("""The current simulation least squares implementation should not be
+                              used with product channels. Please specify all bimolecular channels as
+                              reactant channels.""")
+            elif method == "chemically-significant eigenvalues georgievskii":
+                raise InputError("""The chemically-significant eigenvalues georgievskii method cannot be
+                              used with product channels. Please specify all bimolecular channels as
+                              reactant channels.""")
+
         self.network = network
 
         self.Tmin = Tmin
@@ -621,8 +632,8 @@ class PressureDependenceJob(object):
         Generate a PDF drawing of the pressure-dependent reaction network.
         This requires that Cairo and its Python wrapper be available; if not,
         the drawing is not generated.
-        
-        You may also generate different formats of drawings, by changing format to 
+
+        You may also generate different formats of drawings, by changing format to
         one of the following: `pdf`, `svg`, `png`.
         """
 
