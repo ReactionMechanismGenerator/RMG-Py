@@ -397,7 +397,7 @@ class Reactor:
         core_react, core_domains, core_interfaces, core_p = self.generate_reactor(self.core_phase_system)
 
         terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x = rms.selectobjects(core_react, edge_react,
-                                                edge_domains, edge_interfaces, core_domains, core_interfaces, core_p, edge_p, model_settings.tol_move_to_core,
+                                                edge_domains, edge_interfaces, core_domains, core_interfaces, core_p, edge_p, model_settings.tol_move_to_core, model_settings.tol_rad_move_to_core,
                                                 model_settings.tol_interrupt_simulation, model_settings.ignore_overall_flux_criterion,
                                                 model_settings.filter_reactions, model_settings.max_num_objects_per_iter, model_settings.tol_branch_rxn_to_core,
                                                 model_settings.branching_ratio_max, model_settings.branching_index, model_settings.terminate_at_max_objects,

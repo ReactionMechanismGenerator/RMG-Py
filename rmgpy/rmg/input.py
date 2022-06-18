@@ -1143,7 +1143,8 @@ def solvation(solvent):
     rmg.solvent = solvent
 
 
-def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=np.inf, toleranceKeepInEdge=0.0,
+def model(toleranceMoveToCore=None, toleranceRadMoveToCore=None,
+          toleranceMoveEdgeReactionToCore=np.inf, toleranceKeepInEdge=0.0,
           toleranceInterruptSimulation=1.0,
           toleranceMoveEdgeReactionToSurface=np.inf, toleranceMoveSurfaceSpeciesToCore=np.inf,
           toleranceMoveSurfaceReactionToCore=np.inf,
@@ -1173,6 +1174,7 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=np.inf, tole
     rmg.model_settings_list.append(
         ModelSettings(
             tol_move_to_core=toleranceMoveToCore,
+            tol_rad_move_to_core=toleranceRadMoveToCore,
             tol_move_edge_rxn_to_core=toleranceMoveEdgeReactionToCore,
             tol_keep_in_edge=toleranceKeepInEdge,
             tol_interrupt_simulation=toleranceInterruptSimulation,
