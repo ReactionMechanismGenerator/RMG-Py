@@ -51,6 +51,7 @@ from rmgpy.data.surface import MetalDatabase
 from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor, ConstantTPIdealGasReactor
 from rmgpy.data.vaporLiquidMassTransfer import liquidVolumetricMassTransferCoefficientPowerLaw
 from rmgpy.molecule.fragment import Fragment
+from rmgpy.data.solvation import SolventData
 
 ################################################################################
 
@@ -1141,11 +1142,18 @@ def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
     rmg.simulator_settings_list.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol))
 
 
-def solvation(solvent):
+def solvation(solvent,solventData=None):
     # If solvation module in input file, set the RMG solvent variable
-    if not isinstance(solvent, str):
-        raise InputError("solvent should be a string like 'water'")
-    rmg.solvent = solvent
+    #either a string corresponding to the solvent database or a olvent object
+    if isinstance(solvent, str):
+        rmg.solvent = solvent
+    else:
+        raise InputError("Solvent not specified properly, solvent must be string")
+
+    if isinstance(solventData, SolventData) or solventData is None:
+        rmg.solvent_data = solventData
+    else:
+        raise InputError("Solvent not specified properly, solventData must be None or SolventData object")
 
 
 def model(toleranceMoveToCore=None, toleranceRadMoveToCore=np.inf,
@@ -1544,6 +1552,7 @@ def read_input_file(path, rmg0):
         'mbsampledReactor': mb_sampled_reactor,
         'simulator': simulator,
         'solvation': solvation,
+        'SolventData' : SolventData,
         'liquidVolumetricMassTransferCoefficientPowerLaw': liquid_volumetric_mass_transfer_coefficient_power_law,
         'model': model,
         'quantumMechanics': quantum_mechanics,
