@@ -90,26 +90,26 @@ species(
     label = 'ketene',
     structure = SMILES('C=C=O'),
     E0 = (-6.6,'kcal/mol'),
-    #modes = [
-        #IdealGasTranslation(mass=(42.0106,"g/mol")),
-        #NonlinearRotor(inertia=([1.76922,48.8411,50.6103],"u*angstrom**2"), symmetry=2),
-        #HarmonicOscillator(frequencies=([441.622,548.317,592.155,981.379,1159.66,1399.86,2192.1,3150.02,3240.58],"cm^-1")),
-    #],
-    #spinMultiplicity = 1,
-    #opticalIsomers = 1,
+    modes = [
+        IdealGasTranslation(mass=(42.0106,"g/mol")),
+        NonlinearRotor(inertia=([1.76922,48.8411,50.6103],"u*angstrom**2"), symmetry=2),
+        HarmonicOscillator(frequencies=([441.622,548.317,592.155,981.379,1159.66,1399.86,2192.1,3150.02,3240.58],"cm^-1")),
+    ],
+    spinMultiplicity = 1,
+    opticalIsomers = 1,
 )
 
 species(
     label = 'lactone',
     structure = SMILES('C1OC1(=O)'),
     E0 = (-30.8,'kcal/mol'),
-    #modes = [
-        #IdealGasTranslation(mass=(58.0055,"g/mol")),
-        #NonlinearRotor(inertia=([20.1707,62.4381,79.1616],"u*angstrom**2"), symmetry=1),
-        #HarmonicOscillator(frequencies=([484.387,527.771,705.332,933.372,985.563,1050.26,1107.93,1176.43,1466.54,1985.09,3086.23,3186.46],"cm^-1")),
-    #],
-    #spinMultiplicity = 1,
-    #opticalIsomers = 1,
+    modes = [
+        IdealGasTranslation(mass=(58.0055,"g/mol")),
+        NonlinearRotor(inertia=([20.1707,62.4381,79.1616],"u*angstrom**2"), symmetry=1),
+        HarmonicOscillator(frequencies=([484.387,527.771,705.332,933.372,985.563,1050.26,1107.93,1176.43,1466.54,1985.09,3086.23,3186.46],"cm^-1")),
+    ],
+    spinMultiplicity = 1,
+    opticalIsomers = 1,
 )
 
 
@@ -118,26 +118,26 @@ species(
     label = 'hydroxyl',
     structure = SMILES('[OH]'),
     E0 = (0.0,'kcal/mol'),
-    #modes = [
-        #IdealGasTranslation(mass=(17.0027,"g/mol")),
-        #LinearRotor(inertia=(0.899988,"u*angstrom**2"), symmetry=1),
-        #HarmonicOscillator(frequencies=([3676.39],"cm^-1")),
-    #],
-    #spinMultiplicity = 2,
-    #opticalIsomers = 1,
+    modes = [
+        IdealGasTranslation(mass=(17.0027,"g/mol")),
+        LinearRotor(inertia=(0.899988,"u*angstrom**2"), symmetry=1),
+        HarmonicOscillator(frequencies=([3676.39],"cm^-1")),
+    ],
+    spinMultiplicity = 2,
+    opticalIsomers = 1,
 )
 
 species(
     label = 'hydroperoxyl',
     structure = SMILES('O[O]'),
     E0 = (0.0,'kcal/mol'),
-    #modes = [
-        #IdealGasTranslation(mass=(32.9977,"g/mol")),
-        #NonlinearRotor(inertia=([0.811564,14.9434,15.755],"u*angstrom**2"), symmetry=1),
-        #HarmonicOscillator(frequencies=([1156.77,1424.28,3571.81],"cm^-1")),
-    #],
-    #spinMultiplicity = 2,
-    #opticalIsomers = 1,
+    modes = [
+        IdealGasTranslation(mass=(32.9977,"g/mol")),
+        NonlinearRotor(inertia=([0.811564,14.9434,15.755],"u*angstrom**2"), symmetry=1),
+        HarmonicOscillator(frequencies=([1156.77,1424.28,3571.81],"cm^-1")),
+    ],
+    spinMultiplicity = 2,
+    opticalIsomers = 1,
 )
 
 species(
@@ -209,7 +209,7 @@ transitionState(
     opticalIsomers = 1,
     frequency=(-618.234,'cm^-1'),
 )
-    
+
 ################################################################################
 
 reaction(
@@ -262,6 +262,8 @@ network(
     ],
     reactants = [
         ('acetyl', 'oxygen'),
+        ('ketene', 'hydroperoxyl'),
+	('lactone', 'hydroxyl')
     ],
     bathGas = {
         'nitrogen': 1.0,
@@ -276,12 +278,7 @@ pressureDependence(
     Pmin=(0.01,'bar'), Pmax=(100.0,'bar'), Pcount=5,
     maximumGrainSize = (1.0,'kcal/mol'),
     minimumGrainCount = 250,
-    method = 'modified strong collision',
-    #method = 'reservoir state',
-    #method = 'chemically-significant eigenvalues',
+    method = 'simulation least squares',
     interpolationModel = ('chebyshev', 6, 4),
-    #interpolationModel = ('pdeparrhenius'),
-    #activeKRotor = True, 
     activeJRotor = True,
-    sensitivity_conditions = [[(1000, 'K'), (1, 'bar')], [(1500, 'K'), (10, 'bar')]]
 )
