@@ -109,7 +109,7 @@ class PressureDependenceJob(object):
                  activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None,
                  sensitivity_perturbation=0):
 
-        if network.products and len(network.products) > 0:
+        if network and network.products and len(network.products) > 0:
             if "simulation least squares" in method:
                 raise InputError("""The current simulation least squares implementation should not be
                               used with product channels. Please specify all bimolecular channels as
