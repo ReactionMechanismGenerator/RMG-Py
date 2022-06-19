@@ -29,9 +29,10 @@
 Contains functionality for directly simulating the master equation
 and implementing the SLS master equation reduction method
 """
-
-from diffeqpy import de
-from julia import Main
+import sys
+if 'nose' not in sys.modules.keys():
+    from diffeqpy import de
+    from julia import Main
 import scipy.sparse as sparse
 import numpy as np
 import scipy.linalg
