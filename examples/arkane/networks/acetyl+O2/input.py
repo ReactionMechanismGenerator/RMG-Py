@@ -278,7 +278,7 @@ pressureDependence(
     Pmin=(0.01,'bar'), Pmax=(100.0,'bar'), Pcount=5,
     maximumGrainSize = (1.0,'kcal/mol'),
     minimumGrainCount = 250,
-    method = 'simulation least squares',
+    method = 'chemically-significant eigenvalues',
     interpolationModel = ('chebyshev', 6, 4),
     activeJRotor = True,
 )
