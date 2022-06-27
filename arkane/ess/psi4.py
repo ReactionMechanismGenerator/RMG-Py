@@ -295,10 +295,13 @@ class Psi4Log(ESSAdapter):
 
                     negative_frequencies = [f for f in frequencies if f < 0.0]
                 line = f.readline()
-        if negative_frequencies is not None and len(negative_frequencies):
-            negative_frequencies.sort()
-            frequency = negative_frequencies[0]
-        return frequency
+        if negative_frequencies is None:
+            raise LogError('Unable to find imaginary frequency in Psi4 output file {0}.'.format(self.path))
+        elif len(negative_frequencies) == 1:
+            return negative_frequencies[0]
+        else:
+            logging.info('More than one imaginary frequency in Psi4 output file {0}.'.format(self.path))
+            return negative_frequencies[0]
 
     def load_scan_energies(self):
         """Not implemented for Psi4"""

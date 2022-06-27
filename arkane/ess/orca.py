@@ -288,11 +288,14 @@ class OrcaLog(ESSAdapter):
         for line in log:
             if '***imaginary mode***' in line:
                 frequencies.append(float(line.split()[1]))
-        try:
-            frequency = [freq for freq in frequencies if freq < 0][0]
-        except IndexError:
+
+        if len(frequencies) == 1:
+            return frequencies[0]
+        elif len(frequencies) > 1:
+            logging.info('More than one imaginary frequency in Orca output file {0}.'.format(self.path))
+            return frequencies[0]
+        else:
             raise LogError(f'Unable to find imaginary frequency in Orca output file {self.path}')
-        return frequency
 
     def get_T1_diagnostic(self):
         """

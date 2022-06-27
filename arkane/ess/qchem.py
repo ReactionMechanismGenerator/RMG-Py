@@ -380,16 +380,27 @@ class QChemLog(ESSAdapter):
         Return the imaginary frequency from a transition state frequency
         calculation in cm^-1.
         """
-        frequency = 0
+        read_freqs = False
+        num_freq_blocks = 0
         with open(self.path, 'r') as f:
             for line in f:
-                # Read imaginary frequency
-                if ' Frequency:' in line:
-                    frequency = float((line.split()[1]))
-                    break
-        # Make sure the frequency is imaginary:
-        if frequency < 0:
-            return frequency
+                # only read the first row from a frequency block
+                if read_freqs and ' Frequency:' in line:
+                    freqs = np.array([float(freq) for freq in line.split()[1:4]])
+                    num_freq_blocks += 1
+                    read_freqs = False
+
+                if 'VIBRATIONAL ANALYSIS' in line:
+                    read_freqs = True
+
+        logging.info(f'Identified {num_freq_blocks} frequency block(s)...')
+        logging.info('Only examining frequencies from the last block...')
+        neg_idx = np.where(freqs < 0)[0]
+        if len(neg_idx) == 1:
+            return freqs[neg_idx[0]]
+        elif len(neg_idx) > 1:
+            logging.info('More than one imaginary frequency in QChem output file {0}.'.format(self.path))
+            return freqs[neg_idx[0]]
         else:
             raise LogError('Unable to find imaginary frequency in QChem output file {0}.'.format(self.path))
 
