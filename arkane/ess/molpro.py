@@ -421,7 +421,7 @@ class MolproLog(ESSAdapter):
         """
         Return the negative frequency from a transition state frequency calculation in cm^-1.
         """
-        frequency = None
+        freqs = []
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
@@ -429,13 +429,16 @@ class MolproLog(ESSAdapter):
                 if 'Normal Modes of imaginary frequencies' in line:
                     for i in range(3):
                         line = f.readline()
-                    frequency = line.split()[2]
+                    freqs.append(line.split()[2])
                 line = f.readline()
 
-        if frequency is None:
+        if len(freqs) == 1:
+            return -float(freqs[0])
+        elif len(freqs) > 1:
+            logging.info('More than one imaginary frequency in Molpro output file {0}.'.format(self.path))
+            return -float(freqs[0])
+        else:
             raise LogError('Unable to find imaginary frequency in Molpro output file {0}'.format(self.path))
-        negativefrequency = -float(frequency)
-        return negativefrequency
 
     def load_scan_energies(self):
         """

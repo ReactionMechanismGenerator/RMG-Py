@@ -587,7 +587,6 @@ class GaussianLog(ESSAdapter):
         Return the negative frequency from a transition state frequency
         calculation in cm^-1.
         """
-        frequency = None
         frequencies = []
         with open(self.path, 'r') as f:
             line = f.readline()
@@ -599,11 +598,14 @@ class GaussianLog(ESSAdapter):
 
         frequencies = [float(freq) for freq in frequencies]
         frequencies.sort()
-        try:
-            frequency = [freq for freq in frequencies if freq < 0][0]
-        except IndexError:
+        neg_idx = np.where(np.array(frequencies) < 0)[0]
+        if len(neg_idx) == 1:
+            return frequencies[neg_idx[0]]
+        elif len(neg_idx) > 1:
+            logging.info('More than one imaginary frequency in Gaussian output file {0}.'.format(self.path))
+            return frequencies[neg_idx[0]]
+        else:
             raise LogError(f'Unable to find imaginary frequency in Gaussian output file {self.path}')
-        return frequency
 
 
 register_ess_adapter("GaussianLog", GaussianLog)
