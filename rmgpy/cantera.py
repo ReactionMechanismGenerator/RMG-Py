@@ -136,12 +136,16 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
         # doesn't work for fall-off reactions :( will have to do something else for that
         try:
             s = obj.to_cantera()
-            reacton_data = s.input_data
-            return reacton_data
+            reaction_data = s.input_data
+            return reaction_data
+
         except:
-            if isinstance(obj.kinetics, Troe) or isinstance(obj.kinetics, Lindemann):
-                print("********veryyyyy interesting")
-                # result_dict
+            if isinstance(
+                obj.kinetics, Troe
+            ):  # or isinstance(obj.kinetics, Lindemann):
+                reaction_data = obj.kinetics.write_cantera_inputs(str(obj))
+                return reaction_data
+
             else:
                 print("********passing**********")
             return result_dict
