@@ -133,22 +133,25 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
         )
 
     if isinstance(obj, Reaction):
-        # doesn't work for fall-off reactions :( will have to do something else for that
         try:
             s = obj.to_cantera()
             reaction_data = s.input_data
+            if isinstance(obj.kinetics, Troe) or isinstance(obj.kinetics, Lindemann):
+                print(type(obj.kinetics))
+                print(str(obj))
             return reaction_data
 
         except:
-            if isinstance(
-                obj.kinetics, Troe
-            ):  # or isinstance(obj.kinetics, Lindemann):
-                reaction_data = obj.kinetics.write_cantera_inputs(str(obj))
-                return reaction_data
+            if isinstance(obj.kinetics, Troe):
+                print("this was a troe that was missed")
+
+            if isinstance(obj.kinetics, Lindemann):
+                print("there was a lindemann, did not do s.obj")
 
             else:
                 print("********passing**********")
             return result_dict
+
 
 class CanteraWriter(object):
     """
