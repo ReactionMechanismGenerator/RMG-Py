@@ -135,12 +135,14 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
     if isinstance(obj, Reaction):
         try:
             s = obj.to_cantera()
-            reaction_data = s.input_data
-            if (
+            if isinstance(obj.kinetics, Arrhenius):
+                reaction_data = s.input_data
+            elif (
                 isinstance(obj.kinetics, Troe)
                 or isinstance(obj.kinetics, Lindemann)
                 or isinstance(obj.kinetics, ThirdBody)
             ):
+                reaction_data = s.input_data
                 result_dict["efficiencies"] = {
                     spcs[i].label: float(val)
                     for i, val in enumerate(
@@ -149,6 +151,10 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
                     if val != 1
                 }
                 print("Done correctly")
+            elif isinstance(obj.kinetics, MultiArrhenius):
+                for i, idx in enumerate(s):
+                    reaction_data = s[i].input_data
+                    print("yay")
             reaction_data.update(result_dict)
             return reaction_data
 
@@ -160,7 +166,8 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
                 print("there was a lindemann, did not do s.obj")
 
             else:
-                print("********passing**********")
+                print("passing")
+                print(obj.kinetics)
             return result_dict
 
 
