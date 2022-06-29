@@ -135,7 +135,9 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
     if isinstance(obj, Reaction):
         try:
             s = obj.to_cantera()
-            if isinstance(obj.kinetics, Arrhenius):
+            if isinstance(obj.kinetics, Arrhenius) or isinstance(
+                obj.kinetics, Chebyshev
+            ):
                 reaction_data = s.input_data
             elif (
                 isinstance(obj.kinetics, Troe)
@@ -154,20 +156,12 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
             elif isinstance(obj.kinetics, MultiArrhenius):
                 for i, idx in enumerate(s):
                     reaction_data = s[i].input_data
-                    print("yay")
             reaction_data.update(result_dict)
             return reaction_data
 
         except:
-            if isinstance(obj.kinetics, Troe):
-                print("this was a troe that was missed")
-
-            if isinstance(obj.kinetics, Lindemann):
-                print("there was a lindemann, did not do s.obj")
-
-            else:
-                print("passing")
-                print(obj.kinetics)
+            print("passing")
+            print(type(obj.kinetics))
             return result_dict
 
 
