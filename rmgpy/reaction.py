@@ -352,6 +352,8 @@ class Reaction:
                         reactants=ct_reactants, products=ct_products, rate=rate
                     )
 
+
+            # surfaceArrhenius
             elif isinstance(self.kinetics, SurfaceArrhenius):
                 # Create an surface reaction
                 A = self.kinetics._A.value_si

@@ -2,6 +2,8 @@ import os
 import yaml
 import cantera as ct
 
+# from ck2cti import SurfaceArrhenius
+
 from rmgpy.chemkin import load_chemkin_file
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
@@ -16,7 +18,7 @@ from rmgpy.kinetics.arrhenius import (
 from rmgpy.kinetics.falloff import Troe, ThirdBody, Lindemann
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.data.solvation import SolventData
-from rmgpy.kinetics.surface import StickingCoefficient
+from rmgpy.kinetics.surface import StickingCoefficient, SurfaceArrhenius
 from rmgpy.util import make_output_subdirectory
 from datetime import datetime
 from rmgpy.chemkin import get_species_identifier
@@ -126,7 +128,10 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
     if isinstance(obj, Species):
         s = obj.to_cantera()
         species_data = s.input_data
-        result_dict["note"] = obj.transport_data.comment
+        try:
+            result_dict["note"] = obj.transport_data.comment
+        except:
+            pass
         species_data.update(result_dict)
         return (
             species_data  # returns composition, name, thermo, and transport, and note
@@ -141,9 +146,7 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
                 s = obj.to_cantera()
                 for i, idx in enumerate(s):
                     reaction_data = s[i].input_data
-            elif isinstance(obj.kinetics, StickingCoefficient):
-                reaction_data = dict()
-                result_dict["equation"] = str(obj)
+
             else:
                 s = obj.to_cantera()
                 reaction_data = s.input_data
@@ -166,7 +169,7 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
             )  # delete equation belonging to cantera object
             result_dict["equation"] = str(
                 obj
-            )  # replace with equation that includes RMG labels, so Sticking Coefficients won't mess the whole thing up
+            )  # replace with equation that includes RMG labels, so everything is consistent
 
             reaction_data.update(result_dict)
             return reaction_data
@@ -174,6 +177,7 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
         except:
             print("passing")
             print(type(obj.kinetics))
+            print(str(obj))
             return result_dict
 
 
