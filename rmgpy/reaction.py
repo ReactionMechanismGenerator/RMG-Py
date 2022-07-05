@@ -367,6 +367,7 @@ class Reaction:
                 b = self.kinetics._n.value_si
                 Ea = self.kinetics._Ea.value_si * 1000  # convert from J/mol to J/kmol
                 rate = ct.StickingArrheniusRate(A, b, Ea)
+                ct_reaction = ct.Reaction(equation=str(self), rate=rate)
                 equation = self.fix_reaction(ct_reactants, ct_products)
                 ct_reaction = ct.Reaction(equation=equation, rate=rate)
 
