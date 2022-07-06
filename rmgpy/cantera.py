@@ -90,7 +90,8 @@ elements:
 
 """
         f.write(block4)
-        yaml.dump(result_dict, stream=f)
+
+        yaml.dump(result_dict, stream=f, sort_keys=False)
 
 def get_radicals(spc):
     if (
