@@ -64,7 +64,7 @@ phases:
         species_to_write = [get_species_identifier(spec) for spec in sorted_species]
 
         block2 = f"""
-  species: {species_to_write}
+  species: [{', '.join(species_to_write)}]
   kinetics: gas"""
 
         f.write(block2)
