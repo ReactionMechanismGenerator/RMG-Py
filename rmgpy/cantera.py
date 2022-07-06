@@ -117,9 +117,50 @@ def get_mech_dict(spcs, rxns, solvent="solvent", solvent_data=None):
         if not is_surface:
             result_dict = dict()
             result_dict["species"] = [obj_to_dict(x, spcs, names=names) for x in spcs]
-            result_dict["reactions"] = [obj_to_dict(x, spcs, names=names) for x in rxns]
+
+            reactions = []
+            for rmg_rxn in rxns:
+                reactions.extend(reaction_to_dicts(rmg_rxn, spcs))
+            result_dict["reactions"] = reactions
 
     return result_dict
+
+
+def reaction_to_dicts(obj, spcs):
+    """
+    Takes an RMG reaction object (obj), returns a list of dictionaries
+    for YAML properties. Most reaction objects the list will be of
+    length 1, but a MultiArrhenius or MultiPDepArrhenius will be longer.
+    """
+
+    try:
+        reaction_list = []
+        if isinstance(obj.kinetics, MultiArrhenius) or isinstance(
+            obj.kinetics, MultiPDepArrhenius
+        ):
+            list_of_cantera_reactions = obj.to_cantera(use_chemkin_identifier=True)
+        else:
+            list_of_cantera_reactions = [obj.to_cantera(use_chemkin_identifier=True)]
+
+        for reaction in list_of_cantera_reactions:
+            reaction_data = reaction.input_data
+            efficiencies = getattr(obj.kinetics, "efficiencies", {})
+            if efficiencies:
+                reaction_data["efficiencies"] = {
+                    spcs[i].to_chemkin(): float(val)
+                    for i, val in enumerate(
+                        obj.kinetics.get_effective_collider_efficiencies(spcs)
+                    )
+                    if val != 1
+                }
+
+            reaction_list.append(reaction_data)
+        return reaction_list
+    except:
+        print("passing")
+        print(type(obj.kinetics))
+        print(str(obj))
+        return []
 
 
 def obj_to_dict(obj, spcs, names=None, label="solvent"):
@@ -137,42 +178,6 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
         return (
             species_data  # returns composition, name, thermo, and transport, and note
         )
-
-    if isinstance(obj, Reaction):
-        try:
-
-            if isinstance(obj.kinetics, MultiArrhenius) or isinstance(
-                obj.kinetics, MultiPDepArrhenius
-            ):
-                s = obj.to_cantera(use_chemkin_identifier=True)
-                for i, idx in enumerate(s):
-                    reaction_data = s[i].input_data
-
-            else:
-                s = obj.to_cantera(use_chemkin_identifier=True)
-                reaction_data = s.input_data
-
-            if (
-                isinstance(obj.kinetics, Troe)
-                or isinstance(obj.kinetics, Lindemann)
-                or isinstance(obj.kinetics, ThirdBody)
-            ):
-                result_dict["efficiencies"] = {
-                    spcs[i].label: float(val)
-                    for i, val in enumerate(
-                        obj.kinetics.get_effective_collider_efficiencies(spcs)
-                    )
-                    if val != 1
-                }
-
-            reaction_data.update(result_dict)
-            return reaction_data
-
-        except:
-            print("passing")
-            print(type(obj.kinetics))
-            print(str(obj))
-            return result_dict
 
 
 class CanteraWriter(object):
