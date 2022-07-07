@@ -23,18 +23,31 @@ from rmgpy.util import make_output_subdirectory
 from datetime import datetime
 from rmgpy.chemkin import get_species_identifier
 
-#make final chem.yml file with newest model
-def convert_chemkin_to_cantera(chemkin_path, dictionary_path=None, output="chem.yml"):
-    if dictionary_path:
-        spcs, rxns = load_chemkin_file(chemkin_path, dictionary_path=dictionary_path)
-    else:
-        spcs, rxns = load_chemkin_file(chemkin_path)
-    write_cantera(spcs, rxns, path=output)
 
-
-def write_cantera(spcs, rxns, solvent=None, solvent_data=None, path="chem.yml"):
+def write_cantera(
+    spcs,
+    rxns,
+    surface_site_density=None,
+    solvent=None,
+    solvent_data=None,
+    path="chem.yml",
+):
     result_dict = get_mech_dict(spcs, rxns, solvent=solvent, solvent_data=solvent_data)
+
+    # intro to file will change depending on the presence of surface species
+    is_surface = False
+    for spc in spcs:
+        if spc.contains_surface_site():
+            is_surface = True
+    if is_surface:
+        block1, block2, block3, block4 = write_surface_species(
+            spcs, surface_site_density
+        )
+    else:
+        block1, block2, block3, block4 = write_nonsurface_species(spcs)
+
     with open(path, "w") as f:
+
         # generator line
         f.write("generator: RMG\n")
 
@@ -51,31 +64,41 @@ def write_cantera(spcs, rxns, solvent=None, solvent_data=None, path="chem.yml"):
 
         #'phases' line (below)
 
-        block1 = """
+        f.write(block1)
+        f.write(block2)
+        f.write(block3)
+        f.write(block4)
+        yaml.dump(result_dict, stream=f, sort_keys=False)
+        ###i should put something like "if is_surface: gas species = only gas, surf = only surface, else: gas species = spcs" so that the catalysis ones dont have all species listed in one line
+
+
+def write_nonsurface_species(spcs):
+    """
+    Yaml files without surface species  begin with the following blocks of text.
+    """
+
+    #'phases' line (below)
+    block1 = """
 phases:
 - name: gas
   thermo: ideal-gas
   elements: [H, D, T, C, Ci, O, Oi, N, Ne, Ar, He, Si, S, F, Cl, Br, I, X]"""
-        f.write(block1)
 
-        #'species' section in phases section
+    #'species' section in phases section
 
-        sorted_species = sorted(spcs, key=lambda spcs: spcs.index)
-        species_to_write = [get_species_identifier(spec) for spec in sorted_species]
+    sorted_species = sorted(spcs, key=lambda spcs: spcs.index)
+    species_to_write = [get_species_identifier(spec) for spec in sorted_species]
 
-        block2 = f"""
+    block2 = f"""
   species: [{', '.join(species_to_write)}]
   kinetics: gas"""
 
-        f.write(block2)
-
-        block3 = """
+    block3 = """
   transport: mixture-averaged
   state: {T: 300.0, P: 1 atm}
         """
-        f.write(block3)
 
-        block4 = """
+    block4 = """
 elements:
 - symbol: Ci
   atomic-weight: 13.003
@@ -89,9 +112,82 @@ elements:
   atomic-weight: 195.083
 
 """
-        f.write(block4)
 
-        yaml.dump(result_dict, stream=f, sort_keys=False)
+    return block1, block2, block3, block4
+
+
+def write_surface_species(spcs, surface_site_density):
+    """
+    Yaml files with surface species begin with the following blocks of text, which includes TWO 'phases' instead of just one.
+    """
+    surface_species = []
+    gas_species = []
+    for spc in spcs:
+        if spc.contains_surface_site():
+            surface_species.append(spc)
+        else:
+            gas_species.append(spc)
+        # Dr. West, why can't i just write the above lines as:
+        # surface_species = [spc for spc in spcs if spc.contains_surface_site()]
+        # gas_species = [spc for spc in spcs if not spc.contains_surface_site()]
+
+    sorted_surface_species = sorted(
+        surface_species, key=lambda surface_species: surface_species.index
+    )
+    surface_species_to_write = [
+        get_species_identifier(surface_species)
+        for surface_species in sorted_surface_species
+    ]
+
+    sorted_gas_species = sorted(gas_species, key=lambda gas_species: gas_species.index)
+    gas_species_to_write = [
+        get_species_identifier(gas_species) for gas_species in sorted_gas_species
+    ]
+    # sorted_species = sorted(spcs, key=lambda spcs: spcs.index)
+    # species_to_write = [get_species_identifier(spec) for spec in sorted_species]
+
+    # gas part
+    block1 = f"""
+phases:
+- name: gas
+  thermo: ideal-gas
+  elements: [H, D, T, C, Ci, O, Oi, N, Ne, Ar, He, Si, S, F, Cl, Br, I, X]
+  species: [{', '.join(gas_species_to_write)}]
+  kinetics: gas"""
+
+    block2 = """
+  transport: mixture-averaged
+  state: {T: 300.0, P: 1 atm}"""
+
+    block3 = f""" 
+- name: {surface_species[0].smiles.replace("[","").replace("]","")}
+  thermo: ideal-surface
+  adjacent-phases: [gas]
+  elements: [H, D, T, C, Ci, O, Oi, N, Ne, Ar, He, Si, S, F, Cl, Br, I, X]
+  species: [{', '.join(surface_species_to_write)}]
+  kinetics: surface
+  reactions: all      
+  state:
+  site-density: {surface_site_density * 1e-4 }
+        """
+
+    # surface_site_density * 1e-4 #in units of mol/cm^2
+
+    block4 = """
+elements:
+- symbol: Ci
+  atomic-weight: 13.003
+- symbol: D
+  atomic-weight: 2.014
+- symbol: Oi
+  atomic-weight: 17.999
+- symbol: T
+  atomic-weight: 3.016
+- symbol: X
+  atomic-weight: 195.083
+
+"""
+    return block1, block2, block3, block4
 
 def get_radicals(spc):
     if (
@@ -109,19 +205,14 @@ def get_mech_dict(spcs, rxns, solvent="solvent", solvent_data=None):
         if names.count(name) > 1:
             names[i] += "-" + str(names.count(name))
 
-    is_surface = False
-    for spc in spcs:
-        if spc.contains_surface_site():
-            is_surface = True
-            break
-        if not is_surface:
-            result_dict = dict()
-            result_dict["species"] = [obj_to_dict(x, spcs, names=names) for x in spcs]
+    #  for spc in spcs:
+    result_dict = dict()
+    result_dict["species"] = [obj_to_dict(x, spcs, names=names) for x in spcs]
 
-            reactions = []
-            for rmg_rxn in rxns:
-                reactions.extend(reaction_to_dicts(rmg_rxn, spcs))
-            result_dict["reactions"] = reactions
+    reactions = []
+    for rmg_rxn in rxns:
+        reactions.extend(reaction_to_dicts(rmg_rxn, spcs))
+    result_dict["reactions"] = reactions
 
     return result_dict
 
@@ -212,9 +303,14 @@ class CanteraWriter(object):
         solvent_data = None
         if rmg.solvent:
             solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
+        surface_site_density = None
+        NoneType = type(None)  # types.py no longer has NoneType, says slack.overview
+        if not type(rmg.reaction_model.surface_site_density) == NoneType:
+            surface_site_density = rmg.reaction_model.surface_site_density.value_si
         write_cantera(
             rmg.reaction_model.core.species,
             rmg.reaction_model.core.reactions,
+            surface_site_density=surface_site_density,
             solvent=rmg.solvent,
             solvent_data=solvent_data,
             path=os.path.join(self.output_directory, "cantera", "chem{}.yaml").format(
