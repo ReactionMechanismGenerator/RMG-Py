@@ -44,6 +44,7 @@ import math
 import os.path
 from copy import deepcopy
 from functools import reduce
+from sre_parse import fix_flags
 from urllib.parse import quote
 
 import cython

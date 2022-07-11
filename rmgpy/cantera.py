@@ -274,34 +274,48 @@ def reaction_to_dicts(obj, spcs):
     length 1, but a MultiArrhenius or MultiPDepArrhenius will be longer.
     """
 
-    try:
-        reaction_list = []
-        if isinstance(obj.kinetics, MultiArrhenius) or isinstance(
-            obj.kinetics, MultiPDepArrhenius
-        ):
-            list_of_cantera_reactions = obj.to_cantera(use_chemkin_identifier=True)
-        else:
-            list_of_cantera_reactions = [obj.to_cantera(use_chemkin_identifier=True)]
+    # try:
+    reaction_list = []
+    if isinstance(obj.kinetics, MultiArrhenius) or isinstance(
+        obj.kinetics, MultiPDepArrhenius
+    ):
+        list_of_cantera_reactions = obj.to_cantera(use_chemkin_identifier=True)
+    else:
+        list_of_cantera_reactions = [obj.to_cantera(use_chemkin_identifier=True)]
 
-        for reaction in list_of_cantera_reactions:
-            reaction_data = reaction.input_data
-            efficiencies = getattr(obj.kinetics, "efficiencies", {})
-            if efficiencies:
-                reaction_data["efficiencies"] = {
-                    spcs[i].to_chemkin(): float(val)
-                    for i, val in enumerate(
-                        obj.kinetics.get_effective_collider_efficiencies(spcs)
-                    )
-                    if val != 1
-                }
+    for reaction in list_of_cantera_reactions:
+        reaction_data = reaction.input_data
+        efficiencies = getattr(obj.kinetics, "efficiencies", {})
+        if efficiencies:
+            reaction_data["efficiencies"] = {
+                spcs[i].to_chemkin(): float(val)
+                for i, val in enumerate(
+                    obj.kinetics.get_effective_collider_efficiencies(spcs)
+                )
+                if val != 1
+            }
+        # if isinstance(obj.kinetics, StickingCoefficient):
+        #     reaction_data.pop('equation', None)
+        #     reaction_data['equation'] = str(obj)
+        reaction_list.append(reaction_data)
 
-            reaction_list.append(reaction_data)
-        return reaction_list
-    except:
-        print("passing")
-        print(type(obj.kinetics))
-        print(str(obj))
-        return []
+    # for reaction in list_of_cantera_reactions:
+    #     reaction_data = reaction.input_data
+    #     efficiencies = getattr(obj.kinetics, 'efficiencies', {})
+    #     if efficiencies:
+    #         reaction_data["efficiencies"] = {spcs[i].to_chemkin(): float(val) for i, val in enumerate(obj.kinetics.get_effective_collider_efficiencies(spcs)) if val != 1}
+
+    #     reaction_list.append(reaction_data)
+
+    # if isinstance[obj.kinetics, StickingCoefficient]:
+    #      print(str(obj))
+
+    return reaction_list
+    # except:
+    #     print('passing')
+    #     print(type(obj.kinetics))
+    #     print(str(obj))
+    #     return []
 
 
 def obj_to_dict(obj, spcs, names=None, label="solvent"):
