@@ -329,6 +329,10 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
             result_dict["note"] = obj.transport_data.comment
         except:
             pass
+        if "size" in species_data:
+            sites = species_data["size"]
+            species_data.pop("size", None)
+            species_data["sites"] = sites
         species_data.update(result_dict)
         return (
             species_data  # returns composition, name, thermo, and transport, and note
