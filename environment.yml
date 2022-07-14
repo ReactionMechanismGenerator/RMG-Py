@@ -28,6 +28,9 @@ dependencies:
 # but by installing them in the conda environment we get better control
   - cairo
   - cairocffi
+  - conda-forge::cantera >=2.5
+  - conda-forge::cclib >=1.6.3
+  - rmg::chemprop
   - ffmpeg
   - xlrd
   - xlwt
