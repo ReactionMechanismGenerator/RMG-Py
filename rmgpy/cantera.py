@@ -1,24 +1,11 @@
 import os
 import yaml
-import cantera as ct
 
-# from ck2cti import SurfaceArrhenius
-
-from rmgpy.chemkin import load_chemkin_file
 from rmgpy.species import Species
-from rmgpy.reaction import Reaction
-from rmgpy.thermo.nasa import NASAPolynomial, NASA
-from rmgpy.thermo.wilhoit import Wilhoit
 from rmgpy.kinetics.arrhenius import (
-    Arrhenius,
-    PDepArrhenius,
     MultiArrhenius,
     MultiPDepArrhenius,
 )
-from rmgpy.kinetics.falloff import Troe, ThirdBody, Lindemann
-from rmgpy.kinetics.chebyshev import Chebyshev
-from rmgpy.data.solvation import SolventData
-from rmgpy.kinetics.surface import StickingCoefficient, SurfaceArrhenius
 from rmgpy.util import make_output_subdirectory
 from datetime import datetime
 from rmgpy.chemkin import get_species_identifier
@@ -32,6 +19,10 @@ def write_cantera(
     solvent_data=None,
     path="chem.yml",
 ):
+    """
+    Writes yaml file depending on the type of system (gas-phase, catalysis).
+    Writes beginning lines of yaml file, then uses yaml.dump(result_dict) to write species/reactions info. 
+    """
 
     # intro to file will change depending on the presence of surface species
     is_surface = False
@@ -75,12 +66,11 @@ def write_cantera(
         f.write(block3)
         f.write(block4)
         yaml.dump(result_dict, stream=f, sort_keys=False)
-        ###i should put something like "if is_surface: gas species = only gas, surf = only surface, else: gas species = spcs" so that the catalysis ones dont have all species listed in one line
 
 
 def write_nonsurface_species(spcs):
     """
-    Yaml files without surface species  begin with the following blocks of text.
+    Yaml files without surface species begin with the following blocks of text.
     """
 
     #'phases' line (below)
@@ -124,7 +114,8 @@ elements:
 
 def write_surface_species(spcs, rxns, surface_site_density):
     """
-    Yaml files with surface species begin with the following blocks of text, which includes TWO 'phases' instead of just one.
+    Yaml files with surface species begin with the following blocks of text, 
+    which includes TWO phases instead of just one.
     """
     surface_species = []
     gas_species = []
@@ -134,9 +125,6 @@ def write_surface_species(spcs, rxns, surface_site_density):
             surface_species.append(spc)
         else:
             gas_species.append(spc)
-        # Dr. West, why can't i just write the above lines as:
-        # surface_species = [spc for spc in spcs if spc.contains_surface_site()]
-        # gas_species = [spc for spc in spcs if not spc.contains_surface_site()]
 
     sorted_surface_species = sorted(
         surface_species, key=lambda surface_species: surface_species.index
@@ -150,9 +138,6 @@ def write_surface_species(spcs, rxns, surface_site_density):
     gas_species_to_write = [
         get_species_identifier(gas_species) for gas_species in sorted_gas_species
     ]
-
-    sorted_species = sorted(spcs, key=lambda spcs: spcs.index)
-    species_to_write = [get_species_identifier(spec) for spec in sorted_species]
 
     # gas part
     block1 = f"""
@@ -207,6 +192,10 @@ def get_radicals(spc):
 
 
 def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None):
+    """
+    For systems with surface species/reactions. 
+    Adds 'species', 'gas-reactions', and 'surface-reactions' to result_dict.
+    """
     gas_rxns = []
     surface_rxns = []
     for rxn in rxns:
@@ -239,7 +228,10 @@ def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None):
 
 
 def get_mech_dict_nonsurface(spcs, rxns, solvent="solvent", solvent_data=None):
-
+    """
+    For gas-phase systems. 
+    Adds 'species' and 'reactions' to result_dict.
+    """
     names = [x.label for x in spcs]
     for i, name in enumerate(names):  # fix duplicate names
         if names.count(name) > 1:
@@ -259,7 +251,7 @@ def get_mech_dict_nonsurface(spcs, rxns, solvent="solvent", solvent_data=None):
 def reaction_to_dicts(obj, spcs):
     """
     Takes an RMG reaction object (obj), returns a list of dictionaries
-    for YAML properties. Most reaction objects the list will be of
+    for YAML properties. For most reaction objects the list will be of
     length 1, but a MultiArrhenius or MultiPDepArrhenius will be longer.
     """
 
@@ -288,6 +280,11 @@ def reaction_to_dicts(obj, spcs):
 
 
 def obj_to_dict(obj, spcs, names=None, label="solvent"):
+    """
+    Takes an RMG species object (obj), returns a list of dictionaries
+    for YAML properties. Also adds in the number of surface sites 
+    ('sites') to dictionary. 
+    """
 
     result_dict = dict()
 
