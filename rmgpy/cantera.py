@@ -32,7 +32,6 @@ def write_cantera(
     solvent_data=None,
     path="chem.yml",
 ):
-    # result_dict = get_mech_dict(spcs, rxns, solvent=solvent, solvent_data=solvent_data)
 
     # intro to file will change depending on the presence of surface species
     is_surface = False
@@ -139,8 +138,6 @@ def write_surface_species(spcs, rxns, surface_site_density):
         # surface_species = [spc for spc in spcs if spc.contains_surface_site()]
         # gas_species = [spc for spc in spcs if not spc.contains_surface_site()]
 
-        # VERY INTERESTING: for some reason, the sample catalysis yaml that i was looking at split up the species (surface v. gas), but when I do that, I get an error in cantera
-
     sorted_surface_species = sorted(
         surface_species, key=lambda surface_species: surface_species.index
     )
@@ -154,15 +151,8 @@ def write_surface_species(spcs, rxns, surface_site_density):
         get_species_identifier(gas_species) for gas_species in sorted_gas_species
     ]
 
-    # using this now instead because the separated species gave me errors?
     sorted_species = sorted(spcs, key=lambda spcs: spcs.index)
     species_to_write = [get_species_identifier(spec) for spec in sorted_species]
-
-    # coverage_dependencies = {}
-    # for rxn in rxns:
-    #     coverage_dependence = getattr(rxn.kinetics, 'coverage_dependence', {})
-    #     if coverage_dependence:
-    #         coverage_dependencies.update(coverage_dependence)
 
     # gas part
     block1 = f"""
@@ -255,7 +245,6 @@ def get_mech_dict_nonsurface(spcs, rxns, solvent="solvent", solvent_data=None):
         if names.count(name) > 1:
             names[i] += "-" + str(names.count(name))
 
-    #  for spc in spcs:
     result_dict = dict()
     result_dict["species"] = [obj_to_dict(x, spcs, names=names) for x in spcs]
 
@@ -274,7 +263,6 @@ def reaction_to_dicts(obj, spcs):
     length 1, but a MultiArrhenius or MultiPDepArrhenius will be longer.
     """
 
-    # try:
     reaction_list = []
     if isinstance(obj.kinetics, MultiArrhenius) or isinstance(
         obj.kinetics, MultiPDepArrhenius
@@ -294,28 +282,9 @@ def reaction_to_dicts(obj, spcs):
                 )
                 if val != 1
             }
-        # if isinstance(obj.kinetics, StickingCoefficient):
-        #     reaction_data.pop('equation', None)
-        #     reaction_data['equation'] = str(obj)
         reaction_list.append(reaction_data)
 
-    # for reaction in list_of_cantera_reactions:
-    #     reaction_data = reaction.input_data
-    #     efficiencies = getattr(obj.kinetics, 'efficiencies', {})
-    #     if efficiencies:
-    #         reaction_data["efficiencies"] = {spcs[i].to_chemkin(): float(val) for i, val in enumerate(obj.kinetics.get_effective_collider_efficiencies(spcs)) if val != 1}
-
-    #     reaction_list.append(reaction_data)
-
-    # if isinstance[obj.kinetics, StickingCoefficient]:
-    #      print(str(obj))
-
     return reaction_list
-    # except:
-    #     print('passing')
-    #     print(type(obj.kinetics))
-    #     print(str(obj))
-    #     return []
 
 
 def obj_to_dict(obj, spcs, names=None, label="solvent"):
