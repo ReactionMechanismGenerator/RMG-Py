@@ -1907,6 +1907,264 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
                                                     Molecule(smiles="CC"): 3.0}))
 
 
+        yaml_def = '''
+        phases:
+        - name: gas
+          thermo: ideal-gas
+          kinetics: gas
+          elements: [O, H, C, Ar]
+          species: [H(3), H2(2), Ar, 'CH4(15)', 'CO2(16)', 'H2O(27)', 'ethane']
+          state: {T: 300.0, P: 1 atm}
+        species:
+        - name: H(3)
+          composition:
+            H: 1.0
+          thermo:
+            model: NASA7
+            reference-pressure: 10000.0
+            temperature-ranges:
+            - 100.0
+            - 4530.901867600916
+            - 5000.0
+            data:
+            - - 2.5000000001661453
+              - -9.783188983347162e-13
+              - 1.2596819512415014e-15
+              - -5.277930593078881e-19
+              - 6.800532658433119e-23
+              - 25472.708111815813
+              - -0.45956624704519783
+            - - 2.500592799020857
+              - -5.115902929824364e-07
+              - 1.6547828950269208e-10
+              - -2.377612448237651e-14
+              - 1.2803471670990132e-18
+              - 25472.158869127587
+              - -0.46333513970140155
+          transport:
+            model: gas
+            geometry: atom
+            diameter: 2.0500000000000003
+            well-depth: 145.00018762466215
+          note: GRI-Mech
+        - name: H2(2)
+          composition:
+            H: 2.0
+          thermo:
+            model: NASA7
+            reference-pressure: 10000.0
+            temperature-ranges:
+            - 100.0
+            - 1962.846619341607
+            - 5000.0
+            data:
+            - - 3.422537375135907
+              - 0.0002866496893314833
+              - -4.146706277029017e-07
+              - 4.275479318620867e-10
+              - -9.381187354420037e-14
+              - -1029.7848997391543
+              - -3.8636474016423277
+            - - 2.742187579688893
+              - 0.0005795394907869701
+              - 1.9720275938082656e-07
+              - -6.41094545701619e-11
+              - 4.960031499670019e-15
+              - -552.0377872570556
+              - 0.41409746704388334
+          transport:
+            model: gas
+            geometry: linear
+            diameter: 2.9200000000000004
+            well-depth: 38.00012796964137
+            polarizability: 0.7900000000000005
+            rotational-relaxation: 280.0
+          note: GRI-Mech
+        - name: Ar
+          composition:
+            Ar: 1.0
+          thermo:
+            model: NASA7
+            reference-pressure: 10000.0
+            temperature-ranges:
+            - 100.0
+            - 4530.901867600916
+            - 5000.0
+            data:
+            - - 2.5000000001661453
+              - -9.783188983347162e-13
+              - 1.2596819512415014e-15
+              - -5.277930593078881e-19
+              - 6.800532658433119e-23
+              - -745.0000000161752
+              - 4.3663036338083305
+            - - 2.500592799020857
+              - -5.115902929824364e-07
+              - 1.6547828950269208e-10
+              - -2.377612448237651e-14
+              - 1.2803471670990132e-18
+              - -745.5492427043948
+              - 4.362534741152127
+          transport:
+            model: gas
+            geometry: atom
+            diameter: 3.3300000000000005
+            well-depth: 136.50054988458677
+          note: GRI-Mech
+        - name: CH4(15)
+          composition:
+            C: 1.0
+            H: 4.0
+          thermo:
+            model: NASA7
+            reference-pressure: 10000.0
+            temperature-ranges:
+            - 100.0
+            - 1084.1078069020866
+            - 5000.0
+            data:
+            - - 4.205422517896672
+              - -0.005355657423880153
+              - 2.5112608600526677e-05
+              - -2.137663165313252e-08
+              - 5.975378647646274e-12
+              - -10161.943621852322
+              - -0.9213055064396248
+            - - 0.9082237909449653
+              - 0.011454154918624613
+              - -4.571777231823375e-06
+              - 8.292007200389659e-10
+              - -5.6632230549856994e-14
+              - -9719.956065874298
+              - 13.99333195440782
+          transport:
+            model: gas
+            geometry: nonlinear
+            diameter: 3.746000000000001
+            well-depth: 141.400440100105
+            polarizability: 2.600000000000002
+            rotational-relaxation: 13.0
+          note: GRI-Mech
+        - name: CO2(16)
+          composition:
+            C: 1.0
+            O: 2.0
+          thermo:
+            model: NASA7
+            reference-pressure: 10000.0
+            temperature-ranges:
+            - 100.0
+            - 988.1842520972972
+            - 5000.0
+            data:
+            - - 3.2779030798870306
+              - 0.00275781754853174
+              - 7.127898540585466e-06
+              - -1.0785494419158867e-08
+              - 4.142293572338548e-12
+              - -48475.60317436775
+              - 5.978556187622619
+            - - 4.550710245450814
+              - 0.0029072866799196347
+              - -1.1464332193452888e-06
+              - 2.2579824749945149e-10
+              - -1.6952668379952472e-14
+              - -48986.00826414973
+              - -1.4566068362659845
+          transport:
+            model: gas
+            geometry: linear
+            diameter: 3.763
+            well-depth: 244.00106224424113
+            polarizability: 2.650000000000001
+            rotational-relaxation: 2.1
+          note: GRI-Mech 
+        - name: H2O(27)
+          composition:
+            H: 2.0
+            O: 1.0
+          thermo:
+            model: NASA7
+            reference-pressure: 10000.0
+            temperature-ranges:
+            - 100.0
+            - 1281.427000385289
+            - 5000.0
+            data:
+            - - 3.9988204173262214
+              - -0.0005548349312132653
+              - 2.767752009914246e-06
+              - -1.5566582575936828e-09
+              - 3.023328309078487e-13
+              - -30274.55689713667
+              - -0.030895787286065245
+            - - 3.1956069328926646
+              - 0.0019523944678669848
+              - -1.6711495624675118e-07
+              - -2.979462755546014e-11
+              - 4.451456960670764e-15
+              - -30068.70356699274
+              - 4.043326898815004
+          transport:
+            model: gas
+            geometry: nonlinear
+            diameter: 2.6050000000000004
+            well-depth: 572.4019516813576
+            dipole: 1.8439999999999999
+            rotational-relaxation: 4.0
+          note: GRI-Mech
+        - name: ethane
+          composition:
+            C: 2.0
+            H: 6.0
+          thermo:
+            model: NASA7
+            reference-pressure: 10000.0
+            temperature-ranges:
+            - 100.0
+            - 981.600129524766
+            - 5000.0
+            data:
+            - - 3.746735827545327
+              - 4.514304989481843e-05
+              - 4.079754284063908e-05
+              - -4.5742970844840745e-08
+              - 1.568495706364532e-11
+              - -11474.072510153239
+              - 4.741296000626355
+            - - 3.346934550045707
+              - 0.016175062337970676
+              - -6.009689264233785e-06
+              - 1.0962363623521483e-09
+              - -7.723160458980634e-14
+              - -12094.184681107809
+              - 3.1041998086666167
+          transport:
+            model: gas
+            geometry: nonlinear
+            diameter: 4.3020000000000005
+            well-depth: 252.30104810022812
+            rotational-relaxation: 1.5
+          note: GRI-Mech
+        reactions: 
+          equation: H(3) + H(3) + M <=> H2(2) + M
+          type: three-body
+          rate-constant:
+            A: 1.000000e+18
+            b: -1.0
+            Ea: 0.0
+          efficiencies:
+            CO2(16): 0.0 
+            CH4(15): 2.0 
+            ethane: 3.0 
+            H2O(27): 0.0 
+            H2(2): 0.0 
+            Ar: 0.63  
+        '''
+
+        gas = ct.Solution(yaml=yaml_def)
+
+
         self.ct_thirdBody = ct.Reaction.from_yaml( '''
           equation: H(3) + H(3) + M <=> H2(2) + M
           type: three-body
@@ -2066,8 +2324,8 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         self.assertEqual(ct_lindemann.efficiencies, self.ct_lindemann.efficiencies)
         self.assertEqual(str(ct_lindemann.low_rate), str(self.ct_lindemann.low_rate))
         self.assertEqual(str(ct_lindemann.high_rate), str(self.ct_lindemann.high_rate))
- 
-
+        
+        
 ################################################################################
 
 if __name__ == '__main__':

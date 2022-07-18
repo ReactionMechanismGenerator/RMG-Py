@@ -81,13 +81,9 @@ from rmgpy.tools.plot import plot_sensitivity
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
 from rmgpy.rms import RMSWriter
 from rmgpy.rmg.reactors import Reactor
-<<<<<<< HEAD
 from rmgpy.cantera_ import CanteraWriter
 from rmgpy.yml_test import YAMLWriter
-=======
 from rmgpy.cantera import CanteraWriter
->>>>>>> b296cdfe9... Renaming yml_test to cantera
-
 
 ################################################################################
 
