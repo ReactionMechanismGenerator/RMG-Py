@@ -4704,7 +4704,7 @@ def _compute_rule_sensitivity(rr):
             SCALE_FACTOR = 1.001
             saved_A_value = rxn.kinetics.A.value_si
             rxn.kinetics.A.value_si *= SCALE_FACTOR
-            kin_perturbed = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
+            kin_perturbed = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
             rxn.kinetics.A.value_si = saved_A_value
 
             sensitivity_A = (np.log(kin_perturbed.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
@@ -4727,7 +4727,7 @@ def _compute_rule_sensitivity(rr):
             SCALE_FACTOR = 1.001
             saved_Ea_value = rxn.kinetics.Ea.value_si
             rxn.kinetics.Ea.value_si *= SCALE_FACTOR
-            kin_perturbed = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
+            kin_perturbed = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe, param_guess=unperturbed_params)
             rxn.kinetics.Ea.value_si = saved_Ea_value
 
 
