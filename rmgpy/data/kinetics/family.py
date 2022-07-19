@@ -3596,6 +3596,46 @@ class KineticsFamily(Database):
             raise e
         return grps
 
+    def compute_sensitivities(self, template_rxn_map, nprocs=1, Tref=1000.0, fmax=1.0e5):
+        """
+        function to compute sensitivities of nodes with respect to training reactions
+        assumes the tree has already been generated
+        """
+        rule_keys = self.rules.entries.keys()
+        for entry in self.groups.entries.values():
+            if entry.label not in rule_keys:
+                self.rules.entries[entry.label] = []
+
+        index = max([e.index for e in self.rules.get_entries()] or [0]) + 1
+
+        entries = list(self.groups.entries.values())
+        rxnlists = [(template_rxn_map[entry.label], entry.label)
+                    if entry.label in template_rxn_map.keys() else [] for entry in entries]
+
+        inputs = np.array([(self.forward_recipe.actions, rxns, Tref, fmax, label, [r.rank for r in rxns])
+                           for rxns, label in rxnlists], dtype=object)
+
+        # don't change order
+        pool = mp.Pool(nprocs)
+        derivative_list = np.array(pool.map(_compute_rule_sensitivity, inputs), dtype=object)
+
+        for i, rule_key in enumerate(self.rules.entries.keys()):
+            # the extra tab comes from rmgpy/data/kinetics/common.py line 111
+            # Get rid of previous sensitivities
+            if len(self.rules.entries[rule_key]) < 1:
+                continue
+            derivative_index = -1
+            for j, en in enumerate(entries):
+                if en.label == rule_key:
+                    derivative_index = j
+                    break
+            if derivative_index < 0:
+                print("node label not found")
+            while 'sensitivities' in self.rules.entries[rule_key][0].long_desc:
+                match = re.search(r'\nsensitivities .*]', self.rules.entries[rule_key][0].long_desc)
+                self.rules.entries[rule_key][0].long_desc = self.rules.entries[rule_key][0].long_desc.replace(match[0], '')
+            self.rules.entries[rule_key][0].long_desc += f'\nsensitivities = {derivative_list[derivative_index]}'
+
     def make_bm_rules_from_template_rxn_map(self, template_rxn_map, nprocs=1, Tref=1000.0, fmax=1.0e5):
 
         rule_keys = self.rules.entries.keys()
@@ -3609,7 +3649,7 @@ class KineticsFamily(Database):
         rxnlists = [(template_rxn_map[entry.label], entry.label)
                     if entry.label in template_rxn_map.keys() else [] for entry in entries]
         inputs = np.array([(self.forward_recipe.actions, rxns, Tref, fmax, label, [r.rank for r in rxns])
-                           for rxns, label in rxnlists])
+                           for rxns, label in rxnlists], dtype=object)
 
         inds = np.arange(len(inputs))
         np.random.shuffle(inds)  # want to parallelize in random order
@@ -4636,6 +4676,85 @@ def _make_rule(rr):
         return kin
     else:
         return None
+
+def _compute_rule_sensitivity(rr):
+    """
+    function for parallelizing calculation of rule correlated uncertainty
+    (mostly copied from _make_rule)
+    this function scales the training reaction parameters (A, n, Ea),
+    refits the rule, then calculates the sensitivity of the node BM parameters
+    A and E0 (n and w0 not included) to the training reaction parameters
+    The sensitivities are returned as a dictionary
+    """
+
+    recipe, rxns, Tref, fmax, label, ranks = rr
+    n = len(rxns)
+    for i, rxn in enumerate(rxns):
+        rxn.rank = ranks[i]
+    rxns = np.array(rxns)
+
+    # Is rxns the same for every node? if so, then I can probably use a list instead of a dictionary
+    if n > 0:
+        kin = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
+
+        # compute the derivatives
+        sensitivities = []
+        for rxn in rxns:
+            unperturbed_params = [np.log(kin.A.value_si), kin.n.value_si, kin.E0.value_si]
+            SCALE_FACTOR = 1.001
+            saved_A_value = rxn.kinetics.A.value_si
+            rxn.kinetics.A.value_si *= SCALE_FACTOR
+            kin_perturbed = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
+            rxn.kinetics.A.value_si = saved_A_value
+
+            sensitivity_A = (np.log(kin_perturbed.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
+
+            if kin.E0.value_si == 0:
+                sensitivity_E0 = (np.log(kin_perturbed.E0.value_si) - np.log(kin.E0.values_si)) / (SCALE_FACTOR - 1)
+            elif kin.E0.value_si is np.nan:
+                sensitivity_E0 = np.nan
+            else:
+                sensitivity_E0 = (kin_perturbed.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
+
+            if kin.n.value_si == 0:
+                sensitivity_n = (np.log(kin_perturbed.n.value_si) - np.log(kin.n.value_si)) / (SCALE_FACTOR - 1)
+            elif kin.n.value_si is np.nan:
+                sensitivity_n = np.nan
+            else:
+                sensitivity_n = (kin_perturbed.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
+
+
+            SCALE_FACTOR = 1.001
+            saved_Ea_value = rxn.kinetics.Ea.value_si
+            rxn.kinetics.Ea.value_si *= SCALE_FACTOR
+            kin_perturbed = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
+            rxn.kinetics.Ea.value_si = saved_Ea_value
+
+
+            sensitivity_A_dEa = (np.log(kin_perturbed.A.value_si) - np.log(kin.A.value_si)) / (SCALE_FACTOR - 1)
+            if kin.E0.value_si == 0:
+                sensitivity_E0_dEa = (np.log(kin_perturbed.E0.value_si) - np.log(kin.E0.values_si)) / (SCALE_FACTOR - 1)
+            elif kin.E0.value_si is np.nan:
+                sensitivity_E0_dEa = np.nan
+            else:
+                sensitivity_E0_dEa = (kin_perturbed.E0.value_si - kin.E0.value_si)/kin.E0.value_si / (SCALE_FACTOR - 1)
+
+            if kin.n.value_si == 0:
+                sensitivity_n_dEa = (np.log(kin_perturbed.n.value_si) - np.log(kin.n.value_si)) / (SCALE_FACTOR - 1)
+            elif kin.n.value_si is np.nan:
+                sensitivity_n_dEa = np.nan
+            else:
+                sensitivity_n_dEa = (kin_perturbed.n.value_si - kin.n.value_si)/kin.n.value_si / (SCALE_FACTOR - 1)
+
+            sensitivities.append({'dA': sensitivity_A,
+                                  'dE0': sensitivity_E0,
+                                  'dn': sensitivity_n,
+                                  'dA_dEa': sensitivity_A_dEa,
+                                  'dE0_dEa': sensitivity_E0_dEa,
+                                  'dn_dEa': sensitivity_n_dEa,
+                                  'name': str(rxn)}) # TODO change this to train_rxn
+
+        return sensitivities
 
 
 def _spawn_tree_process(family, template_rxn_map, obj, T, nprocs, depth, min_splitable_entry_num, min_rxns_to_spawn, extension_iter_max, extension_iter_item_cap):
