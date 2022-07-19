@@ -135,6 +135,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         self.source = source
         self.energy_correction = None
         self.explored = []
+        self.products_cache = []
 
     def __str__(self):
         return "PDepNetwork #{0}".format(self.index)
@@ -724,6 +725,17 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             for spec in self.reactants + self.products + self.isomers:
                 spec.energy_correction = self.energy_correction
 
+    def add_products_to_reactants(self):
+        self.products_cache = self.products
+        self.products = []
+        self.reactants = self.reactants + self.products_cache
+
+    def remove_products_from_reactants(self):
+        if self.products_cache != []:
+            for prod in self.products_cache:
+                self.reactants.remove(prod)
+            self.products = self.products_cache
+
     def update(self, reaction_model, pdep_settings):
         """
         Regenerate the :math:`k(T,P)` values for this partial network if the
@@ -753,6 +765,9 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Figure out which configurations are isomers, reactant channels, and product channels
         self.update_configurations(reaction_model)
 
+        if "simulation least squares" in method or method == "chemically-significant eigenvalues georgievskii":
+            self.add_products_to_reactants()
+
         # Make sure we have high-P kinetics for all path reactions
         for rxn in self.path_reactions:
             if rxn.kinetics is None and rxn.reverse.kinetics is None:
@@ -764,9 +779,11 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         # Do nothing if the network is already valid
         if self.valid:
+            self.remove_products_from_reactants()
             return
         # Do nothing if there are no explored wells
         if len(self.explored) == 0 and len(self.source) > 1:
+            self.remove_products_from_reactants()
             return
         # Log the network being updated
         logging.info("Updating {0!s}".format(self))
@@ -965,6 +982,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         # Delete intermediate arrays to conserve memory
         self.cleanup()
+
+        self.remove_products_from_reactants()
 
         # We're done processing this network, so mark it as valid
         self.valid = True
