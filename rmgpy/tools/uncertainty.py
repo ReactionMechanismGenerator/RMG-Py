@@ -46,7 +46,7 @@ class ThermoParameterUncertainty(object):
         """
         Initialize the different uncertainties dG_library, dG_QM, dG_GAV, and dG_other with set values
         in units of kcal/mol.
-        
+
         We expect a uniform distribution for some species free energy G in [Gmin, Gmax].
         dG = (Gmax-Gmin)/2
         """
@@ -75,7 +75,7 @@ class ThermoParameterUncertainty(object):
     def get_partial_uncertainty_value(self, source, corr_source_type, corr_param=None, corr_group_type=None):
         """
         Obtain the partial uncertainty dG/dG_corr*dG_corr, where dG_corr is the correlated parameter
-        
+
         `corr_param` is the parameter identifier itself, which is a integer for QM and library parameters, or a string for group values
         `corr_source_type` is a string, being either 'Library', 'QM', 'GAV', or 'Estimation'
         `corr_group_type` is a string used only when the source type is 'GAV' and indicates grouptype
@@ -113,7 +113,7 @@ class ThermoParameterUncertainty(object):
     def get_uncertainty_factor(self, source):
         """
         Retrieve the uncertainty factor f in kcal/mol when the source of the thermo of a species is given.
-        
+
         This is equivalent to sqrt(3)*dG in a uniform uncertainty interval
         """
         dG = self.get_uncertainty_value(source)
@@ -129,7 +129,7 @@ class KineticParameterUncertainty(object):
                  dlnk_rule=0.5):
         """
         Initialize the different uncertainties dlnk
-        
+
         We expect a uniform distribution for some reaction kinetics  about ln(k0) in [ln(kmin), ln(kmax)].
         dlnk = (ln(kmax)-ln(kmin))/2
         """
@@ -154,7 +154,7 @@ class KineticParameterUncertainty(object):
         elif 'Training' in source:
             # Should be a single training reaction
             # Although some training entries may be used in reverse,
-            # We still consider the kinetics to be directly dependent 
+            # We still consider the kinetics to be directly dependent
             dlnk += self.dlnk_training
         elif 'Rate Rules' in source:
             family_label = source['Rate Rules'][0]
@@ -184,7 +184,7 @@ class KineticParameterUncertainty(object):
     def get_partial_uncertainty_value(self, source, corr_source_type, corr_param=None, corr_family=None):
         """
         Obtain the partial uncertainty dlnk/dlnk_corr*dlnk_corr, where dlnk_corr is the correlated parameter
-        
+
         `corr_param` is the parameter identifier itself, which is the string identifier of the rate rule
         `corr_source_type` is a string, being either 'Rate Rules', 'Library', 'PDep', 'Training' or 'Estimation'
         `corr_family` is a string used only when the source type is 'Rate Rules' and indicates the family
@@ -246,7 +246,7 @@ class KineticParameterUncertainty(object):
     def get_uncertainty_factor(self, source):
         """
         Retrieve the uncertainty factor f when the source of the reaction kinetics are given.
-        
+
         This is equivalent to sqrt(3)/ln(10) * dlnk  in a uniform uncertainty interval
         """
         dlnk = self.get_uncertainty_value(source)
@@ -283,16 +283,16 @@ class Uncertainty(object):
         if not os.path.exists(self.output_directory):
             try:
                 os.makedirs(self.output_directory)
-            except:
+            except (OSError, PermissionError):
                 raise Exception('Uncertainty output directory could not be created.')
 
     def load_database(self, kinetics_families='all', kinetics_depositories=None, thermo_libraries=None, reaction_libraries=None):
         """
         This function loads a single copy of the RMGDatabase with full verbose averaging
-        of the rate rule to trace kinetics sources.  
-        
+        of the rate rule to trace kinetics sources.
+
         By default, this function loads all the kinetics families, only the training kinetics depository,
-        the primaryThermoLibrary, and no reaction libraries.  
+        the primaryThermoLibrary, and no reaction libraries.
         """
         from rmgpy.data.rmg import RMGDatabase
         from rmgpy import settings
@@ -323,7 +323,7 @@ class Uncertainty(object):
         """
         Load a RMG-generated model into the Uncertainty class
         `chemkin_path`: path to the chem_annotated.inp CHEMKIN mechanism
-        `dictionary_path`: path to the species_dictionary.txt file 
+        `dictionary_path`: path to the species_dictionary.txt file
         `transport_path`: path to the tran.dat file (optional)
 
         Then create dictionaries stored in self.thermoGroups and self.rateRules
@@ -402,7 +402,7 @@ class Uncertainty(object):
         self.reaction_sources_dict = {}
         for reaction in self.reaction_list:
             source = self.database.kinetics.extract_source_from_comments(reaction)
-            # Prep the source data 
+            # Prep the source data
             # Consider any library or PDep reaction to be an independent parameter for now
             # and assign the source to the index of the reaction within self.reaction_list
             if 'Library' in source:
@@ -591,7 +591,7 @@ class Uncertainty(object):
                              sensitivity_threshold=1e-3, number=10, fileformat='.png'):
         """
         Run sensitivity analysis using the RMG solver in a single ReactionSystem object
-        
+
         initial_mole_fractions is a dictionary with Species objects as keys and mole fraction initial conditions
         sensitive_species is a list of sensitive Species objects
         number is the number of top species thermo or reaction kinetics desired to be plotted
@@ -660,7 +660,7 @@ class Uncertainty(object):
         output = {}
         for sens_species in sensitive_species:
             csvfile_path = os.path.join(self.output_directory, 'solver',
-                                        'sensitivity_{0}_SPC_{1}.csv'.format(reaction_system_index+1,
+                                        'sensitivity_{0}_SPC_{1}.csv'.format(reaction_system_index + 1,
                                                                              sens_species.index))
             time, data_list = parse_csv_data(csvfile_path)
             # Assign uncertainties
@@ -717,7 +717,7 @@ class Uncertainty(object):
                 # Add the reaction index to the data label of the reaction uncertainties
                 # data.index stores the physical index of the reaction + 1, so we convert it to the RMG index here
                 for data in reaction_data_list:
-                    data.label = 'k' + str(self.reaction_list[data.index-1].index) + ': ' + data.label.split()[-1]
+                    data.label = 'k' + str(self.reaction_list[data.index - 1].index) + ': ' + data.label.split()[-1]
 
             if correlated:
                 folder = os.path.join(self.output_directory, 'correlated')
