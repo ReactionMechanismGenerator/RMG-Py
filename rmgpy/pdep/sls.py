@@ -40,7 +40,7 @@ import scipy.optimize as opt
 
 import rmgpy.constants as constants
 from rmgpy.pdep.reaction import calculate_microcanonical_rate_coefficient
-from rmgpy.pdep.me import generate_full_me_matrix
+from rmgpy.pdep.me import generate_full_me_matrix, states_to_configurations
 from rmgpy.statmech.translation import IdealGasTranslation
 
 def get_initial_condition(network, x0, indices):
