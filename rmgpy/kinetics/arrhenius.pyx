@@ -589,10 +589,12 @@ cdef class ArrheniusBM(KineticsModel):
             comment=self.comment,
         )
 
-    def fit_to_reactions(self, rxns, w0=None, recipe=None, Ts=None):
+    def fit_to_reactions(self, rxns, w0=None, recipe=None, Ts=None, param_guess=None):
         """
         Fit an ArrheniusBM model to a list of reactions at the given temperatures,
         w0 must be either given or estimated using the family object
+        If param_guess, a list with the initial guesses for [lnA, n, E0] is specified,
+        pass that in as the starting point of the curve_fit
         """
         assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
 
@@ -658,7 +660,9 @@ cdef class ArrheniusBM(KineticsModel):
             while boo:
                 boo = False
                 try:
-                    params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[1.0, 1.0, w0 / 10.0], xtol=xtol, ftol=ftol)
+                    if param_guess is None:
+                        param_guess = [1.0, 1.0, w0 / 10.0]
+                    params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=param_guess, xtol=xtol, ftol=ftol)
                 except RuntimeError:
                     if xtol < 1.0:
                         boo = True
