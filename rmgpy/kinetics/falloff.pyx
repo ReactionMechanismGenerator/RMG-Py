@@ -234,8 +234,8 @@ cdef class Lindemann(PDepKineticsModel):
         ct_reaction.high_rate = self.arrheniusHigh.to_cantera_kinetics()
         ct_reaction.low_rate = self.arrheniusLow.to_cantera_kinetics()
 
-        high_rate = self.arrheniusHigh.to_cantera_kinetics()
-        low_rate = self.arrheniusLow.to_cantera_kinetics()
+        high_rate = ct.Arrhenius(self.arrheniusHigh._A.value, self.arrheniusHigh._n.value, self.arrheniusHigh._Ea.value)
+        low_rate = ct.Arrhenius(self.arrheniusLow._A.value, self.arrheniusHigh._n.value, self.arrheniusHigh._Ea.value)
         falloff = []
         ct_reaction.rate = self.to_cantera_kinetics(low_rate,high_rate,falloff) 
                 
