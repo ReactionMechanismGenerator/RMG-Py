@@ -1506,7 +1506,6 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
 
         self.species_list = [ch3, ethane, co2, ch4, h2o, ar, h2, h, oh, ho2, o2, co, h2o2]
 
-
         yaml_def = '''
         phases:
         - name: gas
@@ -1906,14 +1905,13 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
                                                     Molecule(smiles="[Ar]"): 0.63, Molecule(smiles="C"): 2.0,
                                                     Molecule(smiles="CC"): 3.0}))
 
-
         yaml_def = '''
         phases:
         - name: gas
           thermo: ideal-gas
           kinetics: gas
           elements: [O, H, C, Ar]
-          species: [H(3), H2(2), Ar, 'CH4(15)', 'CO2(16)', 'H2O(27)', 'ethane']
+          species: [H(3), H2(2), Ar, 'CH4(15)', 'CO2(16)', 'H2O(27)', 'ethane', O2(6)]
           state: {T: 300.0, P: 1 atm}
         species:
         - name: H(3)
@@ -2146,6 +2144,39 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
             well-depth: 252.30104810022812
             rotational-relaxation: 1.5
           note: GRI-Mech
+        - name: O2(6)
+          composition:
+            O: 2.0
+          thermo:
+            model: NASA7
+            reference-pressure: 10000.0
+            temperature-ranges:
+            - 100.0
+            - 1074.548795028123
+            - 5000.0
+            data:
+            - - 3.5373230499450528
+              - -0.0012157236655088398
+              - 5.316226885910176e-06
+              - -4.894494529178008e-09
+              - 1.4584747751052045e-12
+              - -1038.5885149953663
+              - 4.683679588670967
+            - - 3.1538173584126885
+              - 0.0016780494101270179
+              - -7.699774593040316e-07
+              - 1.5127621213257527e-10
+              - -1.087830289474199e-14
+              - -1040.8157773735998
+              - 6.167577846237351
+          transport:
+            model: gas
+            geometry: linear
+            diameter: 3.4580000000000015
+            well-depth: 107.40032560095216
+            polarizability: 1.6000000000000008
+            rotational-relaxation: 3.8
+          note: GRI-Mech
         reactions: 
           equation: H(3) + H(3) + M <=> H2(2) + M
           type: three-body
@@ -2163,6 +2194,115 @@ Thermo group additivity estimation: group(O2s-OsH) + gauche(O2s(RR)) + other(R) 
         '''
 
         gas = ct.Solution(yaml=yaml_def)
+
+        self.troe = Reaction(index=1, reactants=[ch3, ch3], products=[ethane],
+                             kinetics=Troe(
+                                 arrheniusHigh=Arrhenius(A=(6.77e+16, 'cm^3/(mol*s)'), n=-1.18, Ea=(0.654, 'kcal/mol'),
+                                                         T0=(1, 'K')),
+                                 arrheniusLow=Arrhenius(A=(3.4e+41, 'cm^6/(mol^2*s)'), n=-7.03, Ea=(2.762, 'kcal/mol'),
+                                                        T0=(1, 'K')), alpha=0.619, T3=(73.2, 'K'), T1=(1180, 'K'),
+                                 T2=(10000, 'K'),
+                                 efficiencies={Molecule(smiles="O=C=O"): 2.0, Molecule(smiles="[H][H]"): 2.0,
+                                               Molecule(smiles="O"): 6.0, Molecule(smiles="[Ar]"): 0.7,
+                                               Molecule(smiles="C"): 2.0, Molecule(smiles="CC"): 3.0}))
+
+
+        self.arrheniusBi = Reaction(index=2, reactants=[h, ch4], products=[h2, ch3],
+                                    kinetics=Arrhenius(A=(6.6e+08, 'cm^3/(mol*s)'), n=1.62, Ea=(10.84, 'kcal/mol'),
+                                                       T0=(1, 'K')))
+
+ 
+        self.arrheniusBi_irreversible = Reaction(index=10, reactants=[h, ch4], products=[h2, ch3],
+                                                 kinetics=Arrhenius(A=(6.6e+08, 'cm^3/(mol*s)'), n=1.62,
+                                                                    Ea=(10.84, 'kcal/mol'), T0=(1, 'K')),
+                                                 reversible=False)
+
+
+        self.arrheniusMono = Reaction(index=15, reactants=[h2o2], products=[h2, o2],
+                                      kinetics=Arrhenius(A=(6.6e+03, '1/s'), n=1.62, Ea=(10.84, 'kcal/mol'),
+                                                         T0=(1, 'K')))
+
+        self.arrheniusTri = Reaction(index=20, reactants=[h, h, o2], products=[h2o2],
+                                     kinetics=Arrhenius(A=(6.6e+08, 'cm^6/(mol^2*s)'), n=1.62, Ea=(10.84, 'kcal/mol'),
+                                                        T0=(1, 'K')))
+
+        self.multiArrhenius = Reaction(index=3, reactants=[oh, ho2], products=[h2o, o2],
+                                       kinetics=MultiArrhenius(arrhenius=[
+                                           Arrhenius(A=(1.45e+13, 'cm^3/(mol*s)'), n=0, Ea=(-0.5, 'kcal/mol'),
+                                                     T0=(1, 'K')),
+                                           Arrhenius(A=(5e+15, 'cm^3/(mol*s)'), n=0, Ea=(17.33, 'kcal/mol'),
+                                                     T0=(1, 'K'))]))
+
+
+        self.pdepArrhenius = Reaction(index=4, reactants=[ho2, ho2], products=[o2, h2o2],
+                                      kinetics=PDepArrhenius(
+                                          pressures=([0.1, 1, 10], 'atm'),
+                                          arrhenius=[
+                                              Arrhenius(
+                                                  A=(8.8e+16, 'cm^3/(mol*s)'),
+                                                  n=-1.05,
+                                                  Ea=(6461, 'cal/mol'),
+                                                  T0=(1, 'K'),
+                                              ),
+                                              Arrhenius(
+                                                  A=(8e+21, 'cm^3/(mol*s)'),
+                                                  n=-2.39,
+                                                  Ea=(11180, 'cal/mol'),
+                                                  T0=(1, 'K'),
+                                              ),
+                                              Arrhenius(
+                                                  A=(3.3e+24, 'cm^3/(mol*s)'),
+                                                  n=-3.04,
+                                                  Ea=(15610, 'cal/mol'),
+                                                  T0=(1, 'K'),
+                                              ),
+                                          ],
+                                      ),
+                                      )
+
+        self.multiPdepArrhenius = Reaction(index=5, reactants=[ho2, ch3], products=[o2, ch4],
+                                           kinetics=MultiPDepArrhenius(
+                                               arrhenius=[
+                                                   PDepArrhenius(
+                                                       pressures=([0.001, 1, 3], 'atm'),
+                                                       arrhenius=[
+                                                           Arrhenius(A=(9.3e+10, 'cm^3/(mol*s)'), n=0,
+                                                                     Ea=(0, 'cal/mol'), T0=(1, 'K')),
+                                                           Arrhenius(A=(8e+10, 'cm^3/(mol*s)'), n=0, Ea=(0, 'cal/mol'),
+                                                                     T0=(1, 'K')),
+                                                           Arrhenius(A=(7e+10, 'cm^3/(mol*s)'), n=0, Ea=(0, 'cal/mol'),
+                                                                     T0=(1, 'K')),
+                                                       ],
+                                                   ),
+                                                   PDepArrhenius(
+                                                       pressures=([0.001, 1, 3], 'atm'),
+                                                       arrhenius=[
+                                                           Arrhenius(A=(710000, 'cm^3/(mol*s)'), n=1.8,
+                                                                     Ea=(1133, 'cal/mol'), T0=(1, 'K')),
+                                                           Arrhenius(A=(880000, 'cm^3/(mol*s)'), n=1.77,
+                                                                     Ea=(954, 'cal/mol'), T0=(1, 'K')),
+                                                           Arrhenius(A=(290000, 'cm^3/(mol*s)'), n=1.9,
+                                                                     Ea=(397, 'cal/mol'), T0=(1, 'K')),
+                                                       ],
+                                                   ),
+                                               ],
+                                           ),
+                                           )
+
+        self.chebyshev = Reaction(index=6, reactants=[h, ch3], products=[ch4], kinetics=Chebyshev(
+            coeffs=[[12.68, 0.3961, -0.05481, -0.003606], [-0.7128, 0.731, -0.0941, -0.008587],
+                    [-0.5806, 0.57, -0.05539, -0.01115], [-0.4074, 0.3653, -0.0118, -0.01171],
+                    [-0.2403, 0.1779, 0.01946, -0.008505], [-0.1133, 0.0485, 0.03121, -0.002955]],
+            kunits='cm^3/(mol*s)', Tmin=(300, 'K'), Tmax=(3000, 'K'), Pmin=(0.001, 'atm'), Pmax=(98.692, 'atm')))
+
+        self.thirdBody = Reaction(index=7, reactants=[h, h], products=[h2],
+                                  kinetics=ThirdBody(
+                                      arrheniusLow=Arrhenius(A=(1e+18, 'cm^6/(mol^2*s)'), n=-1, Ea=(0, 'kcal/mol'),
+                                                             T0=(1, 'K')),
+                                      efficiencies={Molecule(smiles="O=C=O"): 0.0, Molecule(smiles="[H][H]"): 0.0,
+                                                    Molecule(smiles="O"): 0.0,
+                                                    Molecule(smiles="[Ar]"): 0.63, Molecule(smiles="C"): 2.0,
+                                                    Molecule(smiles="CC"): 3.0}))
 
 
         self.ct_thirdBody = ct.Reaction.from_yaml( '''
