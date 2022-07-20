@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>10. Species Representation &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -59,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="species-representation">
-<span id="species"></span><h1><span class="section-number">10. </span>Species Representation<a class="headerlink" href="#species-representation" title="Permalink to this headline">¶</a></h1>
+<span id="species"></span><h1><span class="section-number">10. </span>Species Representation<a class="headerlink" href="#species-representation" title="Permalink to this heading">¶</a></h1>
 <p>Species objects in RMG contain a variety of attributes, including user given names,
 thermochemistry, as well as structural isomers.  See the <a class="reference internal" href="../../reference/species/species.html#rmgpy-species-species"><span class="std std-ref">rmgpy.species.Species</span></a> class
 documentation for more information.</p>
@@ -103,7 +104,7 @@ To quickly generate any adjacency list, or to generate an adjacency list from
 other types of molecular representations such as SMILES, InChI, or even common
 species names, use the Molecule Search tool found here: <a class="reference external" href="https://rmg.mit.edu/molecule_search">https://rmg.mit.edu/molecule_search</a></p>
 <section id="representing-oxygen">
-<span id="id1"></span><h2><span class="section-number">10.1. </span>Representing Oxygen<a class="headerlink" href="#representing-oxygen" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2><span class="section-number">10.1. </span>Representing Oxygen<a class="headerlink" href="#representing-oxygen" title="Permalink to this heading">¶</a></h2>
 <p>Special care should be taken when constructing a mechanism that involves
 molecular oxygen. The ground electronic state of molecular oxygen,
 <span class="math notranslate nohighlight">\(^3\Sigma^-_g\)</span>, does <em>not</em> contain a double bond, but instead a single
@@ -218,7 +219,7 @@ RMG input file.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -252,7 +253,7 @@ RMG input file.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

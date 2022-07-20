@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>1. Introduction &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -59,9 +60,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="introduction">
-<h1><span class="section-number">1. </span>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">1. </span>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h1>
 <section id="unimolecular-reactions">
-<h2><span class="section-number">1.1. </span>Unimolecular Reactions<a class="headerlink" href="#unimolecular-reactions" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.1. </span>Unimolecular Reactions<a class="headerlink" href="#unimolecular-reactions" title="Permalink to this heading">¶</a></h2>
 <p>Unimolecular reactions are those that involve a single reactant or product
 molecule, the union of isomerization and dissociation/association reactions:</p>
 <div class="math notranslate nohighlight">
@@ -132,16 +133,17 @@ molecules exhibit significant pressure dependence. Figure adapted from
 Wong, Matheu and Green (2003).</span><a class="headerlink" href="#id21" title="Permalink to this image">¶</a></p>
 </figcaption>
 </figure>
-<dl class="citation">
-<dt class="label" id="wong2003"><span class="brackets"><a class="fn-backref" href="#id1">Wong2003</a></span></dt>
-<dd><p>B. M. Wong, D. M. Matheu, and W. H. Green. <em>J. Phys. Chem. A</em>
+<div role="list" class="citation-list">
+<div class="citation" id="wong2003" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">Wong2003</a><span class="fn-bracket">]</span></span>
+<p>B. M. Wong, D. M. Matheu, and W. H. Green. <em>J. Phys. Chem. A</em>
 <strong>107</strong>, p. 6206-6211 (2003).
 <a class="reference external" href="https://doi.org/10.1021/jp034165g">doi:10.1021/jp034165g</a></p>
-</dd>
-</dl>
+</div>
+</div>
 </section>
 <section id="historical-context">
-<h2><span class="section-number">1.2. </span>Historical Context<a class="headerlink" href="#historical-context" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.2. </span>Historical Context<a class="headerlink" href="#historical-context" title="Permalink to this heading">¶</a></h2>
 <p>The importance of bimolecular collisions in unimolecular reactions was first
 proposed by Lindemann in 1922 <a class="reference internal" href="#lindemann1922" id="id2"><span>[Lindemann1922]</span></a>. It was soon recognized by
 Hinshelwood and others that a rigorous treatment of these processes required
@@ -160,101 +162,120 @@ differential equations <a class="reference internal" href="#gear1971" id="id17">
 the density of states <a class="reference internal" href="#beyer1973" id="id18"><span>[Beyer1973]</span></a> <a class="reference internal" href="#stein1973" id="id19"><span>[Stein1973]</span></a> <a class="reference internal" href="#astholz1979" id="id20"><span>[Astholz1979]</span></a>. In the 1990s
 computing power had increased to the point where it was practical to solve
 them numerically by discretizing the integrals over energy.</p>
-<dl class="citation">
-<dt class="label" id="lindemann1922"><span class="brackets"><a class="fn-backref" href="#id2">Lindemann1922</a></span></dt>
-<dd><p>F. A. Lindemann. <em>Trans. Faraday Soc.</em> <strong>17</strong>,
+<div role="list" class="citation-list">
+<div class="citation" id="lindemann1922" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">Lindemann1922</a><span class="fn-bracket">]</span></span>
+<p>F. A. Lindemann. <em>Trans. Faraday Soc.</em> <strong>17</strong>,
 p. 598-606 (1922).</p>
-</dd>
-<dt class="label" id="hinshelwood1926"><span class="brackets"><a class="fn-backref" href="#id3">Hinshelwood1926</a></span></dt>
-<dd><p>C. N. Hinshelwood. <em>Proc. Royal Soc. A</em> <strong>17</strong>,
+</div>
+<div class="citation" id="hinshelwood1926" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">Hinshelwood1926</a><span class="fn-bracket">]</span></span>
+<p>C. N. Hinshelwood. <em>Proc. Royal Soc. A</em> <strong>17</strong>,
 p. 230-233 (1926).
 <a class="reference external" href="https://www.jstor.org/stable/94593">JSTOR:94593</a></p>
-</dd>
-<dt class="label" id="rice1927"><span class="brackets"><a class="fn-backref" href="#id4">Rice1927</a></span></dt>
-<dd><p>O. K. Rice and H. C. Ramsperger. <em>J. Am. Chem. Soc.</em> <strong>49</strong>,
+</div>
+<div class="citation" id="rice1927" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">Rice1927</a><span class="fn-bracket">]</span></span>
+<p>O. K. Rice and H. C. Ramsperger. <em>J. Am. Chem. Soc.</em> <strong>49</strong>,
 p. 1617-1629 (1927).
 <a class="reference external" href="https://doi.org/10.1021/ja01406a001">doi:10.1021/ja01406a001</a></p>
-</dd>
-<dt class="label" id="kassel1928"><span class="brackets"><a class="fn-backref" href="#id5">Kassel1928</a></span></dt>
-<dd><p>L. S. Kassel. <em>J. Phys. Chem.</em> <strong>32</strong>,
+</div>
+<div class="citation" id="kassel1928" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">Kassel1928</a><span class="fn-bracket">]</span></span>
+<p>L. S. Kassel. <em>J. Phys. Chem.</em> <strong>32</strong>,
 p. 1065-1079 (1928).
 <a class="reference external" href="https://doi.org/10.1021/j150289a011">doi:10.1021/j150289a011</a></p>
-</dd>
-<dt class="label" id="marcus1951"><span class="brackets"><a class="fn-backref" href="#id6">Marcus1951</a></span></dt>
-<dd><p>R. A. Marcus and O. K. Rice. <em>J. Phys. Coll. Chem.</em> <strong>55</strong>,
+</div>
+<div class="citation" id="marcus1951" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">Marcus1951</a><span class="fn-bracket">]</span></span>
+<p>R. A. Marcus and O. K. Rice. <em>J. Phys. Coll. Chem.</em> <strong>55</strong>,
 p. 894-908 (1951).
 <a class="reference external" href="https://doi.org/10.1021/j150489a013">doi:10.1021/j150489a013</a></p>
-</dd>
-<dt class="label" id="siegert1949"><span class="brackets"><a class="fn-backref" href="#id7">Siegert1949</a></span></dt>
-<dd><p>A. J. F. Siegert. <em>Phys. Rev.</em> <strong>76</strong>,
+</div>
+<div class="citation" id="siegert1949" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">Siegert1949</a><span class="fn-bracket">]</span></span>
+<p>A. J. F. Siegert. <em>Phys. Rev.</em> <strong>76</strong>,
 p. 1708-1714 (1949).
 <a class="reference external" href="https://doi.org/10.1103/PhysRev.76.1708">doi:10.1103/PhysRev.76.1708</a></p>
-</dd>
-<dt class="label" id="bartholomay1958"><span class="brackets"><a class="fn-backref" href="#id8">Bartholomay1958</a></span></dt>
-<dd><p>A. F. Bartholomay. <em>Bull. Math. Biophys.</em> <strong>20</strong>,
+</div>
+<div class="citation" id="bartholomay1958" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">Bartholomay1958</a><span class="fn-bracket">]</span></span>
+<p>A. F. Bartholomay. <em>Bull. Math. Biophys.</em> <strong>20</strong>,
 p. 175-190 (1958).
 <a class="reference external" href="https://doi.org/10.1007/BF02478297">doi:10.1007/BF02478297</a></p>
-</dd>
-<dt class="label" id="montroll1958"><span class="brackets"><a class="fn-backref" href="#id9">Montroll1958</a></span></dt>
-<dd><p>E. W. Montroll and K. E. Shuler. <em>Adv. Chem. Phys.</em> <strong>1</strong>,
+</div>
+<div class="citation" id="montroll1958" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id9">Montroll1958</a><span class="fn-bracket">]</span></span>
+<p>E. W. Montroll and K. E. Shuler. <em>Adv. Chem. Phys.</em> <strong>1</strong>,
 p. 361-399 (1958).</p>
-</dd>
-<dt class="label" id="krieger1960"><span class="brackets"><a class="fn-backref" href="#id10">Krieger1960</a></span></dt>
-<dd><p>I. M. Krieger and P. J. Gans. <em>J. Chem. Phys.</em> <strong>32</strong>,
+</div>
+<div class="citation" id="krieger1960" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id10">Krieger1960</a><span class="fn-bracket">]</span></span>
+<p>I. M. Krieger and P. J. Gans. <em>J. Chem. Phys.</em> <strong>32</strong>,
 p. 247-250 (1960).
 <a class="reference external" href="https://doi.org/10.1063/1.1700909">doi:10.1063/1.1700909</a></p>
-</dd>
-<dt class="label" id="gans1960"><span class="brackets"><a class="fn-backref" href="#id11">Gans1960</a></span></dt>
-<dd><p>P. J. Gans. <em>J. Chem. Phys.</em> <strong>33</strong>,
+</div>
+<div class="citation" id="gans1960" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id11">Gans1960</a><span class="fn-bracket">]</span></span>
+<p>P. J. Gans. <em>J. Chem. Phys.</em> <strong>33</strong>,
 p. 691-694 (1960).
 <a class="reference external" href="https://doi.org/10.1063/1.1731239">doi:10.1063/1.1731239</a></p>
-</dd>
-<dt class="label" id="widom1959"><span class="brackets"><a class="fn-backref" href="#id12">Widom1959</a></span></dt>
-<dd><p>B. Widom. <em>J. Chem. Phys.</em> <strong>31</strong>,
+</div>
+<div class="citation" id="widom1959" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id12">Widom1959</a><span class="fn-bracket">]</span></span>
+<p>B. Widom. <em>J. Chem. Phys.</em> <strong>31</strong>,
 p. 1387-1394 (1959).
 <a class="reference external" href="https://doi.org/10.1063/1.1730604">doi:10.1063/1.1730604</a></p>
-</dd>
-<dt class="label" id="keck1965"><span class="brackets"><a class="fn-backref" href="#id13">Keck1965</a></span></dt>
-<dd><p>J. Keck and G. Carrier. <em>J. Chem. Phys.</em> <strong>43</strong>,
+</div>
+<div class="citation" id="keck1965" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id13">Keck1965</a><span class="fn-bracket">]</span></span>
+<p>J. Keck and G. Carrier. <em>J. Chem. Phys.</em> <strong>43</strong>,
 p. 2284-2298 (1965).
 <a class="reference external" href="https://doi.org/10.1063/1.1697125">doi:10.1063/1.1697125</a></p>
-</dd>
-<dt class="label" id="troe1967"><span class="brackets"><a class="fn-backref" href="#id14">Troe1967</a></span></dt>
-<dd><p>J. Troe and H. Gg. Wagner. <em>Ber. Bunsenges. Phys. Chem.</em> <strong>71</strong>,
+</div>
+<div class="citation" id="troe1967" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id14">Troe1967</a><span class="fn-bracket">]</span></span>
+<p>J. Troe and H. Gg. Wagner. <em>Ber. Bunsenges. Phys. Chem.</em> <strong>71</strong>,
 p. 937 (1967).
 <a class="reference external" href="https://doi.org/10.1002/bbpc.19670710904">doi:10.1002/bbpc.19670710904</a></p>
-</dd>
-<dt class="label" id="troe1973"><span class="brackets"><a class="fn-backref" href="#id15">Troe1973</a></span></dt>
-<dd><p>J. Troe. <em>Ber. Bunsenges. Phys. Chem.</em> <strong>77</strong>,
+</div>
+<div class="citation" id="troe1973" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id15">Troe1973</a><span class="fn-bracket">]</span></span>
+<p>J. Troe. <em>Ber. Bunsenges. Phys. Chem.</em> <strong>77</strong>,
 p. 665 (1973).
 <a class="reference external" href="https://doi.org/10.1002/bbpc.19730770903">doi:10.1002/bbpc.19730770903</a></p>
-</dd>
-<dt class="label" id="tardy1966"><span class="brackets"><a class="fn-backref" href="#id16">Tardy1966</a></span></dt>
-<dd><p>D. C. Tardy and B. S. Rabinovitch. <em>J. Chem. Phys.</em>
+</div>
+<div class="citation" id="tardy1966" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id16">Tardy1966</a><span class="fn-bracket">]</span></span>
+<p>D. C. Tardy and B. S. Rabinovitch. <em>J. Chem. Phys.</em>
 <strong>45</strong>, p. 3720-3730 (1966).
 <a class="reference external" href="https://doi.org/10.1063/1.1727392">doi:10.1063/1.1727392</a></p>
-</dd>
-<dt class="label" id="gear1971"><span class="brackets"><a class="fn-backref" href="#id17">Gear1971</a></span></dt>
-<dd><p>C. W. Gear. <em>Commun. ACM</em> <strong>14</strong>,
+</div>
+<div class="citation" id="gear1971" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id17">Gear1971</a><span class="fn-bracket">]</span></span>
+<p>C. W. Gear. <em>Commun. ACM</em> <strong>14</strong>,
 p. 176-179 (1971).
 <a class="reference external" href="https://doi.org/10.1145/362566.362571">doi:10.1145/362566.362571</a></p>
-</dd>
-<dt class="label" id="beyer1973"><span class="brackets"><a class="fn-backref" href="#id18">Beyer1973</a></span></dt>
-<dd><p>T. Beyer and D. F. Swinehart. <em>Commun. ACM</em> <strong>16</strong>,
+</div>
+<div class="citation" id="beyer1973" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id18">Beyer1973</a><span class="fn-bracket">]</span></span>
+<p>T. Beyer and D. F. Swinehart. <em>Commun. ACM</em> <strong>16</strong>,
 p. 379 (1973).
 <a class="reference external" href="https://doi.org/10.1145/362248.362275">doi:10.1145/362248.362275</a></p>
-</dd>
-<dt class="label" id="stein1973"><span class="brackets"><a class="fn-backref" href="#id19">Stein1973</a></span></dt>
-<dd><p>S. E. Stein and B. S. Rabinovitch. <em>J. Chem. Phys.</em> <strong>58</strong>,
+</div>
+<div class="citation" id="stein1973" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id19">Stein1973</a><span class="fn-bracket">]</span></span>
+<p>S. E. Stein and B. S. Rabinovitch. <em>J. Chem. Phys.</em> <strong>58</strong>,
 p. 2438-2444 (1973).
 <a class="reference external" href="https://doi.org/10.1063/1.1679522">doi:10.1063/1.1679522</a></p>
-</dd>
-<dt class="label" id="astholz1979"><span class="brackets"><a class="fn-backref" href="#id20">Astholz1979</a></span></dt>
-<dd><p>D. C. Astholz, J. Troe, and W. Wieters. <em>J. Chem. Phys.</em>
+</div>
+<div class="citation" id="astholz1979" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id20">Astholz1979</a><span class="fn-bracket">]</span></span>
+<p>D. C. Astholz, J. Troe, and W. Wieters. <em>J. Chem. Phys.</em>
 <strong>70</strong>, p. 5107-5116 (1979).
 <a class="reference external" href="https://doi.org/10.1063/1.437352">doi:10.1063/1.437352</a></p>
-</dd>
-</dl>
+</div>
+</div>
 </section>
 </section>
 
@@ -330,7 +351,7 @@ p. 2438-2444 (1973).
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -364,7 +385,7 @@ p. 2438-2444 (1973).
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

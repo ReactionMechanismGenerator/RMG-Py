@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>12.1. Introduction &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -59,10 +60,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="introduction">
-<span id="introdatabase"></span><h1><span class="section-number">12.1. </span>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<span id="introdatabase"></span><h1><span class="section-number">12.1. </span>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h1>
 <p>This section describes some of the general characteristics of RMG’s databases.</p>
 <section id="group-definitions">
-<h2><span class="section-number">12.1.1. </span>Group Definitions<a class="headerlink" href="#group-definitions" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.1.1. </span>Group Definitions<a class="headerlink" href="#group-definitions" title="Permalink to this heading">¶</a></h2>
 <p>The main section in many of RMG’s databases are the ‘group’ definitions. Groups are
 <a class="reference internal" href="../../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><span class="std std-ref">adjacency lists</span></a>
 that describe structures around the reacting atoms. Between the adjacency
@@ -77,11 +78,6 @@ on the right (the numbers correspond to the index from the adjacency list).</p>
 <p><strong>Atom types</strong> describe atoms in group definitions. The
 table below shows all atoms types in RMG.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 7%" />
-<col style="width: 13%" />
-<col style="width: 80%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Atom Type</p></th>
 <th class="head"><p>Chemical Element</p></th>
@@ -538,7 +534,7 @@ table below shows all atoms types in RMG.</p>
 </div>
 </section>
 <section id="forbidden-groups">
-<h2><span class="section-number">12.1.2. </span>Forbidden Groups<a class="headerlink" href="#forbidden-groups" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.1.2. </span>Forbidden Groups<a class="headerlink" href="#forbidden-groups" title="Permalink to this heading">¶</a></h2>
 <p>Forbidden groups can be defined to ban structures globally in RMG or to
 ban pathways in a specific kinetic family.</p>
 <p>Globally forbidden structures will ban all reactions containing either reactants
@@ -610,7 +606,7 @@ replace the <code class="docutils literal notranslate"><span class="pre">group</
 </div>
 </section>
 <section id="hierarchical-trees">
-<h2><span class="section-number">12.1.3. </span>Hierarchical Trees<a class="headerlink" href="#hierarchical-trees" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.1.3. </span>Hierarchical Trees<a class="headerlink" href="#hierarchical-trees" title="Permalink to this heading">¶</a></h2>
 <p>Groups are ordered into the nodes of a hierarchical trees which is written
 at the end of groups.py. The root node of each tree is the most general group with
 the reacting atoms required for the family. Descending from the root node are
@@ -698,7 +694,7 @@ Templates can be filled in with kinetic parameters from the training set or rule
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -733,7 +729,7 @@ Templates can be filled in with kinetic parameters from the training set or rule
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

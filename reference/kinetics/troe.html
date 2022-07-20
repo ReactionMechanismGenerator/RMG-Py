@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>rmgpy.kinetics.Troe &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -59,17 +60,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="rmgpy-kinetics-troe">
-<h1>rmgpy.kinetics.Troe<a class="headerlink" href="#rmgpy-kinetics-troe" title="Permalink to this headline">¶</a></h1>
+<h1>rmgpy.kinetics.Troe<a class="headerlink" href="#rmgpy-kinetics-troe" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Troe">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.kinetics.</span></span><span class="sig-name descname"><span class="pre">Troe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arrheniusHigh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrheniusLow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">efficiencies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Troe" title="Permalink to this definition">¶</a></dt>
 <dd><p>A kinetic model of a phenomenological rate coefficient <span class="math notranslate nohighlight">\(k(T, P)\)</span>
 using the Troe formulation. The attributes are:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 18%" />
-<col style="width: 82%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Attribute</p></th>
 <th class="head"><p>Description</p></th>
@@ -174,7 +171,7 @@ factor <span class="math notranslate nohighlight">\(F\)</span> is computed via</
 <span class="sig-name descname"><span class="pre">alpha</span></span><a class="headerlink" href="#rmgpy.kinetics.Troe.alpha" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>alpha</p>
 </dd>
 </dl>
@@ -185,7 +182,7 @@ factor <span class="math notranslate nohighlight">\(F\)</span> is computed via</
 <span class="sig-name descname"><span class="pre">arrheniusHigh</span></span><a class="headerlink" href="#rmgpy.kinetics.Troe.arrheniusHigh" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.arrhenius.Arrhenius</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>arrheniusHigh</p>
 </dd>
 </dl>
@@ -196,7 +193,7 @@ factor <span class="math notranslate nohighlight">\(F\)</span> is computed via</
 <span class="sig-name descname"><span class="pre">arrheniusLow</span></span><a class="headerlink" href="#rmgpy.kinetics.Troe.arrheniusLow" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.arrhenius.Arrhenius</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>arrheniusLow</p>
 </dd>
 </dl>
@@ -213,7 +210,7 @@ factor <span class="math notranslate nohighlight">\(F\)</span> is computed via</
 <span class="sig-name descname"><span class="pre">comment</span></span><a class="headerlink" href="#rmgpy.kinetics.Troe.comment" title="Permalink to this definition">¶</a></dt>
 <dd><p>unicode</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>comment</p>
 </dd>
 </dl>
@@ -230,7 +227,7 @@ factor <span class="math notranslate nohighlight">\(F\)</span> is computed via</
 <span class="sig-name descname"><span class="pre">efficiencies</span></span><a class="headerlink" href="#rmgpy.kinetics.Troe.efficiencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>efficiencies</p>
 </dd>
 </dl>
@@ -274,7 +271,7 @@ pressure, and pass that value as the pressure to this method.</p>
 <span class="sig-name descname"><span class="pre">highPlimit</span></span><a class="headerlink" href="#rmgpy.kinetics.Troe.highPlimit" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.model.KineticsModel</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>highPlimit</p>
 </dd>
 </dl>
@@ -337,7 +334,7 @@ for a cantera FalloffReaction.</p>
 <span class="sig-name descname"><span class="pre">uncertainty</span></span><a class="headerlink" href="#rmgpy.kinetics.Troe.uncertainty" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.kinetics.uncertainties.RateUncertainty</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>uncertainty</p>
 </dd>
 </dl>
@@ -408,7 +405,7 @@ for a cantera FalloffReaction.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -442,7 +439,7 @@ for a cantera FalloffReaction.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

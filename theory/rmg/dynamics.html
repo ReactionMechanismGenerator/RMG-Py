@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>3. Dynamics Criterion &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -59,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="dynamics-criterion">
-<span id="dynamics"></span><h1><span class="section-number">3. </span>Dynamics Criterion<a class="headerlink" href="#dynamics-criterion" title="Permalink to this headline">¶</a></h1>
+<span id="dynamics"></span><h1><span class="section-number">3. </span>Dynamics Criterion<a class="headerlink" href="#dynamics-criterion" title="Permalink to this heading">¶</a></h1>
 <p>When dealing with more complex chemical mechanisms the standard RMG flux criterion
 has trouble picking up key chain branching reactions and has limited guarantees
 that it accurately represents the concentrations of all species.  The dynamics
@@ -67,7 +68,7 @@ criterion is a measure of how much a given reaction affects core concentrations.
 This allows it to pick up key low-flux chain branching reactions and better represent
 species concentrations.</p>
 <section id="calculating-the-dynamics-criterion">
-<h2><span class="section-number">3.1. </span>Calculating the Dynamics Criterion<a class="headerlink" href="#calculating-the-dynamics-criterion" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.1. </span>Calculating the Dynamics Criterion<a class="headerlink" href="#calculating-the-dynamics-criterion" title="Permalink to this heading">¶</a></h2>
 <p>Let us define rates of production <span class="math notranslate nohighlight">\(P_i(t)\)</span> and consumption <span class="math notranslate nohighlight">\(L_i(t)\)</span> for a given species
 <span class="math notranslate nohighlight">\(\frac{dc_i}{dt} = P_i(t) - L_i(t)\)</span></p>
 <p>Let us define a dimensionless concentration variable we will refer to as the
@@ -88,7 +89,7 @@ core species involved in reaction j to get our criterion the dynamics number.</p
 <p><span class="math notranslate nohighlight">\(\sum_{i\in core} |Ln(\Pi_{Ac,i,j})| = Dy &gt; \epsilon\)</span></p>
 </section>
 <section id="surface-algorithm">
-<h2><span class="section-number">3.2. </span>Surface Algorithm<a class="headerlink" href="#surface-algorithm" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.2. </span>Surface Algorithm<a class="headerlink" href="#surface-algorithm" title="Permalink to this heading">¶</a></h2>
 <p>One common issue with the dynamics criterion is that it treats all core species equally.
 Because of this, if the dynamics criterion is set too low it enters a feedback loop where
 it adds species and then since it can’t get those species’ concentrations right it adds
@@ -111,7 +112,7 @@ for movement from surface to bulk core based on flux or dynamics criterion.</p>
 </figure>
 </section>
 <section id="key-parameters-for-dynamics-criterion-and-surface-algorithm">
-<h2><span class="section-number">3.3. </span>Key Parameters for Dynamics Criterion and Surface Algorithm<a class="headerlink" href="#key-parameters-for-dynamics-criterion-and-surface-algorithm" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.3. </span>Key Parameters for Dynamics Criterion and Surface Algorithm<a class="headerlink" href="#key-parameters-for-dynamics-criterion-and-surface-algorithm" title="Permalink to this heading">¶</a></h2>
 <ul>
 <li><p><strong>toleranceMoveEdgeReactionToCore</strong></p>
 <p>An edge reaction will be pulled directly into the bulk core if its dynamics number
@@ -213,7 +214,7 @@ ever exceeds this value.  Note this is done on the fly during simulation.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -247,7 +248,7 @@ ever exceeds this value.  Note this is done on the fly during simulation.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

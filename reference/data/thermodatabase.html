@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>rmgpy.data.thermo.ThermoDatabase &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -58,7 +59,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="rmgpy-data-thermo-thermodatabase">
-<h1>rmgpy.data.thermo.ThermoDatabase<a class="headerlink" href="#rmgpy-data-thermo-thermodatabase" title="Permalink to this headline">¶</a></h1>
+<h1>rmgpy.data.thermo.ThermoDatabase<a class="headerlink" href="#rmgpy-data-thermo-thermodatabase" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.data.thermo.ThermoDatabase">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.data.thermo.</span></span><span class="sig-name descname"><span class="pre">ThermoDatabase</span></span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase" title="Permalink to this definition">¶</a></dt>
@@ -80,7 +81,7 @@ this should be done later by the calling function.</p>
 <dd><p>Changes the provided thermo, by applying a linear scaling relation
 to correct the adsorption energy.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>thermo</strong> – starting thermo data</p></li>
 <li><p><strong>species</strong> – the species (which is an adsorbate)</p></li>
@@ -88,7 +89,7 @@ to correct the adsorption energy.</p>
 <li><p><strong>metal_to_scale_to</strong> – the metal you want to scale to (string e.g ‘Pt111’ or None)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>corrected thermo</p>
 </dd>
 </dl>
@@ -366,12 +367,12 @@ points to the top-level folder of the metal library.</p>
 <dd><p>Sets and stores the atomic binding energies specified in the input file.</p>
 <p>All adsorbates will be scaled to use these elemental binding energies.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>binding_energies</strong> (<em>dict</em><em>, </em><em>optional</em>) – the desired binding energies with
 elements as keys and binding energy/unit tuples (or Energy
 quantities) as values</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None, stores result in self.binding_energies</p>
 </dd>
 </dl>
@@ -442,7 +443,7 @@ quantities) as values</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -476,7 +477,7 @@ quantities) as values</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

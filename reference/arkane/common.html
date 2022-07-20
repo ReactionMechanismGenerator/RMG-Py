@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>arkane.common &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -58,7 +59,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="module-arkane.common">
-<span id="arkane-common"></span><h1>arkane.common<a class="headerlink" href="#module-arkane.common" title="Permalink to this headline">¶</a></h1>
+<span id="arkane-common"></span><h1>arkane.common<a class="headerlink" href="#module-arkane.common" title="Permalink to this heading">¶</a></h1>
 <p>Arkane common module</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="arkane.common.ArkaneSpecies">
@@ -69,10 +70,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#arkane.common.ArkaneSpecies.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for dumping objects as dictionaries for YAML files</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>A dictionary representation of the object</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict</p>
 </dd>
 </dl>
@@ -90,13 +91,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span class="sig-name descname"><span class="pre">make_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">class_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.ArkaneSpecies.make_object" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for constructing objects from a dictionary (used when loading YAML files)</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>dict</em>) – The dictionary representation of the object</p></li>
 <li><p><strong>class_dict</strong> (<em>dict</em>) – A mapping of class names to the classes themselves</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
 </dd>
 </dl>
@@ -119,10 +120,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span class="sig-name descname"><span class="pre">update_xyz_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.common.ArkaneSpecies.update_xyz_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate an xyz string built from self.conformer, and standardize the result</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>3D coordinates in an XYZ format.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>str</p>
 </dd>
 </dl>
@@ -143,7 +144,7 @@ log a warning message.</p>
 <span class="sig-prename descclassname"><span class="pre">arkane.common.</span></span><span class="sig-name descname"><span class="pre">clean_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_dir_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files_to_delete</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extensions_to_delete</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files_to_keep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_dir_to_keep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#arkane.common.clean_dir" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clean up a directory. Commonly used for removing unwanted files after unit tests.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>base_dir_path</strong> (<em>str</em>) – absolute path of the directory to clean up.</p></li>
 <li><p><strong>files_to_delete</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – full name of the file (includes extension) to delete.</p></li>
@@ -165,13 +166,13 @@ if its extension is also in file_extensions_to_delete.</p></li>
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>freq</strong> (<em>str</em>) – The imaginary frequency representation.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A float representation of the frequency value.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -183,17 +184,17 @@ if its extension is also in file_extensions_to_delete.</p></li>
 <dd><p>Calculate and return the 3D position of the center of mass of the current geometry.
 Either <code class="docutils literal notranslate"><span class="pre">numbers</span></code> or <code class="docutils literal notranslate"><span class="pre">symbols</span></code> must be given.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>coords</strong> (<em>np.array</em>) – Entries are 3-length lists of xyz coordinates for an atom.</p></li>
 <li><p><strong>numbers</strong> (<em>np.array</em><em>, </em><em>list</em>) – Entries are atomic numbers corresponding to coords.</p></li>
 <li><p><strong>symbols</strong> (<em>list</em>) – Entries are atom symbols corresponding to coords.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The center of mass coordinates.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -216,20 +217,20 @@ geometry in amu*angstrom^2. If the coordinates are not at the center of mass,
 they are temporarily shifted there for the purposes of this calculation.
 Adapted from J.W. Allen: <a class="reference external" href="https://github.com/jwallen/ChemPy/blob/master/chempy/geometry.py">https://github.com/jwallen/ChemPy/blob/master/chempy/geometry.py</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>coords</strong> (<em>np.array</em>) – Entries are 3-length lists of xyz coordinates for an atom.</p></li>
 <li><p><strong>numbers</strong> (<em>np.array</em><em>, </em><em>list</em>) – Entries are atomic numbers corresponding to coords.</p></li>
 <li><p><strong>symbols</strong> (<em>list</em>) – Entries are atom symbols corresponding to coords.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The 3x3 moment of inertia tensor.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="../exceptions.html#rmgpy.exceptions.InputError" title="rmgpy.exceptions.InputError"><strong>InputError</strong></a> – If neither <code class="docutils literal notranslate"><span class="pre">symbols</span></code> nor <code class="docutils literal notranslate"><span class="pre">numbers</span></code> are given, or if they have a different length than <code class="docutils literal notranslate"><span class="pre">coords</span></code></p>
 </dd>
 </dl>
@@ -243,18 +244,18 @@ and the corresponding principal axes for the current geometry.
 The moments of inertia are in translated to the center of mass. The principal axes have unit lengths.
 Adapted from J.W. Allen: <a class="reference external" href="https://github.com/jwallen/ChemPy/blob/master/chempy/geometry.py">https://github.com/jwallen/ChemPy/blob/master/chempy/geometry.py</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>coords</strong> (<em>np.array</em>) – Entries are 3-length lists of xyz coordinates for an atom.</p></li>
 <li><p><strong>numbers</strong> (<em>np.array</em><em>, </em><em>list</em>) – Entries are atomic numbers corresponding to coords.</p></li>
 <li><p><strong>symbols</strong> (<em>list</em>) – Entries are atom symbols corresponding to coords.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The principal moments of inertia.
 tuple: The corresponding principal axes.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
@@ -272,13 +273,13 @@ tuple: The corresponding principal axes.</p>
 <dd><p>PEP8 compliant changes to RMG objects could be backward incompatible with Arkane’s YAML files.
 Search for knows phrases which were replace, and fix the format on the fly.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>content</strong> (<em>str</em>) – The content of an Arkane YAML file.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The modified content to be processed via yaml.safe_load().</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
@@ -353,7 +354,7 @@ Search for knows phrases which were replace, and fix the format on the fly.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -387,7 +388,7 @@ Search for knows phrases which were replace, and fix the format on the fly.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

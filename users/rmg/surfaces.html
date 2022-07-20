@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>16. Heterogeneous Catalysis Systems and Surface Reactions &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -59,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="heterogeneous-catalysis-systems-and-surface-reactions">
-<span id="surfaces"></span><h1><span class="section-number">16. </span>Heterogeneous Catalysis Systems and Surface Reactions<a class="headerlink" href="#heterogeneous-catalysis-systems-and-surface-reactions" title="Permalink to this headline">¶</a></h1>
+<span id="surfaces"></span><h1><span class="section-number">16. </span>Heterogeneous Catalysis Systems and Surface Reactions<a class="headerlink" href="#heterogeneous-catalysis-systems-and-surface-reactions" title="Permalink to this heading">¶</a></h1>
 <p>RMG can now be used to study heterogenous catalysis and surface reactions.
 Initially developed in a fork of RMG called RMG-Cat (<a class="reference internal" href="#goldsmith2017" id="id1"><span>[Goldsmith2017]</span></a>),
 this is now a part of the main RMG software.
@@ -67,7 +68,7 @@ Several surface specific features need to be considered when setting up an input
 for surface reaction mechanism generation, as they cause certain aspects of it to
 deviate from the standard gas-phase RMG input file.</p>
 <section id="catalyst-properties">
-<h2><span class="section-number">16.1. </span>Catalyst properties<a class="headerlink" href="#catalyst-properties" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">16.1. </span>Catalyst properties<a class="headerlink" href="#catalyst-properties" title="Permalink to this heading">¶</a></h2>
 <p>A new block <code class="docutils literal notranslate"><span class="pre">catalystProperties()</span></code> should be added for specifying the catalyst
 surface to be used in the mechanism generation.
 It includes the surface site density of the metal surface (<code class="docutils literal notranslate"><span class="pre">surfaceSiteDensity</span></code>),
@@ -98,7 +99,7 @@ The full database of available metals can be found in <code class="docutils lite
 </div>
 </section>
 <section id="reactor-specifications">
-<h2><span class="section-number">16.2. </span>Reactor specifications<a class="headerlink" href="#reactor-specifications" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">16.2. </span>Reactor specifications<a class="headerlink" href="#reactor-specifications" title="Permalink to this heading">¶</a></h2>
 <p>For surface chemistry, RMG can model constant temperature and volume systems.
 The temperature, initial pressure, initial mole fractions of the reactant species,
 initial surface coverages,
@@ -131,7 +132,7 @@ and so may be different in each <code class="docutils literal notranslate"><span
 </pre></div>
 </div>
 <section id="adsorbate-representation">
-<h3><span class="section-number">16.2.1. </span>Adsorbate representation<a class="headerlink" href="#adsorbate-representation" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">16.2.1. </span>Adsorbate representation<a class="headerlink" href="#adsorbate-representation" title="Permalink to this heading">¶</a></h3>
 <p>Adsorbates are represented using chemical graph theory (ChemGraph),
 such that atoms are represented by nodes and bonds between them by edges.
 This way each adsorbate is represented by an <a class="reference internal" href="../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><span class="std std-ref">adjacency list</span></a>.
@@ -178,7 +179,7 @@ consistent with the mean-field approach of the kinetics (<a class="reference int
 </section>
 </section>
 <section id="thermochemistry">
-<h2><span class="section-number">16.3. </span>Thermochemistry<a class="headerlink" href="#thermochemistry" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">16.3. </span>Thermochemistry<a class="headerlink" href="#thermochemistry" title="Permalink to this heading">¶</a></h2>
 <p>RMG will first check thermochemistry libraries for adsorbates.
 Failing that, the gas phase thermochemistry will be used and an adsortion correction added.
 The gas phase thermochemistry will be estimated using the methods specified for regular
@@ -188,7 +189,7 @@ Finally, the adsorbed species will have its energy changed using linear scaling 
 to allow for metals other than Platinum(111) to be simulated.
 These methods are all described below.</p>
 <section id="use-of-thermo-libraries-for-surface-systems">
-<h3><span class="section-number">16.3.1. </span>Use of thermo libraries for surface systems<a class="headerlink" href="#use-of-thermo-libraries-for-surface-systems" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">16.3.1. </span>Use of thermo libraries for surface systems<a class="headerlink" href="#use-of-thermo-libraries-for-surface-systems" title="Permalink to this heading">¶</a></h3>
 <p>For surface species, thermo libraries provided in the input files are checked first
 for an exact match of a given adsorbate, and those thermodynamic properties are used.</p>
 <p>In order to predict the thermodynamic properties for species that are not in the database,
@@ -205,7 +206,7 @@ For a full list of libraries check <a class="reference external" href="https://r
 or the folder <code class="docutils literal notranslate"><span class="pre">RMG-database/input/thermo/libraries/</span></code> in your RMG database.</p>
 </section>
 <section id="adsorption-correction-estimation">
-<h3><span class="section-number">16.3.2. </span>Adsorption correction estimation<a class="headerlink" href="#adsorption-correction-estimation" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">16.3.2. </span>Adsorption correction estimation<a class="headerlink" href="#adsorption-correction-estimation" title="Permalink to this heading">¶</a></h3>
 <p>The folder <code class="docutils literal notranslate"><span class="pre">RMG-database/input/thermo/groups/</span></code> contains the adsorption corrections
 for the change in thermodynamic properties of a species upon adsorption from the gas-phase.
 Currently the database has adsorption corrections for nickel
@@ -272,7 +273,7 @@ from the database and uses it with the thermo of the original adsorbate’s
 gas-phase precursor to estimate its enthalpy, entropy and heat capacity.</p>
 </section>
 <section id="linear-scaling-relations">
-<h3><span class="section-number">16.3.3. </span>Linear scaling relations<a class="headerlink" href="#linear-scaling-relations" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">16.3.3. </span>Linear scaling relations<a class="headerlink" href="#linear-scaling-relations" title="Permalink to this heading">¶</a></h3>
 <p>In surface reaction mechanism generation with RMG-Cat,
 linear scaling relations are used to investigate surface reaction systems occurring on surfaces
 that do not have DFT-based values in the database (<a class="reference internal" href="#mazeau2019" id="id4"><span>[Mazeau2019]</span></a>).
@@ -313,9 +314,9 @@ even for species taken from the thermochemistry libraries:</p>
 </section>
 </section>
 <section id="reactions-and-kinetics">
-<h2><span class="section-number">16.4. </span>Reactions and kinetics<a class="headerlink" href="#reactions-and-kinetics" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">16.4. </span>Reactions and kinetics<a class="headerlink" href="#reactions-and-kinetics" title="Permalink to this heading">¶</a></h2>
 <section id="reaction-families-and-libraries-for-surface-reaction-systems">
-<h3><span class="section-number">16.4.1. </span>Reaction families and libraries for surface reaction systems<a class="headerlink" href="#reaction-families-and-libraries-for-surface-reaction-systems" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">16.4.1. </span>Reaction families and libraries for surface reaction systems<a class="headerlink" href="#reaction-families-and-libraries-for-surface-reaction-systems" title="Permalink to this heading">¶</a></h3>
 <p>In the latest version of the RMG database, surface reaction families have been added.
 These include adsorption/desorption, bond fission and H abstraction (<a class="reference internal" href="#goldsmith2017" id="id7"><span>[Goldsmith2017]</span></a>).
 For surface reaction families to be considered in the mechanism generation,
@@ -346,10 +347,6 @@ in the database section of the input file:</p>
 for accurate coupled gas-phase/surface mechanism generation.</p>
 <p>The following is a list of the current pre-packaged surface reaction libraries in RMG-Cat:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 40%" />
-<col style="width: 60%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Library</p></th>
 <th class="head"><p>Description</p></th>
@@ -367,13 +364,13 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 </section>
 </section>
 <section id="coverage-dependence">
-<h2><span class="section-number">16.5. </span>Coverage Dependence<a class="headerlink" href="#coverage-dependence" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">16.5. </span>Coverage Dependence<a class="headerlink" href="#coverage-dependence" title="Permalink to this heading">¶</a></h2>
 <p>An Arrhenius-like expression can be used to describe the effect of the coverage (<span class="math notranslate nohighlight">\(\theta_{k}\)</span>) of species k on the forward rate constant for a given surface reaction. RMG has the capability to account for such coverage dependent kinetics, as specified in the following equation:</p>
 <div class="math notranslate nohighlight" id="equation-covdepeqn">
 <span class="eqno">(3)<a class="headerlink" href="#equation-covdepeqn" title="Permalink to this equation">¶</a></span>\[k_f = A T^b \exp \left( - \frac{E_a}{RT} \right)\prod_k 10^{a_k \theta_k} \theta_k^{m_k}\exp \left( \frac{- E_k \theta_k}{RT} \right)\]</div>
 <p>where the parameters <span class="math notranslate nohighlight">\(a_k\)</span>, <span class="math notranslate nohighlight">\(m_k\)</span>, and <span class="math notranslate nohighlight">\(E_k\)</span> are the modifiers for the pre-exponential, temperature exponent, and activation energy from species k.</p>
 <section id="input-file-specifications">
-<h3><span class="section-number">16.5.1. </span>input file specifications<a class="headerlink" href="#input-file-specifications" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">16.5.1. </span>input file specifications<a class="headerlink" href="#input-file-specifications" title="Permalink to this heading">¶</a></h3>
 <p>Coverage dependent parameters are applied if the “coverage_dependence” attribute is set to “True” in the catalyst properties block:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">catalystProperties</span><span class="p">(</span>
     <span class="n">metal</span> <span class="o">=</span> <span class="n">Pt111</span>
@@ -384,7 +381,7 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <p>By default, this field is false.</p>
 </section>
 <section id="coverage-block-in-families-and-libraries">
-<h3><span class="section-number">16.5.2. </span>Coverage block in families and libraries<a class="headerlink" href="#coverage-block-in-families-and-libraries" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">16.5.2. </span>Coverage block in families and libraries<a class="headerlink" href="#coverage-block-in-families-and-libraries" title="Permalink to this heading">¶</a></h3>
 <p>Coverage dependent parameters can be added to a family or library reaction by specifying a dictionary in the “coverage_dependence” field, with the names of the species serving as the keys. Nested within that dictionary is a dictionary of the coverage dependent parameters for each species. For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
@@ -417,9 +414,9 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 </section>
 </section>
 <section id="examples">
-<h2><span class="section-number">16.6. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">16.6. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h2>
 <section id="example-input-file-methane-steam-reforming">
-<h3><span class="section-number">16.6.1. </span>Example input file: methane steam reforming<a class="headerlink" href="#example-input-file-methane-steam-reforming" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">16.6.1. </span>Example input file: methane steam reforming<a class="headerlink" href="#example-input-file-methane-steam-reforming" title="Permalink to this heading">¶</a></h3>
 <p>This is a simple input file steam reforming of methane</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
@@ -627,7 +624,7 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 </div>
 </section>
 <section id="example-input-file-methane-oxidation">
-<h3><span class="section-number">16.6.2. </span>Example input file: methane oxidation<a class="headerlink" href="#example-input-file-methane-oxidation" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">16.6.2. </span>Example input file: methane oxidation<a class="headerlink" href="#example-input-file-methane-oxidation" title="Permalink to this heading">¶</a></h3>
 <p>This is an input file for catalytic partial oxidation (CPOX) of methane</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
@@ -720,24 +717,30 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 </div>
 </section>
 <section id="additional-notes">
-<h3><span class="section-number">16.6.3. </span>Additional Notes<a class="headerlink" href="#additional-notes" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">16.6.3. </span>Additional Notes<a class="headerlink" href="#additional-notes" title="Permalink to this heading">¶</a></h3>
 <p>Other things to update:
 * table of atom types in users/rmg/database/introduction.rst
 * table of atom types in reference/molecule/atomtype.rst</p>
-<dl class="citation">
-<dt class="label" id="goldsmith2017"><span class="brackets">Goldsmith2017</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id2">2</a>,<a href="#id3">3</a>,<a href="#id7">4</a>,<a href="#id8">5</a>,<a href="#id9">6</a>)</span></dt>
-<dd><p>C.F. Goldsmith and R.H. West. “Automatic Generation of Microkinetic Mechanisms for Heterogeneous Catalysis.” <em>J. Phys. Chem. C.</em> <strong>121(18)</strong>, p. 9970–9981 (2017).</p>
-</dd>
-<dt class="label" id="deutschmann2006"><span class="brackets"><a class="fn-backref" href="#id10">Deutschmann2006</a></span></dt>
-<dd><p>R. Quiceno, J. Pérez-Ramírez, J. Warnatz and O. Deutschmann. “Modeling the high-temperature catalytic partion oxidation of methane over platinum gauze: Detailed gas-phase and surface chemistries coupled with 3D flow field simulations.” <em>Appl. Catal., A</em> <strong>303(2)</strong>, p. 166-176 (2006).</p>
-</dd>
-<dt class="label" id="mazeau2019"><span class="brackets">Mazeau2019</span><span class="fn-backref">(<a href="#id4">1</a>,<a href="#id6">2</a>)</span></dt>
-<dd><p>E.J. Mazeau, P. Satupte, K. Blondal, C.F. Goldsmith and R.H. West. “Linear Scaling Relationships and Sensitivity Analyses in RMG-Cat.” <em>Unpublished</em>.</p>
-</dd>
-<dt class="label" id="abild2007"><span class="brackets"><a class="fn-backref" href="#id5">Abild2007</a></span></dt>
-<dd><p>F. Abild-Pedersen, J. Greeley, F. Studt, J. Rossmeisl, T.R. Munter, P.G. Moses, E. Skúlason, T. Bligaard, and J.K. Nørskov. “Scaling Properties of Adsorption Energies for Hydrogen-Containing Molecules on Transition-Metal Surfaces.” <em>Phys. Rev. Lett.</em> <strong>99(1)</strong>, p. 4-7 (2007).</p>
-</dd>
-</dl>
+<div role="list" class="citation-list">
+<div class="citation" id="goldsmith2017" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>Goldsmith2017<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id2">2</a>,<a role="doc-backlink" href="#id3">3</a>,<a role="doc-backlink" href="#id7">4</a>,<a role="doc-backlink" href="#id8">5</a>,<a role="doc-backlink" href="#id9">6</a>)</span>
+<p>C.F. Goldsmith and R.H. West. “Automatic Generation of Microkinetic Mechanisms for Heterogeneous Catalysis.” <em>J. Phys. Chem. C.</em> <strong>121(18)</strong>, p. 9970–9981 (2017).</p>
+</div>
+<div class="citation" id="deutschmann2006" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id10">Deutschmann2006</a><span class="fn-bracket">]</span></span>
+<p>R. Quiceno, J. Pérez-Ramírez, J. Warnatz and O. Deutschmann. “Modeling the high-temperature catalytic partion oxidation of methane over platinum gauze: Detailed gas-phase and surface chemistries coupled with 3D flow field simulations.” <em>Appl. Catal., A</em> <strong>303(2)</strong>, p. 166-176 (2006).</p>
+</div>
+<div class="citation" id="mazeau2019" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>Mazeau2019<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id4">1</a>,<a role="doc-backlink" href="#id6">2</a>)</span>
+<p>E.J. Mazeau, P. Satupte, K. Blondal, C.F. Goldsmith and R.H. West. “Linear Scaling Relationships and Sensitivity Analyses in RMG-Cat.” <em>Unpublished</em>.</p>
+</div>
+<div class="citation" id="abild2007" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">Abild2007</a><span class="fn-bracket">]</span></span>
+<p>F. Abild-Pedersen, J. Greeley, F. Studt, J. Rossmeisl, T.R. Munter, P.G. Moses, E. Skúlason, T. Bligaard, and J.K. Nørskov. “Scaling Properties of Adsorption Energies for Hydrogen-Containing Molecules on Transition-Metal Surfaces.” <em>Phys. Rev. Lett.</em> <strong>99(1)</strong>, p. 4-7 (2007).</p>
+</div>
+</div>
 </section>
 </section>
 </section>
@@ -838,7 +841,7 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -872,7 +875,7 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

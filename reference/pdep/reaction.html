@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Reaction events &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -59,9 +60,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="reaction-events">
-<h1>Reaction events<a class="headerlink" href="#reaction-events" title="Permalink to this headline">¶</a></h1>
+<h1>Reaction events<a class="headerlink" href="#reaction-events" title="Permalink to this heading">¶</a></h1>
 <section id="microcanonical-rate-coefficients">
-<h2>Microcanonical rate coefficients<a class="headerlink" href="#microcanonical-rate-coefficients" title="Permalink to this headline">¶</a></h2>
+<h2>Microcanonical rate coefficients<a class="headerlink" href="#microcanonical-rate-coefficients" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient">
 <span class="sig-prename descclassname"><span class="pre">rmgpy.pdep.reaction.</span></span><span class="sig-name descname"><span class="pre">calculate_microcanonical_rate_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">j_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">reac_dens_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">prod_dens_states=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T=0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.calculate_microcanonical_rate_coefficient" title="Permalink to this definition">¶</a></dt>
@@ -89,7 +90,7 @@ inverse Laplace transform method.</p>
 
 </section>
 <section id="rrkm-theory">
-<h2>RRKM theory<a class="headerlink" href="#rrkm-theory" title="Permalink to this headline">¶</a></h2>
+<h2>RRKM theory<a class="headerlink" href="#rrkm-theory" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.pdep.reaction.apply_rrkm_theory">
 <span class="sig-prename descclassname"><span class="pre">rmgpy.pdep.reaction.</span></span><span class="sig-name descname"><span class="pre">apply_rrkm_theory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transition_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">j_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">dens_states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_rrkm_theory" title="Permalink to this definition">¶</a></dt>
@@ -119,7 +120,7 @@ than the inverse Laplace transform method.</p>
 
 </section>
 <section id="inverse-laplace-transform-method">
-<h2>Inverse Laplace transform method<a class="headerlink" href="#inverse-laplace-transform-method" title="Permalink to this headline">¶</a></h2>
+<h2>Inverse Laplace transform method<a class="headerlink" href="#inverse-laplace-transform-method" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.pdep.reaction.apply_inverse_laplace_transform_method">
 <span class="sig-prename descclassname"><span class="pre">rmgpy.pdep.reaction.</span></span><span class="sig-name descname"><span class="pre">apply_inverse_laplace_transform_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transition_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Arrhenius</span> <span class="pre">kinetics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">j_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">dens_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T=0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.reaction.apply_inverse_laplace_transform_method" title="Permalink to this definition">¶</a></dt>
@@ -230,7 +231,7 @@ the reaction barrier <span class="math notranslate nohighlight">\(E_0^\ddagger -
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -264,7 +265,7 @@ the reaction barrier <span class="math notranslate nohighlight">\(E_0^\ddagger -
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>3. Methods for Determining Phenomenological Rate Coefficients &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -59,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="methods-for-determining-phenomenological-rate-coefficients">
-<h1><span class="section-number">3. </span>Methods for Determining Phenomenological Rate Coefficients<a class="headerlink" href="#methods-for-determining-phenomenological-rate-coefficients" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">3. </span>Methods for Determining Phenomenological Rate Coefficients<a class="headerlink" href="#methods-for-determining-phenomenological-rate-coefficients" title="Permalink to this heading">¶</a></h1>
 <p>Solving the energy-grained master equation is often prohibitively expensive for
 chemical reaction mechanisms of even modest size. Instead, we seek to reduce
 the master equation matrix down to a set of phenomenological rate coefficients
@@ -76,7 +77,7 @@ but is very computationally expensive and not very robust. Your choice of
 method will depend on the particular balance between expense, robustness, and
 rigor that is required for your intended application.</p>
 <section id="a-common-formalism">
-<h2><span class="section-number">3.1. </span>A Common Formalism<a class="headerlink" href="#a-common-formalism" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.1. </span>A Common Formalism<a class="headerlink" href="#a-common-formalism" title="Permalink to this heading">¶</a></h2>
 <p>All of the methods discussed here can be expressed in terms of a common
 formalism. Each method seeks to express the population distribution vector
 <span class="math notranslate nohighlight">\(p_i(E, t)\)</span> for each unimolecular isomer <span class="math notranslate nohighlight">\(i\)</span> as a linear
@@ -122,13 +123,13 @@ coefficients <span class="math notranslate nohighlight">\(k(T, P)\)</span> and t
 population distribution predicted by that method.</p>
 </section>
 <section id="the-modified-strong-collision-method">
-<h2><span class="section-number">3.2. </span>The Modified Strong Collision Method<a class="headerlink" href="#the-modified-strong-collision-method" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.2. </span>The Modified Strong Collision Method<a class="headerlink" href="#the-modified-strong-collision-method" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="the-reservoir-state-method">
-<h2><span class="section-number">3.3. </span>The Reservoir State Method<a class="headerlink" href="#the-reservoir-state-method" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.3. </span>The Reservoir State Method<a class="headerlink" href="#the-reservoir-state-method" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="the-chemically-signficant-eigenvalues-method">
-<h2><span class="section-number">3.4. </span>The Chemically-Signficant Eigenvalues Method<a class="headerlink" href="#the-chemically-signficant-eigenvalues-method" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.4. </span>The Chemically-Signficant Eigenvalues Method<a class="headerlink" href="#the-chemically-signficant-eigenvalues-method" title="Permalink to this heading">¶</a></h2>
 </section>
 </section>
 
@@ -206,7 +207,7 @@ population distribution predicted by that method.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -240,7 +241,7 @@ population distribution predicted by that method.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

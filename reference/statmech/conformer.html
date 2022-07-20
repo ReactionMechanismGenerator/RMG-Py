@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>rmgpy.statmech.Conformer &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -59,17 +60,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="rmgpy-statmech-conformer">
-<h1>rmgpy.statmech.Conformer<a class="headerlink" href="#rmgpy-statmech-conformer" title="Permalink to this headline">¶</a></h1>
+<h1>rmgpy.statmech.Conformer<a class="headerlink" href="#rmgpy-statmech-conformer" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.statmech.Conformer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.statmech.</span></span><span class="sig-name descname"><span class="pre">Conformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin_multiplicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optical_isomers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of an individual molecular conformation. The attributes
 are:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 22%" />
-<col style="width: 78%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Attribute</p></th>
 <th class="head"><p>Description</p></th>
@@ -112,10 +109,10 @@ molecular system.</p>
 <span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for dumping objects as dictionaries for YAML files</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>A dictionary representation of the object</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict</p>
 </dd>
 </dl>
@@ -186,8 +183,8 @@ torsional rotation around the axis defined by the two atoms in
 <cite>pivots</cite>. The list <cite>top1</cite> contains the atoms that should be considered
 as part of the rotating top; this list should contain the pivot atom
 connecting the top to the rest of the molecule.    The procedure used is
-that of Pitzer <a class="footnote-reference brackets" href="#id3" id="id1">1</a>, which is described as <span class="math notranslate nohighlight">\(I^{(2,option)}\)</span> by East
-and Radom <a class="footnote-reference brackets" href="#id4" id="id2">2</a>. In this procedure, the molecule is divided into two
+that of Pitzer <a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, which is described as <span class="math notranslate nohighlight">\(I^{(2,option)}\)</span> by East
+and Radom <a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>. In this procedure, the molecule is divided into two
 tops: those at either end of the hindered rotor bond. The moment of
 inertia of each top is evaluated using an axis determined by option.
 Finally, the reduced moment of inertia is evaluated from the moment of inertia
@@ -195,10 +192,6 @@ of each top via the formula (I1*I2)/(I1+I2).</p>
 <p><code class="docutils literal notranslate"><span class="pre">option</span></code> is an integer corresponding to one of three possible ways of calculating the internal reduced moment
 of inertia, as discussed in East and Radom [2]</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 9%" />
-<col style="width: 91%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p>option = 1</p></td>
 <td><p>moments of inertia of each rotating group calculated about the axis containing the twisting bond</p></td>
@@ -215,14 +208,14 @@ centers of mass of both groups</p></td>
 </table>
 <div class="math notranslate nohighlight">
 \[\frac{1}{I^{(2,option)}} = \frac{1}{I_1} + \frac{1}{I_2}\]</div>
-<dl class="footnote brackets">
-<dt class="label" id="id3"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
-<dd><p>Pitzer, K. S. <em>J. Chem. Phys.</em> <strong>14</strong>, p. 239-243 (1946).</p>
-</dd>
-<dt class="label" id="id4"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
-<dd><p>East, A. L. L. and Radom, L. <em>J. Chem. Phys.</em> <strong>106</strong>, p. 6655-6674 (1997).</p>
-</dd>
-</dl>
+<aside class="footnote brackets" id="id3" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Pitzer, K. S. <em>J. Chem. Phys.</em> <strong>14</strong>, p. 239-243 (1946).</p>
+</aside>
+<aside class="footnote brackets" id="id4" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>East, A. L. L. and Radom, L. <em>J. Chem. Phys.</em> <strong>106</strong>, p. 6655-6674 (1997).</p>
+</aside>
 </dd></dl>
 
 <dl class="py method">
@@ -288,13 +281,13 @@ used.</p>
 <span class="sig-name descname"><span class="pre">make_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">class_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer.make_object" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for constructing objects from a dictionary (used when loading YAML files)</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>dict</em>) – The dictionary representation of the object</p></li>
 <li><p><strong>class_dict</strong> (<em>dict</em>) – A mapping of class names to the classes themselves</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
 </dd>
 </dl>
@@ -311,7 +304,7 @@ used.</p>
 <span class="sig-name descname"><span class="pre">modes</span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.modes" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>modes</p>
 </dd>
 </dl>
@@ -328,7 +321,7 @@ used.</p>
 <span class="sig-name descname"><span class="pre">optical_isomers</span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.optical_isomers" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>optical_isomers</p>
 </dd>
 </dl>
@@ -339,7 +332,7 @@ used.</p>
 <span class="sig-name descname"><span class="pre">spin_multiplicity</span></span><a class="headerlink" href="#rmgpy.statmech.Conformer.spin_multiplicity" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>spin_multiplicity</p>
 </dd>
 </dl>
@@ -410,7 +403,7 @@ used.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -444,7 +437,7 @@ used.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

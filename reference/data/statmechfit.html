@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>rmgpy.data.statmechfit &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -59,9 +60,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="rmgpy-data-statmechfit">
-<h1>rmgpy.data.statmechfit<a class="headerlink" href="#rmgpy-data-statmechfit" title="Permalink to this headline">¶</a></h1>
+<h1>rmgpy.data.statmechfit<a class="headerlink" href="#rmgpy-data-statmechfit" title="Permalink to this heading">¶</a></h1>
 <section id="fitting-functions">
-<h2>Fitting functions<a class="headerlink" href="#fitting-functions" title="Permalink to this headline">¶</a></h2>
+<h2>Fitting functions<a class="headerlink" href="#fitting-functions" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.data.statmechfit.fit_statmech_to_heat_capacity">
 <span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">fit_statmech_to_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.fit_statmech_to_heat_capacity" title="Permalink to this definition">¶</a></dt>
@@ -108,7 +109,7 @@ single “pseudo-rotor”.</p>
 
 </section>
 <section id="helper-functions">
-<h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
+<h2>Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.data.statmechfit.harmonic_oscillator_heat_capacity">
 <span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">harmonic_oscillator_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.harmonic_oscillator_heat_capacity" title="Permalink to this definition">¶</a></dt>
@@ -152,7 +153,7 @@ height <cite>barr</cite> in cm^-1.</p>
 
 </section>
 <section id="helper-classes">
-<h2>Helper classes<a class="headerlink" href="#helper-classes" title="Permalink to this headline">¶</a></h2>
+<h2>Helper classes<a class="headerlink" href="#helper-classes" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.data.statmechfit.DirectFit">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.data.statmechfit.</span></span><span class="sig-name descname"><span class="pre">DirectFit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cvdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vib</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit" title="Permalink to this definition">¶</a></dt>
@@ -215,10 +216,6 @@ method of the derived class. This is the method that actually conducts
 the call to DQED. Returns the solution vector and a flag indicating
 the status of the solve. The possible output values of the flag are:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 6%" />
-<col style="width: 94%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Value</p></th>
 <th class="head"><p>Meaning</p></th>
@@ -319,10 +316,6 @@ method of the derived class. This is the method that actually conducts
 the call to DQED. Returns the solution vector and a flag indicating
 the status of the solve. The possible output values of the flag are:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 6%" />
-<col style="width: 94%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Value</p></th>
 <th class="head"><p>Meaning</p></th>
@@ -423,10 +416,6 @@ method of the derived class. This is the method that actually conducts
 the call to DQED. Returns the solution vector and a flag indicating
 the status of the solve. The possible output values of the flag are:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 6%" />
-<col style="width: 94%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Value</p></th>
 <th class="head"><p>Meaning</p></th>
@@ -539,7 +528,7 @@ the status of the solve. The possible output values of the flag are:</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -573,7 +562,7 @@ the status of the solve. The possible output values of the flag are:</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

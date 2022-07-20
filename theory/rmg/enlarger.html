@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>1. Rate-based Model Enlarging Algorithm &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -59,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="rate-based-model-enlarging-algorithm">
-<span id="ratebasedmodelenlarger"></span><h1><span class="section-number">1. </span>Rate-based Model Enlarging Algorithm<a class="headerlink" href="#rate-based-model-enlarging-algorithm" title="Permalink to this headline">¶</a></h1>
+<span id="ratebasedmodelenlarger"></span><h1><span class="section-number">1. </span>Rate-based Model Enlarging Algorithm<a class="headerlink" href="#rate-based-model-enlarging-algorithm" title="Permalink to this heading">¶</a></h1>
 <figure class="align-default">
 <img alt="../../_images/fluxAlgorithm.png" src="../../_images/fluxAlgorithm.png" />
 </figure>
@@ -85,16 +86,18 @@ it is added to the core. The parameter <span class="math notranslate nohighlight
 <code class="docutils literal notranslate"><span class="pre">toleranceMoveToCore</span></code> that can be adjusted under the <a class="reference internal" href="../../users/rmg/input.html#modeltolerances"><span class="std std-ref">model tolerances</span></a>
 in the <a class="reference internal" href="../../users/rmg/input.html#input"><span class="std std-ref">RMG Input File</span></a>.</p>
 <p>For more information on rate-based model enlargement, please refer to the papers <a class="reference internal" href="../../users/rmg/input.html#gao2016" id="id1"><span>[Gao2016]</span></a> or <a class="reference internal" href="#susnow1997" id="id2"><span>[Susnow1997]</span></a>.</p>
-<dl class="citation">
-<dt class="label" id="gao2016"><span class="brackets"><a class="fn-backref" href="#id1">Gao2016</a></span></dt>
-<dd><p>C. W. Gao, J. W. Allen, W. H. Green, R. H. West, “Reaction Mechanism Generator: automatic construction of chemical kinetic mechanisms.” <em>Computer Physics Communications</em> (2016).</p>
-</dd>
-<dt class="label" id="susnow1997"><span class="brackets"><a class="fn-backref" href="#id2">Susnow1997</a></span></dt>
-<dd><p>R. G. Susnow, A. M. Dean, W. H. Green, P. K. Peczak, and L. J. Broadbelt. “Rate-Based Construction of Kinetic Models for Complex Systems.” <em>J. Phys. Chem. A</em> <strong>101</strong>, p. 3731-3740 (1997).</p>
-</dd>
-</dl>
+<div role="list" class="citation-list">
+<div class="citation" id="gao2016" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">Gao2016</a><span class="fn-bracket">]</span></span>
+<p>C. W. Gao, J. W. Allen, W. H. Green, R. H. West, “Reaction Mechanism Generator: automatic construction of chemical kinetic mechanisms.” <em>Computer Physics Communications</em> (2016).</p>
+</div>
+<div class="citation" id="susnow1997" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">Susnow1997</a><span class="fn-bracket">]</span></span>
+<p>R. G. Susnow, A. M. Dean, W. H. Green, P. K. Peczak, and L. J. Broadbelt. “Rate-Based Construction of Kinetic Models for Complex Systems.” <em>J. Phys. Chem. A</em> <strong>101</strong>, p. 3731-3740 (1997).</p>
+</div>
+</div>
 <section id="filtering-reactions-within-the-rate-based-algorithm">
-<span id="filterreactionstheory"></span><h2><span class="section-number">1.1. </span>Filtering Reactions within the Rate-based Algorithm<a class="headerlink" href="#filtering-reactions-within-the-rate-based-algorithm" title="Permalink to this headline">¶</a></h2>
+<span id="filterreactionstheory"></span><h2><span class="section-number">1.1. </span>Filtering Reactions within the Rate-based Algorithm<a class="headerlink" href="#filtering-reactions-within-the-rate-based-algorithm" title="Permalink to this heading">¶</a></h2>
 <p>Filtering reactions in the react step in the flux-based algorithm attempts to speed up model generation by attacking the pain point.  RMG has trouble
 converging when generating models for large molecules because it searches for reactions on the order of <span class="math notranslate nohighlight">\((n_{reaction\: sites})^{{n_{species}}}\)</span>.</p>
 <p>The original algorithm performs in the following manner:</p>
@@ -211,7 +214,7 @@ shifts from <code class="docutils literal notranslate"><span class="pre">False</
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -245,7 +248,7 @@ shifts from <code class="docutils literal notranslate"><span class="pre">False</
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

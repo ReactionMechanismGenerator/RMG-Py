@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Saving Arkane output &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -58,7 +59,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="module-arkane.output">
-<span id="saving-arkane-output"></span><h1>Saving Arkane output<a class="headerlink" href="#module-arkane.output" title="Permalink to this headline">¶</a></h1>
+<span id="saving-arkane-output"></span><h1>Saving Arkane output<a class="headerlink" href="#module-arkane.output" title="Permalink to this heading">¶</a></h1>
 <p>This module contains helper functionality for writing Arkane output files.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="arkane.output.PrettifyVisitor">
@@ -127,13 +128,13 @@ function.</p>
 <span class="sig-prename descclassname"><span class="pre">arkane.output.</span></span><span class="sig-name descname"><span class="pre">get_str_xyz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.get_str_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a string representation of the 3D coordinates from the conformer.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>spc</strong> (<a class="reference internal" href="../species/species.html#rmgpy.species.Species" title="rmgpy.species.Species"><em>Species</em></a>) – A Species instance.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A string representation of the coordinates</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
@@ -153,7 +154,7 @@ onto multiple lines, indenting as appropriate for readability.</p>
 <span class="sig-prename descclassname"><span class="pre">arkane.output.</span></span><span class="sig-name descname"><span class="pre">save_kinetics_lib</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lib_long_desc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.save_kinetics_lib" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save an RMG kinetics library.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>rxn_list</strong> (<em>list</em>) – Entries are Reaction object instances for which kinetics will be saved.</p></li>
 <li><p><strong>path</strong> (<em>str</em>) – The base folder in which the kinetic library will be saved.</p></li>
@@ -169,7 +170,7 @@ onto multiple lines, indenting as appropriate for readability.</p>
 <span class="sig-prename descclassname"><span class="pre">arkane.output.</span></span><span class="sig-name descname"><span class="pre">save_thermo_lib</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lib_long_desc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.save_thermo_lib" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save an RMG thermo library.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>species_list</strong> (<em>list</em>) – Entries are Species object instances for which thermo will be saved.</p></li>
 <li><p><strong>path</strong> (<em>str</em>) – The base folder in which the thermo library will be saved.</p></li>
@@ -243,7 +244,7 @@ onto multiple lines, indenting as appropriate for readability.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -277,7 +278,7 @@ onto multiple lines, indenting as appropriate for readability.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

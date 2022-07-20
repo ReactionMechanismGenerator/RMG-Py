@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>9.11. Isotopes &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -59,9 +60,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="isotopes">
-<span id="id1"></span><h1><span class="section-number">9.11. </span>Isotopes<a class="headerlink" href="#isotopes" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1><span class="section-number">9.11. </span>Isotopes<a class="headerlink" href="#isotopes" title="Permalink to this heading">¶</a></h1>
 <section id="describing-isotopes-in-adjacency-lists">
-<h2><span class="section-number">9.11.1. </span>Describing isotopes in adjacency lists<a class="headerlink" href="#describing-isotopes-in-adjacency-lists" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.11.1. </span>Describing isotopes in adjacency lists<a class="headerlink" href="#describing-isotopes-in-adjacency-lists" title="Permalink to this heading">¶</a></h2>
 <p>Isotopic enrichment can be indicated in a molecular structure’s adjacency list.
 The example below is methane with an isotopically labeled carbon of isotope
 number 13, which is indicated with <code class="docutils literal notranslate"><span class="pre">i13</span></code>:</p>
@@ -74,7 +75,7 @@ number 13, which is indicated with <code class="docutils literal notranslate"><s
 </div>
 </section>
 <section id="running-the-rmg-isotopes-algorithm">
-<h2><span class="section-number">9.11.2. </span>Running the RMG isotopes algorithm<a class="headerlink" href="#running-the-rmg-isotopes-algorithm" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.11.2. </span>Running the RMG isotopes algorithm<a class="headerlink" href="#running-the-rmg-isotopes-algorithm" title="Permalink to this heading">¶</a></h2>
 <p>The isotopes script is located in the folder scripts. To run the algorithm,
 ensure the RMG packages are loaded and type:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">rmg</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">isotopes</span><span class="o">.</span><span class="n">py</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="nb">input</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">py</span>
@@ -125,7 +126,7 @@ fluctuations in enrichment ten to one hundred times larger than from non-hydroge
 kinetic isotope effects.</p>
 </section>
 <section id="output-from-script">
-<h2><span class="section-number">9.11.3. </span>Output from script<a class="headerlink" href="#output-from-script" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.11.3. </span>Output from script<a class="headerlink" href="#output-from-script" title="Permalink to this heading">¶</a></h2>
 <p>The isotope generation script will output two files inside the nested folders
 <code class="docutils literal notranslate"><span class="pre">iso/chemkin</span></code>, unless <code class="docutils literal notranslate"><span class="pre">--output</span></code> is specified. The file
 <code class="docutils literal notranslate"><span class="pre">species_dictionary.txt</span></code> lists the structure of all isotopologue using the
@@ -134,7 +135,7 @@ is a chemkin input file containing elements, species, thermo, and reactions of
 the entire system.</p>
 </section>
 <section id="further-reading-resources">
-<h2><span class="section-number">9.11.4. </span>Further reading &amp; resources<a class="headerlink" href="#further-reading-resources" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.11.4. </span>Further reading &amp; resources<a class="headerlink" href="#further-reading-resources" title="Permalink to this heading">¶</a></h2>
 <p>A description of mechanisms generated using this module and its application to
 obtaining intramolecular isotopic enrichment information is described in
 <a class="reference external" href="https://doi.org/10.1016/j.chemgeo.2019.02.036">Chemical Geology, Volume 514, page 1</a>.</p>
@@ -217,7 +218,7 @@ and the isotopologues used in RMG is deposited at <a class="reference external" 
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -252,7 +253,7 @@ and the isotopologues used in RMG is deposited at <a class="reference external" 
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

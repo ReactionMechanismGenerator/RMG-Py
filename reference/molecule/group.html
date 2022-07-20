@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>rmgpy.molecule.Group &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -58,18 +59,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="rmgpy-molecule-group">
-<h1>rmgpy.molecule.Group<a class="headerlink" href="#rmgpy-molecule-group" title="Permalink to this headline">¶</a></h1>
+<h1>rmgpy.molecule.Group<a class="headerlink" href="#rmgpy-molecule-group" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">Group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a molecular substructure group using a graph data
 type, extending the <code class="xref py py-class docutils literal notranslate"><span class="pre">Graph</span></code> class. The attributes are:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 17%" />
-<col style="width: 17%" />
-<col style="width: 66%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Attribute</p></th>
 <th class="head"><p>Type</p></th>
@@ -157,7 +153,7 @@ this method cannot handle very general cases, so it is better to be conservative
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.classify_benzene_carbons">
 <span class="sig-name descname"><span class="pre">classify_benzene_carbons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">partners=None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#rmgpy.molecule.Group.classify_benzene_carbons" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>group</strong> – :class:Group with atoms to classify</p></li>
 <li><p><strong>partners</strong> – dictionary of partnered up atoms, which must be a cbf atom</p></li>
@@ -214,7 +210,7 @@ original vertices and edges are used in the new graph.</p>
 <dd><p>This method creates an non-radical, uncharged, :class:GroupAtom with specified list of atomtypes and
 connects it to one atom of the group, ‘connecting_atom’. This is useful for making sample atoms.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atomtypes</strong> – list of atomtype labels (strs)</p></li>
 <li><p><strong>connecting_atom</strong> – :class:GroupAtom that is connected to the new benzene atom</p></li>
@@ -237,7 +233,7 @@ connects it to one atom of the group, ‘connecting_atom’. This is useful for 
 <span class="sig-name descname"><span class="pre">elementCount</span></span><a class="headerlink" href="#rmgpy.molecule.Group.elementCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>elementCount</p>
 </dd>
 </dl>
@@ -612,7 +608,7 @@ if keep_identical_labels=True merge_groups will not try to merge atoms with the 
 <span class="sig-name descname"><span class="pre">multiplicity</span></span><a class="headerlink" href="#rmgpy.molecule.Group.multiplicity" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>multiplicity</p>
 </dd>
 </dl>
@@ -623,7 +619,7 @@ if keep_identical_labels=True merge_groups will not try to merge atoms with the 
 <span class="sig-name descname"><span class="pre">ordered_vertices</span></span><a class="headerlink" href="#rmgpy.molecule.Group.ordered_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ordered_vertices</p>
 </dd>
 </dl>
@@ -642,7 +638,7 @@ to pick bond orders that make sense given the selected atomtypes</p>
 <span class="sig-name descname"><span class="pre">props</span></span><a class="headerlink" href="#rmgpy.molecule.Group.props" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>props</p>
 </dd>
 </dl>
@@ -653,7 +649,7 @@ to pick bond orders that make sense given the selected atomtypes</p>
 <span class="sig-name descname"><span class="pre">radicalCount</span></span><a class="headerlink" href="#rmgpy.molecule.Group.radicalCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘short’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>radicalCount</p>
 </dd>
 </dl>
@@ -728,7 +724,7 @@ the isomorphism functions, much more efficient.</p>
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.sort_by_connectivity">
 <span class="sig-name descname"><span class="pre">sort_by_connectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list</span> <span class="pre">atom_list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#rmgpy.molecule.Group.sort_by_connectivity" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>atom_list</strong> – input list of atoms</p>
 </dd>
 </dl>
@@ -858,7 +854,7 @@ isomorphism checks.</p>
 <span class="sig-name descname"><span class="pre">vertices</span></span><a class="headerlink" href="#rmgpy.molecule.Group.vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>vertices</p>
 </dd>
 </dl>
@@ -929,7 +925,7 @@ isomorphism checks.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -963,7 +959,7 @@ isomorphism checks.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

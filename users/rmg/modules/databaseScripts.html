@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>9.9. Database Scripts &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -59,10 +60,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="database-scripts">
-<span id="databasescripts"></span><h1><span class="section-number">9.9. </span>Database Scripts<a class="headerlink" href="#database-scripts" title="Permalink to this headline">¶</a></h1>
+<span id="databasescripts"></span><h1><span class="section-number">9.9. </span>Database Scripts<a class="headerlink" href="#database-scripts" title="Permalink to this heading">¶</a></h1>
 <p>This section details usage for scripts available in <code class="docutils literal notranslate"><span class="pre">RMG-database/scripts</span></code> folder.</p>
 <section id="evanspolanyi-py">
-<h2><span class="section-number">9.9.1. </span>evansPolanyi.py<a class="headerlink" href="#evanspolanyi-py" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.9.1. </span>evansPolanyi.py<a class="headerlink" href="#evanspolanyi-py" title="Permalink to this heading">¶</a></h2>
 <p>This script will generate an Evans-Polanyi plot for a single kinetics
 depository.</p>
 <p>Usage:</p>
@@ -80,7 +81,7 @@ depository.</p>
 </div>
 </section>
 <section id="exportkineticslibrarytochemkin-py">
-<h2><span class="section-number">9.9.2. </span>exportKineticsLibraryToChemkin.py<a class="headerlink" href="#exportkineticslibrarytochemkin-py" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.9.2. </span>exportKineticsLibraryToChemkin.py<a class="headerlink" href="#exportkineticslibrarytochemkin-py" title="Permalink to this heading">¶</a></h2>
 <p>This script exports an individual RMG-Py kinetics library to a chemkin
 and dictionary file.  Thermo is taken from RMG’s estimates and libraries.
 In order to use more specific thermo, you must tweak the thermoLibraries and
@@ -100,7 +101,7 @@ chem.inp and species_dictionary.txt files in the local directory.</p>
 </div>
 </section>
 <section id="importchemkinlibrary-py">
-<h2><span class="section-number">9.9.3. </span>importChemkinLibrary.py<a class="headerlink" href="#importchemkinlibrary-py" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.9.3. </span>importChemkinLibrary.py<a class="headerlink" href="#importchemkinlibrary-py" title="Permalink to this heading">¶</a></h2>
 <p>This script imports a chemkin file (along with RMG dictionary) from a local directory and saves a set of
 RMG-Py kinetics library and thermo library files.  These py files are automatically added to the
 input/kinetics/libraries and input/thermo/libraries folder under the user-specified <cite>name</cite> for the chemkin library.</p>
@@ -120,7 +121,7 @@ input/kinetics/libraries and input/thermo/libraries folder under the user-specif
 </div>
 </section>
 <section id="process-family-images-py">
-<h2><span class="section-number">9.9.4. </span>process_family_images.py<a class="headerlink" href="#process-family-images-py" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.9.4. </span>process_family_images.py<a class="headerlink" href="#process-family-images-py" title="Permalink to this heading">¶</a></h2>
 <p>This script processes reaction family template images (saved as eps files) into user friendly files (pdf and pngs).
 This should typically be run whenever a new family is added or an existing family is updated.</p>
 <dl class="simple">
@@ -216,7 +217,7 @@ to <code class="docutils literal notranslate"><span class="pre">&lt;policy</span
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -251,7 +252,7 @@ to <code class="docutils literal notranslate"><span class="pre">&lt;policy</span
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

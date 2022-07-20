@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>rmgpy.molecule.graph.Graph &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -58,7 +59,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="rmgpy-molecule-graph-graph">
-<h1>rmgpy.molecule.graph.Graph<a class="headerlink" href="#rmgpy-molecule-graph-graph" title="Permalink to this headline">¶</a></h1>
+<h1>rmgpy.molecule.graph.Graph<a class="headerlink" href="#rmgpy-molecule-graph-graph" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.molecule.graph.Graph">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.graph.</span></span><span class="sig-name descname"><span class="pre">Graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph" title="Permalink to this definition">¶</a></dt>
@@ -104,7 +105,7 @@ original vertices and edges are used in the new graph.</p>
 otherwise, and the matching mapping.
 Uses the VF2 algorithm of Vento and Foggia.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>initial_map</strong> (<em>dict</em><em>, </em><em>optional</em>) – initial atom mapping to use</p></li>
 <li><p><strong>save_order</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, reset atom order after performing atom isomorphism</p></li>
@@ -298,7 +299,7 @@ is in one or more cycles in the graph, or <code class="xref py py-data docutils 
 <dd><p>Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if two graphs are isomorphic and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. Uses the VF2 algorithm of Vento and Foggia.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>initial_map</strong> (<em>dict</em><em>, </em><em>optional</em>) – initial atom mapping to use</p></li>
 <li><p><strong>generate_initial_map</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, initialize map by pairing atoms with same labels</p></li>
@@ -345,7 +346,7 @@ cycles in the graph, or <code class="docutils literal notranslate"><span class="
 <span class="sig-name descname"><span class="pre">ordered_vertices</span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.ordered_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ordered_vertices</p>
 </dd>
 </dl>
@@ -415,7 +416,7 @@ used to accelerate the isomorphism checking.</p>
 <span class="sig-name descname"><span class="pre">vertices</span></span><a class="headerlink" href="#rmgpy.molecule.graph.Graph.vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>vertices</p>
 </dd>
 </dl>
@@ -486,7 +487,7 @@ used to accelerate the isomorphism checking.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -520,7 +521,7 @@ used to accelerate the isomorphism checking.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

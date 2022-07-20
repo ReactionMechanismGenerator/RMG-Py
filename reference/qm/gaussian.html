@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>rmgpy.qm.gaussian &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -58,7 +59,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="rmgpy-qm-gaussian">
-<h1>rmgpy.qm.gaussian<a class="headerlink" href="#rmgpy-qm-gaussian" title="Permalink to this headline">¶</a></h1>
+<h1>rmgpy.qm.gaussian<a class="headerlink" href="#rmgpy-qm-gaussian" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.Gaussian">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.qm.gaussian.</span></span><span class="sig-name descname"><span class="pre">Gaussian</span></span><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian" title="Permalink to this definition">¶</a></dt>
@@ -144,6 +145,13 @@ self.qm_data and self.point_group need to be generated before this method is cal
 <span class="sig-name descname"><span class="pre">determine_point_group</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.determine_point_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
 <p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.point_group</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMol.failureKeys">
+<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['ERROR</span> <span class="pre">TERMINATION',</span> <span class="pre">'IMAGINARY</span> <span class="pre">FREQUENCIES']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.failureKeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of phrases that indicate failure
+NONE of these must be present in a succesful job.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -249,6 +257,13 @@ then we start to use the crude coordinates.</p>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMol.successKeys">
+<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Normal</span> <span class="pre">termination</span> <span class="pre">of</span> <span class="pre">Gaussian']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.successKeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of phrases to indicate success.
+ALL of these must be present in a successful job.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMol.verify_output_file">
 <span class="sig-name descname"><span class="pre">verify_output_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.verify_output_file" title="Permalink to this definition">¶</a></dt>
@@ -317,6 +332,13 @@ self.qm_data and self.point_group need to be generated before this method is cal
 <span class="sig-name descname"><span class="pre">determine_point_group</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.determine_point_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
 <p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.point_group</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM3.failureKeys">
+<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['ERROR</span> <span class="pre">TERMINATION',</span> <span class="pre">'IMAGINARY</span> <span class="pre">FREQUENCIES']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.failureKeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of phrases that indicate failure
+NONE of these must be present in a succesful job.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -428,6 +450,13 @@ then we start to use the crude coordinates.</p>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM3.successKeys">
+<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Normal</span> <span class="pre">termination</span> <span class="pre">of</span> <span class="pre">Gaussian']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.successKeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of phrases to indicate success.
+ALL of these must be present in a successful job.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM3.verify_output_file">
 <span class="sig-name descname"><span class="pre">verify_output_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.verify_output_file" title="Permalink to this definition">¶</a></dt>
@@ -496,6 +525,13 @@ self.qm_data and self.point_group need to be generated before this method is cal
 <span class="sig-name descname"><span class="pre">determine_point_group</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.determine_point_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
 <p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.point_group</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM6.failureKeys">
+<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['ERROR</span> <span class="pre">TERMINATION',</span> <span class="pre">'IMAGINARY</span> <span class="pre">FREQUENCIES']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.failureKeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of phrases that indicate failure
+NONE of these must be present in a succesful job.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -607,6 +643,13 @@ then we start to use the crude coordinates.</p>
 <dd><p>The number of attempts with different script keywords</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM6.successKeys">
+<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Normal</span> <span class="pre">termination</span> <span class="pre">of</span> <span class="pre">Gaussian']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.successKeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of phrases to indicate success.
+ALL of these must be present in a successful job.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM6.verify_output_file">
 <span class="sig-name descname"><span class="pre">verify_output_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.verify_output_file" title="Permalink to this definition">¶</a></dt>
@@ -695,7 +738,7 @@ for the <cite>attempt</cite>.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -729,7 +772,7 @@ for the <cite>attempt</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

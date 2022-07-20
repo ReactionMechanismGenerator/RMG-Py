@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>12.3. Kinetics Database &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -60,7 +61,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="kinetics-database">
-<span id="kineticsdatabase"></span><h1><span class="section-number">12.3. </span>Kinetics Database<a class="headerlink" href="#kinetics-database" title="Permalink to this headline">¶</a></h1>
+<span id="kineticsdatabase"></span><h1><span class="section-number">12.3. </span>Kinetics Database<a class="headerlink" href="#kinetics-database" title="Permalink to this heading">¶</a></h1>
 <p>This section describes the general usage of RMG’s kinetic database. See <a class="reference internal" href="modification.html#kinetic-database-modification"><span class="std std-ref">Modifying the Kinetics Database</span></a> for
 instructions on modifying the database.</p>
 <p>Pressure independent reaction rates in RMG are calculated using a modified
@@ -83,7 +84,7 @@ using RMG’s thermo database, instead of being specified in the kinetic databas
 When Evans-Polanyi corrections are not used, <span class="math notranslate nohighlight">\(\Delta H_{rxn}\)</span> and <span class="math notranslate nohighlight">\(\alpha\)</span>
 are set to zero, and <span class="math notranslate nohighlight">\(E_0\)</span> is the activation energy of the reaction.</p>
 <section id="libraries">
-<h2><span class="section-number">12.3.1. </span>Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.3.1. </span>Libraries<a class="headerlink" href="#libraries" title="Permalink to this heading">¶</a></h2>
 <p>Kinetic libraries delineate kinetic parameters for specific reactions.
 RMG always chooses to use kinetics from libraries over families. If multiple libraries
 contain the same reaction, then precedence is given to whichever library is
@@ -102,10 +103,6 @@ families and are universally important to combustion systems.</p>
 </ul>
 <p>Below is a list of pre-packaged kinetics library reactions in RMG:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 40%" />
-<col style="width: 60%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Library</p></th>
 <th class="head"><p>Description</p></th>
@@ -323,7 +320,7 @@ families and are universally important to combustion systems.</p>
 </table>
 </section>
 <section id="families">
-<span id="kinetics-families-db"></span><h2><span class="section-number">12.3.2. </span>Families<a class="headerlink" href="#families" title="Permalink to this headline">¶</a></h2>
+<span id="kinetics-families-db"></span><h2><span class="section-number">12.3.2. </span>Families<a class="headerlink" href="#families" title="Permalink to this heading">¶</a></h2>
 <p>Allowable reactions in RMG are divided up into classes called <strong>reaction families</strong>.
 All reactions not listed in a kinetic library have their kinetic parameters
 estimated from the reaction families.</p>
@@ -334,7 +331,7 @@ estimated from the reaction families.</p>
 <li><p>rules.py containing kinetic parameters for rules</p></li>
 </ul>
 <p>There are currently 74 reaction families in RMG:</p>
-<table class="colwidths-given docutils align-default">
+<table class="docutils align-default">
 <colgroup>
 <col style="width: 40%" />
 <col style="width: 60%" />
@@ -565,7 +562,7 @@ estimated from the reaction families.</p>
 </tbody>
 </table>
 <section id="recipe">
-<h3><span class="section-number">12.3.2.1. </span>Recipe<a class="headerlink" href="#recipe" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.3.2.1. </span>Recipe<a class="headerlink" href="#recipe" title="Permalink to this heading">¶</a></h3>
 <p>The recipe can be found near the top of groups.py and describes the changes in
 bond order and radicals that occur during the reaction. Reacting atoms are
 labelled with a starred number. Shown below is the recipe for the H-abstraction
@@ -576,12 +573,6 @@ in the curly braces as shown above. For the order of bond change in the
 Change_Bond action, a -1 could represent a triple bond changing to a double
 bond while a +1 could represent a single bond changing to a double bond.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 18%" />
-<col style="width: 25%" />
-<col style="width: 31%" />
-<col style="width: 26%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Action</p></th>
 <th class="head"><p>Argument1</p></th>
@@ -623,7 +614,7 @@ reaction families can be applied. However, RMG cannot properly handle benzene bo
 written in the kinetic group definitions.</p>
 </section>
 <section id="training-set-vs-rules">
-<h3><span class="section-number">12.3.2.2. </span>Training Set vs Rules<a class="headerlink" href="#training-set-vs-rules" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">12.3.2.2. </span>Training Set vs Rules<a class="headerlink" href="#training-set-vs-rules" title="Permalink to this heading">¶</a></h3>
 <p>The training set and rules both contain trusted kinetics that are used to fill in
 templates in a family. The <strong>training set</strong> contains kinetics for specific reactions,
 which are then matched to a template. The kinetic <strong>rules</strong> contain kinetic
@@ -732,7 +723,7 @@ rules.py. For more information on modification see <a class="reference internal"
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -767,7 +758,7 @@ rules.py. For more information on modification see <a class="reference internal"
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

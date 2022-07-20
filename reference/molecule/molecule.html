@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>rmgpy.molecule.Molecule &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -58,18 +59,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="rmgpy-molecule-molecule">
-<h1>rmgpy.molecule.Molecule<a class="headerlink" href="#rmgpy-molecule-molecule" title="Permalink to this headline">¶</a></h1>
+<h1>rmgpy.molecule.Molecule<a class="headerlink" href="#rmgpy-molecule-molecule" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">Molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">187</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inchi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a molecular structure using a graph data type, extending
 the <code class="xref py py-class docutils literal notranslate"><span class="pre">Graph</span></code> class. Attributes are:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 18%" />
-<col style="width: 9%" />
-<col style="width: 73%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Attribute</p></th>
 <th class="head"><p>Type</p></th>
@@ -294,7 +290,7 @@ values). The returned mapping also uses the atoms of <cite>self</cite> for the k
 and the atoms of <cite>other</cite> for the values. The <cite>other</cite> parameter must
 be a <a class="reference internal" href="#rmgpy.molecule.Molecule" title="rmgpy.molecule.Molecule"><code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code></a> object, or a <code class="xref py py-class docutils literal notranslate"><span class="pre">TypeError</span></code> is raised.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>initial_map</strong> (<em>dict</em><em>, </em><em>optional</em>) – initial atom mapping to use</p></li>
 <li><p><strong>save_order</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, reset atom order after performing atom isomorphism</p></li>
@@ -497,22 +493,22 @@ the bond order with the surface:
 ‘<a href="#id3"><span class="problematic" id="id4">*</span></a>2’ - double bond
 ‘<a href="#id5"><span class="problematic" id="id6">*</span></a>3’ - triple bond
 ‘<a href="#id7"><span class="problematic" id="id8">*</span></a>4’ - quadruple bond</p>
-<div class="system-message" id="id1">
+<aside class="system-message" id="id1">
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">docstring of rmgpy.molecule.molecule.Molecule.get_desorbed_molecules</span>, line 3); <em><a href="#id2">backlink</a></em></p>
 <p>Inline emphasis start-string without end-string.</p>
-</div>
-<div class="system-message" id="id3">
+</aside>
+<aside class="system-message" id="id3">
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">docstring of rmgpy.molecule.molecule.Molecule.get_desorbed_molecules</span>, line 3); <em><a href="#id4">backlink</a></em></p>
 <p>Inline emphasis start-string without end-string.</p>
-</div>
-<div class="system-message" id="id5">
+</aside>
+<aside class="system-message" id="id5">
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">docstring of rmgpy.molecule.molecule.Molecule.get_desorbed_molecules</span>, line 3); <em><a href="#id6">backlink</a></em></p>
 <p>Inline emphasis start-string without end-string.</p>
-</div>
-<div class="system-message" id="id7">
+</aside>
+<aside class="system-message" id="id7">
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">docstring of rmgpy.molecule.molecule.Molecule.get_desorbed_molecules</span>, line 3); <em><a href="#id8">backlink</a></em></p>
 <p>Inline emphasis start-string without end-string.</p>
-</div>
+</aside>
 </dd></dl>
 
 <dl class="py method">
@@ -849,7 +845,7 @@ while the atoms of <cite>other</cite> are the values). The <cite>other</cite> pa
 be a <a class="reference internal" href="#rmgpy.molecule.Molecule" title="rmgpy.molecule.Molecule"><code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code></a> object, or a <code class="xref py py-class docutils literal notranslate"><span class="pre">TypeError</span></code> is raised.
 Also ensures multiplicities are also equal.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>initial_map</strong> (<em>dict</em><em>, </em><em>optional</em>) – initial atom mapping to use</p></li>
 <li><p><strong>generate_initial_map</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, initialize map by pairing atoms with same labels</p></li>
@@ -926,7 +922,7 @@ object. The merged <a class="reference internal" href="#rmgpy.molecule.Molecule"
 <span class="sig-name descname"><span class="pre">multiplicity</span></span><a class="headerlink" href="#rmgpy.molecule.Molecule.multiplicity" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>multiplicity</p>
 </dd>
 </dl>
@@ -937,7 +933,7 @@ object. The merged <a class="reference internal" href="#rmgpy.molecule.Molecule"
 <span class="sig-name descname"><span class="pre">ordered_vertices</span></span><a class="headerlink" href="#rmgpy.molecule.Molecule.ordered_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ordered_vertices</p>
 </dd>
 </dl>
@@ -948,7 +944,7 @@ object. The merged <a class="reference internal" href="#rmgpy.molecule.Molecule"
 <span class="sig-name descname"><span class="pre">props</span></span><a class="headerlink" href="#rmgpy.molecule.Molecule.props" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>props</p>
 </dd>
 </dl>
@@ -959,7 +955,7 @@ object. The merged <a class="reference internal" href="#rmgpy.molecule.Molecule"
 <span class="sig-name descname"><span class="pre">reactive</span></span><a class="headerlink" href="#rmgpy.molecule.Molecule.reactive" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>reactive</p>
 </dd>
 </dl>
@@ -1091,7 +1087,7 @@ unconnected molecules into separate class:<cite>Molecule</cite> objects.</p>
 <span class="sig-name descname"><span class="pre">symmetry_number</span></span><a class="headerlink" href="#rmgpy.molecule.Molecule.symmetry_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘float’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>symmetry_number</p>
 </dd>
 </dl>
@@ -1227,7 +1223,7 @@ number of lone electron pairs, assuming a neutral molecule.</p>
 <span class="sig-name descname"><span class="pre">vertices</span></span><a class="headerlink" href="#rmgpy.molecule.Molecule.vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>vertices</p>
 </dd>
 </dl>
@@ -1298,7 +1294,7 @@ number of lone electron pairs, assuming a neutral molecule.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -1332,7 +1328,7 @@ number of lone electron pairs, assuming a neutral molecule.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

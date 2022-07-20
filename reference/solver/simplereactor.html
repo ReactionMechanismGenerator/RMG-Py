@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>rmgpy.solver.SimpleReactor &#8212; RMG-Py 3.1.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -59,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="rmgpy-solver-simplereactor">
-<h1>rmgpy.solver.SimpleReactor<a class="headerlink" href="#rmgpy-solver-simplereactor" title="Permalink to this headline">¶</a></h1>
+<h1>rmgpy.solver.SimpleReactor<a class="headerlink" href="#rmgpy-solver-simplereactor" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.solver.SimpleReactor">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.solver.</span></span><span class="sig-name descname"><span class="pre">SimpleReactor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_mole_fractions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">termination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitive_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">const_spc_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor" title="Permalink to this definition">¶</a></dt>
@@ -71,7 +72,7 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 <span class="sig-name descname"><span class="pre">Keq</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.Keq" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Keq</p>
 </dd>
 </dl>
@@ -82,7 +83,7 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 <span class="sig-name descname"><span class="pre">P</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.P" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.quantity.ScalarQuantity</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>P</p>
 </dd>
 </dl>
@@ -93,7 +94,7 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 <span class="sig-name descname"><span class="pre">Prange</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.Prange" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Prange</p>
 </dd>
 </dl>
@@ -104,7 +105,7 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 <span class="sig-name descname"><span class="pre">T</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.T" title="Permalink to this definition">¶</a></dt>
 <dd><p>rmgpy.quantity.ScalarQuantity</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>T</p>
 </dd>
 </dl>
@@ -115,7 +116,7 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 <span class="sig-name descname"><span class="pre">Trange</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.Trange" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Trange</p>
 </dd>
 </dl>
@@ -126,7 +127,7 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 <span class="sig-name descname"><span class="pre">V</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.V" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>V</p>
 </dd>
 </dl>
@@ -154,7 +155,7 @@ and <cite>dydt</cite> attributes.</p>
 <span class="sig-name descname"><span class="pre">atol_array</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.atol_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>atol_array</p>
 </dd>
 </dl>
@@ -165,7 +166,7 @@ and <cite>dydt</cite> attributes.</p>
 <span class="sig-name descname"><span class="pre">bimolecular_threshold</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.bimolecular_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bimolecular_threshold</p>
 </dd>
 </dl>
@@ -195,7 +196,7 @@ and <cite>dydt</cite> attributes.</p>
 <span class="sig-name descname"><span class="pre">collider_efficiencies</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.collider_efficiencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>collider_efficiencies</p>
 </dd>
 </dl>
@@ -233,7 +234,7 @@ k_j is the rate parameter for the jth core reaction.</p>
 <span class="sig-name descname"><span class="pre">const_spc_indices</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.const_spc_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>const_spc_indices</p>
 </dd>
 </dl>
@@ -244,7 +245,7 @@ k_j is the rate parameter for the jth core reaction.</p>
 <span class="sig-name descname"><span class="pre">const_spc_names</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.const_spc_names" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>const_spc_names</p>
 </dd>
 </dl>
@@ -255,7 +256,7 @@ k_j is the rate parameter for the jth core reaction.</p>
 <span class="sig-name descname"><span class="pre">constant_volume</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.constant_volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>constant_volume</p>
 </dd>
 </dl>
@@ -273,7 +274,7 @@ using the given dictionary of species.</p>
 <span class="sig-name descname"><span class="pre">core_reaction_rates</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.core_reaction_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>core_reaction_rates</p>
 </dd>
 </dl>
@@ -284,7 +285,7 @@ using the given dictionary of species.</p>
 <span class="sig-name descname"><span class="pre">core_species_concentrations</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.core_species_concentrations" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>core_species_concentrations</p>
 </dd>
 </dl>
@@ -295,7 +296,7 @@ using the given dictionary of species.</p>
 <span class="sig-name descname"><span class="pre">core_species_consumption_rates</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.core_species_consumption_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>core_species_consumption_rates</p>
 </dd>
 </dl>
@@ -306,7 +307,7 @@ using the given dictionary of species.</p>
 <span class="sig-name descname"><span class="pre">core_species_production_rates</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.core_species_production_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>core_species_production_rates</p>
 </dd>
 </dl>
@@ -317,7 +318,7 @@ using the given dictionary of species.</p>
 <span class="sig-name descname"><span class="pre">core_species_rates</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.core_species_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>core_species_rates</p>
 </dd>
 </dl>
@@ -328,7 +329,7 @@ using the given dictionary of species.</p>
 <span class="sig-name descname"><span class="pre">dydt0</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.dydt0" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dydt0</p>
 </dd>
 </dl>
@@ -339,7 +340,7 @@ using the given dictionary of species.</p>
 <span class="sig-name descname"><span class="pre">edge_reaction_rates</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.edge_reaction_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>edge_reaction_rates</p>
 </dd>
 </dl>
@@ -350,7 +351,7 @@ using the given dictionary of species.</p>
 <span class="sig-name descname"><span class="pre">edge_species_rates</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.edge_species_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>edge_species_rates</p>
 </dd>
 </dl>
@@ -415,7 +416,7 @@ from the species index dictionary.</p>
 <span class="sig-name descname"><span class="pre">initial_mole_fractions</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.initial_mole_fractions" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>initial_mole_fractions</p>
 </dd>
 </dl>
@@ -475,7 +476,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">jacobian_matrix</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.jacobian_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>jacobian_matrix</p>
 </dd>
 </dl>
@@ -486,7 +487,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">kb</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.kb" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>kb</p>
 </dd>
 </dl>
@@ -497,7 +498,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">kf</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.kf" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>kf</p>
 </dd>
 </dl>
@@ -520,7 +521,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">max_edge_species_rate_ratios</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>max_edge_species_rate_ratios</p>
 </dd>
 </dl>
@@ -531,7 +532,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">max_network_leak_rate_ratios</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.max_network_leak_rate_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>max_network_leak_rate_ratios</p>
 </dd>
 </dl>
@@ -542,7 +543,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">n_sims</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.n_sims" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>n_sims</p>
 </dd>
 </dl>
@@ -553,7 +554,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">neq</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.neq" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘Py_ssize_t’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>neq</p>
 </dd>
 </dl>
@@ -564,7 +565,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">network_indices</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.network_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>network_indices</p>
 </dd>
 </dl>
@@ -575,7 +576,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">network_leak_coefficients</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.network_leak_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>network_leak_coefficients</p>
 </dd>
 </dl>
@@ -586,7 +587,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">network_leak_rates</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.network_leak_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>network_leak_rates</p>
 </dd>
 </dl>
@@ -597,7 +598,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">num_core_reactions</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.num_core_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘Py_ssize_t’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>num_core_reactions</p>
 </dd>
 </dl>
@@ -608,7 +609,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">num_core_species</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.num_core_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘Py_ssize_t’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>num_core_species</p>
 </dd>
 </dl>
@@ -619,7 +620,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">num_edge_reactions</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.num_edge_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘Py_ssize_t’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>num_edge_reactions</p>
 </dd>
 </dl>
@@ -630,7 +631,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">num_edge_species</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.num_edge_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘Py_ssize_t’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>num_edge_species</p>
 </dd>
 </dl>
@@ -641,7 +642,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">num_pdep_networks</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.num_pdep_networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘Py_ssize_t’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>num_pdep_networks</p>
 </dd>
 </dl>
@@ -652,7 +653,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">pdep_collider_kinetics</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.pdep_collider_kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pdep_collider_kinetics</p>
 </dd>
 </dl>
@@ -663,7 +664,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">pdep_collision_reaction_indices</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.pdep_collision_reaction_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pdep_collision_reaction_indices</p>
 </dd>
 </dl>
@@ -674,7 +675,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">pdep_specific_collider_kinetics</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.pdep_specific_collider_kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pdep_specific_collider_kinetics</p>
 </dd>
 </dl>
@@ -685,7 +686,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">pdep_specific_collider_reaction_indices</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.pdep_specific_collider_reaction_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pdep_specific_collider_reaction_indices</p>
 </dd>
 </dl>
@@ -696,7 +697,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">product_indices</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.product_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>product_indices</p>
 </dd>
 </dl>
@@ -707,7 +708,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">prunable_network_indices</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.prunable_network_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>prunable_network_indices</p>
 </dd>
 </dl>
@@ -718,7 +719,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">prunable_networks</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.prunable_networks" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>prunable_networks</p>
 </dd>
 </dl>
@@ -729,7 +730,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">prunable_species</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.prunable_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>prunable_species</p>
 </dd>
 </dl>
@@ -740,7 +741,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">prunable_species_indices</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.prunable_species_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>prunable_species_indices</p>
 </dd>
 </dl>
@@ -751,7 +752,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">reactant_indices</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.reactant_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>reactant_indices</p>
 </dd>
 </dl>
@@ -762,7 +763,7 @@ model.</p>
 <span class="sig-name descname"><span class="pre">reaction_index</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.reaction_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>reaction_index</p>
 </dd>
 </dl>
@@ -788,7 +789,7 @@ simple reaction system.</p>
 <span class="sig-name descname"><span class="pre">rtol_array</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.rtol_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>rtol_array</p>
 </dd>
 </dl>
@@ -799,7 +800,7 @@ simple reaction system.</p>
 <span class="sig-name descname"><span class="pre">sens_conditions</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.sens_conditions" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>sens_conditions</p>
 </dd>
 </dl>
@@ -810,7 +811,7 @@ simple reaction system.</p>
 <span class="sig-name descname"><span class="pre">sensitive_species</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.sensitive_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>sensitive_species</p>
 </dd>
 </dl>
@@ -821,7 +822,7 @@ simple reaction system.</p>
 <span class="sig-name descname"><span class="pre">sensitivity_coefficients</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.sensitivity_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>sensitivity_coefficients</p>
 </dd>
 </dl>
@@ -832,7 +833,7 @@ simple reaction system.</p>
 <span class="sig-name descname"><span class="pre">sensitivity_threshold</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.sensitivity_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘double’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>sensitivity_threshold</p>
 </dd>
 </dl>
@@ -893,7 +894,7 @@ the desired termination criteria and the model remains valid throughout,
 <span class="sig-name descname"><span class="pre">snapshots</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.snapshots" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>snapshots</p>
 </dd>
 </dl>
@@ -904,7 +905,7 @@ the desired termination criteria and the model remains valid throughout,
 <span class="sig-name descname"><span class="pre">species_index</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.species_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>species_index</p>
 </dd>
 </dl>
@@ -915,7 +916,7 @@ the desired termination criteria and the model remains valid throughout,
 <span class="sig-name descname"><span class="pre">specific_collider_species</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.specific_collider_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>specific_collider_species</p>
 </dd>
 </dl>
@@ -936,7 +937,7 @@ and <cite>dydt</cite> attributes.</p>
 <span class="sig-name descname"><span class="pre">surface_reaction_indices</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.surface_reaction_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>surface_reaction_indices</p>
 </dd>
 </dl>
@@ -947,7 +948,7 @@ and <cite>dydt</cite> attributes.</p>
 <span class="sig-name descname"><span class="pre">surface_species_indices</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.surface_species_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>surface_species_indices</p>
 </dd>
 </dl>
@@ -958,7 +959,7 @@ and <cite>dydt</cite> attributes.</p>
 <span class="sig-name descname"><span class="pre">t0</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.t0" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘float’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>t0</p>
 </dd>
 </dl>
@@ -969,7 +970,7 @@ and <cite>dydt</cite> attributes.</p>
 <span class="sig-name descname"><span class="pre">termination</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.termination" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>termination</p>
 </dd>
 </dl>
@@ -980,7 +981,7 @@ and <cite>dydt</cite> attributes.</p>
 <span class="sig-name descname"><span class="pre">trimolecular</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.trimolecular" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>trimolecular</p>
 </dd>
 </dl>
@@ -991,7 +992,7 @@ and <cite>dydt</cite> attributes.</p>
 <span class="sig-name descname"><span class="pre">trimolecular_threshold</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.trimolecular_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>trimolecular_threshold</p>
 </dd>
 </dl>
@@ -1002,7 +1003,7 @@ and <cite>dydt</cite> attributes.</p>
 <span class="sig-name descname"><span class="pre">unimolecular_threshold</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.unimolecular_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>unimolecular_threshold</p>
 </dd>
 </dl>
@@ -1013,7 +1014,7 @@ and <cite>dydt</cite> attributes.</p>
 <span class="sig-name descname"><span class="pre">valid_layering_indices</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.valid_layering_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>valid_layering_indices</p>
 </dd>
 </dl>
@@ -1024,7 +1025,7 @@ and <cite>dydt</cite> attributes.</p>
 <span class="sig-name descname"><span class="pre">y0</span></span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.y0" title="Permalink to this definition">¶</a></dt>
 <dd><p>numpy.ndarray</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>y0</p>
 </dd>
 </dl>
@@ -1095,7 +1096,7 @@ and <cite>dydt</cite> attributes.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
     </div>
@@ -1129,7 +1130,7 @@ and <cite>dydt</cite> attributes.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2022, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
