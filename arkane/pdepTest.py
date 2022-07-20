@@ -118,7 +118,7 @@ class ArkaneTest(unittest.TestCase):
                 if '1000.0' in line:
                     break
         sa_coeff = line.split()[-2]
-        self.assertAlmostEqual(float(sa_coeff), -8.23e-6, delta=0.02e-6)
+        self.assertAlmostEqual(float(sa_coeff), -7.02e-07, delta=0.02e-6)
 
     @classmethod
     def tearDown(cls):
