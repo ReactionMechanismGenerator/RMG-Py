@@ -404,7 +404,7 @@ class ConstantVIdealGasReactor(Reactor):
         phase = phase_system.phases["Default"]
         ig = rms.IdealGas(phase.species, phase.reactions)
         domain, y0, p = rms.ConstantVDomain(phase=ig, initialconds=self.initial_conditions)
-        react = rms.Reactor(domain, y0, (0.0, self.tf), p)
+        react = rms.Reactor(domain, y0, (0.0, self.tf), p=p)
         return react, domain, [], p
 
 class ConstantTLiquidSurfaceReactor(Reactor):
@@ -428,7 +428,7 @@ class ConstantTLiquidSurfaceReactor(Reactor):
             inter,pinter = rms.ReactiveInternalInterfaceConstantTPhi(domainliq,domaincat,Main.eval("using ReactionMechanismSimulator; Vector{ElementaryReaction}()"),self.initial_conditions["liquid"]["T"],self.initial_conditions["surface"]["A"])
         else:
             inter,pinter = rms.ReactiveInternalInterfaceConstantTPhi(domainliq,domaincat,interface.reactions,self.initial_conditions["liquid"]["T"],self.initial_conditions["surface"]["A"])
-        react,y0,p = rms.Reactor((domainliq,domaincat), (y0liq,y0cat), (0.0, self.tf), [inter], (pliq,pcat,pinter))
+        react,y0,p = rms.Reactor((domainliq,domaincat), (y0liq,y0cat), (0.0, self.tf), [inter], p=(pliq,pcat,pinter))
         return react, (domainliq,domaincat), [inter], p
 
 class ConstantTVLiquidReactor(Reactor):
@@ -482,7 +482,7 @@ class ConstantTPIdealGasReactor(Reactor):
         phase = phase_system.phases["Default"]
         ig = rms.IdealGas(phase.species, phase.reactions)
         domain, y0, p = rms.ConstantTPDomain(phase=ig, initialconds=self.initial_conditions)
-        react = rms.Reactor(domain, y0, (0.0, self.tf), p)
+        react = rms.Reactor(domain, y0, (0.0, self.tf), p=p)
         return react, domain, [], p
 
 def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
