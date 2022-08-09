@@ -49,7 +49,7 @@ import rmgpy.molecule.molecule as mm
 from rmgpy.exceptions import DependencyError
 
 
-def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
+def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_order=False):
     """
     Convert a molecular structure to a RDKit rdmol object. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
@@ -61,7 +61,8 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
     from rmgpy.molecule.fragment import Fragment
     # Sort the atoms before converting to ensure output is consistent
     # between different runs
-    mol.sort_atoms()
+    if not save_order:
+        mol.sort_atoms()
     atoms = mol.vertices
     rd_atom_indices = {}  # dictionary of RDKit atom indices
     label_dict = {} # store label of atom for Framgent
@@ -227,7 +228,7 @@ def debug_rdkit_mol(rdmol, level=logging.INFO):
     return message
 
 
-def to_ob_mol(mol, return_mapping=False):
+def to_ob_mol(mol, return_mapping=False, save_order=False):
     """
     Convert a molecular structure to an OpenBabel OBMol object. Uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -236,7 +237,8 @@ def to_ob_mol(mol, return_mapping=False):
         raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')
 
     # Sort the atoms to ensure consistent output
-    mol.sort_atoms()
+    if not save_order:
+        mol.sort_atoms()
     atoms = mol.vertices
 
     ob_atom_ids = {}  # dictionary of OB atom IDs

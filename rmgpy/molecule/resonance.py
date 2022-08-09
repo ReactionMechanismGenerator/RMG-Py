@@ -113,9 +113,10 @@ def populate_resonance_algorithms(features=None):
     return method_list
 
 
-def analyze_molecule(mol):
+def analyze_molecule(mol, save_order=False):
     """
     Identify key features of molecule important for resonance structure generation.
+    `save_order` is used to maintain the atom order, when analyzing the molecule, defaults to False.
 
     Returns a dictionary of features.
     """
@@ -131,7 +132,7 @@ def analyze_molecule(mol):
                 }
 
     if features['is_cyclic']:
-        aromatic_rings = mol.get_aromatic_rings()[0]
+        aromatic_rings = mol.get_aromatic_rings(save_order=save_order)[0]
         if len(aromatic_rings) > 0:
             features['is_aromatic'] = True
         if len(aromatic_rings) > 1:
@@ -196,7 +197,7 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
     mol_list = [mol]
 
     # Analyze molecule
-    features = analyze_molecule(mol)
+    features = analyze_molecule(mol, save_order=save_order)
 
     # Use generate_optimal_aromatic_resonance_structures to check for false positives and negatives
     if features['is_aromatic'] or (features['is_cyclic'] and features['is_radical'] and not features['is_aryl_radical']):
@@ -612,7 +613,7 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None, save_orde
                    i=cython.int, counter=cython.int)
 
     if features is None:
-        features = analyze_molecule(mol)
+        features = analyze_molecule(mol, save_order=save_order)
 
     if not features['is_cyclic']:
         return []
