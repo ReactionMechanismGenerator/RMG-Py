@@ -637,7 +637,7 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None, save_orde
     # Sort all of the generated structures by number of perceived aromatic rings
     mol_dict = {}
     for mol0 in kekule_list:
-        aromatic_bonds = mol0.get_aromatic_rings()[1]
+        aromatic_bonds = mol0.get_aromatic_rings(save_order=save_order)[1]
         num_aromatic = len(aromatic_bonds)
         mol_dict.setdefault(num_aromatic, []).append((mol0, aromatic_bonds))
 
