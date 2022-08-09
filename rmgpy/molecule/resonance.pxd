@@ -30,7 +30,7 @@ from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
 
 cpdef list populate_resonance_algorithms(dict features=?)
 
-cpdef dict analyze_molecule(Graph mol)
+cpdef dict analyze_molecule(Graph mol, bint save_order=?)
 
 cpdef list generate_resonance_structures(Graph mol, bint clar_structures=?, bint keep_isomorphic=?, bint filter_structures=?, bint save_order=?)
 
