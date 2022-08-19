@@ -2140,14 +2140,17 @@ class Molecule(Graph):
                 return True
         return False
 
-    def is_aryl_radical(self, aromatic_rings=None):
+    def is_aryl_radical(self, aromatic_rings=None, save_order=False):
         """
         Return ``True`` if the molecule only contains aryl radicals,
-        ie. radical on an aromatic ring, or ``False`` otherwise.
+        i.e., radical on an aromatic ring, or ``False`` otherwise.
+        If no ``aromatic_rings`` provided, aromatic rings will be searched in-place,
+        and this process may involve atom order change by default. Set ``save_order`` to
+        ``True`` to force the atom order unchanged.
         """
         cython.declare(atom=Atom, total=int, aromatic_atoms=set, aryl=int)
         if aromatic_rings is None:
-            aromatic_rings = self.get_aromatic_rings()[0]
+            aromatic_rings = self.get_aromatic_rings(save_order=save_order)[0]
 
         total = self.get_radical_count()
         aromatic_atoms = set([atom for atom in itertools.chain.from_iterable(aromatic_rings)])
@@ -2228,7 +2231,7 @@ class Molecule(Graph):
 
     def saturate_radicals(self, raise_atomtype_exception=True):
         """
-        Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
+        Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.
         """
         cython.declare(added=dict, atom=Atom, i=int, H=Atom, bond=Bond)
         added = {}
