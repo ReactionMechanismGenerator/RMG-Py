@@ -2140,14 +2140,17 @@ class Molecule(Graph):
                 return True
         return False
 
-    def is_aryl_radical(self, aromatic_rings=None):
+    def is_aryl_radical(self, aromatic_rings=None, save_order=False):
         """
         Return ``True`` if the molecule only contains aryl radicals,
-        ie. radical on an aromatic ring, or ``False`` otherwise.
+        i.e., radical on an aromatic ring, or ``False`` otherwise.
+        If no ``aromatic_rings`` provided, aromatic rings will be searched in-place,
+        and this process may involve atom order change by default. Set ``save_order`` to
+        ``True`` to force the atom order unchanged.
         """
         cython.declare(atom=Atom, total=int, aromatic_atoms=set, aryl=int)
         if aromatic_rings is None:
-            aromatic_rings = self.get_aromatic_rings()[0]
+            aromatic_rings = self.get_aromatic_rings(save_order=save_order)[0]
 
         total = self.get_radical_count()
         aromatic_atoms = set([atom for atom in itertools.chain.from_iterable(aromatic_rings)])
@@ -2228,7 +2231,7 @@ class Molecule(Graph):
 
     def saturate_radicals(self, raise_atomtype_exception=True):
         """
-        Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
+        Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.
         """
         cython.declare(added=dict, atom=Atom, i=int, H=Atom, bond=Bond)
         added = {}
@@ -2341,7 +2344,7 @@ class Molecule(Graph):
 
         return count
 
-    def get_aromatic_rings(self, rings=None):
+    def get_aromatic_rings(self, rings=None, save_order=False):
         """
         Returns all aromatic rings as a list of atoms and a list of bonds.
 
@@ -2351,6 +2354,9 @@ class Molecule(Graph):
 
         The method currently restricts aromaticity to six-membered carbon-only rings. This is a limitation imposed
         by RMG, and not by RDKit.
+
+        By default, the atom order will be sorted to get consistent results from different runs. The atom order can
+        be saved when dealing with problems that are sensitive to the atom map.
         """
         cython.declare(rd_atom_indices=dict, ob_atom_ids=dict, aromatic_rings=list, aromatic_bonds=list)
         cython.declare(ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
@@ -2365,7 +2371,7 @@ class Molecule(Graph):
             return [], []
 
         try:
-            rdkitmol, rd_atom_indices = converter.to_rdkit_mol(self, remove_h=False, return_mapping=True)
+            rdkitmol, rd_atom_indices = converter.to_rdkit_mol(self, remove_h=False, return_mapping=True, save_order=save_order)
         except ValueError:
             logging.warning('Unable to check aromaticity by converting to RDKit Mol.')
         else:
@@ -2394,7 +2400,7 @@ class Molecule(Graph):
 
         logging.info('Trying to use OpenBabel to check aromaticity.')
         try:
-            obmol, ob_atom_ids = converter.to_ob_mol(self, return_mapping=True)
+            obmol, ob_atom_ids = converter.to_ob_mol(self, return_mapping=True, save_order=save_order)
         except DependencyError:
             logging.warning('Unable to check aromaticity by converting for OB Mol.')
             return [], []

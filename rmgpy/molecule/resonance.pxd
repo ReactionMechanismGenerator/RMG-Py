@@ -30,7 +30,7 @@ from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
 
 cpdef list populate_resonance_algorithms(dict features=?)
 
-cpdef dict analyze_molecule(Graph mol)
+cpdef dict analyze_molecule(Graph mol, bint save_order=?)
 
 cpdef list generate_resonance_structures(Graph mol, bint clar_structures=?, bint keep_isomorphic=?, bint filter_structures=?, bint save_order=?)
 
@@ -52,14 +52,14 @@ cpdef list generate_isomorphic_resonance_structures(Graph mol, bint saturate_h=?
 
 cpdef list generate_optimal_aromatic_resonance_structures(Graph mol, dict features=?, bint save_order=?)
 
-cpdef list generate_aromatic_resonance_structure(Graph mol, list aromatic_bonds=?, bint copy=?)
+cpdef list generate_aromatic_resonance_structure(Graph mol, list aromatic_bonds=?, bint copy=?, bint save_order=?)
 
 cpdef list generate_aryne_resonance_structures(Graph mol)
 
 cpdef list generate_kekule_structure(Graph mol)
 
-cpdef list generate_clar_structures(Graph mol)
+cpdef list generate_clar_structures(Graph mol, bint save_order=?)
 
-cpdef list _clar_optimization(Graph mol, list constraints=?, max_num=?)
+cpdef list _clar_optimization(Graph mol, list constraints=?, max_num=?, save_order=?)
 
 cpdef list _clar_transformation(Graph mol, list aromatic_ring)

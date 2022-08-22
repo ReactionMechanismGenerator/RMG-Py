@@ -113,9 +113,10 @@ def populate_resonance_algorithms(features=None):
     return method_list
 
 
-def analyze_molecule(mol):
+def analyze_molecule(mol, save_order=False):
     """
     Identify key features of molecule important for resonance structure generation.
+    `save_order` is used to maintain the atom order, when analyzing the molecule, defaults to False.
 
     Returns a dictionary of features.
     """
@@ -131,7 +132,7 @@ def analyze_molecule(mol):
                 }
 
     if features['is_cyclic']:
-        aromatic_rings = mol.get_aromatic_rings()[0]
+        aromatic_rings = mol.get_aromatic_rings(save_order=save_order)[0]
         if len(aromatic_rings) > 0:
             features['is_aromatic'] = True
         if len(aromatic_rings) > 1:
@@ -196,7 +197,7 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
     mol_list = [mol]
 
     # Analyze molecule
-    features = analyze_molecule(mol)
+    features = analyze_molecule(mol, save_order=save_order)
 
     # Use generate_optimal_aromatic_resonance_structures to check for false positives and negatives
     if features['is_aromatic'] or (features['is_cyclic'] and features['is_radical'] and not features['is_aryl_radical']):
@@ -207,7 +208,7 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
             features['isPolycyclicAromatic'] = False
         else:
             features['is_aromatic'] = True
-            if len(new_mol_list[0].get_aromatic_rings()[0]) > 1:
+            if len(new_mol_list[0].get_aromatic_rings(save_order=save_order)[0]) > 1:
                 features['isPolycyclicAromatic'] = True
             for new_mol in new_mol_list:
                 # Append to structure list if unique
@@ -215,7 +216,7 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
                                                              initial_map=None,
                                                              generate_initial_map=False,
                                                              save_order=save_order):
-                    # Note: `initial_map` and `generagenerate_initial_map` is using default values.
+                    # Note: `initial_map` and `generate_initial_map` is using default values.
                     # They are required in compilation before assigning `save_order`.
                     continue
                 elif keep_isomorphic and mol.is_identical(new_mol):
@@ -305,7 +306,7 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
                                                              initial_map=None,
                                                              generate_initial_map=False,
                                                              save_order=save_order):
-                    # Note: `initial_map` and `generagenerate_initial_map` is using default values.
+                    # Note: `initial_map` and `generate_initial_map` is using default values.
                     # They are required in compilation before assigning `save_order`.
                     break
                 elif keep_isomorphic and mol.is_identical(new_mol):
@@ -612,7 +613,7 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None, save_orde
                    i=cython.int, counter=cython.int)
 
     if features is None:
-        features = analyze_molecule(mol)
+        features = analyze_molecule(mol, save_order=save_order)
 
     if not features['is_cyclic']:
         return []
@@ -636,7 +637,7 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None, save_orde
     # Sort all of the generated structures by number of perceived aromatic rings
     mol_dict = {}
     for mol0 in kekule_list:
-        aromatic_bonds = mol0.get_aromatic_rings()[1]
+        aromatic_bonds = mol0.get_aromatic_rings(save_order=save_order)[1]
         num_aromatic = len(aromatic_bonds)
         mol_dict.setdefault(num_aromatic, []).append((mol0, aromatic_bonds))
 
@@ -649,7 +650,7 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None, save_orde
         # Generate the aromatic resonance structure(s)
         for mol0, aromatic_bonds in mol_list:
             # Aromatize the molecule in place
-            result = generate_aromatic_resonance_structure(mol0, aromatic_bonds, copy=False)
+            result = generate_aromatic_resonance_structure(mol0, aromatic_bonds, copy=False, save_order=save_order)
             if not result:
                 # We failed to aromatize this molecule
                 # This could be due to incorrect aromaticity perception by RDKit
@@ -671,7 +672,7 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None, save_orde
     return new_mol_list
 
 
-def generate_aromatic_resonance_structure(mol, aromatic_bonds=None, copy=True):
+def generate_aromatic_resonance_structure(mol, aromatic_bonds=None, copy=True, save_order=False):
     """
     Generate the aromatic form of the molecule in place without considering other resonance.
 
@@ -689,7 +690,7 @@ def generate_aromatic_resonance_structure(mol, aromatic_bonds=None, copy=True):
         molecule = mol
 
     if aromatic_bonds is None:
-        aromatic_bonds = molecule.get_aromatic_rings()[1]
+        aromatic_bonds = molecule.get_aromatic_rings(save_order=save_order)[1]
     if len(aromatic_bonds) == 0:
         return []
 
@@ -897,7 +898,7 @@ def generate_isomorphic_resonance_structures(mol, saturate_h=False):
     return isomorphic_isomers
 
 
-def generate_clar_structures(mol):
+def generate_clar_structures(mol, save_order=False):
     """
     Generate Clar structures for a given molecule.
 
@@ -914,7 +915,7 @@ def generate_clar_structures(mol):
         mol.assign_atom_ids()
 
     try:
-        output = _clar_optimization(mol)
+        output = _clar_optimization(mol, save_order=save_order)
     except ILPSolutionError:
         # The optimization algorithm did not work on the first iteration
         return []
@@ -953,7 +954,7 @@ def generate_clar_structures(mol):
     return mol_list
 
 
-def _clar_optimization(mol, constraints=None, max_num=None):
+def _clar_optimization(mol, constraints=None, max_num=None, save_order=False):
     """
     Implements linear programming algorithm for finding Clar structures. This algorithm maximizes the number
     of Clar sextets within the constraints of molecular geometry and atom valency.
@@ -979,7 +980,7 @@ def _clar_optimization(mol, constraints=None, max_num=None):
     # Make a copy of the molecule so we don't destroy the original
     molecule = mol.copy(deep=True)
 
-    aromatic_rings = molecule.get_aromatic_rings()[0]
+    aromatic_rings = molecule.get_aromatic_rings(save_order=save_order)[0]
     aromatic_rings.sort(key=lambda x: sum([atom.id for atom in x]))
 
     if not aromatic_rings:
@@ -1087,7 +1088,7 @@ def _clar_optimization(mol, constraints=None, max_num=None):
 
     # Run optimization with additional constraints
     try:
-        inner_solutions = _clar_optimization(mol, constraints=constraints, max_num=max_num)
+        inner_solutions = _clar_optimization(mol, constraints=constraints, max_num=max_num, save_order=save_order)
     except ILPSolutionError:
         inner_solutions = []
 

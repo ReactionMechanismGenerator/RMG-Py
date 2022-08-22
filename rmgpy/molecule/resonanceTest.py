@@ -1217,10 +1217,9 @@ multiplicity 2
         res2 = generate_resonance_structures(mol2)
         self.assertEqual(res1, res2)
 
-    def test_resonance_without_changing_atom_order(self):
+    def test_resonance_without_changing_atom_order1(self):
         """Test generating resonance structures without changing the atom order"""
-        mol = Molecule().from_adjacency_list("""
-multiplicity 2
+        mol = Molecule().from_adjacency_list("""multiplicity 2
 1  C u1 p0 c0 {2,S} {8,S} {9,S}
 2  C u0 p0 c0 {1,S} {3,S} {4,D}
 3  C u0 p0 c0 {2,S} {10,S} {11,S} {12,S}
@@ -1244,6 +1243,44 @@ multiplicity 2
         # and the O atom will be reindexed to 1, which should be
         # true regardless of RMG's version and environment.
         # A copy is used to avoid the original mol's atoms are sorted.
+        res_mols = mol.copy(deep=True).generate_resonance_structures(save_order=True)
+
+        # Assign atom ids
+        for molecule in [mol] + res_mols:
+            for idx, atom in enumerate(molecule.atoms):
+                atom.id = idx
+
+        # Comparing atom symbol as its nearest neighbors
+        for res_mol in res_mols:
+            for atom1, atom2 in zip(mol.atoms, res_mol.atoms):
+                self.assertEqual(atom1.element.symbol, atom2.element.symbol)
+                atom1_nb = {nb.id for nb in list(atom1.bonds.keys())}
+                atom2_nb = {nb.id for nb in list(atom2.bonds.keys())}
+                self.assertEqual(atom1_nb, atom2_nb)
+
+    def test_resonance_without_changing_atom_order2(self):
+        """Test generating resonance structures for aromatic molecules without changing the atom order"""
+        mol = Molecule().from_adjacency_list("""
+multiplicity 2
+1  C u0 p0 c0 {2,S} {3,S} {7,D}
+2  O u1 p2 c0 {1,S}
+3  C u0 p0 c0 {1,S} {4,D} {8,S}
+4  C u0 p0 c0 {3,D} {5,S} {9,S}
+5  C u0 p0 c0 {4,S} {6,D} {10,S}
+6  C u0 p0 c0 {5,D} {7,S} {11,S}
+7  C u0 p0 c0 {1,D} {6,S} {12,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {5,S}
+11 H u0 p0 c0 {6,S}
+12 H u0 p0 c0 {7,S}
+""")
+
+        # Note: if save_order = False, atoms will be sorted
+        # and the O atom will be reindexed to 1, which should be
+        # true regardless of RMG's version and environment.
+        # However, at commit 819779 and earlier versions, the atom order will be sorted
+        # regardless the value of `save_order`
         res_mols = mol.copy(deep=True).generate_resonance_structures(save_order=True)
 
         # Assign atom ids

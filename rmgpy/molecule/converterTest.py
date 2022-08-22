@@ -117,6 +117,18 @@ class RDKitTest(unittest.TestCase):
                     except RuntimeError:
                         self.fail("RDKit failed in finding the bond in the original atom!")
 
+    def test_atom_mapping_3(self):
+        """Test that to_rdkit_mol with save_order=True retains the atom order and create the correct RDKit Molecule"""
+        adjlist = """1  H u0 p0 c0 {2,S}
+2  C u0 p0 c0 {1,S} {3,T}
+3  N u0 p1 c0 {2,T}
+"""
+        mol = Molecule().from_adjacency_list(adjlist)
+        rdkitmol, _ = to_rdkit_mol(mol, remove_h=False, return_mapping=True, save_order=True)
+
+        self.assertSequenceEqual([atom.number for atom in mol.atoms], [1, 6, 7])
+        self.assertSequenceEqual([rdkitmol.GetAtomWithIdx(idx).GetAtomicNum() for idx in range(3)], [1, 6, 7])
+
 
 class ConverterTest(unittest.TestCase):
 

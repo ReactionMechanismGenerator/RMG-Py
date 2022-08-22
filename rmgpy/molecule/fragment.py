@@ -1185,7 +1185,7 @@ class Fragment(Graph):
 
             return mol_repr, mapping
 
-    def to_rdkit_mol(self, remove_h=False, return_mapping=True):
+    def to_rdkit_mol(self, remove_h=False, return_mapping=True, save_order=False):
         """
         Convert a molecular structure to a RDKit rdmol object.
         """
@@ -1197,9 +1197,11 @@ class Fragment(Graph):
 
         mol0, mapping = self.get_representative_molecule('minimal', update=False)
 
-        rdmol, rdAtomIdx_mol0 = converter.to_rdkit_mol(mol0, remove_h=remove_h,
-                                                     return_mapping=return_mapping,
-                                                     sanitize=True)
+        rdmol, rdAtomIdx_mol0 = converter.to_rdkit_mol(mol0,
+                                                       remove_h=remove_h,
+                                                       return_mapping=return_mapping,
+                                                       sanitize=True,
+                                                       save_order=save_order)
 
         rdAtomIdx_frag = {}
         for frag_atom, mol0_atom in mapping.items():
@@ -1207,7 +1209,7 @@ class Fragment(Graph):
             rdAtomIdx_frag[frag_atom] = rd_idx
 
         # sync the order of fragment vertices with the order
-        # of mol0.atoms since mol0.atoms is changed/sorted in 
+        # of mol0.atoms since mol0.atoms is changed/sorted in
         # converter.to_rdkit_mol().
         # Since the rdmol's atoms order is same as the order of mol0's atoms,
         # the synchronization between fragment.atoms order and mol0.atoms order
@@ -1268,7 +1270,7 @@ class Fragment(Graph):
                                  'Currently, AFM does not support ion chemistry.\n {0}'.format(adjlist))
         return self
 
-    def get_aromatic_rings(self, rings=None):
+    def get_aromatic_rings(self, rings=None, save_order=False):
         """
         Returns all aromatic rings as a list of atoms and a list of bonds.
 
@@ -1290,7 +1292,7 @@ class Fragment(Graph):
             return [], []
 
         try:
-            rdkitmol, rdAtomIndices = self.to_rdkit_mol(remove_h=False, return_mapping=True)
+            rdkitmol, rdAtomIndices = self.to_rdkit_mol(remove_h=False, return_mapping=True, save_order=save_order)
         except ValueError:
             logging.warning('Unable to check aromaticity by converting to RDKit Mol.')
         else:
@@ -1531,13 +1533,16 @@ class Fragment(Graph):
 
         return added
 
-    def is_aryl_radical(self, aromatic_rings=None):
+    def is_aryl_radical(self, aromatic_rings=None, save_order=False):
         """
-        Return ``True`` if the fragment only contains aryl radicals,
-        ie. radical on an aromatic ring, or ``False`` otherwise.
+        Return ``True`` if the molecule only contains aryl radicals,
+        i.e., radical on an aromatic ring, or ``False`` otherwise.
+        If no ``aromatic_rings`` provided, aromatic rings will be searched in-place,
+        and this process may involve atom order change by default. Set ``save_order`` to
+        ``True`` to force the atom order unchanged.
         """
         if aromatic_rings is None:
-            aromatic_rings = self.get_aromatic_rings()[0]
+            aromatic_rings = self.get_aromatic_rings(save_order=save_order)[0]
 
         total = self.get_radical_count()
         aromatic_atoms = set([atom for atom in itertools.chain.from_iterable(aromatic_rings)])

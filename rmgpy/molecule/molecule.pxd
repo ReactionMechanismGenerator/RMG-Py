@@ -242,16 +242,16 @@ cdef class Molecule(Graph):
     cpdef double calculate_cp0(self) except -1
 
     cpdef double calculate_cpinf(self) except -1
-    
+
     cpdef update_atomtypes(self, bint log_species=?, bint raise_exception=?)
-    
+
     cpdef bint is_radical(self) except -2
 
     cpdef bint has_lone_pairs(self) except -2
 
     cpdef bint has_halogen(self) except -2
 
-    cpdef bint is_aryl_radical(self, list aromatic_rings=?) except -2
+    cpdef bint is_aryl_radical(self, list aromatic_rings=?, bint save_order=?) except -2
 
     cpdef float calculate_symmetry_number(self) except -1
 
@@ -267,7 +267,7 @@ cdef class Molecule(Graph):
 
     cpdef int count_aromatic_rings(self)
 
-    cpdef tuple get_aromatic_rings(self, list rings=?)
+    cpdef tuple get_aromatic_rings(self, list rings=?, bint save_order=?)
 
     cpdef list get_deterministic_sssr(self)
 
