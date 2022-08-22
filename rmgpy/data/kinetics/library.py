@@ -575,7 +575,7 @@ class KineticsLibrary(Database):
             facet=facet,
         )
 
-    def save(self, path):
+    def save(self, path, reindex=True):
         """
         Save the current database to the file at location `path` on disk. 
         """
@@ -583,7 +583,11 @@ class KineticsLibrary(Database):
             os.makedirs(os.path.dirname(path))
         except OSError:
             pass
-        entries = self.get_entries_to_save()
+        
+        if reindex:
+            entries = self.get_entries_to_save()
+        else:
+            entries = self.entries.values()
 
         f = codecs.open(path, 'w', 'utf-8')
         f.write('#!/usr/bin/env python\n')
