@@ -341,7 +341,7 @@ and immediately used in input files without any additional changes.
             if not os.path.exists(family_path): os.mkdir(family_path)
             family.save(family_path)
 
-    def save_libraries(self, path):
+    def save_libraries(self, path, reindex=True):
         """
         Save the kinetics libraries to the given `path` on disk, where `path`
         points to the top-level folder of the kinetics libraries.
@@ -352,7 +352,7 @@ and immediately used in input files without any additional changes.
                 os.makedirs(os.path.join(path, *folders))
             except OSError:
                 pass
-            library.save(os.path.join(path, label, 'reactions.py'))
+            library.save(os.path.join(path, label, 'reactions.py'), reindex=reindex)
             library.save_dictionary(os.path.join(path, label, 'dictionary.txt'))
 
     def load_old(self, path):
