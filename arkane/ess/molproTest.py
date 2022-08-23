@@ -66,6 +66,14 @@ class MolproLogTest(unittest.TestCase):
         with self.assertRaises(LogError):
             MolproLog(os.path.join(self.data_path, 'unrecognized_basis_set.out'))
 
+    def test_number_of_atoms_from_molpro_log(self):
+        """
+        Uses a Molpro log file for ethylene_dz (C2H4) to test that the
+        number of atoms can be properly read.
+        """
+        log = MolproLog(os.path.join(self.data_path, 'ethylene_f12_dz.out'))
+        self.assertEqual(log.get_number_of_atoms(), 6)
+
     def test_load_dz_from_molpro_log_f12(self):
         """
         Uses a Molpro log file for ethylene_dz (C2H4) to test that F12a
