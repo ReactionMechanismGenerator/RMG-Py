@@ -31,8 +31,8 @@
 This module contains unit tests of the :mod:`arkane.ess.molpro` module.
 """
 
-import unittest
 import os
+import unittest
 
 import numpy as np
 
@@ -71,7 +71,6 @@ class MolproLogTest(unittest.TestCase):
         Uses a Molpro log file for ethylene_dz (C2H4) to test that F12a
         energy can be properly read.
         """
-
         log = MolproLog(os.path.join(self.data_path, 'ethylene_f12_dz.out'))
         e0 = log.load_energy()
 
@@ -82,7 +81,6 @@ class MolproLogTest(unittest.TestCase):
         Uses a Molpro log file for ethylene_qz (C2H4) to test that F12b
         energy can be properly read.
         """
-
         log = MolproLog(os.path.join(self.data_path, 'ethylene_f12_qz.out'))
         e0 = log.load_energy()
 
@@ -93,7 +91,6 @@ class MolproLogTest(unittest.TestCase):
         Uses a Molpro log file for OH (C2H4) to test that radical
         energy can be properly read.
         """
-
         log = MolproLog(os.path.join(self.data_path, 'OH_f12.out'))
         e0 = log.load_energy()
 
@@ -104,7 +101,6 @@ class MolproLogTest(unittest.TestCase):
         Uses a molpro log file for HOSI to test that its
         molecular degrees of freedom can be properly read.
         """
-
         log = MolproLog(os.path.join(self.data_path, 'HOSI_ccsd_t1.out'))
         conformer, unscaled_frequencies = log.load_conformer(spin_multiplicity=1)
         e0 = log.load_energy()
@@ -148,7 +144,7 @@ class MolproLogTest(unittest.TestCase):
 
     def test_load_negative_frequency(self):
         """
-        Load an imaginary frequency from a  molpro output file
+        Load an imaginary frequency from a molpro output file
         """
         freq_log = MolproLog(os.path.join(self.data_path, 'molpro_TS.out'))
         imaginary_freq = freq_log.load_negative_frequency()
