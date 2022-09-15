@@ -928,18 +928,17 @@ def load_transport_file(path, species_dict, skip_missing_species=False):
 
 
 def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comments=True, thermo_path=None,
-                      use_chemkin_names=False, check_duplicates=True, generate_resonance_structures=True):
+                      use_chemkin_names=False, check_duplicates=True, generate_resonance_structures=True, 
+                      surface_path=False):
     """
     Load a Chemkin input file located at `path` on disk to `path`, returning lists of the species
     and reactions in the Chemkin file. The 'thermo_path' point to a separate thermo file, or, if 'None' is
     specified, the function will look for the thermo database within the chemkin mechanism file.
     If `generate_resonance_structures` is True (default if omitted) then resonance isomers for
     each species are generated.
+    If `surface path` is specified, the gas and surface species and reactions will be combined
     """
-    species_list = []
     species_dict = {}
-    species_aliases = {}
-    reaction_list = []
 
     # If the dictionary path is given, then read it and generate Molecule objects
     # You need to append an additional adjacency list for nonreactive species, such
@@ -947,38 +946,57 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
     # HTML output.
     if dictionary_path:
         species_dict = load_species_dictionary(dictionary_path, generate_resonance_structures=generate_resonance_structures)
+    
+    def parse_file(path):
+        """
+        helper function for parsing input file
+        """
+        sp_list = []
+        sp_aliases = {}
+        rxn_list = []
 
-    with open(path, 'r') as f:
-        previous_line = f.tell()
-        line0 = f.readline()
-        while line0 != '':
-            line = remove_comment_from_line(line0)[0]
-            line = line.strip()
-
-            if 'SPECIES' in line.upper():
-                # Unread the line (we'll re-read it in readReactionBlock())
-                f.seek(previous_line)
-                read_species_block(f, species_dict, species_aliases, species_list)
-            
-            elif 'SITE' in line.upper():
-                # Unread the line (we'll re-read it in readReactionBlock())
-                f.seek(previous_line)
-                read_species_block(f, species_dict, species_aliases, species_list)
-
-            elif 'THERM' in line.upper() and thermo_path is None:
-                # Skip this if a thermo file is specified
-                # Unread the line (we'll re-read it in read_thermo_block())
-                f.seek(previous_line)
-                read_thermo_block(f, species_dict)
-
-            elif 'REACTIONS' in line.upper():
-                # Reactions section
-                # Unread the line (we'll re-read it in readReactionBlock())
-                f.seek(previous_line)
-                reaction_list = read_reactions_block(f, species_dict, read_comments=read_comments)
-
+        with open(path, 'r') as f:
             previous_line = f.tell()
             line0 = f.readline()
+            while line0 != '':
+                line = remove_comment_from_line(line0)[0]
+                line = line.strip()
+
+                if 'SPECIES' in line.upper():
+                    # Unread the line (we'll re-read it in readReactionBlock())
+                    f.seek(previous_line)
+                    read_species_block(f, species_dict, sp_aliases, sp_list)
+                
+                elif 'SITE' in line.upper():
+                    # Unread the line (we'll re-read it in readReactionBlock())
+                    f.seek(previous_line)
+                    read_species_block(f, species_dict, sp_aliases, sp_list)
+
+                elif 'THERM' in line.upper() and thermo_path is None:
+                    # Skip this if a thermo file is specified
+                    # Unread the line (we'll re-read it in read_thermo_block())
+                    f.seek(previous_line)
+                    read_thermo_block(f, species_dict)
+
+                elif 'REACTIONS' in line.upper():
+                    # Reactions section
+                    # Unread the line (we'll re-read it in readReactionBlock())
+                    f.seek(previous_line)
+                    rxn_list = read_reactions_block(f, species_dict, read_comments=read_comments)
+
+                previous_line = f.tell()
+                line0 = f.readline()
+            return sp_list, species_dict, sp_aliases, rxn_list
+
+
+    # gas
+    species_list, species_dict, species_aliases, reaction_list = parse_file(path)
+    if surface_path:
+        surfsp_list, surfsp_dict, surfsp_aliases, surfrxn_list = parse_file(surface_path)
+        species_list.extend(surfsp_list)
+        species_dict.update(surfsp_dict)
+        species_aliases.update(surfsp_aliases) 
+        reaction_list.extend(surfrxn_list)
 
     # Read in the thermo data from the thermo file        
     if thermo_path:
