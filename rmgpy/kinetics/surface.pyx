@@ -29,7 +29,7 @@
 
 import numpy as np
 cimport numpy as np
-from libc.math cimport exp, sqrt
+from libc.math cimport exp, sqrt, log10
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
@@ -219,6 +219,22 @@ cdef class StickingCoefficient(KineticsModel):
         """
         self._A.value_si /= (self._T0.value_si / T0) ** self._n.value_si
         self._T0.value_si = T0
+
+    cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2:
+        """
+        Returns ``True`` if rates of reaction at temperatures 500,1000,1500,2000 K
+        and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.
+        """
+        cdef double T
+
+        if not isinstance(other_kinetics, StickingCoefficient):
+            return False
+
+        for T in [500, 1000, 1500, 2000]:
+            if abs(log10(self.get_sticking_coefficient(T)) - log10(other_kinetics.get_sticking_coefficient(T))) > 0.5:
+                return False
+
+        return True
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
@@ -421,6 +437,22 @@ cdef class StickingCoefficientBEP(KineticsModel):
             coverage_dependence=self.coverage_dependence,
             comment=self.comment,
         )
+
+    cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2:
+        """
+        Returns ``True`` if rates of reaction at temperatures 500,1000,1500,2000 K
+        and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.
+        """
+        cdef double T
+
+        if not isinstance(other_kinetics, StickingCoefficientBEP):
+            return False
+
+        for T in [500, 1000, 1500, 2000]:
+            if abs(log10(self.get_sticking_coefficient(T)) - log10(other_kinetics.get_sticking_coefficient(T))) > 0.5:
+                return False
+
+        return True
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
