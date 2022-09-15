@@ -467,7 +467,8 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
 
         tokens = case_preserved_tokens[1].split()
         cov_dep_species = species_dict[tokens[0].strip()]
-        k.coverage_dependence[cov_dep_species] = {'a':float(tokens[1]), 'm':float(tokens[2]), 'E':(float(tokens[3]), Eunits)}
+        Ea = Quantity(float(tokens[3]), Eunits)
+        k.coverage_dependence[cov_dep_species] = {'a':float(tokens[1]), 'm':float(tokens[2]), 'E':Ea}
 
     elif 'LOW' in line:
         # Low-pressure-limit Arrhenius parameters
@@ -1906,7 +1907,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
         for species, cov_params in kinetics.coverage_dependence.items():
             label = get_species_identifier(species)
             string += f'    COV / {label:<41} '
-            string += f"{cov_params['a']:<9.3g} {cov_params['m']:<9.3g} {cov_params['E']/4184.:<9.3f} /\n"
+            string += f"{cov_params['a']:<9.3g} {cov_params['m']:<9.3g} {cov_params['E'].value_si/4184.:<9.3f} /\n"
 
     if isinstance(kinetics, (_kinetics.ThirdBody, _kinetics.Lindemann, _kinetics.Troe)):
         # Write collider efficiencies
