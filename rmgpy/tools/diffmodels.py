@@ -219,15 +219,29 @@ def compare_model_reactions(model1, model2):
 
 
 def save_compare_html(outputDir, chemkin_path1, species_dict_path1, chemkin_path2, species_dict_path2,
-                      read_comments1=True, read_comments2=True):
+                      read_comments1=True, read_comments2=True, surf_path1 = False, surf_path2=False):
     """
     Saves a model comparison HTML file based on two sets of chemkin and species dictionary
     files.
     """
     model1 = ReactionModel()
-    model1.species, model1.reactions = load_chemkin_file(chemkin_path1, species_dict_path1, read_comments=read_comments1)
     model2 = ReactionModel()
-    model2.species, model2.reactions = load_chemkin_file(chemkin_path2, species_dict_path2, read_comments=read_comments2)
+
+    if surf_path1 and surf_path2:
+        model1.species, model1.reactions = load_chemkin_file(
+            chemkin_path1, species_dict_path1, read_comments=read_comments1,
+            surface_path=surf_path1)
+        model2.species, model2.reactions = load_chemkin_file(
+            chemkin_path2, species_dict_path2, read_comments=read_comments2,
+            surface_path=surf_path2)
+    else: 
+        if not surf_path1 or not surf_path2:
+            logging.error("to compare gas+surface mechanism, both models need a surface chemkin file")
+        model1.species, model1.reactions = load_chemkin_file(
+            chemkin_path1, species_dict_path1, read_comments=read_comments1)
+        model2.species, model2.reactions = load_chemkin_file(
+            chemkin_path2, species_dict_path2, read_comments=read_comments2)
+    
     common_reactions, unique_reactions1, unique_reactions2 = compare_model_reactions(model1, model2)
     common_species, unique_species1, unique_species2 = compare_model_species(model1, model2)
 
