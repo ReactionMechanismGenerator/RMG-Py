@@ -178,7 +178,7 @@ def read_thermo_entry(entry, Tmin=0, Tint=0, Tmax=0):
 ################################################################################
 
 
-def read_kinetics_entry(entry, species_dict, Aunits, Eunits):
+def read_kinetics_entry(entry, species_dict, Aunits, Aunits_surf, Eunits):
     """
     Read a kinetics `entry` for a single reaction as loaded from a Chemkin
     file. The associated mapping of labels to species `species_dict` should also
@@ -197,11 +197,15 @@ def read_kinetics_entry(entry, species_dict, Aunits, Eunits):
     # The first line contains the reaction equation and a set of
     # modified Arrhenius parameters
     reaction, third_body, kinetics, k_units, k_low_units = _read_kinetics_reaction(
-        line=lines[0], species_dict=species_dict, Aunits=Aunits, Eunits=Eunits)
+        line=lines[0], species_dict=species_dict, Aunits=Aunits, Aunits_surf=Aunits_surf, Eunits=Eunits)
 
     if len(lines) == 1 and not third_body:
         # If there's only one line then we know to use the high-P limit kinetics as-is
-        reaction.kinetics = kinetics['arrhenius high']
+        if 'arrhenius high' in kinetics:
+            reaction.kinetics = kinetics['arrhenius high']
+        elif 'surface arrhenius' in kinetics:
+            reaction.kinetics = kinetics['surface arrhenius']
+
     else:
         # There's more kinetics information to be read
         kinetics.update({
@@ -285,7 +289,13 @@ def read_kinetics_entry(entry, species_dict, Aunits, Eunits):
             reaction.kinetics.efficiencies = kinetics['efficiencies']
         elif 'explicit reverse' in kinetics or reaction.duplicate:
             # it's a normal high-P reaction - the extra lines were only either REV (explicit reverse) or DUP (duplicate)
-            reaction.kinetics = kinetics['arrhenius high']
+            if 'sticking coefficient' in kinetics:
+                reaction.kinetics = kinetics['sticking coefficient']
+            elif 'surface arrhenius' in kinetics:
+                reaction.kinetics = kinetics['surface arrhenius']
+            else:
+                reaction.kinetics = kinetics['arrhenius high']
+
         elif 'sticking coefficient' in kinetics:
             reaction.kinetics = kinetics['sticking coefficient']
         elif 'surface arrhenius' in kinetics:
@@ -305,7 +315,7 @@ def read_kinetics_entry(entry, species_dict, Aunits, Eunits):
     return reaction
 
 
-def _read_kinetics_reaction(line, species_dict, Aunits, Eunits):
+def _read_kinetics_reaction(line, species_dict, Aunits, Aunits_surf, Eunits):
     """
     Parse the first line of of a Chemkin reaction entry.
     """
@@ -428,7 +438,29 @@ def _read_kinetics_reaction(line, species_dict, Aunits, Eunits):
 
     key = 'arrhenius low' if third_body else 'arrhenius high'
 
-    kinetics = {
+    # check if any reactants are surface species
+    surf_rxn = False
+    if any(reactant.molecule[0].contains_surface_site() for reactant in reaction.reactants):
+        surf_rxn = True
+    elif any(product.molecule[0].contains_surface_site() for product in reaction.products):
+        surf_rxn = True
+    
+    # check that reaction is a surface rxn. use surf arrhenius, but correct in following section 
+    # if "STICK' is specified
+    if surf_rxn:
+        ksurfunits = Aunits_surf[n_react]
+        keysurf = 'surface arrhenius'
+        kinetics = {
+            keysurf: _kinetics.SurfaceArrhenius(
+                A=(A, ksurfunits),
+                n=(n, '', '+|-', dn),
+                Ea=(Ea, Eunits, '+|-', dEa),
+                T0=(1, "K"),
+            )
+        }
+    
+    else: 
+        kinetics = {
         key: _kinetics.Arrhenius(
             A=(A, k_units, A_uncertainty_type, dA),
             n=(n, '', '+|-', dn),
@@ -436,6 +468,7 @@ def _read_kinetics_reaction(line, species_dict, Aunits, Eunits):
             T0=(1, "K"),
         ),
     }
+
     return reaction, third_body, kinetics, k_units, k_low_units
 
 
@@ -447,6 +480,13 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
     line = line.upper()
     tokens = line.split('/')
 
+    # check if any reactants are surface species
+    surf_rxn = False
+    if any(reactant.molecule[0].contains_surface_site() for reactant in reaction.reactants):
+        surf_rxn = True
+    elif any(product.molecule[0].contains_surface_site() for product in reaction.products):
+        surf_rxn = True
+    
     if 'DUP' in line:
         # Duplicate reaction
         reaction.duplicate = True
@@ -455,15 +495,7 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
         try:
             k = kinetics['sticking coefficient']
         except KeyError:
-            k = kinetics['arrhenius high']
-            k = _kinetics.SurfaceArrhenius(
-                A=(k.A.value, kunits),
-                n=k.n,
-                Ea=k.Ea,
-                T0=k.T0,
-            )
-            kinetics['surface arrhenius'] = k
-            del kinetics['arrhenius high']
+            k = kinetics['surface arrhenius']
 
         tokens = case_preserved_tokens[1].split()
         cov_dep_species = species_dict[tokens[0].strip()]
@@ -573,15 +605,15 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
             logging.info("Ignoring explicit reverse rate for reaction {0}".format(reaction))
 
     elif line.strip() == 'STICK':
-        # Convert what we thought was Arrhenius into StickingCoefficient
-        k = kinetics['arrhenius high']
+        # Convert what we thought was a surface arrhenius into StickingCoefficient
+        k = kinetics['surface arrhenius']
         kinetics['sticking coefficient'] = _kinetics.StickingCoefficient(
             A=k.A.value,
             n=k.n,
             Ea=k.Ea,
             T0=k.T0,
         )
-        del kinetics['arrhenius high']
+        del kinetics['surface arrhenius']
 
     else:
         # Assume a list of collider efficiencies
@@ -1311,6 +1343,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
     energy_units = 'cal/mol'
     molecule_units = 'moles'
     volume_units = 'cm3'
+    area_units = 'cm2'
     time_units = 's'
 
     line = f.readline()
@@ -1371,6 +1404,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
     elif molecule_units == 'moles' or molecule_units == 'mole':
         molecule_units = 'mol'
     volume_units = {'cm3': 'cm', 'm3': 'm'}[volume_units]
+    area_units = {'cm2': 'cm', 'm2': 'm'}[area_units]
     if energy_units == 'kcal/mole':
         energy_units = 'kcal/mol'
     elif energy_units == 'cal/mole':
@@ -1390,6 +1424,13 @@ def read_reactions_block(f, species_dict, read_comments=True):
         '{0}^3/({1}*{2})'.format(volume_units, molecule_units, time_units),  # Second-order
         '{0}^6/({1}^2*{2})'.format(volume_units, molecule_units, time_units),  # Third-order
         '{0}^9/({1}^3*{2})'.format(volume_units, molecule_units, time_units),  # Fourth-order
+    ]
+
+    Aunits_surf = [
+        '',  # Zeroth-order
+        's^-1'.format(time_units),  # First-order
+        '{0}^2/({1}*{2})'.format(area_units, molecule_units, time_units),  # Second-order
+        '{0}^4/({1}^2*{2})'.format(area_units, molecule_units, time_units),  # Third-order
     ]
     Eunits = energy_units
 
@@ -1461,7 +1502,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
     reaction_list = []
     for kinetics, comments in zip(kinetics_list, comments_list):
         try:
-            reaction = read_kinetics_entry(kinetics, species_dict, Aunits, Eunits)
+            reaction = read_kinetics_entry(kinetics, species_dict, Aunits, Aunits_surf, Eunits)
             reaction = read_reaction_comments(reaction, comments, read=read_comments)
         except ChemkinError as e:
             if "Skip reaction!" in str(e):
