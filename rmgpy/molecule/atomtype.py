@@ -252,6 +252,78 @@ ATOMTYPES['Xo']   = AtomType('Xo', generic=['X'], specific=[],
                              single=[0, 1], all_double=[0, 1], r_double=[], o_double=[], s_double=[], triple=[0, 1],
                              quadruple=[0, 1], benzene=[0], lone_pairs=[0])
 
+# more metal atoms (just copied X, might need a better way of differentiating)
+ATOMTYPES['Pt']   = AtomType(label='Pt', generic=[], specific=['Ptv', 'Pto'])
+ATOMTYPES['Ptv']   = AtomType('Ptv', generic=['Pt'], specific=[],
+                             single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                             benzene=[0], lone_pairs=[0]) 
+ATOMTYPES['Pto']   = AtomType('Pto', generic=['Pt'], specific=[],
+                         single=[0, 1], all_double=[0, 1], r_double=[], o_double=[], s_double=[], triple=[0, 1],
+                         quadruple=[0, 1], benzene=[0], lone_pairs=[0])
+ATOMTYPES['Cu']   = AtomType(label='Cu', generic=[], specific=['Cuv', 'Cuo'])
+ATOMTYPES['Cuv']   = AtomType('Cuv', generic=['Cu'], specific=[],
+                             single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                             benzene=[0], lone_pairs=[0]) 
+ATOMTYPES['Cuo']   = AtomType('Cuo', generic=['Cu'], specific=[],
+                         single=[0, 1], all_double=[0, 1], r_double=[], o_double=[], s_double=[], triple=[0, 1],
+                         quadruple=[0, 1], benzene=[0], lone_pairs=[0])
+ATOMTYPES['Ni']   = AtomType(label='Ni', generic=[], specific=['Niv', 'Nio'])
+ATOMTYPES['Niv']   = AtomType('Niv', generic=['Ni'], specific=[],
+                             single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                             benzene=[0], lone_pairs=[0]) 
+ATOMTYPES['Nio']   = AtomType('Nio', generic=['Ni'], specific=[],
+                         single=[0, 1], all_double=[0, 1], r_double=[], o_double=[], s_double=[], triple=[0, 1],
+                         quadruple=[0, 1], benzene=[0], lone_pairs=[0])
+ATOMTYPES['Ru']   = AtomType(label='Ru', generic=[], specific=['Ruv', 'Ruo'])
+ATOMTYPES['Ruv']   = AtomType('Ruv', generic=['Ru'], specific=[],
+                             single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                             benzene=[0], lone_pairs=[0]) 
+ATOMTYPES['Ruo']   = AtomType('Ruo', generic=['Ru'], specific=[],
+                         single=[0, 1], all_double=[0, 1], r_double=[], o_double=[], s_double=[], triple=[0, 1],
+                         quadruple=[0, 1], benzene=[0], lone_pairs=[0])
+ATOMTYPES['Rh']   = AtomType(label='Rh', generic=[], specific=['Rhv', 'Rho'])
+ATOMTYPES['Rhv']   = AtomType('Rhv', generic=['Rh'], specific=[],
+                             single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                             benzene=[0], lone_pairs=[0]) 
+ATOMTYPES['Rho']   = AtomType('Rho', generic=['Rh'], specific=[],
+                         single=[0, 1], all_double=[0, 1], r_double=[], o_double=[], s_double=[], triple=[0, 1],
+                         quadruple=[0, 1], benzene=[0], lone_pairs=[0])
+ATOMTYPES['Ir']   = AtomType(label='Ir', generic=[], specific=['Irv', 'Iro'])
+ATOMTYPES['Irv']   = AtomType('Irv', generic=['Ir'], specific=[],
+                             single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                             benzene=[0], lone_pairs=[0]) 
+ATOMTYPES['Iro']   = AtomType('Iro', generic=['Ir'], specific=[],
+                         single=[0, 1], all_double=[0, 1], r_double=[], o_double=[], s_double=[], triple=[0, 1],
+                         quadruple=[0, 1], benzene=[0], lone_pairs=[0])
+ATOMTYPES['Au']   = AtomType(label='Au', generic=[], specific=['Auv', 'Auo'])
+ATOMTYPES['Auv']   = AtomType('Auv', generic=['Au'], specific=[],
+                             single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                             benzene=[0], lone_pairs=[0]) 
+ATOMTYPES['Auo']   = AtomType('Auo', generic=['Au'], specific=[],
+                         single=[0, 1], all_double=[0, 1], r_double=[], o_double=[], s_double=[], triple=[0, 1],
+                         quadruple=[0, 1], benzene=[0], lone_pairs=[0])
+ATOMTYPES['Pd']   = AtomType(label='Pd', generic=[], specific=['Pdv', 'Pdo'])
+ATOMTYPES['Pdv']   = AtomType('Pdv', generic=['Pd'], specific=[],
+                             single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                             benzene=[0], lone_pairs=[0]) 
+ATOMTYPES['Pdo']   = AtomType('Pdo', generic=['Pd'], specific=[],
+                         single=[0, 1], all_double=[0, 1], r_double=[], o_double=[], s_double=[], triple=[0, 1],
+                         quadruple=[0, 1], benzene=[0], lone_pairs=[0])
+ATOMTYPES['Ag']   = AtomType(label='Ag', generic=[], specific=['Agv', 'Ago'])
+ATOMTYPES['Agv']   = AtomType('Agv', generic=['Ag'], specific=[],
+                             single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                             benzene=[0], lone_pairs=[0]) 
+ATOMTYPES['Ago']   = AtomType('Ago', generic=['Ag'], specific=[],
+                         single=[0, 1], all_double=[0, 1], r_double=[], o_double=[], s_double=[], triple=[0, 1],
+                         quadruple=[0, 1], benzene=[0], lone_pairs=[0])
+ATOMTYPES['Co']   = AtomType(label='Co', generic=[], specific=['Cov', 'Coo'])
+ATOMTYPES['Cov']   = AtomType('Cov', generic=['Co'], specific=[],
+                             single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                             benzene=[0], lone_pairs=[0]) 
+ATOMTYPES['Coo']   = AtomType('Coo', generic=['Co'], specific=[],
+                         single=[0, 1], all_double=[0, 1], r_double=[], o_double=[], s_double=[], triple=[0, 1],
+                         quadruple=[0, 1], benzene=[0], lone_pairs=[0])
+
 # Non-surface atomTypes, R being the most generic:
 ATOMTYPES['R']    = AtomType(label='R', generic=[], specific=[
     'H',
