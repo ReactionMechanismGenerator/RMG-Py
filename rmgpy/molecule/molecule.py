@@ -374,7 +374,12 @@ class Atom(Vertex):
         """
         Return ``True`` if the atom represents a surface site or ``False`` if not.
         """
-        return self.symbol == 'X'
+        metal_atoms = [
+            'Pt', 'Cu', 'Ni', 'Ru', 'Rh', 'Ir', 
+            'Au', 'Pd', 'Ag', 'Co', 'X']
+
+        return True if self.symbol in metal_atoms else False
+
 
     def is_bonded_to_surface(self):
         """
