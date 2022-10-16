@@ -238,12 +238,12 @@ class KineticsDatabase(object):
                     library.load(library_file, self.local_context, self.global_context)
                     self.libraries[library.label] = library
                 elif os.path.exists(library_file):
-                    logging.info('Loading kinetics library {0} from {1}...'.format(library_name, library_file))
+                    logging.info(f'Loading kinetics library {library_name} from {library_file}...')
                     library = KineticsLibrary(label=library_name)
                     library.load(library_file, self.local_context, self.global_context)
                     self.libraries[library.label] = library
                 else:
-                    raise IOError("Couldn't find kinetics library {0}".format(library_file))
+                    raise IOError(f"Couldn't find kinetics library {library_file}")
 
         else:
             # load all the libraries you can find
@@ -255,7 +255,7 @@ class KineticsDatabase(object):
                     if ext.lower() == '.py':
                         library_file = os.path.join(root, f)
                         label = os.path.dirname(library_file)[len(path) + 1:]
-                        logging.info('Loading kinetics library {0} from {1}...'.format(label, library_file))
+                        logging.info(f'Loading kinetics library {label} from {library_file}...')
                         library = KineticsLibrary(label=label)
                         try:
                             library.load(library_file, self.local_context, self.global_context)
