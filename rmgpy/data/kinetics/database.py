@@ -236,10 +236,6 @@ class KineticsDatabase(object):
                     library.load(library_file, self.local_context, self.global_context)
                     self.libraries[library.label] = library
                 else:
-                    if library_name == "KlippensteinH2O2":
-                        logging.info("""\n** Note: The KlippensteinH2O2 library was replaced and is no longer available in RMG.
-For H2 combustion chemistry consider using either the BurkeH2inN2 or BurkeH2inArHe
-library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n""")
                     raise IOError("Couldn't find kinetics library {0}".format(library_file))
 
         else:
