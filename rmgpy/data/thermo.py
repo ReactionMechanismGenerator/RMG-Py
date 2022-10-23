@@ -940,7 +940,7 @@ class ThermoDatabase(object):
 
         else:
             for libraryName in libraries:
-                f = libraryName + '.py'
+                f = f'{libraryName}.py'
                 if os.path.isfile(libraryName):
                     logging.info(f'Loading thermodynamics library from an external location: {libraryName}..')
                     library = ThermoLibrary()
@@ -949,7 +949,7 @@ class ThermoDatabase(object):
                     self.libraries[library.label] = library
                     self.library_order.append(library.label)
                 elif os.path.exists(os.path.join(path, f)):
-                    logging.info('Loading thermodynamics library from {0} in {1}...'.format(f, path))
+                    logging.info(f'Loading thermodynamics library from {f} in {path}...')
                     library = ThermoLibrary()
                     library.load(os.path.join(path, f), self.local_context, self.global_context)
                     library.label = os.path.splitext(f)[0]
