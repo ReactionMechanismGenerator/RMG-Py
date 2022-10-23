@@ -29,6 +29,7 @@
 
 import math
 import os
+import shutil
 import unittest
 
 import rmgpy
@@ -76,6 +77,16 @@ class TestThermoDatabaseLoading(unittest.TestCase):
 
         with self.assertRaises(Exception):
             database.load_libraries(os.path.join(path, 'libraries'), libraries)
+
+    def test_loading_external_thermo_library(self):
+        """This tests loading a thermo library which is not in the RMG-database repo"""
+        thermo_lib_in_db_path = os.path.join(settings['database.directory'], 'thermo', 'libraries', 'primaryNS.py')
+        thermo_lib_in_test_dir_path = os.path.join(os.path.dirname(rmgpy.__file__), 'test_data', 'copied_thermo_lib.py')
+        shutil.copyfile(src=thermo_lib_in_db_path, dst=thermo_lib_in_test_dir_path)
+        database = ThermoDatabase()
+        database.load_libraries(path='', libraries=[thermo_lib_in_test_dir_path])
+        self.assertEqual(list(database.libraries.keys()), ['copied_thermo_lib'])
+        os.remove(thermo_lib_in_test_dir_path)
 
 
 class TestThermoDatabase(unittest.TestCase):
