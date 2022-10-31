@@ -27,6 +27,10 @@ Again, for those (still) using ``https``, the command is instead::
 
     git pull https://github.com/ReactionMechanismGenerator/RMG-database.git main
 
+We also recommend that the RMS julia package is updated::
+
+    julia -e 'using Pkg; Pkg.update("ReactionMechanismSimulator")'
+
 For more information about how to use the Git workflow to make changes to the source code, please
 refer to the handy `Git Tutorial <http://git-scm.com/docs/gittutorial>`_
 

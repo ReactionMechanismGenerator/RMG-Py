@@ -119,7 +119,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
      python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
-     julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",version="0.4")); using ReactionMechanismSimulator;'
+     julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator;'
 
    Note that this links your python to python-jl enabling calls to Julia through pyjulia. Occasionally programs will
    interact with python-jl differently than the default python. If this occurs for you we recommend doing that operation

@@ -169,7 +169,7 @@ export PATH=YourFolder/RMG-Py/:$PATH
 <li><p>Install and Link Julia dependencies</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;import julia; julia.install(); import diffeqpy; diffeqpy.install()&quot;</span>
 
-<span class="n">julia</span> <span class="o">-</span><span class="n">e</span> <span class="s1">&#39;using Pkg; Pkg.add(PackageSpec(name=&quot;ReactionMechanismSimulator&quot;,version=&quot;0.4&quot;)); using ReactionMechanismSimulator;&#39;</span>
+<span class="n">julia</span> <span class="o">-</span><span class="n">e</span> <span class="s1">&#39;using Pkg; Pkg.add(PackageSpec(name=&quot;ReactionMechanismSimulator&quot;,rev=&quot;main&quot;)); using ReactionMechanismSimulator;&#39;</span>
 </pre></div>
 </div>
 <p>Note that this links your python to python-jl enabling calls to Julia through pyjulia. Occasionally programs will
