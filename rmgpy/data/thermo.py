@@ -940,19 +940,22 @@ class ThermoDatabase(object):
 
         else:
             for libraryName in libraries:
-                f = libraryName + '.py'
-                if os.path.exists(os.path.join(path, f)):
-                    logging.info('Loading thermodynamics library from {0} in {1}...'.format(f, path))
+                f = f'{libraryName}.py'
+                if os.path.isfile(libraryName):
+                    logging.info(f'Loading thermodynamics library from an external location: {libraryName}..')
+                    library = ThermoLibrary()
+                    library.load(libraryName, self.local_context, self.global_context)
+                    library.label = os.path.splitext(os.path.split(libraryName)[-1])[0]
+                    self.libraries[library.label] = library
+                    self.library_order.append(library.label)
+                elif os.path.exists(os.path.join(path, f)):
+                    logging.info(f'Loading thermodynamics library from {f} in {path}...')
                     library = ThermoLibrary()
                     library.load(os.path.join(path, f), self.local_context, self.global_context)
                     library.label = os.path.splitext(f)[0]
                     self.libraries[library.label] = library
                     self.library_order.append(library.label)
                 else:
-                    if libraryName == "KlippensteinH2O2":
-                        logging.info(
-                            '\n** Note: The thermo library KlippensteinH2O2 was replaced and is no longer available '
-                            'in RMG. For H2 combustion chemistry consider using the BurkeH2O2 library instead\n')
                     raise DatabaseError('Library {} not found in {}... Please check if your library is '
                                         'correctly placed'.format(libraryName, path))
 
