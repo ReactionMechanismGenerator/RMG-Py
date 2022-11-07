@@ -69,7 +69,7 @@ class ThermoParameterUncertainty(object):
             dG += self.dG_GAV  # Add a fixed uncertainty for the GAV method
             for group_type, group_entries in source['GAV'].items():
                 group_weights = [groupTuple[-1] for groupTuple in group_entries]
-                dG += np.sum([weight * self.dG_group for weight in group_weights])
+                dG += np.sum([weight * weight * self.dG_group for weight in group_weights])
 
         return dG
 
@@ -100,7 +100,7 @@ class ThermoParameterUncertainty(object):
                     group_list = source['GAV'][corr_group_type]
                     for group, weight in group_list:
                         if group == corr_param:
-                            return weight * self.dG_group
+                            return weight * weight * self.dG_group
 
         elif corr_source_type == 'Estimation':
             if 'GAV' in source:
@@ -178,17 +178,17 @@ class KineticParameterUncertainty(object):
 
             if not exact:
                 # nonexactness contribution increases as N increases
-                dlnk += np.log10(N + 1) * self.dlnk_nonexact
+                dlnk += np.log10(N + 1) * np.log10(N + 1) * self.dlnk_nonexact
 
             # Add the contributions from rules
-            dlnk += np.sum([weight * self.dlnk_rule for weight in rule_weights])
+            dlnk += np.sum([weight * weight * self.dlnk_rule for weight in rule_weights])
             # Add the contributions from training
             # Even though these source from training reactions, we actually
             # use the uncertainty for rate rules, since these are now approximations
             # of the original reaction.  We consider these to be independent of original the training
             # parameters because the rate rules may be reversing the training reactions,
             # which leads to more complicated dependence
-            dlnk += np.sum([weight * self.dlnk_rule for weight in training_weights])
+            dlnk += np.sum([weight * weight * self.dlnk_rule for weight in training_weights])
 
         return dlnk
 
@@ -211,11 +211,11 @@ class KineticParameterUncertainty(object):
                     if rules:
                         for ruleEntry, weight in rules:
                             if corr_param == ruleEntry:
-                                return weight * self.dlnk_rule
+                                return weight * weight * self.dlnk_rule
                     if training:
                         for ruleEntry, trainingEntry, weight in training:
                             if corr_param == ruleEntry:
-                                return weight * self.dlnk_rule
+                                return weight * weight * self.dlnk_rule
 
         # Writing it this way in the function is not the most efficient, but makes it easy to use, and
         # testing a few if statements is not too costly
@@ -246,7 +246,7 @@ class KineticParameterUncertainty(object):
                 N = len(source_dict['rules']) + len(source_dict['training'])
                 if not exact:
                     # nonexactness contribution increases as N increases
-                    dlnk += np.log10(N + 1) * self.dlnk_nonexact
+                    dlnk += np.log10(N + 1) * np.log10(N + 1) * self.dlnk_nonexact
                 return dlnk
         else:
             raise Exception('Kinetics correlated source must be Rate Rules, Library, PDep, Training, or Estimation')
@@ -520,6 +520,105 @@ class Uncertainty(object):
         self.all_kinetic_sources['Training'] = {}
         for family_label in all_kinetic_sources['Training'].keys():
             self.all_kinetic_sources['Training'][family_label] = list(all_kinetic_sources['Training'][family_label])
+
+    def get_uncertainty_covariance_matrix(self):
+        """
+            Function to estimate the uncertainty covariance matrix of all input parameters
+            Must be called after extract_sources_from_model() and assign_parameter_uncertainties()
+            Returns the covariance matrix as a numpy array and the parameter labels as a list
+        """
+        g_param_engine = ThermoParameterUncertainty()
+        k_param_engine = KineticParameterUncertainty()
+
+        Sigma_k = np.zeros((len(self.reaction_list), len(self.reaction_list)))
+        for a, reaction_a in enumerate(self.reaction_list):
+            for b, reaction_b in enumerate(self.reaction_list):
+                source_a = self.reaction_sources_dict[reaction_a]
+                source_b = self.reaction_sources_dict[reaction_b]
+                if 'Rate Rules' in source_a and 'Rate Rules' in source_b:
+                    source_dict_a = source_a['Rate Rules'][1]
+                    source_dict_b = source_b['Rate Rules'][1]
+                    rules_a = source_dict_a['rules']
+                    rules_b = source_dict_b['rules']
+                    training_a = source_dict_a['training']
+                    training_b = source_dict_b['training']
+
+                    cov_ab = 0.0
+                    for ruleEntry_a, weight_a in rules_a:
+                        for ruleEntry_b, weight_b in rules_b:
+                            if ruleEntry_a == ruleEntry_b:
+                                cov_ab += weight_a * weight_b * k_param_engine.dlnk_rule  # assumes uncertainty is variance
+
+                    for ruleEntry_a, trainingEntry, weight_a in training_a:
+                        for ruleEntry_b, trainingEntry, weight_b in training_b:
+                            if ruleEntry_a == ruleEntry_b:
+                                cov_ab += weight_a * weight_b * k_param_engine.dlnk_rule  # assumes delta is variance
+
+                    # Estimation error only matters if i=j, assumes the reaction list is unique
+                    if a == b:
+                        # family_variance = np.float_power(k_param_engine.dlnk_family, 2.0) # assumes uncertainty is std dev
+                        family_variance = k_param_engine.dlnk_family  # assumes uncertainty is variance
+                        match_variance = 0
+                        exact = source_dict_a['exact']
+                        N = len(source_dict_a['rules']) + len(source_dict_a['training'])
+                        if not exact:
+                            # nonexactness contribution increases as N increases
+                            match_variance = np.log10(N + 1) * np.log10(N + 1) * k_param_engine.dlnk_nonexact  # assuming variance - why the log is squared
+                        est_variance = family_variance + match_variance
+                        cov_ab += est_variance
+                    Sigma_k[a, b] = cov_ab
+
+                elif a == b:  # same reaction, so just compute variance like usual
+                    if 'PDep' in source_a:
+                        dplnk = k_param_engine.get_partial_uncertainty_value(source_a, 'PDep', source_a['PDep'])
+                        Sigma_k[a, a] = dplnk  # assumes uncertainty is variance
+
+                    elif 'Library' in source_a:
+                        dplnk = k_param_engine.get_partial_uncertainty_value(source_a, 'Library', source_a['Library'])
+                        Sigma_k[a, a] = dplnk  # assumes uncertainty is variance
+
+                    elif 'Training' in source_a:
+                        dplnk = k_param_engine.get_partial_uncertainty_value(source_a, 'Training', source_a['Training'])
+                        Sigma_k[a, a] = dplnk  # assumes uncertainty is variance
+                # All other cases, the covariance is zero
+
+        Sigma_G = np.zeros((len(self.species_list), len(self.species_list)))
+        for a, species_a in enumerate(self.species_list):
+            for b, species_b in enumerate(self.species_list):
+                source_a = self.species_sources_dict[species_a]
+                source_b = self.species_sources_dict[species_b]
+                cov_ab = 0
+                if 'GAV' in source_a and 'GAV' in source_b:
+                    for groupType_a, groupList_a in source_a['GAV'].items():
+                        for groupType_b, groupList_b in source_b['GAV'].items():
+                            for group_a, degeneracy_a in groupList_a:
+                                for group_b, degeneracy_b in groupList_b:
+                                    if group_a == group_b:
+                                        cov_ab += degeneracy_a * degeneracy_b * g_param_engine.dG_group
+
+                    # We also know if there is group additivity used, there will be uncorrelated estimation error
+                    # but that uncorrelated estimation error only shows up in the covariance matrix if the molecules are the same
+                    if a == b:
+                        estimation_std = g_param_engine.get_partial_uncertainty_value(source_a, 'Estimation')
+                        cov_ab += estimation_std
+
+                # Assume that the library and QM values are uncorrelated if the molecules are not the same
+                if a == b:
+                    if 'Library' in source_a:
+                        library_std = g_param_engine.get_partial_uncertainty_value(source_a, 'Library', corr_param=source_a['Library'])
+                        cov_ab += library_std
+                    if 'QM' in source_a:
+                        qm_std = g_param_engine.get_partial_uncertainty_value(source_a, 'QM', corr_param=source_a['QM'])
+                        cov_ab += qm_std
+
+                Sigma_G[a, b] = cov_ab
+
+        filler = np.zeros((Sigma_G.shape[0], Sigma_k.shape[1]))
+        covariance_matrix = np.block([[Sigma_G, filler], [filler.transpose(), Sigma_k]])
+        parameter_labels = self.species_list.copy()
+        parameter_labels.extend(self.reaction_list)
+
+        return (covariance_matrix, parameter_labels)
 
     def assign_parameter_uncertainties(self, g_param_engine=None, k_param_engine=None, correlated=False):
         """
