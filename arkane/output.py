@@ -262,15 +262,29 @@ def save_kinetics_lib(rxn_list, path, name, lib_long_desc):
         lib_long_desc (str): A multiline string with relevant description.
     """
     entries = dict()
+    counter = 0
     if rxn_list:
         for i, rxn in enumerate(rxn_list):
             if rxn.kinetics is not None:
+                reactants, products = '', ''
+                for reactant in rxn.reactants:
+                    reactant.label = reactant.label.split('(')[0] + str(counter)
+                    counter += 1
+                    if len(reactants):
+                        reactants += ' + '
+                    reactants += reactant.label
+                for product in rxn.products:
+                    product.label = product.label.split('(')[0] + str(counter)
+                    counter += 1
+                    if len(products):
+                        products += ' + '
+                    products += product.label
+                rxn_label= f'{reactants} <=> {products}'
                 entry = Entry(
                     index=i,
                     item=rxn,
                     data=rxn.kinetics,
-                    label=' <=> '.join([' + '.join([reactant.label for reactant in rxn.reactants]),
-                                        ' + '.join([product.label for product in rxn.products])]),
+                    label=rxn_label,
                 )
                 entries[i+1] = entry
             else:
