@@ -269,7 +269,9 @@ def save_kinetics_lib(rxn_list, path, name, lib_long_desc):
                     index=i,
                     item=rxn,
                     data=rxn.kinetics,
-                    label=rxn.label)
+                    label=' <=> '.join([' + '.join([reactant.label for reactant in rxn.reactants]),
+                                        ' + '.join([product.label for product in rxn.products])]),
+                )
                 entries[i+1] = entry
             else:
                 logging.warning(f'Reaction {rxn.label} did not contain any kinetic data and was omitted from the '
