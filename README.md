@@ -59,7 +59,7 @@ Please at least cite our latest publication on Reaction Mechanism Generator v3.0
 relevant publications when publishing the results using our software.
 
 ## How to cite
-Please include the following two citations if RMG and/or Arkane were used for an academic study:
+Please include the following citations if RMG, RMG-database, and/or Arkane were used for an academic study:
 - C.W. Gao, J.W. Allen, W.H. Green, R.H. West,
   [Reaction Mechanism Generator: Automatic construction of chemical kinetic mechanisms](https://doi.org/10.1016/j.cpc.2016.02.013),
   Computer Physics Communications 2016, 203, 212-225.
@@ -67,6 +67,10 @@ Please include the following two citations if RMG and/or Arkane were used for an
   E.J. Mazeau, K. Blondal, R.H. West, C.F. Goldsmith, W.H. Green,
   [Reaction Mechanism Generator v3.0: Advances in Automatic Mechanism Generation](https://doi.org/10.1021/acs.jcim.0c01480),
   Journal of Chemical Information and Modeling 2021, 61(6), 2686-2696.
+- M. S. Johnson, X. Dong, A. Grinberg Dana, Y. Chung, D. Farina, R. J. Gillis, M. Liu, N. W. Yee, K. Blondal, 
+  E. Mazeau, C. A. Grambow, A. M. Payne, K. A. Spiekermann, H.-W. Pang, C. F. Goldsmith, R. H. West, W. H. Green,
+  [RMG Database for Chemical Property Prediction](https://pubs.acs.org/doi/10.1021/acs.jcim.2c00965),
+  Journal of Chemical Information and Modeling 2022, 62(20), 4906–4915.
 
 ## License Information
 RMG is a free, open-source software package (distributed under the [MIT/X11 license](https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/LICENSE.txt)).
