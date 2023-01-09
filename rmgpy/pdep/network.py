@@ -512,7 +512,8 @@ class Network(object):
             e_max = np.max(self.E0)
             for rxn in self.path_reactions:
                 E0 = float(rxn.transition_state.conformer.E0.value_si)
-                if E0 > e_max: e_max = E0
+                if E0 > e_max:
+                    e_max = E0
         else:
             e_max = self.Emax
 
