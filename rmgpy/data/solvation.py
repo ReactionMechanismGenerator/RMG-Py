@@ -800,6 +800,34 @@ class SoluteTSDiffData(object):
             self.S_g, self.B_g, self.E_g, self.L_g, self.A_g, self.K_g, self.S_h, self.B_h, self.E_h,
             self.L_h, self.A_h, self.K_h, self.comment)
 
+def to_soluteTSdata(data,reactants=None):
+    if isinstance(data,SoluteTSData):
+        return data
+    elif isinstance(data,SoluteData):
+        return SoluteTSData(Sg_g=data.S,Bg_g=data.B,Eg_g=data.E,Lg_g=data.L,Ag_g=data.A,Cg_g=1.0,
+                            Sh_h=data.S,Bh_h=data.B,Eh_h=data.E,Lh_h=data.L,Ah_h=data.A,Ch_h=1.0,comment=data.comment)
+    elif isinstance(data,SoluteTSDiffData):
+        from rmgpy.data.rmg import get_db
+        solvation_database = get_db('solvation')
+        react_data = [solvation_database.get_solute_data(spc.copy(deep=True)) for spc in reactants]
+        return SoluteTSData(Sg_g=data.S_g+sum([x.S for x in react_data]),
+                            Bg_g=data.B_g+sum([x.B for x in react_data]),
+                            Eg_g=data.E_g+sum([x.E for x in react_data]),
+                            Lg_g=data.L_g+sum([x.L for x in react_data]),
+                            Ag_g=data.A_g+sum([x.A for x in react_data]),
+                            K_g=data.K_g,
+                            Sg_h=data.S_h,
+                            Bg_h=data.B_h,
+                            Eg_h=data.E_h,
+                            Lg_h=data.L_h,
+                            Ag_h=data.A_h,
+                            Sh_h=sum([x.S for x in react_data]),
+                            Bh_h=sum([x.B for x in react_data]),
+                            Eh_h=sum([x.E for x in react_data]),
+                            Lh_h=sum([x.L for x in react_data]),
+                            Ah_h=sum([x.A for x in react_data]),
+                            K_h=data.K_h,comment=data.comment)
+
 class DataCountGAV(object):
     """
     A class for storing the number of data used to fit each solute parameter group value in the solute group additivity.
