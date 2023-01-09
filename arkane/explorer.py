@@ -278,8 +278,9 @@ class ExplorerJob(object):
                         index = int(s1[7:])
                         N_isomers = int(s2.split('.')[0]) 
                         if index == network.index and N_isomers == len(network.isomers):
+                            netind = self.networks.index(network)
                             shutil.copy(os.path.join(path0, name),
-                                      os.path.join(path, 'network{}_full.py'.format(self.networks.index(network))))
+                                      os.path.join(path, f'network{netind}_full.py'))
 
         warns = []
 
