@@ -336,10 +336,12 @@ class PDepSensitivity(object):
                     # if rxn.transition_state is not None:
                     transition_states.append(rxn.transition_state)
                 entry = (wells+transition_states)[j]
+                label = entry.label
+                pertubation = self.perturbation
                 if entry in wells:
-                    logging.info("\n\nPerturbing well '{0}' by {1}:".format(entry, self.perturbation))
+                    logging.info(f"\n\nPerturbing well '{entry}' by {perturbation}:")
                 else:
-                    logging.info("\n\nPerturbing TS '{0}' by {1}:".format(entry.label, self.perturbation))
+                    logging.info(f"\n\nPerturbing TS '{label}' by {perturbation}:")
                 self.perturb(entry)
                 try:
                     self.job.execute(output_file=None, plot=False, print_summary=False)  # run the perturbed job
@@ -349,13 +351,18 @@ class PDepSensitivity(object):
                     self.unperturb(entry)
                     c += 1
                     self.perturbation = quantity.Quantity(self.perturbation.value/2.0, self.perturbation.units)
+<<<<<<< HEAD
                     logging.error("Decreasing perturbation to {}".format(self.perturbation))
                     
+=======
+                    logging.error(f"Decreasing perturbation to {perturbation}")
+
+>>>>>>> f854ec486 (switch to f-strings)
             if c == self.max_iters:
                 if entry in wells:
-                    logging.error("Perturbation of well '{0}' has failed".format(entry))
+                    logging.error(f"Perturbation of well '{entry}' has failed")
                 else:
-                    logging.error("Perturbation of TS '{0}' has failed".format(entry.label))
+                    logging.error(f"Perturbation of TS '{label}' has failed")
                 failed = True
             for rxn in self.job.network.net_reactions:
                 if failed:
