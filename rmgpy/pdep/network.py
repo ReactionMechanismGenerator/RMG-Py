@@ -72,7 +72,7 @@ class Network(object):
     `grain_count`           Minimum number of descrete energies separated
     `E0`                    A list of ground state energies of isomers, reactants, and products (J/mol)
     `Emax`                  Highest energy level considered in graining before padding
-    `Emin`                  Minimum energy levell considered in graining
+    `Emin`                  Minimum energy level considered in graining
     `active_k_rotor`        ``True`` if the K-rotor is treated as active, ``False`` if treated as adiabatic
     `active_j_rotor`        ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
     `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
