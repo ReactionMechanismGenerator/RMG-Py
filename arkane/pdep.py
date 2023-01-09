@@ -107,7 +107,7 @@ class PressureDependenceJob(object):
                  maximumGrainSize=None, minimumGrainCount=0,
                  method=None, interpolationModel=None, maximumAtoms=None,
                  activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None,
-                 sensitivity_perturbation=0):
+                 sensitivity_perturbation=None):
 
         if network and network.products and len(network.products) > 0:
             if "simulation least squares" in method:
@@ -125,8 +125,8 @@ class PressureDependenceJob(object):
         self.Tmin = Tmin
         self.Tmax = Tmax
         self.Tcount = Tcount
-        if sensitivity_perturbation == 0:
-            self.sensitivity_perturbation = quantity.Quantity(2.0,'kcal/mol')
+        if sensitivity_perturbation is None:
+            self.sensitivity_perturbation = quantity.Quantity(2.0, 'kcal/mol')
         else:
             self.sensitivity_perturbation = quantity.Quantity(sensitivity_perturbation)
 
