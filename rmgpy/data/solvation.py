@@ -765,6 +765,41 @@ class SoluteTSData(object):
         dH298 += -(np.log(10)*8.314*298.15)*(self.Sg_h*solv.s_g+self.Bg_h*solv.b_g+self.Eg_h*solv.e_g+self.Lg_h*solv.l_g+self.Ag_h*solv.a_g+self.Cg_h*solv.c_g+self.K_h)
         dH298 += 1000.0*(self.Sh_h*solv.s_h+self.Bh_h*solv.b_h+self.Eh_h*solv.e_h+self.Lh_h*solv.l_h+self.Ah_h*solv.a_h+self.Ch_h*solv.c_h)
         return dG298,dH298
+
+class SoluteTSDiffData(object):
+    """
+    Stores Abraham parameters to characterize a solute
+    """
+    # Set class variable with McGowan volumes
+    mcgowan_volumes = {
+        1: 8.71, 2: 6.75, 3: 22.23,
+        6: 16.35, 7: 14.39, 8: 12.43, 9: 10.47, 10: 8.51,
+        14: 26.83, 15: 24.87, 16: 22.91, 17: 20.95, 18: 18.99,
+        35: 26.21, 53: 34.53,
+    }
+
+    def __init__(self, S_g=None, B_g=None, E_g=None, L_g=None, A_g=None,
+                 K_g=None, S_h=None, B_h=None, E_h=None, L_h=None, A_h=None, K_h=None, comment=None):
+        self.S_g = S_g
+        self.B_g = B_g
+        self.E_g = E_g
+        self.L_g = L_g
+        self.A_g = A_g
+        self.K_g = K_g
+        self.S_h = S_h
+        self.B_h = B_h
+        self.E_h = E_h
+        self.L_h = L_h
+        self.A_h = A_h
+        self.K_h = K_h
+
+        self.comment=comment
+
+    def __repr__(self):
+        return "SoluteTSDiffData(S_g={0},B_g={1},E_g={2},L_g={3},A_g={4},K_g={5},S_h={6},B_h={7},E_h={8},L_h={9},A_h={10},K_h={11},comment={12!r})".format(
+            self.S_g, self.B_g, self.E_g, self.L_g, self.A_g, self.K_g, self.S_h, self.B_h, self.E_h,
+            self.L_h, self.A_h, self.K_h, self.comment)
+
 class DataCountGAV(object):
     """
     A class for storing the number of data used to fit each solute parameter group value in the solute group additivity.
