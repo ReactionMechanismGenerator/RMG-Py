@@ -139,14 +139,14 @@ cdef class KineticsModel:
         Return a string representation that can be used to reconstruct the
         KineticsModel object.
         """
-        return 'KineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={2!r}, Pmax={3!r}, uncertainty={4!r}, comment="""{5}""")'.format(
-            self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.solute, self.uncertainty, self.comment)
+        return 'KineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={2!r}, Pmax={3!r}, uncertainty={4!r}, solute={5!r}, comment="""{6}""")'.format(
+            self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.solute, self.comment)
 
     def __reduce__(self):
         """
         A helper function used when pickling a KineticsModel object.
         """
-        return (KineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.solute, self.uncertainty, self.comment))
+        return (KineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.solute, self.comment))
 
     property Tmin:
         """The minimum temperature at which the model is valid, or ``None`` if not defined."""
