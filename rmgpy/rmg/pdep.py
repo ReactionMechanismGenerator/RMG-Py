@@ -583,7 +583,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 os.mkdir(path)
             for name in os.listdir(path0):
                 if name.endswith('.py') and '_' in name:
-                    s1,s2 = name.split('_')
+                    s1,s2 = name.split('_') #ex: network1_6.py
                     index = int(s1[7:])
                     N_isomers = int(s2.split('.')[0]) 
                     if index == self.index and N_isomers == len(self.isomers):
