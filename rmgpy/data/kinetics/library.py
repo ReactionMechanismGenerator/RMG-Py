@@ -226,8 +226,10 @@ class LibraryReaction(Reaction):
         from rmgpy.data.rmg import get_db
         solvation_database = get_db('solvation')
         solvent_data = solvation_database.get_solvent_data(solvent)
-        solute_data = self.kinetics.solute
-        correction = solvation_database.get_solvation_correction(solute_data, solvent_data)
+        solute_data = to_soluteTSdata(self.kinetics.solute,reactants=self.reactants)
+        dGTS,dHTS = solute_data.calculate_corrections(solvent_data)
+        dSTS = (dHTS - dGTS)/298.0
+
         dHR = 0.0
         dSR = 0.0
         for spc in self.reactants:
@@ -236,8 +238,8 @@ class LibraryReaction(Reaction):
             dHR += spc_correction.enthalpy
             dSR += spc_correction.entropy
 
-        dH = correction.enthalpy-dHR
-        dA = np.exp((correction.entropy-dSR)/constants.R)
+        dH = dHTS-dHR
+        dA = np.exp((dSTS-dSR)/constants.R)
         self.kinetics.Ea.value_si += dH
         self.kinetics.A.value_si *= dA
         self.kinetics.comment += "solvation correction raised barrier by {0} kcal/mol and prefactor by factor of {1}".format(dH/4184.0,dA)
