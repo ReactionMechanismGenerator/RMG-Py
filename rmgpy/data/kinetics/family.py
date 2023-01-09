@@ -3564,6 +3564,14 @@ class KineticsFamily(Database):
 
                 index += 1
 
+        for label,entry in self.rules.entries.items(): #pull solute data from further up the tree as needed
+            entry = entry[0]
+            if not entry.data.solute:
+                ent = self.groups.entries[label]
+                while not self.rules.entries[ent.label][0].data.solute and ent.parent:
+                    ent = ent.parent
+                entry.data.solute = self.rules.entries[ent.label][0].data.solute
+
     def cross_validate(self, folds=5, template_rxn_map=None, test_rxn_inds=None, T=1000.0, iters=0, random_state=1):
         """
         Perform K-fold cross validation on an automatically generated tree at temperature T
