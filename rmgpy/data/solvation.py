@@ -535,6 +535,236 @@ class SoluteData(object):
 
         self.V = Vtot / 100  # division by 100 to get units correct.
 
+class SoluteTSData(object):
+    """
+    Stores Abraham parameters to characterize a solute
+    """
+    # Set class variable with McGowan volumes
+    mcgowan_volumes = {
+        1: 8.71, 2: 6.75, 3: 22.23,
+        6: 16.35, 7: 14.39, 8: 12.43, 9: 10.47, 10: 8.51,
+        14: 26.83, 15: 24.87, 16: 22.91, 17: 20.95, 18: 18.99,
+        35: 26.21, 53: 34.53,
+    }
+
+    def __init__(self, Sg_g=0.0, Bg_g=0.0, Eg_g=0.0, Lg_g=0.0, Ag_g=0.0, Cg_g=0.0, Sh_g=0.0, Bh_g=0.0, Eh_g=0.0, Lh_g=0.0, Ah_g=0.0, Ch_g=0.0,
+                 K_g=0.0, Sg_h=0.0, Bg_h=0.0, Eg_h=0.0, Lg_h=0.0, Ag_h=0.0, Cg_h=0.0, Sh_h=0.0, Bh_h=0.0, Eh_h=0.0, Lh_h=0.0, Ah_h=0.0, Ch_h=0.0, K_h=0.0, comment=None):
+        """
+        Xi_j correction is associated with calculating j (Gibbs or enthalpy) using solvent parameters for i (abraharm=g, mintz=h)
+        """
+        self.Sg_g = Sg_g
+        self.Bg_g = Bg_g
+        self.Eg_g = Eg_g
+        self.Lg_g = Lg_g
+        self.Ag_g = Ag_g
+        self.Cg_g = Cg_g
+        self.Sh_g = Sh_g
+        self.Bh_g = Bh_g
+        self.Eh_g = Eh_g
+        self.Lh_g = Lh_g
+        self.Ah_g = Ah_g
+        self.Ch_g = Ch_g
+        self.K_g = K_g
+
+        self.Sg_h = Sg_h
+        self.Bg_h = Bg_h
+        self.Eg_h = Eg_h
+        self.Lg_h = Lg_h
+        self.Ag_h = Ag_h
+        self.Cg_h = Cg_h
+        self.Sh_h = Sh_h
+        self.Bh_h = Bh_h
+        self.Eh_h = Eh_h
+        self.Lh_h = Lh_h
+        self.Ah_h = Ah_h
+        self.Ch_h = Ch_h
+        self.K_h = K_h
+
+        self.comment = comment
+
+    def __repr__(self):
+        return "SoluteTSData(Sg_g={0},Bg_g={1},Eg_g={2},Lg_g={3},Ag_g={4},Cg_g={5},Sh_g={6},Bh_g={7},Eh_g={8},Lh_g={9},Ah_g={10},Ch_g={11},K_g={12},Sg_h={13},Bg_h={14},Eg_h={15},Lg_h={16},Ag_h={17},Cg_h={18},Sh_h={19},Bh_h={20},Eh_h={21},Lh_h={22},Ah_h={23},Ch_h={24},K_h={25},comment={26!r})".format(
+            self.Sg_g,
+            self.Bg_g,
+            self.Eg_g,
+            self.Lg_g,
+            self.Ag_g,
+            self.Cg_g,
+            self.Sh_g,
+            self.Bh_g,
+            self.Eh_g,
+            self.Lh_g,
+            self.Ah_g,
+            self.Ch_g,
+            self.K_g,
+            self.Sg_h,
+            self.Bg_h,
+            self.Eg_h,
+            self.Lg_h,
+            self.Ag_h,
+            self.Cg_h,
+            self.Sh_h,
+            self.Bh_h,
+            self.Eh_h,
+            self.Lh_h,
+            self.Ah_h,
+            self.Ch_h,
+            self.K_h, self.comment)
+
+    def __add__(self,sol):
+        return SoluteTSData(
+            Sg_g = self.Sg_g+sol.Sg_g,
+            Bg_g = self.Bg_g+sol.Bg_g,
+            Eg_g = self.Eg_g+sol.Eg_g,
+            Lg_g = self.Lg_g+sol.Lg_g,
+            Ag_g = self.Ag_g+sol.Ag_g,
+            Cg_g = self.Cg_g+sol.Cg_g,
+            Sh_g = self.Sh_g+sol.Sh_g,
+            Bh_g = self.Bh_g+sol.Bh_g,
+            Eh_g = self.Eh_g+sol.Eh_g,
+            Lh_g = self.Lh_g+sol.Lh_g,
+            Ah_g = self.Ah_g+sol.Ah_g,
+            Ch_g = self.Ch_g+sol.Ch_g,
+            K_g = self.K_g+sol.K_g,
+            Sg_h = self.Sg_h+sol.Sg_h,
+            Bg_h = self.Bg_h+sol.Bg_h,
+            Eg_h = self.Eg_h+sol.Eg_h,
+            Lg_h = self.Lg_h+sol.Lg_h,
+            Ag_h = self.Ag_h+sol.Ag_h,
+            Cg_h = self.Cg_h+sol.Cg_h,
+            Sh_h = self.Sh_h+sol.Sh_h,
+            Bh_h = self.Bh_h+sol.Bh_h,
+            Eh_h = self.Eh_h+sol.Eh_h,
+            Lh_h = self.Lh_h+sol.Lh_h,
+            Ah_h = self.Ah_h+sol.Ah_h,
+            Ch_h = self.Ch_h+sol.Ch_h,
+            K_h = self.K_h+sol.K_h,
+        )
+
+    def __sub__(self,sol):
+        return SoluteTSData(
+            Sg_g = self.Sg_g-sol.Sg_g,
+            Bg_g = self.Bg_g-sol.Bg_g,
+            Eg_g = self.Eg_g-sol.Eg_g,
+            Lg_g = self.Lg_g-sol.Lg_g,
+            Ag_g = self.Ag_g-sol.Ag_g,
+            Cg_g = self.Cg_g-sol.Cg_g,
+            Sh_g = self.Sh_g-sol.Sh_g,
+            Bh_g = self.Bh_g-sol.Bh_g,
+            Eh_g = self.Eh_g-sol.Eh_g,
+            Lh_g = self.Lh_g-sol.Lh_g,
+            Ah_g = self.Ah_g-sol.Ah_g,
+            Ch_g = self.Ch_g-sol.Ch_g,
+            K_g = self.K_g-sol.K_g,
+            Sg_h = self.Sg_h-sol.Sg_h,
+            Bg_h = self.Bg_h-sol.Bg_h,
+            Eg_h = self.Eg_h-sol.Eg_h,
+            Lg_h = self.Lg_h-sol.Lg_h,
+            Ag_h = self.Ag_h-sol.Ag_h,
+            Cg_h = self.Cg_h-sol.Cg_h,
+            Sh_h = self.Sh_h-sol.Sh_h,
+            Bh_h = self.Bh_h-sol.Bh_h,
+            Eh_h = self.Eh_h-sol.Eh_h,
+            Lh_h = self.Lh_h-sol.Lh_h,
+            Ah_h = self.Ah_h-sol.Ah_h,
+            Ch_h = self.Ch_h-sol.Ch_h,
+            K_h = self.K_h-sol.K_h,
+        )
+
+    def __eq__(self,sol):
+        if self.Sg_g != sol.Sg_g:
+            return False
+        elif self.Bg_g != sol.Bg_g:
+            return False
+        elif self.Eg_g != sol.Eg_g:
+            return False
+        elif self.Lg_g != sol.Lg_g:
+            return False
+        elif self.Ag_g != sol.Ag_g:
+            return False
+        elif self.Cg_g != sol.Cg_g:
+            return False
+        elif self.Sh_g != sol.Sh_g:
+            return False
+        elif self.Bh_g != sol.Bh_g:
+            return False
+        elif self.Eh_g != sol.Eh_g:
+            return False
+        elif self.Lh_g != sol.Lh_g:
+            return False
+        elif self.Ah_g != sol.Ah_g:
+            return False
+        elif self.Ch_g != sol.Ch_g:
+            return False
+        elif self.K_g != sol.K_g:
+            return False
+        elif self.Sg_h != sol.Sg_h:
+            return False
+        elif self.Bg_h != sol.Bg_h:
+            return False
+        elif self.Eg_h != sol.Eg_h:
+            return False
+        elif self.Lg_h != sol.Lg_h:
+            return False
+        elif self.Ag_h != sol.Ag_h:
+            return False
+        elif self.Cg_h != sol.Cg_h:
+            return False
+        elif self.Sh_h != sol.Sh_h:
+            return False
+        elif self.Bh_h != sol.Bh_h:
+            return False
+        elif self.Eh_h != sol.Eh_h:
+            return False
+        elif self.Lh_h != sol.Lh_h:
+            return False
+        elif self.Ah_h != sol.Ah_h:
+            return False
+        elif self.Ch_h != sol.Ch_h:
+            return False
+        elif self.K_h != sol.K_h:
+            return False
+        else:
+            return True
+
+    def __mul__(self,num):
+        return SoluteTSData(
+            Sg_g = self.Sg_g*num,
+            Bg_g = self.Bg_g*num,
+            Eg_g = self.Eg_g*num,
+            Lg_g = self.Lg_g*num,
+            Ag_g = self.Ag_g*num,
+            Cg_g = self.Cg_g*num,
+            Sh_g = self.Sh_g*num,
+            Bh_g = self.Bh_g*num,
+            Eh_g = self.Eh_g*num,
+            Lh_g = self.Lh_g*num,
+            Ah_g = self.Ah_g*num,
+            Ch_g = self.Ch_g*num,
+            K_g = self.K_g*num,
+            Sg_h = self.Sg_h*num,
+            Bg_h = self.Bg_h*num,
+            Eg_h = self.Eg_h*num,
+            Lg_h = self.Lg_h*num,
+            Ag_h = self.Ag_h*num,
+            Cg_h = self.Cg_h*num,
+            Sh_h = self.Sh_h*num,
+            Bh_h = self.Bh_h*num,
+            Eh_h = self.Eh_h*num,
+            Lh_h = self.Lh_h*num,
+            Ah_h = self.Ah_h*num,
+            Ch_h = self.Ch_h*num,
+            K_h = self.K_h*num,
+        )
+
+    def calculate_corrections(self,solv):
+        dG298 = 0.0
+        dG298 += -(np.log(10)*8.314*298.15)*(self.Sg_g*solv.s_g+self.Bg_g*solv.b_g+self.Eg_g*solv.e_g+self.Lg_g*solv.l_g+self.Ag_g*solv.a_g+self.Cg_g*solv.c_g+self.K_g)
+        dG298 += 1000.0*(self.Sh_g*solv.s_h+self.Bh_g*solv.b_h+self.Eh_g*solv.e_h+self.Lh_g*solv.l_h+self.Ah_g*solv.a_h+self.Ch_g*solv.c_h)
+        dH298 = 0.0
+        dH298 += -(np.log(10)*8.314*298.15)*(self.Sg_h*solv.s_g+self.Bg_h*solv.b_g+self.Eg_h*solv.e_g+self.Lg_h*solv.l_g+self.Ag_h*solv.a_g+self.Cg_h*solv.c_g+self.K_h)
+        dH298 += 1000.0*(self.Sh_h*solv.s_h+self.Bh_h*solv.b_h+self.Eh_h*solv.e_h+self.Lh_h*solv.l_h+self.Ah_h*solv.a_h+self.Ch_h*solv.c_h)
+        return dG298,dH298
 class DataCountGAV(object):
     """
     A class for storing the number of data used to fit each solute parameter group value in the solute group additivity.
