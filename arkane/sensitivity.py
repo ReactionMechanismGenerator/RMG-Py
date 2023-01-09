@@ -345,8 +345,6 @@ class PDepSensitivity(object):
                 self.perturb(entry)
                 try:
                     self.job.execute(output_file=None, plot=False, print_summary=False)  # run the perturbed job
-                    self.unperturb(entry)
-                    break
                 except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError) as e:
                     self.unperturb(entry)
                     c += 1
@@ -356,8 +354,14 @@ class PDepSensitivity(object):
                     
 =======
                     logging.error(f"Decreasing perturbation to {perturbation}")
+<<<<<<< HEAD
 
 >>>>>>> f854ec486 (switch to f-strings)
+=======
+                else:
+                    self.unperturb(entry)
+                    break
+>>>>>>> 142a95714... move unperturb and break to an else
             if c == self.max_iters:
                 if entry in wells:
                     logging.error(f"Perturbation of well '{entry}' has failed")
