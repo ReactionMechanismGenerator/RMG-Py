@@ -3272,7 +3272,7 @@ class KineticsFamily(Database):
         """
         if rxns is None:
             rxns = self.get_training_set(thermo_database=thermo_database, remove_degeneracy=True, estimate_thermo=True,
-                                         fix_labels=True, get_reverse=True)
+                                         fix_labels=True, get_reverse=True, rxns_with_kinetics_only=True)
 
         if len(rxns) <= max_batch_size:
             template_rxn_map = self.get_reaction_matches(rxns=rxns, thermo_database=thermo_database, remove_degeneracy=True,
@@ -3850,7 +3850,7 @@ class KineticsFamily(Database):
         if template_rxn_map is None:
             if rxns is None:
                 template_rxn_map = self.get_reaction_matches(thermo_database=thermo_database, remove_degeneracy=True,
-                                                             get_reverse=True, exact_matches_only=False, fix_labels=True)
+                                                             get_reverse=True, exact_matches_only=False, fix_labels=True, rxns_with_kinetics_only=False)
             else:
                 template_rxn_map = self.get_reaction_matches(rxns=rxns, thermo_database=thermo_database,
                                                              remove_degeneracy=True, get_reverse=True, exact_matches_only=False,
@@ -3949,7 +3949,7 @@ class KineticsFamily(Database):
         self.save(path)
 
     def get_training_set(self, thermo_database=None, remove_degeneracy=False, estimate_thermo=True, fix_labels=False,
-                         get_reverse=False):
+                         get_reverse=False, rxns_with_kinetics_only=False):
         """
         retrieves all reactions in the training set, assigns thermo to the species objects
         reverses reactions as necessary so that all reactions are in the forward direction
@@ -4010,8 +4010,8 @@ class KineticsFamily(Database):
             logging.info('Must be because you turned off the training depository.')
             return
 
-        rxns = deepcopy([i.item for i in dep.entries.values()])
-        entries = deepcopy([i for i in dep.entries.values()])
+        rxns = deepcopy([i.item for i in dep.entries.values() if (not rxns_with_kinetics_only) or type(i.data) != KineticsModel])
+        entries = deepcopy([i for i in dep.entries.values() if (not rxns_with_kinetics_only) or type(i.data) != KineticsModel])
 
         roots = [x.item for x in self.get_root_template()]
         root = None
@@ -4041,7 +4041,7 @@ class KineticsFamily(Database):
             rxns[i].kinetics = entry.data
             rxns[i].rank = entry.rank
 
-            if remove_degeneracy:  # adjust for degeneracy
+            if remove_degeneracy and type(rxns[i].kinetics) != KineticsModel:  # adjust for degeneracy
                 rxns[i].kinetics.A.value_si /= rxns[i].degeneracy
 
             mol = None
@@ -4111,7 +4111,10 @@ class KineticsFamily(Database):
 
                     reacts = [Species(molecule=[get_label_fixed_mol(x.molecule[0], root_labels)], thermo=x.thermo)
                               for x in rxns[i].reactants]
-                    rrev = Reaction(reactants=products, products=reacts,
+                    if type(rxns[i].kinetics) != KineticsModel:
+                        if rxns[i].kinetics.solute:
+                            rxns[i].kinetics.solute = to_soluteTSdata(rxns[i].kinetics.solute,reactants=rxns[i].reactants)
+                        rrev = Reaction(reactants=products, products=reacts,
                                     kinetics=rxns[i].generate_reverse_rate_coefficient(), rank=rxns[i].rank)
                     rrev.is_forward = False
 
@@ -4168,7 +4171,7 @@ class KineticsFamily(Database):
             return rxns
 
     def get_reaction_matches(self, rxns=None, thermo_database=None, remove_degeneracy=False, estimate_thermo=True,
-                             fix_labels=False, exact_matches_only=False, get_reverse=False):
+                             fix_labels=False, exact_matches_only=False, get_reverse=False, rxns_with_kinetics_only=False):
         """
         returns a dictionary mapping for each entry in the tree:
         (entry.label,entry.item) : list of all training reactions (or the list given) that match that entry
@@ -4176,7 +4179,7 @@ class KineticsFamily(Database):
         if rxns is None:
             rxns = self.get_training_set(thermo_database=thermo_database, remove_degeneracy=remove_degeneracy,
                                          estimate_thermo=estimate_thermo, fix_labels=fix_labels,
-                                         get_reverse=get_reverse)
+                                         get_reverse=get_reverse,rxns_with_kinetics_only=rxns_with_kinetics_only)
 
         entries = self.groups.entries
 
