@@ -56,7 +56,7 @@ from rmgpy.exceptions import ActionError, DatabaseError, InvalidActionError, Kek
                              ForbiddenStructureException, UndeterminableKineticsError
 from rmgpy.kinetics import Arrhenius, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficient, \
                            StickingCoefficientBEP, ArrheniusBM, SurfaceChargeTransfer, ArrheniusChargeTransfer, \
-                           ArrheniusChargeTransferBM
+                           ArrheniusChargeTransferBM, KineticsModel
 from rmgpy.kinetics.uncertainties import RateUncertainty, rank_accuracy_map
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
@@ -65,7 +65,7 @@ from rmgpy.species import Species
 from rmgpy.tools.uncertainty import KineticParameterUncertainty
 from rmgpy.molecule.fragment import Fragment
 import rmgpy.constants as constants
-from rmgpy.data.solvation import SoluteData, add_solute_data
+from rmgpy.data.solvation import SoluteData, add_solute_data, SoluteTSData, to_soluteTSdata
 
 ################################################################################
 
@@ -221,13 +221,6 @@ class TemplateReaction(Reaction):
         solvation_database = get_db('solvation')
         solvent_data = solvation_database.get_solvent_data(solvent)
         site_data = self.kinetics.solute
-        solute_data = SoluteData(
-            S=site_data.S,
-            B=site_data.B,
-            E=site_data.E,
-            L=site_data.L,
-            A=site_data.A,
-        )
 
         #compute x from gas phase
         GR = 0.0
@@ -245,35 +238,30 @@ class TemplateReaction(Reaction):
                 logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
                 raise
 
-        GTS = self.kinetics.Ea.value_si + GR
-
-        x = abs(GTS - GR) / (abs(GP - GTS) + abs(GR - GTS))
+        dGrxn = GP-GR
+        if dGrxn > 0:
+            x = 1.0
+        else:
+            x = 0.0
 
         dHR = 0.0
         dSR = 0.0
-        for spc in self.reactants:
-            spc_solute_data = solvation_database.get_solute_data(spc)
-            solute_data.S += (1.0-x) * spc_solute_data.S
-            solute_data.B += (1.0-x) * spc_solute_data.B
-            solute_data.E += (1.0-x) * spc_solute_data.E
-            solute_data.L += (1.0-x) * spc_solute_data.L
-            solute_data.A += (1.0-x) * spc_solute_data.A
+        for spc in rxn.reactants:
+            spc_solute_data = to_soluteTSdata(solvation_database.get_solute_data(spc.copy(deep=True)))
+            site_data += spc_solute_data*(1.0-x)
             spc_correction = solvation_database.get_solvation_correction(spc_solute_data, solvent_data)
             dHR += spc_correction.enthalpy
             dSR += spc_correction.entropy
 
-        for spc in self.products:
-            spc_solute_data = solvation_database.get_solute_data(spc)
-            solute_data.S += x * spc_solute_data.S
-            solute_data.B += x * spc_solute_data.B
-            solute_data.E += x * spc_solute_data.E
-            solute_data.L += x * spc_solute_data.L
-            solute_data.A += x * spc_solute_data.A
+        for spc in rxn.products:
+            spc_solute_data = to_soluteTSdata(solvation_database.get_solute_data(spc.copy(deep=True)))
+            site_data += spc_solute_data*x
 
-        correction = solvation_database.get_solvation_correction(solute_data, solvent_data)
+        dGTS,dHTS = site_data.calculate_corrections(solvent_data)
+        dSTS = (dHTS - dGTS)/298.0
 
-        dH = correction.enthalpy-dHR
-        dA = np.exp((correction.entropy-dSR)/constants.R)
+        dH = dHTS-dHR
+        dA = np.exp((dSTS-dSR)/constants.R)
         self.kinetics.Ea.value_si += dH
         self.kinetics.A.value_si *= dA
         self.kinetics.comment += "\nsolvation correction raised barrier by {0} kcal/mol and prefactor by factor of {1}".format(dH/4184.0,dA)
