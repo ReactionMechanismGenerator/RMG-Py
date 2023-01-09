@@ -185,8 +185,9 @@ def process_reactions(database, libraries, families, compare_kinetics=True, show
                     units = 'cm^3/(mol*s)'
                 elif len(lib_rxn.reactants) == 3:
                     units = 'cm^6/(mol^2*s)'
-                A = lib_rxn.kinetics.A
-                lib_rxn.kinetics.A = ScalarQuantity(value=A.value_si*A.get_conversion_factor_from_si_to_cm_mol_s(),units=units,uncertainty_type=A.uncertainty_type,uncertainty=A.uncertainty_si*A.get_conversion_factor_from_si_to_cm_mol_s())
+                if hasattr(lib_rxn.kinetics,'A'):
+                    A = lib_rxn.kinetics.A
+                    lib_rxn.kinetics.A = ScalarQuantity(value=A.value_si*A.get_conversion_factor_from_si_to_cm_mol_s(),units=units,uncertainty_type=A.uncertainty_type,uncertainty=A.uncertainty_si*A.get_conversion_factor_from_si_to_cm_mol_s())
 
                 if fam_rxn.family in reaction_dict:
                     reaction_dict[fam_rxn.family].append(lib_rxn)
@@ -436,4 +437,3 @@ def manual_selection(master_dict, multiple_dict, database):
     print('================================================================================')
     print('Manual selection of reactions completed.')
     print('================================================================================')
-
