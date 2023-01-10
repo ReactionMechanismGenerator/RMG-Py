@@ -47,7 +47,7 @@ concurrency:
 env:
   # if running on RMG-Py but requiring changes on an un-merged branch of RMG-database, replace
   # main with the name of the branch
-  RMG_DATABASE_BRANCH: main
+  RMG_DATABASE_BRANCH: lithium_rebase
 
 
 jobs:
@@ -57,7 +57,7 @@ jobs:
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env:
       # Update this if needed to match a pull request on the RMG-database:
-      RMG_DATABASE_BRANCH: lithium
+      RMG_DATABASE_BRANCH: lithium_rebase
       # This is true only if this is a reference case for the regression testing:
       REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && matrix.os =='ubuntu-latest' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
     defaults:
