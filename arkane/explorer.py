@@ -266,6 +266,10 @@ class ExplorerJob(object):
                 logging.info('Removing forbidden reaction: {0}'.format(rxn))
                 network.path_reactions.remove(rxn)
 
+            if len(rm_rxns) > 0:
+                network.valid = False
+                network.update(reaction_model,reaction_model.pressure_dependence)
+
             # clean up output files
             if output_file is not None:
                 path0 = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep')
@@ -291,6 +295,8 @@ class ExplorerJob(object):
 
         # reduction process
         for network in self.networks:
+            network.valid = False
+            network.update(reaction_model,reaction_model.pressure_dependence)
             if self.energy_tol != np.inf or self.flux_tol != 0.0:
 
                 rxn_set = None
@@ -333,6 +339,8 @@ class ExplorerJob(object):
 
         self.networks = networks
         for p, network in enumerate(self.networks):
+            network.valid = False
+            network.update(reaction_model,reaction_model.pressure_dependence)
             self.pdepjob.network = network
 
             if len(self.networks) > 1:
