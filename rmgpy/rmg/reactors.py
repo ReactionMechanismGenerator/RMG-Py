@@ -39,13 +39,11 @@ try:
     from pyrms import rms
     from diffeqpy import de
     from julia import Main
-except ImportError as e:
+except:
     if 'nose' not in sys.modules.keys():
         warnings.warn("""
         Import of Julia dependencies failed. Ensure the environment is correctly built and Julia dependencies have been linked properly.
-
-        Original Exception:
-        """ + str(e),RuntimeWarning)
+        """,RuntimeWarning)
 
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
