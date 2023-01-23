@@ -1384,13 +1384,13 @@ class Fragment(Graph):
         Uses entire range of cython's integer values to reduce chance of duplicates
         """
 
-        global atom_id_counter
+        global ATOM_ID_COUNTER
 
         for atom in self.atoms:
-            atom.id = atom_id_counter
-            atom_id_counter += 1
-            if atom_id_counter == 2**15:
-                atom_id_counter = -2**15
+            atom.id = ATOM_ID_COUNTER
+            ATOM_ID_COUNTER += 1
+            if ATOM_ID_COUNTER == 2**15:
+                ATOM_ID_COUNTER = -2**15
 
     def generate_resonance_structures(self, keep_isomorphic=False, filter_structures=True, save_order=False):
         """Returns a list of resonance structures of the fragment."""
@@ -2047,4 +2047,4 @@ class Fragment(Graph):
 
 # this variable is used to name atom IDs so that there are as few conflicts by 
 # using the entire space of integer objects
-atom_id_counter = -2**15
+ATOM_ID_COUNTER = -2**15
