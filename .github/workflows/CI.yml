@@ -23,6 +23,8 @@ jobs:
           environment-file: environment.yml
           environment-name: rmg_env
           channels: defaults,rmg,conda-forge
+          channel-priority: flexible
+          log-level: debug
           extra-specs: |
             python=3.7
       - name: Install codecov
