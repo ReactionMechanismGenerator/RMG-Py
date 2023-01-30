@@ -21,8 +21,6 @@ jobs:
       - uses: mamba-org/provision-with-micromamba@main
         with:
           environment-file: environment.yml
-          python-version: 3.7
-          activate-environment: rmg_env
       - name: Install codecov
         run: micromamba install -y -c conda-forge codecov
       - name: Conda info
