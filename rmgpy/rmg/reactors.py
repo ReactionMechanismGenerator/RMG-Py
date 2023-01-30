@@ -41,9 +41,7 @@ try:
     from julia import Main
 except:
     if 'nose' not in sys.modules.keys():
-        warnings.warn("""
-        Import of Julia dependencies failed. Ensure the environment is correctly built and Julia dependencies have been linked properly.
-        """,RuntimeWarning)
+        raise RuntimeError("Import of Julia dependencies failed. Ensure the environment is correctly built and Julia dependencies have been linked properly.")
 
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
