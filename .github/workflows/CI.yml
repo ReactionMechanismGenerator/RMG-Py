@@ -18,17 +18,17 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: mamba-org/provision-with-micromamba@main
         with:
           environment-file: environment.yml
           python-version: 3.7
           activate-environment: rmg_env
       - name: Install codecov
-        run: conda install -y -c conda-forge codecov
+        run: micromamba install -y -c conda-forge codecov
       - name: Conda info
         run: |
-          conda info
-          conda list  
+          micromamba info
+          micromamba list  
       - name: Install and link Julia dependencies 
         run: |
           julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"))"
