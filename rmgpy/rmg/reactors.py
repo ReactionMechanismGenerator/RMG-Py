@@ -383,12 +383,13 @@ class Reactor:
         edge_react, edge_domains, edge_interfaces, edge_p = self.generate_reactor(self.edge_phase_system)
         core_react, core_domains, core_interfaces, core_p = self.generate_reactor(self.core_phase_system)
 
-        terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x = rms.selectobjects(core_react,
+        terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x = rms.selectobjects(core_react, edge_react,
                                                 edge_domains, edge_interfaces, core_domains, core_interfaces, core_p, edge_p, model_settings.tol_move_to_core,
                                                 model_settings.tol_interrupt_simulation, model_settings.ignore_overall_flux_criterion,
                                                 model_settings.filter_reactions, model_settings.max_num_objects_per_iter, model_settings.tol_branch_rxn_to_core,
                                                 model_settings.branching_ratio_max, model_settings.branching_index, model_settings.terminate_at_max_objects,
-                                                self.terminations, model_settings.filter_threshold, atol=simulator_settings.atol, rtol=simulator_settings.rtol, solver=de.CVODE_BDF())
+                                                self.terminations, model_settings.filter_threshold, model_settings.transitory_tol_dict,
+                                                model_settings.transitory_step_period, atol=simulator_settings.atol, rtol=simulator_settings.rtol, solver=de.CVODE_BDF())
 
         return terminated, resurrected, invalid_objects, unimolecular_threshold, bimolecular_threshold, trimolecular_threshold, max_edge_species_rate_ratios, t, x
 
@@ -403,7 +404,7 @@ class ConstantVIdealGasReactor(Reactor):
         phase = phase_system.phases["Default"]
         ig = rms.IdealGas(phase.species, phase.reactions)
         domain, y0, p = rms.ConstantVDomain(phase=ig, initialconds=self.initial_conditions)
-        react = rms.Reactor(domain, y0, (0.0, self.tf), p)
+        react = rms.Reactor(domain, y0, (0.0, self.tf), p=p)
         return react, domain, [], p
 
 class ConstantTLiquidSurfaceReactor(Reactor):
@@ -427,7 +428,7 @@ class ConstantTLiquidSurfaceReactor(Reactor):
             inter,pinter = rms.ReactiveInternalInterfaceConstantTPhi(domainliq,domaincat,Main.eval("using ReactionMechanismSimulator; Vector{ElementaryReaction}()"),self.initial_conditions["liquid"]["T"],self.initial_conditions["surface"]["A"])
         else:
             inter,pinter = rms.ReactiveInternalInterfaceConstantTPhi(domainliq,domaincat,interface.reactions,self.initial_conditions["liquid"]["T"],self.initial_conditions["surface"]["A"])
-        react,y0,p = rms.Reactor((domainliq,domaincat), (y0liq,y0cat), (0.0, self.tf), [inter], (pliq,pcat,pinter))
+        react,y0,p = rms.Reactor((domainliq,domaincat), (y0liq,y0cat), (0.0, self.tf), [inter], p=(pliq,pcat,pinter))
         return react, (domainliq,domaincat), [inter], p
 
 class ConstantTVLiquidReactor(Reactor):
@@ -463,9 +464,26 @@ class ConstantTVLiquidReactor(Reactor):
         if self.evap_cond_conditions:
             kLA_kH_evap_cond = rms.kLAkHCondensationEvaporationWithReservoir(domain,self.evap_cond_conditions)
             interfaces.append(kLA_kH_evap_cond)
-            
+
         react = rms.Reactor(domain, y0, (0.0, self.tf), interfaces, p=p)
         return react, domain, interfaces, p
+
+class ConstantTPIdealGasReactor(Reactor):
+
+    def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species=None):
+        if constant_species is None:
+            constant_species = []
+        super().__init__(core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species=[])
+
+    def generate_reactor(self, phase_system):
+        """
+        Setup an RMS simulation for EdgeAnalysis
+        """
+        phase = phase_system.phases["Default"]
+        ig = rms.IdealGas(phase.species, phase.reactions)
+        domain, y0, p = rms.ConstantTPDomain(phase=ig, initialconds=self.initial_conditions)
+        react = rms.Reactor(domain, y0, (0.0, self.tf), p=p)
+        return react, domain, [], p
 
 def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     """
