@@ -39,4 +39,4 @@ cpdef float calculate_cyclic_symmetry_number(Molecule molecule) except -1
 
 cpdef bint _indistinguishable(Atom atom1, Atom atom2) except -2
 
-cpdef float calculate_symmetry_number(Molecule molecule) except -1
+cpdef float calculate_symmetry_number(Molecule molecule, bint external=?) except -1

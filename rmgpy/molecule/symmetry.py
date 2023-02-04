@@ -543,19 +543,28 @@ def _indistinguishable(atom1, atom2):
     return True
 
 
-def calculate_symmetry_number(molecule):
+def calculate_symmetry_number(molecule,
+                              external: bool = False,
+                              ) -> float:
     """
-    Return the symmetry number for the structure. The symmetry number
-    includes both external and internal modes.
+    Return the symmetry number for the structure.
+    The symmetry number includes both external and internal modes unless otherwise requested.
+
+    Args:
+        molecule (Molecule): The molecule object instance.
+        external (bool, optional): Whether to only compute the external symmetry. ``False`` by default.
+
+    Returns:
+        float: The symmetry number.
     """
     symmetry_number = 1
 
     for atom in molecule.vertices:
-        if not molecule.is_atom_in_cycle(atom):
+        if not external and not molecule.is_atom_in_cycle(atom):
             symmetry_number *= calculate_atom_symmetry_number(molecule, atom)
 
     for atom1 in molecule.vertices:
-        for atom2 in list(atom1.edges):  # Make a copy of the list of neighbors since we modify the dictionary
+        for atom2 in list(atom1.edges):
             if (molecule.vertices.index(atom1) < molecule.vertices.index(atom2) and
                     not molecule.is_bond_in_cycle(atom1.edges[atom2])):
                 symmetry_number *= calculate_bond_symmetry_number(molecule, atom1, atom2)
