@@ -253,7 +253,9 @@ cdef class Molecule(Graph):
 
     cpdef bint is_aryl_radical(self, list aromatic_rings=?, bint save_order=?) except -2
 
-    cpdef float calculate_symmetry_number(self) except -1
+    cpdef float get_symmetry_number(self, bint external=?) except -1
+
+    cpdef float calculate_symmetry_number(self, bint external=?) except -1
 
     cpdef list generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?, bint save_order=?)
 
