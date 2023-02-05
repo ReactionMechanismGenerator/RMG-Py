@@ -16,17 +16,21 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: mamba-org/provision-with-micromamba@main
         with:
           environment-file: environment.yml
-          python-version: 3.7
-          activate-environment: rmg_env
+          environment-name: rmg_env
+          channels: defaults,rmg,conda-forge
+          channel-priority: flexible
+          log-level: warning
+          extra-specs: |
+            python=3.7
       - name: Install sphinx
-        run: conda install -y sphinx
-      - name: Conda info
+        run: micromamba install -y sphinx
+      - name: Environment info
         run: |
-          conda info
-          conda list
+          micromamba info
+          micromamba list
       - name: Install and link Julia dependencies 
         run: |
           julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"))"
