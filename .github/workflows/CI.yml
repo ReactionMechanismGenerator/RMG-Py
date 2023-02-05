@@ -3,7 +3,7 @@ name: CI Tests
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '0 0 8 ? * MON,TUE,WED,THU,FRI *'
+    - cron:  '0 8 * * 1-5'
   push:
   pull_request:
     branches:
