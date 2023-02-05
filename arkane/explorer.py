@@ -250,9 +250,9 @@ class ExplorerJob(object):
             for rxn in network.path_reactions:
                 if rxn.transition_state is None:
                     if rxn.network_kinetics is None:
-                        E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si
+                        E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si + network.energy_correction
                     else:
-                        E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si
+                        E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si + network.energy_correction
                     rxn.transition_state = rmgpy.species.TransitionState(conformer=Conformer(E0=(E0 * 0.001, "kJ/mol")))
                 
         for network in self.networks:
@@ -265,6 +265,10 @@ class ExplorerJob(object):
             for rxn in rm_rxns:
                 logging.info('Removing forbidden reaction: {0}'.format(rxn))
                 network.path_reactions.remove(rxn)
+
+            if len(rm_rxns) > 0:
+                network.valid = False
+                network.update(reaction_model,reaction_model.pressure_dependence)
 
             # clean up output files
             if output_file is not None:
@@ -291,6 +295,8 @@ class ExplorerJob(object):
 
         # reduction process
         for network in self.networks:
+            network.valid = False
+            network.update(reaction_model,reaction_model.pressure_dependence)
             if self.energy_tol != np.inf or self.flux_tol != 0.0:
 
                 rxn_set = None
@@ -333,6 +339,8 @@ class ExplorerJob(object):
 
         self.networks = networks
         for p, network in enumerate(self.networks):
+            network.valid = False
+            network.update(reaction_model,reaction_model.pressure_dependence)
             self.pdepjob.network = network
 
             if len(self.networks) > 1:
