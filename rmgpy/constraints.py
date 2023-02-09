@@ -139,4 +139,9 @@ def fails_species_constraints(species):
         if struct.get_singlet_carbene_count() > 0 and struct.get_radical_count() > max_carbene_radicals:
             return True
 
+    max_boron_atoms = species_constraints.get('maximumBoronAtoms', -1)
+    if max_boron_atoms != -1:
+        if struct.get_num_atoms('B') > max_boron_atoms:
+            return True
+
     return False
