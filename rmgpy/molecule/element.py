@@ -123,13 +123,17 @@ class PeriodicSystem(object):
     isotopes of the same element may have slight different electronegativities, which is not reflected below
     """
     valences = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'F': 1, 'Ne': 0,
-                'Si': 4, 'P': 3, 'S': 2, 'Cl': 1, 'Br': 1, 'Ar': 0, 'I': 1, 'X': 4}
+                'Si': 4, 'P': 3, 'S': 2, 'Cl': 1, 'Br': 1, 'Ar': 0, 'I': 1, 'X': 4,
+                'B': 3}
     valence_electrons = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'F': 7, 'Ne': 8,
-                         'Si': 4, 'P': 5, 'S': 6, 'Cl': 7, 'Br': 7, 'Ar': 8, 'I': 7, 'X': 4}
+                         'Si': 4, 'P': 5, 'S': 6, 'Cl': 7, 'Br': 7, 'Ar': 8, 'I': 7, 'X': 4, 'B': 3}
     lone_pairs = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'F': 3, 'Ne': 4,
-                  'Si': 0, 'P': 1, 'S': 2, 'Cl': 3, 'Br': 3, 'Ar': 4, 'I': 3, 'X': 0}
-    electronegativity = {'H': 2.20, 'D': 2.20, 'T': 2.20, 'C': 2.55, 'C13': 2.55, 'N': 3.04, 'O': 3.44, 'O18': 3.44,
-                         'F': 3.98, 'Si': 1.90, 'P': 2.19, 'S': 2.58, 'Cl': 3.16, 'Br': 2.96, 'I': 2.66, 'X': 0.0}
+                  'Si': 0, 'P': 1, 'S': 2, 'Cl': 3, 'Br': 3, 'Ar': 4, 'I': 3, 'X': 0,
+                  'B': 0}
+    electronegativity = {'H': 2.20, 'D': 2.20, 'T': 2.20, 'C': 2.55, 'C13': 2.55, 
+                         'N': 3.04, 'O': 3.44, 'O18': 3.44,
+                         'F': 3.98, 'Si': 1.90, 'P': 2.19, 'S': 2.58, 'Cl': 3.16, 
+                         'Br': 2.96, 'I': 2.66, 'X': 0.0, 'B': 2.04}
 
 
 ################################################################################
@@ -337,7 +341,9 @@ element_list = [
 # (between RT and 3/2 RT), and this difference is usually much smaller than the uncertainty in the bond dissociation
 # energy itself. Therefore, the discrepancy between 0 K and 298 K shouldn't matter too much.
 # But for any new entries, try to use the consistent reference state of 298 K.
-bde_elements = ['C', 'N', 'H', 'O', 'S', 'Cl', 'Si', 'P', 'F', 'Br', 'I']  # elements supported by BDE
+# Boron BDE data were from the NBS/NIST data, but B-C and B-Si are values at 0 K. 
+bde_elements = ['C', 'N', 'H', 'O', 'S', 'Cl', 'Si', 'P', 'F', 'Br', 'I', 'B']  
+# elements supported by BDE
 bde_dict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol'),
             ('H', 'N', 1): (386.0, 'kJ/mol'), ('H', 'O', 1.0): (459.0, 'kJ/mol'),
             ('H', 'P', 1): (322.0, 'kJ/mol'), ('H', 'S', 1): (363.0, 'kJ/mol'),
@@ -375,7 +381,12 @@ bde_dict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol')
             ('Br', 'Br', 1): (190.0, 'kJ/mol'), ('I', 'I', 1): (148.0, 'kJ/mol'),
             ('F', 'O', 1): (222.0, 'kJ/mol'), ('Cl', 'O', 1): (272.0, 'kJ/mol'),
             ('Br', 'O', 1): (235.1, 'kJ/mol'), ('Cl', 'F', 1): (250.54, 'kJ/mol'),
-            ('Br', 'F', 1): (233.8, 'kJ/mol'), ('Br', 'Cl', 1): (218.84, 'kJ/mol')}
+            ('Br', 'F', 1): (233.8, 'kJ/mol'), ('Br', 'Cl', 1): (218.84, 'kJ/mol'),
+            ('B', 'B', 1): (297.0, 'kJ/mol'), ('B', 'H', 1): (331.0, 'kJ/mol'),
+            ('B', 'C', 1): (444.0, 'kJ/mol'), ('B', 'N', 1): (389.0, 'kJ/mol'),
+            ('B', 'O', 1): (787.0, 'kJ/mol'), ('B', 'F', 1): (134.0, 'kJ/mol'),
+            ('B', 'Cl', 1): (536.0, 'kJ/mol'), ('B', 'Br', 1): (435.0, 'kJ/mol'),
+            ('B', 'Si', 1): (285.0, 'kJ/mol'), ('B', 'S', 1): (498.0, 'kJ/mol')}
 
 bdes = {}
 for key, value in bde_dict.items():
