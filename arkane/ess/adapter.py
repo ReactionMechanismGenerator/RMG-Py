@@ -86,7 +86,7 @@ class ESSAdapter(ABC):
         pass
 
     @abstractmethod
-    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
+    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, species=None, label=''):
         """
         Return the optimum geometry of the molecular configuration.
         """

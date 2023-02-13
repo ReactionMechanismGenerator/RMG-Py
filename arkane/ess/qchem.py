@@ -207,7 +207,7 @@ class QChemLog(ESSAdapter):
 
         return coord, number, mass
 
-    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
+    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, species=None, label=''):
         """
         Load the molecular degree of freedom data from an output file created as the result of a
         QChem "Freq" calculation. As QChem's guess of the external symmetry number is not always correct,
@@ -222,7 +222,7 @@ class QChemLog(ESSAdapter):
         unscaled_frequencies = []
         e0 = 0.0
         if optical_isomers is None or symmetry is None:
-            _optical_isomers, _symmetry, _ = self.get_symmetry_properties()
+            _optical_isomers, _symmetry, _ = self.get_symmetry_properties(species=species)
             if optical_isomers is None:
                 optical_isomers = _optical_isomers
             if symmetry is None:

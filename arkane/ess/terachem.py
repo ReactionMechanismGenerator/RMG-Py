@@ -203,7 +203,7 @@ class TeraChemLog(ESSAdapter):
 
         return coords, numbers, masses
 
-    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
+    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, species=None, label=''):
         """
         Load the molecular degree of freedom data from an output file created as the result of a
         TeraChem "Freq" calculation. As TeraChem's guess of the external symmetry number might not always correct,
@@ -213,7 +213,7 @@ class TeraChemLog(ESSAdapter):
         modes, unscaled_freqs = list(), list()
         converged = False
         if optical_isomers is None:
-            _optical_isomers = self.get_symmetry_properties()[0]
+            _optical_isomers = self.get_symmetry_properties(species=species)[0]
             if optical_isomers is None:
                 optical_isomers = _optical_isomers
 

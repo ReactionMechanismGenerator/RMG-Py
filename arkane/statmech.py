@@ -508,7 +508,9 @@ class StatMechJob(object):
         conformer, unscaled_frequencies = statmech_log.load_conformer(symmetry=external_symmetry,
                                                                       spin_multiplicity=spin_multiplicity,
                                                                       optical_isomers=optical_isomers,
-                                                                      label=self.species.label)
+                                                                      label=self.species.label,
+                                                                      species=self.species if not is_ts else None,
+                                                                      )
 
         for mode in conformer.modes:
             if isinstance(mode, (Translation, IdealGasTranslation)):
