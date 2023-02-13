@@ -32,12 +32,15 @@ A module for the abstract ESSAdapter class
 """
 
 from abc import ABC, abstractmethod
-import logging
+from typing import TYPE_CHECKING, Optional
 import os
 import shutil
 
 from rmgpy.qm.qmdata import QMData
 from rmgpy.qm.symmetry import PointGroupCalculator
+
+if TYPE_CHECKING:
+    from rmgpy.species import Species
 
 
 class ESSAdapter(ABC):
@@ -164,13 +167,22 @@ class ESSAdapter(ABC):
         raise NotImplementedError(f"get_T1_diagnostic failed for {self.path} "
                                   f"since the method is not implemented for all ESSAdapter subclasses.")
 
-    def get_symmetry_properties(self):
+    def get_symmetry_properties(self, species: Optional['Species'] = None):
         """
         This method uses the symmetry package from RMG's QM module
         and returns a tuple where the first element is the number
         of optical isomers, the second element is the symmetry number,
         and the third element is the point group identified.
+        If ``species`` is given, then the ``Species.get_symmetry_number()`` module is called
+        to determine the external symmetry.
         """
+        symmetry = None
+        if species is not None:
+            spc = species.copy(deep=True)
+            spc.generate_resonance_structures(keep_isomorphic=False, filter_structures=True, save_order=True)
+            spc.get_symmetry_number(external=True)
+            symmetry = spc.symmetry_number
+
         coordinates, atom_numbers, _ = self.load_geometry()
         unique_id = '0'  # Just some name that the SYMMETRY code gives to one of its jobs
         # Scratch directory that the SYMMETRY code writes its files in:
@@ -193,12 +205,12 @@ class ESSAdapter(ABC):
             pg = pgc.calculate()
             if pg is not None:
                 optical_isomers = 2 if pg.chiral else 1
-                symmetry = pg.symmetry_number
-                logging.debug("Symmetry algorithm found {0} optical isomers and a symmetry number of {1}".format(
-                    optical_isomers, symmetry))
+                if symmetry is None:
+                    symmetry = pg.symmetry_number
             else:
-                logging.error('Symmetry algorithm errored when computing point group\nfor log file located at{0}.\n'
-                              'Manually provide values in Arkane input.'.format(self.path))
+                raise ValueError(f'Symmetry algorithm errored when computing point group for log file located at\n'
+                                 f'{self.path}\nManually provide the {"external symmetry and" if symmetry is None else ""} '
+                                 f'optical isomer number.')
             return optical_isomers, symmetry, pg.point_group
         finally:
             shutil.rmtree(scr_dir)
