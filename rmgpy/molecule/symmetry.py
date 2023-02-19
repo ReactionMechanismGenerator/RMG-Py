@@ -36,8 +36,8 @@ import itertools
 
 def calculate_atom_symmetry_number(molecule, atom):
     """
-    Return the symmetry number centered at `atom` in the structure. The
-    `atom` of interest must not be in a cycle.
+    Return the internal symmetry number centered at `atom` in the structure.
+    The `atom` of interest must not be in a cycle.
     """
     symmetry_number = 1
 
@@ -508,6 +508,21 @@ def calculate_cyclic_symmetry_number(molecule):
     return symmetry_number
 
 
+def calculate_internal_ring_symmetry_number(molecule, atom):
+    """
+    Return the internal symmetry number of a ring top.
+    """
+    symmetry_number = 1
+    single_rings = molecule.get_disparate_cycles()[0]
+    print(single_rings)
+    for ring in single_rings:
+        if atom in ring:
+            break
+    else:
+        return symmetry_number
+    atom_1, atom_2 = get_next_in_ring_neighbors(ring=ring, prev_atom_1=atom, prev_atom_2=atom)
+
+
 ################################################################################
 
 
@@ -560,8 +575,11 @@ def calculate_symmetry_number(molecule,
     symmetry_number = 1
 
     for atom in molecule.vertices:
-        if not external and not molecule.is_atom_in_cycle(atom):
-            symmetry_number *= calculate_atom_symmetry_number(molecule, atom)
+        if not external:
+            if not molecule.is_atom_in_cycle(atom):
+                symmetry_number *= calculate_atom_symmetry_number(molecule, atom)
+            else:
+                symmetry_number *= calculate_internal_ring_symmetry_number(molecule, atom)
 
     for atom1 in molecule.vertices:
         for atom2 in list(atom1.edges):

@@ -27,13 +27,22 @@
 #                                                                             #
 ###############################################################################
 
+import os
 import unittest
 
+import yaml
+
+import rmgpy
 from external.wip import work_in_progress
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
-from rmgpy.molecule.symmetry import calculate_atom_symmetry_number, calculate_axis_symmetry_number, \
-    calculate_bond_symmetry_number, calculate_cyclic_symmetry_number, _indistinguishable
+from rmgpy.molecule.symmetry import (calculate_atom_symmetry_number,
+                                     calculate_axis_symmetry_number,
+                                     calculate_bond_symmetry_number,
+                                     calculate_cyclic_symmetry_number,
+                                     calculate_internal_ring_symmetry_number,
+                                     _indistinguishable,
+                                     )
 from rmgpy.species import Species
 
 
@@ -732,6 +741,46 @@ multiplicity 3
         self.assertTrue(_indistinguishable(mol.atoms[1], mol.atoms[3]))
         # O is different from H
         self.assertFalse(_indistinguishable(mol.atoms[6], mol.atoms[7]))
+
+    def test_calculate_internal_ring_symmetry_number(self):
+        """
+        Test the calculate_internal_ring_symmetry_number() function.
+        """
+        mol = Molecule().from_smiles('c1ccccc1C')
+        done = False
+        for atom in mol.atoms:
+            if not mol.is_atom_in_cycle(atom):
+                for pivotal_atom in atom.edges.keys():
+                    if atom.edges.keys().is_carbon():
+                        done = True
+                        break
+                if done:
+                    break
+        calculate_internal_ring_symmetry_number(mol, pivotal_atom)
+
+
+    # def test_symmetry_against_dataset(self):
+    #     """
+    #     Test the Species.calculate_symmetry_number() for a dataset of species.
+    #     We expect to get a >90% success rate, otherwise fail.
+    #     """
+    #     sym_data_path = os.path.join(rmgpy.settings['test_data.directory'], 'symm_data.yml')
+    #     with open(sym_data_path, 'r') as f:
+    #         sym_data = yaml.load(stream=f, Loader=yaml.FullLoader)
+    #     data_size = len(sym_data)
+    #     counter = 0
+    #     incorrects = list()
+    #     for data_point in sym_data:
+    #         spc = Species(inchi=data_point['InChI'])
+    #         spc.generate_resonance_structures(keep_isomorphic=False, filter_structures=True)
+    #         spc.get_symmetry_number()
+    #         if spc.symmetry_number == data_point['ext_symm']:
+    #             counter += 1
+    #         else:
+    #             incorrects.append(data_point)
+    #     print(f'Got {(counter / data_size) * 100:.2f}% correct')
+    #     print(f'got the following datapoints incorrect:\n{incorrects}')
+    #     self.assertGreaterEqual(counter / data_size, 0.9)
 
 
 ################################################################################
