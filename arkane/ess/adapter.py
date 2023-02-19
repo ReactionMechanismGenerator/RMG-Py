@@ -177,7 +177,7 @@ class ESSAdapter(ABC):
         to determine the external symmetry.
         """
         symmetry = None
-        if species is not None:
+        if species is not None and hasattr(species, 'molecule'):
             spc = species.copy(deep=True)
             spc.generate_resonance_structures(keep_isomorphic=False, filter_structures=True, save_order=True)
             spc.get_symmetry_number(external=True)
