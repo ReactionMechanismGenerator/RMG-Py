@@ -751,12 +751,40 @@ multiplicity 3
         for atom in mol.atoms:
             if not mol.is_atom_in_cycle(atom):
                 for pivotal_atom in atom.edges.keys():
-                    if atom.edges.keys().is_carbon():
+                    if pivotal_atom.is_carbon():
                         done = True
                         break
                 if done:
                     break
-        calculate_internal_ring_symmetry_number(mol, pivotal_atom)
+        self.assertEqual(calculate_internal_ring_symmetry_number(mol, pivotal_atom), 2)
+
+    def test_calculate_internal_ring_symmetry_number_2(self):
+        """
+        Test the calculate_internal_ring_symmetry_number() function.
+        """
+        mol = Molecule().from_smiles('c1ccccc1C')
+        self.assertEqual(mol.get_symmetry_number(), 6)
+
+    def test_calculate_internal_ring_symmetry_number_3(self):
+        """
+        Test the calculate_internal_ring_symmetry_number() function.
+        """
+        mol = Molecule().from_smiles('C#CC(C)c1ccccc1')
+        self.assertEqual(mol.get_symmetry_number(), 6)
+
+    def test_calculate_internal_ring_symmetry_number_4(self):
+        """
+        Test the calculate_internal_ring_symmetry_number() function.
+        """
+        mol = Molecule().from_smiles('COOC')
+        self.assertEqual(mol.get_symmetry_number(consider_chirality=False), 18)  # keep
+
+    def test_symmetry_due_to_resonance(self):
+        """
+        Test correctly identifying symmetry due to resonance.
+        """
+        mol = Molecule().from_smiles('[CH]1C=CC=C1')
+        self.assertEqual(mol.get_symmetry_number(consider_chirality=False), 10)  # keep
 
 
     # def test_symmetry_against_dataset(self):

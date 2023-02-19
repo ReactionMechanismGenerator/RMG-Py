@@ -34,7 +34,7 @@ molecule from its chemical graph representation.
 import itertools
 
 
-def calculate_atom_symmetry_number(molecule, atom):
+def calculate_atom_symmetry_number(molecule, atom, consider_chirality=True):
     """
     Return the internal symmetry number centered at `atom` in the structure.
     The `atom` of interest must not be in a cycle.
@@ -97,8 +97,8 @@ def calculate_atom_symmetry_number(molecule, atom):
                 symmetry_number *= 2
             elif count == [2, 1, 1]:
                 symmetry_number *= 1
-            elif count == [1, 1, 1, 1]:
-                symmetry_number *= 0.5  # found chirality
+            elif count == [1, 1, 1, 1] and consider_chirality:
+                symmetry_number *= 0.5
         elif single == 3:
             # Three single bonds
             if count == [3]:
@@ -148,7 +148,7 @@ def calculate_atom_symmetry_number(molecule, atom):
 
 ################################################################################
 
-def calculate_bond_symmetry_number(molecule, atom1, atom2):
+def calculate_bond_symmetry_number(molecule, atom1, atom2, consider_chirality=True):
     """
     Return the symmetry number centered at `bond` in the structure.
     """
@@ -157,12 +157,12 @@ def calculate_bond_symmetry_number(molecule, atom1, atom2):
     if atom1.equivalent(atom2):
         # An O-O bond is considered to be an "optical isomer" and so no
         # symmetry correction will be applied
-        if (atom1.atomtype.label == 'O2s' and atom2.atomtype.label == 'O2s' and
-                atom1.radical_electrons == atom2.radical_electrons == 0):
+        if atom1.atomtype.label == 'O2s' and atom2.atomtype.label == 'O2s' \
+                and atom1.radical_electrons == atom2.radical_electrons == 0 \
+                and consider_chirality:
             return symmetry_number
         # If the molecule is diatomic, then we don't have to check the
-        # ligands on the two atoms in this bond (since we know there
-        # aren't any)
+        # ligands on the two atoms in this bond (since we know there aren't any)
         elif len(molecule.vertices) == 2:
             symmetry_number = 2
         else:
@@ -219,6 +219,22 @@ def calculate_bond_symmetry_number(molecule, atom1, atom2):
 
 
 ################################################################################
+
+
+def calculate_resonance_symmetry_number(molecule):
+    """
+    Determine whether this molecule has identical resonance structures
+    which are relevant for symmetry.
+    """
+    symmetry_number = 1
+    mols = molecule.generate_resonance_structures(keep_isomorphic=True)
+    if all([mol.is_isomorphic(mols[0]) for i, mol in enumerate(mols) if i]):
+        symmetry_number *= len(mols)
+    return symmetry_number
+
+
+################################################################################
+
 
 def calculate_axis_symmetry_number(molecule):
     r"""
@@ -394,7 +410,7 @@ def calculate_axis_symmetry_number(molecule):
 def calculate_cyclic_symmetry_number(molecule):
     """
     Get the symmetry number correction for cyclic regions of a molecule.
-    For complicated fused rings the smallest set of smallest rings is used.
+    For complicated fused rings the smallest set of the smallest rings is used.
     """
     symmetry_number = 1
 
@@ -424,6 +440,7 @@ def calculate_cyclic_symmetry_number(molecule):
                             break
                     starting_index += 1
                 if all_the_same:
+                    print(f'\n427 multiply by {num_sections}')
                     symmetry_number *= num_sections
                     break
 
@@ -486,9 +503,9 @@ def calculate_cyclic_symmetry_number(molecule):
                             # flipping a tetrahedral will not work
                             all_the_same = False
                         else:
-                            # having 5+ bonnds is not modeled here
+                            # having 5+ bonds is not modeled here
                             pass
-            # for even rings, check for flipping accross bonds too
+            # for even rings, check for flipping across bonds too
             if not all_the_same and size % 2 == 0:
                 all_the_same = True
                 min_index = flipping_atom_index
@@ -503,8 +520,10 @@ def calculate_cyclic_symmetry_number(molecule):
                     max_index += -1
 
             if all_the_same:
+                print(f'\n507 multiply by 2')
                 symmetry_number *= 2
                 break
+    print(f'\nDone')
     return symmetry_number
 
 
@@ -514,13 +533,27 @@ def calculate_internal_ring_symmetry_number(molecule, atom):
     """
     symmetry_number = 1
     single_rings = molecule.get_disparate_cycles()[0]
-    print(single_rings)
     for ring in single_rings:
         if atom in ring:
             break
     else:
         return symmetry_number
-    atom_1, atom_2 = get_next_in_ring_neighbors(ring=ring, prev_atom_1=atom, prev_atom_2=atom)
+    ring = molecule.sort_cyclic_vertices(ring)
+    for i in range(int(len(ring) - 1 / 2)):
+        if not i:
+            continue
+        atom_types_1 = set(sorted(atom.atomtype.label
+                                  for atom in ring[i].edges.keys()))
+        atom_types_2 = set(sorted(atom.atomtype.label
+                                  for atom in ring[len(ring) - i].edges.keys()))
+        if atom_types_1 != atom_types_2:
+            return symmetry_number
+    if not len(ring) % 2 and len(set(atom.atomtype.label
+                                     for atom in ring[int(len(ring) / 2 - 1)].edges.keys()
+                                     if atom not in ring)) != 1:
+        return symmetry_number
+    symmetry_number *= 2
+    return symmetry_number
 
 
 ################################################################################
@@ -560,6 +593,7 @@ def _indistinguishable(atom1, atom2):
 
 def calculate_symmetry_number(molecule,
                               external: bool = False,
+                              consider_chirality: bool = True,
                               ) -> float:
     """
     Return the symmetry number for the structure.
@@ -568,6 +602,8 @@ def calculate_symmetry_number(molecule,
     Args:
         molecule (Molecule): The molecule object instance.
         external (bool, optional): Whether to only compute the external symmetry. ``False`` by default.
+        consider_chirality (bool, optional): Whether to consider chirality reductions of the symmetry number.
+                                             ``True`` by default.
 
     Returns:
         float: The symmetry number.
@@ -577,19 +613,36 @@ def calculate_symmetry_number(molecule,
     for atom in molecule.vertices:
         if not external:
             if not molecule.is_atom_in_cycle(atom):
-                symmetry_number *= calculate_atom_symmetry_number(molecule, atom)
-            else:
-                symmetry_number *= calculate_internal_ring_symmetry_number(molecule, atom)
+                val = calculate_atom_symmetry_number(molecule, atom, consider_chirality=consider_chirality)
+                if val != 1:
+                    print(f' atom: {val}')
+                symmetry_number *= val
+            # else:
+            #     symmetry_number *= calculate_internal_ring_symmetry_number(molecule, atom)
 
     for atom1 in molecule.vertices:
         for atom2 in list(atom1.edges):
             if (molecule.vertices.index(atom1) < molecule.vertices.index(atom2) and
                     not molecule.is_bond_in_cycle(atom1.edges[atom2])):
-                symmetry_number *= calculate_bond_symmetry_number(molecule, atom1, atom2)
+                val = calculate_bond_symmetry_number(molecule, atom1, atom2, consider_chirality=consider_chirality)
+                if val != 1:
+                    print(f'bond: {val}')
+                symmetry_number *= val
 
-    symmetry_number *= calculate_axis_symmetry_number(molecule)
+    val = calculate_axis_symmetry_number(molecule)
+    if val != 1:
+        print(f'axis {val}')
+    symmetry_number *= val
+
+    val = calculate_resonance_symmetry_number(molecule)
+    if val != 1:
+        print(f'res {val}')
+    symmetry_number *= val
 
     if molecule.is_cyclic():
-        symmetry_number *= calculate_cyclic_symmetry_number(molecule)
+        val = calculate_cyclic_symmetry_number(molecule)
+        if val != 1:
+            print(f'cyclic {val}')
+        symmetry_number *= val
 
     return symmetry_number

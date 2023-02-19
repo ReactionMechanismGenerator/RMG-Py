@@ -2081,7 +2081,7 @@ class Molecule(Graph):
 
             return self.calculate_cp0() + (n_vib + 0.5 * n_rotors) * constants.R
 
-    def get_symmetry_number(self, external: bool = False) -> float:
+    def get_symmetry_number(self, external: bool = False, consider_chirality: bool = True) -> float:
         """
         Returns the symmetry number of the Molecule.
 
@@ -2092,10 +2092,10 @@ class Molecule(Graph):
             float: The symmetry number.
         """
         if self.symmetry_number == -1:
-            self.calculate_symmetry_number(external=external)
+            self.calculate_symmetry_number(external=external, consider_chirality=consider_chirality)
         return self.symmetry_number
 
-    def calculate_symmetry_number(self, external: bool = False) -> float:
+    def calculate_symmetry_number(self, external: bool = False, consider_chirality: bool = True) -> float:
         """
         Return the symmetry number for the structure.
         The symmetry number includes both external and internal modes unless otherwise requested.
@@ -2108,7 +2108,7 @@ class Molecule(Graph):
         """
         from rmgpy.molecule.symmetry import calculate_symmetry_number
         self.update_connectivity_values()  # for consistent results
-        self.symmetry_number = calculate_symmetry_number(self, external=external)
+        self.symmetry_number = calculate_symmetry_number(self, external=external, consider_chirality=consider_chirality)
         return self.symmetry_number
 
     def is_radical(self):
