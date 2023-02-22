@@ -4429,6 +4429,8 @@ class KineticsFamily(Database):
                     re.sub(r"(?<=]) \+ (?!Average)", ",'",      # + sign between average and non-average
                     re.sub(r"(?<!]) \+ (?!Average)", "','",     # + sign between non-averages
                     comment)))))))
+                if "['" in eval_comment_string and "']" not in eval_comment_string:
+                    eval_comment_string = eval_comment_string.replace("]", "']")
 
                 entry_nested_list = eval(eval_comment_string)
 
@@ -4489,6 +4491,11 @@ class KineticsFamily(Database):
         training_entries = None
         degeneracy = 1
 
+        for line in lines:
+            if 'Ea raised from' in line:
+                print('how is this handled?')
+                break
+
         regex = r"\[(.*)\]"  # only hit outermost brackets
         for line in lines:
             if line.startswith('Matched'):
@@ -4522,26 +4529,44 @@ class KineticsFamily(Database):
 
         # Check whether we're using the old rate rule templates or the new BM tree nodes
         if full_comment_string.find('for rate rule') < 0:  # New trees
-            
-            start_tag = 'Estimated from node '
-            end_tag = 'Multiplied by reaction path degeneracy'
+            matches = []
+            matches = re.search(r'This reaction matched rate rule \[(.*?)\]', full_comment_string)
+            if matches:
+                node = matches[1]
+                node = node.replace('\\n', '')
+                node = node.replace('# ', '')
+                node = node.replace('! ', '')
+                node = node.replace(' ', '')
+                node = ''.join(node.split())
+                if ' ' in node:
+                    print('problem!')
+            else:
+                start_tag = 'Estimated from node '
+                end_tag = 'Multiplied by reaction path degeneracy'
 
-            start_loc = full_comment_string.find(start_tag)
-            end_loc = full_comment_string.find(end_tag)
-            if start_loc == -1:
-                raise ValueError('Could not find start of node in comments')
-            if end_loc == -1:
-                # check if the nodename is the last token
-                node_tokens = full_comment_string.split()
-                if node_tokens[-2] == 'node':
-                    end_loc = None
-                else:
-                    raise ValueError('Could not find end of node in comments')
+                start_loc = full_comment_string.find(start_tag)
+                end_loc = full_comment_string.find(end_tag)
+                if start_loc == -1:
+                    raise ValueError('Could not find start of node in comments')
+                if end_loc == -1:
+                    # check if the nodename is the last token
+                    node_tokens = full_comment_string.split()
+                    if node_tokens[-2] == 'node':
+                        end_loc = None
+                    else:
+                        end_loc = None
+                        print(f'Warning: Could not find end of node in comments {full_comment_string}')
+                        # raise ValueError('Could not find end of node in comments')
 
-            node = full_comment_string[start_loc + len(start_tag): end_loc]
-            node = node.replace('\\n', '')
-            node = node.replace('# ', '')
-            node = node.replace(' ', '')
+                node = full_comment_string[start_loc + len(start_tag): end_loc]
+                node = node.replace('\\n', '')
+                node = node.replace('# ', '')
+                node = node.replace('! ', '')
+                node = node.replace(' ', '')
+                node = ''.join(node.split())
+                if ' ' in node:
+                    print('problem here!')
+
             rules = ''
             training_entries = ''
             template = ''
