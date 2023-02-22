@@ -786,6 +786,48 @@ multiplicity 3
         mol = Molecule().from_smiles('[CH]1C=CC=C1')
         self.assertEqual(mol.get_symmetry_number(consider_chirality=False), 10)  # keep
 
+    def test_symmetry_due_to_resonance_2(self):
+        """
+        Test correctly identifying symmetry due to resonance.
+        """
+        mol = Molecule().from_smiles('[C-]=C=[CH+]')
+        self.assertEqual(mol.get_symmetry_number(consider_chirality=False), 2)  # fails
+
+    def test_symmetry_due_to_resonance_3(self):
+        """
+        Test correctly identifying symmetry due to resonance.
+        """
+        mol = Molecule().from_smiles('[CH2]C=C')
+        self.assertEqual(mol.get_symmetry_number(consider_chirality=False), 4)  # keep
+
+    def test_symmetry_due_to_resonance_4(self):
+        """
+        Test correctly identifying symmetry due to resonance.
+        """
+        mol = Molecule().from_smiles('[CH2]C(=C)C')
+        self.assertEqual(mol.get_symmetry_number(consider_chirality=False), 6)  # keep
+
+    def test_symmetry_due_to_resonance_5(self):
+        """
+        Test correctly identifying symmetry due to resonance.
+        """
+        mol = Molecule().from_smiles('C=C[C](C)C')
+        self.assertEqual(mol.get_symmetry_number(consider_chirality=False), 9)  # keep
+
+    def test_symmetry_due_to_resonance_6(self):
+        """
+        Test correctly identifying symmetry due to resonance.
+        """
+        mol = Molecule().from_smiles('C=C1CCCC1')
+        self.assertEqual(mol.get_symmetry_number(consider_chirality=False), 2)  # fails
+
+    def test_symmetry_due_to_resonance_7(self):
+        """
+        Test correctly identifying symmetry due to resonance.
+        """
+        mol = Molecule().from_smiles('C=C(C)[C](C)C')
+        self.assertEqual(mol.get_symmetry_number(consider_chirality=False), 27)  # keep
+
 
     # def test_symmetry_against_dataset(self):
     #     """

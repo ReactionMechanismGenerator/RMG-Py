@@ -55,11 +55,13 @@ def calculate_atom_symmetry_number(molecule, atom, consider_chirality=True):
 
     # If atom has zero or one neighbors, the symmetry number is 1
     if num_neighbors < 2:
+        print('58')
         return symmetry_number
 
     # Create temporary structures for each functional group attached to atom
     molecule0 = molecule
     molecule = molecule0.copy(True)
+    atom0 = atom
     atom = molecule.vertices[molecule0.vertices.index(atom)]
     molecule.remove_atom(atom)
     groups = molecule.split()
@@ -90,57 +92,79 @@ def calculate_atom_symmetry_number(molecule, atom, consider_chirality=True):
         if single == 4:
             # Four single bonds
             if count == [4]:
+                print('94')
                 symmetry_number *= 12
             elif count == [3, 1]:
+                print('97')
                 symmetry_number *= 3
             elif count == [2, 2]:
+                print('100')
                 symmetry_number *= 2
             elif count == [2, 1, 1]:
+                print('102')
                 symmetry_number *= 1
             elif count == [1, 1, 1, 1] and consider_chirality:
+                print('106')
                 symmetry_number *= 0.5
         elif single == 3:
             # Three single bonds
             if count == [3]:
+                print('111')
                 symmetry_number *= 3
             elif count == [2, 1]:
+                print('114')
                 symmetry_number *= 1
             elif count == [1, 1, 1]:
+                print('116')
                 symmetry_number *= 1
         elif single == 2:
             # Two single bonds
             if count == [2]:
+                print('122')
                 symmetry_number *= 2
         # for resonance hybrids
         elif single == 1:
             if count == [2, 1]:
+                print('127')
                 symmetry_number *= 2
         elif double == 2:
             # Two double bonds
             if count == [2]:
+                print('131')
                 symmetry_number *= 2
         # for nitrogen resonance hybrids
         elif single == 0:
             if count == [2]:
+                print('137')
                 symmetry_number *= 2
     elif atom.radical_electrons == 1:
         if single == 3:
             # Three single bonds
             if count == [3]:
+                print('143')
                 symmetry_number *= 6
             elif count == [2, 1]:
-                symmetry_number *= 2
+                for atom_2 in atom0.edges.keys():
+                    if any([bond.order > 1 for bond in atom_2.edges.values()]):
+                        break
+                else:
+                    print('146')
+                    symmetry_number *= 2
             elif count == [1, 1, 1]:
+                print('149')
                 symmetry_number *= 1
         elif single == 1:
             if count == [2, 1]:
+                print('153')
                 symmetry_number *= 2
             elif count == [1, 1, 1]:
+                print('156')
                 symmetry_number *= 1
     elif atom.radical_electrons == 2:
         if single == 2:
             # Two single bonds
             if count == [2]:
+                print('162')
                 symmetry_number *= 2
 
     return symmetry_number
