@@ -250,9 +250,15 @@ class ExplorerJob(object):
             for rxn in network.path_reactions:
                 if rxn.transition_state is None:
                     if rxn.network_kinetics is None:
-                        E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si + network.energy_correction
+                        if network.energy_correction:
+                            E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si + network.energy_correction
+                        else:
+                            E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si
                     else:
-                        E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si + network.energy_correction
+                        if network.energy_correction:
+                            E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si + network.energy_correction
+                        else:
+                            E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si
                     rxn.transition_state = rmgpy.species.TransitionState(conformer=Conformer(E0=(E0 * 0.001, "kJ/mol")))
                 
         for network in self.networks:
