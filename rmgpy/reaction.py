@@ -810,8 +810,8 @@ class Reaction:
             raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
 
         H298 = self.get_enthalpy_of_reaction(298)
-        H0 = sum([spec.get_thermo_data().E0.value_si for spec in self.products]) \
-             - sum([spec.get_thermo_data().E0.value_si for spec in self.reactants])
+        H0 = sum([spec.get_thermo_data().E0.value_si if spec.get_thermo_data().E0 is not None else spec.get_thermo_data().to_wilhoit().E0.value_si for spec in self.products]) \
+             - sum([spec.get_thermo_data().E0.value_si if spec.get_thermo_data().E0 is not None else spec.get_thermo_data().to_wilhoit().E0.value_si  for spec in self.reactants])
         if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusBM)):
             Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
             self.kinetics = self.kinetics.to_arrhenius(H298)
