@@ -35,12 +35,25 @@ import numpy as np
 import sys
 import logging
 import itertools
-try:
-    from pyrms import rms
-    from diffeqpy import de
-    from julia import Main
-except:
-    pass
+
+if __debug__:
+    try:
+        from os.path import dirname, abspath, join, exists
+        path_rms = dirname(dirname(dirname(abspath(__file__))))
+        from julia.api import Julia
+        jl = Julia(sysimage=join(path_rms,"rms.so")) if exists(join(path_rms,"rms.so")) else Julia(compiled_modules=False)
+        from pyrms import rms
+        from diffeqpy import de
+        from julia import Main 
+    except:
+        pass
+else:
+    try:
+        from pyrms import rms
+        from diffeqpy import de
+        from julia import Main
+    except:
+        pass
 
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
