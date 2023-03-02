@@ -25,9 +25,9 @@ dependencies:
   - matplotlib >=1.5
   - rmg::mopac # was previously RMG, must be RMG
   - mpmath
-  #  - rmg::muq2 # only on RMG
+  - rmg::muq2 # only on RMG
   - networkx
-  #  - nomkl
+  - nomkl
   - nose
   - conda-forge::numdifftools # was previously RMG, was recent
   - numpy >=1.10.0
@@ -39,7 +39,7 @@ dependencies:
   - rmg::pydqed >=1.0.1 # only on RMG
   - rmg::pyjulia # only RMG, internal
   - pymongo
-  #  - pyparsing
+  - pyparsing
   - rmg::pyrdl # only on RMG
   - rmg::pyrms # internal
   - python >=3.7
