@@ -644,6 +644,22 @@ class RMG(util.Subject):
                 spec.get_henry_law_constant_data()
             self.reaction_model.add_species_to_edge(spec)
 
+        # Also always add in a few bath gases (since RMG-Java does)
+        for label, smiles in [('Ar', '[Ar]'), ('He', '[He]'), ('Ne', '[Ne]'), ('N2', 'N#N')]:
+            molecule = Molecule().from_smiles(smiles)
+            spec, is_new = self.reaction_model.make_new_species(molecule, label=label, reactive=False)
+            if is_new:
+                self.initial_species.append(spec)
+
+        # Add nonreactive species (e.g. bath gases) to core first
+        # This is necessary so that the PDep algorithm can identify the bath gas
+        for spec in self.initial_species:
+            if not spec.reactive:
+                self.reaction_model.enlarge(spec)
+        for spec in self.initial_species:
+            if spec.reactive:
+                self.reaction_model.enlarge(spec)
+
         # Seed mechanisms: add species and reactions from seed mechanism
         # DON'T generate any more reactions for the seed species at this time
         for seed_mechanism in self.seed_mechanisms:
@@ -653,13 +669,6 @@ class RMG(util.Subject):
         # that RMG can find them if their rates are large enough
         for library, option in self.reaction_libraries:
             self.reaction_model.add_reaction_library_to_edge(library)
-
-        # Also always add in a few bath gases (since RMG-Java does)
-        for label, smiles in [("Ar", "[Ar]"), ("He", "[He]"), ("Ne", "[Ne]"), ("N2", "N#N")]:
-            molecule = Molecule().from_smiles(smiles)
-            spec, is_new = self.reaction_model.make_new_species(molecule, label=label, reactive=False)
-            if is_new:
-                self.initial_species.append(spec)
 
         # Perform species constraints and forbidden species checks on input species
         for spec in self.initial_species:
@@ -723,15 +732,6 @@ class RMG(util.Subject):
             if vapor_liquid_mass_transfer.enabled:
                 spec.get_liquid_volumetric_mass_transfer_coefficient_data()
                 spec.get_henry_law_constant_data()
-
-        # Add nonreactive species (e.g. bath gases) to core first
-        # This is necessary so that the PDep algorithm can identify the bath gas
-        for spec in self.initial_species:
-            if not spec.reactive:
-                self.reaction_model.enlarge(spec)
-        for spec in self.initial_species:
-            if spec.reactive:
-                self.reaction_model.enlarge(spec)
 
         # chatelak: store constant SPC indices in the reactor attributes if any constant SPC provided in the input file
         # advantages to write it here: this is run only once (as species indexes does not change over the generation)
