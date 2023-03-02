@@ -51,3 +51,4 @@ dependencies:
   - rmg::symmetry # internal
   - xlrd
   - xlwt
+  - conda-forge::libgfortran-ng
