@@ -15,7 +15,7 @@ dependencies:
   - cython >=0.25.2
   - rmg::diffeqpy # only on rmg
   - ffmpeg
-  - conda-forge::gprof2dot # was previously RMG
+  - rmg::gprof2dot # was previously RMG
   - graphviz
   - h5py
   - jinja2
@@ -45,7 +45,7 @@ dependencies:
   - python >=3.7
   - pyyaml
   - conda-forge::quantities # was previously RMG
-  - conda-forge::rdkit >=2020.03.3.0 # was previously RM
+  - conda-forge::rdkit >=2020.03.3.0 # was previously RMG
   - scikit-learn
   - scipy
   - rmg::symmetry # internal
