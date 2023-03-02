@@ -615,9 +615,12 @@ ATOMTYPES['S6tdc'] = AtomType('S6tdc', generic=['R', 'R!H', 'R!H!Val7', 'S', 'Va
                               single=[0,1,2,3,4], all_double=[0, 1, 2], r_double=[], o_double=[], s_double=[], triple=[1, 2], quadruple=[], benzene=[0], lone_pairs=[0], charge=[-1, +1])
 # *Composite atomtype; examples for S6tdc: [SH2+]#[C-], [N-]=[S+]#N
 
-ATOMTYPES['Cl'] = AtomType('Cl', generic=['R', 'R!H', 'Val7'], specific=['Cl1s'])
+ATOMTYPES['Cl'] = AtomType('Cl', generic=['R', 'R!H', 'Val7'], specific=['Cl1s','Cl-'])
 ATOMTYPES['Cl1s'] = AtomType('Cl1s', generic=['R', 'R!H', 'Cl', 'Val7'], specific=[],
                              single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[3], charge=[0])
+ATOMTYPES['Cl-'] = AtomType('Cl-', generic=['R', 'R!H', 'Cl', 'Val7'], specific=[],
+                             single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[4], charge=[-1])
+
 # examples for Cl1s: HCl, [Cl]
 ATOMTYPES['Br'] = AtomType('Br', generic=['R', 'R!H', 'Val7'], specific=['Br1s'])
 ATOMTYPES['Br1s'] = AtomType('Br1s', generic=['R', 'R!H', 'Br', 'Val7'], specific=[],
