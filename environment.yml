@@ -1,52 +1,53 @@
 name: rmg_env
 channels:
   - defaults
+  - cantera
   - rmg
   - conda-forge
 dependencies:
   - cairo
   - cairocffi
-  - rmg::cantera >=2.3.0
+  - cantera::cantera >=2.3.0 # was previously RMG
   - conda-forge::cclib >=1.6.3
-  - rmg::chemprop
+  - rmg::chemprop # change this to conda-forge in a future hackathon (fix the million bugs that will come up from chemprop having gone up a major release)
   - coolprop
   - coverage
   - cython >=0.25.2
-  - rmg::diffeqpy
+  - rmg::diffeqpy # only on rmg
   - ffmpeg
-  - rmg::gprof2dot
+  - conda-forge::gprof2dot # was previously RMG
   - graphviz
   - h5py
   - jinja2
   - jupyter
-  - rmg::lpsolve55
+  - conda-forge::lpsolve55 # was previously RMG
   - markupsafe
   - matplotlib >=1.5
-  - rmg::mopac
+  - rmg::mopac # was previously RMG, must be RMG
   - mpmath
-  - rmg::muq2
+  #  - rmg::muq2 # only on RMG
   - networkx
-  - nomkl
+  #  - nomkl
   - nose
-  - rmg::numdifftools
+  - conda-forge::numdifftools # was previously RMG, was recent
   - numpy >=1.10.0
   - conda-forge::openbabel >= 3
   - pandas
   - psutil
-  - rmg::pydas >=1.0.2
+  - rmg::pydas >=1.0.2 # only RMG, internal
   - pydot
-  - rmg::pydqed >=1.0.1
-  - rmg::pyjulia
+  - rmg::pydqed >=1.0.1 # only on RMG
+  - rmg::pyjulia # only RMG, internal
   - pymongo
-  - pyparsing
-  - rmg::pyrdl
-  - rmg::pyrms
+  #  - pyparsing
+  - rmg::pyrdl # only on RMG
+  - rmg::pyrms # internal
   - python >=3.7
   - pyyaml
-  - rmg::quantities
-  - rmg::rdkit >=2020.03.3.0
+  - conda-forge::quantities # was previously RMG
+  - conda-forge::rdkit >=2020.03.3.0 # was previously RMG
   - scikit-learn
   - scipy
-  - rmg::symmetry
+  - rmg::symmetry # internal
   - xlrd
   - xlwt

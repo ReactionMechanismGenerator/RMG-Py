@@ -1,6 +1,9 @@
 name: CI Tests
 
 on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: "0 8 * * 1-5"
   push:
   pull_request:
     branches:
@@ -32,8 +35,8 @@ jobs:
       - name: mamba info
         run: |
           mamba info
-          mamba list  
-      - name: Install and link Julia dependencies 
+          mamba list
+      - name: Install and link Julia dependencies
         run: |
           julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"))"
           julia -e "using Pkg; Pkg.add(\"PyCall\"); Pkg.add(\"DifferentialEquations\")"
