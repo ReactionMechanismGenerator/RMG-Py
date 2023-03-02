@@ -133,6 +133,12 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    in a different conda environment. However, if convenient you can undo this linking by replacing python-jl with
    python3 in the second command above. Just make sure to rerun the linking command once you are done.
 
+#. Create custom system image of RMS ::
+
+     python -m julia.sysimage rms.so
+
+    This will create a custom system image of Julia with RMS compiled
+
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
     python-jl replace/with/path/to/rmg.py input.py
