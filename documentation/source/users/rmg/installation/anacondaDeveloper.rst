@@ -151,6 +151,11 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
      python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
 
+#. Create custom system image of Julia with RMS compiled,
+   to greatly accelerate launching::
+
+     python -m julia.sysimage rms.so
+
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
     python-jl replace/with/path/to/rmg.py input.py
