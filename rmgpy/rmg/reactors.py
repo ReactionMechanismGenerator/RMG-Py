@@ -35,10 +35,10 @@ import numpy as np
 import sys
 import logging
 import itertools
+from os.path import dirname, abspath, join, exists
 
 if __debug__:
     try:
-        from os.path import dirname, abspath, join, exists
         path_rms = dirname(dirname(dirname(abspath(__file__))))
         from julia.api import Julia
         jl = Julia(sysimage=join(path_rms,"rms.so")) if exists(join(path_rms,"rms.so")) else Julia(compiled_modules=False)
@@ -49,6 +49,9 @@ if __debug__:
         pass
 else:
     try:
+        path_rms = dirname(dirname(dirname(abspath(__file__))))
+        if exists(join(path_rms, "rms.so")):
+            jl = Julia(sysimage=join(path_rms,"rms.so")) 
         from pyrms import rms
         from diffeqpy import de
         from julia import Main
