@@ -145,6 +145,29 @@ scoop: all
 	@ echo "Running minimal example with SCOOP"
 	python -m scoop -n 2 rmg.py -v testing/scoop/input.py
 
+.ONESHELL:
+update:
+	@ echo "Updating RMG-py"
+	@ echo "Please remember to stash unwanted changes."
+	git status
+	@ read -p "Are there any changes that are not staged for committed? [y|n] " user_input
+	if [ "$$user_input" = "N" ] || [ "$$user_input" = "n" ]; then
+		git checkout main || true
+		git pull git@github.com:ReactionMechanismGenerator/RMG-Py.git main || git pull https://github.com/ReactionMechanismGenerator/RMG-Py.git main || true
+		conda activate rmg_env
+		make
+		conda deactivate
+		exit
+	elif [ "$$user_input" = "Y" ] || [ "$$user_input" = "y" ]; then
+		@ echo "Please stash using 'git stash' and run this again"
+		@ echo "After the operation is done, use 'git stash pop'"
+		@ echo "Aborting..."
+		exit
+	fi
+	@ echo Wrong input: $$user_input
+	@ echo "Aborting..."
+	exit
+
 ######### 
 # Section for setting up MOPAC calculations on the Travis-CI.org server
 ifeq ($(TRAVIS),true)
