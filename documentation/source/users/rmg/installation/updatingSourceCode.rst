@@ -7,7 +7,14 @@ Updating the RMG-Py Source Code
 It is recommended to keep yourself up to date with the latest patches and bug fixes by RMG developers,
 which is maintained on the official repository at https://github.com/ReactionMechanismGenerator/RMG-Py/ 
 You can view the latest changes by viewing the commits tab on the repository.  
-To update your source code, you can "pull" the latest changes from the official repo by typing the following command in the
+
+To update your local RMG-Py source code automatically, you can use the following commands::
+    
+    cd /path/to/RMG-Py
+    conda activate rmg_env
+    make update
+
+To update your source code manually, you can "pull" the latest changes from the official repo by typing the following command in the
 Command Prompt ::
 
     cd RMG-Py
