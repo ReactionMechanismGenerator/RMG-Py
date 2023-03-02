@@ -20,7 +20,7 @@ dependencies:
   - h5py
   - jinja2
   - jupyter
-  - conda-forge::lpsolve55 # was previously RMG
+  - rmg::lpsolve55 # was previously RMG, must be rmg (?)
   - markupsafe
   - matplotlib >=1.5
   - conda-forge::mopac # was previously RMG
@@ -51,4 +51,3 @@ dependencies:
   - rmg::symmetry # internal
   - xlrd
   - xlwt
-  - conda-forge::libgfortran-ng
