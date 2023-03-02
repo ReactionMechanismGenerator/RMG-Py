@@ -1,17 +1,10 @@
-name: Constant Integration
+name: Generate Regression Baseline
 
 on:
-  push:
-  pull_request:
-    branches:
-      - main
-    types: [opened, synchronize, reopened, ready_for_review, review_requested]
+  workflow_dispatch:
 
-# this prevents one PR from simultaneously running multiple runners, which will clog up the queue
-# and prevent other PRs from running the CI
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  schedule:
+    - cron: "0 6 * * 1-5"
 
 jobs:
   build-and-test-linux:
@@ -68,22 +61,6 @@ jobs:
           git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
           make
 
-      # non-regression testing
-      - name: Unit tests
-        run: make test-unittests
-      - name: Functional tests
-        if: ${{ success() || failure() }} # Run even if the unit tests failed (but not if they were cancelled)
-        run: make test-functional
-      - name: Database tests
-        if: ${{ success() || failure() }} # Run even if the functional tests failed (but not if they were cancelled)
-        run: make test-database
-
-      # Retrieve Stable Results for reference
-      - name: Retrieve Stable Regression Results
-        run: |
-          echo "Jackson, implement this."
-          # should result in a set of folders, each of which has the stable result for that example/test
-
       # Regression Testing
       - name: Regression Tests
         run: |
@@ -117,7 +94,6 @@ jobs:
           # fi
 
       # Install and Call codecov only if ALL the tests were successful
-      - name: Code coverage install and run
+      - name: Upload Results as Artifacts
         run: |
-          mamba install -y -c conda-forge codecov
-          codecov
+          echo "Jackson do this also."
