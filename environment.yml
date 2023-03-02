@@ -9,25 +9,25 @@ dependencies:
   - cairocffi
   - cantera::cantera >=2.3.0 # was previously RMG
   - conda-forge::cclib >=1.6.3
-  - rmg::chemprop # change this to conda-forge in a future hackathon (fix the million bugs that will come up from chemprop have gone up a major release)
+  - rmg::chemprop # change this to conda-forge in a future hackathon (fix the million bugs that will come up from chemprop having gone up a major release)
   - coolprop
   - coverage
   - cython >=0.25.2
   - rmg::diffeqpy # only on rmg
   - ffmpeg
-  - rmg::gprof2dot # was previously RMG
+  - conda-forge::gprof2dot # was previously RMG
   - graphviz
   - h5py
   - jinja2
   - jupyter
-  - rmg::lpsolve55 # was previously RMG, must be rmg (?)
+  - conda-forge::lpsolve55 # was previously RMG
   - markupsafe
   - matplotlib >=1.5
-  - conda-forge::mopac # was previously RMG
+  - rmg::mopac # was previously RMG, must be RMG
   - mpmath
-  - rmg::muq2 # only on RMG
+  #  - rmg::muq2 # only on RMG
   - networkx
-  - nomkl
+  #  - nomkl
   - nose
   - conda-forge::numdifftools # was previously RMG, was recent
   - numpy >=1.10.0
@@ -39,7 +39,7 @@ dependencies:
   - rmg::pydqed >=1.0.1 # only on RMG
   - rmg::pyjulia # only RMG, internal
   - pymongo
-  - pyparsing
+  #  - pyparsing
   - rmg::pyrdl # only on RMG
   - rmg::pyrms # internal
   - python >=3.7
