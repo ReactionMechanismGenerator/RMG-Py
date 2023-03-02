@@ -637,6 +637,10 @@ ATOMTYPES['F1s'] = AtomType('F1s', generic=['R', 'R!H', 'F', 'Val7'], specific=[
                             single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[3], charge=[0])
 # examples for F1s: HF, [F], FO, CH3F, F2
 
+ATOMTYPES['Na'] = AtomType('Na', generic=['R', 'R!H', 'R!H!Val7'], specific=['Na+'])
+ATOMTYPES['Na+'] = AtomType('Na+', generic=['R', 'R!H', 'R!H!Val7'], specific=[],
+                            single=[0], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[0], charge=[+1])
+
 ATOMTYPES['X'].set_actions(increment_bond=['X'], decrement_bond=['X'], form_bond=['X'], break_bond=['X'], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
 ATOMTYPES['Xv'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Xo'], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
 ATOMTYPES['Xo'].set_actions(increment_bond=['Xo'], decrement_bond=['Xo'], form_bond=[], break_bond=['Xv'], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
