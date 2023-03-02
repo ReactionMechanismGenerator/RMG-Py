@@ -16,17 +16,21 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2
+      - name: Setup Mambaforge Python 3.7
+        uses: Setup Mambaforge Python 3.7
         with:
           environment-file: environment.yml
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
           python-version: 3.7
           activate-environment: rmg_env
+          use-mamba: true
       - name: Install sphinx
-        run: conda install -y sphinx
-      - name: Conda info
+        run: mamba install -y sphinx
+      - name: Mamba info
         run: |
-          conda info
-          conda list
+          mamba info
+          mamba list
       - name: Install and link Julia dependencies 
         run: |
           julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"))"
