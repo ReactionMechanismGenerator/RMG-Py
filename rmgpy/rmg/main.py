@@ -441,7 +441,8 @@ class RMG(util.Subject):
                 copy_species_constraints = copy.copy(self.species_constraints)
                 self.species_constraints = {}
                 for name,family in self.database.kinetics.families.items():
-                    if name not in self.kinetics_families.keys():
+                    # if we exclude a family in the input file, don't add rules from training
+                    if not self.kinetics_families[name]:
                         if self.kinetics_depositories:
                             if not family.auto_generated:
                                 family.add_rules_from_training(thermo_database=self.database.thermo)
