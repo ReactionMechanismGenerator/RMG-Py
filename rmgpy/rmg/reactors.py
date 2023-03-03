@@ -36,7 +36,7 @@ import sys
 import logging
 import itertools
 
-if __debug__:
+if __debug__ and sys.platform != 'darwin':
     try:
         from os.path import dirname, abspath, join, exists
         path_rms = dirname(dirname(dirname(abspath(__file__))))
