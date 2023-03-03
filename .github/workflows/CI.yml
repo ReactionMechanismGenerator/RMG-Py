@@ -8,9 +8,10 @@ on:
     types: [opened, synchronize, reopened, ready_for_review, review_requested]
 jobs:
   build-and-test-linux:
-    runs-on: ubuntu-latest
     strategy:
-      max-parallel: 5
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     env: # update this if needed to match a pull request on the RMG-database
       RMG_DATABASE_BRANCH: main
     defaults:
@@ -32,8 +33,8 @@ jobs:
       - name: mamba info
         run: |
           mamba info
-          mamba list  
-      - name: Install and link Julia dependencies 
+          mamba list
+      - name: Install and link Julia dependencies
         run: |
           julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"))"
           julia -e "using Pkg; Pkg.add(\"PyCall\"); Pkg.add(\"DifferentialEquations\")"
