@@ -34,10 +34,14 @@ jobs:
         run: |
           mamba info
           mamba list
-      - name: Install and link Julia dependencies
+      - name: Install RMS
         run: |
           julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"))"
+      - name: Install Pycall & DifferentialEquations
+        run: |
           julia -e "using Pkg; Pkg.add(\"PyCall\"); Pkg.add(\"DifferentialEquations\")"
+      - name: Install Julia in Python and Link
+        run: |
           python -c "import julia; julia.install()"
           ln -sfn $(which python-jl) $(which python)
       - name: Install MOPAC
