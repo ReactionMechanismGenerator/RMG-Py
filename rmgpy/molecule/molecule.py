@@ -1651,15 +1651,15 @@ class Molecule(Graph):
 
     def is_atom_in_cycle(self, atom):
         """
-        Return :data:`True` if `atom` is in one or more cycles in the structure,
-        and :data:`False` if not.
+        Return :data:``True`` if ``atom`` is in one or more cycles in the structure,
+        and :data:``False`` if not.
         """
         return self.is_vertex_in_cycle(atom)
 
     def is_bond_in_cycle(self, bond):
         """
-        Return :data:`True` if the bond between atoms `atom1` and `atom2`
-        is in one or more cycles in the graph, or :data:`False` if not.
+        Return :data:``True`` if the bond between atoms ``atom1`` and ``atom2``
+        is in one or more cycles in the graph, or :data:``False`` if not.
         """
         return self.is_edge_in_cycle(bond)
 
@@ -2039,7 +2039,7 @@ class Molecule(Graph):
         """
         Determine the number of internal rotors in the structure. Any single
         bond not in a cycle and between two atoms that also have other bonds
-        are considered to be internal rotors.
+        is considered to be a pivot of an internal rotor.
         """
         count = 0
         for atom1 in self.vertices:
