@@ -1431,7 +1431,7 @@ class Fragment(Graph):
         mol_repr.update()
         smiles_after = mol_repr.to_smiles()
         import re
-        smiles = re.sub('\[Si-3\]', '', smiles_after)
+        smiles = re.sub(r'\[Si-3\]', '', smiles_after)
 
         return smiles
 
