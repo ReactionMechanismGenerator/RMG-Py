@@ -214,7 +214,7 @@ class GaussianMol(QMMolecule, Gaussian):
         for the `attempt`.
         """
         molfile = self.get_mol_file_path_for_calculation(attempt)
-        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        atomline = re.compile(r'\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
 
         output = ['', self.geometry.unique_id_long, '']
         output.append("{charge}   {mult}".format(charge=0, mult=(self.molecule.get_radical_count() + 1)))
