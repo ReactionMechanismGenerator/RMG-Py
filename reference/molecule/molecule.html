@@ -234,7 +234,7 @@ This is purely dependent on representation and is unrelated to the actual aromat
 <span class="sig-name descname"><span class="pre">count_internal_rotors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#rmgpy.molecule.Molecule.count_internal_rotors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the number of internal rotors in the structure. Any single
 bond not in a cycle and between two atoms that also have other bonds
-are considered to be internal rotors.</p>
+is considered to be a pivot of an internal rotor.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -800,15 +800,15 @@ and this process may involve atom order change by default. Set <code class="docu
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.is_atom_in_cycle">
 <span class="sig-name descname"><span class="pre">is_atom_in_cycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Atom</span> <span class="pre">atom</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_atom_in_cycle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if <cite>atom</cite> is in one or more cycles in the structure,
-and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
+<dd><p>Return :data:<code class="docutils literal notranslate"><span class="pre">True</span></code> if <code class="docutils literal notranslate"><span class="pre">atom</span></code> is in one or more cycles in the structure,
+and :data:<code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.is_bond_in_cycle">
 <span class="sig-name descname"><span class="pre">is_bond_in_cycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Bond</span> <span class="pre">bond</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_bond_in_cycle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if the bond between atoms <cite>atom1</cite> and <cite>atom2</cite>
-is in one or more cycles in the graph, or <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
+<dd><p>Return :data:<code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond between atoms <code class="docutils literal notranslate"><span class="pre">atom1</span></code> and <code class="docutils literal notranslate"><span class="pre">atom2</span></code>
+is in one or more cycles in the graph, or :data:<code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="py method">
