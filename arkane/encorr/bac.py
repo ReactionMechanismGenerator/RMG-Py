@@ -409,7 +409,7 @@ class BAC:
             if symbol in self.bacs:
                 bac += count * self.bacs[symbol]
             else:
-                symbol_flipped = ''.join(re.findall('[a-zA-Z]+|[^a-zA-Z]+', symbol)[::-1])  # Check reversed symbol
+                symbol_flipped = ''.join(re.findall(r'[a-zA-Z]+|[^a-zA-Z]+', symbol)[::-1])  # Check reversed symbol
                 if symbol_flipped in self.bacs:
                     bac += count * self.bacs[symbol_flipped]
                 else:

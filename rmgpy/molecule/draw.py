@@ -1229,7 +1229,7 @@ class MoleculeDrawer(object):
             heavy_atom = symbol[0]
 
             # Split label by atoms
-            labels = re.findall('[A-Z][a-z]*[0-9]*', symbol)
+            labels = re.findall(r'[A-Z][a-z]*[0-9]*', symbol)
             if not heavy_first:
                 labels.reverse()
             if 'C' not in symbol and 'O' not in symbol and len(atoms) == 1:

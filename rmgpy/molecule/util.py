@@ -41,7 +41,7 @@ def get_element_count(obj):
     if isinstance(obj, str):
         assert 'InChI=1' in obj
         mf = obj.split('/')[1]
-        pieces = re.findall('[A-Z][^A-Z]*', mf)  # split on capital letters
+        pieces = re.findall(r'[A-Z][^A-Z]*', mf)  # split on capital letters
 
         for piece in pieces:
             match = re.match(r"([a-z]+)([0-9]*)", piece, re.I)

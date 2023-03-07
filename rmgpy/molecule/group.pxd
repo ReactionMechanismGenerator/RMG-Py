@@ -192,6 +192,8 @@ cdef class Group(Graph):
 
     cpdef bint is_aromatic_ring(self)
 
+    cpdef bint has_wildcards(self)
+
     cpdef bint standardize_atomtype(self)
 
     cpdef bint add_explicit_ligands(self)
