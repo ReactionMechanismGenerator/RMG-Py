@@ -656,6 +656,13 @@ class Fragment(Graph):
         result = Graph.is_subgraph_isomorphic(self.mol_repr, other, new_initial_map)
         return result
 
+    def is_atom_in_cycle(self, atom):
+        """
+        Return :data:`True` if `atom` is in one or more cycles in the structure,
+        and :data:`False` if not.
+        """
+        return self.is_vertex_in_cycle(atom)
+
     def assign_representative_molecule(self):
 
         # create a molecule from fragment.vertices.copy
