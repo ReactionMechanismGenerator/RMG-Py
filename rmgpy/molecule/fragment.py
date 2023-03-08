@@ -124,6 +124,7 @@ class CuttingLabel(Vertex):
         """
         return True
 
+
 class Fragment(Graph):
 
     def __init__(self,
@@ -988,6 +989,28 @@ class Fragment(Graph):
             if isinstance(vertex, Atom):
                 mass += vertex.element.mass
         return mass
+
+    def count_internal_rotors(self):
+        """
+        Determine the number of internal rotors in the structure. Any single
+        bond not in a cycle and between two atoms that also have other bonds
+        is considered to be a pivot of an internal rotor.
+        """
+        count = 0
+        for atom1 in self.vertices:
+            for atom2, bond in atom1.edges.items():
+                if (self.vertices.index(atom1) < self.vertices.index(atom2) and
+                        bond.is_single() and not self.is_bond_in_cycle(bond)):
+                    if len(atom1.edges) > 1 and len(atom2.edges) > 1:
+                        count += 1
+        return count
+
+    def is_bond_in_cycle(self, bond):
+        """
+        Return :data:``True`` if the bond between atoms ``atom1`` and ``atom2``
+        is in one or more cycles in the graph, or :data:``False`` if not.
+        """
+        return self.is_edge_in_cycle(bond)
 
     def calculate_cp0(self):
         """
