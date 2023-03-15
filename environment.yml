@@ -36,7 +36,7 @@ dependencies:
   - rmg::pydas >=1.0.2
   - pydot
   - rmg::pydqed >=1.0.1
-  - rmg::pyjulia
+  - conda-forge::pyjulia
   - pymongo
   - pyparsing
   - rmg::pyrdl
