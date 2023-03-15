@@ -1,11 +1,11 @@
 import os
 import unittest
 
-from rmgpy.species import Species
 from rmgpy.molecule import resonance
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.element import get_element
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
+from rmgpy.species import Species
 
 import rmgpy.molecule.fragment
 
@@ -867,3 +867,31 @@ class TestFragment(unittest.TestCase):
         rdmol,_ = fragment.to_rdkit_mol()
 
         self.assertEqual(rdmol.GetNumAtoms(), 8)
+
+    def test_is_in_cycle_ethane(self):
+        """
+        Test the Fragment is_atom_in_cycle() and is_bond_in_cycle() methods with ethane.
+        """
+        frag = rmgpy.molecule.fragment.Fragment(smiles='CC')
+        for atom in frag.atoms:
+            self.assertFalse(frag.is_atom_in_cycle(atom))
+        for atom1 in frag.atoms:
+            for atom2, bond in atom1.bonds.items():
+                self.assertFalse(frag.is_bond_in_cycle(bond))
+
+    def test_is_in_cycle_cyclohexane(self):
+        """
+        Test the Fragment is_atom_in_cycle() and is_bond_in_cycle() methods with ethane.
+        """
+        frag = rmgpy.molecule.fragment.Fragment(smiles='C1CCCCC1')
+        for atom in frag.atoms:
+            if atom.is_hydrogen():
+                self.assertFalse(frag.is_atom_in_cycle(atom))
+            elif atom.is_carbon():
+                self.assertTrue(frag.is_atom_in_cycle(atom))
+        for atom1 in frag.atoms:
+            for atom2, bond in atom1.bonds.items():
+                if atom1.is_carbon() and atom2.is_carbon():
+                    self.assertTrue(frag.is_bond_in_cycle(bond))
+                else:
+                    self.assertFalse(frag.is_bond_in_cycle(bond))
