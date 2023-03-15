@@ -340,7 +340,7 @@ class TestFragment(unittest.TestCase):
 
         self.assertFalse(fragment.is_subgraph_isomorphic(other, initial_map=initial_map))
 
-    def test_assign_representative_species(self):
+    def test_assign_representative_species_1(self):
 
         smiles_like = 'RCR'
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
@@ -350,6 +350,14 @@ class TestFragment(unittest.TestCase):
         expected_repr_spec = Species().from_smiles('C=CC(C)(CCCCCCCC(C)(C=C)C(C)C(C)C=CC)C(C)C(C)C=CC')
 
         self.assertTrue(expected_repr_spec.is_isomorphic(fragment.species_repr))
+
+    def test_assign_representative_species_2(self):
+
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCR')
+        fragment.assign_representative_species()
+
+        self.assertEqual(fragment.species_repr.symmetry_number, 3.0)
+        self.assertEqual(fragment.species_repr.smiles.count('C'), 14+2)
 
     def test_assign_representative_molecule(self):
 
@@ -852,14 +860,6 @@ class TestFragment(unittest.TestCase):
         ethane = Molecule().from_smiles('CC')
 
         self.assertTrue(mol_repr.is_isomorphic(ethane))
-
-    def test_assign_representative_species(self):
-
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCR')
-        fragment.assign_representative_species()
-
-        self.assertEqual(fragment.species_repr.symmetry_number, 3.0)
-        self.assertEqual(fragment.species_repr.smiles.count('C'), 14+2)
 
     def test_to_rdkit_mol(self):
 
