@@ -27,6 +27,7 @@ jobs:
           python-version: 3.7
           activate-environment: rmg_env
           use-mamba: true
+          log-level: debug
       - name: Install codecov
         run: mamba install -y -c conda-forge codecov
       - name: mamba info
