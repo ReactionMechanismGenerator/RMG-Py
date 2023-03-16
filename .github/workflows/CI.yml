@@ -18,9 +18,6 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@v1
-        with:
-          version: 1.8
       - name: Setup Mambaforge Python 3.7
         uses: conda-incubator/setup-miniconda@v2
         with:
