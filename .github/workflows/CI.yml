@@ -40,7 +40,7 @@ jobs:
           julia -e "using Pkg; Pkg.add(\"PyCall\"); Pkg.add(\"DifferentialEquations\")"
           python -c "import julia; julia.install()"
           ln -sfn $(which python-jl) $(which python)
-          python -c "from pyrms import rms"
+          python-jl -c "from pyrms import rms"
       - name: Install MOPAC
         env:
           MOPACKEY: ${{ secrets.MOPACKEY }}
