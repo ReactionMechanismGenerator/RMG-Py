@@ -1420,7 +1420,7 @@ multiplicity 2
 
     def test_is_in_cycle_ethane(self):
         """
-        Test the Molecule.isInCycle() method with ethane.
+        Test the Molecule is_atom_in_cycle() and is_bond_in_cycle() methods with ethane.
         """
         molecule = Molecule().from_smiles('CC')
         for atom in molecule.atoms:
@@ -1431,7 +1431,7 @@ multiplicity 2
 
     def test_is_in_cycle_cyclohexane(self):
         """
-        Test the Molecule.isInCycle() method with ethane.
+        Test the Molecule is_atom_in_cycle() and is_bond_in_cycle() methods with cyclohexane.
         """
         molecule = Molecule().from_inchi('InChI=1/C6H12/c1-2-4-6-5-3-1/h1-6H2')
         for atom in molecule.atoms:
