@@ -65,7 +65,8 @@ class ModelSettings(object):
     class for holding the parameters affecting an RMG run
     """
 
-    def __init__(self, tol_move_to_core=None, tol_move_edge_rxn_to_core=np.inf, tol_keep_in_edge=0.0,
+    def __init__(self, tol_move_to_core=None, tol_rad_move_to_core=np.inf,
+                 tol_move_edge_rxn_to_core=np.inf, tol_keep_in_edge=0.0,
                  tol_interrupt_simulation=1.0,
                  tol_move_edge_rxn_to_surface=np.inf, tol_move_surface_spc_to_core=np.inf,
                  tol_move_surface_rxn_to_core=np.inf,
@@ -80,6 +81,7 @@ class ModelSettings(object):
 
         self.tol_keep_in_edge = tol_keep_in_edge
         self.tol_move_to_core = tol_move_to_core
+        self.tol_rad_move_to_core = tol_rad_move_to_core
         self.tol_move_edge_rxn_to_core = tol_move_edge_rxn_to_core
         self.tol_interrupt_simulation = tol_interrupt_simulation
         self.maximum_edge_species = maximum_edge_species
