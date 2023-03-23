@@ -437,7 +437,7 @@ are set to a default value of 1e-6 and 1e-4 respectively unless the user specifi
 For running an initial job, it is recommended to only change the <code class="docutils literal notranslate"><span class="pre">toleranceMoveToCore</span></code> and <code class="docutils literal notranslate"><span class="pre">toleranceInterruptSimulation</span></code> values to an equivalent desired value.  We find
 that typically a value between <code class="docutils literal notranslate"><span class="pre">0.01</span></code> and <code class="docutils literal notranslate"><span class="pre">0.05</span></code> is best.  If your model cannot converge within a few hours, more advanced settings such as <a class="reference internal" href="#filterreactions"><span class="std std-ref">reaction filtering</span></a>
 or <a class="reference internal" href="#pruning"><span class="std std-ref">pruning</span></a> can be turned on to speed up your simulation at a slight risk of omitting chemistry.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>            <span class="n">model</span><span class="p">(</span>
     <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
     <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
 <span class="p">)</span>
@@ -447,18 +447,73 @@ or <a class="reference internal" href="#pruning"><span class="std std-ref">pruni
 <li><p><code class="docutils literal notranslate"><span class="pre">toleranceMoveToCore</span></code> indicates how high the edge flux ratio for a species must get to enter the core model. This tolerance is designed for controlling the accuracy of final model.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">toleranceInterruptSimulation</span></code> indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the <code class="docutils literal notranslate"><span class="pre">terminationConversion</span></code> or <code class="docutils literal notranslate"><span class="pre">terminationTime</span></code>).  This value should be set to be equal to <code class="docutils literal notranslate"><span class="pre">toleranceMoveToCore</span></code> unless the advanced <a class="reference internal" href="#pruning"><span class="std std-ref">pruning</span></a> feature is desired.</p></li>
 </ul>
+<section id="advanced-setting-branching-criterion">
+<span id="filterreactions"></span><h3><span class="section-number">4.7.1. </span>Advanced Setting:  Branching Criterion<a class="headerlink" href="#advanced-setting-branching-criterion" title="Permalink to this heading">¶</a></h3>
+<p>The flux criterion works very well for identifying new species that have high flux
+and therefore pathways that have high throughput flux. However, there are many important
+low flux pathways particularly those that result in net production of radicals such as chain branching reactions in combustion.
+Picking up these pathways with the flux criterion is difficult and almost always requires an appreciably lower
+flux tolerance that would otherwise be necessary causing RMG to pickup many unimportant species. The
+Branching criterion identifies important edge reactions based on the impact they are expected to
+have on the concentrations of core species. The branching specific tolerances shown in the example below
+are the recommended tolerances. These tolerances are much less system dependent than the flux tolerance and
+the recommended values are usually sufficient.</p>
+<p>For example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
+                <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                <span class="n">toleranceBranchReactionToCore</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+          <span class="n">branchingIndex</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+          <span class="n">branchingRatioMax</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-setting-radical-flux-criterion-rms-reactors-only">
+<h3><span class="section-number">4.7.2. </span>Advanced Setting:  Radical Flux Criterion (RMS Reactors Only)<a class="headerlink" href="#advanced-setting-radical-flux-criterion-rms-reactors-only" title="Permalink to this heading">¶</a></h3>
+<p>At high radical concentrations important products can accumulate from termination reactions. In these cases
+the flux and branching criteria can have difficulty adding in all of the important throughput terminations.
+For this case we have added a radical specific flux criterion. This criterion is similar to the flux criterion except
+that it looks at the net radical flux produced by each edge reaction instead of the total flux to each edge species.</p>
+<p>For example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
+                <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                <span class="n">toleranceRadMoveToCore</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-setting-transitory-edge-analysis-rms-reactors-only">
+<h3><span class="section-number">4.7.3. </span>Advanced Setting:  Transitory Edge Analysis (RMS Reactors Only)<a class="headerlink" href="#advanced-setting-transitory-edge-analysis-rms-reactors-only" title="Permalink to this heading">¶</a></h3>
+<p>Suppose you are interested in the chemistry of a particular chemical species in your system. If
+that species is not high flux or participates in important branching reactions it may not be resolved accurately
+with the flux and branching criteria. Transitory edge analysis applies transitory sensitivity analysis to the edge of the mechanism to
+generate much more sophisticated information than the flux and branching algorithms can provide. This can be used to identify how edge reactions
+are likely to affect the concentrations of non-participant core species. By applying this analysis to a given target species
+we can add all edge reactions that the target species is sensitive to above a given tolerance. This criterion is highly effective, but
+it can also be very computationally expensive for models with large edges. One can reduce the computational cost
+by increasing the <cite>transitoryStepPeriod</cite>, which is the number of solver time steps RMG takes between transitory edge analyses.
+how</p>
+<p>For example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
+                <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                <span class="n">toleranceTransitoryDict</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;NO&quot;</span><span class="p">:</span><span class="mf">0.2</span><span class="p">},</span>
+                <span class="n">transitoryStepPeriod</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <section id="advanced-setting-speed-up-by-filtering-reactions">
-<span id="filterreactions"></span><h3><span class="section-number">4.7.1. </span>Advanced Setting: Speed Up by Filtering Reactions<a class="headerlink" href="#advanced-setting-speed-up-by-filtering-reactions" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">4.7.4. </span>Advanced Setting: Speed Up By Filtering Reactions<a class="headerlink" href="#advanced-setting-speed-up-by-filtering-reactions" title="Permalink to this heading">¶</a></h3>
 <p>For generating models for larger molecules, RMG-Py may have trouble converging because it must find reactions on the order of
 <span class="math notranslate nohighlight">\((n_{reaction\: sites})^{{n_{species}}}\)</span>.  Thus it can be further sped up by pre-filtering reactions that are
 added to the model.  This modification to the algorithm does not react core species together
 until their concentrations are deemed high enough.  It is recommended to turn on this flag when
 the model does not converge with normal parameter settings.  See <a class="reference internal" href="../../theory/rmg/enlarger.html#filterreactionstheory"><span class="std std-ref">Filtering Reactions within the Flux-based Algorithm</span></a>. for more details.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
-    <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-    <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-    <span class="n">filterReactions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">filterThreshold</span><span class="o">=</span><span class="mf">5e8</span><span class="p">,</span>
+          <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+          <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+          <span class="n">filterReactions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+          <span class="n">filterThreshold</span><span class="o">=</span><span class="mf">5e8</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -469,7 +524,7 @@ the model does not converge with normal parameter settings.  See <a class="refer
 </ul>
 </section>
 <section id="advanced-setting-speed-up-by-pruning">
-<span id="pruning"></span><h3><span class="section-number">4.7.2. </span>Advanced Setting: Speed Up by Pruning<a class="headerlink" href="#advanced-setting-speed-up-by-pruning" title="Permalink to this heading">¶</a></h3>
+<span id="pruning"></span><h3><span class="section-number">4.7.5. </span>Advanced Setting: Speed Up by Pruning<a class="headerlink" href="#advanced-setting-speed-up-by-pruning" title="Permalink to this heading">¶</a></h3>
 <p>For further speed-up, it is also possible to perform mechanism generation with pruning of “unimportant” edge species to reduce memory usage.</p>
 <p>A typical set of parameters for pruning is:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
@@ -513,7 +568,7 @@ Because the ODE simulation is always interrupted, no pruning is performed.</p>
 <p>Please find more details about the theory behind pruning at <a class="reference internal" href="../../theory/rmg/prune.html#prune"><span class="std std-ref">Pruning Theory</span></a>.</p>
 </section>
 <section id="advanced-setting-thermodynamic-pruning">
-<h3><span class="section-number">4.7.3. </span>Advanced Setting: Thermodynamic Pruning<a class="headerlink" href="#advanced-setting-thermodynamic-pruning" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">4.7.6. </span>Advanced Setting: Thermodynamic Pruning<a class="headerlink" href="#advanced-setting-thermodynamic-pruning" title="Permalink to this heading">¶</a></h3>
 <p>Thermodynamic pruning is an alternative to flux pruning that does not require a given
 simulation to complete to remove excess species.  The thermodynamic criteria is
 calculated by determining the minimum and maximum Gibbs energies of formation (Gmin and Gmax)
@@ -543,7 +598,7 @@ Will always maintain the correct <code class="docutils literal notranslate"><spa
 this is more likely to kick out species RMG might otherwise have added to core.</p>
 </section>
 <section id="advanced-setting-taking-multiple-species-at-a-time">
-<h3><span class="section-number">4.7.4. </span>Advanced Setting: Taking Multiple Species At A Time<a class="headerlink" href="#advanced-setting-taking-multiple-species-at-a-time" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">4.7.7. </span>Advanced Setting: Taking Multiple Species At A Time<a class="headerlink" href="#advanced-setting-taking-multiple-species-at-a-time" title="Permalink to this heading">¶</a></h3>
 <p>Taking multiple objects (species, reactions or pdepNetworks) during a given simulation can often decrease your overall model generation time
 over only taking one.  For this purpose there is a <code class="docutils literal notranslate"><span class="pre">maxNumObjsPerIter</span></code> parameter that allows RMG to take
 that many species, reactions or pdepNetworks from a given simulation. This is done in the order they trigger their respective criteria.</p>
@@ -564,62 +619,9 @@ affect flux pruning.</p>
 <p>Note that this can also result in larger models, however, sometimes these larger models (from taking more than one
 object at a time) pick up chemistry that would otherwise have been missed.</p>
 </section>
-<section id="advanced-setting-dynamics-criterion">
-<span id="ontheflyquantumcalculations"></span><h3><span class="section-number">4.7.5. </span>Advanced Setting:  Dynamics Criterion<a class="headerlink" href="#advanced-setting-dynamics-criterion" title="Permalink to this heading">¶</a></h3>
-<p>While the flux criterion works very well for identifying new species that have high flux
-and therefore will likely be high throughput or high concentration species,
-it provides few automatic guarantees about how well a given model will accurately represent
-the concentrations of the involved species.  The dynamics criterion is more complex
-than the flux criterion, but in general it is a measure of how much impact a given
-reaction will have on the concentrations of core species.  A more detailed explanation
-is available in the theory section: <a class="reference internal" href="../../theory/rmg/dynamics.html#dynamics"><span class="std std-ref">Dynamics Criterion</span></a>.</p>
-<p>Reasonable values for the dynamics criterion range typically between 2-30.</p>
-<p>For example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
-        <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-        <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-        <span class="n">toleranceMoveEdgeReactionToCore</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
-        <span class="n">toleranceMoveEdgeReactionToCoreInterrupt</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p>Note that it is highly recommended to use the dynamics criterion only alongside the flux
-criterion and not by itself.</p>
-</section>
-<section id="advanced-setting-surface-algorithm">
-<h3><span class="section-number">4.7.6. </span>Advanced Setting:  Surface Algorithm<a class="headerlink" href="#advanced-setting-surface-algorithm" title="Permalink to this heading">¶</a></h3>
-<p>One common issue with the dynamics criterion is that it treats all core species equally
-as discussed in our theory section: <a class="reference internal" href="../../theory/rmg/dynamics.html#dynamics"><span class="std std-ref">Dynamics Criterion</span></a>.  Because of this, if the dynamics
-criterion is set too low it enters a feedback loop where it adds species and then
-since it can’t get those species’ concentrations right it adds more species and so on.
-In order to avoid this feedback loop the surface algorithm was developed.  It creates
-a new partition called the <em>surface</em> that is considered part of the core.  We will
-refer to the part of the core that is not part of the surface as the <em>bulk core</em>.  When
-operating without the dynamics criterion everything moves from edge to the bulk core as usual;
-however the dynamics criterion is managed differently.  When using the surface algorithm most
-reactions pulled in by the dynamics criterion enter the surface instead of the bulk core.
-However, unlike movement to bulk core a constraint is placed on movement to the surface.
-Any reaction moved to the surface must have either both reactants or both products
-in the bulk core.  This prevents the dynamics criterion from pulling in reactions
-to get the concentrations of species in the surface right avoiding the feedback loop.
-To avoid important species being trapped in the surface we also add criteria
-for movement from surface to bulk core based on flux or dynamics criterion.</p>
-<p>For example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
-        <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-        <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-        <span class="n">toleranceMoveEdgeReactionToCore</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span>
-        <span class="n">toleranceMoveEdgeReactionToCoreInterrupt</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
-        <span class="n">toleranceMoveEdgeReactionToSurface</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
-        <span class="n">toleranceMoveSurfaceSpeciesToCore</span><span class="o">=</span><span class="mf">.01</span><span class="p">,</span>
-        <span class="n">toleranceMoveSurfaceReactionToCore</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</section>
 </section>
 <section id="on-the-fly-quantum-calculations">
-<h2><span class="section-number">4.8. </span>On the fly Quantum Calculations<a class="headerlink" href="#on-the-fly-quantum-calculations" title="Permalink to this heading">¶</a></h2>
+<span id="ontheflyquantumcalculations"></span><h2><span class="section-number">4.8. </span>On the fly Quantum Calculations<a class="headerlink" href="#on-the-fly-quantum-calculations" title="Permalink to this heading">¶</a></h2>
 <p>This block is used when quantum mechanical calculations are desired to determine thermodynamic parameters.
 These calculations are only run if the molecule is not included in a specified thermo library.
 The <code class="docutils literal notranslate"><span class="pre">onlyCyclics</span></code> option, if <code class="docutils literal notranslate"><span class="pre">True</span></code>, only runs these calculations for cyclic species.
@@ -1042,12 +1044,13 @@ This can be done by setting <code class="docutils literal notranslate"><span cla
 </li>
 <li><a class="reference internal" href="#simulator-tolerances">4.6. Simulator Tolerances</a></li>
 <li><a class="reference internal" href="#model-tolerances">4.7. Model Tolerances</a><ul>
-<li><a class="reference internal" href="#advanced-setting-speed-up-by-filtering-reactions">4.7.1. Advanced Setting: Speed Up by Filtering Reactions</a></li>
-<li><a class="reference internal" href="#advanced-setting-speed-up-by-pruning">4.7.2. Advanced Setting: Speed Up by Pruning</a></li>
-<li><a class="reference internal" href="#advanced-setting-thermodynamic-pruning">4.7.3. Advanced Setting: Thermodynamic Pruning</a></li>
-<li><a class="reference internal" href="#advanced-setting-taking-multiple-species-at-a-time">4.7.4. Advanced Setting: Taking Multiple Species At A Time</a></li>
-<li><a class="reference internal" href="#advanced-setting-dynamics-criterion">4.7.5. Advanced Setting:  Dynamics Criterion</a></li>
-<li><a class="reference internal" href="#advanced-setting-surface-algorithm">4.7.6. Advanced Setting:  Surface Algorithm</a></li>
+<li><a class="reference internal" href="#advanced-setting-branching-criterion">4.7.1. Advanced Setting:  Branching Criterion</a></li>
+<li><a class="reference internal" href="#advanced-setting-radical-flux-criterion-rms-reactors-only">4.7.2. Advanced Setting:  Radical Flux Criterion (RMS Reactors Only)</a></li>
+<li><a class="reference internal" href="#advanced-setting-transitory-edge-analysis-rms-reactors-only">4.7.3. Advanced Setting:  Transitory Edge Analysis (RMS Reactors Only)</a></li>
+<li><a class="reference internal" href="#advanced-setting-speed-up-by-filtering-reactions">4.7.4. Advanced Setting: Speed Up By Filtering Reactions</a></li>
+<li><a class="reference internal" href="#advanced-setting-speed-up-by-pruning">4.7.5. Advanced Setting: Speed Up by Pruning</a></li>
+<li><a class="reference internal" href="#advanced-setting-thermodynamic-pruning">4.7.6. Advanced Setting: Thermodynamic Pruning</a></li>
+<li><a class="reference internal" href="#advanced-setting-taking-multiple-species-at-a-time">4.7.7. Advanced Setting: Taking Multiple Species At A Time</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#on-the-fly-quantum-calculations">4.8. On the fly Quantum Calculations</a></li>
