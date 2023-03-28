@@ -596,11 +596,11 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
                 kLA = rms.TemperatureDependentLiquidVolumetricMassTransferCoefficient(Ts=obj.liquid_volumetric_mass_transfer_coefficient_data.Ts,kLAs=obj.liquid_volumetric_mass_transfer_coefficient_data.kLAs)
             else:
                 kLA = rms.EmptyLiquidVolumetricMassTransferCoefficient()
-            return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, diff, rad, obj.molecule[0].multiplicity-1, obj.molecular_weight.value_si, kH, kLA)
+            return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, diff, rad, obj.molecule[0].multiplicity-1, obj.molecular_weight.value_si, kH, kLA, obj.thermo.comment)
         else:
             th = obj.get_thermo_data()
             thermo = to_rms(th)
-            return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, rms.EmptyDiffusivity(), 0.0, obj.molecule[0].multiplicity-1, 0.0, rms.EmptyHenryLawConstant(), rms.EmptyLiquidVolumetricMassTransferCoefficient())
+            return rms.Species(obj.label, obj.index, "", "", "", thermo, atomnums, bondnum, rms.EmptyDiffusivity(), 0.0, obj.molecule[0].multiplicity-1, 0.0, rms.EmptyHenryLawConstant(), rms.EmptyLiquidVolumetricMassTransferCoefficient(), obj.thermo.comment)
     elif isinstance(obj, Reaction):
         reactantinds = [species_names.index(spc.label) for spc in obj.reactants]
         productinds = [species_names.index(spc.label) for spc in obj.products]
@@ -609,7 +609,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         kinetics = to_rms(obj.kinetics, species_names=species_names, rms_species_list=rms_species_list, rmg_species=rmg_species)
         radchange = sum([spc.molecule[0].multiplicity-1 for spc in obj.products]) - sum([spc.molecule[0].multiplicity-1 for spc in obj.reactants])
         electronchange = 0 #for now
-        return rms.ElementaryReaction(obj.index, reactants, reactantinds, products, productinds, kinetics, electronchange, radchange, obj.reversible, [])
+        return rms.ElementaryReaction(obj.index, reactants, reactantinds, products, productinds, kinetics, electronchange, radchange, obj.reversible, [], obj.kinetics.comment)
     elif isinstance(obj, SolventData):
         return rms.Solvent("solvent", rms.RiedelViscosity(float(obj.A), float(obj.B), float(obj.C), float(obj.D), float(obj.E)))
     elif isinstance(obj, TerminationTime):
