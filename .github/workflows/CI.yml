@@ -1,6 +1,9 @@
 name: Constant Integration
 
 on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: "0 8 * * *"
   push:
   pull_request:
     branches:
@@ -78,18 +81,10 @@ jobs:
         if: ${{ success() || failure() }} # Run even if the functional tests failed (but not if they were cancelled)
         run: make test-database
 
-      # Retrieve Stable Results for reference
-      - name: Retrieve Stable Regression Results
-        run: |
-          echo "Jackson, implement this."
-          # should result in a set of folders, each of which has the stable result for that example/test
-
-      # Regression Testing
+      # Regression Testing - Test Execution
       - name: Regression Tests
         run: |
           timeout 600 python-jl rmg.py test/regression/aromatics/input.py
-          # python-jl scripts/checkModels.py test/regression/aromatics $benchmark_model/chemkin/chem_annotated.inp $benchmark_model/chemkin/species_dictionary.txt $testing_model/chemkin/chem_annotated.inp $testing_model/chemkin/species_dictionary.txt
-          # aromatics_status=$?
           # ./run.sh test/regression/nitrogen
           # nitrogen_status=$?
           # ./run.sh test/regression/sulfur
@@ -115,6 +110,31 @@ jobs:
           #   echo "Failed regression tests (non-zero exit code from regression test)"
           #   exit 1
           # fi
+
+      # Upload Regression Results if Scheduled
+      - name: Upload Stable Regression Testing Results
+        if: ${{ github.event_name == 'schedule' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: stable-regression-results
+          path: |
+            test/regression/aromatics/chemkin/
+            # test/regression/sulfur/chemkin
+
+      # Retrieve Stable Results for reference
+      - name: Retrieve Stable Regression Results
+        if: ${{ github.event_name != 'schedule' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: stable-regression-results
+          path: stable-results
+          # should result in a set of folders, each of which has the stable result for that example/test
+
+      # Regression Testing - Actual Comparisons
+      - name: Regression Tests - Compare to Baseline
+        if: ${{ github.event_name != 'schedule' }}
+        run: |
+          python-jl scripts/checkModels.py test/regression/aromatics $benchmark_model/chemkin/chem_annotated.inp $benchmark_model/chemkin/species_dictionary.txt $testing_model/chemkin/chem_annotated.inp $testing_model/chemkin/species_dictionary.txt
 
       # Install and Call codecov only if ALL the tests were successful
       - name: Code coverage install and run
