@@ -44,35 +44,37 @@ jobs:
           mamba info
           mamba list
 
-      # Clone the other needed repositories, make RMG
+      # Clone the other needed repositories
       - name: Install and Compile RMG
         run: |
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
           cd RMG-Py
           git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
-          make
+          RUNNER_CWD=$(pwd)
+          export PYTHONPATH=$RUNNER_CWD/RMG-Py/:$PYTHONPATH
+          export PATH=$RUNNER_CWD/RMG-Py/:$PATH
 
       # RMG installation and linking to Julia
       - name: Install and link Julia dependencies
         run: |
-          julia -e "using Pkg; Pkg.add(\"PyCall\"); using PyCall; Pkg.add(\"DifferentialEquations\")"
-          RMS_INSTALL="using Pkg;\
-           Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"));\
-           using ReactionMechanismSimulator"
-          julia -e "$RMS_INSTALL"
-          python -c "import julia; julia.install()"
+          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator'
           ln -sfn $(which python-jl) $(which python)
 
-      # Attempt to install MOPAC
-      - name: Install MOPAC
-        env:
-          MOPACKEY: ${{ secrets.MOPACKEY }}
-        timeout-minutes: 1
-        continue-on-error: true # allowed to fail on pull request from a forked repository
-        run: |
-          set +o pipefail
-          yes 'Yes' | ${CONDA_PREFIX}/bin/mopac "$MOPACKEY"
+      # actual RMG build step
+      - name: make RMG
+        run: make
+
+      # # Attempt to install MOPAC
+      # - name: Install MOPAC
+      #   env:
+      #     MOPACKEY: ${{ secrets.MOPACKEY }}
+      #   timeout-minutes: 1
+      #   continue-on-error: true # allowed to fail on pull request from a forked repository
+      #   run: |
+      #     set +o pipefail
+      #     yes 'Yes' | ${CONDA_PREFIX}/bin/mopac "$MOPACKEY"
 
       # non-regression testing
       - name: Unit tests
