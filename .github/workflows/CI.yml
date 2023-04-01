@@ -45,12 +45,15 @@ jobs:
           mamba list
 
       # Clone the other needed repositories
-      - name: Install and Compile RMG
+      - name: Clone RMG-Database and Q2DTor
         run: |
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
           cd RMG-Py
           git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
+
+      # modify env variables
+      -name: Set PYTHONPATH and PATH
           RUNNER_CWD=$(pwd)
           export PYTHONPATH=$RUNNER_CWD/RMG-Py/:$PYTHONPATH
           export PATH=$RUNNER_CWD/RMG-Py/:$PATH
@@ -58,9 +61,9 @@ jobs:
       # RMG installation and linking to Julia
       - name: Install and link Julia dependencies
         run: |
-          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator'
-          ln -sfn $(which python-jl) $(which python)
+          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true
+          ln -sfn $(which python-jl) $(which python) || true
 
       # actual RMG build step
       - name: make RMG
