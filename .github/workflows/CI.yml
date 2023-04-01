@@ -44,6 +44,15 @@ jobs:
           mamba info
           mamba list
 
+      # Clone the other needed repositories, make RMG
+      - name: Install and Compile RMG
+        run: |
+          cd ..
+          git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
+          cd RMG-Py
+          git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
+          make
+
       # RMG installation and linking to Julia
       - name: Install and link Julia dependencies
         run: |
@@ -64,15 +73,6 @@ jobs:
         run: |
           set +o pipefail
           yes 'Yes' | ${CONDA_PREFIX}/bin/mopac "$MOPACKEY"
-
-      # Clone the other needed repositories
-      - name: Install and Compile RMG
-        run: |
-          cd ..
-          git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
-          cd RMG-Py
-          git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
-          make
 
       # non-regression testing
       - name: Unit tests
