@@ -53,7 +53,8 @@ jobs:
           git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
 
       # modify env variables
-      -name: Set PYTHONPATH and PATH
+      - name: Set PYTHONPATH and PATH
+        run: |
           RUNNER_CWD=$(pwd)
           export PYTHONPATH=$RUNNER_CWD/RMG-Py/:$PYTHONPATH
           export PATH=$RUNNER_CWD/RMG-Py/:$PATH
