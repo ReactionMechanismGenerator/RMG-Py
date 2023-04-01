@@ -47,7 +47,10 @@ jobs:
       # RMG installation and linking to Julia
       - name: Install and link Julia dependencies
         run: |
-          julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"))"
+          RMS_INSTALL="using Pkg;\
+           Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"));\
+           using ReactionMechanismSimulator"
+          julia -e "$RMS_INSTALL"
           julia -e "using Pkg; Pkg.add(\"PyCall\"); Pkg.add(\"DifferentialEquations\")"
           python -c "import julia; julia.install()"
           ln -sfn $(which python-jl) $(which python)
@@ -82,7 +85,7 @@ jobs:
         run: make test-database
 
       # Regression Testing - Test Execution
-      - name: Regression Tests
+      - name: Regression Tests - Execution
         run: |
           timeout 600 python-jl rmg.py test/regression/aromatics/input.py
           # ./run.sh test/regression/nitrogen
