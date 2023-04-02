@@ -56,8 +56,8 @@ jobs:
       - name: Set PYTHONPATH and PATH
         run: |
           RUNNER_CWD=$(pwd)
-          export PYTHONPATH=$RUNNER_CWD/RMG-Py/:$PYTHONPATH
-          export PATH=$RUNNER_CWD/RMG-Py/:$PATH
+          echo "PYTHONPATH=$RUNNER_CWD/RMG-Py" >> $GITHUB_ENV
+          echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
 
       # RMG installation and linking to Julia
       - name: Install and link Julia dependencies
