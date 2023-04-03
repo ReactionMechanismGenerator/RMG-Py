@@ -57,10 +57,12 @@ jobs:
         run: make
 
       # modify env variables
-      - name: Set PYTHONPATH and PATH
+      - name: Set PYTHONPATH, PYTHON, and PATH
         run: |
           RUNNER_CWD=$(pwd)
+          CONDA_PYTHON_PATH=$(which python)
           echo "PYTHONPATH=$RUNNER_CWD/RMG-Py" >> $GITHUB_ENV
+          echo "PYTHON=$CONDA_PYTHON_PATH" >> $GITHUB_ENV
           echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
 
       # RMS installation and linking to Julia
