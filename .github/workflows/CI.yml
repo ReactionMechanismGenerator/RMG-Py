@@ -52,6 +52,10 @@ jobs:
           cd RMG-Py
           git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
 
+      # actual RMG build step
+      - name: make RMG
+        run: make
+
       # modify env variables
       - name: Set PYTHONPATH and PATH
         run: |
@@ -59,16 +63,13 @@ jobs:
           echo "PYTHONPATH=$RUNNER_CWD/RMG-Py" >> $GITHUB_ENV
           echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
 
-      # RMG installation and linking to Julia
+      # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
         run: |
-          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true
-          ln -sfn $(which python-jl) $(which python) || true
-
-      # actual RMG build step
-      - name: make RMG
-        run: make
+          julia -e 'using Pkg; Pkg.add("PyCall"); Pkg.build("PyCall")'
+          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator'
+          ln -sfn $(which python-jl) $(which python)
 
       # # Attempt to install MOPAC
       # - name: Install MOPAC
@@ -84,10 +85,8 @@ jobs:
       - name: Unit tests
         run: make test-unittests
       - name: Functional tests
-        if: ${{ success() || failure() }} # Run even if the unit tests failed (but not if they were cancelled)
         run: make test-functional
       - name: Database tests
-        if: ${{ success() || failure() }} # Run even if the functional tests failed (but not if they were cancelled)
         run: make test-database
 
       # Regression Testing - Test Execution
