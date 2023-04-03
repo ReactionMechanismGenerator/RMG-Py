@@ -57,6 +57,7 @@ jobs:
         run: |
           which python
           make
+          python -c "import rmgpy"
 
       # modify env variables
       - name: Set PYTHONPATH, PYTHON, and PATH
