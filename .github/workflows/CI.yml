@@ -71,6 +71,7 @@ jobs:
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
         run: |
+          python -c "import rmgpy"
           julia -e 'using Pkg; Pkg.add("PyCall"); Pkg.build("PyCall")'
           python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
           julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main"))'
