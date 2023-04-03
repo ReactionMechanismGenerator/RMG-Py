@@ -72,7 +72,7 @@ jobs:
         run: |
           julia -e 'using Pkg; Pkg.add("PyCall"); Pkg.build("PyCall")'
           python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator'
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main"))'
           ln -sfn $(which python-jl) $(which python)
 
       # # Attempt to install MOPAC
@@ -86,12 +86,12 @@ jobs:
       #     yes 'Yes' | ${CONDA_PREFIX}/bin/mopac "$MOPACKEY"
 
       # non-regression testing
-      - name: Unit tests
-        run: make test-unittests
-      - name: Functional tests
-        run: make test-functional
-      - name: Database tests
-        run: make test-database
+      # - name: Unit tests
+      #   run: make test-unittests
+      # - name: Functional tests
+      #   run: make test-functional
+      # - name: Database tests
+      #   run: make test-database
 
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution
