@@ -54,7 +54,9 @@ jobs:
 
       # actual RMG build step
       - name: make RMG
-        run: make
+        run: |
+          which python
+          make
 
       # modify env variables
       - name: Set PYTHONPATH, PYTHON, and PATH
