@@ -44,38 +44,33 @@ jobs:
           mamba info
           mamba list
 
-      # Clone the other needed repositories
-      - name: Clone RMG-Database and Q2DTor
+      # Clone the other needed repository
+      - name: Clone RMG-Database
         run: |
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
-          cd RMG-Py
-          git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
-
-      # actual RMG build step
-      - name: make RMG
-        run: |
-          which python
-          make
-          python -c "import rmgpy"
-
+          
       # modify env variables
       - name: Set PYTHONPATH, PYTHON, and PATH
         run: |
           RUNNER_CWD=$(pwd)
           CONDA_PYTHON_PATH=$(which python)
-          echo "PYTHONPATH=$RUNNER_CWD/RMG-Py" >> $GITHUB_ENV
           echo "PYTHON=$CONDA_PYTHON_PATH" >> $GITHUB_ENV
+          echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
           echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
         run: |
-          python -c "import rmgpy"
-          julia -e 'using Pkg; Pkg.add("PyCall"); Pkg.build("PyCall")'
           python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main"))'
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator'
           ln -sfn $(which python-jl) $(which python)
+
+      # actual RMG build step
+      - name: make RMG
+        run: |
+          make clean
+          make
 
       # # Attempt to install MOPAC
       # - name: Install MOPAC
@@ -88,12 +83,12 @@ jobs:
       #     yes 'Yes' | ${CONDA_PREFIX}/bin/mopac "$MOPACKEY"
 
       # non-regression testing
-      # - name: Unit tests
-      #   run: make test-unittests
-      # - name: Functional tests
-      #   run: make test-functional
-      # - name: Database tests
-      #   run: make test-database
+      - name: Unit tests
+        run: make test-unittests
+      - name: Functional tests
+        run: make test-functional
+      - name: Database tests
+        run: make test-database
 
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution
