@@ -62,7 +62,7 @@ jobs:
       - name: Install and link Julia dependencies
         run: |
           python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true # this step fails in the RMG-tests CI and then continues execution
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' # this step also fails in RMG tests
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true # this step also fails in RMG tests
           ln -sfn $(which python-jl) $(which python)
 
       # actual RMG build step
