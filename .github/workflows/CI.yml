@@ -55,15 +55,14 @@ jobs:
         run: |
           RUNNER_CWD=$(pwd)
           CONDA_PYTHON_PATH=$(which python)
-          echo "PYTHON=$CONDA_PYTHON_PATH" >> $GITHUB_ENV
           echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
           echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
         run: |
-          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator'
+          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true # this step fails in the RMG-tests CI and then continues execution
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' # this step also fails in RMG tests
           ln -sfn $(which python-jl) $(which python)
 
       # actual RMG build step
@@ -82,7 +81,7 @@ jobs:
       #     set +o pipefail
       #     yes 'Yes' | ${CONDA_PREFIX}/bin/mopac "$MOPACKEY"
 
-      # non-regression testing
+      # non-regression testing - could this be moved to a step before the Julia install? if we reorder to Julia install/RMG build?
       - name: Unit tests
         run: make test-unittests
       - name: Functional tests
