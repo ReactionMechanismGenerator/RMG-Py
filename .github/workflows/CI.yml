@@ -101,7 +101,8 @@ jobs:
 
       # Upload Regression Results if Scheduled
       - name: Upload Stable Regression Testing Results
-        # if: ${{ github.event_name == 'schedule' }} -> uncomment this after complete
+        # upload the results for scheduled CI and pushes to main
+        # if: ${{ github.event_name == 'schedule' || github.ref == 'refs/heads/main' }} -> uncomment this after complete
         uses: actions/upload-artifact@v3
         with:
           name: stable-regression-results
@@ -120,10 +121,9 @@ jobs:
       #     workflow: CI.yml
       #     workflow_conclusion: success
       #     branch: main
-      #     event: scheduled
       #     name: stable-regression-results
       #     path: stable-results
-      #     search_artifacts: true
+      #     search_artifacts: true  # retrieves the last run result, either scheduled daily or on push to main
 
       # placeholder until the above is merged into main
       - name: Retrieve Stable Regression Results
@@ -167,11 +167,14 @@ jobs:
               test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
               test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt
 
-            # Check for Regression between Reference and New
-            python-jl /rmgpy/tools/regression.py \
-              test/regression/"$regr_test"/regression_input.py \
-              $REFERENCE \
-              test/regression/"$regr_test"/chemkin
+            # Check for Regression between Reference and New (skip superminimal)
+            if [ -f test/regression/"$regr_test"/regression_input.py ];
+            then
+              python-jl /rmgpy/tools/regression.py \
+                test/regression/"$regr_test"/regression_input.py \
+                $REFERENCE \
+                test/regression/"$regr_test"/chemkin
+            fi
           done
       # Install and Call codecov only if ALL the tests were successful
       - name: Code coverage install and run
