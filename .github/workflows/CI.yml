@@ -8,7 +8,6 @@ on:
 
 env:
   SKIP_TESTS: True
-  REGRESSION_TESTS: ('aromatics') #'liquid_oxidation' 'nitrogen' 'oxidation' 'sulfur' 'superminimal' 'eg1')
 
 # this prevents one PR from simultaneously running multiple runners, which will clog up the queue
 # and prevent other PRs from running the CI
@@ -95,7 +94,7 @@ jobs:
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution
         run: |
-          for regr_test in REGRESSION_TESTS
+          for regr_test in aromatics; #liquid_oxidation nitrogen oxidation sulfur superminimal eg1
           do
             timeout 600 python-jl rmg.py test/regression/"$regr_test"/input.py
           done
@@ -125,7 +124,7 @@ jobs:
         env:
           REFERENCE: stable-results
         run: |
-          for regr_test in REGRESSION_TESTS
+          for regr_test in aromatics; #liquid_oxidation nitrogen oxidation sulfur superminimal eg1
           do
             # Memory Usage and Execution Time
             grep "checkModels" "$regr_test".log | cut -f2- -d'='
