@@ -27,8 +27,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # configures the mamba environment manager
-      - name: Setup Mambaforge Python 3.7
+      # configures the mamba environment manager and build the environment
+      - name: Setup mamba with Python 3.7 and Build Environment
         uses: conda-incubator/setup-miniconda@v2
         with:
           environment-file: environment.yml
@@ -50,44 +50,49 @@ jobs:
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
           
-      # modify env variables
-      - name: Set PYTHONPATH, PYTHON, and PATH
+      # modify env variables as directed in the RMG installation instructions
+      - name: Set PYTHONPATH and PATH
         run: |
           RUNNER_CWD=$(pwd)
-          CONDA_PYTHON_PATH=$(which python)
           echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
           echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
 
-      # RMS installation and linking to Julia
-      - name: Install and link Julia dependencies
-        run: |
-          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true # this step fails in the RMG-tests CI and then continues execution
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true # this step also fails in RMG tests
-          ln -sfn $(which python-jl) $(which python)
-
-      # actual RMG build step
+      # RMG build step
       - name: make RMG
         run: |
           make clean
           make
 
-      # # Attempt to install MOPAC
-      # - name: Install MOPAC
-      #   env:
-      #     MOPACKEY: ${{ secrets.MOPACKEY }}
-      #   timeout-minutes: 1
-      #   continue-on-error: true # allowed to fail on pull request from a forked repository
-      #   run: |
-      #     set +o pipefail
-      #     yes 'Yes' | ${CONDA_PREFIX}/bin/mopac "$MOPACKEY"
-
-      # non-regression testing - could this be moved to a step before the Julia install? if we reorder to Julia install/RMG build?
+      # non-regression testing - does not need the Julia install working, get these fast
       - name: Unit tests
         run: make test-unittests
       - name: Functional tests
         run: make test-functional
       - name: Database tests
         run: make test-database
+
+      # RMS installation and linking to Julia
+      - name: Install and link Julia dependencies
+        run: |
+        # Allow these installs to 'fail' (as they do in RMG-Tests) with the command || True trick
+          python -c "import julia;\
+           julia.install();\
+           import diffeqpy;\
+           diffeqpy.install()" || true
+          julia -e 'using Pkg;\
+           Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main"));\
+            using ReactionMechanismSimulator' || true 
+          ln -sfn $(which python-jl) $(which python)
+
+      # Attempt to install MOPAC
+      - name: Install MOPAC
+        env:
+          MOPACKEY: ${{ secrets.MOPACKEY }}
+        timeout-minutes: 1
+        continue-on-error: true # allowed to fail on pull request from a forked repository
+        run: |
+          set +o pipefail
+          yes 'Yes' | ${CONDA_PREFIX}/bin/mopac "$MOPACKEY"
 
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution
@@ -121,7 +126,7 @@ jobs:
 
       # Upload Regression Results if Scheduled
       - name: Upload Stable Regression Testing Results
-        if: ${{ github.event_name == 'schedule' }}
+        # if: ${{ github.event_name == 'schedule' }} - temporarily comment this out to force a testing upload
         uses: actions/upload-artifact@v3
         with:
           name: stable-regression-results
@@ -141,8 +146,15 @@ jobs:
       # Regression Testing - Actual Comparisons
       - name: Regression Tests - Compare to Baseline
         if: ${{ github.event_name != 'schedule' }}
+        env:
+          REFERENCE: stable-results
         run: |
-          python-jl scripts/checkModels.py test/regression/aromatics $benchmark_model/chemkin/chem_annotated.inp $benchmark_model/chemkin/species_dictionary.txt $testing_model/chemkin/chem_annotated.inp $testing_model/chemkin/species_dictionary.txt
+          python-jl scripts/checkModels.py \
+          test/regression/aromatics \
+          $REFERENCE/chem_annotated.inp \
+          $REFERENCE/species_dictionary.txt \
+          test/regression/aromatics/chemkin/chem_annotated.inp \
+          test/regression/aromatics/chemkin/species_dictionary.txt
 
       # Install and Call codecov only if ALL the tests were successful
       - name: Code coverage install and run
