@@ -110,8 +110,9 @@ jobs:
             # test/regression/sulfur/chemkin
 
       # Retrieve Stable Results for reference
+      # Will need to use this -> https://github.com/dawidd6/action-download-artifact
       - name: Retrieve Stable Regression Results
-        if: ${{ github.event_name != 'schedule' }}
+        # if: ${{ github.event_name != 'schedule' }} -> uncomment once the proper action step is in place
         uses: actions/download-artifact@v3
         with:
           name: stable-regression-results
