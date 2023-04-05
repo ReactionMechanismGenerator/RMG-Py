@@ -67,7 +67,7 @@ jobs:
       - name: Install and link Julia dependencies
         run: |
           python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true 
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="baba92ae5b85bdb53e919ca9b22c44380803f561")); using ReactionMechanismSimulator' || true 
           ln -sfn $(which python-jl) $(which python)
 
       # Attempt to install MOPAC
