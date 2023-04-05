@@ -58,24 +58,12 @@ decython:
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test-all:
-ifneq ($(OS),Windows_NT)
-	mkdir -p testing/coverage
-	rm -rf testing/coverage/*
-endif
 	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
 
 test test-unittests:
-ifneq ($(OS),Windows_NT)
-	mkdir -p testing/coverage
-	rm -rf testing/coverage/*
-endif
 	nosetests --nocapture --nologcapture --all-modules -A 'not functional' --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
 
 test-functional:
-ifneq ($(OS),Windows_NT)
-	mkdir -p testing/coverage
-	rm -rf testing/coverage/*
-endif
 	nosetests --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy arkane
 
 test-database:
@@ -87,6 +75,7 @@ eg0: all
 	cp examples/rmg/superminimal/input.py testing/eg0/input.py
 	@ echo "Running eg0: superminimal (H2 oxidation) example"
 	python rmg.py testing/eg0/input.py
+
 eg1: all
 	mkdir -p testing/eg1
 	rm -rf testing/eg1/*
@@ -96,6 +85,7 @@ eg1: all
 	coverage run rmg.py -p testing/eg1/input.py
 	coverage report
 	coverage html
+	
 eg2: all
 	mkdir -p testing/eg2
 	rm -rf testing/eg2/*
@@ -145,34 +135,9 @@ scoop: all
 	@ echo "Running minimal example with SCOOP"
 	python -m scoop -n 2 rmg.py -v testing/scoop/input.py
 
-######### 
-# Section for setting up MOPAC calculations on the Travis-CI.org server
-ifeq ($(TRAVIS),true)
-ifneq ($(TRAVIS_SECURE_ENV_VARS),true)
-SKIP_MOPAC=true
-endif
-endif
-mopac_travis:
-ifeq ($(TRAVIS),true)
-ifneq ($(TRAVIS_SECURE_ENV_VARS),true)
-	@echo "Don't have MOPAC licence key on this Travis build so can't test QM"
-else
-	@echo "Installing MOPAC key"
-	@yes Yes | mopac $(MOPACKEY)
-endif
-else
-	@#echo "Not in Travis build, no need to run this target"
-endif
-# End of MOPAC / TRAVIS stuff
-#######
-
-eg4: all mopac_travis
-ifeq ($(SKIP_MOPAC),true)
-	@echo "Skipping eg4 (without failing) because can't run MOPAC"
-else
+eg4: all
 	mkdir -p testing/eg4
 	rm -rf testing/eg4/*
 	cp examples/thermoEstimator/input.py testing/eg4/input.py
 	@ echo "Running thermo data estimator example. This tests QM."
 	python scripts/thermoEstimator.py testing/eg4/input.py
-endif
