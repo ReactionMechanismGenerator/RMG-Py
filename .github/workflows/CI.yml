@@ -109,10 +109,24 @@ jobs:
             test/regression/aromatics/chemkin/
             # test/regression/sulfur/chemkin
 
-      # Retrieve Stable Results for reference
-      # Will need to use this -> https://github.com/dawidd6/action-download-artifact
+      # # Retrieve Stable Results for reference
+      # # Will need to use this -> https://github.com/dawidd6/action-download-artifact
+      # - name: Retrieve Stable Regression Results
+      #   if: ${{ github.event_name != 'schedule' }}
+      #   uses: dawidd6/action-download-artifact@v2
+      #   with:
+      #   # this will search for the last scheduled execution of CI on main and download
+      #   # the stable regression results
+      #     workflow: CI.yml
+      #     workflow_conclusion: success
+      #     branch: main
+      #     event: scheduled
+      #     name: stable-regression-results
+      #     path: stable-results
+      #     search_artifacts: true
+
+      # placeholder until the above is merged into main
       - name: Retrieve Stable Regression Results
-        # if: ${{ github.event_name != 'schedule' }} -> uncomment once the proper action step is in place
         uses: actions/download-artifact@v3
         with:
           name: stable-regression-results
