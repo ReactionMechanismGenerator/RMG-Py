@@ -83,13 +83,13 @@ jobs:
 
       # non-regression testing
       - name: Unit tests
-        if: ${{ env.SKIP_TESTS != "True"}}
+        if: ${{ env.SKIP_TESTS != 'True' }}
         run: make test-unittests
       - name: Functional tests
-        if: ${{ env.SKIP_TESTS != "True"}}
+        if: ${{ env.SKIP_TESTS != 'True' }}
         run: make test-functional
       - name: Database tests
-        if: ${{ env.SKIP_TESTS != "True"}}
+        if: ${{ env.SKIP_TESTS != 'True' }}
         run: make test-database
 
       # Regression Testing - Test Execution
