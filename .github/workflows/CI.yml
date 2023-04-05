@@ -142,7 +142,6 @@ jobs:
           for regr_test in aromatics; #liquid_oxidation nitrogen oxidation sulfur superminimal eg1
           do
             # Memory Usage and Execution Time
-            grep "checkModels" "$regr_test".log | cut -f2- -d'='
             echo 'Execution time for Reference:'
             grep "Execution time" $REFERENCE/RMG.log | tail -1
             echo 'Execution time for Current:'
