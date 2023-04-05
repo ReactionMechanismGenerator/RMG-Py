@@ -5,10 +5,6 @@ on:
     # * is a special character in YAML so you have to quote this string
     - cron: "0 8 * * *"
   push:
-  pull_request:
-    branches:
-      - main
-    types: [opened, synchronize, reopened, ready_for_review, review_requested]
 
 # this prevents one PR from simultaneously running multiple runners, which will clog up the queue
 # and prevent other PRs from running the CI
@@ -63,25 +59,12 @@ jobs:
           make clean
           make
 
-      # non-regression testing - does not need the Julia install working, get these fast
-      - name: Unit tests
-        run: make test-unittests
-      - name: Functional tests
-        run: make test-functional
-      - name: Database tests
-        run: make test-database
-
       # RMS installation and linking to Julia
       # Allow these installs to 'fail' (as they do in RMG-Tests) with the command || True trick
       - name: Install and link Julia dependencies
         run: |
-          python -c "import julia; " \
-           "julia.install(); " \
-           "import diffeqpy; " \
-           "diffeqpy.install()" || true
-          julia -e 'using Pkg; ' \
-           'Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); ' \
-           'using ReactionMechanismSimulator' || true 
+          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true 
           ln -sfn $(which python-jl) $(which python)
 
       # Attempt to install MOPAC
@@ -93,6 +76,14 @@ jobs:
         run: |
           set +o pipefail
           yes 'Yes' | ${CONDA_PREFIX}/bin/mopac "$MOPACKEY"
+
+      # non-regression testing
+      - name: Unit tests
+        run: make test-unittests
+      - name: Functional tests
+        run: make test-functional
+      - name: Database tests
+        run: make test-database
 
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution
