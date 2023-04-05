@@ -85,7 +85,6 @@ eg1: all
 	coverage run rmg.py -p testing/eg1/input.py
 	coverage report
 	coverage html
-	
 eg2: all
 	mkdir -p testing/eg2
 	rm -rf testing/eg2/*

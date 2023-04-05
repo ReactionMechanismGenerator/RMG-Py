@@ -72,16 +72,16 @@ jobs:
         run: make test-database
 
       # RMS installation and linking to Julia
+      # Allow these installs to 'fail' (as they do in RMG-Tests) with the command || True trick
       - name: Install and link Julia dependencies
         run: |
-        # Allow these installs to 'fail' (as they do in RMG-Tests) with the command || True trick
-          python -c "import julia;\
-           julia.install();\
-           import diffeqpy;\
-           diffeqpy.install()" || true
-          julia -e 'using Pkg;\
-           Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main"));\
-            using ReactionMechanismSimulator' || true 
+          python -c "import julia; " \
+           "julia.install(); " \
+           "import diffeqpy; " \
+           "diffeqpy.install()" || true
+          julia -e 'using Pkg; ' \
+           'Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); ' \
+           'using ReactionMechanismSimulator' || true 
           ln -sfn $(which python-jl) $(which python)
 
       # Attempt to install MOPAC
