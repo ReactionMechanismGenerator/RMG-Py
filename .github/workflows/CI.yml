@@ -101,7 +101,7 @@ jobs:
 
       # Upload Regression Results if Scheduled
       - name: Upload Stable Regression Testing Results
-        if: ${{ github.event_name == 'schedule' }}
+        # if: ${{ github.event_name == 'schedule' }} -> uncomment this after complete
         uses: actions/upload-artifact@v3
         with:
           name: stable-regression-results
