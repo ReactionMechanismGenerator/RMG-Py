@@ -24,7 +24,7 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # configures the mamba environment manager and build the environment
       - name: Setup mamba with Python 3.7 and Build Environment
@@ -121,23 +121,22 @@ jobs:
       #     workflow: CI.yml
       #     workflow_conclusion: success
       #     branch: main
-      #     name: stable-regression-results
-      #     path: stable-results
+      #     name: stable_regression_results
       #     search_artifacts: true  # retrieves the last run result, either scheduled daily or on push to main
 
       # placeholder until the above is merged into main
       - name: Retrieve Stable Regression Results
         uses: actions/download-artifact@v3
         with:
-          name: stable-regression-results
-          path: stable-results
-          # should result in a set of folders, each of which has the stable result for that example/test
+          name: stable_regression_results
+          # should result in a set of folders inside stable_regression_results
+          # each of which has the stable result for that example/test
 
       # Regression Testing - Actual Comparisons
       - name: Regression Tests - Compare to Baseline
         if: ${{ github.event_name != 'schedule' }}
         env:
-          REFERENCE: stable-results
+          REFERENCE: stable_regression_results
         run: |
           for regr_test in aromatics; #liquid_oxidation nitrogen oxidation sulfur superminimal eg1
           do
