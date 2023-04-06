@@ -1,3 +1,20 @@
+# CI.yml
+# This file contains the script used by GitHub actions to execute the Constant Integration (CI)
+# for RMG-Py. This includes building RMG and its dependencies, executing the unit tests,
+# functional tests, database tests, and regression tests.
+# 
+# This will run automatically on any push to any branch, but will only run one instance of
+# itself at a time per branch (to avoid spawning tons of runners, which prevents them from
+# executing).
+#
+# In the regression testing section of the action the term "Stable" or "Reference" refers to
+# the 'correct answers' to the regression tests, i.e. the way that the main branch executes
+# them. These 'answers' are re-generated daily, or on any push to main, and retrieved whenever
+# a push is made to a non-main branch. The new proposed changes are referred to as "Dynamic".
+#
+# Changelog:
+# April 2023 - Jackson Burns - Added this header, regression tests, cleanup of action in 
+# in general, and documentation throughout the file.
 name: Constant Integration
 
 on:
@@ -6,13 +23,10 @@ on:
     - cron: "0 8 * * *"
   push:
 
-env:
-  SKIP_TESTS: True
-
 # this prevents one PR from simultaneously running multiple runners, which will clog up the queue
 # and prevent other PRs from running the CI
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -26,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # configures the mamba environment manager and build the environment
+      # configures the mamba environment manager and builds the environment
       - name: Setup mamba with Python 3.7 and Build Environment
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -82,32 +96,39 @@ jobs:
 
       # non-regression testing
       - name: Unit tests
-        if: ${{ env.SKIP_TESTS != 'True' }}
         run: make test-unittests
       - name: Functional tests
-        if: ${{ env.SKIP_TESTS != 'True' }}
         run: make test-functional
       - name: Database tests
-        if: ${{ env.SKIP_TESTS != 'True' }}
         run: make test-database
 
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution
         run: |
-          for regr_test in aromatics; #liquid_oxidation nitrogen oxidation sulfur superminimal eg1
+          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal;
           do
             timeout 600 python-jl rmg.py test/regression/"$regr_test"/input.py
           done
 
-      # Upload Regression Results if Scheduled
-      - name: Upload Stable Regression Testing Results
+      # Upload Regression Results as Stable if Scheduled or Push to Main
+      - name: Upload Results as Reference
         # upload the results for scheduled CI and pushes to main
-        # if: ${{ github.event_name == 'schedule' || github.ref == 'refs/heads/main' }} -> uncomment this after complete
+        # if: ${{ github.event_name == 'schedule' || github.ref == 'refs/heads/main' }} --> uncomment this when ready to merge into main
         uses: actions/upload-artifact@v3
         with:
           name: stable_regression_results
           path: |
-            test/regression/aromatics
+            test/regression
+            # test/regression/sulfur
+      
+      # Upload Regression Results as Dynamic if Push to non-main Branch
+      - name: Upload Results as Dynamic
+        if: ${{ github.event_name != 'schedule' || github.ref != 'refs/heads/main' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: dynamic_regression_results
+          path: |
+            test/regression
             # test/regression/sulfur
 
       # # Retrieve Stable Results for reference
@@ -138,7 +159,7 @@ jobs:
         env:
           REFERENCE: stable_regression_results
         run: |
-          for regr_test in aromatics; #liquid_oxidation nitrogen oxidation sulfur superminimal eg1
+          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal;
           do
             # Memory Usage and Execution Time
             echo 'Execution time for Reference:'
@@ -164,7 +185,7 @@ jobs:
               test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
               test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt
 
-            # Check for Regression between Reference and New (skip superminimal)
+            # Check for Regression between Reference and Dynamic (skip superminimal)
             if [ -f test/regression/"$regr_test"/regression_input.py ];
             then
               python-jl /rmgpy/tools/regression.py \
