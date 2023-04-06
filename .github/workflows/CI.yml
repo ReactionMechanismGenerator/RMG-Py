@@ -107,8 +107,8 @@ jobs:
         with:
           name: stable-regression-results
           path: |
-            test/regression/aromatics/chemkin/
-            # test/regression/sulfur/chemkin
+            test/regression/aromatics
+            # test/regression/sulfur
 
       # # Retrieve Stable Results for reference
       # # Will need to use this -> https://github.com/dawidd6/action-download-artifact
@@ -143,26 +143,25 @@ jobs:
           do
             # Memory Usage and Execution Time
             echo 'Execution time for Reference:'
-            grep "Execution time" $REFERENCE/RMG.log | tail -1
+            grep "Execution time" $REFERENCE/"$regr_test"/RMG.log | tail -1
             echo 'Execution time for Current:'
             grep "Execution time" test/regression/"$regr_test"/RMG.log | tail -1
             echo 'Memory used for Reference:'
-            grep "Memory used:" $REFERENCE/RMG.log | tail -1
+            grep "Memory used:" $REFERENCE/"$regr_test"/RMG.log | tail -1
             echo 'Memory used for Current:'
             grep "Memory used:" test/regression/"$regr_test"/RMG.log | tail -1
 
             # Compare the edge and core
             python-jl scripts/checkModels.py \
               "$regr_test" \
-              $REFERENCE/chem_annotated.inp \
-              $REFERENCE/species_dictionary.txt \
+              $REFERENCE/"$regr_test"/chemkin/chem_annotated.inp \
+              $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
               test/regression/"$regr_test"/chemkin/chem_annotated.inp \
               test/regression/"$regr_test"/chemkin/species_dictionary.txt
-            grep "checkModels" "$regr_test".log | cut -f2- -d'='
             python-jl scripts/checkModels.py \
               "$regr_test" \
-              $REFERENCE/chem_edge_annotated.inp \
-              $REFERENCE/species_edge_dictionary.txt \
+              $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated.inp \
+              $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
               test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
               test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt
 
@@ -171,7 +170,7 @@ jobs:
             then
               python-jl /rmgpy/tools/regression.py \
                 test/regression/"$regr_test"/regression_input.py \
-                $REFERENCE \
+                $REFERENCE/"$regr_test"/chemkin \
                 test/regression/"$regr_test"/chemkin
             fi
           done
