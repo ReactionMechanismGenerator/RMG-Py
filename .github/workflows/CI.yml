@@ -107,8 +107,27 @@ jobs:
         run: |
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal;
           do
-            timeout 600 python-jl rmg.py test/regression/"$regr_test"/input.py
+            if timeout 600 python-jl rmg.py test/regression/"$regr_test"/input.py; then
+              echo "$regr_test" "Executed Successfully"
+            else
+              echo "$regr_test" "Failed to Execute"
+              export FAILED=Yes
+            fi
           done
+          if [[ -v FAILED ]]; then
+            echo "One or more regression tests could not be executed."
+            echo "Please download the failed results or check the above log to see why."
+            exit 1
+          fi
+
+      # Upload Regression Results as Failed if above step failed
+      - name: Upload Failed Results
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: failed_regression_results
+          path: |
+            test/regression
 
       # Upload Regression Results as Stable if Scheduled or Push to Main
       - name: Upload Results as Reference
@@ -119,7 +138,6 @@ jobs:
           name: stable_regression_results
           path: |
             test/regression
-            # test/regression/sulfur
       
       # Upload Regression Results as Dynamic if Push to non-main Branch
       - name: Upload Results as Dynamic
@@ -129,7 +147,6 @@ jobs:
           name: dynamic_regression_results
           path: |
             test/regression
-            # test/regression/sulfur
 
       - name: mkdir stable_regression_results
         run: mkdir stable_regression_results
@@ -192,12 +209,22 @@ jobs:
             # Check for Regression between Reference and Dynamic (skip superminimal)
             if [ -f test/regression/"$regr_test"/regression_input.py ];
             then
-              python-jl rmgpy/tools/regression.py \
+              if python-jl rmgpy/tools/regression.py \
                 test/regression/"$regr_test"/regression_input.py \
                 $REFERENCE/"$regr_test"/chemkin \
-                test/regression/"$regr_test"/chemkin
+                test/regression/"$regr_test"/chemkin; then
+                echo "$regr_test" "Passed Regression Testing"
+              else
+                echo "$regr_test" "Failed Regression Testing"
+                export FAILED=Yes
+              fi
             fi
           done
+          if [[ -v FAILED ]]; then
+            echo "One or more regression tests failed."
+            echo "Please download the failed results and run the tests locally or check the above log to see why."
+            exit 1
+          fi
       # Install and Call codecov only if ALL the tests were successful
       - name: Code coverage install and run
         run: |
