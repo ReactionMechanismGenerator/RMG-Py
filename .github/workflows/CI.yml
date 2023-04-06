@@ -192,7 +192,7 @@ jobs:
             # Check for Regression between Reference and Dynamic (skip superminimal)
             if [ -f test/regression/"$regr_test"/regression_input.py ];
             then
-              python-jl /rmgpy/tools/regression.py \
+              python-jl rmgpy/tools/regression.py \
                 test/regression/"$regr_test"/regression_input.py \
                 $REFERENCE/"$regr_test"/chemkin \
                 test/regression/"$regr_test"/chemkin
