@@ -105,7 +105,7 @@ jobs:
         # if: ${{ github.event_name == 'schedule' || github.ref == 'refs/heads/main' }} -> uncomment this after complete
         uses: actions/upload-artifact@v3
         with:
-          name: stable-regression-results
+          name: stable_regression_results
           path: |
             test/regression/aromatics
             # test/regression/sulfur
