@@ -596,11 +596,11 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
                 kLA = rms.TemperatureDependentLiquidVolumetricMassTransferCoefficient(Ts=obj.liquid_volumetric_mass_transfer_coefficient_data.Ts,kLAs=obj.liquid_volumetric_mass_transfer_coefficient_data.kLAs)
             else:
                 kLA = rms.EmptyLiquidVolumetricMassTransferCoefficient()
-            return rms.Species(label=obj.label, index=obj.index, inchi="", smiles="", adjlist="", thermo=thermo, atomnums=atomnums, bondnum=bondnum, diffusion=diff, radius=rad, radicalelectrons=obj.molecule[0].multiplicity-1, molecularweight=obj.molecular_weight.value_si, henrylawconstant=kH, liquidvolumetricmasstransfercoefficient=kLA, comment=obj.thermo.comment)
+            return rms.Species(name=obj.label, index=obj.index, inchi="", smiles="", adjlist="", thermo=thermo, atomnums=atomnums, bondnum=bondnum, diffusion=diff, radius=rad, radicalelectrons=obj.molecule[0].multiplicity-1, molecularweight=obj.molecular_weight.value_si, henrylawconstant=kH, liquidvolumetricmasstransfercoefficient=kLA, comment=obj.thermo.comment)
         else:
             th = obj.get_thermo_data()
             thermo = to_rms(th)
-            return rms.Species(label=obj.label, index=obj.index, inchi="", smiles="", adjlist="", thermo=thermo, atomnums=atomnums, bonnum=bondnum, diffusion=rms.EmptyDiffusivity(), radius=0.0, radicalelectrons=obj.molecule[0].multiplicity-1, molecularweight=0.0, henrylawconstant=rms.EmptyHenryLawConstant(), liquidvolumetricmasstransfercoefficient=rms.EmptyLiquidVolumetricMassTransferCoefficient(), comment=obj.thermo.comment)
+            return rms.Species(name=obj.label, index=obj.index, inchi="", smiles="", adjlist="", thermo=thermo, atomnums=atomnums, bonnum=bondnum, diffusion=rms.EmptyDiffusivity(), radius=0.0, radicalelectrons=obj.molecule[0].multiplicity-1, molecularweight=0.0, henrylawconstant=rms.EmptyHenryLawConstant(), liquidvolumetricmasstransfercoefficient=rms.EmptyLiquidVolumetricMassTransferCoefficient(), comment=obj.thermo.comment)
     elif isinstance(obj, Reaction):
         reactantinds = [species_names.index(spc.label) for spc in obj.reactants]
         productinds = [species_names.index(spc.label) for spc in obj.products]
