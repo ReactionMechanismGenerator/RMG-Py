@@ -42,14 +42,15 @@ jobs:
 
       # configures the mamba environment manager and builds the environment
       - name: Setup mamba with Python 3.7 and Build Environment
-        uses: conda-incubator/setup-miniconda@v2
+        uses: mamba-org/provision-with-micromamba@main
         with:
           environment-file: environment.yml
-          miniforge-variant: Mambaforge
-          miniforge-version: latest
-          python-version: 3.7
-          activate-environment: rmg_env
-          use-mamba: true
+          environment-name: rmg_env
+          channels: defaults,cantera,rmg,conda-forge
+          channel-priority: flexible
+          log-level: warning
+          extra-specs: |
+            python=3.7
 
       # list the environment for debugging purposes
       - name: mamba info
@@ -81,7 +82,7 @@ jobs:
       - name: Install and link Julia dependencies
         run: |
           python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="baba92ae5b85bdb53e919ca9b22c44380803f561")); using ReactionMechanismSimulator' || true 
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true 
           ln -sfn $(which python-jl) $(which python)
 
       # Attempt to install MOPAC
@@ -132,7 +133,7 @@ jobs:
       # Upload Regression Results as Stable if Scheduled or Push to Main
       - name: Upload Results as Reference
         # upload the results for scheduled CI and pushes to main
-        # if: ${{ github.event_name == 'schedule' || github.ref == 'refs/heads/main' }} --> uncomment this when ready to merge into main
+        if: ${{ github.event_name == 'schedule' || github.ref == 'refs/heads/main' }}
         uses: actions/upload-artifact@v3
         with:
           name: stable_regression_results
@@ -151,26 +152,19 @@ jobs:
       - name: mkdir stable_regression_results
         run: mkdir stable_regression_results
 
-      # # Retrieve Stable Results for reference
-      # # Will need to use this -> https://github.com/dawidd6/action-download-artifact
-      # - name: Retrieve Stable Regression Results
-      #   if: ${{ github.event_name != 'schedule' }}
-      #   uses: dawidd6/action-download-artifact@v2
-      #   with:
-      #   # this will search for the last scheduled execution of CI on main and download
-      #   # the stable regression results
-      #     workflow: CI.yml
-      #     workflow_conclusion: success
-      #     branch: main
-      #     name: stable_regression_results
-      #     search_artifacts: true  # retrieves the last run result, either scheduled daily or on push to main
-
-      # placeholder until the above is merged into main
+      # Retrieve Stable Results for reference
+      # Will need to use this -> https://github.com/dawidd6/action-download-artifact
       - name: Retrieve Stable Regression Results
-        uses: actions/download-artifact@v3
+        if: ${{ github.event_name != 'schedule' }}
+        uses: dawidd6/action-download-artifact@v2
         with:
+        # this will search for the last scheduled execution of CI on main and download
+        # the stable regression results
+          workflow: CI.yml
+          workflow_conclusion: success
+          branch: main
           name: stable_regression_results
-          path: stable_regression_results
+          search_artifacts: true  # retrieves the last run result, either scheduled daily or on push to main
           # should result in a set of folders inside stable_regression_results
           # each of which has the stable result for that example/test
 
@@ -225,6 +219,7 @@ jobs:
             echo "Please download the failed results and run the tests locally or check the above log to see why."
             exit 1
           fi
+
       # Install and Call codecov only if ALL the tests were successful
       - name: Code coverage install and run
         run: |
