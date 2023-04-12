@@ -1,11 +1,8 @@
 # <img align="top" src="https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/main/documentation/source/_static/rmg-logo-small.png"> Reaction Mechanism Generator (RMG)
 
-[![Build status](https://img.shields.io/travis/ReactionMechanismGenerator/RMG-Py/main.svg)](https://travis-ci.org/ReactionMechanismGenerator/RMG-Py)
 [![Codecov report](https://img.shields.io/codecov/c/github/ReactionMechanismGenerator/RMG-Py/main.svg)](https://codecov.io/gh/ReactionMechanismGenerator/RMG-Py)
-[![Codacy report](https://img.shields.io/codacy/grade/5c12cecf3d01400a92ea20e14ca0b880/main.svg)](https://www.codacy.com/app/ReactionMechanismGenerator/RMG-Py/dashboard)
 [![GitHub release](https://img.shields.io/github/release/ReactionMechanismGenerator/RMG-Py.svg)](https://github.com/ReactionMechanismGenerator/RMG-Py/releases)
 [![Anconda](https://img.shields.io/conda/v/rmg/rmg.svg)](https://anaconda.org/rmg/rmg)
-[![Gitter](https://img.shields.io/gitter/room/ReactionMechanismGenerator/RMG-Py.svg)](https://gitter.im/ReactionMechanismGenerator/RMG-Py)
 [![RMG Website](https://img.shields.io/website-up-down-green-red/http/rmg.mit.edu.svg?label=rmg%20website)](https://rmg.mit.edu/)
 
 ## Description
