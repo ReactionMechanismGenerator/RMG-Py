@@ -1155,7 +1155,8 @@ def model(toleranceMoveToCore=None, toleranceRadMoveToCore=None,
           maxNumSpecies=None, maxNumObjsPerIter=1, terminateAtMaxObjects=False,
           toleranceThermoKeepSpeciesInEdge=np.inf, dynamicsTimeScale=(0.0, 'sec'),
           toleranceBranchReactionToCore=0.0, branchingIndex=0.5, branchingRatioMax=1.0,
-          toleranceTransitoryDict={}, transitoryStepPeriod=20):
+          toleranceTransitoryDict={}, transitoryStepPeriod=20,
+          toleranceReactionToCoreDeadendRadical=0.0):
     """
     How to generate the model. `toleranceMoveToCore` must be specified. 
     toleranceMoveReactionToCore and toleranceReactionInterruptSimulation refers to an additional criterion for forcing an edge reaction to be included in the core
@@ -1199,6 +1200,7 @@ def model(toleranceMoveToCore=None, toleranceRadMoveToCore=None,
             branching_ratio_max=branchingRatioMax,
             transitory_tol_dict=toleranceTransitoryDict,
             transitory_step_period=transitoryStepPeriod,
+            tol_rxn_to_core_deadend_radical=toleranceReactionToCoreDeadendRadical,
         )
     )
 
