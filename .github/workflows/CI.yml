@@ -149,6 +149,7 @@ jobs:
             test/regression
 
       - name: mkdir stable_regression_results
+        if: github.ref != 'refs/heads/main'
         run: mkdir stable_regression_results
 
       # Retrieve Stable Results for reference
