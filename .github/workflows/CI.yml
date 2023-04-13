@@ -131,8 +131,8 @@ jobs:
 
       # Upload Regression Results as Stable if Scheduled or Push to Main
       - name: Upload Results as Reference
-        # upload the results for scheduled CI and pushes to main
-        if: ${{ github.event_name == 'schedule' || github.ref == 'refs/heads/main' }}
+        # upload the results for scheduled CI (on main) and pushes to main
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v3
         with:
           name: stable_regression_results
@@ -141,7 +141,7 @@ jobs:
       
       # Upload Regression Results as Dynamic if Push to non-main Branch
       - name: Upload Results as Dynamic
-        if: ${{ github.event_name != 'schedule' || github.ref != 'refs/heads/main' }}
+        if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v3
         with:
           name: dynamic_regression_results
@@ -154,7 +154,7 @@ jobs:
       # Retrieve Stable Results for reference
       # Will need to use this -> https://github.com/dawidd6/action-download-artifact
       - name: Retrieve Stable Regression Results
-        if: ${{ github.event_name != 'schedule' }}
+        if: github.ref != 'refs/heads/main'
         uses: dawidd6/action-download-artifact@v2
         with:
         # this will search for the last scheduled execution of CI on main and download
@@ -169,7 +169,7 @@ jobs:
 
       # Regression Testing - Actual Comparisons
       - name: Regression Tests - Compare to Baseline
-        if: ${{ github.event_name != 'schedule' }}
+        if: github.ref != 'refs/heads/main'
         env:
           REFERENCE: stable_regression_results
         run: |
