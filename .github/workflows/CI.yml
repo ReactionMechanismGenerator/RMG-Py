@@ -163,6 +163,7 @@ jobs:
           workflow_conclusion: success
           branch: main
           name: stable_regression_results
+          path: stable_regression_results
           search_artifacts: true  # retrieves the last run result, either scheduled daily or on push to main
           # should result in a set of folders inside stable_regression_results
           # each of which has the stable result for that example/test
