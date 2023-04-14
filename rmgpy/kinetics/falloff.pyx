@@ -441,6 +441,7 @@ cdef class Troe(PDepKineticsModel):
         import cantera as ct
         return ct.TroeRate(high=high, low=low, falloff_coeffs=falloff)
 
+
     def to_cantera_kinetics(self, low, high, falloff):
         """
         Converts the Troe object to a cantera Troe object
