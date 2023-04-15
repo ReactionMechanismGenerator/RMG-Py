@@ -448,8 +448,6 @@ or :ref:`pruning <pruning>` can be turned on to speed up your simulation at a sl
 - ``toleranceMoveToCore`` indicates how high the edge flux ratio for a species must get to enter the core model. This tolerance is designed for controlling the accuracy of final model.
 - ``toleranceInterruptSimulation`` indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the ``terminationConversion`` or ``terminationTime``).  This value should be set to be equal to ``toleranceMoveToCore`` unless the advanced :ref:`pruning <pruning>` feature is desired.
 
-.. _filterReactions:
-
 Advanced Setting:  Branching Criterion
 ----------------------------------------
 The flux criterion works very well for identifying new species that have high flux
@@ -504,6 +502,8 @@ For example ::
 				toleranceTransitoryDict={"NO":0.2},
 				transitoryStepPeriod=20,
 		)
+
+.. _filterReactions:
 
 Advanced Setting: Speed Up By Filtering Reactions
 -------------------------------------------------
