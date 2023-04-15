@@ -1,11 +1,11 @@
 import os
 import unittest
 
-from rmgpy.species import Species
 from rmgpy.molecule import resonance
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.element import get_element
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
+from rmgpy.species import Species
 
 import rmgpy.molecule.fragment
 
@@ -340,7 +340,7 @@ class TestFragment(unittest.TestCase):
 
         self.assertFalse(fragment.is_subgraph_isomorphic(other, initial_map=initial_map))
 
-    def test_assign_representative_species(self):
+    def test_assign_representative_species_1(self):
 
         smiles_like = 'RCR'
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
@@ -350,6 +350,14 @@ class TestFragment(unittest.TestCase):
         expected_repr_spec = Species().from_smiles('C=CC(C)(CCCCCCCC(C)(C=C)C(C)C(C)C=CC)C(C)C(C)C=CC')
 
         self.assertTrue(expected_repr_spec.is_isomorphic(fragment.species_repr))
+
+    def test_assign_representative_species_2(self):
+
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCR')
+        fragment.assign_representative_species()
+
+        self.assertEqual(fragment.species_repr.symmetry_number, 3.0)
+        self.assertEqual(fragment.species_repr.smiles.count('C'), 14+2)
 
     def test_assign_representative_molecule(self):
 
@@ -853,17 +861,37 @@ class TestFragment(unittest.TestCase):
 
         self.assertTrue(mol_repr.is_isomorphic(ethane))
 
-    def test_assign_representative_species(self):
-
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCR')
-        fragment.assign_representative_species()
-
-        self.assertEqual(fragment.species_repr.symmetry_number, 3.0)
-        self.assertEqual(fragment.species_repr.smiles.count('C'), 14+2)
-
     def test_to_rdkit_mol(self):
 
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string('CCR')
         rdmol,_ = fragment.to_rdkit_mol()
 
         self.assertEqual(rdmol.GetNumAtoms(), 8)
+
+    def test_is_in_cycle_ethane(self):
+        """
+        Test the Fragment is_atom_in_cycle() and is_bond_in_cycle() methods with ethane.
+        """
+        frag = rmgpy.molecule.fragment.Fragment(smiles='CC')
+        for atom in frag.atoms:
+            self.assertFalse(frag.is_atom_in_cycle(atom))
+        for atom1 in frag.atoms:
+            for atom2, bond in atom1.bonds.items():
+                self.assertFalse(frag.is_bond_in_cycle(bond))
+
+    def test_is_in_cycle_cyclohexane(self):
+        """
+        Test the Fragment is_atom_in_cycle() and is_bond_in_cycle() methods with ethane.
+        """
+        frag = rmgpy.molecule.fragment.Fragment(smiles='C1CCCCC1')
+        for atom in frag.atoms:
+            if atom.is_hydrogen():
+                self.assertFalse(frag.is_atom_in_cycle(atom))
+            elif atom.is_carbon():
+                self.assertTrue(frag.is_atom_in_cycle(atom))
+        for atom1 in frag.atoms:
+            for atom2, bond in atom1.bonds.items():
+                if atom1.is_carbon() and atom2.is_carbon():
+                    self.assertTrue(frag.is_bond_in_cycle(bond))
+                else:
+                    self.assertFalse(frag.is_bond_in_cycle(bond))

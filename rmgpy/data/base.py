@@ -475,7 +475,7 @@ class Database(object):
                 record = self.entries[label].item
                 lines = record.splitlines()
                 # If record is a logical node, make it into one.
-                if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", lines[1]):
+                if re.match(r"(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", lines[1]):
                     self.entries[label].item = make_logic_node(' '.join(lines[1:]))
                 # Otherwise convert adjacency list to molecule or pattern
                 elif pattern:
@@ -497,7 +497,7 @@ class Database(object):
             raise DatabaseError("Load the dictionary before you load the tree.")
 
         # should match '  L3 : foo_bar '  and 'L3:foo_bar'
-        parser = re.compile('^\s*L(?P<level>\d+)\s*:\s*(?P<label>\S+)')
+        parser = re.compile(r'^\s*L(?P<level>\d+)\s*:\s*(?P<label>\S+)')
 
         parents = [None]
         for line in tree.splitlines():
@@ -1120,7 +1120,7 @@ class LogicNode(object):
     def __init__(self, items, invert):
         self.components = []
         for item in items:
-            if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", item):
+            if re.match(r"(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", item):
                 component = make_logic_node(item)
             else:
                 component = item

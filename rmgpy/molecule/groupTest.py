@@ -397,6 +397,7 @@ class TestGroupAtom(unittest.TestCase):
         for index, atom in enumerate(group.atoms):
             self.assertTrue(atom.has_wildcards(),
                             'GroupAtom with index {0} should have wildcards, but does not'.format(index))
+        self.assertTrue(group.has_wildcards(), 'Group should have wildcards, but does not')
 
     def test_make_sample_atom(self):
         """
