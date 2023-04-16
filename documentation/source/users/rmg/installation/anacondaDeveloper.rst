@@ -6,10 +6,10 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
 #. Download and install `Anaconda Individual Edition <https://www.anaconda.com/products/individual#Downloads>`.
 
-   The download will be a .sh file with a name like ``Anaconda3-2021.05-Linux-x86_64.sh``. Open a terminal in the same
+   The download will be a .sh file with a name like ``Anaconda3-2023.03-Linux-x86_64.sh``. Open a terminal in the same
    directory as this file, and type the following to install Anaconda (replace the name of your .sh file below). ::
 
-    bash Anaconda3-2021.05-Linux-x86_64.sh
+    bash Anaconda3-2023.03-Linux-x86_64.sh
 
    **When prompted to append Anaconda to your PATH, select or type Yes**.  Install the Anaconda folder inside your home
    directory (typically ``/home/YourUsername/`` in Linux and ``/Users/YourUsername`` in Mac). When prompted, you do not
@@ -47,15 +47,6 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    to install this is to simply run one of the commands in the terminal, e.g. ``git``. The terminal will then prompt you on
    whether or not you would like to install the Command Line Tools.
 
-   For MacOS users only, download and install the latest macOS julia from here: <https://julialang.org/downloads/>. Then add julia to PATH by running the following command replacing 1.6 with the first two numbers in the Julia version designation (ex: 1.6.2->1.6, 1.1.1->1.1) ::
-
-     echo 'export PATH="/Applications/Julia-1.6.app/Contents/Resources/julia/bin:$PATH"' >> ~/.bash_profile
-
-     export PATH="/Applications/Julia-1.6.app/Contents/Resources/julia/bin:$PATH"
-
-   Note that this julia install will not respect conda environmental boundaries this means only one conda environment can be linked to it at a time.
-   For linux users julia will be installed automatically.
-
 #. Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an
    appropriate local directory where you want both RMG-Py and RMG-database folders to exist.
    Github has deprecated password authentication from the command line, so it
@@ -72,12 +63,19 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    For information on using ``ssh`` with GitHub see the `Connecting to GitHub with SSH <https://docs.github.com/en/authentication/connecting-to-github-with-ssh>`_
 
-#. Now create the conda environment for RMG-Py ::
+#. Switch the conda solver backend to speed up creation of the RMG environment ::
+
+    conda install -n base conda-libmamba-solver
+    conda config --set solver libmamba
+    ..
+        The above step is retrieved from https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community also see https://github.com/ReactionMechanismGenerator/RMG-Py/issues/2323
+
+    Now create the conda environment for RMG-Py ::
 
     cd RMG-Py
     conda env create -f environment.yml
 
-   If the command returns an error due to being unable to find the ``conda`` command, try to either close and reopen your terminal to refresh your environment variables or type the following command.
+   If either of these commands return an error due to being unable to find the ``conda`` command, try to either close and reopen your terminal to refresh your environment variables or type the following command.
 
    If on Linux or pre-Catalina MacOS ::
 
