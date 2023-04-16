@@ -1,11 +1,34 @@
-name: CI Tests
+# CI.yml
+# This file contains the script used by GitHub actions to execute the Constant Integration (CI)
+# for RMG-Py. This includes building RMG and its dependencies, executing the unit tests,
+# functional tests, database tests, and regression tests.
+# 
+# This will run automatically on any push to any branch, but will only run one instance of
+# itself at a time per branch (to avoid spawning tons of runners, which prevents them from
+# executing).
+#
+# In the regression testing section of the action the term "Stable" or "Reference" refers to
+# the 'correct answers' to the regression tests, i.e. the way that the main branch executes
+# them. These 'answers' are re-generated daily, or on any push to main, and retrieved whenever
+# a push is made to a non-main branch. The new proposed changes are referred to as "Dynamic".
+#
+# Changelog:
+# April 2023 - Jackson Burns - Added this header, regression tests, cleanup of action in 
+# in general, and documentation throughout the file.
+name: Constant Integration
 
 on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: "0 8 * * *"
   push:
-  pull_request:
-    branches:
-      - main
-    types: [opened, synchronize, reopened, ready_for_review, review_requested]
+
+# this prevents one PR from simultaneously running multiple runners, which will clog up the queue
+# and prevent other PRs from running the CI
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test-linux:
     strategy:
@@ -18,7 +41,9 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -28,22 +53,40 @@ jobs:
           python-version: 3.7
           activate-environment: rmg_env
           use-mamba: true
-      - name: Install codecov
-        run: mamba install -y -c conda-forge codecov
+
+      # list the environment for debugging purposes
       - name: mamba info
         run: |
           mamba info
           mamba list
-      - name: Install RMS
+      # Clone the other needed repository
+      - name: Clone RMG-Database
         run: |
-          julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"))"
-      - name: Install Pycall & DifferentialEquations
+          cd ..
+          git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
+          
+      # modify env variables as directed in the RMG installation instructions
+      - name: Set PYTHONPATH and PATH
         run: |
-          julia -e "using Pkg; Pkg.add(\"PyCall\"); Pkg.add(\"DifferentialEquations\")"
-      - name: Install Julia in Python and Link
+          RUNNER_CWD=$(pwd)
+          echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
+          echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
+
+      # RMG build step
+      - name: make RMG
         run: |
-          python -c "import julia; julia.install()"
+          make clean
+          make
+
+      # RMS installation and linking to Julia
+      # Allow these installs to 'fail' (as they do in RMG-Tests) with the command || True trick
+      - name: Install and link Julia dependencies
+        run: |
+          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true 
           ln -sfn $(which python-jl) $(which python)
+
+      # Attempt to install MOPAC
       - name: Install MOPAC
         env:
           MOPACKEY: ${{ secrets.MOPACKEY }}
@@ -52,25 +95,136 @@ jobs:
         run: |
           set +o pipefail
           yes 'Yes' | ${CONDA_PREFIX}/bin/mopac "$MOPACKEY"
-      - name: Install and compile RMG
-        run: |
-          cd ..
-          git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
-          cd RMG-Py
-          git clone -b arkanepy3 https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
-          make
-      - name: Trigger RMG-tests
-        if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/stable' }} # only push events to branches other than main and stable
-        env:
-          GH_TOKEN: ${{ secrets.RMG_DEV_TOKEN }}
-        run: ./trigger-rmg-tests.sh
+
+      # non-regression testing
       - name: Unit tests
         run: make test-unittests
       - name: Functional tests
-        if: ${{ success() || failure() }} # Run even if the unit tests failed (but not if they were cancelled)
         run: make test-functional
       - name: Database tests
-        if: ${{ success() || failure() }} # Run even if the functional tests failed (but not if they were cancelled)
         run: make test-database
-      - name: Code coverage
-        run: codecov
+
+      # Regression Testing - Test Execution
+      - name: Regression Tests - Execution
+        run: |
+          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal;
+          do
+            if timeout 600 python-jl rmg.py test/regression/"$regr_test"/input.py; then
+              echo "$regr_test" "Executed Successfully"
+            else
+              echo "$regr_test" "Failed to Execute"
+              export FAILED=Yes
+            fi
+          done
+          if [[ -v FAILED ]]; then
+            echo "One or more regression tests could not be executed."
+            echo "Please download the failed results or check the above log to see why."
+            exit 1
+          fi
+
+      # Upload Regression Results as Failed if above step failed
+      - name: Upload Failed Results
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: failed_regression_results
+          path: |
+            test/regression
+
+      # Upload Regression Results as Stable if Scheduled or Push to Main
+      - name: Upload Results as Reference
+        # upload the results for scheduled CI (on main) and pushes to main
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v3
+        with:
+          name: stable_regression_results
+          path: |
+            test/regression
+      
+      # Upload Regression Results as Dynamic if Push to non-main Branch
+      - name: Upload Results as Dynamic
+        if: github.ref != 'refs/heads/main'
+        uses: actions/upload-artifact@v3
+        with:
+          name: dynamic_regression_results
+          path: |
+            test/regression
+
+      - name: mkdir stable_regression_results
+        if: github.ref != 'refs/heads/main'
+        run: mkdir stable_regression_results
+
+      # Retrieve Stable Results for reference
+      # Will need to use this -> https://github.com/dawidd6/action-download-artifact
+      - name: Retrieve Stable Regression Results
+        if: github.ref != 'refs/heads/main'
+        uses: dawidd6/action-download-artifact@v2
+        with:
+        # this will search for the last scheduled execution of CI on main and download
+        # the stable regression results
+          workflow: CI.yml
+          workflow_conclusion: success
+          branch: main
+          name: stable_regression_results
+          path: stable_regression_results
+          search_artifacts: true  # retrieves the last run result, either scheduled daily or on push to main
+          # should result in a set of folders inside stable_regression_results
+          # each of which has the stable result for that example/test
+
+      # Regression Testing - Actual Comparisons
+      - name: Regression Tests - Compare to Baseline
+        if: github.ref != 'refs/heads/main'
+        env:
+          REFERENCE: stable_regression_results
+        run: |
+          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal;
+          do
+            # Memory Usage and Execution Time
+            echo 'Execution time for Reference:'
+            grep "Execution time" $REFERENCE/"$regr_test"/RMG.log | tail -1
+            echo 'Execution time for Current:'
+            grep "Execution time" test/regression/"$regr_test"/RMG.log | tail -1
+            echo 'Memory used for Reference:'
+            grep "Memory used:" $REFERENCE/"$regr_test"/RMG.log | tail -1
+            echo 'Memory used for Current:'
+            grep "Memory used:" test/regression/"$regr_test"/RMG.log | tail -1
+
+            # Compare the edge and core
+            python-jl scripts/checkModels.py \
+              "$regr_test" \
+              $REFERENCE/"$regr_test"/chemkin/chem_annotated.inp \
+              $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
+              test/regression/"$regr_test"/chemkin/chem_annotated.inp \
+              test/regression/"$regr_test"/chemkin/species_dictionary.txt
+            python-jl scripts/checkModels.py \
+              "$regr_test" \
+              $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated.inp \
+              $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
+              test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
+              test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt
+
+            # Check for Regression between Reference and Dynamic (skip superminimal)
+            if [ -f test/regression/"$regr_test"/regression_input.py ];
+            then
+              if python-jl rmgpy/tools/regression.py \
+                test/regression/"$regr_test"/regression_input.py \
+                $REFERENCE/"$regr_test"/chemkin \
+                test/regression/"$regr_test"/chemkin; then
+                echo "$regr_test" "Passed Regression Testing"
+              else
+                echo "$regr_test" "Failed Regression Testing"
+                export FAILED=Yes
+              fi
+            fi
+          done
+          if [[ -v FAILED ]]; then
+            echo "One or more regression tests failed."
+            echo "Please download the failed results and run the tests locally or check the above log to see why."
+            exit 1
+          fi
+
+      # Install and Call codecov only if ALL the tests were successful
+      - name: Code coverage install and run
+        run: |
+          mamba install -y -c conda-forge codecov
+          codecov

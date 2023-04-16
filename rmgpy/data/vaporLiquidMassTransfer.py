@@ -88,9 +88,8 @@ class VaporLiquidMassTransfer(RMGObject):
             Tcrit = solvent_data.get_solvent_coolprop_Tcrit()
             Ts = [float(T) for T in np.linspace(Tmin, Tcrit-0.01, 50)]
 
-        # The function `get_T_dep_solvation_energy_from_LSER_298`` returns (delG, Kfactor(T,Psat)), the henry's constant kH and the Kfactor = y/x
-        # can be related by kH(T,P) = lim_{x -> 0} P y/x = lim_{x -> 0} P Kfactor(T,P), and thus kH(T,Psat) = lim_{x -> 0} Psat Kfactor(T,Psat)
-        kHs = [self.database.get_T_dep_solvation_energy_from_LSER_298(solute_data, solvent_data, T)[1]* solvent_data.get_solvent_saturation_pressure(T) for T in Ts]
+        # The function `get_T_dep_solvation_energy_from_LSER_298`` returns (delG, Kfactor(T,Psat), kH(T))
+        kHs = [self.database.get_T_dep_solvation_energy_from_LSER_298(solute_data, solvent_data, T)[2] for T in Ts]
 
         return HenryLawConstantData(Ts=Ts,kHs=kHs)
 

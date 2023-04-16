@@ -148,7 +148,7 @@ cdef class Lindemann(PDepKineticsModel):
     `efficiencies`      A dict associating chemical species with associated efficiencies
     `comment`           Information about the model (e.g. its source)
     =================== ========================================================
-    
+
     """
 
     def __init__(self, arrheniusHigh=None, arrheniusLow=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None,
@@ -255,7 +255,7 @@ cdef class Troe(PDepKineticsModel):
     `efficiencies`      A dict associating chemical species with associated efficiencies
     `comment`           Information about the model (e.g. its source)
     =================== ========================================================
-    
+
     """
 
     def __init__(self, arrheniusHigh=None, arrheniusLow=None, alpha=0.0, T3=None, T1=None, T2=None, Tmin=None,
@@ -347,7 +347,7 @@ cdef class Troe(PDepKineticsModel):
             d = 0.14
             n = 0.75 - 1.27 * log10(Fcent)
             c = -0.4 - 0.67 * log10(Fcent)
-            F = 10.0 ** (log10(Fcent) / (1 + ((log10(Pr) + c) / (n - d * (log10(Pr)))) ** 2))
+            F = 10.0 ** (log10(Fcent) / (1 + ((log10(Pr) + c) / (n - d * (log10(Pr) + c))) ** 2))
 
         return kinf * (Pr / (1 + Pr)) * F
 
@@ -397,7 +397,7 @@ cdef class Troe(PDepKineticsModel):
         T3 = self.T3.value_si
         T1 = self.T1.value_si
         if self.T2 is None:
-            ct_reaction.falloff = ct.TroeFalloff(params=[A, T3, T1]) 
+            ct_reaction.falloff = ct.TroeFalloff(params=[A, T3, T1])
         else:
             T2 = self.T2.value_si
             ct_reaction.falloff = ct.TroeFalloff(params=[A, T3, T1, T2])

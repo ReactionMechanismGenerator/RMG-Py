@@ -339,6 +339,19 @@ def get_gas_saturation_density(compound_name, temp):
         raise DatabaseError(f"Gas-phase saturation density is not available for {compound_name} at {temp} K.")
     return rho_g
 
+
+def get_gas_saturation_pressure(compound_name, temp):
+    """
+    Returns the saturation pressure of the solvent in Pa if the solvent is available in CoolProp (i.e. name_in_coolprop is
+    not None); raises DatabaseError if the solvent is not available in CoolProp (i.e. name_in_coolprop is None).
+    """
+    try:
+        Psat_g = PropsSI('P', 'T', temp, 'Q', 0, compound_name)  # saturated gas phase pressure in Pa
+    except:
+        raise DatabaseError(f"Gas-phase saturation pressure is not available for {compound_name} at {temp} K.")
+    return Psat_g
+
+
 ################################################################################
 
 class SolventData(object):
@@ -389,17 +402,6 @@ class SolventData(object):
         and coefficients in DIPPR
         """
         return math.exp(self.A + (self.B / T) + (self.C * math.log(T)) + (self.D * (T ** self.E)))
-
-
-    def get_solvent_saturation_pressure(self, T):
-        """
-        Returns the saturation pressure of the solvent in Pa if the solvent is available in CoolProp (i.e. name_in_coolprop is
-        not None); raises DatabaseError if the solvent is not available in CoolProp (i.e. name_in_coolprop is None).
-        """
-        if self.name_in_coolprop is not None:
-            return PropsSI('P', 'T', T, 'Q', 0, self.name_in_coolprop)
-        else:
-            raise DatabaseError("Saturation pressure is not available for the solvent whose `name_in_coolprop` is None")
 
     def get_solvent_density(self, T):
         """
@@ -2027,14 +2029,17 @@ class SolvationDatabase(object):
             delG (float): solvation free energy at the input temperature in J/mol.
             Kfactor (float): K-factor at the input temperature. K-factor is defined as a ratio of the mole fraction
             of a solute in a gas-phase to the mole fraction of a solute in a liquid-phase at equilibrium
-
+            kH (float): the Henry's law constant at the input temperature. kH is defined as the ratio of the pressure
+            of a solute in the gas-phase to the concentration of a solute in the liquid-phase at equilibrium.
         """
 
         Kfactor = self.get_Kfactor(delG298, delH298, delS298, solvent_name, T)
-        rho_g = get_gas_saturation_density(solvent_name, T)
-        rho_l = get_liquid_saturation_density(solvent_name, T)
+        rho_g = get_gas_saturation_density(solvent_name, T) # saturated gas phase density of the solvent, in mol/m^3
+        rho_l = get_liquid_saturation_density(solvent_name, T) # saturated liquid phase density of the solvent, in mol/m^3
+        Psat_g = get_gas_saturation_pressure(solvent_name, T)
+        kH = Kfactor * Psat_g / rho_l  # Henry's law constant as a fraction of the gas-phase partial pressure of solute to the liquid-phase concentration of solute
         delG = constants.R * T * math.log(Kfactor * rho_g / (rho_l))  # in J/mol
-        return delG, Kfactor
+        return delG, Kfactor, kH
 
     def get_Kfactor_parameters(self, delG298, delH298, delS298, solvent_name, T_trans_factor=0.75):
         """Returns fitted parameters for the K-factor piecewise functions given the solvation properties at 298 K.

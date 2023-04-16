@@ -88,3 +88,8 @@ rmgpy/rmgrc
 scripts/treegen.log
 
 scripts/treegen_backup.log
+
+# regression testing files - ignore everything but input and regression input
+test/regression/*
+!test/regression/*/input.py
+!test/regression/*/regression_input.py
