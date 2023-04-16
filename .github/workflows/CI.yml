@@ -135,7 +135,7 @@ jobs:
       # Upload Regression Results as Stable if Scheduled or Push to Main
       - name: Upload Results as Reference
         # upload the results for scheduled CI (on main) and pushes to main
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && runner.os =='ubuntu'
         uses: actions/upload-artifact@v3
         with:
           name: stable_regression_results
