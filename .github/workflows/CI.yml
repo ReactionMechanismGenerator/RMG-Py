@@ -33,7 +33,7 @@ jobs:
   build-and-test-linux:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-11]
     runs-on: ${{ matrix.os }}
     env: # update this if needed to match a pull request on the RMG-database
       RMG_DATABASE_BRANCH: main
