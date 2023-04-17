@@ -117,7 +117,7 @@ jobs:
               export FAILED=Yes
             fi
           done
-          if [[ -v FAILED ]]; then
+          if [[ ${FAILED} ]]; then
             echo "One or more regression tests could not be executed."
             echo "Please download the failed results or check the above log to see why."
             exit 1
@@ -219,7 +219,7 @@ jobs:
               fi
             fi
           done
-          if [[ -v FAILED ]]; then
+          if [[ ${FAILED} ]]; then
             echo "One or more regression tests failed."
             echo "Please download the failed results and run the tests locally or check the above log to see why."
             exit 1
