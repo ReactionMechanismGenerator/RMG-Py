@@ -63,9 +63,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span id="anacondadeveloper"></span><h1><span class="section-number">3.3.1. </span>Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX<a class="headerlink" href="#installation-by-source-using-anaconda-environment-for-unix-based-systems-linux-and-mac-osx" title="Permalink to this heading">¶</a></h1>
 <ol class="arabic">
 <li><p>Download and install <cite>Anaconda Individual Edition &lt;https://www.anaconda.com/products/individual#Downloads&gt;</cite>.</p>
-<p>The download will be a .sh file with a name like <code class="docutils literal notranslate"><span class="pre">Anaconda3-2021.05-Linux-x86_64.sh</span></code>. Open a terminal in the same
+<p>The download will be a .sh file with a name like <code class="docutils literal notranslate"><span class="pre">Anaconda3-2023.03-Linux-x86_64.sh</span></code>. Open a terminal in the same
 directory as this file, and type the following to install Anaconda (replace the name of your .sh file below).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">Anaconda3</span><span class="o">-</span><span class="mf">2021.05</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">Anaconda3</span><span class="o">-</span><span class="mf">2023.03</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 <p><strong>When prompted to append Anaconda to your PATH, select or type Yes</strong>.  Install the Anaconda folder inside your home
@@ -95,18 +95,18 @@ for your system.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">pacman</span> <span class="o">-</span><span class="n">S</span> <span class="n">git</span> <span class="n">gcc</span> <span class="n">make</span>
 </pre></div>
 </div>
-<p>For MacOS users, the above packages will not come preinstalled, but can be easily obtained by installing the XCode Command Line Tools.
+<p>For MacOS users, the above packages will not come preinstalled but can be easily obtained by installing the XCode Command Line Tools.
 These are a set of packages relevant for software development which have been bundled together by Apple. The easiest way
 to install this is to simply run one of the commands in the terminal, e.g. <code class="docutils literal notranslate"><span class="pre">git</span></code>. The terminal will then prompt you on
 whether or not you would like to install the Command Line Tools.</p>
-<p>For MacOS users only, download and install the latest macOS julia from here: &lt;<a class="reference external" href="https://julialang.org/downloads/">https://julialang.org/downloads/</a>&gt;. Then add julia to PATH by running the following command replacing 1.6 with the first two numbers in the Julia version designation (ex: 1.6.2-&gt;1.6, 1.1.1-&gt;1.1)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="s1">&#39;export PATH=&quot;/Applications/Julia-1.6.app/Contents/Resources/julia/bin:$PATH&quot;&#39;</span> <span class="o">&gt;&gt;</span> <span class="o">~/.</span><span class="n">bash_profile</span>
+<p>For MacOS users only, download and install MacOS Julia 1.8 from here: &lt;<a class="reference external" href="https://julialang.org/downloads/">https://julialang.org/downloads/</a>&gt;. Then add Julia to PATH by running the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="s1">&#39;export PATH=&quot;/Applications/Julia-1.8.app/Contents/Resources/julia/bin:$PATH&quot;&#39;</span> <span class="o">&gt;&gt;</span> <span class="o">~/.</span><span class="n">bash_profile</span>
 
-<span class="n">export</span> <span class="n">PATH</span><span class="o">=</span><span class="s2">&quot;/Applications/Julia-1.6.app/Contents/Resources/julia/bin:$PATH&quot;</span>
+<span class="n">export</span> <span class="n">PATH</span><span class="o">=</span><span class="s2">&quot;/Applications/Julia-1.8.app/Contents/Resources/julia/bin:$PATH&quot;</span>
 </pre></div>
 </div>
-<p>Note that this julia install will not respect conda environmental boundaries this means only one conda environment can be linked to it at a time.
-For linux users julia will be installed automatically.</p>
+<p>If using MacOS Catalina or newer your terminal may be using <code class="docutils literal notranslate"><span class="pre">zsh</span></code> by default, in which case you should replace <code class="docutils literal notranslate"><span class="pre">.bash_profile</span></code> with <code class="docutils literal notranslate"><span class="pre">.zshrc</span></code>.</p>
+<p>Note that this Julia install will not respect conda environmental boundaries meaning only one conda environment can be linked to it at a time.</p>
 </li>
 <li><p>Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an
 appropriate local directory where you want both RMG-Py and RMG-database folders to exist.
@@ -124,12 +124,19 @@ unfamiliar with <code class="docutils literal notranslate"><span class="pre">ssh
 </div>
 <p>For information on using <code class="docutils literal notranslate"><span class="pre">ssh</span></code> with GitHub see the <a class="reference external" href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh">Connecting to GitHub with SSH</a></p>
 </li>
-<li><p>Now create the conda environment for RMG-Py</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
+<li><p>Switch the conda solver backend to speed up creation of the RMG environment</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">n</span> <span class="n">base</span> <span class="n">conda</span><span class="o">-</span><span class="n">libmamba</span><span class="o">-</span><span class="n">solver</span>
+<span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">solver</span> <span class="n">libmamba</span>
+<span class="o">..</span>
+    <span class="n">The</span> <span class="n">above</span> <span class="n">step</span> <span class="ow">is</span> <span class="n">retrieved</span> <span class="kn">from</span> <span class="nn">https</span><span class="p">:</span><span class="o">//</span><span class="n">www</span><span class="o">.</span><span class="n">anaconda</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">blog</span><span class="o">/</span><span class="n">a</span><span class="o">-</span><span class="n">faster</span><span class="o">-</span><span class="n">conda</span><span class="o">-</span><span class="k">for</span><span class="o">-</span><span class="n">a</span><span class="o">-</span><span class="n">growing</span><span class="o">-</span><span class="n">community</span> <span class="n">also</span> <span class="n">see</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ReactionMechanismGenerator</span><span class="o">/</span><span class="n">RMG</span><span class="o">-</span><span class="n">Py</span><span class="o">/</span><span class="n">issues</span><span class="o">/</span><span class="mi">2323</span>
+
+<span class="n">Now</span> <span class="n">create</span> <span class="n">the</span> <span class="n">conda</span> <span class="n">environment</span> <span class="k">for</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span> <span class="p">::</span>
+
+<span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
 <span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
-<p>If the command returns an error due to being unable to find the <code class="docutils literal notranslate"><span class="pre">conda</span></code> command, try to either close and reopen your terminal to refresh your environment variables or type the following command.</p>
+<p>If either of these commands return an error due to being unable to find the <code class="docutils literal notranslate"><span class="pre">conda</span></code> command, try to either close and reopen your terminal to refresh your environment variables or type the following command.</p>
 <p>If on Linux or pre-Catalina MacOS</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">~/.</span><span class="n">bashrc</span>
 </pre></div>
