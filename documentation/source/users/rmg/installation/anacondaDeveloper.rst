@@ -78,10 +78,8 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     conda install -n base conda-libmamba-solver
     conda config --set solver libmamba
-    ..
-        The above step is retrieved from https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community also see https://github.com/ReactionMechanismGenerator/RMG-Py/issues/2323
 
-    Now create the conda environment for RMG-Py ::
+   Now create the conda environment for RMG-Py ::
 
     cd RMG-Py
     conda env create -f environment.yml
