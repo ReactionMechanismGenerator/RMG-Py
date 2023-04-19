@@ -88,6 +88,12 @@ jobs:
           make clean
           make
 
+      - name: Add Global Julia Install on MacOS
+        if: runner.os == 'macos'
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: "1.8.5"
+
       # RMS installation and linking to Julia
       # Allow these installs to 'fail' (as they do in RMG-Tests) with the command || True trick
       - name: Install and link Julia dependencies
