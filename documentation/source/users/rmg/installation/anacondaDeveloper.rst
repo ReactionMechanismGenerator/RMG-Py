@@ -42,10 +42,21 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     sudo pacman -S git gcc make
 
-   For MacOS users, the above packages will not come preinstalled, but can be easily obtained by installing the XCode Command Line Tools.
+   For MacOS users, the above packages will not come preinstalled but can be easily obtained by installing the XCode Command Line Tools.
    These are a set of packages relevant for software development which have been bundled together by Apple. The easiest way
    to install this is to simply run one of the commands in the terminal, e.g. ``git``. The terminal will then prompt you on
    whether or not you would like to install the Command Line Tools.
+
+   For MacOS users only, download and install MacOS Julia 1.8 from here: <https://julialang.org/downloads/>. Then add Julia to PATH by running the following command: ::
+
+     echo 'export PATH="/Applications/Julia-1.8.app/Contents/Resources/julia/bin:$PATH"' >> ~/.bash_profile
+
+     export PATH="/Applications/Julia-1.8.app/Contents/Resources/julia/bin:$PATH"
+
+   If using MacOS Catalina or newer your terminal may be using ``zsh`` by default, in which case you should replace ``.bash_profile`` with ``.zshrc``.
+   
+   Note that this Julia install will not respect conda environmental boundaries meaning only one conda environment can be linked to it at a time.
+
 
 #. Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an
    appropriate local directory where you want both RMG-Py and RMG-database folders to exist.
