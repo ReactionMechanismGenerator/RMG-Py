@@ -51,12 +51,6 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Update Xcode on MacOS
-        if: runner.os == 'macos'
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
