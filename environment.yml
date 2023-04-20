@@ -24,6 +24,7 @@ dependencies:
   - markupsafe
   - matplotlib >=1.5
   - conda-forge::mopac
+  - conda-forge::libgfortran-ng>=10.0
   - mpmath
   - rmg::muq2
   - networkx
