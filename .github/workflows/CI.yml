@@ -86,16 +86,6 @@ jobs:
           julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true 
           ln -sfn $(which python-jl) $(which python)
 
-      # Attempt to install MOPAC
-      - name: Install MOPAC
-        env:
-          MOPACKEY: ${{ secrets.MOPACKEY }}
-        timeout-minutes: 1
-        continue-on-error: true # allowed to fail on pull request from a forked repository
-        run: |
-          set +o pipefail
-          yes 'Yes' | ${CONDA_PREFIX}/bin/mopac "$MOPACKEY"
-
       # non-regression testing
       - name: Unit tests
         run: make test-unittests

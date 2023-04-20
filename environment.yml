@@ -23,7 +23,7 @@ dependencies:
   - rmg::lpsolve55
   - markupsafe
   - matplotlib >=1.5
-  - rmg::mopac
+  - conda-forge::mopac
   - mpmath
   - rmg::muq2
   - networkx
