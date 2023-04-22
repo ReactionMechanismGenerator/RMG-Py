@@ -21,6 +21,16 @@ for RMG-Py.
 - [Arkane Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/users/arkane/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_and_Arkane_Documentation.pdf))
 - [RMG API Reference](http://reactionmechanismgenerator.github.io/RMG-Py/reference/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_API_Reference.pdf))
 
+## How to cite
+A. Grinberg Dana, M.S. Johnson, J.W. Allen, S. Sharma, S. Raman, M. Liu, C.W. Gao, C.A. Grambow, M.J. Goldman,
+D.S. Ranasinghe, R.J. Gillis, A.M. Payne, Y.-P. Li, X. Dong, K.A. Spiekermann, H. Wu, E.E. Dames, Z.J. Buras,
+N.M. Vandewiele, N.W. Yee, S.S. Merchant, B. Buesser, C.A. Class, C.F. Goldsmith, R.H. West, W.H. Green,
+"Automated reaction kinetics and network exploration (Arkane):
+A statistical mechanics, thermodynamics, transition state theory, and master equation software",
+*International Journal of Chemical Kinetics* 2023, 55(6), 300-323.
+
+DOI: [10.1002/kin.21637](https://doi.org/10.1002/kin.21637)
+
 ## How to Contribute
 Please see the [Contributor Guidelines](https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/RMG-Contributor-Guidelines)
 for details on how to contribute to RMG-Py or RMG-database.
