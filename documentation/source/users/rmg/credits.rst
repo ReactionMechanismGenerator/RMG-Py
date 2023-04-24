@@ -15,10 +15,19 @@ Current Developers: (rmg_dev@mit.edu)
 
 - Dr. Alon Grinberg Dana
 - Dr. Matt Johnson
+- Yen-Ting Wang
+- Xiaorui Dong
+- Hao-Wei Pang
+- Oscar Wu
+- Kevin Spiekermann
+- Jonathan Zheng
+- Jackson Burns
+- Nathan Morgan
 
 Previous Developers: 
 
 - Dr. Joshua W. Allen
+- Dr. Yunsie Chung
 - Dr. Mark Goldman
 - Dr. Colin Grambow
 - Dr. Mengjie Liu
