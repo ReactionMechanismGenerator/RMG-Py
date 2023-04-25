@@ -23,6 +23,9 @@ Current Developers: (rmg_dev@mit.edu)
 - Jonathan Zheng
 - Jackson Burns
 - Nathan Morgan
+- Prof. C. Franklin Goldsmith
+- Dr. Katrin Blondal
+- Dr. Bjarne Kreitz
 
 Previous Developers: 
 
