@@ -26,16 +26,20 @@ Current Developers: (rmg_dev@mit.edu)
 - Prof. C. Franklin Goldsmith
 - Dr. Katrin Blondal
 - Dr. Bjarne Kreitz
+- Chris Blais
+- Sevy Harris
+- Nora Khalil
 
 Previous Developers: 
 
 - Dr. Joshua W. Allen
 - Dr. Yunsie Chung
+- Dr. David Farina
 - Dr. Mark Goldman
 - Dr. Colin Grambow
 - Dr. Mengjie Liu
 - Dr. Mark Payne
-- Jacob Barlow
+- Dr. Jacob Barlow
 - Dr. Pierre L. Bhoorasingh
 - Dr. Beat A. Buesser
 - Dr. Caleb A. Class
@@ -43,7 +47,10 @@ Previous Developers:
 - Dr. Kehang Han
 - Dr. Fariba S. Khanshan
 - Victor Lambert
+- Dr. Emily Mazeau
 - Dr. Shamel S. Merchant
+- Priyanka Satpute
+- Dr. Sai Krishna Sirumalla
 - Dr. Belinda Slakman
 - Sean Troiano
 - Dr. Aaron Vandeputte
