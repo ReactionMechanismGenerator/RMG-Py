@@ -4,7 +4,9 @@
 Credits
 *******
  
-RMG is based upon work supported by the Department of Energy, Office of Basic Energy Sciences through grant DE-FG02-98ER14914 and by the National Science Foundation under Grants No. 0312359 and 0535604.
+RMG is based upon work supported by the Department of Energy, Office of Basic Energy Sciences through grant DE-FG02-98ER14914 and  as part of the Computational Chemical Sciences Program. 
+and by the National Science Foundation under Grants No. 0312359, 0535604, and 1751720.
+Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation or the Department of Energy.
 
 Project Supervisors:
 
