@@ -261,7 +261,7 @@ cdef class ThermoData(HeatCapacityModel):
         S = self._S298.value_si
          
         # Correct the entropy from 298 K to the temperature of the lowest heat capacity point
-        assert Tdata[0] > 298
+        assert Tdata[0] >= 298
         Tlow = Tdata[0]; Thigh = Tdata[1]
         Cplow = Cpdata[0]; Cphigh = Cpdata[1]
         slope = (Cphigh - Cplow) / (Thigh - Tlow)
