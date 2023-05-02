@@ -35,9 +35,9 @@ dependencies:
   - conda-forge::openbabel >= 3
   - pandas
   - psutil
-  - rmg::pydas >=1.0.2
+  - rmg::pydas >=1.0.3
   - pydot
-  - rmg::pydqed >=1.0.1
+  - rmg::pydqed >=1.0.3
   - rmg::pyjulia
   - pymongo
   - pyparsing
