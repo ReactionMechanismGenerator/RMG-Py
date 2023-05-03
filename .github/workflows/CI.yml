@@ -94,6 +94,11 @@ jobs:
         with:
           version: "1.8.5"
 
+      - name: Install PyCall on MacOS Global Julia
+        if: runner.os == 'macos'
+        run: |
+          julia -e 'using Pkg; Pkg.add("PyCall"); using PyCall' || true 
+
       # RMS installation and linking to Julia
       # Allow these installs to 'fail' (as they do in RMG-Tests) with the command || True trick
       - name: Install and link Julia dependencies
