@@ -108,6 +108,12 @@ def execute(input_model_files, **kwargs):
 
     models = get_models_to_merge(input_model_files)
 
+    if transport:
+        for i, model in enumerate(models):
+            for s in model.species:
+                if not s.transport_data:
+                    print(f"Model {i+1} is missing transport data for species {s} !!!")
+   
     final_model = combine_models(models)
 
     # Save the merged model to disk
