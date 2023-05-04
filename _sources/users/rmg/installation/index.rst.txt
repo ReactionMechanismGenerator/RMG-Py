@@ -36,7 +36,7 @@ For users unfamiliar with bash or Linux, we recommend looking at
 
 
 Alternative Install: Binary Installation Using Anaconda
-===================================================
+===========================================================
 
 If you are accustomed to using the Anaconda package manager or cannot tolerate the storage overhead of Docker, installation from conda is also available.
 This is recommended for users who want to use RMG out of the box and are not interested in changing the RMG code or making many additions to RMG's thermodynamic and kinetics databases.
