@@ -821,6 +821,9 @@ cdef class PDepArrhenius(PDepKineticsModel):
         self.pressures = (Plist * 1e-5, "bar")
         self.arrhenius = []
         for i in range(len(Plist)):
+            k_p = [entry for entry in K[:, i] if entry is not None] 
+            if len(k_p) == 1: #checks whether it is '\' ,which means no k in data
+                Arrhenius(A=k_p[0], n=0, E0=0) 
             arrhenius = Arrhenius().fit_to_data(Tlist, K[:, i], kunits, T0)
             self.arrhenius.append(arrhenius)
         return self
