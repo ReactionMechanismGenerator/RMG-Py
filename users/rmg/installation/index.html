@@ -18,7 +18,7 @@
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="3.1.1. Setting up a Linux Virtual Machine from Windows" href="virtualMachineSetup.html" />
+    <link rel="next" title="3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX" href="anacondaUser.html" />
     <link rel="prev" title="2. Overview of Features" href="../features.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
@@ -39,7 +39,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="virtualMachineSetup.html" title="3.1.1. Setting up a Linux Virtual Machine from Windows"
+          <a href="anacondaUser.html" title="3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../features.html" title="2. Overview of Features"
@@ -62,45 +62,52 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span id="id1"></span><h1><span class="section-number">3. </span>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>It is recommended that RMG be installed with Python 3.7. Legacy releases compatible with Python 2.7 are also available.</p>
-</div>
-<p>For any questions related to RMG and its usage and installation, please
-post an issue at <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">https://github.com/ReactionMechanismGenerator/RMG-Py/issues</a> and the RMG
-developers will get back to you as soon as we can.  You can also search for your problem on the issues
-page to see if there are already solutions in development.  Alternatively, you can email us at
+<p>For questions related to installing or using RMG please post an issue on the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">RMG-Py GitHub repository</a>.
+You can also search for your problem on the issues page to see if there are already solutions in development.  Alternatively, you can email us at
 <a class="reference external" href="mailto:rmg_dev&#37;&#52;&#48;mit&#46;edu">rmg_dev<span>&#64;</span>mit<span>&#46;</span>edu</a></p>
-<section id="installation-on-a-windows-platform">
-<h2><span class="section-number">3.1. </span>Installation on a Windows Platform<a class="headerlink" href="#installation-on-a-windows-platform" title="Permalink to this heading">¶</a></h2>
-<p>Due to difficulties with dependencies, installation on Windows directly is no longer supported. Instead, it is
-recommended to run a Linux virtual machine from Windows and follow either the instructions for basic users
-(binary installation using Anaconda) or the instructions for developers. Alternatively, it is also possible to install
-RMG in the Ubuntu subsystem now available on Windows 10.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="virtualMachineSetup.html">3.1.1. Setting up a Linux Virtual Machine from Windows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="linuxSubsystem.html">3.1.2. Installing RMG in the Linux Subsystem on Windows 10</a></li>
-</ul>
 </div>
+<section id="recommended-install-docker">
+<h2><span class="section-number">3.1. </span>Recommended Install: Docker<a class="headerlink" href="#recommended-install-docker" title="Permalink to this heading">¶</a></h2>
+<p>RMG is primarily distributed using Docker, a software package for delivering applications.</p>
+<ol class="arabic">
+<li><p>Download and install <a class="reference external" href="https://docs.docker.com/get-docker/">Docker</a>.</p></li>
+<li><p>Open a terminal, powershell, or command prompt and run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">reactionmechanismgenerator/rmg:latest</span></code>.</p>
+<p>This step may take some time as the image is downloaded.</p>
+</li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--name</span> <span class="pre">rmgcontainer</span> <span class="pre">-v</span> <span class="pre">&quot;C:\Users\rmguser\myrmgfiles:/rmg/RMG-Py/myrmgfiles&quot;</span> <span class="pre">-it</span> <span class="pre">reactionmechanismgenerator/rmg:latest</span></code></p>
+<p>This command will make the folder <code class="docutils literal notranslate"><span class="pre">C:\Users\rmguser\myrmgfiles</span></code> on your computer accessible from inside the container to easily edit and transfer input and output files.
+Change the path to match your individual computer.
+If the folder does not exist when the command is run, it will be created.</p>
+</li>
+</ol>
+<p>You are now operating inside an Ubuntu operating system (a container called “rmgcontainer”) with a working installation of RMG-Py.
+To leave this container run <code class="docutils literal notranslate"><span class="pre">exit</span></code>, and to reconnect run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">start</span> <span class="pre">rmgcontainer</span> <span class="pre">--attach</span></code>.</p>
 <p>For users unfamiliar with bash or Linux, we recommend looking at
-<a class="reference external" href="https://www.guru99.com/unix-linux-tutorial.html">online Linux tutorials</a>. To start out
-with, we recommend looking at the following tutorials: <a class="reference external" href="https://www.guru99.com/linux-differences.html">Linux vs. Windows</a>,
+<a class="reference external" href="https://www.guru99.com/unix-linux-tutorial.html">online Linux tutorials</a> particularly <a class="reference external" href="https://www.guru99.com/linux-differences.html">Linux vs. Windows</a>,
 <a class="reference external" href="https://www.guru99.com/terminal-file-manager.html">Terminal vs File Manager</a>, and
 <a class="reference external" href="https://www.guru99.com/must-know-linux-commands.html">Must Know Linux/Unix Commands</a>.</p>
 </section>
-<section id="for-basic-users-binary-installation-using-anaconda">
-<h2><span class="section-number">3.2. </span>For Basic Users: Binary Installation Using Anaconda<a class="headerlink" href="#for-basic-users-binary-installation-using-anaconda" title="Permalink to this heading">¶</a></h2>
-<p>It is highly recommended to use the Python platform Anaconda to perform the installation of RMG-Py.
-A binary installation is recommended for users who want to use RMG out of the box, and are
-not interested in changing or recompiling the RMG code or making many additions to
-RMG’s thermodynamic and kinetics databases.</p>
+<section id="alternative-install-binary-installation-using-anaconda">
+<h2><span class="section-number">3.2. </span>Alternative Install: Binary Installation Using Anaconda<a class="headerlink" href="#alternative-install-binary-installation-using-anaconda" title="Permalink to this heading">¶</a></h2>
+<aside class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/installation/index.rst</span>, line 39)</p>
+<p>Title underline too short.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Alternative</span> <span class="n">Install</span><span class="p">:</span> <span class="n">Binary</span> <span class="n">Installation</span> <span class="n">Using</span> <span class="n">Anaconda</span>
+<span class="o">===================================================</span>
+</pre></div>
+</div>
+</aside>
+<p>If you are accustomed to using the Anaconda package manager or cannot tolerate the storage overhead of Docker, installation from conda is also available.
+This is recommended for users who want to use RMG out of the box and are not interested in changing the RMG code or making many additions to RMG’s thermodynamic and kinetics databases.
+If this does interest you, please see the Developer Install below.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="anacondaUser.html">3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a></li>
 </ul>
 </div>
 </section>
-<section id="for-developers-installation-by-source-using-anaconda-environment">
-<h2><span class="section-number">3.3. </span>For Developers: Installation by Source Using Anaconda Environment<a class="headerlink" href="#for-developers-installation-by-source-using-anaconda-environment" title="Permalink to this heading">¶</a></h2>
+<section id="developer-install-installation-from-source">
+<h2><span class="section-number">3.3. </span>Developer Install: Installation from Source<a class="headerlink" href="#developer-install-installation-from-source" title="Permalink to this heading">¶</a></h2>
 <p>RMG-Py can now be built by source using the Anaconda Python Platform to assist in installing
 all necessary dependencies. This is recommended for a developer who may be altering the RMG source code
 or someone who expects to manipulate the databases extensively.  You will also be able to access the latest
@@ -124,6 +131,8 @@ not recommended for use.</p>
 <li class="toctree-l1"><a class="reference internal" href="anacondaUserWindows.html">3.4.3. Binary Installation Using Anaconda for Windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="anacondaDeveloperWindows.html">3.4.4. Installation by Source Using Anaconda Environment for Windows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="windowsEnvironment.html">3.4.5. Setting up Windows Environment Variables for RMG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualMachineSetup.html">3.4.6. Setting up a Linux Virtual Machine from Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linuxSubsystem.html">3.4.7. Installing RMG in the Linux Subsystem on Windows 10</a></li>
 </ul>
 </div>
 </section>
@@ -170,9 +179,9 @@ not recommended for use.</p>
     <h3><a href="../../../contents.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">3. Installation</a><ul>
-<li><a class="reference internal" href="#installation-on-a-windows-platform">3.1. Installation on a Windows Platform</a></li>
-<li><a class="reference internal" href="#for-basic-users-binary-installation-using-anaconda">3.2. For Basic Users: Binary Installation Using Anaconda</a></li>
-<li><a class="reference internal" href="#for-developers-installation-by-source-using-anaconda-environment">3.3. For Developers: Installation by Source Using Anaconda Environment</a></li>
+<li><a class="reference internal" href="#recommended-install-docker">3.1. Recommended Install: Docker</a></li>
+<li><a class="reference internal" href="#alternative-install-binary-installation-using-anaconda">3.2. Alternative Install: Binary Installation Using Anaconda</a></li>
+<li><a class="reference internal" href="#developer-install-installation-from-source">3.3. Developer Install: Installation from Source</a></li>
 <li><a class="reference internal" href="#archive-of-unsupported-installation-methods">3.4. Archive of Unsupported Installation Methods</a></li>
 <li><a class="reference internal" href="#dependencies">3.5. Dependencies</a></li>
 </ul>
@@ -189,8 +198,8 @@ not recommended for use.</p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="virtualMachineSetup.html"
-                          title="next chapter"><span class="section-number">3.1.1. </span>Setting up a Linux Virtual Machine from Windows</a></p>
+    <p class="topless"><a href="anacondaUser.html"
+                          title="next chapter"><span class="section-number">3.2.1. </span>Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a></p>
   </div>
         </div>
         <div class="menuitem">
@@ -231,7 +240,7 @@ not recommended for use.</p>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="virtualMachineSetup.html" title="3.1.1. Setting up a Linux Virtual Machine from Windows"
+          <a href="anacondaUser.html" title="3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX"
              >next</a> |</li>
         <li class="right" >
           <a href="../features.html" title="2. Overview of Features"
