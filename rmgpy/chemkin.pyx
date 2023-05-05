@@ -896,10 +896,12 @@ def remove_comment_from_line(line):
     return line, comment
 
 
-def load_transport_file(path, species_dict):
+def load_transport_file(path, species_dict, skip_missing_species=False):
     """
     Load a Chemkin transport properties file located at `path` and store the
     properties on the species in `species_dict`.
+    If skip_missing_species=True then species not defined in the species_dict 
+    are just skipped over, with a warning.
     """
     with open(path, 'r') as f:
         for line0 in f:
@@ -909,6 +911,10 @@ def load_transport_file(path, species_dict):
                 # This line contains an entry, so parse it
                 label = line[0:16].strip()
                 data = line[16:].split()
+                if skip_missing_species:
+                    if label not in species_dict:
+                        logging.warning(f"Skipping transport data for unknown species {label}")
+                        continue
                 species = species_dict[label]
                 species.transport_data = TransportData(
                     shapeIndex=int(data[0]),
@@ -999,7 +1005,7 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
     # If the transport path is given, then read it to obtain the transport
     # properties
     if transport_path:
-        load_transport_file(transport_path, species_dict)
+        load_transport_file(transport_path, species_dict, skip_missing_species=True)
 
     if not use_chemkin_names:
         # Apply species aliases if known
