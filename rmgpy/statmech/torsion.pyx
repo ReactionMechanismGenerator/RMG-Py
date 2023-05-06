@@ -328,9 +328,6 @@ cdef class HinderedRotor(Torsion):
         cdef double beta = 1. / (constants.R * T), V, phi, dphi
         cdef int k
 
-        frequency = self.get_frequency() * constants.c * 100
-        x = constants.h * frequency / (constants.kB * T)
-
         if self.quantum:
             if self.energies is None: self.solve_schrodinger_equation()
             return np.sum(np.exp(-self.energies / constants.R / T)) / self.symmetry
@@ -353,6 +350,7 @@ cdef class HinderedRotor(Torsion):
 
         # Semiclassical correction
         if self.semiclassical:
+            x = constants.h * self.get_frequency() * constants.c * 100 / (constants.kB * T)
             Q *= x / (1 - exp(-x))
 
         return Q
