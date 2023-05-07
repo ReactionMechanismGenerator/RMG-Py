@@ -422,7 +422,7 @@ class TestArrheniusBM(unittest.TestCase):
         self.A = 8.00037e+12
         self.n = 0.391734
         self.w0 = 798000
-        self.E0 = 115905
+        self.E0 = 116249.32617478925
         self.Tmin = 300.
         self.Tmax = 2000.
         self.comment = 'rxn001084'
