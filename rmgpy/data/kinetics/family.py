@@ -3565,6 +3565,8 @@ class KineticsFamily(Database):
                 index += 1
 
         for label,entry in self.rules.entries.items(): #pull solute data from further up the tree as needed
+            if len(entry) == 0:
+                continue
             entry = entry[0]
             if not entry.data.solute:
                 ent = self.groups.entries[label]
