@@ -48,7 +48,7 @@ import h5py
 import numpy as np
 import psutil
 import yaml
-from cantera import ck2cti
+from cantera import ck2yaml
 from scipy.optimize import brute
 
 import rmgpy.util as util
@@ -1098,14 +1098,14 @@ class RMG(util.Subject):
 
         self.run_model_analysis()
 
-        # generate Cantera files chem.cti & chem_annotated.cti in a designated `cantera` output folder
+        # generate Cantera files chem.yaml & chem_annotated.yaml in a designated `cantera` output folder
         try:
             if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
                 self.generate_cantera_files(os.path.join(self.output_directory, 'chemkin', 'chem-gas.inp'),
-                                            surfaceFile=(
+                                            surface_file=(
                                               os.path.join(self.output_directory, 'chemkin', 'chem-surface.inp')))
                 self.generate_cantera_files(os.path.join(self.output_directory, 'chemkin', 'chem_annotated-gas.inp'),
-                                            surfaceFile=(os.path.join(self.output_directory, 'chemkin',
+                                            surface_file=(os.path.join(self.output_directory, 'chemkin',
                                                                     'chem_annotated-surface.inp')))
             else:  # gas phase only
                 self.generate_cantera_files(os.path.join(self.output_directory, 'chemkin', 'chem.inp'))
@@ -1671,13 +1671,13 @@ class RMG(util.Subject):
 
     def generate_cantera_files(self, chemkin_file, **kwargs):
         """
-        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti
+        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.yaml
         and save it in the cantera directory
         """
         transport_file = os.path.join(os.path.dirname(chemkin_file), 'tran.dat')
-        file_name = os.path.splitext(os.path.basename(chemkin_file))[0] + '.cti'
+        file_name = os.path.splitext(os.path.basename(chemkin_file))[0] + '.yaml'
         out_name = os.path.join(self.output_directory, 'cantera', file_name)
-        if 'surfaceFile' in kwargs:
+        if 'surface_file' in kwargs:
             out_name = out_name.replace('-gas.', '.')
         cantera_dir = os.path.dirname(out_name)
         try:
@@ -1687,14 +1687,14 @@ class RMG(util.Subject):
                 raise
         if os.path.exists(out_name):
             os.remove(out_name)
-        parser = ck2cti.Parser()
+        parser = ck2yaml.Parser()
         try:
-            parser.convertMech(chemkin_file, transportFile=transport_file, outName=out_name, quiet=True, permissive=True,
+            parser.convert_mech(chemkin_file, transport_file=transport_file, out_name=out_name, quiet=True, permissive=True,
                                **kwargs)
-        except ck2cti.InputParseError:
+        except ck2yaml.InputError:
             logging.exception("Error converting to Cantera format.")
             logging.info("Trying again without transport data file.")
-            parser.convertMech(chemkin_file, outName=out_name, quiet=True, permissive=True, **kwargs)
+            parser.convert_mech(chemkin_file, out_name=out_name, quiet=True, permissive=True, **kwargs)
 
     def initialize_reaction_threshold_and_react_flags(self):
         num_core_species = len(self.reaction_model.core.species)

@@ -203,7 +203,7 @@ class Cantera(object):
         `species_list`: list of RMG species objects
         `reaction_list`: list of RMG reaction objects
         `reaction_map`: dict mapping the RMG reaction index within the `reaction_list` to cantera model reaction(s) indices
-        `canteraFile` path of the chem.cti file associated with this job
+        `canteraFile` path of the chem.yaml file associated with this job
         `conditions`: a list of `CanteraCondition` objects
         `sensitive_species`: a list of RMG species objects for conductng sensitivity analysis on
         `thermo_SA`: a boolean indicating whether or not to run thermo SA. By default, if sensitive_species is given,
@@ -289,19 +289,19 @@ class Cantera(object):
 
     def load_chemkin_model(self, chemkin_file, transport_file=None, **kwargs):
         """
-        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti 
+        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.yaml 
         and save it in the output_directory
         Then load it into self.model
         """
-        from cantera import ck2cti
+        from cantera import ck2yaml
 
         base = os.path.basename(chemkin_file)
         base_name = os.path.splitext(base)[0]
-        out_name = os.path.join(self.output_directory, base_name + ".cti")
+        out_name = os.path.join(self.output_directory, base_name + ".yaml")
         if os.path.exists(out_name):
             os.remove(out_name)
-        parser = ck2cti.Parser()
-        parser.convertMech(chemkin_file, transportFile=transport_file, outName=out_name, **kwargs)
+        parser = ck2yaml.Parser()
+        parser.convert_mech(chemkin_file, transport_file=transport_file, out_name=out_name, **kwargs)
         self.model = ct.Solution(out_name)
 
     def modify_reaction_kinetics(self, rmg_reaction_index, rmg_reaction):
