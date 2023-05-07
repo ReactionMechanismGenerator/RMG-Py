@@ -1452,7 +1452,7 @@ class Fragment(Graph):
             if isinstance(atom, CuttingLabel):
                 substi = Atom(element=get_element('Si'),
                     radical_electrons=0,
-                    charge=0,
+                    charge=-3,
                     lone_pairs=3)
                 substi.label = element_symbol
 
