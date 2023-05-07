@@ -684,6 +684,9 @@ class TestGetAtomType(unittest.TestCase):
                                                        11 H u0 p0 {5,S}
                                                        12 H u0 p0 {6,S}''')
 
+        self.mol95 = Molecule().from_adjacency_list('''1 C u0 p0 c+1 {2,T}
+                                                       2 C u0 p1 c-1 {1,T}''')
+        
         self.electron = Molecule().from_adjacency_list('''1 e u1 p0 c-1''')
         self.proton = Molecule().from_adjacency_list('''1 H u0 p0 c+1''')
 
