@@ -1528,7 +1528,7 @@ def read_input_file(path, rmg0):
         'SMILES': smiles,
         'InChI': inchi,
         'adjacencyList': adjacency_list,
-        'adjacencyListGroup': adjacency_list_group,
+        'adjacencyListGroup': group_adjacency_list,
         'groupAdjacencyList': group_adjacency_list,
         'react': react,
         'simpleReactor': simple_reactor,
