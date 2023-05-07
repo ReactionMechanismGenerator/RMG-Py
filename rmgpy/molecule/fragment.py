@@ -660,9 +660,8 @@ class Fragment(Molecule):
                 substi = Atom(
                     element=get_element("Si"),
                     radical_electrons=0,
-                    charge=0,
-                    lone_pairs=3,
-                )
+                    charge=-3,
+                    lone_pairs=3)
                 substi.label = element_symbol
 
                 for bonded_atom, bond in atom.edges.items():
