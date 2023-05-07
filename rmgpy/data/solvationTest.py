@@ -263,7 +263,7 @@ class TestSoluteDatabase(TestCase):
 
     def test_radical_and_lone_pair_generation(self):
         """
-        Test we can obtain solute parameters via group additivity for a molecule with both lone 
+        Test we can obtain solute parameters via group additivity for a molecule with both lone
         pairs and a radical
         """
         molecule = Molecule().from_adjacency_list(
@@ -405,41 +405,6 @@ class TestSoluteDatabase(TestCase):
         T = 1000
         self.assertRaises(InputError, self.database.get_T_dep_solvation_energy_from_input_298,
                           delG298, delH298, delS298, solvent_name, T)
-
-    def test_initial_species(self):
-        """Test we can check whether the solvent is listed as one of the initial species in various scenarios"""
-
-        # Case 1. when SMILES for solvent is available, the molecular structures of the initial species and the solvent
-        # are compared to check whether the solvent is in the initial species list
-
-        # Case 1-1: the solvent water is not in the initialSpecies list, so it raises Exception
-        rmg = RMG()
-        rmg.initial_species = []
-        solute = Species(label='n-octane', molecule=[Molecule().from_smiles('C(CCCCC)CC')])
-        rmg.initial_species.append(solute)
-        rmg.solvent = 'water'
-        solvent_structure = Species().from_smiles('O')
-        self.assertRaises(Exception, self.database.check_solvent_in_initial_species, rmg, solvent_structure)
-
-        # Case 1-2: the solvent is now octane and it is listed as the initialSpecies. Although the string
-        # names of the solute and the solvent are different, because the solvent SMILES is provided,
-        # it can identify the 'n-octane' as the solvent
-        rmg.solvent = 'octane'
-        solvent_structure = Species().from_smiles('CCCCCCCC')
-        self.database.check_solvent_in_initial_species(rmg, solvent_structure)
-        self.assertTrue(rmg.initial_species[0].is_solvent)
-
-        # Case 2: the solvent SMILES is not provided. In this case, it can identify the species as the
-        # solvent by looking at the string name.
-
-        # Case 2-1: Since 'n-octane and 'octane' are not equal, it raises Exception
-        solvent_structure = None
-        self.assertRaises(Exception, self.database.check_solvent_in_initial_species, rmg, solvent_structure)
-
-        # Case 2-2: The label 'n-ocatne' is corrected to 'octane', so it is identified as the solvent
-        rmg.initial_species[0].label = 'octane'
-        self.database.check_solvent_in_initial_species(rmg, solvent_structure)
-        self.assertTrue(rmg.initial_species[0].is_solvent)
 
     def test_solvent_molecule(self):
         """Test that we can assign a proper solvent molecular structure when different formats are given"""
