@@ -734,41 +734,40 @@ def check_equivalent_cantera_reaction(ct_rxn1, ct_rxn2, check_id=False, dE=1e-5)
         assert ct_rxn1.reactants == ct_rxn2.reactants, "Same reactants"
         assert ct_rxn1.products == ct_rxn2.products, "Same products"
 
-        if isinstance(ct_rxn1, ct.ElementaryReaction):
-            assert ct_rxn1.allow_negative_pre_exponential_factor == ct_rxn2.allow_negative_pre_exponential_factor, \
-                "Same allow_negative_pre_exponential_factor attribute"
-            if ct_rxn1.rate or ct_rxn2.rate:
-                check_equivalent_arrhenius(ct_rxn1.rate, ct_rxn2.rate)
+        if isinstance(ct_rxn1, ct.Reaction):
+            # may not mean it is arrhenius, need to check if it is troe, 
+            if isinstance(ct_rxn1.rate, ct.ArrheniusRate):
+                assert ct_rxn1.allow_negative_pre_exponential_factor == ct_rxn2.allow_negative_pre_exponential_factor, \
+                    "Same allow_negative_pre_exponential_factor attribute"
+                if ct_rxn1.rate or ct_rxn2.rate:
+                    check_equivalent_arrhenius(ct_rxn1.rate, ct_rxn2.rate)
+            elif isinstance(ct_rxn1.rate, ct.PlogRate):
+                if ct_rxn1.rate.rates or ct_rxn2.rate.rates:
+                    assert len(ct_rxn1.rates) == len(ct_rxn2.rates), "Same number of rates in PLOG reaction"
 
-        elif isinstance(ct_rxn1, ct.PlogReaction):
-            if ct_rxn1.rates or ct_rxn2.rates:
-                assert len(ct_rxn1.rates) == len(ct_rxn2.rates), "Same number of rates in PLOG reaction"
+                    for i in range(len(ct_rxn1.rate.rates)):
+                        P1, arr1 = ct_rxn1.rate.rates[i]
+                        P2, arr2 = ct_rxn2.rate.rates[i]
+                        assert check_nearly_equal(P1, P2, dE), "Similar pressures for PLOG rates"
+                        check_equivalent_arrhenius(arr1, arr2)
 
-                for i in range(len(ct_rxn1.rates)):
-                    P1, arr1 = ct_rxn1.rates[i]
-                    P2, arr2 = ct_rxn2.rates[i]
-                    assert check_nearly_equal(P1, P2, dE), "Similar pressures for PLOG rates"
-                    check_equivalent_arrhenius(arr1, arr2)
-
-        elif isinstance(ct_rxn1, ct.ChebyshevReaction):
-            assert ct_rxn1.Pmax == ct_rxn2.Pmax, "Same Pmax for Chebyshev reaction"
-            assert ct_rxn1.Pmin == ct_rxn2.Pmin, "Same Pmin for Chebyshev reaction"
-            assert ct_rxn1.Tmax == ct_rxn2.Tmax, "Same Tmax for Chebyshev reaction"
-            assert ct_rxn1.Tmin == ct_rxn2.Tmin, "Same Tmin for Chebyshev reaction"
-            assert ct_rxn1.nPressure == ct_rxn2.nPressure, "Same number of pressure interpolations"
-            assert ct_rxn1.nTemperature == ct_rxn2.nTemperature, "Same number of temperature interpolations"
-            for i in range(ct_rxn1.coeffs.shape[0]):
-                for j in range(ct_rxn1.coeffs.shape[1]):
-                    assert check_nearly_equal(ct_rxn1.coeffs[i, j], ct_rxn2.coeffs[i, j], dE), \
-                        "Similar Chebyshev coefficients"
+            elif isinstance(ct_rxn1.rate, ct.ChebyshevRate):
+                assert ct_rxn1.rate.pressure_range == ct_rxn2.rate.pressure_range, "Same Prange for Chebyshev reaction"
+                assert ct_rxn1.rate.temperature_range == ct_rxn2.rate.temperature_range, "Same Trange for Chebyshev reaction"
+                assert ct_rxn1.rate.n_pressure == ct_rxn2.rate.n_pressure, "Same number of pressure interpolations"
+                assert ct_rxn1.rate.n_temperature == ct_rxn2.rate.n_temperature , "Same number of temperature interpolations"
+                for i in range(ct_rxn1.rate.data.shape[0]):
+                    for j in range(ct_rxn1.rate.data.shape[1]):
+                        assert check_nearly_equal(ct_rxn1.rate.data[i, j], ct_rxn2.rate.data[i, j], dE), \
+                            "Similar Chebyshev coefficients"
 
         elif isinstance(ct_rxn1, ct.ThreeBodyReaction):
             assert ct_rxn1.default_efficiency == ct_rxn2.default_efficiency, "Same default efficiency"
-            assert ct_rxn1.efficiencies == ct_rxn2.efficiencies, "Same efficienciess"
+            assert ct_rxn1.efficiencies == ct_rxn2.efficiencies, "Same efficiencies"
 
         elif isinstance(ct_rxn1, ct.FalloffReaction):
             assert ct_rxn1.default_efficiency == ct_rxn2.default_efficiency, "Same default efficiency"
-            assert ct_rxn1.efficiencies == ct_rxn2.efficiencies, "Same efficienciess"
+            assert ct_rxn1.efficiencies == ct_rxn2.efficiencies, "Same efficiencies"
             if ct_rxn1.falloff or ct_rxn2.falloff:
                 check_equivalent_falloff(ct_rxn1.falloff, ct_rxn2.falloff)
             if ct_rxn1.high_rate or ct_rxn2.high_rate:
