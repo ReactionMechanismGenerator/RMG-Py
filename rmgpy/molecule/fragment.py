@@ -165,6 +165,9 @@ class Fragment(Molecule):
             return "{0}({1:d})".format(self.label, self.index)
 
     # override methods
+    def is_lithium(self):
+        return False
+
     def copy(self, deep=False):
         """
         Create a copy of the current graph. If `deep` is ``True``, a deep copy
