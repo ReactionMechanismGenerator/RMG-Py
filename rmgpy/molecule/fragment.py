@@ -112,6 +112,9 @@ class CuttingLabel(Vertex):
     def is_iodine(self):
         return False
 
+    def is_lithium(self):
+        return False
+
     def is_nos(self):
         """
         Return ``True`` if the atom represent either nitrogen, sulfur, or oxygen
