@@ -238,8 +238,8 @@ returned.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.set_cantera_kinetics">
 <span class="sig-name descname"><span class="pre">set_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ct_reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.set_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Passes in a cantera ElementaryReaction() object and sets its
-rate to a Cantera Arrhenius() object.</p>
+<dd><p>Passes in a cantera Reaction() object and sets its
+rate to a Cantera ArrheniusRate object.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -252,9 +252,12 @@ in J/mol (and vise versa).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.to_cantera_kinetics">
-<span class="sig-name descname"><span class="pre">to_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.to_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts the Arrhenius object to a cantera Arrhenius object</p>
-<p>Arrhenius(A,b,E) where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol</p>
+<span class="sig-name descname"><span class="pre">to_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrhenius_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.to_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the RMG Arrhenius object to a cantera ArrheniusRate or
+the auxiliary cantera Arrhenius class (used by falloff reactions).
+Inputs for both are (A,b,E)  where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol</p>
+<p>arrhenius_class: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, uses cantera.Arrhenius (for falloff reactions). If <code class="docutils literal notranslate"><span class="pre">False</span></code>, uses
+Cantera.ArrheniusRate</p>
 </dd></dl>
 
 <dl class="py method">
