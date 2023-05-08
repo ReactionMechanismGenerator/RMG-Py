@@ -152,8 +152,8 @@ cdef class Arrhenius(KineticsModel):
         data.
         """
         import scipy.stats
-        if not all(np.isfinite(klist)):
-            raise  ValueError("Rates must all be finite, not inf or NaN")
+        #if not all(np.isfinite(klist)):
+        #     raise  ValueError("Rates must all be finite, not inf or NaN")
         if any(klist<0):
             if not all(klist<0):
                 raise ValueError("Rates must all be positive or all be negative.")
