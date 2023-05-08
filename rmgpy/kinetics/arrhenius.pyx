@@ -28,7 +28,6 @@
 ###############################################################################
 
 import numpy as np
-import math
 cimport numpy as np
 from libc.math cimport exp, sqrt, log10
 from scipy.optimize import curve_fit, fsolve
@@ -822,13 +821,18 @@ cdef class PDepArrhenius(PDepKineticsModel):
         self.pressures = (Plist * 1e-5, "bar")
         self.arrhenius = []
         for i in range(len(Plist)):
-            k_p = [entry for entry in K[:, i] if entry is not None or not math.isnan(entry)] 
+            new_Tlist=[]
+            k_p = [entry for entry in K[:, i] if not np.isnan(entry)] 
             k_p_list=np.array(k_p)
+            T_K_diff=len(Tlist)-len(k_p)
+            if(T_K_diff!=0): #remove the last T_K_diff valuse from Tlist. Thus the num of K and T equals
+                new_Tlist=Tlist[:-T_K_diff] 
+                print("Tlist try:",Tlist)
             if len(k_p) == 1: #checks whether there is only one value in a column of K
                 arrhenius=Arrhenius(A=k_p[0], n=0, E0=0) 
             else:
                 print("Kp:",k_p)
-                arrhenius = Arrhenius().fit_to_data(Tlist, k_p_list, kunits, T0)
+                arrhenius = Arrhenius().fit_to_data(new_Tlist, k_p_list, kunits, T0)
             self.arrhenius.append(arrhenius)
         return self
 
