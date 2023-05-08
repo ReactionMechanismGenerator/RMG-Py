@@ -823,8 +823,9 @@ cdef class PDepArrhenius(PDepKineticsModel):
         for i in range(len(Plist)):
             k_p = [entry for entry in K[:, i] if entry is not 0] 
             if len(k_p) == 1: #checks whether there is only one value in a column of K
-                Arrhenius(A=k_p[0], n=0, E0=0) 
-            arrhenius = Arrhenius().fit_to_data(Tlist, K[:, i], kunits, T0)
+                arrhenius=Arrhenius(A=k_p[0], n=0, E0=0) 
+            else:
+                arrhenius = Arrhenius().fit_to_data(Tlist, K[:, i], kunits, T0)
             self.arrhenius.append(arrhenius)
         return self
 
