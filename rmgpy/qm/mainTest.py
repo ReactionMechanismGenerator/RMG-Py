@@ -83,16 +83,6 @@ class TestQMCalculator(unittest.TestCase):
     """
 
     mopExecutablePath = Mopac.executablePath
-    if not os.path.exists(mopExecutablePath):
-        NO_MOPAC = NO_LICENCE = True
-    else:
-        NO_MOPAC = False
-        process = subprocess.Popen(mopExecutablePath,
-                                   stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        stdut, stderr = process.communicate(b'\n')
-        NO_LICENCE = b'To install the MOPAC license' in stderr
 
     gaussExecutablePath = Gaussian.executablePath
     NO_GAUSSIAN = not os.path.exists(gaussExecutablePath)
@@ -222,8 +212,6 @@ class TestQMCalculator(unittest.TestCase):
             self.gauss3.get_thermo_data(mol)
             self.molpro1.get_thermo_data(mol)
 
-    @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
-    @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
     def test_get_thermo_data_mopac(self):
         """
         Test that Mocpac get_thermo_data() works correctly.
@@ -287,8 +275,6 @@ class TestQMCalculator(unittest.TestCase):
         self.assertAlmostEqual(thermo2.H298.value_si, 169326.2504, 0)  # to 1 decimal place
         self.assertAlmostEqual(thermo2.S298.value_si, 338.2696063, 0)  # to 1 decimal place
 
-    @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
-    @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
     def test_run_jobs(self):
         """Test that run_jobs() works properly."""
         qm = QMCalculator(software='mopac',

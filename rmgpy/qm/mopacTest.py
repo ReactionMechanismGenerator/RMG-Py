@@ -39,17 +39,6 @@ from rmgpy.molecule.molecule import Molecule
 from rmgpy.qm.main import QMCalculator
 from rmgpy.qm.mopac import Mopac, MopacMolPM3, MopacMolPM6, MopacMolPM7
 
-NO_MOPAC = NO_LICENCE = False
-try:
-    Mopac().test_ready()
-except DependencyError as e:
-    if "Couldn't find MOPAC executable" in str(e):
-        NO_MOPAC = NO_LICENCE = True
-    elif 'To install the MOPAC license' in str(e) or 'MOPAC_LICENSE' in str(e):
-        NO_LICENCE = True
-    else:
-        raise
-
 mol1 = Molecule().from_smiles('C1=CC=C2C=CC=CC2=C1')
 MOPAC_CLOSE_ENOUGH_PERCENT = 0.0001  # 0.01%
 
@@ -59,8 +48,6 @@ class TestMopacMolPM3(unittest.TestCase):
     Contains unit tests for the Geometry class.
     """
 
-    @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
-    @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
     def setUp(self):
         """
         A function run before each unit test in this class.
@@ -123,8 +110,6 @@ class TestMopacMolPM6(unittest.TestCase):
     Contains unit tests for the Geometry class.
     """
 
-    @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
-    @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
     def setUp(self):
         """
         A function run before each unit test in this class.
@@ -188,8 +173,6 @@ class TestMopacMolPM7(unittest.TestCase):
     Contains unit tests for the Geometry class.
     """
 
-    @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
-    @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
     def setUp(self):
         """
         A function run before each unit test in this class.

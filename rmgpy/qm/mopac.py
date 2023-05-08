@@ -100,33 +100,13 @@ class Mopac(object):
         'MOPAC DONE'
     ]
 
-    def test_ready(self):
-        if not os.path.exists(self.executablePath):
-            raise DependencyError("Couldn't find MOPAC executable at {0}. Try setting your MOPAC_DIR "
-                                  "environment variable.".format(self.executablePath))
-
-        # Check if MOPAC executable works properly
-        process = Popen(self.executablePath,
-                        stdin=PIPE,
-                        stdout=PIPE,
-                        stderr=PIPE)
-        stdout, stderr = process.communicate()
-
-        self.expired = False
-        stderr = stderr.decode('utf-8')
-        if 'has expired' in stderr:
-            # The MOPAC executable is expired
-            logging.warning('\n'.join(stderr.split('\n')[2:7]))
-            self.expired = True
-        elif 'To install the MOPAC license' in stderr:
-            # The MOPAC executable exists, but the license has not been installed
-            raise DependencyError('\n'.join(stderr.split('\n')[0:9]))
-        elif 'MOPAC_LICENSE' in stderr:
-            # The MOPAC executable is in the wrong location on Windows; MOPAC_LICENSE must be set
-            raise DependencyError('\n'.join(stderr.split('\n')[0:11]))
-
     def run(self):
-        self.test_ready()
+        # ensure that the executable is present
+        if not os.path.exists(self.executablePath):
+            raise DependencyError(
+                "Couldn't find MOPAC executable at {0}. Please ensure your conda environment is "
+                "installed correctly.".format(self.executablePath)
+            )
         # submits the input file to mopac
 
         dirpath = tempfile.mkdtemp()
