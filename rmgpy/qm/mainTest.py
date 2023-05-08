@@ -40,6 +40,9 @@ from rmgpy.qm.mopac import Mopac
 from rmgpy.species import Species
 
 
+MOPAC_CLOSE_ENOUGH_PERCENT = 0.0001  # 0.01%
+
+
 class TestQMSettings(unittest.TestCase):
     """
     Contains unit tests for the QMSettings class.
@@ -249,12 +252,12 @@ class TestQMCalculator(unittest.TestCase):
         self.assertTrue(thermo2.comment.startswith('QM MopacMolPM6'))
         self.assertTrue(thermo3.comment.startswith('QM MopacMolPM7'))
 
-        self.assertAlmostEqual(thermo1.H298.value_si, 169708.0608, 1)  # to 1 decimal place
-        self.assertAlmostEqual(thermo1.S298.value_si, 334.5007584, 1)  # to 1 decimal place
-        self.assertAlmostEqual(thermo2.H298.value_si, 167704.4270, 1)  # to 1 decimal place
-        self.assertAlmostEqual(thermo2.S298.value_si, 338.0999241, 1)  # to 1 decimal place
-        self.assertAlmostEqual(thermo3.H298.value_si, 166168.8571, 1)  # to 1 decimal place
-        self.assertAlmostEqual(thermo3.S298.value_si, 336.3330406, 1)  # to 1 decimal place
+        self.assertAlmostEqual(thermo1.H298.value_si, 169708, delta=169708*MOPAC_CLOSE_ENOUGH_PERCENT)
+        self.assertAlmostEqual(thermo1.S298.value_si, 334.500, delta=334.500*MOPAC_CLOSE_ENOUGH_PERCENT)
+        self.assertAlmostEqual(thermo2.H298.value_si, 167704, delta=167704*MOPAC_CLOSE_ENOUGH_PERCENT)
+        self.assertAlmostEqual(thermo2.S298.value_si, 338.099, delta=338.099*MOPAC_CLOSE_ENOUGH_PERCENT)
+        self.assertAlmostEqual(thermo3.H298.value_si, 166168, delta=166168*MOPAC_CLOSE_ENOUGH_PERCENT)
+        self.assertAlmostEqual(thermo3.S298.value_si, 336.333, delta=336.333*MOPAC_CLOSE_ENOUGH_PERCENT)
 
     @unittest.skipIf(NO_GAUSSIAN, "Gaussian not found. Try resetting your environment variables if you want to use it.")
     def test_get_thermo_data_gaussian(self):

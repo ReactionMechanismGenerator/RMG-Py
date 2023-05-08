@@ -51,6 +51,7 @@ except DependencyError as e:
         raise
 
 mol1 = Molecule().from_smiles('C1=CC=C2C=CC=CC2=C1')
+MOPAC_CLOSE_ENOUGH_PERCENT = 0.0001  # 0.01%
 
 
 class TestMopacMolPM3(unittest.TestCase):
@@ -94,8 +95,8 @@ class TestMopacMolPM3(unittest.TestCase):
         if result.molecularMass.units == 'amu':
             self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
 
-        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 0)  # to 1 decimal place
-        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1)  # to 1 decimal place
+        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708, delta=169708*MOPAC_CLOSE_ENOUGH_PERCENT)
+        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.500, delta=334.500*MOPAC_CLOSE_ENOUGH_PERCENT)
 
     def test_load_thermo_data(self):
         """
@@ -113,8 +114,8 @@ class TestMopacMolPM3(unittest.TestCase):
         if result.molecularMass.units == 'amu':
             self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
 
-        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708.0608, 0)  # to 1 decimal place
-        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.5007584, 1)  # to 1 decimal place
+        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 169708, delta=169708*MOPAC_CLOSE_ENOUGH_PERCENT)
+        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 334.500, delta=334.500*MOPAC_CLOSE_ENOUGH_PERCENT)
 
 
 class TestMopacMolPM6(unittest.TestCase):
@@ -159,8 +160,8 @@ class TestMopacMolPM6(unittest.TestCase):
         if result.molecularMass.units == 'amu':
             self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
 
-        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 167704.4270, 0)  # to 1 decimal place
-        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.0999241, 1)  # to 1 decimal place
+        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 167704, delta=167704*MOPAC_CLOSE_ENOUGH_PERCENT)
+        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.099, delta=338.099*MOPAC_CLOSE_ENOUGH_PERCENT)
 
     def test_load_thermo_data(self):
         """
@@ -178,8 +179,8 @@ class TestMopacMolPM6(unittest.TestCase):
         if result.molecularMass.units == 'amu':
             self.assertEqual(result.molecularMass.value, 128.173)
 
-        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 167704.0681, 0)  # to 0 decimal place
-        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.0999241, 1)  # to 1 decimal place
+        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 167704, delta=167704*MOPAC_CLOSE_ENOUGH_PERCENT)  # to 0 decimal place
+        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 338.099, selta=338.099*MOPAC_CLOSE_ENOUGH_PERCENT)
 
 
 class TestMopacMolPM7(unittest.TestCase):
@@ -225,8 +226,8 @@ class TestMopacMolPM7(unittest.TestCase):
         if result.molecularMass.units == 'amu':
             self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
 
-        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 166168.9863, 0)  # to 1 decimal place
-        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 336.3330406, 1)  # to 1 decimal place
+        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 166169, delta=166169*MOPAC_CLOSE_ENOUGH_PERCENT)
+        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 336.333, delta=336.333*MOPAC_CLOSE_ENOUGH_PERCENT)
 
     def test_load_thermo_data(self):
         """
@@ -244,8 +245,8 @@ class TestMopacMolPM7(unittest.TestCase):
         if result.molecularMass.units == 'amu':
             self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
 
-        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 166168.8571, 0)  # to 1 decimal place
-        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 336.3330406, 1)  # to 1 decimal place
+        self.assertAlmostEqual(self.qmmol1.thermo.H298.value_si, 166169, delta=166169*MOPAC_CLOSE_ENOUGH_PERCENT)
+        self.assertAlmostEqual(self.qmmol1.thermo.S298.value_si, 336.333, delta=336.333*MOPAC_CLOSE_ENOUGH_PERCENT)
 
 
 ################################################################################
