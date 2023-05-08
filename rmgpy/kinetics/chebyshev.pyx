@@ -268,7 +268,7 @@ cdef class Chebyshev(PDepKineticsModel):
         """
         import cantera as ct
         import copy
-        assert isinstance(ct_reaction, ct.ChebyshevReaction), "Must be a Cantera ChebyshevReaction object"
+        assert isinstance(ct_reaction.rate, ct.ChebyshevRate), "Must have a Cantera Chebychev rate attribute"
 
         Tmin = self.Tmin.value_si
         Tmax = self.Tmax.value_si
@@ -294,4 +294,6 @@ cdef class Chebyshev(PDepKineticsModel):
         except:
             raise Exception('Chebyshev units {0} not found among accepted units for converting to '
                             'Cantera Chebyshev object.'.format(self.kunits))
-        ct_reaction.set_parameters(Tmin, Tmax, Pmin, Pmax, coeffs)
+
+        new_chebyshev = ct.ChebyshevRate(temperature_range=(Tmin, Tmax), pressure_range=(Pmin, Pmax), data=coeffs)
+        ct_reaction.rate = new_chebyshev

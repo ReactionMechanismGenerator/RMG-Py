@@ -281,39 +281,81 @@ class Reaction:
                 ct_products[product_name] += 1
             else:
                 ct_products[product_name] = 1
+
         if self.specific_collider:  # add a specific collider if exists
             ct_collider[self.specific_collider.to_chemkin() if use_chemkin_identifier else self.specific_collider.label] = 1
 
         if self.kinetics:
             if isinstance(self.kinetics, Arrhenius):
                 # Create an Elementary Reaction
-                ct_reaction = ct.ElementaryReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
             elif isinstance(self.kinetics, MultiArrhenius):
                 # Return a list of elementary reactions which are duplicates
-                ct_reaction = [ct.ElementaryReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
                                for arr in self.kinetics.arrhenius]
 
             elif isinstance(self.kinetics, PDepArrhenius):
-                ct_reaction = ct.PlogReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
 
             elif isinstance(self.kinetics, MultiPDepArrhenius):
-                ct_reaction = [ct.PlogReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
                                for arr in self.kinetics.arrhenius]
 
             elif isinstance(self.kinetics, Chebyshev):
-                ct_reaction = ct.ChebyshevReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ChebyshevRate())
 
             elif isinstance(self.kinetics, ThirdBody):
                 if ct_collider is not None:
-                    ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products, tbody=ct_collider)
+                    ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products, third_body=ct_collider)
                 else:
                     ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products)
 
-            elif isinstance(self.kinetics, Lindemann) or isinstance(self.kinetics, Troe):
-                if ct_collider is not None:
-                    ct_reaction = ct.FalloffReaction(reactants=ct_reactants, products=ct_products, tbody=ct_collider)
+            elif isinstance(self.kinetics, Troe):
+                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
+                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
+                A = self.kinetics.alpha
+                T3 = self.kinetics.T3.value_si
+                T1 = self.kinetics.T1.value_si
+
+                if self.kinetics.T2 is None:
+                    rate = ct.TroeRate(
+                        high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1]
+                    )
                 else:
-                    ct_reaction = ct.FalloffReaction(reactants=ct_reactants, products=ct_products)
+                    T2 = self.kinetics.T2.value_si
+                    rate = ct.TroeRate(
+                        high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1, T2]
+                    )
+
+                if ct_collider is not None:
+                    ct_reaction = ct.FalloffReaction(
+                        reactants=ct_reactants,
+                        products=ct_products,
+                        tbody=ct_collider,
+                        rate=rate,
+                    )
+                else:
+                    ct_reaction = ct.FalloffReaction(
+                        reactants=ct_reactants, products=ct_products, rate=rate
+                    )
+
+            elif isinstance(self.kinetics, Lindemann):
+                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
+                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
+                falloff = []
+                rate = ct.LindemannRate(low_rate, high_rate, falloff)
+                if ct_collider is not None:
+                    ct_reaction = ct.FalloffReaction(
+                        reactants=ct_reactants,
+                        products=ct_products,
+                        tbody=ct_collider,
+                        rate=rate,
+                    )
+                else:
+                    ct_reaction = ct.FalloffReaction(
+                        reactants=ct_reactants, products=ct_products, rate=rate
+                    )
+
             else:
                 raise NotImplementedError('Unable to set cantera kinetics for {0}'.format(self.kinetics))
 
