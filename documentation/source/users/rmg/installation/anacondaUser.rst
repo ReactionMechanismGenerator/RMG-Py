@@ -22,10 +22,6 @@ Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX
 
     source activate rmg_env
 
-#. Optional: If you wish to use the :ref:`QMTP interface <qm>` with `MOPAC <http://openmopac.net/>`_ to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the `MOPAC License Request Form <http://openmopac.net/form.php>`_.  Once you have it, type the following into your terminal ::
-
-    mopac password_string_here
-
 #. You may now run an RMG test job. Save the `Minimal Example Input File <https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/examples/rmg/minimal/input.py>`_
    to a local directory.  Use the terminal to run your RMG job inside that folder using the following command ::
 
