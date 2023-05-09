@@ -658,6 +658,9 @@ class KineticsFamily(Database):
             self.reverse = local_context.get('reverse', None)
             self.reversible = True if local_context.get('reversible', None) is None else local_context.get('reversible', None)
             self.forward_template.products = self.generate_product_template(self.forward_template.reactants)
+            for entry in self.forward_template.products:
+                if isinstance(entry.item,Group):
+                    entry.item.update()
             if self.reversible:
                 self.reverse_template = Reaction(reactants=self.forward_template.products,
                                                  products=self.forward_template.reactants)
