@@ -52,16 +52,7 @@ class Mopac(object):
     input_file_extension = ".mop"
     output_file_extension = ".out"
 
-    try:
-        executable_path = distutils.spawn.find_executable("mopac")
-    except:
-        logging.debug(
-            "Did not find mopac on path, checking if it exists in a declared MOPAC_DIR..."
-        )
-        mopacEnv = os.getenv("MOPAC_DIR", default="/opt/mopac")
-        executable_path = os.path.join(mopacEnv, "mopac")
-        if not os.path.exists(executable_path):
-            executable_path = os.path.join(mopacEnv, "(MOPAC 2009 or 2012 or 2016)")
+    executable_path = distutils.spawn.find_executable("mopac")
 
     use_polar = False  # use polar keyword in MOPAC
 
