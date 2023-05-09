@@ -49,24 +49,24 @@ class Mopac(object):
     Classes such as :class:`MopacMol` will inherit from this class.
     """
 
-    inputFileExtension = ".mop"
-    outputFileExtension = ".out"
+    input_file_extension = ".mop"
+    output_file_extension = ".out"
 
     try:
-        executablePath = distutils.spawn.find_executable("mopac")
+        executable_path = distutils.spawn.find_executable("mopac")
     except:
         logging.debug(
             "Did not find mopac on path, checking if it exists in a declared MOPAC_DIR..."
         )
         mopacEnv = os.getenv("MOPAC_DIR", default="/opt/mopac")
-        executablePath = os.path.join(mopacEnv, "mopac")
-        if not os.path.exists(executablePath):
-            executablePath = os.path.join(mopacEnv, "(MOPAC 2009 or 2012 or 2016)")
+        executable_path = os.path.join(mopacEnv, "mopac")
+        if not os.path.exists(executable_path):
+            executable_path = os.path.join(mopacEnv, "(MOPAC 2009 or 2012 or 2016)")
 
-    usePolar = False  # use polar keyword in MOPAC
+    use_polar = False  # use polar keyword in MOPAC
 
     # Keywords for the multiplicity
-    multiplicityKeywords = {
+    multiplicity_keywords = {
         1: "",
         2: "uhf doublet",
         3: "uhf triplet",
@@ -80,31 +80,34 @@ class Mopac(object):
 
     #: List of phrases that indicate failure
     #: NONE of these must be present in a succesful job.
-    failureKeys = [
+    failure_keys = [
         "IMAGINARY FREQUENCIES",
         "EXCESS NUMBER OF OPTIMIZATION CYCLES",
         "NOT ENOUGH TIME FOR ANOTHER CYCLE",
     ]
     #: List of phrases to indicate success.
     #: ALL of these must be present in a successful job.
-    successKeys = ["DESCRIPTION OF VIBRATIONS", "MOPAC DONE"]
+    success_keys = ["DESCRIPTION OF VIBRATIONS", "MOPAC DONE"]
 
     def run(self):
         # ensure that the executable is present
-        if not os.path.exists(self.executablePath):
+        if not os.path.exists(self.executable_path):
             raise DependencyError(
                 "Couldn't find MOPAC executable at {0}. Please ensure your conda environment is "
-                "installed correctly.".format(self.executablePath)
+                "installed correctly.".format(self.executable_path)
             )
         # submits the input file to mopac
 
-        dirpath = tempfile.mkdtemp()
+        dir_path = tempfile.mkdtemp()
         # copy input file to temp dir:
-        tempInpFile = os.path.join(dirpath, os.path.basename(self.input_file_path))
-        shutil.copy(self.input_file_path, dirpath)
+        temp_input_file = os.path.join(dir_path, os.path.basename(self.input_file_path))
+        shutil.copy(self.input_file_path, dir_path)
 
         process = Popen(
-            [self.executablePath, tempInpFile], stdin=PIPE, stdout=PIPE, stderr=PIPE
+            [self.executable_path, temp_input_file],
+            stdin=PIPE,
+            stdout=PIPE,
+            stderr=PIPE,
         )
         stdout, stderr = process.communicate(
             input=None
@@ -113,11 +116,13 @@ class Mopac(object):
             logging.warning("Mopac error message:" + stderr.decode("utf-8"))
 
         # copy output file from temp dir to output dir:
-        tempOutFile = os.path.join(dirpath, os.path.basename(self.output_file_path))
-        shutil.copy(tempOutFile, self.output_file_path)
+        temp_output_file = os.path.join(
+            dir_path, os.path.basename(self.output_file_path)
+        )
+        shutil.copy(temp_output_file, self.output_file_path)
 
         # delete temp folder:
-        shutil.rmtree(dirpath)
+        shutil.rmtree(dir_path)
         return self.verify_output_file()
 
     def verify_output_file(self):
@@ -148,13 +153,13 @@ class Mopac(object):
         )
 
         # Initialize dictionary with "False"s
-        success_keys_found = dict([(key, False) for key in self.successKeys])
+        success_keys_found = dict([(key, False) for key in self.success_keys])
 
-        with open(self.output_file_path) as outputFile:
-            for line in outputFile:
+        with open(self.output_file_path) as output_file:
+            for line in output_file:
                 line = line.strip()
 
-                for element in self.failureKeys:  # search for failure keywords
+                for element in self.failure_keys:  # search for failure keywords
                     if element in line:
                         logging.error(
                             "MOPAC output file contains the following error: {0}".format(
@@ -163,7 +168,7 @@ class Mopac(object):
                         )
                         return False
 
-                for element in self.successKeys:  # search for success keywords
+                for element in self.success_keys:  # search for success keywords
                     if element in line:
                         success_keys_found[element] = True
 
@@ -304,7 +309,7 @@ class MopacMol(QMMolecule, Mopac):
             mopac_file.write(input_string)
             mopac_file.write("\n")
             mopac_file.write(bottom_keys)
-            if self.usePolar:
+            if self.use_polar:
                 mopac_file.write("\n\n\n")
                 mopac_file.write(polar_keys)
 
@@ -387,7 +392,7 @@ class MopacMolPMn(MopacMol):
         if attempt > self.script_attempts:
             attempt -= self.script_attempts
 
-        multiplicity_keys = self.multiplicityKeywords[
+        multiplicity_keys = self.multiplicity_keywords[
             self.geometry.molecule.multiplicity
         ]
 

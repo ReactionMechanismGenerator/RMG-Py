@@ -83,10 +83,10 @@ class TestQMCalculator(unittest.TestCase):
     Contains unit tests for the QMSettings class.
     """
 
-    mopExecutablePath = Mopac.executablePath
+    mopexecutable_path = Mopac.executable_path
 
-    gaussExecutablePath = Gaussian.executablePath
-    NO_GAUSSIAN = not os.path.exists(gaussExecutablePath)
+    gaussexecutable_path = Gaussian.executable_path
+    NO_GAUSSIAN = not os.path.exists(gaussexecutable_path)
 
     def setUp(self):
         """

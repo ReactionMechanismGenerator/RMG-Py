@@ -32,6 +32,7 @@ import math
 import os
 
 import numpy as np
+
 try:
     from rdkit import Chem
     from rdkit.Chem import AllChem
@@ -89,11 +90,17 @@ class Geometry(object):
             self.scratchDirectory = None
 
         if self.fileStore and not os.path.exists(self.fileStore):
-            logging.info("Creating permanent directory %s for qm files." % os.path.abspath(self.fileStore))
+            logging.info(
+                "Creating permanent directory %s for qm files."
+                % os.path.abspath(self.fileStore)
+            )
             os.makedirs(self.fileStore)
 
         if self.scratchDirectory and not os.path.exists(self.scratchDirectory):
-            logging.info("Creating scratch directory %s for qm files." % os.path.abspath(self.scratchDirectory))
+            logging.info(
+                "Creating scratch directory %s for qm files."
+                % os.path.abspath(self.scratchDirectory)
+            )
             os.makedirs(self.scratchDirectory)
 
     def get_file_path(self, extension, scratch=True):
@@ -106,16 +113,16 @@ class Geometry(object):
         """
         return os.path.join(
             self.settings.scratchDirectory if scratch else self.settings.fileStore,
-            self.unique_id + extension
+            self.unique_id + extension,
         )
 
     def get_crude_mol_file_path(self):
         """Returns the path of the crude mol file."""
-        return self.get_file_path('.crude.mol')
+        return self.get_file_path(".crude.mol")
 
     def get_refined_mol_file_path(self):
         """Returns the path the the refined mol file."""
-        return self.get_file_path('.refined.mol')
+        return self.get_file_path(".refined.mol")
 
     def generate_rdkit_geometries(self):
         """
@@ -129,7 +136,9 @@ class Geometry(object):
         atoms = len(self.molecule.atoms)
         dist_geom_attempts = 1
         if atoms > 3:  # this check prevents the number of attempts from being negative
-            dist_geom_attempts = 5 * (atoms - 3)  # number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
+            dist_geom_attempts = 5 * (
+                atoms - 3
+            )  # number of conformer attempts is just a linear scaling with molecule size, due to time considerations in practice, it is probably more like 3^(n-3) or something like that
 
         rdmol, min_e_id = self.rd_embed(rdmol, dist_geom_attempts)
         self.save_coordinates_from_rdmol(rdmol, min_e_id, rdatom_idx)
@@ -155,7 +164,9 @@ class Geometry(object):
             # Try to embed using random coordinates. However, there
             # are still cases that it can fails:
             # https://github.com/rdkit/rdkit/issues/2996
-            AllChem.EmbedMultipleConfs(rdmol, num_conf_attempts, useRandomCoords=True, randomSeed=1)
+            AllChem.EmbedMultipleConfs(
+                rdmol, num_conf_attempts, useRandomCoords=True, randomSeed=1
+            )
 
             if rdmol.GetNumConformers() == 0:
                 # As a workaround, one can also build a molecule using its 2D Geometry
@@ -163,19 +174,25 @@ class Geometry(object):
                 for _ in range(num_conf_attempts):
                     # Since it can only add one conformer at a time, clearConfs is set to False
                     # to keep the previously generated 2D geometries
-                    AllChem.Compute2DCoords(rdmol, nSample=10, sampleSeed=1, clearConfs=False)
+                    AllChem.Compute2DCoords(
+                        rdmol, nSample=10, sampleSeed=1, clearConfs=False
+                    )
 
                 if rdmol.GetNumConformers() == 0:
                     # EDKTG + random coords + 2D should be able to cover almost all
                     # the cases. This is to check and report if further workaround
                     # needs to be implemented
-                    raise RuntimeError(f'RDKit has issue in embedding the conformer of {self.molecule}.'
-                                       f' Please raise an issue on the RMG Github page mentioning the'
-                                       f' error and the molecule.')
+                    raise RuntimeError(
+                        f"RDKit has issue in embedding the conformer of {self.molecule}."
+                        f" Please raise an issue on the RMG Github page mentioning the"
+                        f" error and the molecule."
+                    )
 
         energy = 0.0
         min_e_id = 0
-        min_e = 9.999999e99  # start with a very high number, which would never be reached
+        min_e = (
+            9.999999e99  # start with a very high number, which would never be reached
+        )
 
         crude = Chem.Mol(rdmol.ToBinary())
 
@@ -196,13 +213,15 @@ class Geometry(object):
         if not good_embed and not good_opt:
             # TODO: Probably add something to prevent the following QM calculation if a molecule
             # cannot embed and force field opt correctly.
-            logging.debug(f"Encounted a molecule {AllChem.MolToInchi(rdmol)} that cannot be embedded"
-                          f" and optimized correctly.")
+            logging.debug(
+                f"Encounted a molecule {AllChem.MolToInchi(rdmol)} that cannot be embedded"
+                f" and optimized correctly."
+            )
 
-        with open(self.get_crude_mol_file_path(), 'w') as out_3d_crude:
+        with open(self.get_crude_mol_file_path(), "w") as out_3d_crude:
             out_3d_crude.write(Chem.MolToMolBlock(crude, confId=min_e_id))
 
-        with open(self.get_refined_mol_file_path(), 'w') as out_3d:
+        with open(self.get_refined_mol_file_path(), "w") as out_3d:
             out_3d.write(Chem.MolToMolBlock(rdmol, confId=min_e_id))
 
         return rdmol, min_e_id
@@ -232,17 +251,17 @@ def load_thermo_data_file(file_path):
         return None
     try:
         with open(file_path) as result_file:
-            logging.info('Reading existing thermo file {0}'.format(file_path))
-            global_context = {'__builtins__': None}
+            logging.info("Reading existing thermo file {0}".format(file_path))
+            global_context = {"__builtins__": None}
             local_context = {
-                '__builtins__': None,
-                'True': True,
-                'False': False,
-                'ThermoData': rmgpy.thermo.ThermoData,
-                'PointGroup': symmetry.PointGroup,
-                'QMData': qmdata.QMData,
-                'array': np.array,
-                'int32': np.int32,
+                "__builtins__": None,
+                "True": True,
+                "False": False,
+                "ThermoData": rmgpy.thermo.ThermoData,
+                "PointGroup": symmetry.PointGroup,
+                "QMData": qmdata.QMData,
+                "array": np.array,
+                "int32": np.int32,
             }
             exec(result_file.read(), global_context, local_context)
     except IOError:
@@ -252,14 +271,20 @@ def load_thermo_data_file(file_path):
         logging.error('The thermo file "{0}" was invalid:'.format(file_path))
         logging.exception(e)
         return None
-    if 'InChI' not in local_context:
-        logging.error('The thermo file "{0}" did not contain an InChI.'.format(file_path))
+    if "InChI" not in local_context:
+        logging.error(
+            'The thermo file "{0}" did not contain an InChI.'.format(file_path)
+        )
         return None
-    if 'adjacencyList' not in local_context:
-        logging.error('The thermo file "{0}" did not contain adjacencyList.'.format(file_path))
+    if "adjacencyList" not in local_context:
+        logging.error(
+            'The thermo file "{0}" did not contain adjacencyList.'.format(file_path)
+        )
         return None
-    if 'thermoData' not in local_context:
-        logging.error('The thermo file "{0}" did not contain thermoData.'.format(file_path))
+    if "thermoData" not in local_context:
+        logging.error(
+            'The thermo file "{0}" did not contain thermoData.'.format(file_path)
+        )
         return None
     return local_context
 
@@ -271,8 +296,8 @@ class QMMolecule(object):
     Specific programs and methods should inherit from this and define some
     extra attributes and methods:
 
-     * outputFileExtension
-     * inputFileExtension
+     * output_file_extension
+     * input_file_extension
      * generate_qm_data() ...and whatever else is needed to make this method work.
 
     The attributes are:
@@ -306,22 +331,22 @@ class QMMolecule(object):
         # ToDo: this is duplicated in Geometry class. Should be refactored.
         return os.path.join(
             self.settings.scratchDirectory if scratch else self.settings.fileStore,
-            self.unique_id + extension
+            self.unique_id + extension,
         )
 
     @property
     def output_file_path(self):
         """Get the output file name."""
-        return self.get_file_path(self.outputFileExtension)
+        return self.get_file_path(self.output_file_extension)
 
     @property
     def input_file_path(self):
         """Get the input file name."""
-        return self.get_file_path(self.inputFileExtension)
+        return self.get_file_path(self.input_file_extension)
 
     def get_thermo_file_path(self):
         """Returns the path the thermo data file."""
-        return self.get_file_path('.thermo', scratch=False)
+        return self.get_file_path(".thermo", scratch=False)
 
     @property
     def script_attempts(self):
@@ -350,18 +375,29 @@ class QMMolecule(object):
         """
         Check the paths in the settings are OK. Make folders as necessary.
         """
-        self.settings.fileStore = os.path.expandvars(self.settings.fileStore)  # to allow things like $HOME or $RMGpy
-        self.settings.scratchDirectory = os.path.expandvars(self.settings.scratchDirectory)
+        self.settings.fileStore = os.path.expandvars(
+            self.settings.fileStore
+        )  # to allow things like $HOME or $RMGpy
+        self.settings.scratchDirectory = os.path.expandvars(
+            self.settings.scratchDirectory
+        )
         for path in [self.settings.fileStore, self.settings.scratchDirectory]:
             if not os.path.exists(path):
-                logging.info("Creating directory %s for QM files." % os.path.abspath(path))
+                logging.info(
+                    "Creating directory %s for QM files." % os.path.abspath(path)
+                )
                 os.makedirs(path)
 
     def create_geometry(self):
         """
         Creates self.geometry with RDKit geometries
         """
-        self.geometry = Geometry(self.settings, self.unique_id, self.molecule, unique_id_long=self.unique_id_long)
+        self.geometry = Geometry(
+            self.settings,
+            self.unique_id,
+            self.molecule,
+            unique_id_long=self.unique_id_long,
+        )
         self.geometry.generate_rdkit_geometries()
         return self.geometry
 
@@ -370,21 +406,33 @@ class QMMolecule(object):
         Parses the results of the Mopac calculation, and returns a QMData object.
         """
         parser = self.get_parser(self.output_file_path)
-        parser.logger.setLevel(logging.ERROR)  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-        parser.rotcons = [] # give it an attribute and it won't delete it, leaving it on the parser object
-        parser.molmass = None # give it an attribute and it won't delete it, leaving it on the parser object
+        parser.logger.setLevel(
+            logging.ERROR
+        )  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        parser.rotcons = (
+            []
+        )  # give it an attribute and it won't delete it, leaving it on the parser object
+        parser.molmass = None  # give it an attribute and it won't delete it, leaving it on the parser object
         cclib_data = parser.parse()
         radical_number = self.molecule.get_radical_count()
-        cclib_data.rotcons = parser.rotcons # this hack required because rotcons not part of a default cclib data object
-        cclib_data.molmass = parser.molmass # this hack required because rotcons not part of a default cclib data object
-        qm_data = parse_cclib_data(cclib_data, radical_number + 1)  # Should `radical_number+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
+        cclib_data.rotcons = (
+            parser.rotcons
+        )  # this hack required because rotcons not part of a default cclib data object
+        cclib_data.molmass = (
+            parser.molmass
+        )  # this hack required because rotcons not part of a default cclib data object
+        qm_data = parse_cclib_data(
+            cclib_data, radical_number + 1
+        )  # Should `radical_number+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
         return qm_data
 
     def generate_qm_data(self):
         """
         Calculate the QM data somehow and return a CCLibData object, or None if it fails.
         """
-        raise NotImplementedError("This should be defined in a subclass that inherits from QMMolecule")
+        raise NotImplementedError(
+            "This should be defined in a subclass that inherits from QMMolecule"
+        )
         return qmdata.QMData() or None
 
     def generate_thermo_data(self):
@@ -424,15 +472,19 @@ class QMMolecule(object):
         """
         Save the generated thermo data.
         """
-        self.thermo.H298.units = 'kcal/mol'
-        self.thermo.S298.units = 'cal/mol/K'
-        self.thermo.Cpdata.units = 'cal/mol/K'
-        with open(self.get_thermo_file_path(), 'w') as result_file:
+        self.thermo.H298.units = "kcal/mol"
+        self.thermo.S298.units = "cal/mol/K"
+        self.thermo.Cpdata.units = "cal/mol/K"
+        with open(self.get_thermo_file_path(), "w") as result_file:
             result_file.write('InChI = "{0!s}"\n'.format(self.unique_id_long))
             result_file.write("thermoData = {0!r}\n".format(self.thermo))
             result_file.write("pointGroup = {0!r}\n".format(self.point_group))
             result_file.write("qmData = {0!r}\n".format(self.qm_data))
-            result_file.write('adjacencyList = """\n{0!s}"""\n'.format(self.molecule.to_adjacency_list(remove_h=False)))
+            result_file.write(
+                'adjacencyList = """\n{0!s}"""\n'.format(
+                    self.molecule.to_adjacency_list(remove_h=False)
+                )
+            )
 
     def load_thermo_data(self):
         """
@@ -443,26 +495,34 @@ class QMMolecule(object):
         if local_context is None:
             # file does not exist or is invalid
             return None
-        if local_context['InChI'] != self.unique_id_long:
-            logging.error('The InChI in the thermo file {0} did not match the '
-                          'current molecule {1}'.format(file_path, self.unique_id_long))
+        if local_context["InChI"] != self.unique_id_long:
+            logging.error(
+                "The InChI in the thermo file {0} did not match the "
+                "current molecule {1}".format(file_path, self.unique_id_long)
+            )
             return None
-        loaded_molecule = rmgpy.molecule.Molecule().from_adjacency_list(local_context['adjacencyList'])
+        loaded_molecule = rmgpy.molecule.Molecule().from_adjacency_list(
+            local_context["adjacencyList"]
+        )
         if not loaded_molecule.is_isomorphic(self.molecule):
-            logging.error('The adjacencyList in thermo file {0} did not match the '
-                          'current molecule {1}'.format(file_path, self.unique_id_long))
+            logging.error(
+                "The adjacencyList in thermo file {0} did not match the "
+                "current molecule {1}".format(file_path, self.unique_id_long)
+            )
             return None
-        thermo = local_context['thermoData']
+        thermo = local_context["thermoData"]
         assert isinstance(thermo, rmgpy.thermo.ThermoData)
         self.thermo = thermo
 
-        self.point_group = symmetry.point_group_dictionary[local_context['pointGroup'].point_group]  # point to the one in the module level dictionary with the same name
-        self.qm_data = local_context['qmData']
+        self.point_group = symmetry.point_group_dictionary[
+            local_context["pointGroup"].point_group
+        ]  # point to the one in the module level dictionary with the same name
+        self.qm_data = local_context["qmData"]
         return thermo
 
     def get_augmented_inchi_key(self):
         """
-        Returns the augmented InChI from self.molecule 
+        Returns the augmented InChI from self.molecule
         """
         return self.molecule.to_augmented_inchi_key()
 
@@ -495,7 +555,7 @@ class QMMolecule(object):
         if self.point_group.chiral:
             return rmgpy.quantity.constants.R * math.log(2)
         else:
-            return 0.
+            return 0.0
 
     def calculate_thermo_data(self):
         """
@@ -507,16 +567,21 @@ class QMMolecule(object):
         assert self.qm_data, "Need QM Data first in order to calculate thermo."
         assert self.point_group, "Need Point Group first in order to calculate thermo."
 
-        mass = getattr(self.qm_data, 'molecularMass', None)
+        mass = getattr(self.qm_data, "molecularMass", None)
         if mass is None:
             # If using a cclib that doesn't read molecular mass, for example
-            mass = sum(rmgpy.molecule.element.get_element(int(a)).mass for a in self.qm_data.atomicNumbers)
-            mass = rmgpy.quantity.Mass(mass, 'kg/mol')
+            mass = sum(
+                rmgpy.molecule.element.get_element(int(a)).mass
+                for a in self.qm_data.atomicNumbers
+            )
+            mass = rmgpy.quantity.Mass(mass, "kg/mol")
         trans = rmgpy.statmech.IdealGasTranslation(mass=mass)
         if self.point_group.linear:
             # there should only be one rotational constant for a linear rotor
-            rotational_constant = rmgpy.quantity.Frequency(max(self.qm_data.rotationalConstants.value),
-                                                           self.qm_data.rotationalConstants.units)
+            rotational_constant = rmgpy.quantity.Frequency(
+                max(self.qm_data.rotationalConstants.value),
+                self.qm_data.rotationalConstants.units,
+            )
             rot = rmgpy.statmech.LinearRotor(
                 rotationalConstant=rotational_constant,
                 symmetry=self.point_group.symmetry_number,
@@ -531,9 +596,11 @@ class QMMolecule(object):
 
         # @todo: We need to extract or calculate E0 somehow from the qmdata
         E0 = (0, "kJ/mol")
-        self.statesmodel = rmgpy.statmech.Conformer(E0=E0,
-                                                    modes=[trans, rot, vib],
-                                                    spin_multiplicity=self.qm_data.groundStateDegeneracy)
+        self.statesmodel = rmgpy.statmech.Conformer(
+            E0=E0,
+            modes=[trans, rot, vib],
+            spin_multiplicity=self.qm_data.groundStateDegeneracy,
+        )
 
         # we will use number of atoms from above (alternatively, we could use the chemGraph); this is needed to test whether the species is monoatomic
         # SI units are J/mol, but converted to kJ/mol for generating the thermo.
@@ -552,7 +619,7 @@ class QMMolecule(object):
             S298=(S298, "J/(mol*K)"),
             Tmin=(300.0, "K"),
             Tmax=(2000.0, "K"),
-            comment=comment
+            comment=comment,
         )
         self.thermo = thermo
         return thermo
