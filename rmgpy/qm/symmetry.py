@@ -65,7 +65,7 @@ class PointGroup(object):
         )
 
 
-def make_point_group_dictionary():
+def _make_point_group_dictionary():
     """
     A function to make and fill the point group dictionary.
 
@@ -138,7 +138,7 @@ def make_point_group_dictionary():
 
 
 #: A dictionary of PointGroup objects, stored as a module level variable.
-point_group_dictionary = make_point_group_dictionary()
+POINT_GROUP_DICTIONARY = _make_point_group_dictionary()
 
 
 class PointGroupCalculator(object):
@@ -285,9 +285,9 @@ class SymmetryJob(object):
             # parse the output to get a point group name
             point_group_name = self.parse(output)
 
-            if point_group_name in point_group_dictionary:
+            if point_group_name in POINT_GROUP_DICTIONARY:
                 self.point_group_found = True
-                return point_group_dictionary[point_group_name]
+                return POINT_GROUP_DICTIONARY[point_group_name]
             else:
                 logging.info(
                     "Attempt number {0} did not identify a recognized "

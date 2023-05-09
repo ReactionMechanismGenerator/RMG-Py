@@ -514,7 +514,7 @@ class QMMolecule(object):
         assert isinstance(thermo, rmgpy.thermo.ThermoData)
         self.thermo = thermo
 
-        self.point_group = symmetry.point_group_dictionary[
+        self.point_group = symmetry.POINT_GROUP_DICTIONARY[
             local_context["pointGroup"].point_group
         ]  # point to the one in the module level dictionary with the same name
         self.qm_data = local_context["qmData"]
