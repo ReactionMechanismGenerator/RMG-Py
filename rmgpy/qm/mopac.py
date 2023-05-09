@@ -56,7 +56,7 @@ class Mopac(object):
         executablePath = distutils.spawn.find_executable("mopac")
     except:
         logging.debug(
-            "Did not find MOPAC on path, checking if it exists in a declared MOPAC_DIR..."
+            "Did not find mopac on path, checking if it exists in a declared MOPAC_DIR..."
         )
         mopacEnv = os.getenv("MOPAC_DIR", default="/opt/mopac")
         executablePath = os.path.join(mopacEnv, "mopac")
