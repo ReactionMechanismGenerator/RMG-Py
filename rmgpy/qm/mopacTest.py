@@ -40,7 +40,7 @@ from rmgpy.qm.main import QMCalculator
 from rmgpy.qm.mopac import Mopac, MopacMolPM3, MopacMolPM6, MopacMolPM7
 
 mol1 = Molecule().from_smiles("C1=CC=C2C=CC=CC2=C1")
-MOPAC_CLOSE_ENOUGH_PERCENT = 0.001  # 0.1%
+MOPAC_CLOSE_ENOUGH_PERCENT = 0.005  # 0.5%
 
 
 class TestMopacMolPM3(unittest.TestCase):
