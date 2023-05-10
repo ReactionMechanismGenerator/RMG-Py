@@ -154,6 +154,7 @@ jobs:
         # the stable regression results
           workflow: CI.yml
           workflow_conclusion: success
+          repo: ReactionMechanismGenerator/RMG-Py
           branch: main
           name: stable_regression_results
           path: stable_regression_results
