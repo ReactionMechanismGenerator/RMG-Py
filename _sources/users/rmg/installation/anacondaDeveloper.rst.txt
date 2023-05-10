@@ -137,10 +137,6 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     python-jl replace/with/path/to/rmg.py input.py
 
-#. Optional: If you wish to use the :ref:`QMTP interface <qm>` with `MOPAC <http://openmopac.net/>`_ to run quantum mechanical calculations for improved thermochemistry estimates of cyclic species, please obtain a legal license through the `MOPAC License Request Form <http://openmopac.net/form.php>`_.  Once you have it, type the following into your terminal ::
-    
-    mopac password_string_here    
-
 You may now use RMG-Py, Arkane, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.
 
 

@@ -63,5 +63,4 @@ All of RMG's dependencies except the ones listed below are freely available and 
 If you wish to do on-the-fly quantum chemistry calculations of thermochemistry (advisable for fused cyclic species in particular, where the ring corrections to group additive estimates are lacking),
 the then you will need the third-party software for the QM calculations:
 
-* **gaussian**: Gaussian03 and Gaussian09 are currently supported and commercially available.  See `https://gaussian.com <https://gaussian.com>`_ for more details.  
-* **mopac** MOPAC can be found at `http://openmopac.net/ <http://openmopac.net/>`_. Though it is not free for industrial use, it is free for non-profit and academic research use.
+* **gaussian**: Gaussian03 and Gaussian09 are currently supported and commercially available.  See `https://gaussian.com <https://gaussian.com>`_ for more details.

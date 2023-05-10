@@ -66,8 +66,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dd><p>A base class for all QM calculations that use MOPAC.</p>
 <p>Classes such as <a class="reference internal" href="#rmgpy.qm.mopac.MopacMol" title="rmgpy.qm.mopac.MopacMol"><code class="xref py py-class docutils literal notranslate"><span class="pre">MopacMol</span></code></a> will inherit from this class.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.Mopac.failureKeys">
-<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['IMAGINARY</span> <span class="pre">FREQUENCIES',</span> <span class="pre">'EXCESS</span> <span class="pre">NUMBER</span> <span class="pre">OF</span> <span class="pre">OPTIMIZATION</span> <span class="pre">CYCLES',</span> <span class="pre">'NOT</span> <span class="pre">ENOUGH</span> <span class="pre">TIME</span> <span class="pre">FOR</span> <span class="pre">ANOTHER</span> <span class="pre">CYCLE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.failureKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.mopac.Mopac.failure_keys">
+<span class="sig-name descname"><span class="pre">failure_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['IMAGINARY</span> <span class="pre">FREQUENCIES',</span> <span class="pre">'EXCESS</span> <span class="pre">NUMBER</span> <span class="pre">OF</span> <span class="pre">OPTIMIZATION</span> <span class="pre">CYCLES',</span> <span class="pre">'NOT</span> <span class="pre">ENOUGH</span> <span class="pre">TIME</span> <span class="pre">FOR</span> <span class="pre">ANOTHER</span> <span class="pre">CYCLE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.failure_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases that indicate failure
 NONE of these must be present in a succesful job.</p>
 </dd></dl>
@@ -79,16 +79,10 @@ NONE of these must be present in a succesful job.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.Mopac.successKeys">
-<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['DESCRIPTION</span> <span class="pre">OF</span> <span class="pre">VIBRATIONS',</span> <span class="pre">'MOPAC</span> <span class="pre">DONE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.successKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.mopac.Mopac.success_keys">
+<span class="sig-name descname"><span class="pre">success_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['DESCRIPTION</span> <span class="pre">OF</span> <span class="pre">VIBRATIONS',</span> <span class="pre">'MOPAC</span> <span class="pre">DONE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.success_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases to indicate success.
 ALL of these must be present in a successful job.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.Mopac.usePolar">
-<span class="sig-name descname"><span class="pre">usePolar</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.usePolar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Keywords for the multiplicity</p>
 </dd></dl>
 
 <dl class="py method">
@@ -154,8 +148,8 @@ self.qm_data and self.point_group need to be generated before this method is cal
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMol.failureKeys">
-<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['IMAGINARY</span> <span class="pre">FREQUENCIES',</span> <span class="pre">'EXCESS</span> <span class="pre">NUMBER</span> <span class="pre">OF</span> <span class="pre">OPTIMIZATION</span> <span class="pre">CYCLES',</span> <span class="pre">'NOT</span> <span class="pre">ENOUGH</span> <span class="pre">TIME</span> <span class="pre">FOR</span> <span class="pre">ANOTHER</span> <span class="pre">CYCLE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.failureKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMol.failure_keys">
+<span class="sig-name descname"><span class="pre">failure_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['IMAGINARY</span> <span class="pre">FREQUENCIES',</span> <span class="pre">'EXCESS</span> <span class="pre">NUMBER</span> <span class="pre">OF</span> <span class="pre">OPTIMIZATION</span> <span class="pre">CYCLES',</span> <span class="pre">'NOT</span> <span class="pre">ENOUGH</span> <span class="pre">TIME</span> <span class="pre">FOR</span> <span class="pre">ANOTHER</span> <span class="pre">CYCLE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.failure_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases that indicate failure
 NONE of these must be present in a succesful job.</p>
 </dd></dl>
@@ -269,16 +263,10 @@ then we start to use the crude coordinates.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMol.successKeys">
-<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['DESCRIPTION</span> <span class="pre">OF</span> <span class="pre">VIBRATIONS',</span> <span class="pre">'MOPAC</span> <span class="pre">DONE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.successKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMol.success_keys">
+<span class="sig-name descname"><span class="pre">success_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['DESCRIPTION</span> <span class="pre">OF</span> <span class="pre">VIBRATIONS',</span> <span class="pre">'MOPAC</span> <span class="pre">DONE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.success_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases to indicate success.
 ALL of these must be present in a successful job.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMol.usePolar">
-<span class="sig-name descname"><span class="pre">usePolar</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.usePolar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Keywords for the multiplicity</p>
 </dd></dl>
 
 <dl class="py method">
@@ -352,8 +340,8 @@ self.qm_data and self.point_group need to be generated before this method is cal
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM3.failureKeys">
-<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['IMAGINARY</span> <span class="pre">FREQUENCIES',</span> <span class="pre">'EXCESS</span> <span class="pre">NUMBER</span> <span class="pre">OF</span> <span class="pre">OPTIMIZATION</span> <span class="pre">CYCLES',</span> <span class="pre">'NOT</span> <span class="pre">ENOUGH</span> <span class="pre">TIME</span> <span class="pre">FOR</span> <span class="pre">ANOTHER</span> <span class="pre">CYCLE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.failureKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM3.failure_keys">
+<span class="sig-name descname"><span class="pre">failure_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['IMAGINARY</span> <span class="pre">FREQUENCIES',</span> <span class="pre">'EXCESS</span> <span class="pre">NUMBER</span> <span class="pre">OF</span> <span class="pre">OPTIMIZATION</span> <span class="pre">CYCLES',</span> <span class="pre">'NOT</span> <span class="pre">ENOUGH</span> <span class="pre">TIME</span> <span class="pre">FOR</span> <span class="pre">ANOTHER</span> <span class="pre">CYCLE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.failure_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases that indicate failure
 NONE of these must be present in a succesful job.</p>
 </dd></dl>
@@ -468,16 +456,10 @@ then we start to use the crude coordinates.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM3.successKeys">
-<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['DESCRIPTION</span> <span class="pre">OF</span> <span class="pre">VIBRATIONS',</span> <span class="pre">'MOPAC</span> <span class="pre">DONE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.successKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM3.success_keys">
+<span class="sig-name descname"><span class="pre">success_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['DESCRIPTION</span> <span class="pre">OF</span> <span class="pre">VIBRATIONS',</span> <span class="pre">'MOPAC</span> <span class="pre">DONE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.success_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases to indicate success.
 ALL of these must be present in a successful job.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM3.usePolar">
-<span class="sig-name descname"><span class="pre">usePolar</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.usePolar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Keywords for the multiplicity</p>
 </dd></dl>
 
 <dl class="py method">
@@ -551,8 +533,8 @@ self.qm_data and self.point_group need to be generated before this method is cal
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM6.failureKeys">
-<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['IMAGINARY</span> <span class="pre">FREQUENCIES',</span> <span class="pre">'EXCESS</span> <span class="pre">NUMBER</span> <span class="pre">OF</span> <span class="pre">OPTIMIZATION</span> <span class="pre">CYCLES',</span> <span class="pre">'NOT</span> <span class="pre">ENOUGH</span> <span class="pre">TIME</span> <span class="pre">FOR</span> <span class="pre">ANOTHER</span> <span class="pre">CYCLE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.failureKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM6.failure_keys">
+<span class="sig-name descname"><span class="pre">failure_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['IMAGINARY</span> <span class="pre">FREQUENCIES',</span> <span class="pre">'EXCESS</span> <span class="pre">NUMBER</span> <span class="pre">OF</span> <span class="pre">OPTIMIZATION</span> <span class="pre">CYCLES',</span> <span class="pre">'NOT</span> <span class="pre">ENOUGH</span> <span class="pre">TIME</span> <span class="pre">FOR</span> <span class="pre">ANOTHER</span> <span class="pre">CYCLE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.failure_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases that indicate failure
 NONE of these must be present in a succesful job.</p>
 </dd></dl>
@@ -667,16 +649,10 @@ then we start to use the crude coordinates.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM6.successKeys">
-<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['DESCRIPTION</span> <span class="pre">OF</span> <span class="pre">VIBRATIONS',</span> <span class="pre">'MOPAC</span> <span class="pre">DONE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.successKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM6.success_keys">
+<span class="sig-name descname"><span class="pre">success_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['DESCRIPTION</span> <span class="pre">OF</span> <span class="pre">VIBRATIONS',</span> <span class="pre">'MOPAC</span> <span class="pre">DONE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.success_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases to indicate success.
 ALL of these must be present in a successful job.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM6.usePolar">
-<span class="sig-name descname"><span class="pre">usePolar</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.usePolar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Keywords for the multiplicity</p>
 </dd></dl>
 
 <dl class="py method">
@@ -750,8 +726,8 @@ self.qm_data and self.point_group need to be generated before this method is cal
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM7.failureKeys">
-<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['IMAGINARY</span> <span class="pre">FREQUENCIES',</span> <span class="pre">'EXCESS</span> <span class="pre">NUMBER</span> <span class="pre">OF</span> <span class="pre">OPTIMIZATION</span> <span class="pre">CYCLES',</span> <span class="pre">'NOT</span> <span class="pre">ENOUGH</span> <span class="pre">TIME</span> <span class="pre">FOR</span> <span class="pre">ANOTHER</span> <span class="pre">CYCLE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.failureKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM7.failure_keys">
+<span class="sig-name descname"><span class="pre">failure_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['IMAGINARY</span> <span class="pre">FREQUENCIES',</span> <span class="pre">'EXCESS</span> <span class="pre">NUMBER</span> <span class="pre">OF</span> <span class="pre">OPTIMIZATION</span> <span class="pre">CYCLES',</span> <span class="pre">'NOT</span> <span class="pre">ENOUGH</span> <span class="pre">TIME</span> <span class="pre">FOR</span> <span class="pre">ANOTHER</span> <span class="pre">CYCLE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.failure_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases that indicate failure
 NONE of these must be present in a succesful job.</p>
 </dd></dl>
@@ -866,16 +842,10 @@ then we start to use the crude coordinates.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM7.successKeys">
-<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['DESCRIPTION</span> <span class="pre">OF</span> <span class="pre">VIBRATIONS',</span> <span class="pre">'MOPAC</span> <span class="pre">DONE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.successKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM7.success_keys">
+<span class="sig-name descname"><span class="pre">success_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['DESCRIPTION</span> <span class="pre">OF</span> <span class="pre">VIBRATIONS',</span> <span class="pre">'MOPAC</span> <span class="pre">DONE']</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.success_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases to indicate success.
 ALL of these must be present in a successful job.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.mopac.MopacMolPM7.usePolar">
-<span class="sig-name descname"><span class="pre">usePolar</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.usePolar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Keywords for the multiplicity</p>
 </dd></dl>
 
 <dl class="py method">

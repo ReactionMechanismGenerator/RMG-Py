@@ -66,8 +66,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dd><p>A base class for all QM calculations that use Gaussian.</p>
 <p>Classes such as <a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol" title="rmgpy.qm.gaussian.GaussianMol"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianMol</span></code></a> will inherit from this class.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.gaussian.Gaussian.failureKeys">
-<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['ERROR</span> <span class="pre">TERMINATION',</span> <span class="pre">'IMAGINARY</span> <span class="pre">FREQUENCIES']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian.failureKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.Gaussian.failure_keys">
+<span class="sig-name descname"><span class="pre">failure_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['ERROR</span> <span class="pre">TERMINATION',</span> <span class="pre">'IMAGINARY</span> <span class="pre">FREQUENCIES']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian.failure_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases that indicate failure
 NONE of these must be present in a succesful job.</p>
 </dd></dl>
@@ -79,8 +79,8 @@ NONE of these must be present in a succesful job.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.gaussian.Gaussian.successKeys">
-<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Normal</span> <span class="pre">termination</span> <span class="pre">of</span> <span class="pre">Gaussian']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian.successKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.Gaussian.success_keys">
+<span class="sig-name descname"><span class="pre">success_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Normal</span> <span class="pre">termination</span> <span class="pre">of</span> <span class="pre">Gaussian']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.Gaussian.success_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases to indicate success.
 ALL of these must be present in a successful job.</p>
 </dd></dl>
@@ -148,8 +148,8 @@ self.qm_data and self.point_group need to be generated before this method is cal
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMol.failureKeys">
-<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['ERROR</span> <span class="pre">TERMINATION',</span> <span class="pre">'IMAGINARY</span> <span class="pre">FREQUENCIES']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.failureKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMol.failure_keys">
+<span class="sig-name descname"><span class="pre">failure_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['ERROR</span> <span class="pre">TERMINATION',</span> <span class="pre">'IMAGINARY</span> <span class="pre">FREQUENCIES']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.failure_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases that indicate failure
 NONE of these must be present in a succesful job.</p>
 </dd></dl>
@@ -258,8 +258,8 @@ then we start to use the crude coordinates.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMol.successKeys">
-<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Normal</span> <span class="pre">termination</span> <span class="pre">of</span> <span class="pre">Gaussian']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.successKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMol.success_keys">
+<span class="sig-name descname"><span class="pre">success_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Normal</span> <span class="pre">termination</span> <span class="pre">of</span> <span class="pre">Gaussian']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMol.success_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases to indicate success.
 ALL of these must be present in a successful job.</p>
 </dd></dl>
@@ -335,8 +335,8 @@ self.qm_data and self.point_group need to be generated before this method is cal
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM3.failureKeys">
-<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['ERROR</span> <span class="pre">TERMINATION',</span> <span class="pre">'IMAGINARY</span> <span class="pre">FREQUENCIES']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.failureKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM3.failure_keys">
+<span class="sig-name descname"><span class="pre">failure_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['ERROR</span> <span class="pre">TERMINATION',</span> <span class="pre">'IMAGINARY</span> <span class="pre">FREQUENCIES']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.failure_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases that indicate failure
 NONE of these must be present in a succesful job.</p>
 </dd></dl>
@@ -451,8 +451,8 @@ then we start to use the crude coordinates.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM3.successKeys">
-<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Normal</span> <span class="pre">termination</span> <span class="pre">of</span> <span class="pre">Gaussian']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.successKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM3.success_keys">
+<span class="sig-name descname"><span class="pre">success_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Normal</span> <span class="pre">termination</span> <span class="pre">of</span> <span class="pre">Gaussian']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM3.success_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases to indicate success.
 ALL of these must be present in a successful job.</p>
 </dd></dl>
@@ -528,8 +528,8 @@ self.qm_data and self.point_group need to be generated before this method is cal
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM6.failureKeys">
-<span class="sig-name descname"><span class="pre">failureKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['ERROR</span> <span class="pre">TERMINATION',</span> <span class="pre">'IMAGINARY</span> <span class="pre">FREQUENCIES']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.failureKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM6.failure_keys">
+<span class="sig-name descname"><span class="pre">failure_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['ERROR</span> <span class="pre">TERMINATION',</span> <span class="pre">'IMAGINARY</span> <span class="pre">FREQUENCIES']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.failure_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases that indicate failure
 NONE of these must be present in a succesful job.</p>
 </dd></dl>
@@ -644,8 +644,8 @@ then we start to use the crude coordinates.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM6.successKeys">
-<span class="sig-name descname"><span class="pre">successKeys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Normal</span> <span class="pre">termination</span> <span class="pre">of</span> <span class="pre">Gaussian']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.successKeys" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.qm.gaussian.GaussianMolPM6.success_keys">
+<span class="sig-name descname"><span class="pre">success_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Normal</span> <span class="pre">termination</span> <span class="pre">of</span> <span class="pre">Gaussian']</span></em><a class="headerlink" href="#rmgpy.qm.gaussian.GaussianMolPM6.success_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of phrases to indicate success.
 ALL of these must be present in a successful job.</p>
 </dd></dl>
