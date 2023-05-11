@@ -23,7 +23,10 @@ on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     - cron: "0 8 * * *"
+  # runs on all branches on both RMG-Py and forks
   push:
+  # runs on PRs against RMG-Py (and anywhere else, but we add this for RMG-Py)
+  pull_request:
 
 # this prevents one PR from simultaneously running multiple runners, which will clog up the queue
 # and prevent other PRs from running the CI
