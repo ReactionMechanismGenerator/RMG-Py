@@ -26,7 +26,7 @@
 # DEALINGS IN THE SOFTWARE.                                                   #
 #                                                                             #
 ###############################################################################
-
+import math
 import numpy as np
 cimport numpy as np
 from libc.math cimport exp, sqrt, log10
@@ -825,11 +825,29 @@ cdef class PDepArrhenius(PDepKineticsModel):
             k_p = [entry for entry in K[:, i] if not np.isnan(entry)] 
             k_p_list=np.array(k_p)
             T_K_diff=len(Tlist)-len(k_p)
+            print("diff:",T_K_diff)
             if(T_K_diff!=0): #remove the last T_K_diff valuse from Tlist. Thus the num of K and T equals
                 new_Tlist=Tlist[:-T_K_diff] 
-                print("Tlist try:",Tlist)
+                print("Tlist new:",new_Tlist)
             if len(k_p) == 1: #checks whether there is only one value in a column of K
-                arrhenius=Arrhenius(A=k_p[0], n=0, E0=0) 
+                print("Kp:",k_p)
+                arrhenius=Arrhenius(A=(k_p[0],kunits), n=0, Ea=(0,'kJ/mol')) 
+            elif len(k_p)==2:
+                print("Kp:",k_p)
+                point1=(1/new_Tlist[0],math.log(k_p[0]))
+                point2=(1/new_Tlist[1],math.log(k_p[1]))
+                m=(point1[1]-point2[1])/(point1[0]-point2[0])
+                R=1.987 #cal/mol/k
+                Ea=-m*R
+                A=10**(point1[1]-m*point1[0]) 
+                arrhenius=Arrhenius(A=(A,kunits),n=0,Ea=(Ea,'cal/mol'))
+                #arrhenius = Arrhenius().fit_to_data(new_Tlist, k_p_list, kunits, T0,three_params=False)
+            elif len(k_p)==3:
+                print("Kp:",k_p)
+                arrhenius = Arrhenius().fit_to_data(new_Tlist, k_p_list, kunits, T0,three_params=False)
+
+            elif len(k_p)==0: #no data for Pi
+                continue
             else:
                 print("Kp:",k_p)
                 arrhenius = Arrhenius().fit_to_data(new_Tlist, k_p_list, kunits, T0)
