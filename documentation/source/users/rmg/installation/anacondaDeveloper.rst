@@ -47,17 +47,6 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    to install this is to simply run one of the commands in the terminal, e.g. ``git``. The terminal will then prompt you on
    whether or not you would like to install the Command Line Tools.
 
-   For MacOS users only, download and install MacOS Julia 1.8 from here: <https://julialang.org/downloads/>. Then add Julia to PATH by running the following command: ::
-
-     echo 'export PATH="/Applications/Julia-1.8.app/Contents/Resources/julia/bin:$PATH"' >> ~/.bash_profile
-
-     export PATH="/Applications/Julia-1.8.app/Contents/Resources/julia/bin:$PATH"
-
-   If using MacOS Catalina or newer your terminal may be using ``zsh`` by default, in which case you should replace ``.bash_profile`` with ``.zshrc``.
-   
-   Note that this Julia install will not respect conda environmental boundaries meaning only one conda environment can be linked to it at a time.
-
-
 #. Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an
    appropriate local directory where you want both RMG-Py and RMG-database folders to exist.
    Github has deprecated password authentication from the command line, so it
@@ -83,6 +72,16 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     cd RMG-Py
     conda env create -f environment.yml
+
+.. warning:: Apple Silicon (M1+) Users
+   Execute the following commands instead of ``conda env create -f environment.yml``: ::
+    
+    conda create -n rmg_env
+    conda activate rmg_env
+    conda config --env --set subdir osx-64
+    conda install python=3.7
+    conda env update -f environment.yml
+..
 
    If either of these commands return an error due to being unable to find the ``conda`` command, try to either close and reopen your terminal to refresh your environment variables or type the following command.
 
@@ -127,6 +126,14 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
      python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
      julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator;'
+
+.. warning:: Apple Silicon (M1+) Users
+   Execute the following commands instead of ``conda env create -f environment.yml``: ::
+    
+    julia -e 'using Pkg; Pk.add("PyCall");Pkg.build("PyCall");Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator;'
+
+    python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
+..
 
    Note that this links your python to python-jl enabling calls to Julia through pyjulia. Occasionally programs will
    interact with python-jl differently than the default python. If this occurs for you we recommend doing that operation
