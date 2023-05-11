@@ -27,7 +27,7 @@ RMG is primarily distributed using Docker, a software package for delivering app
    If the folder does not exist when the command is run, it will be created.
 
 You are now operating inside an Ubuntu operating system (a container called "rmgcontainer") with a working installation of RMG-Py.
-To leave this container run ``exit``, and to reconnect run ``docker start rmgcontainer --attach``.
+To leave this container run ``exit``, and to reconnect run ``docker start rmgcontainer --attach --interactive``.
 
 For users unfamiliar with bash or Linux, we recommend looking at
 `online Linux tutorials <https://www.guru99.com/unix-linux-tutorial.html>`_ particularly `Linux vs. Windows <https://www.guru99.com/linux-differences.html>`_,
