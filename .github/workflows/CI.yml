@@ -40,7 +40,7 @@ jobs:
   build-and-test-linux:
     runs-on: ubuntu-latest
     # skip scheduled runs on main from forks
-    if: !(github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule')
+    if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: # update this if needed to match a pull request on the RMG-database
       RMG_DATABASE_BRANCH: main
     defaults:
