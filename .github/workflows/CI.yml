@@ -17,13 +17,18 @@
 # in general, and documentation throughout the file.
 #
 # May 2023 - added Docker build steps
+#
+# May 12 2023 - added changes to allow running on forks
 name: Constant Integration
 
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     - cron: "0 8 * * *"
+  # runs on all branches on both RMG-Py and forks
   push:
+  # runs on PRs against RMG-Py (and anywhere else, but we add this for RMG-Py)
+  pull_request:
 
 # this prevents one PR from simultaneously running multiple runners, which will clog up the queue
 # and prevent other PRs from running the CI
@@ -34,6 +39,8 @@ concurrency:
 jobs:
   build-and-test-linux:
     runs-on: ubuntu-latest
+    # skip scheduled runs on main from forks
+    if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: # update this if needed to match a pull request on the RMG-database
       RMG_DATABASE_BRANCH: main
     defaults:
@@ -154,6 +161,7 @@ jobs:
         # the stable regression results
           workflow: CI.yml
           workflow_conclusion: success
+          repo: ReactionMechanismGenerator/RMG-Py
           branch: main
           name: stable_regression_results
           path: stable_regression_results
@@ -228,7 +236,7 @@ jobs:
     # taken from https://github.com/docker/build-push-action
     needs: build-and-test-linux
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py'
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
