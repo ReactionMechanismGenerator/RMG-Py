@@ -240,7 +240,7 @@ class Reaction:
         Otherwise, only the reaction string will be returned.
         """
         import rmgpy.chemkin
-        if kinetics:
+        if kinetics and species_list is not None:
             return rmgpy.chemkin.write_kinetics_entry(self, species_list)
         else:
             return rmgpy.chemkin.write_reaction_string(self)
