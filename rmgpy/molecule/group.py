@@ -2746,28 +2746,22 @@ class Group(Graph):
     def is_benzene_explicit(self):
         """
 
-        Returns: 'True' if all Cb, Cbf atoms are in completely explicitly stated benzene rings.
+        Returns: 'True' if all Cb, Cbf (and other 'b' atoms)
+        are in completely explicitly stated benzene rings.
 
         Otherwise return 'False'
 
         """
-
         # classify atoms
         cb_atom_list = []
-
-        # only want to work with carbon atoms (and some others)
-        labels_of_carbon_atom_types = [x.label for x in ATOMTYPES['C'].specific] + ['C', 'N3b', 'N5b', 'N5bd']
-
         for atom in self.atoms:
-            if atom.atomtype[0].label not in labels_of_carbon_atom_types:
-                continue
-            elif atom.atomtype[0].label in ['Cb', 'Cbf', 'N3b', 'N5b', 'N5bd']:  # Make Cb and N3b into normal cb atoms
+            if sum(atom.atomtype[0].benzene): # atomtype has at least one benzene bond
                 cb_atom_list.append(atom)
-            else:
-                benzene_bonds = 0
+            else: # there may be some undeclared (eg. a generic C atomtype, with a benzene bond)
                 for atom2, bond12 in atom.bonds.items():
-                    if bond12.is_benzene(): benzene_bonds += 1
-                if benzene_bonds > 0: cb_atom_list.append(atom)
+                    if bond12.is_benzene():
+                        cb_atom_list.append(atom)
+                        break # can stop checking bonds for this atom
 
         # get all explicit benzene rings
         rings = [cycle for cycle in self.get_all_cycles_of_size(6) if Group(atoms=cycle).is_aromatic_ring()]
