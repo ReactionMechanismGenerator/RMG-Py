@@ -2219,12 +2219,12 @@ class Group(Graph):
         # Only want to work with benzene bonds on carbon
         labels_of_carbon_atom_types = [x.label for x in ATOMTYPES['C'].specific] + ['C']
         # Also allow with R!H and some nitrogen groups
-        labels_of_carbon_atom_types.extend(['R!H', 'N5b', 'N3b'])
+        labels_of_carbon_atom_types.extend(['R!H', 'N5b', 'N3b', 'N5bd'])
 
         for atom in self.atoms:
             if atom.atomtype[0].label not in labels_of_carbon_atom_types:
                 continue
-            elif atom.atomtype[0].label in ['Cb', 'N5b', 'N3b']:  # Make Cb and N3b into normal cb atoms
+            elif atom.atomtype[0].label in ['Cb', 'N5b', 'N3b', 'N5bd']:  # Make Cb and N3b into normal cb atoms
                 cb_atom_list.append(atom)
             elif atom.atomtype[0].label == 'Cbf':
                 cbf_atom_list.append(atom)
@@ -2755,13 +2755,13 @@ class Group(Graph):
         # classify atoms
         cb_atom_list = []
 
-        # only want to work with carbon atoms
-        labels_of_carbon_atom_types = [x.label for x in ATOMTYPES['C'].specific] + ['C', 'N3b', 'N5b']
+        # only want to work with carbon atoms (and some others)
+        labels_of_carbon_atom_types = [x.label for x in ATOMTYPES['C'].specific] + ['C', 'N3b', 'N5b', 'N5bd']
 
         for atom in self.atoms:
             if atom.atomtype[0].label not in labels_of_carbon_atom_types:
                 continue
-            elif atom.atomtype[0].label in ['Cb', 'Cbf', 'N3b', 'N5b']:  # Make Cb and N3b into normal cb atoms
+            elif atom.atomtype[0].label in ['Cb', 'Cbf', 'N3b', 'N5b', 'N5bd']:  # Make Cb and N3b into normal cb atoms
                 cb_atom_list.append(atom)
             else:
                 benzene_bonds = 0
