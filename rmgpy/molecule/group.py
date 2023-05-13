@@ -2205,7 +2205,10 @@ class Group(Graph):
             group: :class:Group with atoms to classify
             partners: dictionary of partnered up atoms, which must be a cbf atom
 
-        Returns: tuple with lists of each atom classification
+        Some non-carbon 'benzene' type atoms (eg. N3b) are included and classified.
+
+        Returns: tuple with lists of each atom classification:
+        cb_atom_list, cbf_atom_list, cbf_atom_list1, cbf_atom_list2, connected_cbfs
         """
         if not partners:
             partners = {}
@@ -2214,17 +2217,19 @@ class Group(Graph):
         cbf_atom_list = []  # All Cbf Atoms
         cbf_atom_list1 = []  # Cbf Atoms that are bonded to exactly one other Cbf (part of 2 rings)
         cbf_atom_list2 = []  # Cbf that are sandwiched between two other Cbf (part of 2 rings)
-        connected_cbfs = {}  # dictionary of connections to other cbfAtoms
+        connected_cbfs = {}  # dictionary of connections to other cbf Atoms
 
         # Only want to work with benzene bonds on carbon
         labels_of_carbon_atom_types = [x.label for x in ATOMTYPES['C'].specific] + ['C']
-        # Also allow with R!H and some nitrogen groups
-        labels_of_carbon_atom_types.extend(['R!H', 'N5b', 'N3b', 'N5bd'])
+        # Also allow with R!H and some other aromatic groups
+        labels_of_carbon_atom_types.extend(['R!H', 'N5b', 'N3b', 'N5bd', 'O4b', 'P3b', 'P5b', 'P5bd', 'S4b'])
+        # Why are Sib and Sibf missing?
 
         for atom in self.atoms:
+            atomtype = atom.atomtype[0]
             if atom.atomtype[0].label not in labels_of_carbon_atom_types:
                 continue
-            elif atom.atomtype[0].label in ['Cb', 'N5b', 'N3b', 'N5bd']:  # Make Cb and N3b into normal cb atoms
+            elif atom.atomtype[0].label in ['Cb', 'N5b', 'N3b', 'N5bd', 'O4b', 'P3b', 'P5b', 'P5bd', 'S4b']:  # Make Cb and N3b into normal cb atoms
                 cb_atom_list.append(atom)
             elif atom.atomtype[0].label == 'Cbf':
                 cbf_atom_list.append(atom)
@@ -2277,8 +2282,12 @@ class Group(Graph):
         are many dangling Cb or Cbf atoms not in a ring, it is likely fail. In the database test
         (the only use thus far), we will require that any group with more than 3 Cbfs have
         complete rings. This is much stricter than this method can handle, but right now
-        this method cannot handle very general cases, so it is better to be conservative. 
+        this method cannot handle very general cases, so it is better to be conservative.
+
+        Note that it also works on other aromatic atomtypes like N5bd etc.
         """
+        # Note that atomtypes like N5bd are mostly referred to as Cb in this code,
+        # which was first written for just carbon.
 
         # First define some helper functions
         def check_set(super_list, sub_list):
