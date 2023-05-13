@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-.PHONY : all minimal main solver check pycheck arkane clean install decython documentation mopac_travis
+.PHONY : all minimal main solver check pycheck arkane clean install decython documentation mopac_travis test
 
 all: pycheck main solver check
 
