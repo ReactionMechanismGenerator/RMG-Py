@@ -404,7 +404,7 @@ ATOMTYPES['N3t'] = AtomType('N3t', generic=['R', 'R!H', 'R!H!Val7', 'N', 'Val5']
 # examples for N3t: N2, N#C, N#[C], N#CC
 ATOMTYPES['N3b'] = AtomType('N3b', generic=['R', 'R!H', 'R!H!Val7', 'N', 'Val5'], specific=[],
                             single=[0], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0], quadruple=[], benzene=[2], lone_pairs=[1], charge=[0])
-# examples for N3b: Oxazole, Pyradine, Pyrazine, 1,3,5-Triazine, Benzimidazole, Purine
+# examples for N3b: Oxazole, Pyridine, Pyrazine, 1,3,5-Triazine, Benzimidazole, Purine
 ATOMTYPES['N5sc'] = AtomType('N5sc', generic=['R', 'R!H', 'R!H!Val7', 'N', 'Val5'], specific=[],  # (shared electrons = 4-8)
                              single=[0,1,2,3,4], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0], benzene=[0], lone_pairs=[0], charge=[+1, +2])
 # examples for N5sc: [NH3+][O-]
