@@ -1318,7 +1318,10 @@ class KineticsFamily(Database):
             template = self.get_reaction_template(item)
 
             item.template = self.get_reaction_template_labels(item)
-            new_degeneracy = self.calculate_degeneracy(item)
+            try:
+                new_degeneracy = self.calculate_degeneracy(item)
+            except:
+                pass
 
             if isinstance(entry.data, SurfaceArrhenius):
                 data = SurfaceArrheniusBEP(
@@ -1334,6 +1337,7 @@ class KineticsFamily(Database):
             else:
                 data = data.to_arrhenius_ep()
 
+            # this block was indented right in a prev commit
             new_entry = Entry(
                 index=index,
                 label=';'.join([g.label for g in template]),
@@ -1982,9 +1986,9 @@ class KineticsFamily(Database):
         # log issues
         if len(reactions) != 1:
             for reactant in reaction.reactants:
-                logging.error("Reactant: {0!r}".format(reactant))
+                logging.debug("Reactant: {0!r}".format(reactant))
             for product in reaction.products:
-                logging.error("Product: {0!r}".format(product))
+                logging.debug("Product: {0!r}".format(product))
             raise KineticsError(('Unable to calculate degeneracy for reaction {0} '
                                  'in reaction family {1}. Expected 1 reaction '
                                  'but generated {2}').format(reaction, self.label, len(reactions)))
