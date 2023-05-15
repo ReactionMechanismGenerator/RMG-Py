@@ -16,11 +16,11 @@ RMG is primarily distributed using Docker, a software package for delivering app
 
 #. Download and install `Docker <https://docs.docker.com/get-docker/>`_.
 
-#. Open a terminal, powershell, or command prompt and run ``docker pull reactionmechanismgenerator/rmg:latest``.
+#. Open a terminal, powershell, or command prompt and run ``docker pull reactionmechanismgenerator/rmg:3.1.1``.
 
    This step may take some time as the image is downloaded.
 
-#. Run ``docker run --name rmgcontainer -v "C:\Users\rmguser\myrmgfiles:/rmg/RMG-Py/myrmgfiles" -it reactionmechanismgenerator/rmg:latest``
+#. Run ``docker run --name rmgcontainer -v "C:\Users\rmguser\myrmgfiles:/rmg/RMG-Py/myrmgfiles" -it reactionmechanismgenerator/rmg:3.1.1``
 
    This command will make the folder ``C:\Users\rmguser\myrmgfiles`` on your computer accessible from inside the container to easily edit and transfer input and output files.
    Change the path to match your individual computer.
