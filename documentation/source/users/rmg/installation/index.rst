@@ -26,8 +26,13 @@ RMG is primarily distributed using Docker, a software package for delivering app
    Change the path to match your individual computer.
    If the folder does not exist when the command is run, it will be created.
 
+   If you want to use jupyter notebook inside the docker container, run ``docker run --name rmgcontainer -v "C:\Users\rmguser\myrmgfiles:/rmg/RMG-Py/myrmgfiles" -it -p 8888:8888 reactionmechanismgenerator/rmg:latest`` instead.
+   And you can start the jupyter notebook by running ``jupyter notebook --ip 0.0.0.0 --no-browser --allow-root`` inside the container.
+   Then you can access the jupyter notebook from your browser by going to ``http://localhost:8888``.
+   You may need to copy and paste the token from the terminal into the browser to access the notebook.
+
 You are now operating inside an Ubuntu operating system (a container called "rmgcontainer") with a working installation of RMG-Py.
-To leave this container run ``exit``, and to reconnect run ``docker start rmgcontainer --attach``.
+To leave this container run ``exit``, and to reconnect run ``docker start rmgcontainer --attach --interactive``.
 
 For users unfamiliar with bash or Linux, we recommend looking at
 `online Linux tutorials <https://www.guru99.com/unix-linux-tutorial.html>`_ particularly `Linux vs. Windows <https://www.guru99.com/linux-differences.html>`_,
