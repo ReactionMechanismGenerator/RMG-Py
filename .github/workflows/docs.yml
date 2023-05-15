@@ -44,7 +44,14 @@ jobs:
           cd RMG-Py
           sed -i '/embedsignature/s/# //g' setup.py
           make
-      - name: Make documentation
+      - name: Make documentation - CI
+        if: ${{  github.event_name != 'push' || github.repository != 'ReactionMechanismGenerator/RMG-Py' }}
+        run: |
+          make -C documentation continous_integration_setup clean html
+      - name: Make documentation - Publish
+        if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
+        env:
+            GH_TOKEN: ${{ secrets.RMG_DEV_TOKEN }}
         run: |
           make -C documentation continous_integration_setup clean html
       - name: Check documentation links
