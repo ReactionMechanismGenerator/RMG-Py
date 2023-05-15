@@ -4,7 +4,10 @@
 Credits
 *******
  
-RMG is based upon work supported by the Department of Energy, Office of Basic Energy Sciences through grant DE-FG02-98ER14914 and by the National Science Foundation under Grants No. 0312359 and 0535604.
+RMG is based upon work supported by the U.S. Department of Energy, Office of Basic Energy Sciences 
+(through grant DE-FG02-98ER14914 and as part of the Computational Chemical Sciences Program),
+and by the National Science Foundation (under Grants No. 0312359, 0535604, and 1751720).
+Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation or the Department of Energy.
 
 Project Supervisors:
 
@@ -15,15 +18,31 @@ Current Developers: (rmg_dev@mit.edu)
 
 - Dr. Alon Grinberg Dana
 - Dr. Matt Johnson
+- Yen-Ting Wang
+- Xiaorui Dong
+- Hao-Wei Pang
+- Oscar Wu
+- Kevin Spiekermann
+- Jonathan Zheng
+- Jackson Burns
+- Nathan Morgan
+- Prof. C. Franklin Goldsmith
+- Dr. Katrin Blondal
+- Dr. Bjarne Kreitz
+- Chris Blais
+- Sevy Harris
+- Nora Khalil
 
 Previous Developers: 
 
 - Dr. Joshua W. Allen
+- Dr. Yunsie Chung
+- Dr. David Farina
 - Dr. Mark Goldman
 - Dr. Colin Grambow
 - Dr. Mengjie Liu
 - Dr. Mark Payne
-- Jacob Barlow
+- Dr. Jacob Barlow
 - Dr. Pierre L. Bhoorasingh
 - Dr. Beat A. Buesser
 - Dr. Caleb A. Class
@@ -31,7 +50,10 @@ Previous Developers:
 - Dr. Kehang Han
 - Dr. Fariba S. Khanshan
 - Victor Lambert
+- Dr. Emily Mazeau
 - Dr. Shamel S. Merchant
+- Priyanka Satpute
+- Dr. Sai Krishna Sirumalla
 - Dr. Belinda Slakman
 - Sean Troiano
 - Dr. Aaron Vandeputte

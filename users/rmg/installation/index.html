@@ -71,17 +71,21 @@ You can also search for your problem on the issues page to see if there are alre
 <p>RMG is primarily distributed using Docker, a software package for delivering applications.</p>
 <ol class="arabic">
 <li><p>Download and install <a class="reference external" href="https://docs.docker.com/get-docker/">Docker</a>.</p></li>
-<li><p>Open a terminal, powershell, or command prompt and run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">reactionmechanismgenerator/rmg:latest</span></code>.</p>
+<li><p>Open a terminal, powershell, or command prompt and run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">pull</span> <span class="pre">reactionmechanismgenerator/rmg:3.1.1</span></code>.</p>
 <p>This step may take some time as the image is downloaded.</p>
 </li>
-<li><p>Run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--name</span> <span class="pre">rmgcontainer</span> <span class="pre">-v</span> <span class="pre">&quot;C:\Users\rmguser\myrmgfiles:/rmg/RMG-Py/myrmgfiles&quot;</span> <span class="pre">-it</span> <span class="pre">reactionmechanismgenerator/rmg:latest</span></code></p>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--name</span> <span class="pre">rmgcontainer</span> <span class="pre">-v</span> <span class="pre">&quot;C:\Users\rmguser\myrmgfiles:/rmg/RMG-Py/myrmgfiles&quot;</span> <span class="pre">-it</span> <span class="pre">reactionmechanismgenerator/rmg:3.1.1</span></code></p>
 <p>This command will make the folder <code class="docutils literal notranslate"><span class="pre">C:\Users\rmguser\myrmgfiles</span></code> on your computer accessible from inside the container to easily edit and transfer input and output files.
 Change the path to match your individual computer.
 If the folder does not exist when the command is run, it will be created.</p>
+<p>If you want to use jupyter notebook inside the docker container, run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--name</span> <span class="pre">rmgcontainer</span> <span class="pre">-v</span> <span class="pre">&quot;C:\Users\rmguser\myrmgfiles:/rmg/RMG-Py/myrmgfiles&quot;</span> <span class="pre">-it</span> <span class="pre">-p</span> <span class="pre">8888:8888</span> <span class="pre">reactionmechanismgenerator/rmg:latest</span></code> instead.
+And you can start the jupyter notebook by running <code class="docutils literal notranslate"><span class="pre">jupyter</span> <span class="pre">notebook</span> <span class="pre">--ip</span> <span class="pre">0.0.0.0</span> <span class="pre">--no-browser</span> <span class="pre">--allow-root</span></code> inside the container.
+Then you can access the jupyter notebook from your browser by going to <code class="docutils literal notranslate"><span class="pre">http://localhost:8888</span></code>.
+You may need to copy and paste the token from the terminal into the browser to access the notebook.</p>
 </li>
 </ol>
 <p>You are now operating inside an Ubuntu operating system (a container called “rmgcontainer”) with a working installation of RMG-Py.
-To leave this container run <code class="docutils literal notranslate"><span class="pre">exit</span></code>, and to reconnect run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">start</span> <span class="pre">rmgcontainer</span> <span class="pre">--attach</span></code>.</p>
+To leave this container run <code class="docutils literal notranslate"><span class="pre">exit</span></code>, and to reconnect run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">start</span> <span class="pre">rmgcontainer</span> <span class="pre">--attach</span> <span class="pre">--interactive</span></code>.</p>
 <p>For users unfamiliar with bash or Linux, we recommend looking at
 <a class="reference external" href="https://www.guru99.com/unix-linux-tutorial.html">online Linux tutorials</a> particularly <a class="reference external" href="https://www.guru99.com/linux-differences.html">Linux vs. Windows</a>,
 <a class="reference external" href="https://www.guru99.com/terminal-file-manager.html">Terminal vs File Manager</a>, and
