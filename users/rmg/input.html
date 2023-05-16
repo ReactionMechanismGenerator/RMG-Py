@@ -448,7 +448,7 @@ or <a class="reference internal" href="#pruning"><span class="std std-ref">pruni
 <li><p><code class="docutils literal notranslate"><span class="pre">toleranceInterruptSimulation</span></code> indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the <code class="docutils literal notranslate"><span class="pre">terminationConversion</span></code> or <code class="docutils literal notranslate"><span class="pre">terminationTime</span></code>).  This value should be set to be equal to <code class="docutils literal notranslate"><span class="pre">toleranceMoveToCore</span></code> unless the advanced <a class="reference internal" href="#pruning"><span class="std std-ref">pruning</span></a> feature is desired.</p></li>
 </ul>
 <section id="advanced-setting-branching-criterion">
-<span id="filterreactions"></span><h3><span class="section-number">4.7.1. </span>Advanced Setting:  Branching Criterion<a class="headerlink" href="#advanced-setting-branching-criterion" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">4.7.1. </span>Advanced Setting:  Branching Criterion<a class="headerlink" href="#advanced-setting-branching-criterion" title="Permalink to this heading">¶</a></h3>
 <p>The flux criterion works very well for identifying new species that have high flux
 and therefore pathways that have high throughput flux. However, there are many important
 low flux pathways particularly those that result in net production of radicals such as chain branching reactions in combustion.
@@ -468,8 +468,23 @@ the recommended values are usually sufficient.</p>
 </pre></div>
 </div>
 </section>
+<section id="advanced-setting-deadend-radical-elimination-rms-reactors-only">
+<h3><span class="section-number">4.7.2. </span>Advanced Setting: Deadend Radical Elimination (RMS Reactors only)<a class="headerlink" href="#advanced-setting-deadend-radical-elimination-rms-reactors-only" title="Permalink to this heading">¶</a></h3>
+<p>When generating mechanisms involving significant molecular growth (such as in polymerization),
+there are many possible radicals, so fast propagation pathways compete with very slow termination and chain transfer reactions.
+These slow reactions individually usually have a negligible impact on the model, and thus will not be picked up by the flux or branching criteria.
+However, together they can have a very significant impact on the overall radical concentration, and need to be included in the generated mechanism.
+The deadend radical elimination algorithm identifies important chain transfer and termination reactions in the edge, based on their flux ratio with radical consumption and termination reactions in the core.</p>
+<p>For example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
+                <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                <span class="n">toleranceReactionToCoreDeadendRadical</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <section id="advanced-setting-radical-flux-criterion-rms-reactors-only">
-<h3><span class="section-number">4.7.2. </span>Advanced Setting:  Radical Flux Criterion (RMS Reactors Only)<a class="headerlink" href="#advanced-setting-radical-flux-criterion-rms-reactors-only" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">4.7.3. </span>Advanced Setting:  Radical Flux Criterion (RMS Reactors Only)<a class="headerlink" href="#advanced-setting-radical-flux-criterion-rms-reactors-only" title="Permalink to this heading">¶</a></h3>
 <p>At high radical concentrations important products can accumulate from termination reactions. In these cases
 the flux and branching criteria can have difficulty adding in all of the important throughput terminations.
 For this case we have added a radical specific flux criterion. This criterion is similar to the flux criterion except
@@ -483,7 +498,7 @@ that it looks at the net radical flux produced by each edge reaction instead of 
 </div>
 </section>
 <section id="advanced-setting-transitory-edge-analysis-rms-reactors-only">
-<h3><span class="section-number">4.7.3. </span>Advanced Setting:  Transitory Edge Analysis (RMS Reactors Only)<a class="headerlink" href="#advanced-setting-transitory-edge-analysis-rms-reactors-only" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">4.7.4. </span>Advanced Setting:  Transitory Edge Analysis (RMS Reactors Only)<a class="headerlink" href="#advanced-setting-transitory-edge-analysis-rms-reactors-only" title="Permalink to this heading">¶</a></h3>
 <p>Suppose you are interested in the chemistry of a particular chemical species in your system. If
 that species is not high flux or participates in important branching reactions it may not be resolved accurately
 with the flux and branching criteria. Transitory edge analysis applies transitory sensitivity analysis to the edge of the mechanism to
@@ -503,7 +518,7 @@ how</p>
 </div>
 </section>
 <section id="advanced-setting-speed-up-by-filtering-reactions">
-<h3><span class="section-number">4.7.4. </span>Advanced Setting: Speed Up By Filtering Reactions<a class="headerlink" href="#advanced-setting-speed-up-by-filtering-reactions" title="Permalink to this heading">¶</a></h3>
+<span id="filterreactions"></span><h3><span class="section-number">4.7.5. </span>Advanced Setting: Speed Up By Filtering Reactions<a class="headerlink" href="#advanced-setting-speed-up-by-filtering-reactions" title="Permalink to this heading">¶</a></h3>
 <p>For generating models for larger molecules, RMG-Py may have trouble converging because it must find reactions on the order of
 <span class="math notranslate nohighlight">\((n_{reaction\: sites})^{{n_{species}}}\)</span>.  Thus it can be further sped up by pre-filtering reactions that are
 added to the model.  This modification to the algorithm does not react core species together
@@ -524,7 +539,7 @@ the model does not converge with normal parameter settings.  See <a class="refer
 </ul>
 </section>
 <section id="advanced-setting-speed-up-by-pruning">
-<span id="pruning"></span><h3><span class="section-number">4.7.5. </span>Advanced Setting: Speed Up by Pruning<a class="headerlink" href="#advanced-setting-speed-up-by-pruning" title="Permalink to this heading">¶</a></h3>
+<span id="pruning"></span><h3><span class="section-number">4.7.6. </span>Advanced Setting: Speed Up by Pruning<a class="headerlink" href="#advanced-setting-speed-up-by-pruning" title="Permalink to this heading">¶</a></h3>
 <p>For further speed-up, it is also possible to perform mechanism generation with pruning of “unimportant” edge species to reduce memory usage.</p>
 <p>A typical set of parameters for pruning is:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
@@ -568,7 +583,7 @@ Because the ODE simulation is always interrupted, no pruning is performed.</p>
 <p>Please find more details about the theory behind pruning at <a class="reference internal" href="../../theory/rmg/prune.html#prune"><span class="std std-ref">Pruning Theory</span></a>.</p>
 </section>
 <section id="advanced-setting-thermodynamic-pruning">
-<h3><span class="section-number">4.7.6. </span>Advanced Setting: Thermodynamic Pruning<a class="headerlink" href="#advanced-setting-thermodynamic-pruning" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">4.7.7. </span>Advanced Setting: Thermodynamic Pruning<a class="headerlink" href="#advanced-setting-thermodynamic-pruning" title="Permalink to this heading">¶</a></h3>
 <p>Thermodynamic pruning is an alternative to flux pruning that does not require a given
 simulation to complete to remove excess species.  The thermodynamic criteria is
 calculated by determining the minimum and maximum Gibbs energies of formation (Gmin and Gmax)
@@ -598,7 +613,7 @@ Will always maintain the correct <code class="docutils literal notranslate"><spa
 this is more likely to kick out species RMG might otherwise have added to core.</p>
 </section>
 <section id="advanced-setting-taking-multiple-species-at-a-time">
-<h3><span class="section-number">4.7.7. </span>Advanced Setting: Taking Multiple Species At A Time<a class="headerlink" href="#advanced-setting-taking-multiple-species-at-a-time" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">4.7.8. </span>Advanced Setting: Taking Multiple Species At A Time<a class="headerlink" href="#advanced-setting-taking-multiple-species-at-a-time" title="Permalink to this heading">¶</a></h3>
 <p>Taking multiple objects (species, reactions or pdepNetworks) during a given simulation can often decrease your overall model generation time
 over only taking one.  For this purpose there is a <code class="docutils literal notranslate"><span class="pre">maxNumObjsPerIter</span></code> parameter that allows RMG to take
 that many species, reactions or pdepNetworks from a given simulation. This is done in the order they trigger their respective criteria.</p>
@@ -1045,12 +1060,13 @@ This can be done by setting <code class="docutils literal notranslate"><span cla
 <li><a class="reference internal" href="#simulator-tolerances">4.6. Simulator Tolerances</a></li>
 <li><a class="reference internal" href="#model-tolerances">4.7. Model Tolerances</a><ul>
 <li><a class="reference internal" href="#advanced-setting-branching-criterion">4.7.1. Advanced Setting:  Branching Criterion</a></li>
-<li><a class="reference internal" href="#advanced-setting-radical-flux-criterion-rms-reactors-only">4.7.2. Advanced Setting:  Radical Flux Criterion (RMS Reactors Only)</a></li>
-<li><a class="reference internal" href="#advanced-setting-transitory-edge-analysis-rms-reactors-only">4.7.3. Advanced Setting:  Transitory Edge Analysis (RMS Reactors Only)</a></li>
-<li><a class="reference internal" href="#advanced-setting-speed-up-by-filtering-reactions">4.7.4. Advanced Setting: Speed Up By Filtering Reactions</a></li>
-<li><a class="reference internal" href="#advanced-setting-speed-up-by-pruning">4.7.5. Advanced Setting: Speed Up by Pruning</a></li>
-<li><a class="reference internal" href="#advanced-setting-thermodynamic-pruning">4.7.6. Advanced Setting: Thermodynamic Pruning</a></li>
-<li><a class="reference internal" href="#advanced-setting-taking-multiple-species-at-a-time">4.7.7. Advanced Setting: Taking Multiple Species At A Time</a></li>
+<li><a class="reference internal" href="#advanced-setting-deadend-radical-elimination-rms-reactors-only">4.7.2. Advanced Setting: Deadend Radical Elimination (RMS Reactors only)</a></li>
+<li><a class="reference internal" href="#advanced-setting-radical-flux-criterion-rms-reactors-only">4.7.3. Advanced Setting:  Radical Flux Criterion (RMS Reactors Only)</a></li>
+<li><a class="reference internal" href="#advanced-setting-transitory-edge-analysis-rms-reactors-only">4.7.4. Advanced Setting:  Transitory Edge Analysis (RMS Reactors Only)</a></li>
+<li><a class="reference internal" href="#advanced-setting-speed-up-by-filtering-reactions">4.7.5. Advanced Setting: Speed Up By Filtering Reactions</a></li>
+<li><a class="reference internal" href="#advanced-setting-speed-up-by-pruning">4.7.6. Advanced Setting: Speed Up by Pruning</a></li>
+<li><a class="reference internal" href="#advanced-setting-thermodynamic-pruning">4.7.7. Advanced Setting: Thermodynamic Pruning</a></li>
+<li><a class="reference internal" href="#advanced-setting-taking-multiple-species-at-a-time">4.7.8. Advanced Setting: Taking Multiple Species At A Time</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#on-the-fly-quantum-calculations">4.8. On the fly Quantum Calculations</a></li>
