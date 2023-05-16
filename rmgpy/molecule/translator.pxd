@@ -28,12 +28,12 @@
 cimport rmgpy.molecule.molecule as mm
 
 
-cpdef list BACKENDS
-cpdef dict INCHI_LOOKUPS
-cpdef dict SMILES_LOOKUPS
+cdef list BACKENDS
+cdef dict INCHI_LOOKUPS
+cdef dict SMILES_LOOKUPS
 
-cpdef dict MOLECULE_LOOKUPS
-cpdef dict RADICAL_LOOKUPS
+cdef dict MOLECULE_LOOKUPS
+cdef dict RADICAL_LOOKUPS
 
 cpdef str to_inchi(mm.Molecule mol, str backend=?, int aug_level=?)
 
