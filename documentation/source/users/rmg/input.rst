@@ -469,6 +469,21 @@ For example ::
 			  branchingRatioMax=1.0,
 		)
 
+Advanced Setting: Deadend Radical Elimination (RMS Reactors only)
+-----------------------------------------------------------------
+When generating mechanisms involving significant molecular growth (such as in polymerization),
+there are many possible radicals, so fast propagation pathways compete with very slow termination and chain transfer reactions.
+These slow reactions individually usually have a negligible impact on the model, and thus will not be picked up by the flux or branching criteria. 
+However, together they can have a very significant impact on the overall radical concentration, and need to be included in the generated mechanism. 
+The deadend radical elimination algorithm identifies important chain transfer and termination reactions in the edge, based on their flux ratio with radical consumption and termination reactions in the core. 
+
+For example ::
+
+		model(
+				toleranceMoveToCore=0.01,
+				toleranceReactionToCoreDeadendRadical=0.01,
+		)
+
 Advanced Setting:  Radical Flux Criterion (RMS Reactors Only)
 --------------------------------------------------------------
 At high radical concentrations important products can accumulate from termination reactions. In these cases
