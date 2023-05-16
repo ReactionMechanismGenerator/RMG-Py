@@ -102,12 +102,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 #. Activate conda environment ::
 
     conda activate rmg_env
-    
-   Note regarding differences between conda versions: Prior to Anaconda 4.4, the command to activate an environment was
-   ``source activate rmg_env``. It has since been changed to ``conda activate rmg_env`` due to underlying changes to
-   standardize operation across different operating systems. However, a prerequisite to using the new syntax is having
-   run the ``conda init`` setup routine, which can be done at the end of the install procedure if the user requests.
-    
+
 #. Compile RMG-Py after activating the conda environment ::
 
     make
