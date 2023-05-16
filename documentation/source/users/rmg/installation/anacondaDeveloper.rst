@@ -79,7 +79,6 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     conda create -n rmg_env
     conda activate rmg_env
     conda config --env --set subdir osx-64
-    conda install python=3.7
     conda env update -f environment.yml
 ..
 
