@@ -44,7 +44,8 @@ dependencies:
   - conda-forge::openbabel >= 3
 
 # general-purpose external software tools
-  - conda-forge::julia=1.8.5
+  - conda-forge::julia>=1.8.5
+  - conda-forge::pyjulia
 
 # Python tools
   - python >=3.7
@@ -76,7 +77,6 @@ dependencies:
   - rmg::pyrms
   - rmg::quantities
   - rmg::symmetry
-  - rmg::pyjulia
 
 # packages we would like to stop maintaining (and why)
   - rmg::diffeqpy
