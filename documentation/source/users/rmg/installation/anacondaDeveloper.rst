@@ -68,10 +68,9 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     conda install -n base conda-libmamba-solver
     conda config --set solver libmamba
 
-   Now create the conda environment for RMG-Py ::
+   Navigate to the RMG-Py directory ::
 
     cd RMG-Py
-    conda env create -f environment.yml
 
 .. warning:: Apple Silicon (M1+) Users
    Execute the following commands instead of ``conda env create -f environment.yml``: ::
@@ -81,6 +80,10 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     conda config --env --set subdir osx-64
     conda env update -f environment.yml
 ..
+
+   Now create the conda environment for RMG-Py ::
+
+    conda env create -f environment.yml
 
    If either of these commands return an error due to being unable to find the ``conda`` command, try to either close and reopen your terminal to refresh your environment variables or type the following command.
 
@@ -120,19 +123,11 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    Be sure to either close and reopen your terminal to refresh your environment variables (``source ~/.bashrc`` or ``source ~/.zshrc``).
 
-#. Install and Link Julia dependencies ::
+#. Install and Link Julia dependencies: ::
+
+     julia -e 'using Pkg; Pkg.add("PyCall");Pkg.build("PyCall");Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator;'
 
      python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
-
-     julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator;'
-
-.. warning:: Apple Silicon (M1+) Users
-   Execute the following commands instead of ``conda env create -f environment.yml``: ::
-    
-    julia -e 'using Pkg; Pk.add("PyCall");Pkg.build("PyCall");Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator;'
-
-    python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
-..
 
    Note that this links your python to python-jl enabling calls to Julia through pyjulia. Occasionally programs will
    interact with python-jl differently than the default python. If this occurs for you we recommend doing that operation
