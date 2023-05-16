@@ -448,8 +448,6 @@ or :ref:`pruning <pruning>` can be turned on to speed up your simulation at a sl
 - ``toleranceMoveToCore`` indicates how high the edge flux ratio for a species must get to enter the core model. This tolerance is designed for controlling the accuracy of final model.
 - ``toleranceInterruptSimulation`` indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the ``terminationConversion`` or ``terminationTime``).  This value should be set to be equal to ``toleranceMoveToCore`` unless the advanced :ref:`pruning <pruning>` feature is desired.
 
-.. _filterReactions:
-
 Advanced Setting:  Branching Criterion
 ----------------------------------------
 The flux criterion works very well for identifying new species that have high flux
@@ -469,6 +467,21 @@ For example ::
 				toleranceBranchReactionToCore=0.001,
 			  branchingIndex=0.5,
 			  branchingRatioMax=1.0,
+		)
+
+Advanced Setting: Deadend Radical Elimination (RMS Reactors only)
+-----------------------------------------------------------------
+When generating mechanisms involving significant molecular growth (such as in polymerization),
+there are many possible radicals, so fast propagation pathways compete with very slow termination and chain transfer reactions.
+These slow reactions individually usually have a negligible impact on the model, and thus will not be picked up by the flux or branching criteria. 
+However, together they can have a very significant impact on the overall radical concentration, and need to be included in the generated mechanism. 
+The deadend radical elimination algorithm identifies important chain transfer and termination reactions in the edge, based on their flux ratio with radical consumption and termination reactions in the core. 
+
+For example ::
+
+		model(
+				toleranceMoveToCore=0.01,
+				toleranceReactionToCoreDeadendRadical=0.01,
 		)
 
 Advanced Setting:  Radical Flux Criterion (RMS Reactors Only)
@@ -504,6 +517,8 @@ For example ::
 				toleranceTransitoryDict={"NO":0.2},
 				transitoryStepPeriod=20,
 		)
+
+.. _filterReactions:
 
 Advanced Setting: Speed Up By Filtering Reactions
 -------------------------------------------------
