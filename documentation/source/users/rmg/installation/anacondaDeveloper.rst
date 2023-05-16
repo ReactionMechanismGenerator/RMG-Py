@@ -129,18 +129,12 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
      python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
-   Note that this links your python to python-jl enabling calls to Julia through pyjulia. Occasionally programs will
-   interact with python-jl differently than the default python. If this occurs for you we recommend doing that operation
-   in a different conda environment. However, if convenient you can undo this linking by replacing python-jl with
-   python3 in the second command above. Just make sure to rerun the linking command once you are done.
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
     python-jl replace/with/path/to/rmg.py input.py
 
 You may now use RMG-Py, Arkane, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.
-
-
 
 
 Test Suite
