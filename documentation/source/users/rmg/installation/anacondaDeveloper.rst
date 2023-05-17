@@ -108,6 +108,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     make
 
 #. Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any folder.
+   *This is important before the next step in which julia dependencies are installed.*
    Also, add your RMG-Py folder to PATH to launch ``rmg.py`` from any folder.
 
    In general, these commands should be placed in the appropriate shell initialization file.
