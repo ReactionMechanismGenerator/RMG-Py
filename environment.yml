@@ -47,6 +47,7 @@ dependencies:
 
 # general-purpose external software tools
   - conda-forge::julia>=1.8.5
+  - conda-forge::pyjulia >=0.6
 
 # Python tools
   - python >=3.7
@@ -93,16 +94,6 @@ dependencies:
   - rmg::rdkit >=2020.03.3.0
   # We should use the official channel, not sure how difficult this
   # change will be.
-
-  - rmg::pyjulia
-  # This is identical to the conda-forge package, except that we run
-  # a hard to decipher sed command during the build process:
-  # https://github.com/ReactionMechanismGenerator/conda-recipes/blob/rmg-deps/pyjulia/build.sh#LL15C69-L15C69
-  #
-  # We should either remove the need to use this command or add this
-  # to the installation steps
-  # 
-  # Both pyrms and diffeqpy depend on this package.
 
 # conda mutex metapackage
   - nomkl
