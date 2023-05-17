@@ -168,20 +168,20 @@ class ThermoJob(object):
 
         with open(output_file, 'a') as f:
             f.write('# Thermodynamics for {0}:\n'.format(species.label))
-            H298 = species.get_thermo_data().get_enthalpy(298) / 4184.
-            S298 = species.get_thermo_data().get_entropy(298) / 4.184
-            f.write('#   Enthalpy of formation (298 K)   = {0:9.3f} kcal/mol\n'.format(H298))
-            f.write('#   Entropy of formation (298 K)    = {0:9.3f} cal/(mol*K)\n'.format(S298))
+            H298 = species.get_thermo_data().get_enthalpy(298) / 1000.
+            S298 = species.get_thermo_data().get_entropy(298)
+            f.write('#   Enthalpy of formation (298 K)   = {0:9.3f} kJ/mol\n'.format(H298))
+            f.write('#   Entropy of formation (298 K)    = {0:9.3f} J/(mol*K)\n'.format(S298))
             f.write('#    =========== =========== =========== =========== ===========\n')
             f.write('#    Temperature Heat cap.   Enthalpy    Entropy     Free energy\n')
-            f.write('#    (K)         (cal/mol*K) (kcal/mol)  (cal/mol*K) (kcal/mol)\n')
+            f.write('#    (K)         (J/mol*K)   (kJ/mol)    (J/mol*K)   (kJ/mol)\n')
             f.write('#    =========== =========== =========== =========== ===========\n')
             for T in [300, 400, 500, 600, 800, 1000, 1500, 2000, 2400]:
                 try:
-                    Cp = species.get_thermo_data().get_heat_capacity(T) / 4.184
-                    H = species.get_thermo_data().get_enthalpy(T) / 4184.
-                    S = species.get_thermo_data().get_entropy(T) / 4.184
-                    G = species.get_thermo_data().get_free_energy(T) / 4184.
+                    Cp = species.get_thermo_data().get_heat_capacity(T)
+                    H = species.get_thermo_data().get_enthalpy(T) / 1000.
+                    S = species.get_thermo_data().get_entropy(T)
+                    G = species.get_thermo_data().get_free_energy(T) / 1000.
                     f.write('#    {0:11g} {1:11.3f} {2:11.3f} {3:11.3f} {4:11.3f}\n'.format(T, Cp, H, S, G))
                 except ValueError:
                     logging.debug("Valid thermo for {0} is outside range for temperature {1}".format(species, T))
