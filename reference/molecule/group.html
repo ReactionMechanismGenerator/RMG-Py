@@ -134,6 +134,7 @@ are many dangling Cb or Cbf atoms not in a ring, it is likely fail. In the datab
 (the only use thus far), we will require that any group with more than 3 Cbfs have
 complete rings. This is much stricter than this method can handle, but right now
 this method cannot handle very general cases, so it is better to be conservative.</p>
+<p>Note that it also works on other aromatic atomtypes like N5bd etc.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -160,7 +161,9 @@ this method cannot handle very general cases, so it is better to be conservative
 </ul>
 </dd>
 </dl>
-<p>Returns: tuple with lists of each atom classification</p>
+<p>Some non-carbon ‘benzene’ type atoms (eg. N3b) are included and classified.</p>
+<p>Returns: tuple with lists of each atom classification:
+cb_atom_list, cbf_atom_list, cbf_atom_list1, cbf_atom_list2, connected_cbfs</p>
 </dd></dl>
 
 <dl class="py method">
@@ -515,7 +518,8 @@ benzene bonds exclusively</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.is_benzene_explicit">
 <span class="sig-name descname"><span class="pre">is_benzene_explicit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.Group.is_benzene_explicit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns: ‘True’ if all Cb, Cbf atoms are in completely explicitly stated benzene rings.</p>
+<dd><p>Returns: ‘True’ if all Cb, Cbf (and other ‘b’ atoms)
+are in completely explicitly stated benzene rings.</p>
 <p>Otherwise return ‘False’</p>
 </dd></dl>
 
