@@ -103,6 +103,10 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     conda activate rmg_env
 
+#. Switch the conda solver to libmamba again, to accelerate any changes you might make to this conda environment in the future::
+
+    conda config --set solver libmamba
+
 #. Compile RMG-Py after activating the conda environment ::
 
     make
