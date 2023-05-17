@@ -52,6 +52,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
 from rmgpy.species import Species
 from rmgpy.thermo import NASAPolynomial, NASA
+from rmgpy.thermo.thermodata import ThermoData
 from rmgpy.transport import TransportData
 from rmgpy.util import make_output_subdirectory
 
@@ -1572,7 +1573,8 @@ def write_thermo_entry(species, element_counts=None, verbose=True):
     """
 
     thermo = species.get_thermo_data()
-
+    if isinstance(thermo, ThermoData):
+        thermo = thermo.to_nasa(Tmin=298, Tmax=2500, Tint=1000)
     if not isinstance(thermo, NASA):
         raise ChemkinError('Cannot generate Chemkin string for species "{0}": '
                            'Thermodynamics data must be a NASA object.'.format(species))
