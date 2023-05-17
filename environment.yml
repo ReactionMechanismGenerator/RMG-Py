@@ -33,6 +33,8 @@ dependencies:
   - graphviz
   - markupsafe
   - psutil
+  # conda-forge not default, since default has a version information bug
+  # (see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2421)
   - conda-forge::ncurses
   - conda-forge::suitesparse
 
@@ -99,6 +101,18 @@ dependencies:
   #
   # We should either remove the need to use this command or add this
   # to the installation steps
+  # 
+  # Both pyrms and diffeqpy depend on this package.
 
 # conda mutex metapackage
   - nomkl
+
+# additional packages that are required, but not specified here (and why)
+  # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)
+  # in the environment. Normally we would add this to the environment file with
+  # - libgfortran-ng >= 10
+  # but this exact package is only maintained for Linux, meaning that if we were to add
+  # it here the environment creation would fail on Mac. The way it ends up working behind
+  # the scenes is that conda will find a different package for Mac that provides gfortran,
+  # but because we cannot specify per-platform requirements in this file we simply leave
+  # it out.
