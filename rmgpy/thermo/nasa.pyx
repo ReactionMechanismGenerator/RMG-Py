@@ -335,19 +335,17 @@ cdef class NASA(HeatCapacityModel):
         If Cp0 and CpInf are omitted or 0, they are None in the returned ThermoData.
         """
         from rmgpy.thermo.thermodata import ThermoData
-        
-        Tdata = [300,400,500,600,800,1000,1500]
+
+        Tdata = [300, 400, 500, 600, 800, 1000, 1500, 2000, 2500]
         Cpdata = [self.get_heat_capacity(T) for T in Tdata]
         
         return ThermoData(
-            Tdata = (Tdata,"K"),
-            Cpdata = (Cpdata,"J/(mol*K)"),
-            H298 = (self.get_enthalpy(298)*0.001,"kJ/mol"),
-            S298 = (self.get_entropy(298),"J/(mol*K)"),
-            Cp0 = self.Cp0,
-            CpInf = self.CpInf,
-            E0 = self.E0,
-            comment = self.comment
+            Tdata=(Tdata, "K"),
+            Cpdata=(Cpdata, "J/(mol*K)"),
+            H298=(self.get_enthalpy(298) * 0.001, "kJ/mol"),
+            S298=(self.get_entropy(298), "J/(mol*K)"),
+            Cp0=self.Cp0,
+            CpInf=self.CpInf,
         )
 
     @cython.boundscheck(False)
