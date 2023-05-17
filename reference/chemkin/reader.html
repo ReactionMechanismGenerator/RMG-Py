@@ -84,9 +84,11 @@ then resonance isomers for each species are generated.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.chemkin.load_transport_file">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.chemkin.</span></span><span class="sig-name descname"><span class="pre">load_transport_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.load_transport_file" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.chemkin.</span></span><span class="sig-name descname"><span class="pre">load_transport_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_missing_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.load_transport_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a Chemkin transport properties file located at <cite>path</cite> and store the
-properties on the species in <cite>species_dict</cite>.</p>
+properties on the species in <cite>species_dict</cite>.
+If skip_missing_species=True then species not defined in the species_dict
+are just skipped over, with a warning.</p>
 </dd></dl>
 
 </section>
