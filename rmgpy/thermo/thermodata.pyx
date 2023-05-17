@@ -70,7 +70,7 @@ cdef class ThermoData(HeatCapacityModel):
         Return a string representation that can be used to reconstruct the
         ThermoData object.
         """
-        string = 'ThermoData(H298={2!r}, S298={3!r}, Tdata={0!r}, Cpdata={1!r}'.format(self.H298, self.S298, self.Tdata, self.Cpdata)
+        string = 'ThermoData(H298={0!r}, S298={1!r}, Tdata={2!r}, Cpdata={3!r}'.format(self.H298, self.S298, self.Tdata, self.Cpdata)
         if self.Cp0 is not None: string += ', Cp0={0!r}'.format(self.Cp0)
         if self.CpInf is not None: string += ', CpInf={0!r}'.format(self.CpInf)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
@@ -85,7 +85,7 @@ cdef class ThermoData(HeatCapacityModel):
         """
         A helper function used when pickling a ThermoData object.
         """
-        return (ThermoData, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Cp0, self.CpInf, self.Tmin, self.Tmax, self.E0, self.label, self.comment))
+        return (ThermoData, (self.H298, self.S298, self.Tdata, self.Cpdata, self.Cp0, self.CpInf, self.Tmin, self.Tmax))
 
     property Tdata:
         """An array of temperatures at which the heat capacity is known."""
