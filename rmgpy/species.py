@@ -773,12 +773,14 @@ class Species(object):
         if self.thermo:
             if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
                 self.thermo = self.thermo.result()
-        else:
-            submit(self, solvent_name)
-            if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
-                self.thermo = self.thermo.result()
+            if isinstance(self.thermo, (NASA, Wilhoit)):
+                self.thermo = self.thermo.to_thermo_data()
+        # else:
+        #     submit(self, solvent_name)
+        #     if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
+        #         self.thermo = self.thermo.result()
 
-        return self.thermo
+            return self.thermo
 
     def generate_transport_data(self):
         """
