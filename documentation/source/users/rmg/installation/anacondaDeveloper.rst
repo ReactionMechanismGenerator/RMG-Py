@@ -18,7 +18,8 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    Note that you should restart your terminal in order for the changes to take effect, as the installer will tell you.
 
 #. There are a few system-level dependencies which are required and should not be installed via Anaconda. These include
-   `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG.
+   `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, 
+   and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG.
 
    For Linux users, you can check whether these are already installed by simply calling them via the command line, which
    will let you know if they are missing. To install any missing packages, you should use the appropriate package manager
@@ -47,17 +48,6 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    to install this is to simply run one of the commands in the terminal, e.g. ``git``. The terminal will then prompt you on
    whether or not you would like to install the Command Line Tools.
 
-   For MacOS users only, download and install MacOS Julia 1.8 from here: <https://julialang.org/downloads/>. Then add Julia to PATH by running the following command: ::
-
-     echo 'export PATH="/Applications/Julia-1.8.app/Contents/Resources/julia/bin:$PATH"' >> ~/.bash_profile
-
-     export PATH="/Applications/Julia-1.8.app/Contents/Resources/julia/bin:$PATH"
-
-   If using MacOS Catalina or newer your terminal may be using ``zsh`` by default, in which case you should replace ``.bash_profile`` with ``.zshrc``.
-   
-   Note that this Julia install will not respect conda environmental boundaries meaning only one conda environment can be linked to it at a time.
-
-
 #. Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an
    appropriate local directory where you want both RMG-Py and RMG-database folders to exist.
    Github has deprecated password authentication from the command line, so it
@@ -79,41 +69,56 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     conda install -n base conda-libmamba-solver
     conda config --set solver libmamba
 
-   Now create the conda environment for RMG-Py ::
+#. Navigate to the RMG-Py directory ::
 
     cd RMG-Py
+
+#. Apple silicon (M1+) users only: execute the following commands
+   **instead of** the following `conda env create -f environment.yml` step.
+   (This will tell conda that we want to the environment to use x86 
+   architecture rather than the native ARM64 architecture) ::
+
+    conda create -n rmg_env
+    conda activate rmg_env
+    conda config --env --set subdir osx-64
+    conda env update -f environment.yml
+
+#. Create the conda environment for RMG-Py ::
+
     conda env create -f environment.yml
 
-   If either of these commands return an error due to being unable to find the ``conda`` command, try to either close and reopen your terminal to refresh your environment variables or type the following command.
+   If either of these commands return an error due to being unable to find the ``conda`` command,
+   try to either close and reopen your terminal to refresh your environment variables
+   or type the following command.
 
-   If on Linux or pre-Catalina MacOS ::
+   If on Linux or pre-Catalina MacOS (or if you have a bash shell)::
 
     source ~/.bashrc
 
-   If on MacOS Catalina or later ::
+   If on MacOS Catalina or later (or if you have a Z shell)::
 
     source ~/.zshrc
 
 #. Activate conda environment ::
 
     conda activate rmg_env
-    
-   Note regarding differences between conda versions: Prior to Anaconda 4.4, the command to activate an environment was
-   ``source activate rmg_env``. It has since been changed to ``conda activate rmg_env`` due to underlying changes to
-   standardize operation across different operating systems. However, a prerequisite to using the new syntax is having
-   run the ``conda init`` setup routine, which can be done at the end of the install procedure if the user requests.
-    
+
+#. Switch the conda solver to libmamba again, to accelerate any changes you might make to this conda environment in the future::
+
+    conda config --set solver libmamba
+
 #. Compile RMG-Py after activating the conda environment ::
 
     make
 
 #. Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any folder.
+   *This is important before the next step in which julia dependencies are installed.*
    Also, add your RMG-Py folder to PATH to launch ``rmg.py`` from any folder.
 
-   In general, these commands should be placed in the appropriate shell initialization file. For Linux users using
-   bash (the default on distributions mentioned here), these should be placed in ``~/.bashrc``. For MacOS users using bash (default before MacOS Catalina),
-   these should be placed in ``~/.bash_profile``, which you should create if it doesn't exist. For MacOS users using zsh
-   (default beginning in MacOS Catalina), these should be placed in ``~/.zshrc``. ::
+   In general, these commands should be placed in the appropriate shell initialization file.
+   For Linux users using bash (the default on distributions mentioned here), these should be placed in ``~/.bashrc``.
+   For MacOS users using bash (default before MacOS Catalina), these should be placed in ``~/.bash_profile``, which you should create if it doesn't exist.
+   For MacOS users using zsh (default beginning in MacOS Catalina), these should be placed in ``~/.zshrc``. ::
 
     export PYTHONPATH=YourFolder/RMG-Py/:$PYTHONPATH
     export PATH=YourFolder/RMG-Py/:$PATH
@@ -122,24 +127,18 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    Be sure to either close and reopen your terminal to refresh your environment variables (``source ~/.bashrc`` or ``source ~/.zshrc``).
 
-#. Install and Link Julia dependencies ::
+#. Install and Link Julia dependencies: ::
+
+     julia -e 'using Pkg; Pkg.add("PyCall");Pkg.build("PyCall");Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator;'
 
      python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
-     julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator;'
-
-   Note that this links your python to python-jl enabling calls to Julia through pyjulia. Occasionally programs will
-   interact with python-jl differently than the default python. If this occurs for you we recommend doing that operation
-   in a different conda environment. However, if convenient you can undo this linking by replacing python-jl with
-   python3 in the second command above. Just make sure to rerun the linking command once you are done.
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
     python-jl replace/with/path/to/rmg.py input.py
 
 You may now use RMG-Py, Arkane, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.
-
-
 
 
 Test Suite

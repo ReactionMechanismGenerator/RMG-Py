@@ -37,8 +37,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test-linux:
-    runs-on: ubuntu-latest
+  build-and-test-unix:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     # skip scheduled runs on main from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: # update this if needed to match a pull request on the RMG-database
@@ -73,7 +76,7 @@ jobs:
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
           
       # modify env variables as directed in the RMG installation instructions
-      - name: Set PYTHONPATH and PATH
+      - name: Set Environment Variables
         run: |
           RUNNER_CWD=$(pwd)
           echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
@@ -103,17 +106,18 @@ jobs:
 
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution
+        timeout-minutes: 60
         run: |
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal;
           do
-            if timeout 600 python-jl rmg.py test/regression/"$regr_test"/input.py; then
+            if python-jl rmg.py test/regression/"$regr_test"/input.py; then
               echo "$regr_test" "Executed Successfully"
             else
               echo "$regr_test" "Failed to Execute"
               export FAILED=Yes
             fi
           done
-          if [[ -v FAILED ]]; then
+          if [[ ${FAILED} ]]; then
             echo "One or more regression tests could not be executed."
             echo "Please download the failed results or check the above log to see why."
             exit 1
@@ -131,7 +135,7 @@ jobs:
       # Upload Regression Results as Stable if Scheduled or Push to Main
       - name: Upload Results as Reference
         # upload the results for scheduled CI (on main) and pushes to main
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && runner.os =='ubuntu'
         uses: actions/upload-artifact@v3
         with:
           name: stable_regression_results
@@ -215,7 +219,7 @@ jobs:
               fi
             fi
           done
-          if [[ -v FAILED ]]; then
+          if [[ ${FAILED} ]]; then
             echo "One or more regression tests failed."
             echo "Please download the failed results and run the tests locally or check the above log to see why."
             exit 1
@@ -227,6 +231,21 @@ jobs:
           mamba install -y -c conda-forge codecov
           codecov
 
+  # This allows us to have a branch protection rule for tests and deploys with matrix
+  # 
+  # taken from https://github.com/orgs/community/discussions/4324#discussioncomment-3477871
+  ci-report-status:
+    runs-on: ubuntu-latest
+    needs: build-and-test-unix
+    if: always()
+    steps:
+      - name: Successful CI
+        if: ${{ !(contains(needs.build-and-test-unix.result, 'failure')) }}
+        run: exit 0
+      - name: Failing CI
+        if: ${{ contains(needs.build-and-test-unix.result, 'failure') }}
+        run: exit 1          
+
   build-and-push-docker:
     # after testing and on pushes to main, build and push docker image
     # technically we could live without the 'needs' since _in theory_
@@ -234,7 +253,7 @@ jobs:
     # who knows ¯\_(ツ)_/¯
     # 
     # taken from https://github.com/docker/build-push-action
-    needs: build-and-test-linux
+    needs: build-and-test-unix
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py'
     steps:
