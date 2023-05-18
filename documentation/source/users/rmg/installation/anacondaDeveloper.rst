@@ -141,6 +141,77 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 You may now use RMG-Py, Arkane, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.
 
 
+Debugging
+=========
+
+If you wish to debug using the (very helpful) debugger in `VSCode <https://code.visualstudio.com>`_,
+here is an example launch configuration to put in your launch.json file,
+which can be found in the .vscode folder.
+You might have to edit them slightly to match your exact paths. Specifically, 
+you will need ``/opt/miniconda3/envs/rmg_env`` to point to where your conda environment is located.
+
+This configuration will allow you to debug the rms_constant_V example, running through
+python-jl. ::
+
+        {
+            "name": "Python: rmg.py rms_constant_V",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/",
+            "program": "rmg.py",
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
+            "args": [
+                "examples/rmg/rms_constant_V/input.py",
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                "PATH": "/opt/miniconda3/envs/rmg_env/bin:${env:PATH}",
+                "PYTHONPATH": "${workspaceFolder}/",
+            }
+        },
+
+This configuration will allow you to debug a subset of the unit tests.
+Open one of the many test files named `*Test.py` before you launch it::
+
+            {
+            "name": "Python: nosetest Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "/opt/miniconda3/envs/rmg_env/bin/nosetests",
+            "args": [
+                "--nologcapture",
+                "--nocapture",
+                "--verbose",
+                "${file}"
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                "PATH": "/opt/miniconda3/envs/rmg_env/bin:${env:PATH}",
+                "PYTHONPATH": "${workspaceFolder}/",
+            },
+        },
+
+This configuration will allow you to debug running all the database tests.::
+
+        {
+            "name": "Test RMG-database",
+            "type": "python",
+            "request": "launch",
+            "program": "/opt/miniconda3/envs/rmg_env/bin/nosetests",
+            "args": [
+                "--nologcapture",
+                "--nocapture",
+                "--verbose",
+                "--detailed-errors",
+                "${workspaceFolder}/testing/databaseTest.py"
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                "PATH": "/opt/miniconda3/envs/rmg_env/bin:${env:PATH}",
+                "PYTHONPATH": "${workspaceFolder}/",
+            },
+        },
+
 Test Suite
 ==========
 
