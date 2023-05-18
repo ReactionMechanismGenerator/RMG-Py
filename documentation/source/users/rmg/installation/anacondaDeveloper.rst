@@ -259,3 +259,15 @@ A number of basic examples can be run immediately.  Additional example input fil
 
     cd RMG-Py
     make eg4
+
+
+Building Documentation
+======================
+To build the documentation (to test that you have it right before pushing to GitHub) you will need to install sphinx::
+
+    conda activate rmg_env
+    conda install sphinx
+
+Then you can build the documentation::
+
+    make documentation
