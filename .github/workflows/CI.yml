@@ -94,7 +94,6 @@ jobs:
         run: |
           python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true
           julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true 
-          ln -sfn $(which python-jl) $(which python)
 
       # non-regression testing
       - name: Unit tests
