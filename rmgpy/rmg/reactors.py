@@ -44,16 +44,14 @@ try:
         logging.info(f"Using system Julia system image at {system_image_path}")
         jl = Julia(sysimage=system_image_path)
     elif __debug__:
-        "This is the normal case (__debug__ is True by default)"
+        # This is the normal case (__debug__ is True by default)
         jl = Julia(compiled_modules=False) # Disable incremental precompilation of modules.
     else:
-        """
-        This means that python was run with the -O flag.
-        I don't know why or how often that is done (all it does is
-        remove assert statements), nor why one would then
-        need or wish to skip creating a Julia runtime, but for now I'm trying
-        to refactor without changing behaviour.
-        """
+        # This means that python was run with the -O flag.
+        # I don't know why or how often that is done
+        # (all it does usually is remove assert statements),
+        # nor why one would then need or wish to skip creating a Julia runtime,
+        # but for now I'm trying to refactor without changing behaviour.
         pass
     from pyrms import rms
     from diffeqpy import de
