@@ -134,6 +134,11 @@ jobs:
             exit 1
           fi
 
+      # For debugging
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+
       # Upload Regression Results as Failed if above step failed
       - name: Upload Failed Results
         if: failure()
