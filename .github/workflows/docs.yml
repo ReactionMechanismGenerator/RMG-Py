@@ -36,7 +36,6 @@ jobs:
           julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"))"
           julia -e "using Pkg; Pkg.add(\"PyCall\"); Pkg.add(\"DifferentialEquations\")"
           python -c "import julia; julia.install()"
-          ln -sfn $(which python-jl) $(which python)
       - name: Install and compile RMG
         run: |
           cd ..
