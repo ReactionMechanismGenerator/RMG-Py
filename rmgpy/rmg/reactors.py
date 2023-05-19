@@ -43,18 +43,22 @@ try:
     system_image_path = os.path.join(os.path.dirname(get_path()), "rms.so")
     # Should be RMG-Py/rms.so for a normal install, alongside rmg.py
     if os.path.exists(system_image_path):
-        logging.info(f"Using system Julia system image at {system_image_path}")
+        print(f"Using system Julia system image at {system_image_path}")
         jl = Julia(sysimage=system_image_path)
-    elif __debug__:
-        # This is the normal case (__debug__ is True by default)
-        jl = Julia(compiled_modules=False) # Disable incremental precompilation of modules.
     else:
-        # This means that python was run with the -O flag.
-        # I don't know why or how often that is done
-        # (all it does usually is remove assert statements),
-        # nor why one would then need or wish to skip creating a Julia runtime,
-        # but for now I'm trying to refactor without changing behaviour.
-        pass
+        print(f"Couldn't find Julia system image at {system_image_path}. "
+                     "Using default Julia system image.")
+        if __debug__:
+            # This is the normal case (__debug__ is True by default)
+            jl = Julia(compiled_modules=False) # Disable incremental precompilation of modules.
+        else:
+            # This means that python was run with the -O flag.
+            # I don't know why or how often that is done
+            # (all it does usually is remove assert statements),
+            # nor why one would then need or wish to skip creating a Julia runtime,
+            # and allow incremental precompilation to be its default,
+            # but for now I'm trying to refactor without changing behaviour.
+            pass
     from pyrms import rms
     from diffeqpy import de
     from julia import Main
