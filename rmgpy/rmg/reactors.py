@@ -35,12 +35,14 @@ import numpy as np
 import sys
 import logging
 import itertools
-from os.path import dirname, abspath, join, exists
+import os
+from rmgpy import get_path
 
 try:
     from julia.api import Julia
-    system_image_path = join(dirname(dirname(dirname(abspath(__file__)))),"rms.so")
-    if exists(system_image_path):
+    system_image_path = os.path.join(os.path.dirname(get_path()), "rms.so")
+    # Should be RMG-Py/rms.so for a normal install, alongside rmg.py
+    if os.path.exists(system_image_path):
         logging.info(f"Using system Julia system image at {system_image_path}")
         jl = Julia(sysimage=system_image_path)
     elif __debug__:
