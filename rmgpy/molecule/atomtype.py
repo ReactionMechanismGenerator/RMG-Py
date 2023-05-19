@@ -305,7 +305,7 @@ ATOMTYPES['R'] = AtomType(label='R', generic=['Rx'], specific=[
     'Br','Br1s',
     'I','I1s',
     'F','F1s',
-    'B','Bs','Bd', 'Bt','BO','Bb','Bbf'])
+    'B','Bs','Bd', 'Bt','BO','Bb','Bbf','B1+','B1-'])
 
 ATOMTYPES['R!H'] = AtomType(label='R!H', generic=['R', 'Rx', 'Rx!H'], specific=[
     'Val3','Val4','Val5','Val6','Val7',
@@ -320,7 +320,7 @@ ATOMTYPES['R!H'] = AtomType(label='R!H', generic=['R', 'Rx', 'Rx!H'], specific=[
     'Br','Br1s',
     'I','I1s',
     'F','F1s',
-    'B','Bs','Bd', 'Bt','BO','Bb','Bbf'])
+    'B','Bs','Bd', 'Bt','BO','Bb','Bbf','B1+','B1-'])
 
 ATOMTYPES['R!H!Val7'] = AtomType(label='R!H!Val7', generic=['R', 'Rx', 'Rx!H'], specific=[
     'Val3','Val4','Val5','Val6',
@@ -331,12 +331,12 @@ ATOMTYPES['R!H!Val7'] = AtomType(label='R!H!Val7', generic=['R', 'Rx', 'Rx!H'], 
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf','Siq',
     'P','P0sc','P1s','P1sc','P1dc','P3s','P3d','P3t','P3b','P5s','P5sc','P5d','P5dd','P5dc','P5ddc','P5t','P5td','P5tc','P5b','P5bd',
     'S','Sa','S0sc','S2s','S2sc','S2d','S2dc','S2tc','S4s','S4sc','S4d','S4dd','S4dc','S4b','S4t','S4tdc','S6s','S6sc','S6d','S6dd','S6ddd','S6dc','S6t','S6td','S6tt','S6tdc',
-    'B','Bs','Bd','Bt','BO','Bb','Bbf'
+    'B','Bs','Bd','Bt','BO','Bb','Bbf','B1+','B1-'
     ])
 
 ATOMTYPES['Val4'] = AtomType(label='Val4', generic=['R', 'R!H', 'R!H!Val7', 'Rx', 'Rx!H'], specific=[
     'C','Ca','Cs','Csc','Cd','CO','CS','Cq','Cdd','Cdc','Ctc','Ct','Cb','Cbf','C2s','C2sc','C2d','C2dc','C2tc',
-    'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf','Siq'])
+    'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf','Siq','B','B1-'])
 
 ATOMTYPES['Val5'] = AtomType(label='Val5', generic=['R', 'R!H', 'R!H!Val7', 'Rx', 'Rx!H'], specific=[
     'N','N0sc','N1s','N1sc','N1dc','N3s','N3sc','N3d','N3t','N3b','N5sc','N5dc','N5ddc','N5dddc','N5tc','N5b','N5bd',
@@ -353,7 +353,7 @@ ATOMTYPES['Val7'] = AtomType(label='Val7', generic=['R', 'R!H', 'Rx', 'Rx!H'], s
     'F','F1s'])
 
 ATOMTYPES['Val3'] = AtomType(label='Val3', generic=['R', 'R!H', 'R!H!Val7'], specific=[
-    'B','Bs','Bd', 'Bt','BO','Bb','Bbf'])
+    'B','Bs','Bd', 'Bt','BO','Bb','Bbf','B1+'])
 
 ATOMTYPES['H'] = AtomType('H', generic=['Rx','R'], specific=[])
 
@@ -676,7 +676,7 @@ ATOMTYPES['F1s'] = AtomType('F1s', generic=['R', 'R!H', 'F', 'Val7', 'Rx', 'Rx!H
                             single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[3], charge=[0])
 # examples for F1s: HF, [F], FO, CH3F, F2
 
-ATOMTYPES['B'] = AtomType('B', generic=['R', 'R!H', 'R!H!Val7', 'Val3'], specific=['Bs', 'Bd', 'Bt', 'BO', 'Bb', 'Bbf'],
+ATOMTYPES['B'] = AtomType('B', generic=['R', 'R!H', 'R!H!Val7', 'Val3', 'Val4'], specific=['Bs', 'Bd', 'Bt', 'BO', 'Bb', 'Bbf', 'B1+', 'B1-'],
                            single=[], all_double=[], r_double=[], o_double=[], s_double=[], triple=[], quadruple=[], benzene=[], lone_pairs=[], charge=[])
 ATOMTYPES['Bs'] = AtomType('Bs', generic=['R', 'R!H', 'R!H!Val7', 'B', 'Val3'], specific=[],
                             single=[], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[], benzene=[0], lone_pairs=[], charge=[])
@@ -690,6 +690,10 @@ ATOMTYPES['Bb'] = AtomType('Bb', generic=['R', 'R!H', 'R!H!Val7', 'B', 'Val3'], 
                             single=[], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[], benzene=[2], lone_pairs=[], charge=[])
 ATOMTYPES['Bbf'] = AtomType('Bbf', generic=['R', 'R!H', 'R!H!Val7', 'B', 'Val3'], specific=[],
                              single=[], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[], benzene=[3], lone_pairs=[], charge=[])
+ATOMTYPES['B1+'] = AtomType('B1+', generic=['R', 'R!H', 'R!H!Val7', 'B', 'Val3'], specific=[],
+                             single=[], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[], benzene=[3], lone_pairs=[], charge=[1])
+ATOMTYPES['B1-'] = AtomType('B1-', generic=['R', 'R!H', 'R!H!Val7', 'B', 'Val4'], specific=[],
+                             single=[], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[], benzene=[3], lone_pairs=[], charge=[-1])
 
 # Boron Atom Types
 
@@ -842,6 +846,8 @@ ATOMTYPES['Bt'].set_actions(increment_bond=[], decrement_bond=['Bd'], form_bond=
 ATOMTYPES['BO'].set_actions(increment_bond=[], decrement_bond=['Bs'], form_bond=['BO'], break_bond=['BO'], increment_radical=['BO'], decrement_radical=['BO'], increment_lone_pair=[], decrement_lone_pair=[])
 ATOMTYPES['Bb'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Bb'], break_bond=['Bb'], increment_radical=['Bb'], decrement_radical=['Bb'], increment_lone_pair=[], decrement_lone_pair=[])
 ATOMTYPES['Bbf'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
+ATOMTYPES['B1+'].set_actions(increment_bond=['B'], decrement_bond=['B1+'], form_bond=['B'], break_bond=['B'], increment_radical=['B1+'], decrement_radical=['B1+'], increment_lone_pair=[], decrement_lone_pair=[])
+ATOMTYPES['B1-'].set_actions(increment_bond=[], decrement_bond=['B'], form_bond=['B1-'], break_bond=['B1-'], increment_radical=[], decrement_radical=['B1-'], increment_lone_pair=[], decrement_lone_pair=[])
 
 # these are ordered in priority of picking if a more general atomtype is encountered
 allElements = ['H', 'C', 'O', 'N', 'S', 'P', 'B', 'Si', 'F', 'Cl', 'Br', 'I', 'Ne', 'Ar', 'He', 'X']

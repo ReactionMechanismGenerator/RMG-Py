@@ -2349,7 +2349,7 @@ def write_elements_section(f):
 
     # map of isotope elements with chemkin-compatible element representation:
     elements = ('H', ('H', 2), ('H', 3), 'C', ('C', 13), 'O', ('O', 18), 'N', 'Ne', 'Ar', 'He', 'Si', 'S',
-                'F', 'Cl', 'Br', 'I')
+                'F', 'Cl', 'Br', 'I', 'B')
     for el in elements:
         if isinstance(el, tuple):
             symbol, isotope = el
