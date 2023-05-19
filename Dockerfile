@@ -56,7 +56,6 @@ RUN make
 # Install and link Julia dependencies for RMS
 RUN python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true
 RUN julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true 
-RUN ln -sfn $(which python-jl) $(which python)
 
 # RMG-Py should now be installed and ready
 RUN python-jl rmg.py --help
