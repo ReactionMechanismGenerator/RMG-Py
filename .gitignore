@@ -30,7 +30,7 @@ make.inc
 # Example output files
 examples/*
 !examples/*/input.py
-!examples/*/*/*.ipynb
+!examples/**/*.ipynb
 
 # NetBeans project files
 nbproject/*
