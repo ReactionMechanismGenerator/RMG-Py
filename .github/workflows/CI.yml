@@ -119,7 +119,7 @@ jobs:
       - name: Regression Tests - Execution
         timeout-minutes: 60
         run: |
-          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal;
+          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat;
           do
             if python-jl rmg.py test/regression/"$regr_test"/input.py; then
               echo "$regr_test" "Executed Successfully"
@@ -190,7 +190,7 @@ jobs:
         env:
           REFERENCE: stable_regression_results
         run: |
-          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal;
+          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat;
           do
             # Memory Usage and Execution Time
             echo 'Execution time for Reference:'
