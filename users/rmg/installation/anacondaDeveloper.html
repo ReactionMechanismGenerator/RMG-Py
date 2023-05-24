@@ -198,8 +198,78 @@ export PATH=YourFolder/RMG-Py/:$PATH
 </li>
 </ol>
 <p>You may now use RMG-Py, Arkane, as well as any of the <a class="reference internal" href="../modules/index.html#modules"><span class="std std-ref">Standalone Modules</span></a> included in the RMG-Py package.</p>
+<section id="debugging">
+<h2><span class="section-number">3.3.1.1. </span>Debugging<a class="headerlink" href="#debugging" title="Permalink to this heading">¶</a></h2>
+<p>If you wish to debug using the (very helpful) debugger in <a class="reference external" href="https://code.visualstudio.com">VSCode</a>,
+here is an example launch configuration to put in your launch.json file,
+which can be found in the .vscode folder.
+You might have to edit them slightly to match your exact paths. Specifically,
+you will need <code class="docutils literal notranslate"><span class="pre">/opt/miniconda3/envs/rmg_env</span></code> to point to where your conda environment is located.</p>
+<p>This configuration will allow you to debug the rms_constant_V example, running through
+python-jl.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Python: rmg.py rms_constant_V&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cwd&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{workspaceFolder}</span><span class="s2">/&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;rmg.py&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python-jl&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;examples/rmg/rms_constant_V/input.py&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;console&quot;</span><span class="p">:</span> <span class="s2">&quot;integratedTerminal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;PATH&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin:${env:PATH}&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;PYTHONPATH&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{workspaceFolder}</span><span class="s2">/&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">},</span>
+</pre></div>
+</div>
+<p>This configuration will allow you to debug a subset of the unit tests.
+Open one of the many test files named <cite>*Test.py</cite> before you launch it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Python: nosetest Current File&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/nosetests&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;--nologcapture&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--nocapture&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--verbose&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;$</span><span class="si">{file}</span><span class="s2">&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;console&quot;</span><span class="p">:</span> <span class="s2">&quot;integratedTerminal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;PATH&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin:${env:PATH}&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;PYTHONPATH&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{workspaceFolder}</span><span class="s2">/&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">},</span>
+</pre></div>
+</div>
+<p>This configuration will allow you to debug running all the database tests.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Test RMG-database&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/nosetests&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;--nologcapture&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--nocapture&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--verbose&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--detailed-errors&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;$</span><span class="si">{workspaceFolder}</span><span class="s2">/testing/databaseTest.py&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;console&quot;</span><span class="p">:</span> <span class="s2">&quot;integratedTerminal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;PATH&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin:${env:PATH}&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;PYTHONPATH&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{workspaceFolder}</span><span class="s2">/&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">},</span>
+</pre></div>
+</div>
+</section>
 <section id="test-suite">
-<h2><span class="section-number">3.3.1.1. </span>Test Suite<a class="headerlink" href="#test-suite" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">3.3.1.2. </span>Test Suite<a class="headerlink" href="#test-suite" title="Permalink to this heading">¶</a></h2>
 <p>There are a number of basic tests you can run on the newly installed RMG.  It is recommended to run them regularly to ensure the code and databases are behaving normally.
 Make sure that the environment is active before running the tests: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">rmg_env</span></code>.</p>
 <ol class="arabic">
@@ -224,7 +294,7 @@ Make sure that the environment is active before running the tests: <code class="
 </ol>
 </section>
 <section id="running-examples">
-<h2><span class="section-number">3.3.1.2. </span>Running Examples<a class="headerlink" href="#running-examples" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">3.3.1.3. </span>Running Examples<a class="headerlink" href="#running-examples" title="Permalink to this heading">¶</a></h2>
 <p>A number of basic examples can be run immediately.  Additional example input files can be found in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/examples</span></code> folder.  Please read more on <a class="reference internal" href="../examples.html#examples"><span class="std std-ref">Example Input Files</span></a> in the documentation.</p>
 <ol class="arabic">
 <li><p><strong>Minimal Example</strong>: this will run an Ethane pyrolysis model.  It should take less than a minute to complete. The results will be in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/testing/minimal</span></code> folder:</p>
@@ -252,6 +322,18 @@ Make sure that the environment is active before running the tests: <code class="
 </div>
 </li>
 </ol>
+</section>
+<section id="building-documentation">
+<h2><span class="section-number">3.3.1.4. </span>Building Documentation<a class="headerlink" href="#building-documentation" title="Permalink to this heading">¶</a></h2>
+<p>To build the documentation (to test that you have it right before pushing to GitHub) you will need to install sphinx:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">rmg_env</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">sphinx</span>
+</pre></div>
+</div>
+<p>Then you can build the documentation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">documentation</span>
+</pre></div>
+</div>
 </section>
 </section>
 
@@ -287,8 +369,10 @@ Make sure that the environment is active before running the tests: <code class="
     <h3><a href="../../../contents.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">3.3.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX</a><ul>
-<li><a class="reference internal" href="#test-suite">3.3.1.1. Test Suite</a></li>
-<li><a class="reference internal" href="#running-examples">3.3.1.2. Running Examples</a></li>
+<li><a class="reference internal" href="#debugging">3.3.1.1. Debugging</a></li>
+<li><a class="reference internal" href="#test-suite">3.3.1.2. Test Suite</a></li>
+<li><a class="reference internal" href="#running-examples">3.3.1.3. Running Examples</a></li>
+<li><a class="reference internal" href="#building-documentation">3.3.1.4. Building Documentation</a></li>
 </ul>
 </li>
 </ul>
