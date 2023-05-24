@@ -441,8 +441,8 @@ class ConstantTLiquidSurfaceReactor(Reactor):
             inter,pinter = rms.ReactiveInternalInterfaceConstantTPhi(domainliq,domaincat,Main.eval("using ReactionMechanismSimulator; Vector{ElementaryReaction}()"),self.initial_conditions["liquid"]["T"],self.initial_conditions["surface"]["A"])
         else:
             inter,pinter = rms.ReactiveInternalInterfaceConstantTPhi(domainliq,domaincat,interface.reactions,self.initial_conditions["liquid"]["T"],self.initial_conditions["surface"]["A"])
-        react,y0,p = rms.Reactor((domainliq,domaincat), (y0liq,y0cat), (0.0, self.tf), [inter], p=(pliq,pcat,pinter))
-        return react, (domainliq,domaincat), [inter], p
+        react,y0,p = rms.Reactor((domainliq,domaincat), (y0liq,y0cat), (0.0, self.tf), (inter,), (pliq,pcat,pinter))
+        return react, (domainliq,domaincat), (inter,), p
 
 class ConstantTVLiquidReactor(Reactor):
     def __init__(self, core_phase_system, edge_phase_system, initial_conditions, terminations, constant_species=[],
