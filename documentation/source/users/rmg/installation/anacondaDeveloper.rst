@@ -31,29 +31,29 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    For Linux users, you can check whether these are already installed by simply calling them via the command line, which
    will let you know if they are missing. To install any missing packages, you should use the appropriate package manager
    for your system.
-   
-   On Ubuntu and Debian the package manager is ``apt`` ::
 
-    sudo apt install git gcc g++ make
-    
-   On Fedora and Red Hat derivatives (RHEL 8+) the package manager is ``dnf`` ::
-   
-    sudo dnf install git gcc gcc-c++ make
+   a. On Ubuntu and Debian the package manager is ``apt`` ::
 
-   Replace ``dnf`` with ``yum`` in the preceding for Red Hat 7 and lower.
+       sudo apt install git gcc g++ make
 
-   On openSUSE the package manager is ``zypper``::
+   b. On Fedora and Red Hat derivatives (RHEL 8+) the package manager is ``dnf`` ::
 
-    sudo zypper install git gcc gcc-c++ make
+       sudo dnf install git gcc gcc-c++ make
 
-   On Manjaro or Arch Linux the package manager is ``pacman`` ::
+   c. For Red Hat 7 and lower, replace ``dnf`` with ``yum`` in the preceding.
 
-    sudo pacman -S git gcc make
+   d. On openSUSE the package manager is ``zypper``::
 
-   For MacOS users, the above packages will not come preinstalled but can be easily obtained by installing the XCode Command Line Tools.
-   These are a set of packages relevant for software development which have been bundled together by Apple. The easiest way
-   to install this is to simply run one of the commands in the terminal, e.g. ``git``. The terminal will then prompt you on
-   whether or not you would like to install the Command Line Tools.
+       sudo zypper install git gcc gcc-c++ make
+
+   e. On Manjaro or Arch Linux the package manager is ``pacman`` ::
+
+       sudo pacman -S git gcc make
+
+   f. For MacOS users, the above packages can be easily obtained by installing the XCode Command Line Tools.
+      These are a set of packages relevant for software development which have been bundled together by Apple.
+      The easiest way to install this is to simply run one of the commands in the terminal, e.g. ``git``.
+      The terminal will then prompt you to install the Command Line Tools.
 
 #. Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an
    appropriate local directory where you want both RMG-Py and RMG-database folders to exist.
