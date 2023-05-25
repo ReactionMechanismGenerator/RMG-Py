@@ -43,10 +43,6 @@ jobs:
           cd RMG-Py
           sed -i '/embedsignature/s/# //g' setup.py
           make
-      - name: Compile PyRMS
-        run: |
-          python-jl -c "from pyrms import rms"
-          python-jl -c "from diffeqpy import de"
       - name: Make documentation - for testing
         if: ${{  github.event_name != 'push' || github.repository != 'ReactionMechanismGenerator/RMG-Py' }}
         run: |
