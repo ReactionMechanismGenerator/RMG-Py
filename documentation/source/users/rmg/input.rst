@@ -916,10 +916,14 @@ be directly compared against local uncertainty results.
 uncertainties based on the estimation method used by RMG. Actual uncertainties associated with the original data sources
 are not used. Thus, the output uncertainties reported by these analyses should be viewed with this in mind.
 
+The uncertainty analysis is described in [Gao2016thesis]_ and [Gao2020]_.
+
 .. [Cantera] Goodwin, D.G.; Moffat, H.K.; Speth, R.L. Cantera: An object-oriented software toolkit for
                 chemical kinetics, thermodynamics, and transport processes; https://www.cantera.org/
 .. [MUQ] Conrad, P.R.; Parno, M.D.; Davis, A.D.; Marzouk, Y.M. MIT Uncertainty Quantification Library (MUQ); http://muq.mit.edu/
-.. [Gao2016] Gao, C. W.; Ph.D. Thesis. 2016.
+.. [Gao2016thesis] Gao, C. W.; Ph.D. Thesis. 2016. 
+.. [Gao2020] Gao, CW; Liu, M; Green, WH. Uncertainty analysis of correlated parameters in automated reaction mechanism generation. 
+             Int J Chem Kinet. 2020; 52: 266– 282. https://doi.org/10.1002/kin.21348
 
 
 .. _miscellaneousoptions:
