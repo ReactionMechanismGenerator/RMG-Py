@@ -7,8 +7,9 @@ Linux Installation
 RMG-Py and all of its dependencies may be easily installed through a short series of Terminal commands.
 The instructions listed below were written for Ubuntu 12.04 and should generally apply to other distributions.
 
-Warning: This installation method is no longer actively maintained, and is not guaranteed to work as written.
-Please refer to `installation`_ for more up-to-date instructions.
+.. warning::
+    This installation method is no longer actively maintained, and is not guaranteed to work as written.
+    Please refer to :ref:`installation` for more up-to-date instructions.
 
 * Install compilers and libraries: ::
 
