@@ -75,6 +75,9 @@ cdef class RMGObject(object):
             None
         """
         kwargs = recursive_make_object(data, class_dict, make_final_object=False)
+        for key in ['aux', 'mol']:
+            if key in kwargs.keys():
+                del kwargs[key]
         self.__init__(**kwargs)
 
 cpdef expand_to_dict(obj):
