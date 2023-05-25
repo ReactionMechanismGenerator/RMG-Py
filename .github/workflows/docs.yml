@@ -48,6 +48,10 @@ jobs:
         run: |
           cd documentation
           sphinx-build -b html -d build/doctrees/ source/ build/html -w errors.log -W --keep-going
+      - name: Report documentation errors
+        if: ${{ failure() }}
+        run: |
+          cat documentation/errors.log
       - name: Make documentation - to publish
         if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
         env:
