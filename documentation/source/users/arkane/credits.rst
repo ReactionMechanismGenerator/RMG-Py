@@ -1,4 +1,4 @@
-.. _credits:
+.. _Arkane credits:
 
 *******
 Credits
