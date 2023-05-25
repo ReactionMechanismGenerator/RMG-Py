@@ -43,11 +43,12 @@ jobs:
           cd RMG-Py
           sed -i '/embedsignature/s/# //g' setup.py
           make
-      - name: Make documentation - CI
+      - name: Make documentation - for testing
         if: ${{  github.event_name != 'push' || github.repository != 'ReactionMechanismGenerator/RMG-Py' }}
         run: |
-          make -C documentation continous_integration_setup clean html
-      - name: Make documentation - Publish
+          cd documentation
+          sphinx-build -b html -d build/doctrees/ source/ build/html -w errors.log -W --keep-going
+      - name: Make documentation - to publish
         if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
         env:
             GH_TOKEN: ${{ secrets.RMG_DEV_TOKEN }}
@@ -58,11 +59,6 @@ jobs:
         run: |
           cd documentation
           sphinx-build -b linkcheck -d build/doctrees/ source/ build/linkcheck | grep -e broken -e redirect | grep -v -e 'redirect  https://doi.org/'
-      - name: Test documentation
-        if: ${{  github.event_name == 'pull_request' }}
-        run: |
-          cd documentation
-          sphinx-build -b html -d build/doctrees/ source/ build/html -w errors.log -W --keep-going
       - name: Publish documentation
         if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
         env:
