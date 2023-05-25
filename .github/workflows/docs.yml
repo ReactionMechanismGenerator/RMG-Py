@@ -58,7 +58,7 @@ jobs:
         continue-on-error: true
         run: |
           cd documentation
-          sphinx-build -b linkcheck -d build/doctrees/ source/ build/linkcheck | grep -e broken -e redirect | grep -v -e 'redirect  https://doi.org/'
+          sphinx-build -b linkcheck -d build/doctrees/ source/ build/linkcheck | grep -e broken -e redirect | grep -v -e 'redirect  https://doi.org/' -e 'broken    https://doi.org/.* 403 Client Error: Forbidden'
       - name: Publish documentation
         if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
         env:
