@@ -246,11 +246,9 @@ cdef class SingleExponentialDown(RMGObject):
         reactive energy `e_reac` in kJ/mol. The collisions occur at temperature `T`
         in K and are described by the average energy transferred in a deactivating
         collision `d_e_down` in kJ/mol. The algorithm here is implemented as
-        described by Chang, Bozzelli, and Dean [Chang2000]_.
-    
-        .. [Chang2000] A. Y. Chang, J. W. Bozzelli, and A. M. Dean.
-           *Z. Phys. Chem.* **214**, p. 1533-1568 (2000).
-           `doi: 10.1524/zpch.2000.214.11.1533 <https://doi.org/10.1524/zpch.2000.214.11.1533>`_
+        described by A. Y. Chang, J. W. Bozzelli, and A. M. Dean.
+        *Z. Phys. Chem.* **214**, p. 1533-1568 (2000).
+        `doi: 10.1524/zpch.2000.214.11.1533 <https://doi.org/10.1524/zpch.2000.214.11.1533>`_
     
         """
     

@@ -73,17 +73,17 @@ class TemplateReaction(Reaction):
     to attributes inherited from :class:`Reaction`, this class includes the
     following attributes:
 
-    ============ ========================= =====================================
-    Attribute    Type                      Description
-    ============ ========================= =====================================
-    `family`     ``str``                   The kinetics family that the reaction was created from.
-    `estimator`  ``str``                   Whether the kinetics came from rate rules or group additivity.
-    `reverse`    :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
-    `is_forward`  ``bool``                 Whether the reaction was generated in the forward direction of the family.
-    `labeled_atoms`   ``dict``             Keys are 'reactants' or 'products', values are dictionaries.
-                                           Keys in the second level dictionary are template labels (e.g., '*1'),
-                                           values are the respective Atom object instance in the reactants.
-    ============ ========================= =====================================
+    =============== ========================= =====================================
+    Attribute       Type                      Description
+    =============== ========================= =====================================
+    `family`        ``str``                   The kinetics family that the reaction was created from.
+    `estimator`     ``str``                   Whether the kinetics came from rate rules or group additivity.
+    `reverse`       :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
+    `is_forward`    ``bool``                  Whether the reaction was generated in the forward direction of the family.
+    `labeled_atoms` ``dict``                  Keys are 'reactants' or 'products', values are dictionaries.
+                                              Keys in the second level dictionary are template labels (e.g., ``*1``),
+                                              values are the respective Atom object instance in the reactants.
+    =============== ========================= =====================================
     """
 
     def __init__(self,

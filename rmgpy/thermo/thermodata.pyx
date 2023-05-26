@@ -405,7 +405,9 @@ cdef class ThermoData(HeatCapacityModel):
 
     cpdef bint is_all_zeros(self):
         """
-        Check whether a ThermoData object has all zero values, e.g.: 
+        Check whether a ThermoData object has all zero values
+        
+        e.g.::
         
             ThermoData(
                 Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -413,7 +415,7 @@ cdef class ThermoData(HeatCapacityModel):
                 H298=(0.0, "kJ/mol"),
                 S298=(0.0, "J/(mol*K)"),
             )
-    
+        
         Returns:
             bool: Whether all values are zeroes or not.
         """

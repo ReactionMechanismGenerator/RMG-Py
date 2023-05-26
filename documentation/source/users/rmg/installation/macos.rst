@@ -4,8 +4,9 @@
 MacOS X Installation
 ********************
 
-Warning: This installation method is no longer maintained, and is unlikely to work as written.
-Please refer to `installation`_ for more up-to-date instructions.
+.. warning::
+    This installation method is no longer maintained, and is unlikely to work as written.
+    Please refer to :ref:`installation` for more up-to-date instructions.
 
 There are a number of dependencies for RMG-Py. This page will guide you through installing them.
 You will need the Command Line Tools for XCode. If you are not using Anaconda to install RMG-Py,

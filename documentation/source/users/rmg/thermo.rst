@@ -105,7 +105,7 @@ can be found here: :ref:`thermoDatabase`.
 
 Hydrogen Bond Increment (HBI) method
 ------------------------------------
-Lay et al. [Lay]_ introduced the hydrogen bond increment (HBI) method to
+Lay et al. [Lay1995]_ introduced the hydrogen bond increment (HBI) method to
 predict thermochemical properties of radicals. In contrast to Benson’s method,
 the HBI method does not use the group-additivity concept. The HBI
 enthalpy of formation of a radical (R*) is calculated from the enthalpy
@@ -168,7 +168,7 @@ The QMTP interface involves a number of steps, summarized in the figure below.
 In a first step the connectivity representation is converted into a three-dimensional structure of the molecule
 through the generation of 3D coordinates for the atoms in the molecule. This is accomplished using 
 a combination of a distance geometry method, followed by a optimization using the UFF force field available in
-RDKit [RDKit]_. Next, an input file is created containing the 3D atomic coordinates along with a number of keywords. This file is sent to a computational chemistry package, either OpenMopac or Gaussian,
+RDKit [RDKit2]_. Next, an input file is created containing the 3D atomic coordinates along with a number of keywords. This file is sent to a computational chemistry package, either OpenMopac or Gaussian,
 that calculates the thermochemistry of the given molecule "on-the-fly". The keywords specify the type of calculation, and the level-of-theory. 
 Finally, the calculated thermochemistry data is sent back to RMG.
 
@@ -281,7 +281,7 @@ References
 
 .. [Benson] Benson, S.W. (1965), https://en.wikipedia.org/wiki/Benson_group_increment_theory
 
-.. [Lay] Lay, T.; Bozzelli, J.; Dean, A.; Ritter, E. J. Phys. Chem. 1995, 99,14514-14527
+.. [Lay1995] Lay, T.; Bozzelli, J.; Dean, A.; Ritter, E. J. Phys. Chem. 1995, 99,14514-14527
 
 .. [Magoon and Green] Magoon, Gregory R., and William H. Green. "Design and implementation of a next-generation software interface for on-the-fly quantum and force field calculations in automated reaction mechanism generation." Computers & Chemical Engineering 52 (2013): 35-45.
 
@@ -291,4 +291,4 @@ References
 
 .. [Yu] "Estimation method for the thermochemical properties of polycyclic aromatic molecules" (Ph.D), Joanna Yu, M.I.T (2005)
 
-.. [RDKit] Landrum, G. (2012). RDKit, https://rdkit.org.
+.. [RDKit2] Landrum, G. (2012). RDKit: Open-source cheminformatics, https://www.rdkit.org.

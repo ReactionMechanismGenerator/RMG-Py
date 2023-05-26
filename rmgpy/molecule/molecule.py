@@ -2679,10 +2679,10 @@ class Molecule(Graph):
         
         Returns a list of Molecules.  Each molecule's atoms will be labeled corresponding to
         the bond order with the surface:
-        '*1' - Single bond
-        '*2' - double bond
-        '*3' - triple bond
-        '*4' - quadruple bond
+        ``*1`` - single bond
+        ``*2`` - double bond
+        ``*3`` - triple bond
+        ``*4`` - quadruple bond
         """
         cython.declare(desorbed_molecules=list, desorbed_molecule=Molecule, sites_to_remove=list, adsorbed_atoms=list,
                        site=Atom, numbonds=cython.int, bonded_atom=Atom, bond=Bond, i=cython.int, j=cython.int, atom0=Atom,
