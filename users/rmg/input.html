@@ -641,7 +641,7 @@ object at a time) pick up chemistry that would otherwise have been missed.</p>
 These calculations are only run if the molecule is not included in a specified thermo library.
 The <code class="docutils literal notranslate"><span class="pre">onlyCyclics</span></code> option, if <code class="docutils literal notranslate"><span class="pre">True</span></code>, only runs these calculations for cyclic species.
 In this case, group additive estimates are used for all other species.</p>
-<p>Molecular geometries are estimated via RDKit <a class="reference internal" href="thermo.html#rdkit" id="id3"><span>[RDKit]</span></a>.
+<p>Molecular geometries are estimated via RDKit <a class="reference internal" href="#rdkit" id="id3"><span>[RDKit]</span></a>.
 Either MOPAC (2009 and 2012) or GAUSSIAN (2003 and 2009) can be used
 with the semi-empirical pm3, pm6, and pm7 (pm7 only available in MOPAC2012),
 specified in the software and method blocks.
@@ -878,6 +878,7 @@ be directly compared against local uncertainty results.</p>
 <p><strong>Important Note:</strong> The current implementation of uncertainty analysis assigns values for input parameter
 uncertainties based on the estimation method used by RMG. Actual uncertainties associated with the original data sources
 are not used. Thus, the output uncertainties reported by these analyses should be viewed with this in mind.</p>
+<p>The uncertainty analysis is described in <a class="reference internal" href="#gao2016thesis" id="id8"><span>[Gao2016thesis]</span></a> and <a class="reference internal" href="#gao2020" id="id9"><span>[Gao2020]</span></a>.</p>
 <div role="list" class="citation-list">
 <div class="citation" id="cantera" role="doc-biblioentry">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">Cantera</a><span class="fn-bracket">]</span></span>
@@ -888,9 +889,14 @@ chemical kinetics, thermodynamics, and transport processes; <a class="reference 
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">MUQ</a><span class="fn-bracket">]</span></span>
 <p>Conrad, P.R.; Parno, M.D.; Davis, A.D.; Marzouk, Y.M. MIT Uncertainty Quantification Library (MUQ); <a class="reference external" href="http://muq.mit.edu/">http://muq.mit.edu/</a></p>
 </div>
-<div class="citation" id="gao2016" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>Gao2016<span class="fn-bracket">]</span></span>
+<div class="citation" id="gao2016thesis" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">Gao2016thesis</a><span class="fn-bracket">]</span></span>
 <p>Gao, C. W.; Ph.D. Thesis. 2016.</p>
+</div>
+<div class="citation" id="gao2020" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id9">Gao2020</a><span class="fn-bracket">]</span></span>
+<p>Gao, CW; Liu, M; Green, WH. Uncertainty analysis of correlated parameters in automated reaction mechanism generation.
+Int J Chem Kinet. 2020; 52: 266– 282. <a class="reference external" href="https://doi.org/10.1002/kin.21348">https://doi.org/10.1002/kin.21348</a></p>
 </div>
 </div>
 </section>

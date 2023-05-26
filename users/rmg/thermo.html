@@ -136,7 +136,7 @@ can be found here: <a class="reference internal" href="database/thermo.html#ther
 </section>
 <section id="hydrogen-bond-increment-hbi-method">
 <h3><span class="section-number">13.2.3. </span>Hydrogen Bond Increment (HBI) method<a class="headerlink" href="#hydrogen-bond-increment-hbi-method" title="Permalink to this heading">¶</a></h3>
-<p>Lay et al. <a class="reference internal" href="#lay" id="id2"><span>[Lay]</span></a> introduced the hydrogen bond increment (HBI) method to
+<p>Lay et al. <a class="reference internal" href="#lay1995" id="id2"><span>[Lay1995]</span></a> introduced the hydrogen bond increment (HBI) method to
 predict thermochemical properties of radicals. In contrast to Benson’s method,
 the HBI method does not use the group-additivity concept. The HBI
 enthalpy of formation of a radical (R*) is calculated from the enthalpy
@@ -179,7 +179,7 @@ the available ring corrections in RMG’s ring strain correction databases.</p>
 <p>In a first step the connectivity representation is converted into a three-dimensional structure of the molecule
 through the generation of 3D coordinates for the atoms in the molecule. This is accomplished using
 a combination of a distance geometry method, followed by a optimization using the UFF force field available in
-RDKit <a class="reference internal" href="#rdkit" id="id3"><span>[RDKit]</span></a>. Next, an input file is created containing the 3D atomic coordinates along with a number of keywords. This file is sent to a computational chemistry package, either OpenMopac or Gaussian,
+RDKit <a class="reference internal" href="#rdkit2" id="id3"><span>[RDKit2]</span></a>. Next, an input file is created containing the 3D atomic coordinates along with a number of keywords. This file is sent to a computational chemistry package, either OpenMopac or Gaussian,
 that calculates the thermochemistry of the given molecule “on-the-fly”. The keywords specify the type of calculation, and the level-of-theory.
 Finally, the calculated thermochemistry data is sent back to RMG.</p>
 <p>The QMTP calculation creates a folder ‘QMfiles’ that contains a number of files that are created during the process.
@@ -303,8 +303,8 @@ for each chiral center.</p>
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">Benson</a><span class="fn-bracket">]</span></span>
 <p>Benson, S.W. (1965), <a class="reference external" href="https://en.wikipedia.org/wiki/Benson_group_increment_theory">https://en.wikipedia.org/wiki/Benson_group_increment_theory</a></p>
 </div>
-<div class="citation" id="lay" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">Lay</a><span class="fn-bracket">]</span></span>
+<div class="citation" id="lay1995" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">Lay1995</a><span class="fn-bracket">]</span></span>
 <p>Lay, T.; Bozzelli, J.; Dean, A.; Ritter, E. J. Phys. Chem. 1995, 99,14514-14527</p>
 </div>
 </div>
@@ -321,9 +321,9 @@ for each chiral center.</p>
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">Yu</a><span class="fn-bracket">]</span></span>
 <p>“Estimation method for the thermochemical properties of polycyclic aromatic molecules” (Ph.D), Joanna Yu, M.I.T (2005)</p>
 </div>
-<div class="citation" id="rdkit" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">RDKit</a><span class="fn-bracket">]</span></span>
-<p>Landrum, G. (2012). RDKit, <a class="reference external" href="https://rdkit.org">https://rdkit.org</a>.</p>
+<div class="citation" id="rdkit2" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">RDKit2</a><span class="fn-bracket">]</span></span>
+<p>Landrum, G. (2012). RDKit: Open-source cheminformatics, <a class="reference external" href="https://www.rdkit.org">https://www.rdkit.org</a>.</p>
 </div>
 </div>
 </section>

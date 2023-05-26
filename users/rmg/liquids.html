@@ -155,11 +155,11 @@ for this specific species-solvent system.</p>
 <span id="lsertoestimatethermo"></span><h3><span class="section-number">15.2.2. </span>Use of Abraham LSER to estimate thermochemistry at 298 K<a class="headerlink" href="#use-of-abraham-lser-to-estimate-thermochemistry-at-298-k" title="Permalink to this heading">¶</a></h3>
 <p>The Abraham LSER provides an estimate of the the partition coefficient (<span class="math notranslate nohighlight">\(K\)</span>)  of a solute (component 2)
 between the vapor phase and a particular solvent (component 1) at 298 K:</p>
-<div class="math notranslate nohighlight" id="equation-abmodeleqn">
-<span class="eqno">(2)<a class="headerlink" href="#equation-abmodeleqn" title="Permalink to this equation">¶</a></span>\[\log_{10} K = c + eE + sS + aA + bB + lL\]</div>
+<div class="math notranslate nohighlight" id="equation-abmodeleqn1">
+<span class="eqno">(2)<a class="headerlink" href="#equation-abmodeleqn1" title="Permalink to this equation">¶</a></span>\[\log_{10} K = c + eE + sS + aA + bB + lL\]</div>
 <p>where the partition coefficient is the ratio of the equilibrium concentrations of the solute in liquid and vapor phases</p>
-<div class="math notranslate nohighlight" id="equation-abmodeleqn">
-<span class="eqno">(3)<a class="headerlink" href="#equation-abmodeleqn" title="Permalink to this equation">¶</a></span>\[K = \frac{c_{\rm 2, liquid}}{c_{\rm 2, gas}}\]</div>
+<div class="math notranslate nohighlight" id="equation-abmodeleqn2">
+<span class="eqno">(3)<a class="headerlink" href="#equation-abmodeleqn2" title="Permalink to this equation">¶</a></span>\[K = \frac{c_{\rm 2, liquid}}{c_{\rm 2, gas}}\]</div>
 <p>The Abraham model is used in RMG to estimate <span class="math notranslate nohighlight">\(\Delta G_{\rm solv}^{*}\)</span> which is related to the <span class="math notranslate nohighlight">\(K\)</span> of a solute according to the following expression:</p>
 <div class="math notranslate nohighlight" id="equation-partition">
 <span class="eqno">(4)<a class="headerlink" href="#equation-partition" title="Permalink to this equation">¶</a></span>\[\begin{split}\Delta G_{\rm solv}^{*}({\rm 298 K}) = -RT \ln K \\
@@ -224,15 +224,15 @@ far away from 298 K. Looking at several experimental data, this approximation se
 The K-factor at infinite dilution (<span class="math notranslate nohighlight">\(K_{2,1}^{\infty}\)</span>), also known as the vapor-liquid equilibrium ratio, is
 defined as the ratio of the equilibrium mole fractions of the solute (component 2) in the gas and the liquid phases
 of the solvent (component 1):</p>
-<div class="math notranslate nohighlight" id="equation-linear-extrapolation">
-<span class="eqno">(8)<a class="headerlink" href="#equation-linear-extrapolation" title="Permalink to this equation">¶</a></span>\[K_{2,1}^{\infty} = \frac{y_{2}}{x_{2}}\]</div>
+<div class="math notranslate nohighlight">
+\[K_{2,1}^{\infty} = \frac{y_{2}}{x_{2}}\]</div>
 <p>Recently, Chung et al. (<a class="reference internal" href="#chung2020" id="id22"><span>[Chung2020]</span></a>) has shown that the following piecewise function combining two separate correlations
 (<a class="reference internal" href="#japas1989" id="id23"><span>[Japas1989]</span></a>, <a class="reference internal" href="#harvey1996" id="id24"><span>[Harvey1996]</span></a>) can accurately predict the K-factor from room temperature up to the critical temperature
 of the solvent</p>
 <div class="math notranslate nohighlight" id="equation-piecewise-function-1">
-<span class="eqno">(9)<a class="headerlink" href="#equation-piecewise-function-1" title="Permalink to this equation">¶</a></span>\[{\rm For}\ \ T \leqslant 0.75T_{\rm c}:\ \ \ \ \ \ \ \ \ T_{\rm r}\ln K_{2,1}^{\infty} = A + B(1-T_{\rm r})^{0.355} + C(T_{\rm r})^{0.59}\exp (1-T_{\rm r})\]</div>
+<span class="eqno">(8)<a class="headerlink" href="#equation-piecewise-function-1" title="Permalink to this equation">¶</a></span>\[{\rm For}\ \ T \leqslant 0.75T_{\rm c}:\ \ \ \ \ \ \ \ \ T_{\rm r}\ln K_{2,1}^{\infty} = A + B(1-T_{\rm r})^{0.355} + C(T_{\rm r})^{0.59}\exp (1-T_{\rm r})\]</div>
 <div class="math notranslate nohighlight" id="equation-piecewise-function-2">
-<span class="eqno">(10)<a class="headerlink" href="#equation-piecewise-function-2" title="Permalink to this equation">¶</a></span>\[{\rm For}\ \ 0.75T_{\rm c} \leqslant T &lt; T_{\rm c}:\ \ \ \ \ \ \ \ \ \ T_{\rm r}\ln K_{2,1}^{\infty} = D(\frac{\rho_{1}^{\rm l}}{\rho_{\rm c, 1}}-1)\]</div>
+<span class="eqno">(9)<a class="headerlink" href="#equation-piecewise-function-2" title="Permalink to this equation">¶</a></span>\[{\rm For}\ \ 0.75T_{\rm c} \leqslant T &lt; T_{\rm c}:\ \ \ \ \ \ \ \ \ \ T_{\rm r}\ln K_{2,1}^{\infty} = D(\frac{\rho_{1}^{\rm l}}{\rho_{\rm c, 1}}-1)\]</div>
 <p>where <span class="math notranslate nohighlight">\(A, B, C, D\)</span> are empirical parameters unique for each solvent-solute pair, <span class="math notranslate nohighlight">\(T_{\rm c}\)</span> is the critical
 temperature of the solvent, <span class="math notranslate nohighlight">\(T_{\rm r}\)</span> is the reduced temperature (<span class="math notranslate nohighlight">\(T_{\rm r} = \frac{T}{T_{\rm c}}\)</span>),
 <span class="math notranslate nohighlight">\(\rho_{1}^{\rm l}\)</span> is the saturated liquid phase density of the solvent, and <span class="math notranslate nohighlight">\(\rho_{\rm c, 1}\)</span> is the critical
@@ -240,7 +240,7 @@ density of the solvent. The transition temperature, <span class="math notranslat
 are performed at the solvent’s saturation pressures such that K-factor is only a function of temperature.</p>
 <p>Solvation free energy can be calculated from K-factor from the following relation</p>
 <div class="math notranslate nohighlight" id="equation-kfactor-dgsolv-conversion">
-<span class="eqno">(11)<a class="headerlink" href="#equation-kfactor-dgsolv-conversion" title="Permalink to this equation">¶</a></span>\[\Delta G_{\rm solv}^{*} = RT\ln \left(\frac{K_{2,1}^{\infty} \rho_{1}^{\rm g}}{\rho_{1}^{\rm l}}\right)\]</div>
+<span class="eqno">(10)<a class="headerlink" href="#equation-kfactor-dgsolv-conversion" title="Permalink to this equation">¶</a></span>\[\Delta G_{\rm solv}^{*} = RT\ln \left(\frac{K_{2,1}^{\infty} \rho_{1}^{\rm g}}{\rho_{1}^{\rm l}}\right)\]</div>
 <p>where <span class="math notranslate nohighlight">\(\rho_{1}^{\rm g}\)</span> is the saturated gas phase density of the solvent.</p>
 <p>To solve for the four empirical parameters (A, B, C, D), we need four equations. The first two can be obtained by
 enforcing the continuity in values and temperature gradient of the piecewise function at the transition temperature. The
@@ -248,13 +248,13 @@ last two can be obtained by making the K-factor value and its temperature gradie
 estimated from the solvation free energy and enthalpy at 298 K. These lead to the following four linearly independent
 equations to solve:</p>
 <div class="math notranslate nohighlight" id="equation-condition1">
-<span class="eqno">(12)<a class="headerlink" href="#equation-condition1" title="Permalink to this equation">¶</a></span>\[{\rm At\ } T = {\rm 298 K} :\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ A + B(1-T_{\rm r})^{0.355} + C(T_{\rm r})^{0.59}\exp{(1-T_{\rm r})} =T_{\rm r} \ln{K_{2,1}^{\infty}(298\ \rm K)}\]</div>
+<span class="eqno">(11)<a class="headerlink" href="#equation-condition1" title="Permalink to this equation">¶</a></span>\[{\rm At\ } T = {\rm 298 K} :\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ A + B(1-T_{\rm r})^{0.355} + C(T_{\rm r})^{0.59}\exp{(1-T_{\rm r})} =T_{\rm r} \ln{K_{2,1}^{\infty}(298\ \rm K)}\]</div>
 <div class="math notranslate nohighlight" id="equation-condition2">
-<span class="eqno">(13)<a class="headerlink" href="#equation-condition2" title="Permalink to this equation">¶</a></span>\[{\rm At\ } T = {\rm 298 K}:\ \ \ \ \ -\frac{0.355B}{T_{\rm c}}(1-T_{\rm r})^{-0.645} + \frac{C\exp{(1-T_{\rm r})}}{T_{\rm c}}\left(0.59(T_{\rm r})^{-0.41} - (T_{\rm r}^{*})^{0.59}\right) = \frac{{\rm d}\left(T_{\rm r} \ln{K_{2,1}^{\infty}}\right)}{{\rm d}T}\Big|_{T=298\ {\rm K}}\]</div>
+<span class="eqno">(12)<a class="headerlink" href="#equation-condition2" title="Permalink to this equation">¶</a></span>\[{\rm At\ } T = {\rm 298 K}:\ \ \ \ \ -\frac{0.355B}{T_{\rm c}}(1-T_{\rm r})^{-0.645} + \frac{C\exp{(1-T_{\rm r})}}{T_{\rm c}}\left(0.59(T_{\rm r})^{-0.41} - (T_{\rm r}^{*})^{0.59}\right) = \frac{{\rm d}\left(T_{\rm r} \ln{K_{2,1}^{\infty}}\right)}{{\rm d}T}\Big|_{T=298\ {\rm K}}\]</div>
 <div class="math notranslate nohighlight" id="equation-condition3">
-<span class="eqno">(14)<a class="headerlink" href="#equation-condition3" title="Permalink to this equation">¶</a></span>\[{\rm At\ } T = 0.75T_{\rm c}:\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ A + B(1-T_{\rm r})^{0.355} + C(T_{\rm r})^{0.59}\exp{(1-T_{\rm r})} = D\Big(\frac{\rho_{1}^{\rm l}}{\rho_{\rm c,1}} - 1 \Big)\]</div>
+<span class="eqno">(13)<a class="headerlink" href="#equation-condition3" title="Permalink to this equation">¶</a></span>\[{\rm At\ } T = 0.75T_{\rm c}:\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ A + B(1-T_{\rm r})^{0.355} + C(T_{\rm r})^{0.59}\exp{(1-T_{\rm r})} = D\Big(\frac{\rho_{1}^{\rm l}}{\rho_{\rm c,1}} - 1 \Big)\]</div>
 <div class="math notranslate nohighlight" id="equation-condition4">
-<span class="eqno">(15)<a class="headerlink" href="#equation-condition4" title="Permalink to this equation">¶</a></span>\[{\rm At\ } T = 0.75T_{\rm c}:\ \ \ \ \ \ \ \ \ \ \ \ \ -\frac{0.355B}{T_{\rm c}}(1-T_{\rm r})^{-0.645} + \frac{C\exp{(1-T_{\rm r})}}{T_{\rm c}}\left(0.59(T_{\rm r})^{-0.41} - (T_{\rm r})^{0.59}\right) = \frac{D}{\rho_{\rm c, 1}} \frac{{\rm d}\rho_{1}^{\rm l}}{{\rm d}T}\Big|_{T=0.75T_{\rm c}}\]</div>
+<span class="eqno">(14)<a class="headerlink" href="#equation-condition4" title="Permalink to this equation">¶</a></span>\[{\rm At\ } T = 0.75T_{\rm c}:\ \ \ \ \ \ \ \ \ \ \ \ \ -\frac{0.355B}{T_{\rm c}}(1-T_{\rm r})^{-0.645} + \frac{C\exp{(1-T_{\rm r})}}{T_{\rm c}}\left(0.59(T_{\rm r})^{-0.41} - (T_{\rm r})^{0.59}\right) = \frac{D}{\rho_{\rm c, 1}} \frac{{\rm d}\rho_{1}^{\rm l}}{{\rm d}T}\Big|_{T=0.75T_{\rm c}}\]</div>
 <p>The temperature dependent liquid phase and gas phase densities of solvents can be evaluated at the solvent’s saturation
 pressure using CoolProp <a class="reference internal" href="#bell2014" id="id25"><span>[Bell2014]</span></a>. CoolProp is an open source fluid modeling software based on Helmholtz energy equations
 of state. It provides accurate estimations of fluid properties over the wide ranges of temperature and pressure for a variety
@@ -316,7 +316,7 @@ and <span class="math notranslate nohighlight">\(N_{\mathrm{atom*}}\)</span> and
 the number of halogen atoms in a molecule, respectively. We take this unique approach because it allows one to use the
 experimental solute parameter data of a replaced compound and simply apply halogen corrections to get more accurate
 estimates for a halogenated compound.</p>
-<p>For radical species, RMG uses the hydrogen bond increment (HBI) method developed by Lay et al. <a class="reference internal" href="thermo.html#lay" id="id29"><span>[Lay]</span></a> to estimate the
+<p>For radical species, RMG uses the hydrogen bond increment (HBI) method developed by Lay et al. <a class="reference internal" href="#lay" id="id29"><span>[Lay]</span></a> to estimate the
 solute descriptors. The HBI method first saturates the compound, gets the estimate using the saturated structure, and
 applies the radical corrections for each radical site using the original structure as shown below:</p>
 <div class="math notranslate nohighlight">
@@ -386,26 +386,26 @@ limits. The theory behind diffusive limits in the solution phase for bimolecular
 (<a class="reference internal" href="#rice1985" id="id31"><span>[Rice1985]</span></a>) and has been extended to reactions of any order (<a class="reference internal" href="#flegg2016" id="id32"><span>[Flegg2016]</span></a>). The effective rate constant of a
 diffusion-limited reaction is given by:</p>
 <div class="math notranslate nohighlight" id="equation-diffusive-limit">
-<span class="eqno">(16)<a class="headerlink" href="#equation-diffusive-limit" title="Permalink to this equation">¶</a></span>\[k_{\mathrm{eff}} = \frac {k_{\mathrm{diff}} k_{\mathrm{int}}}{k_{\mathrm{diff}} + k_{\mathrm{int}}}\]</div>
+<span class="eqno">(15)<a class="headerlink" href="#equation-diffusive-limit" title="Permalink to this equation">¶</a></span>\[k_{\mathrm{eff}} = \frac {k_{\mathrm{diff}} k_{\mathrm{int}}}{k_{\mathrm{diff}} + k_{\mathrm{int}}}\]</div>
 <p>where <span class="math notranslate nohighlight">\(k_\mathrm{int}\)</span> is the intrinsic reaction rate, and <span class="math notranslate nohighlight">\(k_\mathrm{diff}\)</span> is the diffusion-limited rate, which is given
 by:</p>
 <div class="math notranslate nohighlight" id="equation-smoluchowski">
-<span class="eqno">(17)<a class="headerlink" href="#equation-smoluchowski" title="Permalink to this equation">¶</a></span>\[k_{\mathrm{diff}} = \left[\prod_{i=2}^N\hat{D}_i^{3/2}\right]\frac{4\pi^{\alpha+1}}{\Gamma(\alpha)}\left(\frac{\sigma}{\sqrt{\Delta_N}}\right)^{2\alpha}\]</div>
+<span class="eqno">(16)<a class="headerlink" href="#equation-smoluchowski" title="Permalink to this equation">¶</a></span>\[k_{\mathrm{diff}} = \left[\prod_{i=2}^N\hat{D}_i^{3/2}\right]\frac{4\pi^{\alpha+1}}{\Gamma(\alpha)}\left(\frac{\sigma}{\sqrt{\Delta_N}}\right)^{2\alpha}\]</div>
 <p>where <span class="math notranslate nohighlight">\(\alpha=(3N-5)/2\)</span> and</p>
 <div class="math notranslate nohighlight" id="equation-diff1">
-<span class="eqno">(18)<a class="headerlink" href="#equation-diff1" title="Permalink to this equation">¶</a></span>\[\hat{D}_i = D_i + \frac{1}{\sum_m^{i-1}D_m^{-1}}\]</div>
+<span class="eqno">(17)<a class="headerlink" href="#equation-diff1" title="Permalink to this equation">¶</a></span>\[\hat{D}_i = D_i + \frac{1}{\sum_m^{i-1}D_m^{-1}}\]</div>
 <div class="math notranslate nohighlight" id="equation-diff2">
-<span class="eqno">(19)<a class="headerlink" href="#equation-diff2" title="Permalink to this equation">¶</a></span>\[\Delta_N = \frac{\sum_{i=1}^N D_i^{-1}}{\sum_{i&gt;m}(D_iD_m)^{-1}}\]</div>
+<span class="eqno">(18)<a class="headerlink" href="#equation-diff2" title="Permalink to this equation">¶</a></span>\[\Delta_N = \frac{\sum_{i=1}^N D_i^{-1}}{\sum_{i&gt;m}(D_iD_m)^{-1}}\]</div>
 <p><span class="math notranslate nohighlight">\(D_i\)</span> are the individual diffusivities and <span class="math notranslate nohighlight">\(\sigma\)</span> is the Smoluchowski radius, which would usually be fitted to
 experiment, but RMG approximates it as the sum of molecular radii. RMG uses the McGowan method for estimating
 radii, and diffusivities are estimated with the Stokes-Einstein equation using experimental solvent
 viscosities (<span class="math notranslate nohighlight">\(\eta(T)\)</span>):</p>
 <div class="math notranslate nohighlight" id="equation-stokeseinstein">
-<span class="eqno">(20)<a class="headerlink" href="#equation-stokeseinstein" title="Permalink to this equation">¶</a></span>\[D_{i} = \frac{k_{B}T}{6\pi\,\eta\,r_{i}}\]</div>
+<span class="eqno">(19)<a class="headerlink" href="#equation-stokeseinstein" title="Permalink to this equation">¶</a></span>\[D_{i} = \frac{k_{B}T}{6\pi\,\eta\,r_{i}}\]</div>
 <div class="math notranslate nohighlight" id="equation-smoluchowski-radius">
-<span class="eqno">(21)<a class="headerlink" href="#equation-smoluchowski-radius" title="Permalink to this equation">¶</a></span>\[\sigma = \sum_{i=1}^N r_{i}\]</div>
+<span class="eqno">(20)<a class="headerlink" href="#equation-smoluchowski-radius" title="Permalink to this equation">¶</a></span>\[\sigma = \sum_{i=1}^N r_{i}\]</div>
 <div class="math notranslate nohighlight" id="equation-raidus-from-mcgowan-volume">
-<span class="eqno">(22)<a class="headerlink" href="#equation-raidus-from-mcgowan-volume" title="Permalink to this equation">¶</a></span>\[r_{i} = \frac{\left(100\frac{3}{4}\frac{V_{i}}{\pi N_{A}}\right)^{1/3}}{100}\]</div>
+<span class="eqno">(21)<a class="headerlink" href="#equation-raidus-from-mcgowan-volume" title="Permalink to this equation">¶</a></span>\[r_{i} = \frac{\left(100\frac{3}{4}\frac{V_{i}}{\pi N_{A}}\right)^{1/3}}{100}\]</div>
 <p>where <span class="math notranslate nohighlight">\(k_B\)</span> is the Boltzmann constant, <span class="math notranslate nohighlight">\(N_A\)</span> is the Avogadro number, <span class="math notranslate nohighlight">\(r_i\)</span> is the individual molecular
 radius in meters, and <span class="math notranslate nohighlight">\(V_i\)</span> is the individual McGowan volume in cm3/mol divided by 100, which is equivalent to the
 Abraham solute parameter, <span class="math notranslate nohighlight">\(V\)</span>.</p>
@@ -417,7 +417,7 @@ forward and reverse directions are calculated and the limit with the smaller for
 <p>The viscosity of the solvent is calculated Pa.s using the solvent specified in the command line
 and a correlation for the viscosity using parameters <span class="math notranslate nohighlight">\(A, B, C, D, E\)</span>:</p>
 <div class="math notranslate nohighlight" id="equation-viscosity">
-<span class="eqno">(23)<a class="headerlink" href="#equation-viscosity" title="Permalink to this equation">¶</a></span>\[\ln \eta = A + \frac{B}{T} + C\log T + DT^E\]</div>
+<span class="eqno">(22)<a class="headerlink" href="#equation-viscosity" title="Permalink to this equation">¶</a></span>\[\ln \eta = A + \frac{B}{T} + C\log T + DT^E\]</div>
 <p>The viscosity parameters (<cite>A, B, C, D, E</cite>) are provided for 150 pure solvents in RMG’s database, which can be found under
 (1) <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-database/blob/master/input/solvation/libraries/solvent.py">the RMG-database git repository</a>
 or (2) <a class="reference external" href="https://rmg.mit.edu/database/solvation/libraries/solvent/">the RMG website</a>. If RMG-database is installed,
