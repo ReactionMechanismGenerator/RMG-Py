@@ -15,6 +15,8 @@
 # - May 15, 2023 Added this changelog, added inline documentation,
 #   made depdency list more explicit (@JacksonBurns).
 #
+# - May 31, 2023 Switch chemprop to official builds
+#
 name: rmg_env
 channels:
   - defaults
@@ -40,6 +42,7 @@ dependencies:
 
 # external software tools for chemistry
   - coolprop
+  - conda-forge::chemprop
   - cantera::cantera=2.6
   - conda-forge::mopac
   - conda-forge::cclib >=1.6.3
@@ -86,10 +89,6 @@ dependencies:
   # rather than ours (which is only made so that we can get it from conda)
   # It is only on pip, so we will need to do something like:
   # https://stackoverflow.com/a/35245610
-
-  - rmg::chemprop
-  # Our build of this is version 0.0.1 (!!) and we are using parts
-  # of the API that are now gone. Need a serious PR to fix this.
 
   - rmg::rdkit >=2020.03.3.0
   # We should use the official channel, not sure how difficult this
