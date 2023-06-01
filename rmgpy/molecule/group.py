@@ -750,6 +750,8 @@ class GroupBond(Edge):
                 values.append('vdW')
             elif value == 0.1:
                 values.append('H')
+            elif value == 0.05:
+                values.append('R')
             else:
                 raise TypeError('Bond order number {} is not hardcoded as a string'.format(value))
         return values
@@ -775,6 +777,8 @@ class GroupBond(Edge):
                 values.append(1.5)
             elif value == 'H':
                 values.append(0.1)
+            elif value == 'R':
+                values.append(0.05)
             else:
                 # try to see if an float disguised as a string was input by mistake
                 try:
@@ -903,12 +907,28 @@ class GroupBond(Edge):
         """
         if wildcards:
             for order in self.order:
-                if abs(order) <= 1e-9:
+                if abs(order - 0.1) <= 1e-9:
                     return True
             else:
                 return False
         else:
-            return abs(self.order[0]) <= 1e-9 and len(self.order) == 1
+            return abs(self.order[0] - 0.1) <= 1e-9 and len(self.order) == 1
+        
+    def is_reaction_bond(self, wildcards=False):
+        """
+        Return ``True`` if the bond represents a reaction bond or ``False`` if
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are reaction bonds.
+        """
+        if wildcards:
+            for order in self.order:
+                if abs(order - 0.05) <= 1e-9:
+                    return True
+            else:
+                return False
+        else:
+            return abs(self.order[0] - 0.05) <= 1e-9 and len(self.order) == 1
 
     def _change_bond(self, order):
         """

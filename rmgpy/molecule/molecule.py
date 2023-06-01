@@ -701,6 +701,8 @@ class Bond(Edge):
             return 'vdW'
         elif self.is_hydrogen_bond():
             return 'H'
+        elif self.is_reaction_bond():
+            return 'R'
         else:
             raise ValueError("Bond order {} does not have string representation.".format(self.order))
 
@@ -722,6 +724,8 @@ class Bond(Edge):
             self.order = 0
         elif new_order == 'H':
             self.order = 0.1
+        elif new_order == 'R':
+            self.order = 0.05
         else:
             # try to see if an float disguised as a string was input by mistake
             try:
@@ -815,6 +819,13 @@ class Bond(Edge):
         """
         return self.is_order(0.1)
 
+    def is_reaction_bond(self):
+        """
+        Return ``True`` if the bond represents a reaction bond or ``False`` if
+        not.
+        """
+        return self.is_order(0.05)
+    
     def increment_order(self):
         """
         Update the bond as a result of applying a CHANGE_BOND action to
@@ -873,7 +884,7 @@ class Bond(Edge):
         the atom labels in alphabetical order (i.e. 'C-H' is possible but not 'H-C')
         :return: str
         """
-        bond_symbol_mapping = {0.1: '~', 1: '-', 1.5: ':', 2: '=', 3: '#'}
+        bond_symbol_mapping = {0.05: '~', 0.1: '~', 1: '-', 1.5: ':', 2: '=', 3: '#'}
         atom_labels = [self.atom1.symbol, self.atom2.symbol]
         atom_labels.sort()
         try:
