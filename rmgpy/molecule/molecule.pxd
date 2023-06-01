@@ -146,6 +146,8 @@ cdef class Molecule(Graph):
     cdef public int multiplicity
     cdef public bint reactive
     cdef public dict props
+    cdef public str metal
+    cdef public str facet
     cdef str _fingerprint
     cdef str _inchi
     cdef str _smiles

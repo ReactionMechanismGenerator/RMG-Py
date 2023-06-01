@@ -1046,15 +1046,19 @@ class Group(Graph):
     `atoms`             ``list``            Aliases for the `vertices` storing :class:`GroupAtom`
     `multiplicity`      ``list``            Range of multiplicities accepted for the group
     `props`             ``dict``            Dictionary of arbitrary properties/flags classifying state of Group object 
+    `metal`             ``list``            List of metals accepted for the group
+    `facet`             ``list``            List of facets accepted for the group
     =================== =================== ====================================
 
     Corresponding alias methods to Molecule have also been provided.
     """
 
-    def __init__(self, atoms=None, props=None, multiplicity=None):
+    def __init__(self, atoms=None, props=None, multiplicity=None, metal=None, facet=None):
         Graph.__init__(self, atoms)
         self.props = props or {}
         self.multiplicity = multiplicity or []
+        self.metal = metal or []
+        self.facet = facet or []
         self.elementCount = {}
         self.radicalCount = -1
         self.update()
@@ -1771,7 +1775,7 @@ class Group(Graph):
         ``False``.
         """
         from rmgpy.molecule.adjlist import from_adjacency_list
-        self.vertices, multiplicity = from_adjacency_list(adjlist, group=True, check_consistency=check_consistency)
+        self.vertices, multiplicity, self.metal, self.facet = from_adjacency_list(adjlist, group=True, check_consistency=check_consistency)
         if multiplicity is not None:
             self.multiplicity = multiplicity
         self.update()
@@ -1782,7 +1786,7 @@ class Group(Graph):
         Convert the molecular structure to a string adjacency list.
         """
         from rmgpy.molecule.adjlist import to_adjacency_list
-        return to_adjacency_list(self.vertices, multiplicity=self.multiplicity, label=label, group=True)
+        return to_adjacency_list(self.vertices, multiplicity=self.multiplicity, metal=self.metal, facet=self.facet, label=label, group=True)
 
     def update_fingerprint(self):
         """
@@ -1845,7 +1849,7 @@ class Group(Graph):
         be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
         cython.declare(group=Group)
-        cython.declare(mult1=cython.short, mult2=cython.short)
+        cython.declare(mult1=cython.short, mult2=cython.short, m1=str, m2=str)
         cython.declare(a=GroupAtom, L=list)
         # It only makes sense to compare a Group to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
@@ -1894,6 +1898,24 @@ class Group(Graph):
                         return False
         else:
             if group.multiplicity: return False
+        if self.metal:
+            for m1 in self.metal:
+                if group.metal:
+                    for m2 in group.metal:
+                        if m1 == m2: break
+                    else:
+                        return False
+        else:
+            if group.metal: return False
+        if self.facet:
+            for m1 in self.facet:
+                if group.facet:
+                    for m2 in group.facet:
+                        if m1 == m2: break
+                    else:
+                        return False
+        else:
+            if group.facet: return False
         # Do the isomorphism comparison
         return Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order)
 
@@ -1910,7 +1932,7 @@ class Group(Graph):
         :class:`TypeError` is raised.
         """
         cython.declare(group=Group)
-        cython.declare(mult1=cython.short, mult2=cython.short)
+        cython.declare(mult1=cython.short, mult2=cython.short, m1=str, m2=str)
 
         # It only makes sense to compare a Group to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
@@ -1929,7 +1951,27 @@ class Group(Graph):
         else:
             if group.multiplicity:
                 return []
-
+        if self.metal:
+            for m1 in self.metal:
+                if group.metal:
+                    for m2 in group.metal:
+                        if m1 == m2: break
+                    else:
+                        return []
+        else:
+            if group.metal:
+                return []
+        if self.facet:
+            for m1 in self.facet:
+                if group.facet:
+                    for m2 in group.facet:
+                        if m1 == m2: break
+                    else:
+                        return []
+        else:
+            if group.facet:
+                return []
+            
         # Do the isomorphism comparison
         return Graph.find_subgraph_isomorphisms(self, other, initial_map, save_order=save_order)
 

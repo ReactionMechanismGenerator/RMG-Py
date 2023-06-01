@@ -524,11 +524,17 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False, check_consistenc
             multiplicity = int(line.split()[1])
         if len(lines) == 0:
             raise InvalidAdjacencyListError('No atoms specified in adjacency list: \n{0}'.format(adjlist))
-
+        
     mistake1 = re.compile(r'\{[^}]*\s+[^}]*\}')
+    if group:
+        metal = []
+        facet = []
+    else:
+        metal = ''
+        facet = ''
     # Iterate over the remaining lines, generating Atom or GroupAtom objects
     for line in lines:
-
+            
         # Sometimes people put spaces after commas, which messes up the
         # parse-by-whitespace. Examples include '[Cd, Ct]'.
         if mistake1.search(line):
@@ -545,7 +551,49 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False, check_consistenc
         # Skip if blank line
         if len(data) == 0:
             continue
-
+        
+        if line.split()[0] == 'metal':
+            if group:
+                match = re.match(r'\s*metal\s+\[\s*[\w,\s]+\s*\]\s*$', line)
+                if not match:
+                    rematch = re.match(r'\s*metal\s+x\s*$', line)
+                    if not rematch:
+                        raise InvalidAdjacencyListError("Invalid metal line '{0}'. Should be a list like "
+                                                        "'metal [Cu,Fe,Ag]' or a wildcard 'metal x'".format(line))
+                else:
+                    out = line.split('[')[1][:-1]
+                    metal = [x.strip() for x in out.split(',') if x.strip() != '']
+        
+            else:
+                match = re.match(r'\s*metal\s+\w+\s*$', line)
+                if not match:
+                    raise InvalidAdjacencyListError("Invalid metal line '{0}'. Should be a string like "
+                                                "'metal Fe'".format(line))
+                metal = line.split()[1].strip()
+            
+            continue
+                
+        if line.split()[0] == 'facet':
+            if group:
+                match = re.match(r'\s*facet\s+\[\s*[\w,\s]+\s*\]\s*$', line)
+                if not match:
+                    rematch = re.match(r'\s*facet\s+x\s*$', line)
+                    if not rematch:
+                        raise InvalidAdjacencyListError("Invalid facet line '{0}'. Should be a list like "
+                                                        "'facet [111,211,110]' or a wildcard 'facet x'".format(line))
+                else:
+                    out = line.split('[')[1][:-1]
+                    facet = [x.strip() for x in out.split(',') if x.strip() != '']
+        
+            else:
+                match = re.match(r'\s*facet\s+\w+\s*$', line)
+                if not match:
+                    raise InvalidAdjacencyListError("Invalid facet line '{0}'. Should be a string like "
+                                                "'facet 111'".format(line))
+                facet = line.split()[1].strip()
+            
+            continue
+        
         # First item is index for atom
         # Sometimes these have a trailing period (as if in a numbered list),
         # so remove it just in case
@@ -787,19 +835,19 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False, check_consistenc
         ConsistencyChecker.check_multiplicity(n_rad, multiplicity)
         for atom in atoms:
             ConsistencyChecker.check_hund_rule(atom, multiplicity)
-        return atoms, multiplicity
+        return atoms, multiplicity, metal, facet
     else:
         # Currently no group consistency check
-
         if not group:
             if multiplicity is None:
                 n_rad = sum([atom.radical_electrons for atom in atoms])
                 multiplicity = n_rad + 1
 
-        return atoms, multiplicity
+        return atoms, multiplicity, metal, facet
 
 
-def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=False, remove_lone_pairs=False,
+
+def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group=False, remove_h=False, remove_lone_pairs=False,
                       old_style=False):
     """
     Convert a chemical graph defined by a list of `atoms` into a string
@@ -827,10 +875,18 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
             # Functional group should have a list of possible multiplicities.  
             # If the list is empty, then it does not need to be written
             adjlist += 'multiplicity [{0!s}]\n'.format(','.join(str(i) for i in multiplicity))
+        if metal:
+            adjlist += 'metal [{0!s}]\n'.format(','.join(i for i in metal))
+        if facet:
+            adjlist += 'facet [{0!s}]\n'.format(','.join(i for i in facet))
     else:
         assert isinstance(multiplicity, int), "Molecule should have an integer multiplicity"
         if multiplicity != 1 or any(atom.radical_electrons for atom in atoms):
             adjlist += 'multiplicity {0!r}\n'.format(multiplicity)
+        if metal:
+            adjlist += f"metal {metal}\n"
+        if facet:
+            adjlist += f"facet {facet}\n"
 
     # Determine the numbers to use for each atom
     atom_numbers = {}
