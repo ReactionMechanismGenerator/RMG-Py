@@ -1718,7 +1718,7 @@ class Molecule(Graph):
         return self
 
     def from_adjacency_list(self, adjlist, saturate_h=False, raise_atomtype_exception=True,
-                            raise_charge_exception=True):
+                            raise_charge_exception=True, check_consistency=True):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
         Skips the first line (assuming it's a label) unless `withLabel` is
@@ -1726,7 +1726,8 @@ class Molecule(Graph):
         """
         from rmgpy.molecule.adjlist import from_adjacency_list
 
-        self.vertices, self.multiplicity = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h)
+        self.vertices, self.multiplicity = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h,
+                                                               check_consistency=check_consistency)
         self.update_atomtypes(raise_exception=raise_atomtype_exception)
         self.identify_ring_membership()
 

@@ -460,7 +460,7 @@ re_old_adjlist = re.compile(r'^\s*(\d*)\s+' +  # atom number digit
                             r'\s*$')  # the end!
 
 
-def from_adjacency_list(adjlist, group=False, saturate_h=False):
+def from_adjacency_list(adjlist, group=False, saturate_h=False, check_consistency=True):
     """
     Convert a string adjacency list `adjlist` into a set of :class:`Atom` and
     :class:`Bond` objects.
@@ -772,7 +772,7 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
             Saturator.saturate(atoms)
 
     # Consistency checks
-    if not group:
+    if not group and check_consistency:
         # Molecule consistency check
         # Electron and valency consistency check for each atom
         for atom in atoms:
@@ -790,6 +790,12 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
         return atoms, multiplicity
     else:
         # Currently no group consistency check
+
+        if not group:
+            if multiplicity is None:
+                n_rad = sum([atom.radical_electrons for atom in atoms])
+                multiplicity = n_rad + 1
+
         return atoms, multiplicity
 
 

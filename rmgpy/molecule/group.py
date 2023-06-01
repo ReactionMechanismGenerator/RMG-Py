@@ -1744,14 +1744,14 @@ class Group(Graph):
 
         return element_count
 
-    def from_adjacency_list(self, adjlist):
+    def from_adjacency_list(self, adjlist, check_consistency=True):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
         from rmgpy.molecule.adjlist import from_adjacency_list
-        self.vertices, multiplicity = from_adjacency_list(adjlist, group=True)
+        self.vertices, multiplicity = from_adjacency_list(adjlist, group=True, check_consistency=check_consistency)
         if multiplicity is not None:
             self.multiplicity = multiplicity
         self.update()

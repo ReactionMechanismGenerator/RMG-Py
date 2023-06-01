@@ -166,7 +166,7 @@ cdef class Group(Graph):
 
     cpdef dict get_element_count(self)
 
-    cpdef from_adjacency_list(self, str adjlist)
+    cpdef from_adjacency_list(self, str adjlist, bint check_consistency=?)
 
     cpdef to_adjacency_list(self, str label=?)
     
