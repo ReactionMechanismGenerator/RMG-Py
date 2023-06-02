@@ -88,6 +88,8 @@ class Atom(Vertex):
     `mass`               ``int``             atomic mass of element (read only)
     `number`             ``int``             atomic number of element (read only)
     `symbol`             ``str``             atomic symbol of element (read only)
+    `site`               ``str``             type of adsorption site
+    `morphology`         ``str``             morphology of the adsorption site
     ==================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -95,8 +97,8 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radical_electrons=0, charge=0, label='', lone_pairs=-100, coords=np.array([]),
-                 id=-1, props=None):
+    def __init__(self, element=None, radical_electrons=0, charge=0, label='', lone_pairs=-100, site='', morphology='', 
+                 coords=np.array([]), id=-1, props=None):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -107,6 +109,8 @@ class Atom(Vertex):
         self.label = label
         self.atomtype = None
         self.lone_pairs = lone_pairs
+        self.site = site 
+        self.morphology = morphology
         self.coords = coords
         self.id = id
         self.props = props or {}
@@ -139,6 +143,8 @@ class Atom(Vertex):
             'sorting_label': self.sorting_label,
             'atomtype': self.atomtype.label if self.atomtype else None,
             'lone_pairs': self.lone_pairs,
+            'site': self.site,
+            'morphology': self.morphology,
         }
         if self.element.isotope == -1:
             element2pickle = self.element.symbol
@@ -157,6 +163,8 @@ class Atom(Vertex):
         self.sorting_label = d['sorting_label']
         self.atomtype = ATOMTYPES[d['atomtype']] if d['atomtype'] else None
         self.lone_pairs = d['lone_pairs']
+        self.site = d['site']
+        self.morphology = d['morphology']
 
     def __hash__(self):
         """
@@ -250,6 +258,16 @@ class Atom(Vertex):
                     if self.charge == charge: break
                 else:
                     return False
+            if ap.site:
+                for site in ap.site:
+                    if self.site == site: break
+                else:
+                    return False
+            if ap.morphology:
+                for morphology in ap.morphology:
+                    if self.morphology == morphology: break
+                else:
+                    return False
             if 'inRing' in self.props and 'inRing' in ap.props:
                 if self.props['inRing'] != ap.props['inRing']:
                     return False
@@ -293,6 +311,16 @@ class Atom(Vertex):
                         break
                 else:
                     return False
+            if atom.site:
+                for site in atom.site:
+                    if self.site == site: break
+                else:
+                    return False
+            if atom.morphology:
+                for morphology in atom.morphology:
+                    if self.morphology == morphology: break
+                else:
+                    return False
             if 'inRing' in self.props and 'inRing' in atom.props:
                 if self.props['inRing'] != atom.props['inRing']:
                     return False
@@ -316,6 +344,8 @@ class Atom(Vertex):
         a.label = self.label
         a.atomtype = self.atomtype
         a.lone_pairs = self.lone_pairs
+        a.site = self.site
+        a.morphology = self.morphology
         a.coords = self.coords[:]
         a.id = self.id
         a.props = deepcopy(self.props)

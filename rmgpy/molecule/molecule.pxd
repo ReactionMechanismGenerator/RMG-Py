@@ -45,6 +45,8 @@ cdef class Atom(Vertex):
     cdef public AtomType atomtype
     cdef public np.ndarray coords
     cdef public short lone_pairs
+    cdef public str site 
+    cdef public str morphology
     cdef public int id
     cdef public dict props
     

@@ -38,13 +38,16 @@ cdef class GroupAtom(Vertex):
     cdef public list charge
     cdef public str label
     cdef public list lone_pairs
-
+    cdef public list site 
+    cdef public list morphology
     cdef public dict props
 
     cdef public list reg_dim_atm
     cdef public list reg_dim_u
     cdef public list reg_dim_r
-
+    cdef public list reg_dim_site
+    cdef public list reg_dim_morphology
+    
     cpdef Vertex copy(self)
 
     cpdef _change_bond(self, short order)

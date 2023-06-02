@@ -63,10 +63,14 @@ class GroupAtom(Vertex):
     `label`              ``str``             A string label that can be used to tag individual atoms
     `lone_pairs`         ``list``            The number of lone electron pairs
     `charge`             ``list``            The partial charge of the atom
+    `site`               ``list``            The allowed adsorption sites
+    `morphology`         ``list``            The allowed morphologies
     `props`              ``dict``            Dictionary for storing additional atom properties
     `reg_dim_atm`        ``list``            List of atom types that are free dimensions in tree optimization
     `reg_dim_u`          ``list``            List of unpaired electron numbers that are free dimensions in tree optimization
     `reg_dim_r`          ``list``            List of inRing values that are free dimensions in tree optimization
+    `reg_dim_site`       ``list``            List of sites that are free dimensions in tree optimization
+    `reg_dim_morphology` ``list``            List of morphologies that are free dimensions in tree optimization
     ==================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -76,7 +80,8 @@ class GroupAtom(Vertex):
     order to match.
     """
 
-    def __init__(self, atomtype=None, radical_electrons=None, charge=None, label='', lone_pairs=None, props=None):
+    def __init__(self, atomtype=None, radical_electrons=None, charge=None, label='', lone_pairs=None, site=None, morphology=None, 
+                 props=None):
         Vertex.__init__(self)
         self.atomtype = atomtype or []
         for index in range(len(self.atomtype)):
@@ -86,12 +91,15 @@ class GroupAtom(Vertex):
         self.charge = charge or []
         self.label = label
         self.lone_pairs = lone_pairs or []
-
+        self.site = site or []
+        self.morphology = morphology or []
         self.props = props or {}
 
         self.reg_dim_atm = [[], []]
         self.reg_dim_u = [[], []]
         self.reg_dim_r = [[], []]
+        self.reg_dim_site = [[], []]
+        self.reg_dim_morphology = [[], []]
 
     def __reduce__(self):
         """
@@ -107,7 +115,8 @@ class GroupAtom(Vertex):
         atomtype = self.atomtype
         if atomtype is not None:
             atomtype = [a.label for a in atomtype]
-        return (GroupAtom, (atomtype, self.radical_electrons, self.charge, self.label, self.lone_pairs, self.props), d)
+        return (GroupAtom, (atomtype, self.radical_electrons, self.charge, self.label, self.lone_pairs, self.site, 
+                            self.morphology, self.props), d)
 
     def __setstate__(self, d):
         """
@@ -146,6 +155,8 @@ class GroupAtom(Vertex):
             self.charge[:],
             self.label,
             self.lone_pairs[:],
+            self.site[:],
+            self.morphology[:],
             deepcopy(self.props),
         )
 
@@ -404,6 +415,32 @@ class GroupAtom(Vertex):
                     if charge1 == charge2: break
                 else:
                     return False
+        # Each site in self must have an equivalent in other (and vice versa)
+        for site1 in self.site:
+            if group.site:
+                for site2 in group.site:
+                    if site1 == site2: break
+                else:
+                    return False
+        for site1 in group.site:
+            if self.site:
+                for site2 in self.site:
+                    if site1 == site2: break
+                else:
+                    return False
+        # Each morphology in self must have an equivalent in other (and vice versa)
+        for morphology1 in self.morphology:
+            if group.morphology:
+                for morphology2 in group.morphology:
+                    if morphology1 == morphology2: break
+                else:
+                    return False
+        for morphology1 in group.morphology:
+            if self.morphology:
+                for morphology2 in self.morphology:
+                    if morphology1 == morphology2: break
+                else:
+                    return False
         # Other properties must have an equivalent in other (and vice versa)
         # Absence of the 'inRing' prop indicates a wildcard
         if 'inRing' in self.props and 'inRing' in group.props:
@@ -427,7 +464,8 @@ class GroupAtom(Vertex):
         group = other
 
         cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short,
-                       lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short)
+                       lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short,
+                       site1=str, site2=str, morphology1=str, morphology2=str)
         # Compare two atom groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for atomType1 in self.atomtype:  # all these must match
@@ -464,6 +502,26 @@ class GroupAtom(Vertex):
                         return False
         else:
             if group.charge: return False
+        # Each site in self must have an equivalent in other
+        if self.site:
+            for site1 in self.site:
+                if group.site:
+                    for site2 in group.site:
+                        if site1 == site2: break
+                    else:
+                        return False
+        else:
+            if group.site: return False
+        # Each morphology in self must have an equivalent in other
+        if self.morphology:
+            for morphology1 in self.morphology:
+                if group.morphology:
+                    for morphology2 in group.morphology:
+                        if morphology1 == morphology2: break
+                    else:
+                        return False
+        else:
+            if group.morphology: return False
         # Other properties must have an equivalent in other
         # Absence of the 'inRing' prop indicates a wildcard
         if 'inRing' in self.props and 'inRing' in group.props:
