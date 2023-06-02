@@ -438,8 +438,10 @@ def from_old_adjacency_list(adjlist, group=False, saturate_h=False):
     except InvalidAdjacencyListError:
         logging.error("Troublesome adjacency list:\n" + adjlist)
         raise
-
-    return atoms, multiplicity
+    if group:
+        return atoms, multiplicity, [], []
+    else:
+        return atoms, multiplicity, '', ''
 
 
 ###############################
@@ -725,6 +727,32 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False, check_consistenc
             if not group:
                 partial_charges.append(0)
 
+        # Next the sites (if provided)
+        sites = []
+        if len(data) > index:
+            s_state = data[index]
+            if s_state[0] == 's':
+                if s_state[1] == '[':
+                    s_state = s_state[2:-1].split(',')
+                else:
+                    s_state = [s_state[1:]]
+                for s in s_state:
+                    sites.append(s[1:-1])
+                index += 1
+            
+        # Next the morphologys (if provided)
+        morphologies = []
+        if len(data) > index:
+            m_state = data[index]
+            if m_state[0] == 'm':
+                if m_state[1] == '[':
+                    m_state = m_state[2:-1].split(',')
+                else:
+                    m_state = [m_state[1:]]
+                for m in m_state:
+                    morphologies.append(m[1:-1])
+                index += 1
+        
         # Next the isotope (if provided)
         isotope = -1
         if len(data) > index:
@@ -743,12 +771,20 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False, check_consistenc
 
         # Create a new atom based on the above information
         if group:
-            atom = GroupAtom(atom_type, unpaired_electrons, partial_charges, label, lone_pairs, props)
+            atom = GroupAtom(atom_type, unpaired_electrons, partial_charges, label, lone_pairs, sites, morphologies, props)
         else:
             # detect if this is cutting label or atom
             _ , cutting_label_list = Fragment().detect_cutting_label(atom_type[0])
             if cutting_label_list == []:
-                atom = Atom(atom_type[0], unpaired_electrons[0], partial_charges[0], label, lone_pairs[0])
+                if sites == []:
+                    site = ''
+                else:
+                    site = sites[0]
+                if morphologies == []:
+                    morphology = ''
+                else:
+                    morphology = morphologies[0]
+                atom = Atom(atom_type[0], unpaired_electrons[0], partial_charges[0], label, lone_pairs[0], site, morphology)
                 if isotope != -1:
                     atom.element = get_element(atom.number, isotope)
             else:
@@ -905,6 +941,8 @@ def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group
     atom_charge = {}
     atom_isotope = {}
     atom_props = {}
+    atom_site = {}
+    atom_morphology = {}
     if group:
         for atom in atom_numbers:
             # Atom type(s)
@@ -936,6 +974,22 @@ def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group
             else:
                 atom_charge[atom] = '[{0}]'.format(','.join(['+'+str(charge) if charge > 0 else ''+str(charge) for charge in atom.charge]))
 
+            # Sites
+            if len(atom.site) == 1:
+                atom_site[atom] = "\"" + atom.site[0] + "\""
+            elif len(atom.site) == 0:
+                atom_site[atom] = None  # Empty list indicates wildcard
+            else:
+                atom_site[atom] = '["{0}"]'.format('","'.join(s for s in atom.site))
+            
+            # Morphologies
+            if len(atom.morphology) == 1:
+                atom_morphology[atom] = "\"" + atom.morphology[0] + "\""
+            elif len(atom.morphology) == 0:
+                atom_morphology[atom] = None  # Empty list indicates wildcard
+            else:
+                atom_morphology[atom] = '["{0}"]'.format('","'.join(s for s in atom.morphology))
+                
             # Isotopes
             atom_isotope[atom] = -1
 
@@ -954,6 +1008,16 @@ def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group
             atom_lone_pairs[atom] = str(atom.lone_pairs)
             # Partial Charge(s)
             atom_charge[atom] = '+' + str(atom.charge) if atom.charge > 0 else '' + str(atom.charge)
+            # Sites
+            if atom.site:
+                atom_site[atom] = "\"" + atom.site + "\""
+            else:
+                atom_site[atom] = None
+            # Morphology
+            if atom.morphology:
+                atom_morphology[atom] = "\"" + atom.morphology + "\""
+            else:
+                atom_morphology[atom] = None
             # Isotopes
             if isinstance(atom, Atom):
                 atom_isotope[atom] = atom.element.isotope
@@ -988,6 +1052,12 @@ def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group
         # Partial charges
         if atom_charge[atom] is not None:
             adjlist += ' c{0}'.format(atom_charge[atom])
+        # Sites
+        if atom_site[atom]:
+            adjlist += ' s{0}'.format(atom_site[atom])
+        # Morphologies
+        if atom_morphology[atom]:
+            adjlist += ' m{0}'.format(atom_morphology[atom])
         # Isotopes
         if atom_isotope[atom] != -1:
             adjlist += ' i{0}'.format(atom_isotope[atom])
