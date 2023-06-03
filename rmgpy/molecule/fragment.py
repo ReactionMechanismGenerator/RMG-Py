@@ -150,6 +150,8 @@ class Fragment(Graph):
         self.props = props or {}
         self.multiplicity = multiplicity
         self.reactive = reactive
+        self.metal = ''
+        self.facet = ''
 
         if inchi and smiles:
             logging.warning('Both InChI and SMILES provided for Fragment instantiation, '
