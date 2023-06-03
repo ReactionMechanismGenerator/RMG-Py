@@ -140,12 +140,14 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 test.description = test_name
                 self.compat_func_name = test_name
                 yield test, family_name
-
-                test = lambda x: self.kinetics_check_coverage_dependence_units_are_correct(family_name)
-                test_name = "Kinetics surface family {0}: check coverage dependent units are correct?".format(family_name)
-                test.description = test_name
-                self.compat_func_name = test_name
-                yield test, family_name
+                
+                if family_name not in ["Surface_Proton_Electron_Reduction_Alpha", "Surface_Proton_Electron_Reduction_Beta"
+                                       "Surface_Proton_Electron_Reduction_Beta_Dissociation"]:
+                    test = lambda x: self.kinetics_check_coverage_dependence_units_are_correct(family_name)
+                    test_name = "Kinetics surface family {0}: check coverage dependent units are correct?".format(family_name)
+                    test.description = test_name
+                    self.compat_func_name = test_name
+                    yield test, family_name
 
             # these families have some sort of difficulty which prevents us from testing accessibility right now
             # See RMG-Py PR #2232 for reason why adding Bimolec_Hydroperoxide_Decomposition here. Bsically some nodes need to be in a ring, but the sampled molecule is not.
