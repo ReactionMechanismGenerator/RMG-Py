@@ -1791,7 +1791,7 @@ The following adjList may have atoms in a different ordering than the input file
         tst3 = []
 
         # Solvation groups have special groups that RMG cannot generate proper sample_molecules. Skip them.
-        skip_entry_list = ['Cds-CdsCS6dd', 'Cs-CS4dHH']
+        skip_entry_list = ['Cds-CdsCS6dd', 'Cs-CS4dHH', 'Li-OCring', 'CsOOOring', 'Cbf-CbfCbfCbf']
         skip_short_desc_list = ['special solvation group with ring', 'special solvation polycyclic group']
 
         for entryName, entry in group.entries.items():
