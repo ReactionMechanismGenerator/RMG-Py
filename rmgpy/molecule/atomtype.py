@@ -249,8 +249,8 @@ ATOMTYPES['Xv']   = AtomType('Xv', generic=['X'], specific=[],
                              benzene=[0], lone_pairs=[0])
 # Occupied surface site:
 ATOMTYPES['Xo']   = AtomType('Xo', generic=['X'], specific=[],
-                             single=[0, 1], all_double=[0, 1], r_double=[], o_double=[], s_double=[], triple=[0, 1],
-                             quadruple=[0, 1], benzene=[0], lone_pairs=[0])
+                             single=[0, 1, 2, 3, 4, 5, 6, 7, 8], all_double=[0, 1, 2, 3, 4, 5, 6, 7, 8], r_double=[], o_double=[], s_double=[], triple=[0, 1, 2, 3, 4, 5, 6, 7, 8],
+                             quadruple=[0, 1, 2, 3, 4, 5, 6, 7, 8], benzene=[0], lone_pairs=[0])
 
 # Non-surface atomTypes, R being the most generic:
 ATOMTYPES['R']    = AtomType(label='R', generic=[], specific=[
