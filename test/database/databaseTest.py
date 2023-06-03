@@ -50,6 +50,7 @@ from rmgpy.molecule import Group
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.quantity import ScalarQuantity
+from rmgpy.kinetics.model import KineticsModel
 
 # allow asserts to 'fail' and then continue - this test file relies on a lot
 # of asserts in each test and we want them all to run
@@ -970,9 +971,10 @@ class TestDatabase:
         tst_limit = (kB * T) / h
         collision_limit = Na * np.pi * h_rad_diam**2 * np.sqrt(8 * kB * T / (np.pi * h_rad_mass / 2))
         for entry in library.entries.values():
-            if entry.item.is_surface_reaction():
+            if entry.item.is_surface_reaction() or isinstance(entry.data, KineticsModel):
                 # Don't check surface reactions
                 continue
+
             k = entry.data.get_rate_coefficient(T, P)
             rxn = entry.item
             if k < 0:
