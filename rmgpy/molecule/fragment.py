@@ -673,6 +673,89 @@ class Fragment(Graph):
         """
         return self.is_edge_in_cycle(bond)
 
+    def has_halogen(self):
+        """
+        Return ``True`` if the molecule contains at least one halogen (F, Cl, Br, or I),
+        or ``False`` otherwise.
+        """
+        for atom in self.vertices:
+            if atom.is_halogen():
+                return True
+        return False
+
+    def has_lone_pairs(self):
+        """
+        Return ``True`` if the molecule contains at least one lone electron pair,
+        or ``False`` otherwise.
+        """
+        for atom in self.vertices:
+            if atom.lone_pairs > 0:
+                return True
+        return False
+
+    def has_charge(self):
+        for atom in self.vertices:
+            if atom.charge != 0:
+                return True
+        return False
+
+    def get_nth_neighbor(self, starting_atoms, distance_list, ignore_list=None, n=1):
+        """
+        Recursively get the Nth nonHydrogen neighbors of the starting_atoms, and return them in a list.
+        `starting_atoms` is a list of :class:Atom for which we will get the nth neighbor.
+        `distance_list` is a list of integers, corresponding to the desired neighbor distances.
+        `ignore_list` is a list of :class:Atom that have been counted in (n-1)th neighbor, and will not be returned.
+        `n` is an integer, corresponding to the distance to be calculated in the current iteration.
+        """
+        if ignore_list is None:
+            ignore_list = []
+
+        neighbors = []
+        for atom in starting_atoms:
+            new_neighbors = [neighbor for neighbor in self.get_bonds(atom) if neighbor.is_non_hydrogen()]
+            neighbors.extend(new_neighbors)
+
+        neighbors = list(set(neighbors) - set(ignore_list))
+        for atom in starting_atoms:
+            ignore_list.append(atom)
+        if n < max(distance_list):
+            if n in distance_list:
+                neighbors += self.get_nth_neighbor(neighbors, distance_list, ignore_list, n + 1)
+            else:
+                neighbors = self.get_nth_neighbor(neighbors, distance_list, ignore_list, n + 1)
+        return neighbors
+
+    def get_bonds(self, atom):
+        """
+        Return a dictionary of the bonds involving the specified `atom`.
+        """
+        return self.get_edges(atom)
+
+    def has_atom(self, atom):
+        """
+        Returns ``True`` if `atom` is an atom in the graph, or ``False`` if
+        not.
+        """
+        return self.has_vertex(atom)
+
+    def sort_atoms(self):
+        """
+        Sort the atoms in the graph. This can make certain operations, e.g.
+        the isomorphism functions, much more efficient.
+
+        This function orders atoms using several attributes in atom.getDescriptor().
+        Currently it sorts by placing heaviest atoms first and hydrogen atoms last.
+        Placing hydrogens last during sorting ensures that functions with hydrogen
+        removal work properly.
+        """
+        for vertex in self.vertices:
+            if vertex.sorting_label < 0:
+                self.update_connectivity_values()
+                break
+        self.atoms.sort(reverse=True)
+        for index, vertex in enumerate(self.vertices):
+            vertex.sorting_label = index
+
     def assign_representative_molecule(self):
 
         # create a molecule from fragment.vertices.copy
