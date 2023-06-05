@@ -40,7 +40,7 @@ jobs:
   build-and-test-unix:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-20.04, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     # skip scheduled runs on main from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
