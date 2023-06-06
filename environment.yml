@@ -13,7 +13,7 @@
 #
 # Changelog:
 # - May 15, 2023 Added this changelog, added inline documentation,
-#   made depdency list more explicit (@JacksonBurns).
+#   made dependency list more explicit (@JacksonBurns).
 #
 name: rmg_env
 channels:
@@ -22,9 +22,6 @@ channels:
   - conda-forge
   - cantera
 dependencies:
-# Fixing old versions of things that seem to break otherwise
-  - libstdcxx-ng < 13
-
 # System-level dependencies - we could install these at the OS level
 # but by installing them in the conda environment we get better control
   - cairo

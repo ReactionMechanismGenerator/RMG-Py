@@ -40,7 +40,7 @@ jobs:
   build-and-test-unix:
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     # skip scheduled runs on main from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
@@ -51,6 +51,12 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up gcc-6
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          version: 6
+          platform: x64
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
