@@ -34,6 +34,7 @@ dependencies:
   - markupsafe
   - psutil
   - conda-forge::compilers
+  - conda-forge::lld
   # conda-forge not default, since default has a version information bug
   # (see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2421)
   - conda-forge::ncurses
