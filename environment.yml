@@ -33,8 +33,6 @@ dependencies:
   - graphviz
   - markupsafe
   - psutil
-  # LLVM-built C++ library (mac uses this since libstdcxx-ng has no compatible mac build, make both platforms use it)
-  - conda-forge::libcxx
   # conda-forge not default, since default has a version information bug
   # (see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2421)
   - conda-forge::ncurses
@@ -43,6 +41,7 @@ dependencies:
 # external software tools for chemistry
   - coolprop
   - cantera::cantera=2.6
+  - conda-forge::rdkit
   - conda-forge::mopac
   - conda-forge::cclib >=1.6.3
   - conda-forge::openbabel >= 3
@@ -92,10 +91,6 @@ dependencies:
   - rmg::chemprop
   # Our build of this is version 0.0.1 (!!) and we are using parts
   # of the API that are now gone. Need a serious PR to fix this.
-
-  - rmg::rdkit >=2020.03.3.0
-  # We should use the official channel, not sure how difficult this
-  # change will be.
 
 # conda mutex metapackage
   - nomkl
