@@ -41,8 +41,17 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
+        libstdcxx-ng: [null, 12, 13]
+        exclude:
+          - os: macos-latest
+            libstdcxx-ng: 12
+          - os: macos-latest
+            libstdcxx-ng: 13
+          - os: ubuntu-latest
+            libstdcxx-ng: null
     runs-on: ${{ matrix.os }}
-    # skip scheduled runs on main from forks
+    continue-on-error: ${{ matrix.libstdcxx-ng == 13 }} # allow (expect) this to fail
+    # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: # update this if needed to match a pull request on the RMG-database
       RMG_DATABASE_BRANCH: main
@@ -51,11 +60,10 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v3
-
       - name: Patch the environment file
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.libstdcxx-ng }}
         run: |
-          echo -e "\n  - libstdcxx-ng < 13\n" >> environment.yml
+          echo -e "\n  - libstdcxx-ng = ${{ matrix.libstdcxx-ng }}\n" >> environment.yml
           cat environment.yml
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
