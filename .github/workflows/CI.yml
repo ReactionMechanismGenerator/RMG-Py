@@ -52,12 +52,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up gcc-6
-        uses: egor-tensin/setup-gcc@v1
-        with:
-          version: 6
-          platform: x64
-
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
         uses: conda-incubator/setup-miniconda@v2
