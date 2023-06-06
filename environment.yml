@@ -33,6 +33,8 @@ dependencies:
   - graphviz
   - markupsafe
   - psutil
+  # LLVM-built C++ library (mac uses this since libstdcxx-ng has no compatible mac build, make both platforms use it)
+  - conda-forge::libcxx
   # conda-forge not default, since default has a version information bug
   # (see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2421)
   - conda-forge::ncurses
