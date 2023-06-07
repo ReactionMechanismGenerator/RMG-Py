@@ -126,13 +126,13 @@ jobs:
             if python-jl rmg.py test/regression/"$regr_test"/input.py; then
               echo "$regr_test" "Executed Successfully"
             else
-              echo "$regr_test" "Failed to Execute"
+              echo "$regr_test" "Failed to Execute" | tee -a $GITHUB_STEP_SUMMARY
               export FAILED=Yes
             fi
           done
           if [[ ${FAILED} ]]; then
-            echo "One or more regression tests could not be executed."
-            echo "Please download the failed results or check the above log to see why."
+            echo "One or more regression tests could not be executed." | tee -a $GITHUB_STEP_SUMMARY
+            echo "Please download the failed results or check the above log to see why." | tee -a $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
@@ -229,14 +229,14 @@ jobs:
               then
                 echo "$regr_test" "Passed Regression Testing"
               else
-                echo "$regr_test" "Failed Regression Testing"
+                echo "$regr_test" "Failed Regression Testing" | tee -a $GITHUB_STEP_SUMMARY
                 export FAILED=Yes
               fi
             fi
           done
           if [[ ${FAILED} ]]; then
-            echo "One or more regression tests failed."
-            echo "Please download the failed results and run the tests locally or check the above log to see why."
+            echo "One or more regression tests failed." | tee -a $GITHUB_STEP_SUMMARY
+            echo "Please download the failed results and run the tests locally or check the above log to see why." | tee -a $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
