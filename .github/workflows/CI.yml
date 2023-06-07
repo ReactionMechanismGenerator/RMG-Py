@@ -144,7 +144,7 @@ jobs:
         if: ${{ failure() && steps.regression.conclusion == 'failure' }}
         uses: actions/upload-artifact@v3
         with:
-          name: failed_regression_results
+          name: failed regression results ${{ matrix.os }} ${{ matrix.libstdcxx-ng }}
           path: |
             test/regression
 
@@ -163,7 +163,7 @@ jobs:
         if: ${{ env.REFERENCE_JOB == 'false' }}
         uses: actions/upload-artifact@v3
         with:
-          name: dynamic_regression_results
+          name: dynamic regression results ${{ matrix.os }} ${{ matrix.libstdcxx-ng }}
           path: |
             test/regression
 
