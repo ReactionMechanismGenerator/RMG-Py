@@ -36,6 +36,7 @@ RUN git clone -b main https://github.com/ReactionMechanismGenerator/RMG-database
 
 # build the conda environment
 WORKDIR /rmg/RMG-Py
+RUN echo -e "\n  - libstdcxx-ng<13\n" >> environment.yml  # patch for linux
 RUN conda env create --file environment.yml
 
 # This runs all subsequent commands inside the rmg_env conda environment
