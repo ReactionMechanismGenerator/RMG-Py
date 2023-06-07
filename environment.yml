@@ -13,7 +13,7 @@
 #
 # Changelog:
 # - May 15, 2023 Added this changelog, added inline documentation,
-#   made depdency list more explicit (@JacksonBurns).
+#   made dependency list more explicit (@JacksonBurns).
 #
 name: rmg_env
 channels:

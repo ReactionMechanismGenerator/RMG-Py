@@ -13,12 +13,11 @@
 # a push is made to a non-main branch. The new proposed changes are referred to as "Dynamic".
 #
 # Changelog:
-# April 2023 - Jackson Burns - Added this header, regression tests, cleanup of action in 
-# in general, and documentation throughout the file.
-#
-# May 2023 - added Docker build steps
-#
-# May 12 2023 - added changes to allow running on forks
+# 2023-04    - Jackson Burns - Added this header, regression tests, cleanup of action in 
+#              in general, and documentation throughout the file.
+# 2023-05    - added Docker build steps
+# 2023-05-12 - added changes to allow running on forks
+# 2023-06-06 - added matrix build for libstdcxx-ng versions 12 and 13 on ubuntu. Only expect 12 to work.
 name: Constant Integration
 
 on:
@@ -41,8 +40,17 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
+        libstdcxx-ng: [null, 12, 13]
+        exclude:
+          - os: macos-latest
+            libstdcxx-ng: 12
+          - os: macos-latest
+            libstdcxx-ng: 13
+          - os: ubuntu-latest
+            libstdcxx-ng: null
     runs-on: ${{ matrix.os }}
-    # skip scheduled runs on main from forks
+    continue-on-error: ${{ matrix.libstdcxx-ng == 13 }} # allow (expect) this to fail
+    # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: # update this if needed to match a pull request on the RMG-database
       RMG_DATABASE_BRANCH: main
@@ -51,7 +59,11 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v3
-
+      - name: Patch the environment file
+        if: ${{ matrix.libstdcxx-ng }}
+        run: |
+          echo -e "\n  - libstdcxx-ng = ${{ matrix.libstdcxx-ng }}\n" >> environment.yml
+          cat environment.yml
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
         uses: conda-incubator/setup-miniconda@v2
