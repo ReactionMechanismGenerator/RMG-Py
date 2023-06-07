@@ -36,6 +36,7 @@ RUN git clone -b main https://github.com/ReactionMechanismGenerator/RMG-database
 
 # build the conda environment
 WORKDIR /rmg/RMG-Py
+RUN echo -e "\n  - libstdcxx-ng<13\n" >> environment.yml  # patch for linux
 RUN conda env create --file environment.yml
 
 # This runs all subsequent commands inside the rmg_env conda environment
@@ -57,8 +58,12 @@ RUN make
 RUN python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true
 RUN julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true 
 
-# RMG-Py should now be installed and ready
-RUN python-jl rmg.py --help
+# RMG-Py should now be installed and ready - trigger precompilation and test run
+RUN python-jl rmg.py examples/rmg/minimal/input.py
+# delete the results, preserve input.py
+RUN mv examples/rmg/minimal/input.py .
+RUN rm -rf examples/rmg/minimal/*
+RUN mv input.py examples/rmg/minimal/
 
 # when running this image, open an interactive bash terminal inside the conda environment
 RUN echo "source activate rmg_env" > ~/.bashrc
