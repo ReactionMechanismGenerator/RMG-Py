@@ -193,13 +193,13 @@ jobs:
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat;
           do
             # Memory Usage and Execution Time
-            echo 'Execution time for Reference:'
+            echo -n 'Reference: '
             grep "Execution time" $REFERENCE/"$regr_test"/RMG.log | tail -1
-            echo 'Execution time for Current:'
+            echo -n 'Current:   '
             grep "Execution time" test/regression/"$regr_test"/RMG.log | tail -1
-            echo 'Memory used for Reference:'
+            echo -n 'Reference: '
             grep "Memory used:" $REFERENCE/"$regr_test"/RMG.log | tail -1
-            echo 'Memory used for Current:'
+            echo -n 'Current:   '
             grep "Memory used:" test/regression/"$regr_test"/RMG.log | tail -1
 
             # Compare the edge and core
@@ -222,7 +222,8 @@ jobs:
               if python-jl rmgpy/tools/regression.py \
                 test/regression/"$regr_test"/regression_input.py \
                 $REFERENCE/"$regr_test"/chemkin \
-                test/regression/"$regr_test"/chemkin; then
+                test/regression/"$regr_test"/chemkin
+              then
                 echo "$regr_test" "Passed Regression Testing"
               else
                 echo "$regr_test" "Failed Regression Testing"
