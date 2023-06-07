@@ -87,7 +87,7 @@ jobs:
         run: |
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
-          
+
       # modify env variables as directed in the RMG installation instructions
       - name: Set Environment Variables
         run: |
@@ -104,6 +104,7 @@ jobs:
       # RMS installation and linking to Julia
       # Allow these installs to 'fail' (as they do in RMG-Tests) with the command || True trick
       - name: Install and link Julia dependencies
+        timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         run: |
           python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true
           julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true 
@@ -148,13 +149,13 @@ jobs:
       # Upload Regression Results as Stable if Scheduled or Push to Main
       - name: Upload Results as Reference
         # upload the results for scheduled CI (on main) and pushes to main
-        if: github.ref == 'refs/heads/main' && runner.os =='ubuntu'
+        if: github.ref == 'refs/heads/main' && runner.os =='ubuntu' && github.repository == 'ReactionMechanismGenerator/RMG-Py'
         uses: actions/upload-artifact@v3
         with:
           name: stable_regression_results
           path: |
             test/regression
-      
+
       # Upload Regression Results as Dynamic if Push to non-main Branch
       - name: Upload Results as Dynamic
         if: github.ref != 'refs/heads/main'
