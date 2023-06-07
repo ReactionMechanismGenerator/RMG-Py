@@ -55,6 +55,8 @@ jobs:
     env: 
       # Update this if needed to match a pull request on the RMG-database:
       RMG_DATABASE_BRANCH: main
+      # This is true only if this is a reference case for the regression testing:
+      REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && matrix.os =='ubuntu-latest' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
     defaults:
       run:
         shell: bash -l {0}
@@ -149,7 +151,7 @@ jobs:
       # Upload Regression Results as Stable if Scheduled or Push to Main
       - name: Upload Results as Reference
         # upload the results for scheduled CI (on main) and pushes to main
-        if: github.ref == 'refs/heads/main' && runner.os =='ubuntu' && github.repository == 'ReactionMechanismGenerator/RMG-Py'
+        if: ${{ env.REFERENCE_JOB == 'true' }}
         uses: actions/upload-artifact@v3
         with:
           name: stable_regression_results
@@ -158,7 +160,7 @@ jobs:
 
       # Upload Regression Results as Dynamic if Push to non-main Branch
       - name: Upload Results as Dynamic
-        if: github.ref != 'refs/heads/main'
+        if: ${{ env.REFERENCE_JOB == 'false' }}
         uses: actions/upload-artifact@v3
         with:
           name: dynamic_regression_results
@@ -166,13 +168,13 @@ jobs:
             test/regression
 
       - name: mkdir stable_regression_results
-        if: github.ref != 'refs/heads/main'
+        if: ${{ env.REFERENCE_JOB == 'false' }}
         run: mkdir stable_regression_results
 
       # Retrieve Stable Results for reference
       # Will need to use this -> https://github.com/dawidd6/action-download-artifact
       - name: Retrieve Stable Regression Results
-        if: github.ref != 'refs/heads/main'
+        if: ${{ env.REFERENCE_JOB == 'false' }}
         uses: dawidd6/action-download-artifact@v2
         with:
         # this will search for the last successful execution of CI on main and download
@@ -189,7 +191,7 @@ jobs:
 
       # Regression Testing - Actual Comparisons
       - name: Regression Tests - Compare to Baseline
-        if: github.ref != 'refs/heads/main'
+        if: ${{ env.REFERENCE_JOB == 'false' }}
         env:
           REFERENCE: stable_regression_results
         run: |
@@ -228,9 +230,9 @@ jobs:
                 $REFERENCE/"$regr_test"/chemkin \
                 test/regression/"$regr_test"/chemkin
               then
-                echo "$regr_test" "Passed Regression Testing"
+                echo "$regr_test Passed Regression Testing"
               else
-                echo "$regr_test" "Failed Regression Testing" | tee -a $GITHUB_STEP_SUMMARY
+                echo "$regr_test Failed Regression Testing" | tee -a $GITHUB_STEP_SUMMARY
                 export FAILED=Yes
               fi
             fi
