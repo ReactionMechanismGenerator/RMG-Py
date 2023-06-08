@@ -836,7 +836,7 @@ def constant_T_V_liquid_reactor(temperature,
     termination = []
     if terminationConversion is not None:
         for spec, conv in terminationConversion.items():
-            termination.append(TerminationConversion(species_dict[spec], conv))
+            termination.append((species_dict[spec], conv))
     if terminationTime is not None:
         termination.append(TerminationTime(Quantity(terminationTime)))
     if terminationRateRatio is not None:
