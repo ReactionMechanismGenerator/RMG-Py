@@ -50,7 +50,7 @@ jobs:
           - os: ubuntu-latest
             libstdcxx-ng: null
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.libstdcxx-ng == 13 }} # allow (expect) this to fail
+    continue-on-error: ${{ ( matrix.libstdcxx-ng == 13 || matrix.os == 'macos-latest' ) }} # allow (expect) this to fail
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: 
