@@ -176,7 +176,7 @@ jobs:
       # Will need to use this -> https://github.com/dawidd6/action-download-artifact
       - name: Retrieve Stable Regression Results
         if: ${{ env.REFERENCE_JOB == 'false' }}
-        uses: dawidd6/action-download-artifact@v2
+        uses: dsnopek/action-download-artifact@91dda23aa09c68860977dd0ed11d93c0ed3795e7 # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2459#issuecomment-1582850815
         with:
         # this will search for the last successful execution of CI on main and download
         # the stable regression results
@@ -187,6 +187,7 @@ jobs:
           name: stable_regression_results
           path: stable_regression_results
           search_artifacts: true  # retrieves the last run result, either scheduled daily or on push to main
+          ensure_latest: true     # ensures that the latest run is retrieved
           # should result in a set of folders inside stable_regression_results
           # each of which has the stable result for that example/test
 
