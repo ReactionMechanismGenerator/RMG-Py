@@ -18,7 +18,8 @@
 # 2023-05    - added Docker build steps
 # 2023-05-12 - added changes to allow running on forks
 # 2023-06-06 - added matrix build for libstdcxx-ng versions 12 and 13 on ubuntu. Only expect 12 to work.
-name: Constant Integration
+# 2023-06-07 - updated regression testing. Now fails if significant changes are detected.
+name: Continuous Integration
 
 on:
   schedule:
@@ -49,11 +50,14 @@ jobs:
           - os: ubuntu-latest
             libstdcxx-ng: null
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.libstdcxx-ng == 13 }} # allow (expect) this to fail
+    continue-on-error: ${{ ( matrix.libstdcxx-ng == 13 || matrix.os == 'macos-latest' ) }} # allow (expect) this to fail
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
-    env: # update this if needed to match a pull request on the RMG-database
+    env: 
+      # Update this if needed to match a pull request on the RMG-database:
       RMG_DATABASE_BRANCH: main
+      # This is true only if this is a reference case for the regression testing:
+      REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && matrix.os =='ubuntu-latest' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
     defaults:
       run:
         shell: bash -l {0}
@@ -86,7 +90,7 @@ jobs:
         run: |
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
-          
+
       # modify env variables as directed in the RMG installation instructions
       - name: Set Environment Variables
         run: |
@@ -103,6 +107,7 @@ jobs:
       # RMS installation and linking to Julia
       # Allow these installs to 'fail' (as they do in RMG-Tests) with the command || True trick
       - name: Install and link Julia dependencies
+        timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         run: |
           python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true
           julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true 
@@ -117,6 +122,7 @@ jobs:
 
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution
+        id: regression-execution
         timeout-minutes: 60
         run: |
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat;
@@ -124,55 +130,55 @@ jobs:
             if python-jl rmg.py test/regression/"$regr_test"/input.py; then
               echo "$regr_test" "Executed Successfully"
             else
-              echo "$regr_test" "Failed to Execute"
+              echo "$regr_test" "Failed to Execute" | tee -a $GITHUB_STEP_SUMMARY
               export FAILED=Yes
             fi
           done
           if [[ ${FAILED} ]]; then
-            echo "One or more regression tests could not be executed."
-            echo "Please download the failed results or check the above log to see why."
+            echo "One or more regression tests could not be executed." | tee -a $GITHUB_STEP_SUMMARY
+            echo "Please download the failed results or check the above log to see why." | tee -a $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
       # Upload Regression Results as Failed if above step failed
       - name: Upload Failed Results
-        if: failure()
+        if: ${{ failure() && steps.regression-execution.conclusion == 'failure' }}
         uses: actions/upload-artifact@v3
         with:
-          name: failed_regression_results
+          name: failed regression results ${{ matrix.os }} ${{ matrix.libstdcxx-ng }}
           path: |
             test/regression
 
       # Upload Regression Results as Stable if Scheduled or Push to Main
       - name: Upload Results as Reference
         # upload the results for scheduled CI (on main) and pushes to main
-        if: github.ref == 'refs/heads/main' && runner.os =='ubuntu'
+        if: ${{ env.REFERENCE_JOB == 'true' }}
         uses: actions/upload-artifact@v3
         with:
           name: stable_regression_results
           path: |
             test/regression
-      
+
       # Upload Regression Results as Dynamic if Push to non-main Branch
       - name: Upload Results as Dynamic
-        if: github.ref != 'refs/heads/main'
+        if: ${{ env.REFERENCE_JOB == 'false' }}
         uses: actions/upload-artifact@v3
         with:
-          name: dynamic_regression_results
+          name: dynamic regression results ${{ matrix.os }} ${{ matrix.libstdcxx-ng }}
           path: |
             test/regression
 
       - name: mkdir stable_regression_results
-        if: github.ref != 'refs/heads/main'
+        if: ${{ env.REFERENCE_JOB == 'false' }}
         run: mkdir stable_regression_results
 
       # Retrieve Stable Results for reference
       # Will need to use this -> https://github.com/dawidd6/action-download-artifact
       - name: Retrieve Stable Regression Results
-        if: github.ref != 'refs/heads/main'
-        uses: dawidd6/action-download-artifact@v2
+        if: ${{ env.REFERENCE_JOB == 'false' }}
+        uses: dsnopek/action-download-artifact@91dda23aa09c68860977dd0ed11d93c0ed3795e7 # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2459#issuecomment-1582850815
         with:
-        # this will search for the last scheduled execution of CI on main and download
+        # this will search for the last successful execution of CI on main and download
         # the stable regression results
           workflow: CI.yml
           workflow_conclusion: success
@@ -181,40 +187,55 @@ jobs:
           name: stable_regression_results
           path: stable_regression_results
           search_artifacts: true  # retrieves the last run result, either scheduled daily or on push to main
+          ensure_latest: true     # ensures that the latest run is retrieved
           # should result in a set of folders inside stable_regression_results
           # each of which has the stable result for that example/test
 
       # Regression Testing - Actual Comparisons
       - name: Regression Tests - Compare to Baseline
-        if: github.ref != 'refs/heads/main'
+        if: ${{ env.REFERENCE_JOB == 'false' }}
         env:
           REFERENCE: stable_regression_results
         run: |
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat;
           do
+            echo ""
+            echo "## Regression test $regr_test:"
             # Memory Usage and Execution Time
-            echo 'Execution time for Reference:'
+            echo -n 'Reference: '
             grep "Execution time" $REFERENCE/"$regr_test"/RMG.log | tail -1
-            echo 'Execution time for Current:'
+            echo -n 'Current:   '
             grep "Execution time" test/regression/"$regr_test"/RMG.log | tail -1
-            echo 'Memory used for Reference:'
+            echo -n 'Reference: '
             grep "Memory used:" $REFERENCE/"$regr_test"/RMG.log | tail -1
-            echo 'Memory used for Current:'
+            echo -n 'Current:   '
             grep "Memory used:" test/regression/"$regr_test"/RMG.log | tail -1
 
             # Compare the edge and core
-            python-jl scripts/checkModels.py \
-              "$regr_test" \
-              $REFERENCE/"$regr_test"/chemkin/chem_annotated.inp \
-              $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
-              test/regression/"$regr_test"/chemkin/chem_annotated.inp \
-              test/regression/"$regr_test"/chemkin/species_dictionary.txt
-            python-jl scripts/checkModels.py \
-              "$regr_test" \
-              $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated.inp \
-              $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
-              test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
-              test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt
+            if python-jl scripts/checkModels.py \
+                "$regr_test" \
+                $REFERENCE/"$regr_test"/chemkin/chem_annotated.inp \
+                $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
+                test/regression/"$regr_test"/chemkin/chem_annotated.inp \
+                test/regression/"$regr_test"/chemkin/species_dictionary.txt
+            then
+              echo "$regr_test Passed Core Comparison"
+            else
+              echo "$regr_test Failed Core Comparison" | tee -a $GITHUB_STEP_SUMMARY
+              export FAILED=Yes
+            fi
+            if python-jl scripts/checkModels.py \
+                "$regr_test" \
+                $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated.inp \
+                $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
+                test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
+                test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt
+            then
+              echo "$regr_test Passed Edge Comparison"
+            else
+              echo "$regr_test Failed Edge Comparison" | tee -a $GITHUB_STEP_SUMMARY
+              export FAILED=Yes
+            fi
 
             # Check for Regression between Reference and Dynamic (skip superminimal)
             if [ -f test/regression/"$regr_test"/regression_input.py ];
@@ -222,22 +243,25 @@ jobs:
               if python-jl rmgpy/tools/regression.py \
                 test/regression/"$regr_test"/regression_input.py \
                 $REFERENCE/"$regr_test"/chemkin \
-                test/regression/"$regr_test"/chemkin; then
-                echo "$regr_test" "Passed Regression Testing"
+                test/regression/"$regr_test"/chemkin
+              then
+                echo "$regr_test Passed Observable Testing"
               else
-                echo "$regr_test" "Failed Regression Testing"
+                echo "$regr_test Failed Observable Testing" | tee -a $GITHUB_STEP_SUMMARY
                 export FAILED=Yes
               fi
             fi
+            echo ""
           done
           if [[ ${FAILED} ]]; then
-            echo "One or more regression tests failed."
-            echo "Please download the failed results and run the tests locally or check the above log to see why."
+            echo "\nOne or more regression tests failed." | tee -a $GITHUB_STEP_SUMMARY
+            echo "Please download the failed results and run the tests locally or check the above log to see why." | tee -a $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
-      # Install and Call codecov only if ALL the tests were successful
+      # Install and Call codecov only if the tests were successful (permitting failures in the regression comparison tests)
       - name: Code coverage install and run
+        if: success() || ( failure() && steps.regression-execution.conclusion == 'success' )
         run: |
           mamba install -y -c conda-forge codecov
           codecov

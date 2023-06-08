@@ -30,6 +30,7 @@
 import argparse
 import logging
 import math
+import sys
 
 from rmgpy.tools.diffmodels import execute
 
@@ -60,6 +61,8 @@ def parse_command_line_arguments():
 def main():
     """
     Driver function that parses command line arguments and passes them to the execute function.
+
+    Returns `True` if there is any error (discrepancy between the two models), `False` otherwise.
     """
     args = parse_command_line_arguments()
 
@@ -72,7 +75,8 @@ def main():
     test_chemkin = args.testChemkin[0]
     test_species_dict = args.testSpeciesDict[0]
 
-    check(name, bench_chemkin, bench_species_dict, test_chemkin, test_species_dict)
+    error = check(name, bench_chemkin, bench_species_dict, test_chemkin, test_species_dict)
+    return error
 
 
 def check(name, benchChemkin, benchSpeciesDict, testChemkin, testSpeciesDict):
@@ -93,6 +97,8 @@ def check(name, benchChemkin, benchSpeciesDict, testChemkin, testSpeciesDict):
     error_species = checkSpecies(common_species, unique_species_test, unique_species_orig)
 
     error_reactions = checkReactions(common_reactions, unique_reactions_test, unique_reactions_orig)
+
+    return error_model or error_species or error_reactions
 
 
 def checkModel(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig, commonReactions, uniqueReactionsTest,
@@ -285,4 +291,5 @@ def initialize_log(verbose, log_file_name='checkModels.log'):
 
 
 if __name__ == '__main__':
-    main()
+    error = main()
+    sys.exit(1 if error else 0)
