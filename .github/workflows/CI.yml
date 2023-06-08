@@ -18,6 +18,7 @@
 # 2023-05    - added Docker build steps
 # 2023-05-12 - added changes to allow running on forks
 # 2023-06-06 - added matrix build for libstdcxx-ng versions 12 and 13 on ubuntu. Only expect 12 to work.
+# 2023-06-07 - updated regression testing. Now fails if significant changes are detected.
 name: Continuous Integration
 
 on:
