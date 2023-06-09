@@ -285,7 +285,7 @@ def initialize_log(verbose, log_file_name='checkModels.log'):
     logging.basicConfig(
         filename=log_file_name,
         filemode='w',
-        format='%(name)s=%(message)s',
+        format='%(message)s',
         level=verbose
     )
 
