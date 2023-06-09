@@ -73,14 +73,12 @@ jobs:
       # configures the conda environment manager and builds the environment
       - name: Setup Miniconda Python 3.7
         uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: ""  # activates base
-          auto-activate-base: true
-      - run: |
+      - name: Create rmg_env
+        run: |
           conda install -n base conda-libmamba-solver
           conda config --set solver libmamba
           conda env create --file environment.yml
-          conda activate rmg_env
+          echo "source activate rmg_env" >> .bashrc
 
       # list the environment for debugging purposes
       - name: conda info
