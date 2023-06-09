@@ -19,6 +19,7 @@
 # 2023-05-12 - added changes to allow running on forks
 # 2023-06-06 - added matrix build for libstdcxx-ng versions 12 and 13 on ubuntu. Only expect 12 to work.
 # 2023-06-07 - updated regression testing. Now fails if significant changes are detected.
+# 2023-06-09 - switched from mamba back to conda
 name: Continuous Integration
 
 on:
@@ -68,22 +69,24 @@ jobs:
         run: |
           echo -e "\n  - libstdcxx-ng = ${{ matrix.libstdcxx-ng }}\n" >> environment.yml
           cat environment.yml
-      # configures the mamba environment manager and builds the environment
-      - name: Setup Mambaforge Python 3.7
+
+      # configures the conda environment manager and builds the environment
+      - name: Setup Miniconda Python 3.7
         uses: conda-incubator/setup-miniconda@v2
         with:
-          environment-file: environment.yml
-          miniforge-variant: Mambaforge
-          miniforge-version: latest
-          python-version: 3.7
-          activate-environment: rmg_env
-          use-mamba: true
+          activate-environment: ""  # activates base
+          auto-activate-base: true
+      - run: |
+          conda install -n base conda-libmamba-solver
+          conda config --set solver libmamba
+          conda create --file environment.yml
+          conda activate rmg_env
 
       # list the environment for debugging purposes
-      - name: mamba info
+      - name: conda info
         run: |
-          mamba info
-          mamba list
+          conda info
+          conda list
 
       # Clone the other needed repository
       - name: Clone RMG-Database
@@ -263,7 +266,7 @@ jobs:
       - name: Code coverage install and run
         if: success() || ( failure() && steps.regression-execution.conclusion == 'success' )
         run: |
-          mamba install -y -c conda-forge codecov
+          conda install -y -c conda-forge codecov
           codecov
 
   build-and-push-docker:
