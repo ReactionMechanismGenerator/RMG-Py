@@ -88,6 +88,8 @@ class Atom(Vertex):
     `mass`               ``int``             atomic mass of element (read only)
     `number`             ``int``             atomic number of element (read only)
     `symbol`             ``str``             atomic symbol of element (read only)
+    `site`               ``str``             type of adsorption site
+    `morphology`         ``str``             morphology of the adsorption site
     ==================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -95,8 +97,8 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radical_electrons=0, charge=0, label='', lone_pairs=-100, coords=np.array([]),
-                 id=-1, props=None):
+    def __init__(self, element=None, radical_electrons=0, charge=0, label='', lone_pairs=-100, site='', morphology='', 
+                 coords=np.array([]), id=-1, props=None):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -107,6 +109,8 @@ class Atom(Vertex):
         self.label = label
         self.atomtype = None
         self.lone_pairs = lone_pairs
+        self.site = site 
+        self.morphology = morphology
         self.coords = coords
         self.id = id
         self.props = props or {}
@@ -139,6 +143,8 @@ class Atom(Vertex):
             'sorting_label': self.sorting_label,
             'atomtype': self.atomtype.label if self.atomtype else None,
             'lone_pairs': self.lone_pairs,
+            'site': self.site,
+            'morphology': self.morphology,
         }
         if self.element.isotope == -1:
             element2pickle = self.element.symbol
@@ -157,6 +163,8 @@ class Atom(Vertex):
         self.sorting_label = d['sorting_label']
         self.atomtype = ATOMTYPES[d['atomtype']] if d['atomtype'] else None
         self.lone_pairs = d['lone_pairs']
+        self.site = d['site']
+        self.morphology = d['morphology']
 
     def __hash__(self):
         """
@@ -250,6 +258,16 @@ class Atom(Vertex):
                     if self.charge == charge: break
                 else:
                     return False
+            if ap.site:
+                for site in ap.site:
+                    if self.site == site: break
+                else:
+                    return False
+            if ap.morphology:
+                for morphology in ap.morphology:
+                    if self.morphology == morphology: break
+                else:
+                    return False
             if 'inRing' in self.props and 'inRing' in ap.props:
                 if self.props['inRing'] != ap.props['inRing']:
                     return False
@@ -293,6 +311,16 @@ class Atom(Vertex):
                         break
                 else:
                     return False
+            if atom.site:
+                for site in atom.site:
+                    if self.site == site: break
+                else:
+                    return False
+            if atom.morphology:
+                for morphology in atom.morphology:
+                    if self.morphology == morphology: break
+                else:
+                    return False
             if 'inRing' in self.props and 'inRing' in atom.props:
                 if self.props['inRing'] != atom.props['inRing']:
                     return False
@@ -316,6 +344,8 @@ class Atom(Vertex):
         a.label = self.label
         a.atomtype = self.atomtype
         a.lone_pairs = self.lone_pairs
+        a.site = self.site
+        a.morphology = self.morphology
         a.coords = self.coords[:]
         a.id = self.id
         a.props = deepcopy(self.props)
@@ -701,6 +731,8 @@ class Bond(Edge):
             return 'vdW'
         elif self.is_hydrogen_bond():
             return 'H'
+        elif self.is_reaction_bond():
+            return 'R'
         else:
             raise ValueError("Bond order {} does not have string representation.".format(self.order))
 
@@ -722,6 +754,8 @@ class Bond(Edge):
             self.order = 0
         elif new_order == 'H':
             self.order = 0.1
+        elif new_order == 'R':
+            self.order = 0.05
         else:
             # try to see if an float disguised as a string was input by mistake
             try:
@@ -815,6 +849,13 @@ class Bond(Edge):
         """
         return self.is_order(0.1)
 
+    def is_reaction_bond(self):
+        """
+        Return ``True`` if the bond represents a reaction bond or ``False`` if
+        not.
+        """
+        return self.is_order(0.05)
+    
     def increment_order(self):
         """
         Update the bond as a result of applying a CHANGE_BOND action to
@@ -873,7 +914,7 @@ class Bond(Edge):
         the atom labels in alphabetical order (i.e. 'C-H' is possible but not 'H-C')
         :return: str
         """
-        bond_symbol_mapping = {0.1: '~', 1: '-', 1.5: ':', 2: '=', 3: '#'}
+        bond_symbol_mapping = {0.05: '~', 0.1: '~', 1: '-', 1.5: ':', 2: '=', 3: '#'}
         atom_labels = [self.atom1.symbol, self.atom2.symbol]
         atom_labels.sort()
         try:
@@ -912,13 +953,16 @@ class Molecule(Graph):
     `inchi`                 ``str``     A string representation of the molecule in InChI
     `smiles`                ``str``     A string representation of the molecule in SMILES
     `fingerprint`           ``str``     A representation for fast comparison, set as molecular formula
+    `metal`                 ``str``     The metal of the metal surface the molecule is associated with
+    `facet`                 ``str``     The facet of the metal surface the molecule is associated with
     ======================= =========== ========================================
 
     A new molecule object can be easily instantiated by passing the `smiles` or
     `inchi` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, reactive=True, props=None, inchi='', smiles=''):
+    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, reactive=True, props=None, inchi='', smiles='', 
+                 metal='', facet=''):
         Graph.__init__(self, atoms)
         self.symmetry_number = symmetry
         self.multiplicity = multiplicity
@@ -927,6 +971,8 @@ class Molecule(Graph):
         self._inchi = None
         self._smiles = None
         self.props = props or {}
+        self.metal = metal
+        self.facet = facet
 
         if inchi and smiles:
             logging.warning('Both InChI and SMILES provided for Molecule instantiation, '
@@ -1001,7 +1047,7 @@ class Molecule(Graph):
         """
         A helper function used when pickling an object.
         """
-        return (Molecule, (self.vertices, self.symmetry_number, self.multiplicity, self.reactive, self.props))
+        return (Molecule, (self.vertices, self.symmetry_number, self.multiplicity, self.reactive, self.props, self.metal, self.facet))
 
     @property
     def atoms(self):
@@ -1283,6 +1329,8 @@ class Molecule(Graph):
             v2.sorting_label = v1.sorting_label
         other.multiplicity = self.multiplicity
         other.reactive = self.reactive
+        other.metal = self.metal 
+        other.facet = self.facet
         return other
 
     def merge(self, other):
@@ -1496,7 +1544,12 @@ class Molecule(Graph):
         # check multiplicity
         if self.multiplicity != other.multiplicity:
             return False
-        
+        #check metal
+        if self.metal != other.metal:
+            return False 
+        #check facet
+        if self.facet != other.facet:
+            return False
         # if given an initial map, ensure that it's valid.
         if initial_map:
             if not self.is_mapping_valid(other, initial_map, equivalent=True):
@@ -1534,7 +1587,12 @@ class Molecule(Graph):
         # check multiplicity
         if self.multiplicity != other.multiplicity:
             return []
-
+        #check metal
+        if self.metal != other.metal:
+            return []
+        #check facet
+        if self.facet != other.facet:
+            return []
         # Do the isomorphism comparison
         result = Graph.find_isomorphism(self, other, initial_map, save_order=save_order, strict=strict)
         return result
@@ -1561,7 +1619,12 @@ class Molecule(Graph):
         # Check multiplicity
         if group.multiplicity:
             if self.multiplicity not in group.multiplicity: return False
-
+        #check metal
+        if group.metal:
+            if self.metal not in group.metal: return False
+        #check facet
+        if group.facet:
+            if self.facet not in group.facet: return False
         # Compare radical counts
         if self.get_radical_count() < group.radicalCount:
             return False
@@ -1632,7 +1695,12 @@ class Molecule(Graph):
         # Check multiplicity
         if group.multiplicity:
             if self.multiplicity not in group.multiplicity: return []
-
+        #check metal
+        if group.metal:
+            if self.metal not in group.metal: return False
+        #check facet
+        if group.facet:
+            if self.facet not in group.facet: return False
         # Compare radical counts
         if self.get_radical_count() < group.radicalCount:
             return []
@@ -1718,7 +1786,7 @@ class Molecule(Graph):
         return self
 
     def from_adjacency_list(self, adjlist, saturate_h=False, raise_atomtype_exception=True,
-                            raise_charge_exception=True):
+                            raise_charge_exception=True, check_consistency=True):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
         Skips the first line (assuming it's a label) unless `withLabel` is
@@ -1726,7 +1794,8 @@ class Molecule(Graph):
         """
         from rmgpy.molecule.adjlist import from_adjacency_list
 
-        self.vertices, self.multiplicity = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h)
+        self.vertices, self.multiplicity, self.metal, self.facet = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h,
+                                                               check_consistency=check_consistency)
         self.update_atomtypes(raise_exception=raise_atomtype_exception)
         self.identify_ring_membership()
 
@@ -1876,7 +1945,8 @@ class Molecule(Graph):
         Convert the molecular structure to a string adjacency list.
         """
         from rmgpy.molecule.adjlist import to_adjacency_list
-        result = to_adjacency_list(self.vertices, self.multiplicity, label=label, group=False, remove_h=remove_h,
+        result = to_adjacency_list(self.vertices, self.multiplicity, metal=self.metal, facet=self.facet, 
+                                   label=label, group=False, remove_h=remove_h,
                                    remove_lone_pairs=remove_lone_pairs, old_style=old_style)
         return result
 
@@ -2296,7 +2366,8 @@ class Molecule(Graph):
                                              label=atom.label,
                                              )
 
-        group = gr.Group(atoms=list(group_atoms.values()), multiplicity=[self.multiplicity])
+        group = gr.Group(atoms=list(group_atoms.values()), multiplicity=[self.multiplicity], metal=[self.metal],
+                         facet=[self.facet])
 
         # Create GroupBond for each bond between atoms in the molecule
         for atom in self.atoms:

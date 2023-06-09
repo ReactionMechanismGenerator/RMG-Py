@@ -45,6 +45,8 @@ cdef class Atom(Vertex):
     cdef public AtomType atomtype
     cdef public np.ndarray coords
     cdef public short lone_pairs
+    cdef public str site 
+    cdef public str morphology
     cdef public int id
     cdef public dict props
     
@@ -146,6 +148,8 @@ cdef class Molecule(Graph):
     cdef public int multiplicity
     cdef public bint reactive
     cdef public dict props
+    cdef public str metal
+    cdef public str facet
     cdef str _fingerprint
     cdef str _inchi
     cdef str _smiles
@@ -217,7 +221,7 @@ cdef class Molecule(Graph):
     cpdef from_smiles(self, str smilesstr, backend=?, bint raise_atomtype_exception=?)
 
     cpdef from_adjacency_list(self, str adjlist, bint saturate_h=?, bint raise_atomtype_exception=?,
-                              bint raise_charge_exception=?)
+                              bint raise_charge_exception=?, bint check_consistency=?)
 
     cpdef from_xyz(self, np.ndarray atomic_nums, np.ndarray coordinates, float critical_distance_factor=?, bint raise_atomtype_exception=?)
     

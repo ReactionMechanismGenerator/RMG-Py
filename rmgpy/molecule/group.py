@@ -63,10 +63,14 @@ class GroupAtom(Vertex):
     `label`              ``str``             A string label that can be used to tag individual atoms
     `lone_pairs`         ``list``            The number of lone electron pairs
     `charge`             ``list``            The partial charge of the atom
+    `site`               ``list``            The allowed adsorption sites
+    `morphology`         ``list``            The allowed morphologies
     `props`              ``dict``            Dictionary for storing additional atom properties
     `reg_dim_atm`        ``list``            List of atom types that are free dimensions in tree optimization
     `reg_dim_u`          ``list``            List of unpaired electron numbers that are free dimensions in tree optimization
     `reg_dim_r`          ``list``            List of inRing values that are free dimensions in tree optimization
+    `reg_dim_site`       ``list``            List of sites that are free dimensions in tree optimization
+    `reg_dim_morphology` ``list``            List of morphologies that are free dimensions in tree optimization
     ==================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -76,7 +80,8 @@ class GroupAtom(Vertex):
     order to match.
     """
 
-    def __init__(self, atomtype=None, radical_electrons=None, charge=None, label='', lone_pairs=None, props=None):
+    def __init__(self, atomtype=None, radical_electrons=None, charge=None, label='', lone_pairs=None, site=None, morphology=None, 
+                 props=None):
         Vertex.__init__(self)
         self.atomtype = atomtype or []
         for index in range(len(self.atomtype)):
@@ -86,12 +91,15 @@ class GroupAtom(Vertex):
         self.charge = charge or []
         self.label = label
         self.lone_pairs = lone_pairs or []
-
+        self.site = site or []
+        self.morphology = morphology or []
         self.props = props or {}
 
         self.reg_dim_atm = [[], []]
         self.reg_dim_u = [[], []]
         self.reg_dim_r = [[], []]
+        self.reg_dim_site = [[], []]
+        self.reg_dim_morphology = [[], []]
 
     def __reduce__(self):
         """
@@ -107,7 +115,8 @@ class GroupAtom(Vertex):
         atomtype = self.atomtype
         if atomtype is not None:
             atomtype = [a.label for a in atomtype]
-        return (GroupAtom, (atomtype, self.radical_electrons, self.charge, self.label, self.lone_pairs, self.props), d)
+        return (GroupAtom, (atomtype, self.radical_electrons, self.charge, self.label, self.lone_pairs, self.site, 
+                            self.morphology, self.props), d)
 
     def __setstate__(self, d):
         """
@@ -146,6 +155,8 @@ class GroupAtom(Vertex):
             self.charge[:],
             self.label,
             self.lone_pairs[:],
+            self.site[:],
+            self.morphology[:],
             deepcopy(self.props),
         )
 
@@ -404,6 +415,32 @@ class GroupAtom(Vertex):
                     if charge1 == charge2: break
                 else:
                     return False
+        # Each site in self must have an equivalent in other (and vice versa)
+        for site1 in self.site:
+            if group.site:
+                for site2 in group.site:
+                    if site1 == site2: break
+                else:
+                    return False
+        for site1 in group.site:
+            if self.site:
+                for site2 in self.site:
+                    if site1 == site2: break
+                else:
+                    return False
+        # Each morphology in self must have an equivalent in other (and vice versa)
+        for morphology1 in self.morphology:
+            if group.morphology:
+                for morphology2 in group.morphology:
+                    if morphology1 == morphology2: break
+                else:
+                    return False
+        for morphology1 in group.morphology:
+            if self.morphology:
+                for morphology2 in self.morphology:
+                    if morphology1 == morphology2: break
+                else:
+                    return False
         # Other properties must have an equivalent in other (and vice versa)
         # Absence of the 'inRing' prop indicates a wildcard
         if 'inRing' in self.props and 'inRing' in group.props:
@@ -427,7 +464,8 @@ class GroupAtom(Vertex):
         group = other
 
         cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short,
-                       lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short)
+                       lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short,
+                       site1=str, site2=str, morphology1=str, morphology2=str)
         # Compare two atom groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
         for atomType1 in self.atomtype:  # all these must match
@@ -464,6 +502,26 @@ class GroupAtom(Vertex):
                         return False
         else:
             if group.charge: return False
+        # Each site in self must have an equivalent in other
+        if self.site:
+            for site1 in self.site:
+                if group.site:
+                    for site2 in group.site:
+                        if site1 == site2: break
+                    else:
+                        return False
+        else:
+            if group.site: return False
+        # Each morphology in self must have an equivalent in other
+        if self.morphology:
+            for morphology1 in self.morphology:
+                if group.morphology:
+                    for morphology2 in group.morphology:
+                        if morphology1 == morphology2: break
+                    else:
+                        return False
+        else:
+            if group.morphology: return False
         # Other properties must have an equivalent in other
         # Absence of the 'inRing' prop indicates a wildcard
         if 'inRing' in self.props and 'inRing' in group.props:
@@ -750,6 +808,8 @@ class GroupBond(Edge):
                 values.append('vdW')
             elif value == 0.1:
                 values.append('H')
+            elif value == 0.05:
+                values.append('R')
             else:
                 raise TypeError('Bond order number {} is not hardcoded as a string'.format(value))
         return values
@@ -775,6 +835,8 @@ class GroupBond(Edge):
                 values.append(1.5)
             elif value == 'H':
                 values.append(0.1)
+            elif value == 'R':
+                values.append(0.05)
             else:
                 # try to see if an float disguised as a string was input by mistake
                 try:
@@ -903,12 +965,28 @@ class GroupBond(Edge):
         """
         if wildcards:
             for order in self.order:
-                if abs(order) <= 1e-9:
+                if abs(order - 0.1) <= 1e-9:
                     return True
             else:
                 return False
         else:
-            return abs(self.order[0]) <= 1e-9 and len(self.order) == 1
+            return abs(self.order[0] - 0.1) <= 1e-9 and len(self.order) == 1
+        
+    def is_reaction_bond(self, wildcards=False):
+        """
+        Return ``True`` if the bond represents a reaction bond or ``False`` if
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are reaction bonds.
+        """
+        if wildcards:
+            for order in self.order:
+                if abs(order - 0.05) <= 1e-9:
+                    return True
+            else:
+                return False
+        else:
+            return abs(self.order[0] - 0.05) <= 1e-9 and len(self.order) == 1
 
     def _change_bond(self, order):
         """
@@ -1026,15 +1104,19 @@ class Group(Graph):
     `atoms`             ``list``            Aliases for the `vertices` storing :class:`GroupAtom`
     `multiplicity`      ``list``            Range of multiplicities accepted for the group
     `props`             ``dict``            Dictionary of arbitrary properties/flags classifying state of Group object 
+    `metal`             ``list``            List of metals accepted for the group
+    `facet`             ``list``            List of facets accepted for the group
     =================== =================== ====================================
 
     Corresponding alias methods to Molecule have also been provided.
     """
 
-    def __init__(self, atoms=None, props=None, multiplicity=None):
+    def __init__(self, atoms=None, props=None, multiplicity=None, metal=None, facet=None):
         Graph.__init__(self, atoms)
         self.props = props or {}
         self.multiplicity = multiplicity or []
+        self.metal = metal or []
+        self.facet = facet or []
         self.elementCount = {}
         self.radicalCount = -1
         self.update()
@@ -1744,14 +1826,14 @@ class Group(Graph):
 
         return element_count
 
-    def from_adjacency_list(self, adjlist):
+    def from_adjacency_list(self, adjlist, check_consistency=True):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
         from rmgpy.molecule.adjlist import from_adjacency_list
-        self.vertices, multiplicity = from_adjacency_list(adjlist, group=True)
+        self.vertices, multiplicity, self.metal, self.facet = from_adjacency_list(adjlist, group=True, check_consistency=check_consistency)
         if multiplicity is not None:
             self.multiplicity = multiplicity
         self.update()
@@ -1762,7 +1844,7 @@ class Group(Graph):
         Convert the molecular structure to a string adjacency list.
         """
         from rmgpy.molecule.adjlist import to_adjacency_list
-        return to_adjacency_list(self.vertices, multiplicity=self.multiplicity, label=label, group=True)
+        return to_adjacency_list(self.vertices, multiplicity=self.multiplicity, metal=self.metal, facet=self.facet, label=label, group=True)
 
     def update_fingerprint(self):
         """
@@ -1825,7 +1907,7 @@ class Group(Graph):
         be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
         cython.declare(group=Group)
-        cython.declare(mult1=cython.short, mult2=cython.short)
+        cython.declare(mult1=cython.short, mult2=cython.short, m1=str, m2=str)
         cython.declare(a=GroupAtom, L=list)
         # It only makes sense to compare a Group to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
@@ -1874,6 +1956,24 @@ class Group(Graph):
                         return False
         else:
             if group.multiplicity: return False
+        if self.metal:
+            for m1 in self.metal:
+                if group.metal:
+                    for m2 in group.metal:
+                        if m1 == m2: break
+                    else:
+                        return False
+        else:
+            if group.metal: return False
+        if self.facet:
+            for m1 in self.facet:
+                if group.facet:
+                    for m2 in group.facet:
+                        if m1 == m2: break
+                    else:
+                        return False
+        else:
+            if group.facet: return False
         # Do the isomorphism comparison
         return Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order)
 
@@ -1890,7 +1990,7 @@ class Group(Graph):
         :class:`TypeError` is raised.
         """
         cython.declare(group=Group)
-        cython.declare(mult1=cython.short, mult2=cython.short)
+        cython.declare(mult1=cython.short, mult2=cython.short, m1=str, m2=str)
 
         # It only makes sense to compare a Group to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
@@ -1909,7 +2009,27 @@ class Group(Graph):
         else:
             if group.multiplicity:
                 return []
-
+        if self.metal:
+            for m1 in self.metal:
+                if group.metal:
+                    for m2 in group.metal:
+                        if m1 == m2: break
+                    else:
+                        return []
+        else:
+            if group.metal:
+                return []
+        if self.facet:
+            for m1 in self.facet:
+                if group.facet:
+                    for m2 in group.facet:
+                        if m1 == m2: break
+                    else:
+                        return []
+        else:
+            if group.facet:
+                return []
+            
         # Do the isomorphism comparison
         return Graph.find_subgraph_isomorphisms(self, other, initial_map, save_order=save_order)
 

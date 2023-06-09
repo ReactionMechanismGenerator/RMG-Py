@@ -28,6 +28,8 @@ class CuttingLabel(Vertex):
         self.isotope = -1
         self.id = id
         self.mass = 0
+        self.site = ''
+        self.morphology = ''
 
     def __str__(self):
         """
@@ -148,6 +150,8 @@ class Fragment(Graph):
         self.props = props or {}
         self.multiplicity = multiplicity
         self.reactive = reactive
+        self.metal = ''
+        self.facet = ''
 
         if inchi and smiles:
             logging.warning('Both InChI and SMILES provided for Fragment instantiation, '
@@ -1290,7 +1294,7 @@ class Fragment(Graph):
         """
         from rmgpy.molecule.adjlist import from_adjacency_list
         
-        self.vertices, self.multiplicity = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h)
+        self.vertices, self.multiplicity, self.site, self.morphology = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h)
         self.update_atomtypes(raise_exception=raise_atomtype_exception)
         
         # Check if multiplicity is possible
