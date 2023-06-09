@@ -79,7 +79,7 @@ jobs:
       - run: |
           conda install -n base conda-libmamba-solver
           conda config --set solver libmamba
-          conda create --file environment.yml
+          conda env create --file environment.yml
           conda activate rmg_env
 
       # list the environment for debugging purposes
