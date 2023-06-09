@@ -85,8 +85,8 @@ is recommended in most cases. Generally the identifier should only use
 alphanumeric characters and the underscore, as if an identifier in many popular
 programming languages. However, strictly speaking any non-space ASCII character
 is allowed.</p>
-<p>The subsequent lines may contain keyword-value pairs. Currently there is only
-one keyword, <code class="docutils literal notranslate"><span class="pre">multiplicity</span></code>.</p>
+<p>The subsequent lines may contain keyword-value pairs. Currently there can be:
+<code class="docutils literal notranslate"><span class="pre">multiplicity</span></code>, <code class="docutils literal notranslate"><span class="pre">metal</span></code> and <code class="docutils literal notranslate"><span class="pre">facet</span></code>.</p>
 <p>For species or molecule declarations, the value after <code class="docutils literal notranslate"><span class="pre">multiplicity</span></code> defines
 the spin multiplicity of the molecule. E.g. <code class="docutils literal notranslate"><span class="pre">multiplicity</span> <span class="pre">1</span></code> for most ground state
 closed shell species, <code class="docutils literal notranslate"><span class="pre">multiplicity</span> <span class="pre">2</span></code> for most radical species,
@@ -101,6 +101,8 @@ which defines the multiplicities that will be matched by the group, eg.
 If a wildcard is desired, the line <code class="docutils literal notranslate"><span class="pre">'multiplicity</span> <span class="pre">x</span></code> can be used instead to accept
 all multiplicities.  If the multiplicity line is omitted altogether, then a wildcard
 is assumed.</p>
+<p><code class="docutils literal notranslate"><span class="pre">metal</span></code> and <code class="docutils literal notranslate"><span class="pre">facet</span></code> work similarly and will correspond to lines like <code class="docutils literal notranslate"><span class="pre">metal</span> <span class="pre">Fe</span></code>,
+<code class="docutils literal notranslate"><span class="pre">metal</span> <span class="pre">[Fe,Cu,Ag]</span></code>, <code class="docutils literal notranslate"><span class="pre">facet</span> <span class="pre">111</span></code>, <code class="docutils literal notranslate"><span class="pre">facet</span> <span class="pre">[111,211,110]</span></code>.</p>
 <p>e.g. the following two group adjlists represent identical groups.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>group1
 multiplicity x
@@ -115,7 +117,7 @@ multiplicity x
 each subsequent line describes a single atom and its
 local bond structure. The format of these lines is a whitespace-delimited list
 with tokens</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">label</span><span class="o">&gt;</span><span class="p">]</span> <span class="o">&lt;</span><span class="n">element</span><span class="o">&gt;</span> <span class="n">u</span><span class="o">&lt;</span><span class="n">unpaired</span><span class="o">&gt;</span> <span class="p">[</span><span class="n">p</span><span class="o">&lt;</span><span class="n">pairs</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">c</span><span class="o">&lt;</span><span class="n">charge</span><span class="o">&gt;</span><span class="p">]</span> <span class="o">&lt;</span><span class="n">bondlist</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">label</span><span class="o">&gt;</span><span class="p">]</span> <span class="o">&lt;</span><span class="n">element</span><span class="o">&gt;</span> <span class="n">u</span><span class="o">&lt;</span><span class="n">unpaired</span><span class="o">&gt;</span> <span class="p">[</span><span class="n">p</span><span class="o">&lt;</span><span class="n">pairs</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">c</span><span class="o">&lt;</span><span class="n">charge</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">s</span><span class="o">&lt;</span><span class="n">site</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">m</span><span class="o">&lt;</span><span class="n">morphology</span><span class="o">&gt;</span><span class="p">]</span> <span class="o">&lt;</span><span class="n">bondlist</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>The first item is the number used to identify that atom. Any number may be used,
@@ -132,6 +134,8 @@ a sequence of tokens describing the electronic state of the atom:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">p0</span></code> number of lone <strong>pairs</strong> of electrons, common on oxygen and nitrogen.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">c0</span></code> formal <strong>charge</strong> on the atom, e.g. <code class="docutils literal notranslate"><span class="pre">c-1</span></code> (negatively charged),
 <code class="docutils literal notranslate"><span class="pre">c0</span></code>, <code class="docutils literal notranslate"><span class="pre">c+1</span></code> (positively charged)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">s</span></code> the site type a site atom is e.g. <code class="docutils literal notranslate"><span class="pre">s&quot;fcc&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">m</span></code> the morphology of a site atom e.g. <code class="docutils literal notranslate"><span class="pre">m&quot;terrace&quot;</span></code></p></li>
 </ul>
 <p>For <a class="reference internal" href="molecule.html#rmgpy.molecule.Molecule" title="rmgpy.molecule.Molecule"><code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code></a> definitions:
 The value must be a single integer (and for charge must have a + or - sign if not equal to 0)
@@ -139,7 +143,7 @@ The number of unpaired electrons (i.e. radical electrons) is required, even if z
 The number of lone pairs and the formal charge are assumed to be zero if omitted.</p>
 <p>For <a class="reference internal" href="group.html#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><code class="xref py py-class docutils literal notranslate"><span class="pre">Group</span></code></a> definitions:
 The value can be an integer or a list of integers (with signs, for charges),
-eg. <code class="docutils literal notranslate"><span class="pre">u[0,1,2]</span></code> or <code class="docutils literal notranslate"><span class="pre">c[0,+1,+2,+3,+4]</span></code>, or may be a wildcard <code class="docutils literal notranslate"><span class="pre">x</span></code>
+eg. <code class="docutils literal notranslate"><span class="pre">u[0,1,2]</span></code>, <code class="docutils literal notranslate"><span class="pre">c[0,+1,+2,+3,+4]</span></code>, or <code class="docutils literal notranslate"><span class="pre">s[&quot;hcp&quot;,&quot;fcc&quot;]</span> <span class="pre">or</span> <span class="pre">may</span> <span class="pre">be</span> <span class="pre">a</span> <span class="pre">wildcard</span> <span class="pre">``x</span></code>
 which matches any valid value,
 eg. <code class="docutils literal notranslate"><span class="pre">px</span></code> is the same as <code class="docutils literal notranslate"><span class="pre">p[0,1,2,3,4,</span> <span class="pre">...]</span></code> and <code class="docutils literal notranslate"><span class="pre">cx</span></code> is the same as
 <code class="docutils literal notranslate"><span class="pre">c[...,-4,-3,-2,-1,0,+1,+2,+3,+4,...]</span></code>. Lists must be enclosed is square brackets,
@@ -220,7 +224,7 @@ electrons, lone pairs, and charges are all correctly defined:</p>
 <tr class="row-odd"><td></td>
 <td></td>
 </tr>
-<tr class="row-even"><td rowspan="4"><p>Chemical Bond</p></td>
+<tr class="row-even"><td rowspan="7"><p>Chemical Bond</p></td>
 <td><p>S</p></td>
 <td><p>Single Bond</p></td>
 </tr>
@@ -230,22 +234,27 @@ electrons, lone pairs, and charges are all correctly defined:</p>
 <tr class="row-even"><td><p>T</p></td>
 <td><p>Triple bond</p></td>
 </tr>
-<tr class="row-odd"><td><p>B</p></td>
-<td><p>Benzene bond</p></td>
+<tr class="row-odd"><td colspan="2"><p>B        | Benzene bond</p></td>
+</tr>
+<tr class="row-even"><td colspan="2"><p>vdW      | Van der Waals bond</p></td>
+</tr>
+<tr class="row-odd"><td colspan="2"><p>H        | Hydrogen bond</p></td>
+</tr>
+<tr class="row-even"><td colspan="2"><p>R        | Reaction bond</p></td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.adjlist.from_adjacency_list">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.adjlist.</span></span><span class="sig-name descname"><span class="pre">from_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adjlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saturate_h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.adjlist.from_adjacency_list" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.adjlist.</span></span><span class="sig-name descname"><span class="pre">from_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adjlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saturate_h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_consistency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.adjlist.from_adjacency_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a string adjacency list <cite>adjlist</cite> into a set of <code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code> and
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Bond</span></code> objects.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.adjlist.to_adjacency_list">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.adjlist.</span></span><span class="sig-name descname"><span class="pre">to_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplicity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_lone_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.adjlist.to_adjacency_list" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.adjlist.</span></span><span class="sig-name descname"><span class="pre">to_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplicity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_lone_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.adjlist.to_adjacency_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a chemical graph defined by a list of <cite>atoms</cite> into a string
 adjacency list.</p>
 </dd></dl>

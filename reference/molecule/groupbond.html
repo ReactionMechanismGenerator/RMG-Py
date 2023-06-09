@@ -167,6 +167,15 @@ are quadruple.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.GroupBond.is_reaction_bond">
+<span class="sig-name descname"><span class="pre">is_reaction_bond</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wildcards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.is_reaction_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a reaction bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
+not. If <cite>wildcards</cite> is <code class="docutils literal notranslate"><span class="pre">False</span></code> we return False anytime there is more
+than one bond order, otherwise we return <code class="docutils literal notranslate"><span class="pre">True</span></code> if any of the options
+are reaction bonds.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupBond.is_single">
 <span class="sig-name descname"><span class="pre">is_single</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">wildcards=False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.molecule.GroupBond.is_single" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a single bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if

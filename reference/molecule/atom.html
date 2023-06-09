@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.Atom<a class="headerlink" href="#rmgpy-molecule-atom" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.molecule.Atom">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">Atom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radical_electrons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lone_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.array([])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">Atom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radical_electrons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lone_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">morphology</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.array([])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>An atom. The attributes are:</p>
 <table class="docutils align-default">
 <thead>
@@ -123,6 +123,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <tr class="row-even"><td><p><cite>symbol</cite></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
 <td><p>atomic symbol of element (read only)</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>site</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>type of adsorption site</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>morphology</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>morphology of the adsorption site</p></td>
 </tr>
 </tbody>
 </table>
@@ -464,6 +472,17 @@ not.</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.molecule.Atom.morphology">
+<span class="sig-name descname"><span class="pre">morphology</span></span><a class="headerlink" href="#rmgpy.molecule.Atom.morphology" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>morphology</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.molecule.Atom.props">
 <span class="sig-name descname"><span class="pre">props</span></span><a class="headerlink" href="#rmgpy.molecule.Atom.props" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
@@ -495,6 +514,17 @@ not.</p>
 <dt class="sig sig-object py" id="rmgpy.molecule.Atom.set_lone_pairs">
 <span class="sig-name descname"><span class="pre">set_lone_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">lone_pairs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.set_lone_pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the number of lone electron pairs.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.molecule.Atom.site">
+<span class="sig-name descname"><span class="pre">site</span></span><a class="headerlink" href="#rmgpy.molecule.Atom.site" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>site</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">

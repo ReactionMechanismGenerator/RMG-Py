@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.GroupAtom<a class="headerlink" href="#rmgpy-molecule-groupatom" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">GroupAtom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radical_electrons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lone_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">GroupAtom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radical_electrons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lone_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">morphology</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom" title="Permalink to this definition">¶</a></dt>
 <dd><p>An atom group. This class is based on the <a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> class, except that
 it uses <a class="reference internal" href="atomtype.html#atom-types"><span class="std std-ref">atom types</span></a> instead of elements, and all
 attributes are lists rather than individual values. The attributes are:</p>
@@ -98,6 +98,14 @@ attributes are lists rather than individual values. The attributes are:</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
 <td><p>The partial charge of the atom</p></td>
 </tr>
+<tr class="row-even"><td><p><cite>site</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The allowed adsorption sites</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>morphology</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>The allowed morphologies</p></td>
+</tr>
 <tr class="row-even"><td><p><cite>props</cite></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">dict</span></code></p></td>
 <td><p>Dictionary for storing additional atom properties</p></td>
@@ -113,6 +121,14 @@ attributes are lists rather than individual values. The attributes are:</p>
 <tr class="row-odd"><td><p><cite>reg_dim_r</cite></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
 <td><p>List of inRing values that are free dimensions in tree optimization</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>reg_dim_site</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>List of sites that are free dimensions in tree optimization</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>reg_dim_morphology</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code></p></td>
+<td><p>List of morphologies that are free dimensions in tree optimization</p></td>
 </tr>
 </tbody>
 </table>
@@ -344,6 +360,17 @@ self.atomtype, self.radical_electrons, self.lone_pairs, and self.charge</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.morphology">
+<span class="sig-name descname"><span class="pre">morphology</span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.morphology" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>morphology</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.props">
 <span class="sig-name descname"><span class="pre">props</span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.props" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict</p>
@@ -377,12 +404,34 @@ self.atomtype, self.radical_electrons, self.lone_pairs, and self.charge</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.reg_dim_morphology">
+<span class="sig-name descname"><span class="pre">reg_dim_morphology</span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.reg_dim_morphology" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>reg_dim_morphology</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.reg_dim_r">
 <span class="sig-name descname"><span class="pre">reg_dim_r</span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.reg_dim_r" title="Permalink to this definition">¶</a></dt>
 <dd><p>list</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>reg_dim_r</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.reg_dim_site">
+<span class="sig-name descname"><span class="pre">reg_dim_site</span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.reg_dim_site" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>reg_dim_site</p>
 </dd>
 </dl>
 </dd></dl>
@@ -402,6 +451,17 @@ self.atomtype, self.radical_electrons, self.lone_pairs, and self.charge</p>
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.reset_connectivity_values">
 <span class="sig-name descname"><span class="pre">reset_connectivity_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.reset_connectivity_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the cached structure information for this vertex.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.site">
+<span class="sig-name descname"><span class="pre">site</span></span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.site" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>site</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
