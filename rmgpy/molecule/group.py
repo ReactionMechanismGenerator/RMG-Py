@@ -2995,8 +2995,6 @@ class Group(Graph):
                                     'S0sc', 'S2sc', 'S2dc', 'S2tc', 'S4sc', 'S4dc', 'S4tdc', 'S6sc', 'S6dc', 'S6tdc']
                 if atom.charge > 0 and any([group_atom.atomtype[0] is ATOMTYPES[x] or ATOMTYPES[x].is_specific_case_of(group_atom.atomtype[0]) for x in positive_charged]):
                     pass
-                elif atom.charge < 0 and any([group_atom.atomtype[0] is ATOMTYPES[x] or ATOMTYPES[x].is_specific_case_of(group_atom.atomtype[0]) for x in negative_charged]):
-                    pass
                 elif atom.charge in group_atom.atomtype[0].charge:
                     # declared charge in original group is same as new charge
                     pass
