@@ -898,7 +898,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         reactants=configurations[j],
                         products=configurations[i],
                         network=self,
-                        kinetics=None
+                        kinetics=None,
                     )
                     net_reaction = reaction_model.make_new_pdep_reaction(net_reaction)
                     self.net_reactions.append(net_reaction)
@@ -911,10 +911,10 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         for rxn in reaction_model.core.reactions:
                             if isinstance(rxn, LibraryReaction) \
                                     and rxn.is_isomorphic(net_reaction, either_direction=True) \
-                                    and not rxn.allow_pdep_route and not rxn.elementary_high_p:
-                                logging.info('Network reaction {0} matched an existing core reaction {1}'
-                                             ' from the {2} library, and was not added to the model'.format(
-                                    str(net_reaction), str(rxn), rxn.library))
+                                    and not rxn.allow_pdep_route \
+                                    and (rxn.kinetics.is_pressure_dependent() or not rxn.elementary_high_p):
+                                logging.info(f'Network reaction {net_reaction} matched an existing core reaction {rxn} '
+                                             f'from the {rxn.library} library, and was not added to the model')
                                 break
                         else:
                             reaction_model.add_reaction_to_core(net_reaction)
@@ -923,10 +923,10 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         for rxn in reaction_model.edge.reactions:
                             if isinstance(rxn, LibraryReaction) \
                                     and rxn.is_isomorphic(net_reaction, either_direction=True) \
-                                    and not rxn.allow_pdep_route and not rxn.elementary_high_p:
-                                logging.info('Network reaction {0} matched an existing edge reaction {1}'
-                                             ' from the {2} library, and was not added to the model'.format(
-                                    str(net_reaction), str(rxn), rxn.library))
+                                    and not rxn.allow_pdep_route \
+                                    and (rxn.kinetics.is_pressure_dependent() or not rxn.elementary_high_p):
+                                logging.info(f'Network reaction {net_reaction} matched an existing edge reaction {rxn} '
+                                             f'from the {rxn.library} library, and was not added to the model')
                                 break
                         else:
                             reaction_model.add_reaction_to_edge(net_reaction)

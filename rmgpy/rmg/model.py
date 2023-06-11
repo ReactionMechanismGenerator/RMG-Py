@@ -864,9 +864,9 @@ class CoreEdgeReactionModel:
                 # Since PDepReactions are created as irreversible, not doing so
                 # would cause you to miss the reverse reactions!
                 self.add_reaction_to_unimolecular_networks(rxn, new_species=new_species, network=pdep_network)
-                if isinstance(rxn, LibraryReaction):
-                    # If reaction came from a reaction library, omit it from the core and edge so that it does
-                    # not get double-counted with the pdep network
+                if isinstance(rxn, LibraryReaction) and not rxn.kinetics.is_pressure_dependent():
+                    # If the reaction came from a library, and it does not have PDep kinetics,
+                    # omit it from the core and edge so that it does not get double-counted with the pdep network
                     if rxn in self.core.reactions:
                         self.core.reactions.remove(rxn)
                     if rxn in self.edge.reactions:
