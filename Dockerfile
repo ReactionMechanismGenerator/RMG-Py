@@ -66,5 +66,10 @@ RUN rm -rf examples/rmg/minimal/*
 RUN mv input.py examples/rmg/minimal/
 
 # when running this image, open an interactive bash terminal inside the conda environment
-RUN echo "source activate rmg_env" > ~/.bashrc
+RUN echo "source activate rmg_env" >> ~/.bashrc
+
+# add a warning so that users will not try and use latest
+# comment/remove this line when building release images
+RUN echo "NOTE: This docker image is intended for developers and is NOT guaranteed to work, please pull the most recent official release of rmg (3.1.1) instead." >> ~/.bashrc
+
 ENTRYPOINT ["/bin/bash", "--login"]
