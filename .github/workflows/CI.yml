@@ -1,5 +1,5 @@
 # CI.yml
-# This file contains the script used by GitHub actions to execute the Constant Integration (CI)
+# This file contains the script used by GitHub actions to execute the Continuous Integration (CI)
 # for RMG-Py. This includes building RMG and its dependencies, executing the unit tests,
 # functional tests, database tests, and regression tests.
 # 
@@ -19,6 +19,7 @@
 # 2023-05-12 - added changes to allow running on forks
 # 2023-06-06 - added matrix build for libstdcxx-ng versions 12 and 13 on ubuntu. Only expect 12 to work.
 # 2023-06-07 - updated regression testing. Now fails if significant changes are detected.
+# 2023-06-15 - revert changes from 06-06, both now work
 name: Continuous Integration
 
 on:
@@ -41,16 +42,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        libstdcxx-ng: [null, 12, 13]
-        exclude:
-          - os: macos-latest
-            libstdcxx-ng: 12
-          - os: macos-latest
-            libstdcxx-ng: 13
-          - os: ubuntu-latest
-            libstdcxx-ng: null
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ ( matrix.libstdcxx-ng == 13 || matrix.os == 'macos-latest' ) }} # allow (expect) this to fail
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: 
@@ -63,11 +55,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v3
-      - name: Patch the environment file
-        if: ${{ matrix.libstdcxx-ng }}
-        run: |
-          echo -e "\n  - libstdcxx-ng = ${{ matrix.libstdcxx-ng }}\n" >> environment.yml
-          cat environment.yml
+
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
         uses: conda-incubator/setup-miniconda@v2
@@ -145,7 +133,7 @@ jobs:
         if: ${{ failure() && steps.regression-execution.conclusion == 'failure' }}
         uses: actions/upload-artifact@v3
         with:
-          name: failed regression results ${{ matrix.os }} ${{ matrix.libstdcxx-ng }}
+          name: failed regression results ${{ matrix.os }}
           path: |
             test/regression
 
@@ -164,7 +152,7 @@ jobs:
         if: ${{ env.REFERENCE_JOB == 'false' }}
         uses: actions/upload-artifact@v3
         with:
-          name: dynamic regression results ${{ matrix.os }} ${{ matrix.libstdcxx-ng }}
+          name: dynamic regression results ${{ matrix.os }}
           path: |
             test/regression
 
@@ -254,7 +242,7 @@ jobs:
             echo ""
           done
           if [[ ${FAILED} ]]; then
-            echo "\nOne or more regression tests failed." | tee -a $GITHUB_STEP_SUMMARY
+            echo "One or more regression tests failed." | tee -a $GITHUB_STEP_SUMMARY
             echo "Please download the failed results and run the tests locally or check the above log to see why." | tee -a $GITHUB_STEP_SUMMARY
             exit 1
           fi
