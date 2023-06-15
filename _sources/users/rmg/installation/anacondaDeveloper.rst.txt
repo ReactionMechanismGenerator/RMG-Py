@@ -90,16 +90,6 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     conda config --env --set subdir osx-64
     conda env update -f environment.yml
 
-#. Modify the environment file for Linux (eg. Ubuntu). If you are using MacOS, you should skip this step.::
-
-    echo -e "\n  - libstdcxx-ng<13\n" >> environment.yml
-
-   Details: Recently (June 2023) conda-forge have a GNU C++ library version 13,
-   which is incompatible with some of the other binaries in the environment.
-   By specifying that we want a version of the library less than 13, we ensure
-   compatibility. MacOS does not use the conda-forge g++ libraries, so this line 
-   would fail if we included it in the environment.yml file for everyone.
-
 #. Create the conda environment for RMG-Py::
 
     conda env create -f environment.yml
