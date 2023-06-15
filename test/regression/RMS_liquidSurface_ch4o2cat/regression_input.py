@@ -21,7 +21,6 @@ observable(
 
 species(
     label='vacantX',
-    reactive=True,
     structure=adjacencyList("1 X u0"),
 )
 
