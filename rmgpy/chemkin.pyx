@@ -2292,35 +2292,42 @@ def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, trans
 
     if any([s.contains_surface_site() for s in reaction_model.core.species]):
         # it's a surface model
+        if reaction_model.solvent_name:
+            # it's a liquid-surface model
+            non_surface_postfix = '-liquid'
+        else:
+            # it's a gas-surface model
+            non_surface_postfix = '-gas'
+
         root, ext = os.path.splitext(path)
-        gas_path = root + '-gas' + ext
+        non_surface_path = root + non_surface_postfix + ext
         surface_path = root + '-surface' + ext
         root, ext = os.path.splitext(verbose_path)
-        gas_verbose_path = root + '-gas' + ext
+        non_surface_verbose_path = root + non_surface_postfix + ext
         surface_verbose_path = root + '-surface' + ext
 
         surface_species_list = []
-        gas_species_list = []
+        non_surface_species_list = []
         surface_rxn_list = []
-        gas_rxn_list = []
+        non_surface_rxn_list = []
 
         for s in species_list:
             if s.contains_surface_site():
                 surface_species_list.append(s)
             else:
-                gas_species_list.append(s)
+                non_surface_species_list.append(s)
         for r in rxn_list:
             if r.is_surface_reaction():
                 surface_rxn_list.append(r)
             else:
-                gas_rxn_list.append(r)
+                non_surface_rxn_list.append(r)
 
         # We should already have marked everything as duplicates by now so use check_for_duplicates=False
-        save_chemkin_file(gas_path, gas_species_list, gas_rxn_list, verbose=False, check_for_duplicates=False)
+        save_chemkin_file(non_surface_path, non_surface_species_list, non_surface_rxn_list, verbose=False, check_for_duplicates=False)
         save_chemkin_surface_file(surface_path, surface_species_list, surface_rxn_list, verbose=False,
                                   check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density)
         logging.info('Saving annotated version of Chemkin files...')
-        save_chemkin_file(gas_verbose_path, gas_species_list, gas_rxn_list, verbose=True, check_for_duplicates=False)
+        save_chemkin_file(non_surface_verbose_path, non_surface_species_list, non_surface_rxn_list, verbose=True, check_for_duplicates=False)
         save_chemkin_surface_file(surface_verbose_path, surface_species_list, surface_rxn_list, verbose=True,
                                   check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density)
 
