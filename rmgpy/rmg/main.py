@@ -1684,6 +1684,7 @@ class RMG(util.Subject):
         out_name = os.path.join(self.output_directory, 'cantera', file_name)
         if 'surface_file' in kwargs:
             out_name = out_name.replace('-gas.', '.')
+            out_name = out_name.replace('-liquid.', '.')
         cantera_dir = os.path.dirname(out_name)
         try:
             os.makedirs(cantera_dir)
