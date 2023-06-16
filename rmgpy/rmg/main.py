@@ -1101,10 +1101,15 @@ class RMG(util.Subject):
         # generate Cantera files chem.yaml & chem_annotated.yaml in a designated `cantera` output folder
         try:
             if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
-                self.generate_cantera_files(os.path.join(self.output_directory, 'chemkin', 'chem-gas.inp'),
+                if self.reaction_model.solvent_name:
+                    non_surface_postfix = "-liquid"
+                else:
+                    non_surface_postfix = "-gas"
+
+                self.generate_cantera_files(os.path.join(self.output_directory, 'chemkin', f'chem{non_surface_postfix}.inp'),
                                             surface_file=(
                                               os.path.join(self.output_directory, 'chemkin', 'chem-surface.inp')))
-                self.generate_cantera_files(os.path.join(self.output_directory, 'chemkin', 'chem_annotated-gas.inp'),
+                self.generate_cantera_files(os.path.join(self.output_directory, 'chemkin', f'chem_annotated{non_surface_postfix}.inp'),
                                             surface_file=(os.path.join(self.output_directory, 'chemkin',
                                                                     'chem_annotated-surface.inp')))
             else:  # gas phase only
