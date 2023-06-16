@@ -203,24 +203,67 @@ jobs:
             grep "Memory used:" test/regression/"$regr_test"/RMG.log | tail -1
 
             # Compare the edge and core
-            if python-jl scripts/checkModels.py \
+            if [ "$regr_test" == "RMS_liquidSurface_ch4o2cat" ]
+            then
+              liquid_core_comparison_pass=$( python-jl scripts/checkModels.py \
+                "$regr_test" \
+                $REFERENCE/"$regr_test"/chemkin/chem_annotated-liquid.inp \
+                $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
+                test/regression/"$regr_test"/chemkin/chem_annotated-liquid.inp \
+                test/regression/"$regr_test"/chemkin/species_dictionary.txt )
+              
+              surface_core_comparison_pass=$( python-jl scripts/checkModels.py \
+                "$regr_test" \
+                $REFERENCE/"$regr_test"/chemkin/chem_annotated-surface.inp \
+                $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
+                test/regression/"$regr_test"/chemkin/chem_annotated-surface.inp \
+                test/regression/"$regr_test"/chemkin/species_dictionary.txt )
+              
+              core_comparison_pass=$( [ $liquid_core_comparison_pass ] && [ $surface_core_comparison_pass ] )
+            else
+              core_comparison_pass=$( python-jl scripts/checkModels.py \
                 "$regr_test" \
                 $REFERENCE/"$regr_test"/chemkin/chem_annotated.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_annotated.inp \
-                test/regression/"$regr_test"/chemkin/species_dictionary.txt
+                test/regression/"$regr_test"/chemkin/species_dictionary.txt )
+            fi
+
+            if $core_comparison_pass
             then
               echo "$regr_test Passed Core Comparison"
             else
               echo "$regr_test Failed Core Comparison" | tee -a $GITHUB_STEP_SUMMARY
               export FAILED=Yes
             fi
-            if python-jl scripts/checkModels.py \
+
+            if [ "$regr_test" == "RMS_liquidSurface_ch4o2cat" ]
+            then
+              liquid_edge_comparison_pass=$( python-jl scripts/checkModels.py \
+                "$regr_test" \
+                $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated-liquid.inp \
+                $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
+                test/regression/"$regr_test"/chemkin/chem_edge_annotated-liquid.inp \
+                test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt )
+              
+              surface_edge_comparison_pass=$( python-jl scripts/checkModels.py \
+                "$regr_test" \
+                $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated-surface.inp \
+                $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
+                test/regression/"$regr_test"/chemkin/chem_edge_annotated-surface.inp \
+                test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt )
+              
+              edge_comparison_pass=$( [ $liquid_edge_comparison_pass ] && [ $surface_edge_comparison_pass ] )
+            else
+              edge_comparison_pass=$( python-jl scripts/checkModels.py \
                 "$regr_test" \
                 $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
-                test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt
+                test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt )
+            fi
+
+            if $edge_comparison_pass
             then
               echo "$regr_test Passed Edge Comparison"
             else
