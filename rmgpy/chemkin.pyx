@@ -2365,8 +2365,13 @@ def save_chemkin_files(rmg):
                  save_edge_species=False)
 
     if is_surface_model:
+        if rmg.reaction_model.solvent_name:
+            non_surface_phase = "liquid"
+        else:
+            non_surface_phase = "gas"
+
         paths = []
-        for phase in ['surface', 'gas']:
+        for phase in ['surface', non_surface_phase]:
             root, ext = os.path.splitext(this_chemkin_path)
             path1 = root + '-' + phase + ext
             root, ext = os.path.splitext(latest_chemkin_path)
@@ -2392,8 +2397,13 @@ def save_chemkin_files(rmg):
                      latest_transport_path, rmg.save_edge_species)
 
         if is_surface_model:
+            if rmg.reaction_model.solvent_name:
+                non_surface_phase = "liquid"
+            else:
+                non_surface_phase = "gas"
+            
             paths = []
-            for phase in ['surface', 'gas']:
+            for phase in ['surface', non_surface_phase]:
                 root, ext = os.path.splitext(this_chemkin_path)
                 path1 = root + '-' + phase + ext
                 root, ext = os.path.splitext(latest_chemkin_path)
