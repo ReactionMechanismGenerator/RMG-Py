@@ -184,10 +184,12 @@ jobs:
 
       # Regression Testing - Actual Comparisons
       - name: Regression Tests - Compare to Baseline
+        id: regression-comparison
         if: ${{ env.REFERENCE_JOB == 'false' }}
         env:
           REFERENCE: stable_regression_results
         run: |
+          mkdir -p "test/regression-diff"
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat;
           do
             echo ""
@@ -206,14 +208,14 @@ jobs:
             if [ "$regr_test" == "RMS_liquidSurface_ch4o2cat" ]
             then
               liquid_core_comparison_pass=$( python-jl scripts/checkModels.py \
-                "$regr_test" \
+                "$regr_test-core-liquid" \
                 $REFERENCE/"$regr_test"/chemkin/chem_annotated-liquid.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_annotated-liquid.inp \
                 test/regression/"$regr_test"/chemkin/species_dictionary.txt )
               
               surface_core_comparison_pass=$( python-jl scripts/checkModels.py \
-                "$regr_test" \
+                "$regr_test-core-surface" \
                 $REFERENCE/"$regr_test"/chemkin/chem_annotated-surface.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_annotated-surface.inp \
@@ -222,7 +224,7 @@ jobs:
               core_comparison_pass=$( [ $liquid_core_comparison_pass ] && [ $surface_core_comparison_pass ] )
             else
               core_comparison_pass=$( python-jl scripts/checkModels.py \
-                "$regr_test" \
+                "$regr_test-core" \
                 $REFERENCE/"$regr_test"/chemkin/chem_annotated.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_annotated.inp \
@@ -234,20 +236,21 @@ jobs:
               echo "$regr_test Passed Core Comparison"
             else
               echo "$regr_test Failed Core Comparison" | tee -a $GITHUB_STEP_SUMMARY
+              cp "$regr_test-*.log" test/regression-diff/
               export FAILED=Yes
             fi
 
             if [ "$regr_test" == "RMS_liquidSurface_ch4o2cat" ]
             then
               liquid_edge_comparison_pass=$( python-jl scripts/checkModels.py \
-                "$regr_test" \
+                "$regr_test-edge-liquid" \
                 $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated-liquid.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_edge_annotated-liquid.inp \
                 test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt )
               
               surface_edge_comparison_pass=$( python-jl scripts/checkModels.py \
-                "$regr_test" \
+                "$regr_test-edge-surface" \
                 $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated-surface.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_edge_annotated-surface.inp \
@@ -256,7 +259,7 @@ jobs:
               edge_comparison_pass=$( [ $liquid_edge_comparison_pass ] && [ $surface_edge_comparison_pass ] )
             else
               edge_comparison_pass=$( python-jl scripts/checkModels.py \
-                "$regr_test" \
+                "$regr_test-edge" \
                 $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
@@ -268,6 +271,7 @@ jobs:
               echo "$regr_test Passed Edge Comparison"
             else
               echo "$regr_test Failed Edge Comparison" | tee -a $GITHUB_STEP_SUMMARY
+              cp "$regr_test-*.log" test/regression-diff/
               export FAILED=Yes
             fi
 
@@ -292,7 +296,14 @@ jobs:
             echo "Please download the failed results and run the tests locally or check the above log to see why." | tee -a $GITHUB_STEP_SUMMARY
             exit 1
           fi
-
+      # Upload Regression Results as Failed if above step failed
+      - name: Upload Failed Results
+        if: ${{ failure() && steps.regression-comparison.conclusion == 'failure' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: failed regression comparison results ${{ matrix.os }}
+          path: |
+            test/regression-diff
       # Install and Call codecov only if the tests were successful (permitting failures in the regression comparison tests)
       - name: Code coverage install and run
         if: success() || ( failure() && steps.regression-execution.conclusion == 'success' )
