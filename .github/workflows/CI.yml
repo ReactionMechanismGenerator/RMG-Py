@@ -30,6 +30,8 @@ on:
   push:
   # runs on PRs against RMG-Py (and anywhere else, but we add this for RMG-Py)
   pull_request:
+  # allow calling from other repos in the ReactionMechanismGenerator organization
+  workflow_call:
 
 # this prevents one PR from simultaneously running multiple runners, which will clog up the queue
 # and prevent other PRs from running the CI
