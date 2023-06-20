@@ -225,8 +225,10 @@ jobs:
                 "$regr_test-core-surface" \
                 $REFERENCE/"$regr_test"/chemkin/chem_annotated-surface.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
+                --benchThermo $REFERENCE/"$regr_test"/chemkin/chem_annotated-liquid.inp \
                 test/regression/"$regr_test"/chemkin/chem_annotated-surface.inp \
-                test/regression/"$regr_test"/chemkin/species_dictionary.txt
+                test/regression/"$regr_test"/chemkin/species_dictionary.txt \
+                --testThermo test/regression/"$regr_test"/chemkin/chem_annotated-liquid.inp
               then
                 echo "$regr_test Passed Surface Core Comparison"
               else
@@ -251,8 +253,10 @@ jobs:
                 "$regr_test-edge-surface" \
                 $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated-surface.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
+                --benchThermo $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated-liquid.inp \
                 test/regression/"$regr_test"/chemkin/chem_edge_annotated-surface.inp \
-                test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt
+                test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt \
+                --testThermo test/regression/"$regr_test"/chemkin/chem_edge_annotated-liquid.inp
               then
                 echo "$regr_test Passed Surface Edge Comparison"
               else
