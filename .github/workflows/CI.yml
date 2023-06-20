@@ -281,7 +281,7 @@ jobs:
                   $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated.inp \
                   $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
                   test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
-                  test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt )
+                  test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt
               then
                 echo "$regr_test Passed Edge Comparison"
               else
