@@ -47,14 +47,14 @@ def parse_command_line_arguments():
                         help='The path to the the Chemkin file of the benchmark model')
     parser.add_argument('benchSpeciesDict', metavar='BENCHSPECIESDICT', type=str, nargs=1,
                         help='The path to the the species dictionary file of the benchmark model')
-    parser.add_argument('--benchThermo', metavar='BENCHTHERMO', type=str, nargs=1
+    parser.add_argument('--benchThermo', metavar='BENCHTHERMO', type=str, nargs=1,
                         help='The path to the thermo file of the benchmark model')
 
     parser.add_argument('testChemkin', metavar='TESTEDCHEMKIN', type=str, nargs=1,
                         help='The path to the the Chemkin file of the tested model')
     parser.add_argument('testSpeciesDict', metavar='TESTEDSPECIESDICT', type=str, nargs=1,
                         help='The path to the the species dictionary file of the tested model')
-    parser.add_argument('--testThermo', metavar='TESTEDTHERMO', type=str, nargs=1
+    parser.add_argument('--testThermo', metavar='TESTEDTHERMO', type=str, nargs=1,
                         help='The path to the thermo file of the tested model')
 
     args = parser.parse_args()
