@@ -184,6 +184,7 @@ jobs:
 
       # Regression Testing - Actual Comparisons
       - name: Regression Tests - Compare to Baseline
+        id: regression-comparison
         if: ${{ env.REFERENCE_JOB == 'false' }}
         env:
           REFERENCE: stable_regression_results
@@ -252,7 +253,14 @@ jobs:
             echo "Please download the failed results and run the tests locally or check the above log to see why." | tee -a $GITHUB_STEP_SUMMARY
             exit 1
           fi
-
+      # Upload Regression Results as Failed if above step failed
+      - name: Upload Failed Comparison Results
+        if: ${{ failure() && steps.regression-comparison.conclusion == 'failure' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: failed regression comparison results ${{ matrix.os }}
+          path: |
+            test/regression-diff
       # Install and Call codecov only if the tests were successful (permitting failures in the regression comparison tests)
       - name: Code coverage install and run
         if: success() || ( failure() && steps.regression-execution.conclusion == 'success' )
