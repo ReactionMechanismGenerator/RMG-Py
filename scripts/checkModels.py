@@ -47,11 +47,15 @@ def parse_command_line_arguments():
                         help='The path to the the Chemkin file of the benchmark model')
     parser.add_argument('benchSpeciesDict', metavar='BENCHSPECIESDICT', type=str, nargs=1,
                         help='The path to the the species dictionary file of the benchmark model')
+    parser.add_argument('--benchThermo', metavar='BENCHTHERMO', type=str, nargs=1, default=None,
+                        help='The path to the thermo file of the benchmark model')
 
     parser.add_argument('testChemkin', metavar='TESTEDCHEMKIN', type=str, nargs=1,
                         help='The path to the the Chemkin file of the tested model')
     parser.add_argument('testSpeciesDict', metavar='TESTEDSPECIESDICT', type=str, nargs=1,
                         help='The path to the the species dictionary file of the tested model')
+    parser.add_argument('--testThermo', metavar='TESTEDTHERMO', type=str, nargs=1, default=None,
+                        help='The path to the thermo file of the tested model')
 
     args = parser.parse_args()
 
@@ -71,15 +75,17 @@ def main():
 
     bench_chemkin = args.benchChemkin[0]
     bench_species_dict = args.benchSpeciesDict[0]
+    bench_thermo = args.benchThermo[0] 
 
     test_chemkin = args.testChemkin[0]
     test_species_dict = args.testSpeciesDict[0]
+    test_thermo = args.testThermo[0]
 
-    error = check(name, bench_chemkin, bench_species_dict, test_chemkin, test_species_dict)
+    error = check(name, bench_chemkin, bench_species_dict, bench_thermo, test_chemkin, test_species_dict, test_thermo)
     return error
 
 
-def check(name, benchChemkin, benchSpeciesDict, testChemkin, testSpeciesDict):
+def check(name, benchChemkin, benchSpeciesDict, benchThermo, testChemkin, testSpeciesDict, testThermo):
     """
     Compare the tested model to the benchmark model.
     """
@@ -87,9 +93,8 @@ def check(name, benchChemkin, benchSpeciesDict, testChemkin, testSpeciesDict):
         'web': True,
     }
 
-    test_thermo, bench_thermo = None, None
     common_species, unique_species_orig, unique_species_test, common_reactions, unique_reactions_orig, unique_reactions_test = \
-        execute(benchChemkin, benchSpeciesDict, bench_thermo, testChemkin, testSpeciesDict, test_thermo, **kwargs)
+        execute(benchChemkin, benchSpeciesDict, benchThermo, testChemkin, testSpeciesDict, testThermo, **kwargs)
 
     error_model = checkModel(common_species, unique_species_test, unique_species_orig, common_reactions, unique_reactions_test,
                             unique_reactions_orig)
