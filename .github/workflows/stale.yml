@@ -24,3 +24,7 @@ jobs:
           stale-issue-label: stale
           stale-pr-label: stale
           operations-per-run: 1000
+          exempt-issue-labels: bug
+          exempt-pr-labels: bug
+          close-issue-label: abandoned
+          close-pr-label: abandoned
