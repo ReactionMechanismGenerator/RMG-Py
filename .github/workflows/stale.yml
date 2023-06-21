@@ -1,0 +1,21 @@
+name: Stale Issues and Pull Requests
+on:
+  schedule:
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Stale Issues and Pull Requests
+        uses: actions/stale@main
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-issue-message: 'This issue is being automatically marked as stale because it has not received any interaction in the last 90 days. Please leave a comment if this is still a relevant issue, otherwise it will automatically be closed in 30 days.'
+          stale-pr-message: 'This pull request is being automatically marked as stale because it has not received any interaction in the last 90 days. Please leave a comment if this is still a relevant pull request, otherwise it will automatically be closed in 30 days.'
+          days-before-stale: 90
+          days-before-close: 30
+          stale-issue-label: stale
+          stale-pr-label: stale
+          operations-per-run: 1000
