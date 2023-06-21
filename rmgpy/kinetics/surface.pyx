@@ -222,8 +222,8 @@ cdef class StickingCoefficient(KineticsModel):
 
     cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2:
         """
-        Returns ``True`` if rates of reaction at temperatures 500,1000,1500,2000 K
-        and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.
+        Returns ``True`` if the sticking coefficient at temperatures 500,1000,1500,2000 K
+        are within +/ .5 for log(k), in other words, within a factor of 3.
         """
         cdef double T
 
@@ -440,8 +440,8 @@ cdef class StickingCoefficientBEP(KineticsModel):
 
     cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2:
         """
-        Returns ``True`` if rates of reaction at temperatures 500,1000,1500,2000 K
-        and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.
+        Returns ``True`` if sticking coefficient at temperatures 500,1000,1500,2000 K
+        are within +/ .5 for log(k), in other words, within a factor of 3.
         """
         cdef double T
 
