@@ -1779,7 +1779,7 @@ def write_reaction_string(reaction, java_library=False):
         reaction_string += third_body
 
     if len(reaction_string) > 52:
-        logging.warning("Chemkin reaction string {0!r} is too long for Chemkin 2!".format(reaction_string))
+        logging.debug("Chemkin reaction string '%s' is too long for Chemkin 2!", reaction_string)
     return reaction_string
 
 ################################################################################
