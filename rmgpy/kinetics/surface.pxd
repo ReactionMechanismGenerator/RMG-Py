@@ -47,6 +47,8 @@ cdef class StickingCoefficient(KineticsModel):
 
     cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=?, np.ndarray weights=?, bint three_params=?)
 
+    cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2
+
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
     cpdef change_rate(self, double factor)
@@ -63,6 +65,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
     cpdef double get_sticking_coefficient(self, double T, double dHrxn=?) except -1
     cpdef double get_activation_energy(self, double dHrxn) except -1
     cpdef StickingCoefficient to_arrhenius(self, double dHrxn)
+    cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     cpdef change_rate(self, double factor)
 

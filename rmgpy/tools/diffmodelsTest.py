@@ -54,3 +54,27 @@ class DiffModelsTest(unittest.TestCase):
         shutil.rmtree(os.path.join(folder, 'species1'))
         shutil.rmtree(os.path.join(folder, 'species2'))
         os.remove(os.path.join(folder, 'diff.html'))
+
+    def test_surface_models(self):
+        folder = os.path.join(os.getcwd(), 'rmgpy/tools/data/diffmodels/surf_model')
+
+        chemkin_gas1 = os.path.join(folder, 'chem_gas1.inp')
+        chemkin_surf1 = os.path.join(folder, 'chem_surface1.inp')
+        species_dict1 = os.path.join(folder, 'species_dictionary1.txt')
+
+        chemkin_gas2 = os.path.join(folder, 'chem_gas2.inp')
+        chemkin_surf2 = os.path.join(folder, 'chem_surface2.inp')
+        species_dict2 = os.path.join(folder, 'species_dictionary2.txt')
+
+        kwargs = {
+            'wd': folder,
+            'surface_path1': chemkin_surf1,
+            'surface_path2': chemkin_surf2,
+        }
+
+        execute(chemkin_gas1, species_dict1, None,
+                chemkin_gas2, species_dict2, None, **kwargs)
+
+        shutil.rmtree(os.path.join(folder, 'species1'))
+        shutil.rmtree(os.path.join(folder, 'species2'))
+        os.remove(os.path.join(folder, 'diff.html'))

@@ -1183,7 +1183,7 @@ $(document).ready(function() {
 
 <P><b>Fitted Reverse Kinetics:</b>
 {% if not rxn2.kinetics.is_pressure_dependent() %}
-{{rxn2.generate_reverse_rate_coefficient().to_html() }}
+{{rxn2.generate_reverse_rate_coefficient(surface_site_density=2.483e-05).to_html() }}
 {% else %} Pressure dependent
 {% endif %}
 {% endif %}

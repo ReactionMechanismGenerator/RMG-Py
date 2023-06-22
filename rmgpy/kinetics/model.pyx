@@ -38,6 +38,8 @@ from libc.math cimport log10
 
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
+from rmgpy.kinetics.surface import StickingCoefficient, StickingCoefficientBEP
+
 
 ################################################################################
 
@@ -196,6 +198,7 @@ cdef class KineticsModel:
         """
         raise NotImplementedError('Unexpected call to KineticsModel.get_rate_coefficient(); '
                                   'you should be using a class derived from KineticsModel.')
+    
 
     cpdef to_html(self):
         """
@@ -232,6 +235,9 @@ cdef class KineticsModel:
         cdef double T
 
         if other_kinetics.is_pressure_dependent():
+            return False
+
+        if isinstance(other_kinetics, (StickingCoefficient, StickingCoefficientBEP)):
             return False
 
         for T in [500, 1000, 1500, 2000]:
