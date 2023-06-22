@@ -523,6 +523,13 @@ class GaussianLog(ESSAdapter):
                         action_index = 4  # valance angle with three terms
                     elif terms[0] == 'B':
                         action_index = 3  # bond length with 2 terms
+                    elif terms[0] == 'L':
+                        # Can be either L 1 2 3 B or L 1 2 3 -1 B
+                        # It defines a linear bend which is helpful in calculating
+                        # molecules with ~180 degree bond angles. As no other module
+                        # now depends on this information, simply skipping this line.
+                        line = f.readline()
+                        continue
                     else:
                         raise LogError('This file has an option not supported by Arkane. '
                                        'Unable to read scan specs for line: {0}'.format(line))
@@ -580,7 +587,6 @@ class GaussianLog(ESSAdapter):
         Return the negative frequency from a transition state frequency
         calculation in cm^-1.
         """
-        frequency = None
         frequencies = []
         with open(self.path, 'r') as f:
             line = f.readline()
@@ -592,11 +598,14 @@ class GaussianLog(ESSAdapter):
 
         frequencies = [float(freq) for freq in frequencies]
         frequencies.sort()
-        try:
-            frequency = [freq for freq in frequencies if freq < 0][0]
-        except IndexError:
+        neg_idx = np.where(np.array(frequencies) < 0)[0]
+        if len(neg_idx) == 1:
+            return frequencies[neg_idx[0]]
+        elif len(neg_idx) > 1:
+            logging.info('More than one imaginary frequency in Gaussian output file {0}.'.format(self.path))
+            return frequencies[neg_idx[0]]
+        else:
             raise LogError(f'Unable to find imaginary frequency in Gaussian output file {self.path}')
-        return frequency
 
 
 register_ess_adapter("GaussianLog", GaussianLog)

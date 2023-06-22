@@ -32,6 +32,7 @@ This module provides methods for converting molecules between RMG, RDKit, and Op
 """
 
 import logging
+import re
 import sys
 
 import cython
@@ -48,7 +49,7 @@ import rmgpy.molecule.molecule as mm
 from rmgpy.exceptions import DependencyError
 
 
-def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
+def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_order=False):
     """
     Convert a molecular structure to a RDKit rdmol object. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
@@ -57,12 +58,14 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
     If return_mapping==True then it also returns a dictionary mapping the
     atoms to RDKit's atom indices.
     """
-
+    from rmgpy.molecule.fragment import Fragment
     # Sort the atoms before converting to ensure output is consistent
     # between different runs
-    mol.sort_atoms()
+    if not save_order:
+        mol.sort_atoms()
     atoms = mol.vertices
     rd_atom_indices = {}  # dictionary of RDKit atom indices
+    label_dict = {} # store label of atom for Framgent
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
     for index, atom in enumerate(mol.vertices):
         if atom.element.symbol == 'X':
@@ -81,6 +84,17 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
         else:
             rd_atom_indices[atom] = index
 
+        # Check if a cutting label is present. If preserve this so that it is added to the SMILES string
+        # Fragment's representative species is Molecule (with CuttingLabel replaced by Si but label as CuttingLabel)
+        # so we use detect_cutting_label to check atom.label
+        _, cutting_label_list = Fragment().detect_cutting_label(atom.label)
+        if cutting_label_list != []:
+            saved_index = index
+            label = atom.label
+            if label in label_dict:
+                label_dict[label].append(saved_index)
+            else:
+                label_dict[label] = [saved_index]
     rd_bonds = Chem.rdchem.BondType
     orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE, 'T': rd_bonds.TRIPLE, 'B': rd_bonds.AROMATIC,
               'Q': rd_bonds.QUADRUPLE}
@@ -98,6 +112,10 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
 
     # Make editable mol into a mol and rectify the molecule
     rdkitmol = rdkitmol.GetMol()
+    if label_dict:
+        for label, ind_list in label_dict.items():
+            for ind in ind_list:
+                Chem.SetSupplementalSmilesLabel(rdkitmol.GetAtomWithIdx(ind), label)
     if sanitize:
         Chem.SanitizeMol(rdkitmol)
     if remove_h:
@@ -210,7 +228,7 @@ def debug_rdkit_mol(rdmol, level=logging.INFO):
     return message
 
 
-def to_ob_mol(mol, return_mapping=False):
+def to_ob_mol(mol, return_mapping=False, save_order=False):
     """
     Convert a molecular structure to an OpenBabel OBMol object. Uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -219,7 +237,8 @@ def to_ob_mol(mol, return_mapping=False):
         raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')
 
     # Sort the atoms to ensure consistent output
-    mol.sort_atoms()
+    if not save_order:
+        mol.sort_atoms()
     atoms = mol.vertices
 
     ob_atom_ids = {}  # dictionary of OB atom IDs

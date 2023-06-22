@@ -233,7 +233,7 @@ class TestArrhenius(unittest.TestCase):
     def test_to_cantera_kinetics(self):
         """
         Test that the Arrhenius cantera object can be set properly within 
-        a cantera ElementaryReaction object
+        a cantera Reaction object
         """
         ctArrhenius = self.arrhenius.to_cantera_kinetics()
         self.assertAlmostEqual(ctArrhenius.pre_exponential_factor, 1e9, 6)

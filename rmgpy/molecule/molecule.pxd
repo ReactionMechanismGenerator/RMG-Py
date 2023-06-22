@@ -45,6 +45,8 @@ cdef class Atom(Vertex):
     cdef public AtomType atomtype
     cdef public np.ndarray coords
     cdef public short lone_pairs
+    cdef public str site 
+    cdef public str morphology
     cdef public int id
     cdef public dict props
     
@@ -146,6 +148,8 @@ cdef class Molecule(Graph):
     cdef public int multiplicity
     cdef public bint reactive
     cdef public dict props
+    cdef public str metal
+    cdef public str facet
     cdef str _fingerprint
     cdef str _inchi
     cdef str _smiles
@@ -217,7 +221,7 @@ cdef class Molecule(Graph):
     cpdef from_smiles(self, str smilesstr, backend=?, bint raise_atomtype_exception=?)
 
     cpdef from_adjacency_list(self, str adjlist, bint saturate_h=?, bint raise_atomtype_exception=?,
-                              bint raise_charge_exception=?)
+                              bint raise_charge_exception=?, bint check_consistency=?)
 
     cpdef from_xyz(self, np.ndarray atomic_nums, np.ndarray coordinates, float critical_distance_factor=?, bint raise_atomtype_exception=?)
     
@@ -242,16 +246,16 @@ cdef class Molecule(Graph):
     cpdef double calculate_cp0(self) except -1
 
     cpdef double calculate_cpinf(self) except -1
-    
+
     cpdef update_atomtypes(self, bint log_species=?, bint raise_exception=?)
-    
+
     cpdef bint is_radical(self) except -2
 
     cpdef bint has_lone_pairs(self) except -2
 
     cpdef bint has_halogen(self) except -2
 
-    cpdef bint is_aryl_radical(self, list aromatic_rings=?) except -2
+    cpdef bint is_aryl_radical(self, list aromatic_rings=?, bint save_order=?) except -2
 
     cpdef float calculate_symmetry_number(self) except -1
 
@@ -267,7 +271,7 @@ cdef class Molecule(Graph):
 
     cpdef int count_aromatic_rings(self)
 
-    cpdef tuple get_aromatic_rings(self, list rings=?)
+    cpdef tuple get_aromatic_rings(self, list rings=?, bint save_order=?)
 
     cpdef list get_deterministic_sssr(self)
 
@@ -277,7 +281,7 @@ cdef class Molecule(Graph):
 
     cpdef bint atom_ids_valid(self)
 
-    cpdef bint is_identical(self, Molecule other, bint strict=?) except -2
+    cpdef bint is_identical(self, Graph other, bint strict=?) except -2
 
     cpdef dict enumerate_bonds(self)
 

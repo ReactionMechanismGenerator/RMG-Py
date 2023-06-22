@@ -1,53 +1,110 @@
+# environment.yml - conda environment specification file for RMG-Py
+#
+# Usage: conda env create --file environment.yml
+#
+# This file contains all of the software packages needed to run RMG-Py.
+# There is a mixture of the following
+# - packlages would could be installed at OS level, but we install here
+#   for better version control
+# - python tools
+# - external software tools specific to chemistry
+# - other software we maintain which RMG depends on
+# + some other categories (see below)
+#
+# Changelog:
+# - May 15, 2023 Added this changelog, added inline documentation,
+#   made dependency list more explicit (@JacksonBurns).
+#
 name: rmg_env
 channels:
   - defaults
   - rmg
   - conda-forge
+  - cantera
 dependencies:
+# System-level dependencies - we could install these at the OS level
+# but by installing them in the conda environment we get better control
   - cairo
   - cairocffi
-  - rmg::cantera >=2.3.0
-  - conda-forge::cclib >=1.6.3
-  - rmg::chemprop
-  - coolprop
-  - coverage
-  - cython >=0.25.2
-  - rmg::diffeqpy
   - ffmpeg
-  - rmg::gprof2dot
-  - graphviz
-  - h5py
-  - jinja2
-  - jupyter
-  - rmg::lpsolve55
-  - markupsafe
-  - matplotlib >=1.5
-  - rmg::mopac
-  - mpmath
-  - rmg::muq2
-  - networkx
-  - nomkl
-  - nose
-  - rmg::numdifftools
-  - numpy >=1.10.0
-  - conda-forge::openbabel >= 3
-  - pandas
-  - psutil
-  - rmg::pydas >=1.0.2
-  - pydot
-  - rmg::pydqed >=1.0.1
-  - rmg::pyjulia
-  - pymongo
-  - pyparsing
-  - rmg::pyrdl
-  - rmg::pyrms
-  - python >=3.7
-  - pyutilib
-  - pyyaml
-  - rmg::quantities
-  - rmg::rdkit >=2020.03.3.0
-  - scikit-learn
-  - scipy
-  - rmg::symmetry
   - xlrd
   - xlwt
+  - h5py
+  - graphviz
+  - markupsafe
+  - psutil
+  # conda-forge not default, since default has a version information bug
+  # (see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2421)
+  - conda-forge::ncurses
+  - conda-forge::suitesparse
+
+# external software tools for chemistry
+  - coolprop
+  - cantera::cantera=2.6
+  - conda-forge::mopac
+  - conda-forge::cclib >=1.6.3
+  - conda-forge::openbabel >= 3
+
+# general-purpose external software tools
+  - conda-forge::julia>=1.8.5,!=1.9.0
+  - conda-forge::pyjulia >=0.6
+
+# Python tools
+  - python >=3.7
+  - coverage
+  - cython >=0.25.2
+  - scikit-learn
+  - scipy
+  - numpy >=1.10.0
+  - pydot
+  - jinja2
+  - jupyter
+  - pymongo
+  - pyparsing
+  - pyyaml
+  - pyutilib
+  - networkx
+  - nose
+  - matplotlib >=1.5
+  - mpmath
+  - pandas
+
+# packages we maintain
+  - rmg::gprof2dot
+  - rmg::lpsolve55
+  - rmg::muq2
+  - rmg::numdifftools
+  - rmg::pydas >=1.0.3
+  - rmg::pydqed >=1.0.3
+  - rmg::pyrdl
+  - rmg::pyrms
+  - rmg::quantities
+  - rmg::symmetry
+
+# packages we would like to stop maintaining (and why)
+  - rmg::diffeqpy
+  # we should use the official verison https://github.com/SciML/diffeqpy),
+  # rather than ours (which is only made so that we can get it from conda)
+  # It is only on pip, so we will need to do something like:
+  # https://stackoverflow.com/a/35245610
+
+  - rmg::chemprop
+  # Our build of this is version 0.0.1 (!!) and we are using parts
+  # of the API that are now gone. Need a serious PR to fix this.
+
+  - rmg::rdkit >=2020.03.3.0
+  # We should use the official channel, not sure how difficult this
+  # change will be.
+
+# conda mutex metapackage
+  - nomkl
+
+# additional packages that are required, but not specified here (and why)
+  # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)
+  # in the environment. Normally we would add this to the environment file with
+  # - libgfortran-ng >= 10
+  # but this exact package is only maintained for Linux, meaning that if we were to add
+  # it here the environment creation would fail on Mac. The way it ends up working behind
+  # the scenes is that conda will find a different package for Mac that provides gfortran,
+  # but because we cannot specify per-platform requirements in this file we simply leave
+  # it out.

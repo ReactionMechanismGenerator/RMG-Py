@@ -30,7 +30,7 @@ cimport numpy as np
 from rmgpy.rmgobject cimport RMGObject
 
 
-cpdef list NOT_IMPLEMENTED_UNITS
+cdef list NOT_IMPLEMENTED_UNITS
 
 ################################################################################
 

@@ -43,6 +43,7 @@ from rmgpy.data.rmg import get_db
 from rmgpy.exceptions import InputError
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.statmech.conformer import Conformer
 
 ################################################################################
 
@@ -244,6 +245,16 @@ class ExplorerJob(object):
                             reaction_model.enlarge(react_edge=True, unimolecular_react=flags,
                                                    bimolecular_react=np.zeros((len(reaction_model.core.species),
                                                                               len(reaction_model.core.species))))
+        
+        for network in self.networks:
+            for rxn in network.path_reactions:
+                if rxn.transition_state is None:
+                    if rxn.network_kinetics is None:
+                        E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si + network.energy_correction
+                    else:
+                        E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si + network.energy_correction
+                    rxn.transition_state = rmgpy.species.TransitionState(conformer=Conformer(E0=(E0 * 0.001, "kJ/mol")))
+                
         for network in self.networks:
             rm_rxns = []
             for rxn in network.path_reactions:  # remove reactions with forbidden species
@@ -255,16 +266,24 @@ class ExplorerJob(object):
                 logging.info('Removing forbidden reaction: {0}'.format(rxn))
                 network.path_reactions.remove(rxn)
 
+            if len(rm_rxns) > 0:
+                network.valid = False
+                network.update(reaction_model,reaction_model.pressure_dependence)
+
             # clean up output files
             if output_file is not None:
-                path = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep')
-                for name in os.listdir(path):
+                path0 = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep')
+                path = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep','final')
+                if not os.path.exists(path):
+                    os.mkdir(path)
+                for name in os.listdir(path0):
                     if name.endswith('.py') and '_' in name:
-                        if name.split('_')[-1].split('.')[0] != str(len(network.isomers)):
-                            os.remove(os.path.join(path, name))
-                        else:
-                            os.rename(os.path.join(path, name),
-                                      os.path.join(path, 'network_full{}.py'.format(self.networks.index(network))))
+                        s1,s2 = name.split('_')
+                        index = int(s1[7:])
+                        N_isomers = int(s2.split('.')[0]) 
+                        if index == network.index and N_isomers == len(network.isomers):
+                            shutil.copy(os.path.join(path0, name),
+                                      os.path.join(path, 'network{}_full.py'.format(self.networks.index(network))))
 
         warns = []
 
@@ -276,6 +295,8 @@ class ExplorerJob(object):
 
         # reduction process
         for network in self.networks:
+            network.valid = False
+            network.update(reaction_model,reaction_model.pressure_dependence)
             if self.energy_tol != np.inf or self.flux_tol != 0.0:
 
                 rxn_set = None
@@ -309,7 +330,7 @@ class ExplorerJob(object):
                         logging.info([x.label for x in prod])
                     product_set = list(product_set)
 
-                network.remove_reactions(reaction_model, rxns=rxn_set, prods=product_set)
+                network.remove_reactions(reaction_model, networks, rxns=rxn_set, prods=product_set)
 
                 for rxn in self.job_rxns:
                     if rxn not in network.path_reactions:
@@ -318,6 +339,8 @@ class ExplorerJob(object):
 
         self.networks = networks
         for p, network in enumerate(self.networks):
+            network.valid = False
+            network.update(reaction_model,reaction_model.pressure_dependence)
             self.pdepjob.network = network
 
             if len(self.networks) > 1:

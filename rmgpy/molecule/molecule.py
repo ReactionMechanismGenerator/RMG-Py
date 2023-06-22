@@ -88,6 +88,8 @@ class Atom(Vertex):
     `mass`               ``int``             atomic mass of element (read only)
     `number`             ``int``             atomic number of element (read only)
     `symbol`             ``str``             atomic symbol of element (read only)
+    `site`               ``str``             type of adsorption site
+    `morphology`         ``str``             morphology of the adsorption site
     ==================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -95,8 +97,8 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radical_electrons=0, charge=0, label='', lone_pairs=-100, coords=np.array([]),
-                 id=-1, props=None):
+    def __init__(self, element=None, radical_electrons=0, charge=0, label='', lone_pairs=-100, site='', morphology='', 
+                 coords=np.array([]), id=-1, props=None):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -107,6 +109,8 @@ class Atom(Vertex):
         self.label = label
         self.atomtype = None
         self.lone_pairs = lone_pairs
+        self.site = site 
+        self.morphology = morphology
         self.coords = coords
         self.id = id
         self.props = props or {}
@@ -139,6 +143,8 @@ class Atom(Vertex):
             'sorting_label': self.sorting_label,
             'atomtype': self.atomtype.label if self.atomtype else None,
             'lone_pairs': self.lone_pairs,
+            'site': self.site,
+            'morphology': self.morphology,
         }
         if self.element.isotope == -1:
             element2pickle = self.element.symbol
@@ -157,6 +163,8 @@ class Atom(Vertex):
         self.sorting_label = d['sorting_label']
         self.atomtype = ATOMTYPES[d['atomtype']] if d['atomtype'] else None
         self.lone_pairs = d['lone_pairs']
+        self.site = d['site']
+        self.morphology = d['morphology']
 
     def __hash__(self):
         """
@@ -250,6 +258,16 @@ class Atom(Vertex):
                     if self.charge == charge: break
                 else:
                     return False
+            if ap.site:
+                for site in ap.site:
+                    if self.site == site: break
+                else:
+                    return False
+            if ap.morphology:
+                for morphology in ap.morphology:
+                    if self.morphology == morphology: break
+                else:
+                    return False
             if 'inRing' in self.props and 'inRing' in ap.props:
                 if self.props['inRing'] != ap.props['inRing']:
                     return False
@@ -293,6 +311,16 @@ class Atom(Vertex):
                         break
                 else:
                     return False
+            if atom.site:
+                for site in atom.site:
+                    if self.site == site: break
+                else:
+                    return False
+            if atom.morphology:
+                for morphology in atom.morphology:
+                    if self.morphology == morphology: break
+                else:
+                    return False
             if 'inRing' in self.props and 'inRing' in atom.props:
                 if self.props['inRing'] != atom.props['inRing']:
                     return False
@@ -316,6 +344,8 @@ class Atom(Vertex):
         a.label = self.label
         a.atomtype = self.atomtype
         a.lone_pairs = self.lone_pairs
+        a.site = self.site
+        a.morphology = self.morphology
         a.coords = self.coords[:]
         a.id = self.id
         a.props = deepcopy(self.props)
@@ -701,6 +731,8 @@ class Bond(Edge):
             return 'vdW'
         elif self.is_hydrogen_bond():
             return 'H'
+        elif self.is_reaction_bond():
+            return 'R'
         else:
             raise ValueError("Bond order {} does not have string representation.".format(self.order))
 
@@ -722,6 +754,8 @@ class Bond(Edge):
             self.order = 0
         elif new_order == 'H':
             self.order = 0.1
+        elif new_order == 'R':
+            self.order = 0.05
         else:
             # try to see if an float disguised as a string was input by mistake
             try:
@@ -815,6 +849,13 @@ class Bond(Edge):
         """
         return self.is_order(0.1)
 
+    def is_reaction_bond(self):
+        """
+        Return ``True`` if the bond represents a reaction bond or ``False`` if
+        not.
+        """
+        return self.is_order(0.05)
+    
     def increment_order(self):
         """
         Update the bond as a result of applying a CHANGE_BOND action to
@@ -873,7 +914,7 @@ class Bond(Edge):
         the atom labels in alphabetical order (i.e. 'C-H' is possible but not 'H-C')
         :return: str
         """
-        bond_symbol_mapping = {0.1: '~', 1: '-', 1.5: ':', 2: '=', 3: '#'}
+        bond_symbol_mapping = {0.05: '~', 0.1: '~', 1: '-', 1.5: ':', 2: '=', 3: '#'}
         atom_labels = [self.atom1.symbol, self.atom2.symbol]
         atom_labels.sort()
         try:
@@ -912,13 +953,16 @@ class Molecule(Graph):
     `inchi`                 ``str``     A string representation of the molecule in InChI
     `smiles`                ``str``     A string representation of the molecule in SMILES
     `fingerprint`           ``str``     A representation for fast comparison, set as molecular formula
+    `metal`                 ``str``     The metal of the metal surface the molecule is associated with
+    `facet`                 ``str``     The facet of the metal surface the molecule is associated with
     ======================= =========== ========================================
 
     A new molecule object can be easily instantiated by passing the `smiles` or
     `inchi` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, reactive=True, props=None, inchi='', smiles=''):
+    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, reactive=True, props=None, inchi='', smiles='', 
+                 metal='', facet=''):
         Graph.__init__(self, atoms)
         self.symmetry_number = symmetry
         self.multiplicity = multiplicity
@@ -927,6 +971,8 @@ class Molecule(Graph):
         self._inchi = None
         self._smiles = None
         self.props = props or {}
+        self.metal = metal
+        self.facet = facet
 
         if inchi and smiles:
             logging.warning('Both InChI and SMILES provided for Molecule instantiation, '
@@ -1001,7 +1047,7 @@ class Molecule(Graph):
         """
         A helper function used when pickling an object.
         """
-        return (Molecule, (self.vertices, self.symmetry_number, self.multiplicity, self.reactive, self.props))
+        return (Molecule, (self.vertices, self.symmetry_number, self.multiplicity, self.reactive, self.props, self.metal, self.facet))
 
     @property
     def atoms(self):
@@ -1283,6 +1329,8 @@ class Molecule(Graph):
             v2.sorting_label = v1.sorting_label
         other.multiplicity = self.multiplicity
         other.reactive = self.reactive
+        other.metal = self.metal 
+        other.facet = self.facet
         return other
 
     def merge(self, other):
@@ -1485,7 +1533,7 @@ class Molecule(Graph):
         """
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, Molecule):
+        if not isinstance(other, Graph):
             raise TypeError(
                 'Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         # Do the quick isomorphism comparison using the fingerprint
@@ -1496,27 +1544,19 @@ class Molecule(Graph):
         # check multiplicity
         if self.multiplicity != other.multiplicity:
             return False
-        
+        #check metal
+        if self.metal != other.metal:
+            return False 
+        #check facet
+        if self.facet != other.facet:
+            return False
         # if given an initial map, ensure that it's valid.
         if initial_map:
             if not self.is_mapping_valid(other, initial_map, equivalent=True):
                 return False
 
-        if generate_initial_map:
-            initial_map = dict()
-            for atom in self.atoms:
-                if atom.label and atom.label != '':
-                    for a in other.atoms:
-                        if a.label == atom.label:
-                            initial_map[atom] = a
-                            break
-                    else:
-                        return False
-            if not self.is_mapping_valid(other, initial_map, equivalent=True):
-                return False
-
         # Do the full isomorphism comparison
-        result = Graph.is_isomorphic(self, other, initial_map, save_order=save_order, strict=strict)
+        result = Graph.is_isomorphic(self, other, initial_map, generate_initial_map, save_order=save_order, strict=strict)
         return result
 
     def find_isomorphism(self, other, initial_map=None, save_order=False, strict=True):
@@ -1547,7 +1587,12 @@ class Molecule(Graph):
         # check multiplicity
         if self.multiplicity != other.multiplicity:
             return []
-
+        #check metal
+        if self.metal != other.metal:
+            return []
+        #check facet
+        if self.facet != other.facet:
+            return []
         # Do the isomorphism comparison
         result = Graph.find_isomorphism(self, other, initial_map, save_order=save_order, strict=strict)
         return result
@@ -1574,7 +1619,12 @@ class Molecule(Graph):
         # Check multiplicity
         if group.multiplicity:
             if self.multiplicity not in group.multiplicity: return False
-
+        #check metal
+        if group.metal:
+            if self.metal not in group.metal: return False
+        #check facet
+        if group.facet:
+            if self.facet not in group.facet: return False
         # Compare radical counts
         if self.get_radical_count() < group.radicalCount:
             return False
@@ -1645,7 +1695,12 @@ class Molecule(Graph):
         # Check multiplicity
         if group.multiplicity:
             if self.multiplicity not in group.multiplicity: return []
-
+        #check metal
+        if group.metal:
+            if self.metal not in group.metal: return False
+        #check facet
+        if group.facet:
+            if self.facet not in group.facet: return False
         # Compare radical counts
         if self.get_radical_count() < group.radicalCount:
             return []
@@ -1664,15 +1719,15 @@ class Molecule(Graph):
 
     def is_atom_in_cycle(self, atom):
         """
-        Return :data:`True` if `atom` is in one or more cycles in the structure,
-        and :data:`False` if not.
+        Return :data:``True`` if ``atom`` is in one or more cycles in the structure,
+        and :data:``False`` if not.
         """
         return self.is_vertex_in_cycle(atom)
 
     def is_bond_in_cycle(self, bond):
         """
-        Return :data:`True` if the bond between atoms `atom1` and `atom2`
-        is in one or more cycles in the graph, or :data:`False` if not.
+        Return :data:``True`` if the bond between atoms ``atom1`` and ``atom2``
+        is in one or more cycles in the graph, or :data:``False`` if not.
         """
         return self.is_edge_in_cycle(bond)
 
@@ -1731,7 +1786,7 @@ class Molecule(Graph):
         return self
 
     def from_adjacency_list(self, adjlist, saturate_h=False, raise_atomtype_exception=True,
-                            raise_charge_exception=True):
+                            raise_charge_exception=True, check_consistency=True):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
         Skips the first line (assuming it's a label) unless `withLabel` is
@@ -1739,7 +1794,8 @@ class Molecule(Graph):
         """
         from rmgpy.molecule.adjlist import from_adjacency_list
 
-        self.vertices, self.multiplicity = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h)
+        self.vertices, self.multiplicity, self.metal, self.facet = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h,
+                                                               check_consistency=check_consistency)
         self.update_atomtypes(raise_exception=raise_atomtype_exception)
         self.identify_ring_membership()
 
@@ -1889,7 +1945,8 @@ class Molecule(Graph):
         Convert the molecular structure to a string adjacency list.
         """
         from rmgpy.molecule.adjlist import to_adjacency_list
-        result = to_adjacency_list(self.vertices, self.multiplicity, label=label, group=False, remove_h=remove_h,
+        result = to_adjacency_list(self.vertices, self.multiplicity, metal=self.metal, facet=self.facet, 
+                                   label=label, group=False, remove_h=remove_h,
                                    remove_lone_pairs=remove_lone_pairs, old_style=old_style)
         return result
 
@@ -2052,7 +2109,7 @@ class Molecule(Graph):
         """
         Determine the number of internal rotors in the structure. Any single
         bond not in a cycle and between two atoms that also have other bonds
-        are considered to be internal rotors.
+        is considered to be a pivot of an internal rotor.
         """
         count = 0
         for atom1 in self.vertices:
@@ -2153,14 +2210,17 @@ class Molecule(Graph):
                 return True
         return False
 
-    def is_aryl_radical(self, aromatic_rings=None):
+    def is_aryl_radical(self, aromatic_rings=None, save_order=False):
         """
         Return ``True`` if the molecule only contains aryl radicals,
-        ie. radical on an aromatic ring, or ``False`` otherwise.
+        i.e., radical on an aromatic ring, or ``False`` otherwise.
+        If no ``aromatic_rings`` provided, aromatic rings will be searched in-place,
+        and this process may involve atom order change by default. Set ``save_order`` to
+        ``True`` to force the atom order unchanged.
         """
         cython.declare(atom=Atom, total=int, aromatic_atoms=set, aryl=int)
         if aromatic_rings is None:
-            aromatic_rings = self.get_aromatic_rings()[0]
+            aromatic_rings = self.get_aromatic_rings(save_order=save_order)[0]
 
         total = self.get_radical_count()
         aromatic_atoms = set([atom for atom in itertools.chain.from_iterable(aromatic_rings)])
@@ -2241,7 +2301,7 @@ class Molecule(Graph):
 
     def saturate_radicals(self, raise_atomtype_exception=True):
         """
-        Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
+        Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.
         """
         cython.declare(added=dict, atom=Atom, i=int, H=Atom, bond=Bond)
         added = {}
@@ -2306,7 +2366,8 @@ class Molecule(Graph):
                                              label=atom.label,
                                              )
 
-        group = gr.Group(atoms=list(group_atoms.values()), multiplicity=[self.multiplicity])
+        group = gr.Group(atoms=list(group_atoms.values()), multiplicity=[self.multiplicity], metal=[self.metal],
+                         facet=[self.facet])
 
         # Create GroupBond for each bond between atoms in the molecule
         for atom in self.atoms:
@@ -2354,7 +2415,7 @@ class Molecule(Graph):
 
         return count
 
-    def get_aromatic_rings(self, rings=None):
+    def get_aromatic_rings(self, rings=None, save_order=False):
         """
         Returns all aromatic rings as a list of atoms and a list of bonds.
 
@@ -2364,6 +2425,9 @@ class Molecule(Graph):
 
         The method currently restricts aromaticity to six-membered carbon-only rings. This is a limitation imposed
         by RMG, and not by RDKit.
+
+        By default, the atom order will be sorted to get consistent results from different runs. The atom order can
+        be saved when dealing with problems that are sensitive to the atom map.
         """
         cython.declare(rd_atom_indices=dict, ob_atom_ids=dict, aromatic_rings=list, aromatic_bonds=list)
         cython.declare(ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
@@ -2378,7 +2442,7 @@ class Molecule(Graph):
             return [], []
 
         try:
-            rdkitmol, rd_atom_indices = converter.to_rdkit_mol(self, remove_h=False, return_mapping=True)
+            rdkitmol, rd_atom_indices = converter.to_rdkit_mol(self, remove_h=False, return_mapping=True, save_order=save_order)
         except ValueError:
             logging.warning('Unable to check aromaticity by converting to RDKit Mol.')
         else:
@@ -2407,7 +2471,7 @@ class Molecule(Graph):
 
         logging.info('Trying to use OpenBabel to check aromaticity.')
         try:
-            obmol, ob_atom_ids = converter.to_ob_mol(self, return_mapping=True)
+            obmol, ob_atom_ids = converter.to_ob_mol(self, return_mapping=True, save_order=save_order)
         except DependencyError:
             logging.warning('Unable to check aromaticity by converting for OB Mol.')
             return [], []
@@ -2593,8 +2657,9 @@ class Molecule(Graph):
         If ``strict=False``, performs the check ignoring electrons and resonance structures.
         """
         cython.declare(atom_ids=set, other_ids=set, atom_list=list, other_list=list, mapping=dict)
+        from rmgpy.molecule.fragment import Fragment
 
-        if not isinstance(other, Molecule):
+        if not isinstance(other, (Molecule, Fragment)):
             raise TypeError(
                 'Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
 
@@ -2685,10 +2750,10 @@ class Molecule(Graph):
         
         Returns a list of Molecules.  Each molecule's atoms will be labeled corresponding to
         the bond order with the surface:
-        '*1' - Single bond
-        '*2' - double bond
-        '*3' - triple bond
-        '*4' - quadruple bond
+        ``*1`` - single bond
+        ``*2`` - double bond
+        ``*3`` - triple bond
+        ``*4`` - quadruple bond
         """
         cython.declare(desorbed_molecules=list, desorbed_molecule=Molecule, sites_to_remove=list, adsorbed_atoms=list,
                        site=Atom, numbonds=cython.int, bonded_atom=Atom, bond=Bond, i=cython.int, j=cython.int, atom0=Atom,

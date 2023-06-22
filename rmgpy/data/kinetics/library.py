@@ -43,7 +43,8 @@ from rmgpy.data.base import DatabaseError, Database, Entry
 from rmgpy.data.kinetics.common import save_entry
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.kinetics import Arrhenius, ThirdBody, Lindemann, Troe, \
-                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, Chebyshev
+                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, Chebyshev 
+from rmgpy.kinetics.surface import StickingCoefficient
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
@@ -206,6 +207,16 @@ class LibraryReaction(Reaction):
                          " it doesn't answer either of the following criteria:\n1. Has a Lindemann or Troe"
                          " kinetics type; 2. Has a PDepArrhenius or Chebyshev kinetics type and has valid"
                          " kinetics at P >= 100 bar.\n".format(self))
+        return False
+
+    def get_sticking_coefficient(self, T):
+        """
+        Helper function to get sticking coefficient
+        """
+        if isinstance(self.kinetics, StickingCoefficient):
+            stick = self.kinetics.get_sticking_coefficient(T)
+            return stick
+            
         return False
 
 

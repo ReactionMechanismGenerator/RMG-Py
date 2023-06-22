@@ -124,9 +124,7 @@ def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=No
     for family in rmg_database.kinetics.families.values():  # load training
         if not family.auto_generated:
             family.add_rules_from_training(thermo_database=rmg_database.thermo)
-
-    for family in rmg_database.kinetics.families.values():
-        family.fill_rules_by_averaging_up(verbose=True)
+            family.fill_rules_by_averaging_up(verbose=True)
 
 
 def species(label, *args, **kwargs):
@@ -472,7 +470,7 @@ def thermo(label, thermoClass):
 
 def pressureDependence(label, Tmin=None, Tmax=None, Tcount=0, Tlist=None, Pmin=None, Pmax=None, Pcount=0, Plist=None,
                        maximumGrainSize=None, minimumGrainCount=0, method=None, interpolationModel=None,
-                       activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None):
+                       activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None, sensitivity_perturbation=(2.0,'kcal/mol')):
     """Generate a pressure dependent job"""
     global job_list, network_dict
 
@@ -488,7 +486,8 @@ def pressureDependence(label, Tmin=None, Tmax=None, Tcount=0, Tlist=None, Pmin=N
                                 maximumGrainSize=maximumGrainSize, minimumGrainCount=minimumGrainCount,
                                 method=method, interpolationModel=interpolationModel,
                                 activeKRotor=activeKRotor, activeJRotor=activeJRotor,
-                                rmgmode=rmgmode, sensitivity_conditions=sensitivity_conditions)
+                                rmgmode=rmgmode, sensitivity_conditions=sensitivity_conditions,
+                                sensitivity_perturbation=sensitivity_perturbation)
     job_list.append(job)
 
 

@@ -29,7 +29,7 @@
 
 import numpy as np
 cimport numpy as np
-from libc.math cimport exp, sqrt
+from libc.math cimport exp, sqrt, log10
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
@@ -87,7 +87,7 @@ cdef class StickingCoefficient(KineticsModel):
         if self.coverage_dependence:
             string += ", coverage_dependence={"
             for species, parameters in self.coverage_dependence.items():
-                string += f"{species.to_chemkin()!r}: {{'a':{parameters['a']}, 'm':{parameters['m']}, 'E':({parameters['E'].value}, '{parameters['E'].units}')}},"
+                string += f"{species.to_chemkin()!r}: {{'a':{repr(parameters['a'])}, 'm':{repr(parameters['m'])}, 'E':{repr(parameters['E'])}}},"
             string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
@@ -220,6 +220,22 @@ cdef class StickingCoefficient(KineticsModel):
         self._A.value_si /= (self._T0.value_si / T0) ** self._n.value_si
         self._T0.value_si = T0
 
+    cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2:
+        """
+        Returns ``True`` if the sticking coefficient at temperatures 500,1000,1500,2000 K
+        are within +/ .5 for log(k), in other words, within a factor of 3.
+        """
+        cdef double T
+
+        if not isinstance(other_kinetics, StickingCoefficient):
+            return False
+
+        for T in [500, 1000, 1500, 2000]:
+            if abs(log10(self.get_sticking_coefficient(T)) - log10(other_kinetics.get_sticking_coefficient(T))) > 0.5:
+                return False
+
+        return True
+
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
@@ -320,7 +336,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
         if self.coverage_dependence:
             string += ", coverage_dependence={"
             for species, parameters in self.coverage_dependence.items():
-                string += f"{species.to_chemkin()!r}: {{'a':{parameters['a']}, 'm':{parameters['m']}, 'E':({parameters['E'].value}, '{parameters['E'].units}')}},"
+                string += f"{species.to_chemkin()!r}: {{'a':{repr(parameters['a'])}, 'm':{repr(parameters['m'])}, 'E':{repr(parameters['E'])}}},"
             string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
@@ -422,6 +438,22 @@ cdef class StickingCoefficientBEP(KineticsModel):
             comment=self.comment,
         )
 
+    cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2:
+        """
+        Returns ``True`` if sticking coefficient at temperatures 500,1000,1500,2000 K
+        are within +/ .5 for log(k), in other words, within a factor of 3.
+        """
+        cdef double T
+
+        if not isinstance(other_kinetics, StickingCoefficientBEP):
+            return False
+
+        for T in [500, 1000, 1500, 2000]:
+            if abs(log10(self.get_sticking_coefficient(T)) - log10(other_kinetics.get_sticking_coefficient(T))) > 0.5:
+                return False
+
+        return True
+
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
         Returns ``True`` if kinetics matches that of another kinetics model.  Must match type, temperature
@@ -522,7 +554,7 @@ cdef class SurfaceArrhenius(Arrhenius):
         if self.coverage_dependence:
             string += ", coverage_dependence={"
             for species, parameters in self.coverage_dependence.items():
-                string += f"{species.to_chemkin()!r}: {{'a':{parameters['a']}, 'm':{parameters['m']}, 'E':({parameters['E'].value}, '{parameters['E'].units}')}},"
+                string += f"{species.to_chemkin()!r}: {{'a':{repr(parameters['a'])}, 'm':{repr(parameters['m'])}, 'E':{repr(parameters['E'])}}},"
             string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
@@ -616,7 +648,7 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
         if self.coverage_dependence:
             string += ", coverage_dependence={"
             for species, parameters in self.coverage_dependence.items():
-                string += f"{species.to_chemkin()!r}: {{'a':{parameters['a']}, 'm':{parameters['m']}, 'E':({parameters['E'].value}, '{parameters['E'].units}')}},"
+                string += f"{species.to_chemkin()!r}: {{'a':{repr(parameters['a'])}, 'm':{repr(parameters['m'])}, 'E':{repr(parameters['E'])}}},"
             string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)

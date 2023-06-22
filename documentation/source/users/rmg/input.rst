@@ -440,7 +440,7 @@ For running an initial job, it is recommended to only change the ``toleranceMove
 that typically a value between ``0.01`` and ``0.05`` is best.  If your model cannot converge within a few hours, more advanced settings such as :ref:`reaction filtering <filterReactions>`
 or :ref:`pruning <pruning>` can be turned on to speed up your simulation at a slight risk of omitting chemistry.  ::
 
-    model(
+		model(
         toleranceMoveToCore=0.1,
         toleranceInterruptSimulation=0.1,
     )
@@ -448,9 +448,79 @@ or :ref:`pruning <pruning>` can be turned on to speed up your simulation at a sl
 - ``toleranceMoveToCore`` indicates how high the edge flux ratio for a species must get to enter the core model. This tolerance is designed for controlling the accuracy of final model.
 - ``toleranceInterruptSimulation`` indicates how high the edge flux ratio must get to interrupt the simulation (before reaching the ``terminationConversion`` or ``terminationTime``).  This value should be set to be equal to ``toleranceMoveToCore`` unless the advanced :ref:`pruning <pruning>` feature is desired.
 
+Advanced Setting:  Branching Criterion
+----------------------------------------
+The flux criterion works very well for identifying new species that have high flux
+and therefore pathways that have high throughput flux. However, there are many important
+low flux pathways particularly those that result in net production of radicals such as chain branching reactions in combustion.
+Picking up these pathways with the flux criterion is difficult and almost always requires an appreciably lower
+flux tolerance that would otherwise be necessary causing RMG to pickup many unimportant species. The
+Branching criterion identifies important edge reactions based on the impact they are expected to
+have on the concentrations of core species. The branching specific tolerances shown in the example below
+are the recommended tolerances. These tolerances are much less system dependent than the flux tolerance and
+the recommended values are usually sufficient.
+
+For example ::
+
+		model(
+				toleranceMoveToCore=0.1,
+				toleranceBranchReactionToCore=0.001,
+			  branchingIndex=0.5,
+			  branchingRatioMax=1.0,
+		)
+
+Advanced Setting: Deadend Radical Elimination (RMS Reactors only)
+-----------------------------------------------------------------
+When generating mechanisms involving significant molecular growth (such as in polymerization),
+there are many possible radicals, so fast propagation pathways compete with very slow termination and chain transfer reactions.
+These slow reactions individually usually have a negligible impact on the model, and thus will not be picked up by the flux or branching criteria. 
+However, together they can have a very significant impact on the overall radical concentration, and need to be included in the generated mechanism. 
+The deadend radical elimination algorithm identifies important chain transfer and termination reactions in the edge, based on their flux ratio with radical consumption and termination reactions in the core. 
+
+For example ::
+
+		model(
+				toleranceMoveToCore=0.01,
+				toleranceReactionToCoreDeadendRadical=0.01,
+		)
+
+Advanced Setting:  Radical Flux Criterion (RMS Reactors Only)
+--------------------------------------------------------------
+At high radical concentrations important products can accumulate from termination reactions. In these cases
+the flux and branching criteria can have difficulty adding in all of the important throughput terminations.
+For this case we have added a radical specific flux criterion. This criterion is similar to the flux criterion except
+that it looks at the net radical flux produced by each edge reaction instead of the total flux to each edge species.
+
+For example ::
+
+		model(
+				toleranceMoveToCore=0.1,
+				toleranceRadMoveToCore=0.2,
+		)
+
+Advanced Setting:  Transitory Edge Analysis (RMS Reactors Only)
+----------------------------------------------------------------
+Suppose you are interested in the chemistry of a particular chemical species in your system. If
+that species is not high flux or participates in important branching reactions it may not be resolved accurately
+with the flux and branching criteria. Transitory edge analysis applies transitory sensitivity analysis to the edge of the mechanism to
+generate much more sophisticated information than the flux and branching algorithms can provide. This can be used to identify how edge reactions
+are likely to affect the concentrations of non-participant core species. By applying this analysis to a given target species
+we can add all edge reactions that the target species is sensitive to above a given tolerance. This criterion is highly effective, but
+it can also be very computationally expensive for models with large edges. One can reduce the computational cost
+by increasing the `transitoryStepPeriod`, which is the number of solver time steps RMG takes between transitory edge analyses.
+how
+
+For example ::
+
+		model(
+				toleranceMoveToCore=0.1,
+				toleranceTransitoryDict={"NO":0.2},
+				transitoryStepPeriod=20,
+		)
+
 .. _filterReactions:
 
-Advanced Setting: Speed Up by Filtering Reactions
+Advanced Setting: Speed Up By Filtering Reactions
 -------------------------------------------------
 For generating models for larger molecules, RMG-Py may have trouble converging because it must find reactions on the order of
 :math:`(n_{reaction\: sites})^{{n_{species}}}`.  Thus it can be further sped up by pre-filtering reactions that are
@@ -458,12 +528,12 @@ added to the model.  This modification to the algorithm does not react core spec
 until their concentrations are deemed high enough.  It is recommended to turn on this flag when
 the model does not converge with normal parameter settings.  See :ref:`Filtering Reactions within the Flux-based Algorithm <filterReactionsTheory>`. for more details. ::
 
-    model(
-        toleranceMoveToCore=0.1,
-        toleranceInterruptSimulation=0.1,
-        filterReactions=True,
-        filterThreshold=5e8,
-    )
+		model(
+			  toleranceMoveToCore=0.1,
+			  toleranceInterruptSimulation=0.1,
+			  filterReactions=True,
+			  filterThreshold=5e8,
+		)
 
 **Additional parameters:**
 
@@ -583,62 +653,6 @@ Note that this can also result in larger models, however, sometimes these larger
 object at a time) pick up chemistry that would otherwise have been missed.
 
 .. _ontheflyquantumcalculations:
-
-Advanced Setting:  Dynamics Criterion
--------------------------------------
-While the flux criterion works very well for identifying new species that have high flux
-and therefore will likely be high throughput or high concentration species,
-it provides few automatic guarantees about how well a given model will accurately represent
-the concentrations of the involved species.  The dynamics criterion is more complex
-than the flux criterion, but in general it is a measure of how much impact a given
-reaction will have on the concentrations of core species.  A more detailed explanation
-is available in the theory section: :ref:`dynamics`.
-
-Reasonable values for the dynamics criterion range typically between 2-30.
-
-For example ::
-
-	model(
-		toleranceMoveToCore=0.1,
-		toleranceInterruptSimulation=0.1,
-		toleranceMoveEdgeReactionToCore=10.0,
-		toleranceMoveEdgeReactionToCoreInterrupt=5.0,
-	)
-
-Note that it is highly recommended to use the dynamics criterion only alongside the flux
-criterion and not by itself.
-
-Advanced Setting:  Surface Algorithm
--------------------------------------
-One common issue with the dynamics criterion is that it treats all core species equally 
-as discussed in our theory section: :ref:`dynamics`.  Because of this, if the dynamics
-criterion is set too low it enters a feedback loop where it adds species and then
-since it can't get those species' concentrations right it adds more species and so on.
-In order to avoid this feedback loop the surface algorithm was developed.  It creates
-a new partition called the *surface* that is considered part of the core.  We will
-refer to the part of the core that is not part of the surface as the *bulk core*.  When
-operating without the dynamics criterion everything moves from edge to the bulk core as usual;
-however the dynamics criterion is managed differently.  When using the surface algorithm most
-reactions pulled in by the dynamics criterion enter the surface instead of the bulk core.  
-However, unlike movement to bulk core a constraint is placed on movement to the surface.  
-Any reaction moved to the surface must have either both reactants or both products
-in the bulk core.  This prevents the dynamics criterion from pulling in reactions
-to get the concentrations of species in the surface right avoiding the feedback loop.  
-To avoid important species being trapped in the surface we also add criteria
-for movement from surface to bulk core based on flux or dynamics criterion.
-
-
-For example ::
-
-	model(
-		toleranceMoveToCore=0.1,
-		toleranceInterruptSimulation=0.1,
-		toleranceMoveEdgeReactionToCore=30.0,
-		toleranceMoveEdgeReactionToCoreInterrupt=5.0,
-		toleranceMoveEdgeReactionToSurface=10.0,
-		toleranceMoveSurfaceSpeciesToCore=.01,
-		toleranceMoveSurfaceReactionToCore=5.0,
-	)
 
 On the fly Quantum Calculations
 ===============================
@@ -902,10 +916,14 @@ be directly compared against local uncertainty results.
 uncertainties based on the estimation method used by RMG. Actual uncertainties associated with the original data sources
 are not used. Thus, the output uncertainties reported by these analyses should be viewed with this in mind.
 
+The uncertainty analysis is described in [Gao2016thesis]_ and [Gao2020]_.
+
 .. [Cantera] Goodwin, D.G.; Moffat, H.K.; Speth, R.L. Cantera: An object-oriented software toolkit for
                 chemical kinetics, thermodynamics, and transport processes; https://www.cantera.org/
 .. [MUQ] Conrad, P.R.; Parno, M.D.; Davis, A.D.; Marzouk, Y.M. MIT Uncertainty Quantification Library (MUQ); http://muq.mit.edu/
-.. [Gao2016] Gao, C. W.; Ph.D. Thesis. 2016.
+.. [Gao2016thesis] Gao, C. W.; Ph.D. Thesis. 2016. 
+.. [Gao2020] Gao, CW; Liu, M; Green, WH. Uncertainty analysis of correlated parameters in automated reaction mechanism generation. 
+             Int J Chem Kinet. 2020; 52: 266– 282. https://doi.org/10.1002/kin.21348
 
 
 .. _miscellaneousoptions:

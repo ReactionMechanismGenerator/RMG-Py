@@ -265,7 +265,7 @@ class KineticsRules(Database):
                       " removed in version 2.3.", DeprecationWarning)
         index = 'General'  # mops up comments before the first rate ID
 
-        re_underline = re.compile('^\-+')
+        re_underline = re.compile(r'^\-+')
 
         comments = {}
         comments[index] = ''
@@ -352,7 +352,7 @@ class KineticsRules(Database):
             if len(line) > 48:  # make long lines line up in 10-space columns
                 flib.write(' ' * (10 - len(line) % 10))
             if entry.data.Tmax is None:
-                if re.match('\d+\-\d+', str(entry.data.Tmin).strip()):
+                if re.match(r'\d+\-\d+', str(entry.data.Tmin).strip()):
                     # Tmin contains string of Trange
                     Trange = '{0} '.format(entry.data.Tmin)
                 elif isinstance(entry.data.Tmin, ScalarQuantity):

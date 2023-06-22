@@ -33,6 +33,7 @@ from rmgpy.thermo.model cimport HeatCapacityModel
 from rmgpy.statmech.conformer cimport Conformer
 from rmgpy.kinetics.model cimport TunnelingModel
 from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
+from rmgpy.molecule.graph cimport Graph
 
 ################################################################################
 
@@ -53,6 +54,8 @@ cdef class Species:
     cdef public bint is_solvent
     cdef public int creation_iteration
     cdef public bint explicitly_allowed
+    cdef public object liquid_volumetric_mass_transfer_coefficient_data
+    cdef public object henry_law_constant_data
     cdef str _fingerprint
     cdef str _inchi
     cdef str _smiles
@@ -102,6 +105,10 @@ cdef class Species:
     cpdef Species copy(self, bint deep=?)
 
     cpdef set_structure(self, str structure)
+
+    cpdef object get_henry_law_constant_data(self, list Ts=?)
+
+    cpdef object get_liquid_volumetric_mass_transfer_coefficient_data(self, list Ts=?)
     
 ################################################################################
 

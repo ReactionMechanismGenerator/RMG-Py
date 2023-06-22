@@ -44,57 +44,67 @@ from rmgpy.qm.qmdata import parse_cclib_data
 class Gaussian:
     """
     A base class for all QM calculations that use Gaussian.
-    
+
     Classes such as :class:`GaussianMol` will inherit from this class.
     """
 
-    inputFileExtension = '.gjf'
-    outputFileExtension = '.log'
+    input_file_extension = ".gjf"
+    output_file_extension = ".log"
 
-    executablesToTry = ('g16', 'g09', 'g03')
+    executablesToTry = ("g16", "g09", "g03")
 
     for exe in executablesToTry:
         try:
-            executablePath = distutils.spawn.find_executable(exe)
+            executable_path = distutils.spawn.find_executable(exe)
         except:
-            executablePath = None
-        if executablePath is not None:
+            executable_path = None
+        if executable_path is not None:
             break
     else:  # didn't break
-        logging.debug("Did not find Gaussian on path, checking if it exists in a declared GAUSS_EXEDIR, g09root or g03root...")
-        gaussEnv = os.getenv('GAUSS_EXEDIR') or os.getenv('g09root') or os.getenv('g03root') or ""
-        possibleDirs = gaussEnv.split(':')  # GAUSS_EXEDIR may be a list like "path1:path2:path3"
+        logging.debug(
+            "Did not find Gaussian on path, checking if it exists in a declared GAUSS_EXEDIR, g09root or g03root..."
+        )
+        gaussEnv = (
+            os.getenv("GAUSS_EXEDIR")
+            or os.getenv("g09root")
+            or os.getenv("g03root")
+            or ""
+        )
+        possibleDirs = gaussEnv.split(
+            ":"
+        )  # GAUSS_EXEDIR may be a list like "path1:path2:path3"
         for exe, possibleDir in itertools.product(executablesToTry, possibleDirs):
-            executablePath = os.path.join(possibleDir, exe)
-            if os.path.exists(executablePath):
+            executable_path = os.path.join(possibleDir, exe)
+            if os.path.exists(executable_path):
                 break
         else:  # didn't break
-            executablePath = os.path.join(gaussEnv, '(Gaussian 2003 or 2009)')
+            executable_path = os.path.join(gaussEnv, "(Gaussian 2003 or 2009)")
 
-    usePolar = False
+    use_polar = False
 
     #: List of phrases that indicate failure
     #: NONE of these must be present in a succesful job.
-    failureKeys = [
-        'ERROR TERMINATION',
-        'IMAGINARY FREQUENCIES'
-    ]
+    failure_keys = ["ERROR TERMINATION", "IMAGINARY FREQUENCIES"]
 
     #: List of phrases to indicate success.
     #: ALL of these must be present in a successful job.
-    successKeys = [
-        'Normal termination of Gaussian'
-    ]
+    success_keys = ["Normal termination of Gaussian"]
 
     def test_ready(self):
-        if not os.path.exists(self.executablePath):
-            raise Exception("Couldn't find Gaussian executable at {0}. "
-                            "Try setting your GAUSS_EXEDIR environment variable.".format(self.executablePath))
+        if not os.path.exists(self.executable_path):
+            raise Exception(
+                "Couldn't find Gaussian executable at {0}. "
+                "Try setting your GAUSS_EXEDIR environment variable.".format(
+                    self.executable_path
+                )
+            )
 
     def run(self):
         self.test_ready()
         # submits the input file to Gaussian
-        process = Popen([self.executablePath, self.input_file_path, self.output_file_path])
+        process = Popen(
+            [self.executable_path, self.input_file_path, self.output_file_path]
+        )
         process.communicate()  # necessary to wait for executable termination!
 
         return self.verify_output_file()
@@ -102,10 +112,10 @@ class Gaussian:
     def verify_output_file(self):
         """
         Check's that an output file exists and was successful.
-        
-        Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the 
+
+        Returns a boolean flag that states whether a successful GAUSSIAN simulation already exists for the molecule with the
         given (augmented) InChI Key.
-        
+
         The definition of finding a successful simulation is based on these criteria:
         1) finding an output file with the file name equal to the InChI Key
         2) NOT finding any of the keywords that are denote a calculation failure
@@ -117,25 +127,33 @@ class Gaussian:
         If all are satisfied, it will return True.
         """
         if not os.path.exists(self.output_file_path):
-            logging.info("Output file {0} does not exist.".format(self.output_file_path))
+            logging.info(
+                "Output file {0} does not exist.".format(self.output_file_path)
+            )
             return False
 
         inchi_match = False  # flag (1 or 0) indicating whether the InChI in the file matches InChIaug this can only be 1 if inchi_found is also 1
-        inchi_found = False  # flag (1 or 0) indicating whether an InChI was found in the log file
+        inchi_found = (
+            False  # flag (1 or 0) indicating whether an InChI was found in the log file
+        )
 
-        # Initialize dictionary with "False"s 
-        success_keys_found = dict([(key, False) for key in self.successKeys])
+        # Initialize dictionary with "False"s
+        success_keys_found = dict([(key, False) for key in self.success_keys])
 
         with open(self.output_file_path) as outputFile:
             for line in outputFile:
                 line = line.strip()
 
-                for element in self.failureKeys:  # search for failure keywords
+                for element in self.failure_keys:  # search for failure keywords
                     if element in line:
-                        logging.error("Gaussian output file contains the following error: {0}".format(element))
+                        logging.error(
+                            "Gaussian output file contains the following error: {0}".format(
+                                element
+                            )
+                        )
                         return False
 
-                for element in self.successKeys:  # search for success keywords
+                for element in self.success_keys:  # search for success keywords
                     if element in line:
                         success_keys_found[element] = True
 
@@ -145,26 +163,42 @@ class Gaussian:
                     if self.unique_id_long in log_file_inchi:
                         inchi_match = True
                     elif self.unique_id_long.startswith(log_file_inchi):
-                        logging.info("InChI too long to check, but beginning matches so assuming OK.")
+                        logging.info(
+                            "InChI too long to check, but beginning matches so assuming OK."
+                        )
                         inchi_match = True
                     else:
-                        logging.warning("InChI in log file ({0}) didn't match that in geometry "
-                                        "({1}).".format(log_file_inchi, self.geometry.unique_id_long))
+                        logging.warning(
+                            "InChI in log file ({0}) didn't match that in geometry "
+                            "({1}).".format(
+                                log_file_inchi, self.geometry.unique_id_long
+                            )
+                        )
                         if self.geometry.unique_id_long.startswith(log_file_inchi):
-                            logging.warning("but the beginning matches so it's probably just a truncation problem.")
+                            logging.warning(
+                                "but the beginning matches so it's probably just a truncation problem."
+                            )
                             inchi_match = True
         # Check that ALL 'success' keywords were found in the file.
         if not all(success_keys_found.values()):
-            logging.error('Not all of the required keywords for success were found in the output file!')
+            logging.error(
+                "Not all of the required keywords for success were found in the output file!"
+            )
             return False
 
         if not inchi_found:
-            logging.error("No InChI was found in the Gaussian output file {0}".format(self.output_file_path))
+            logging.error(
+                "No InChI was found in the Gaussian output file {0}".format(
+                    self.output_file_path
+                )
+            )
             return False
 
         if not inchi_match:
             # InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
-            return self.checkForInChiKeyCollision(log_file_inchi)  # Not yet implemented!
+            return self.checkForInChiKeyCollision(
+                log_file_inchi
+            )  # Not yet implemented!
 
         # Compare the optimized geometry to the original molecule
         qm_data = self.parse()
@@ -172,10 +206,18 @@ class Gaussian:
         cclib_mol.from_xyz(qm_data.atomicNumbers, qm_data.atomCoords.value)
         test_mol = self.molecule.to_single_bonds()
         if not cclib_mol.is_isomorphic(test_mol):
-            logging.info("Incorrect connectivity for optimized geometry in file {0}".format(self.output_file_path))
+            logging.info(
+                "Incorrect connectivity for optimized geometry in file {0}".format(
+                    self.output_file_path
+                )
+            )
             return False
 
-        logging.info("Successful {1} quantum result in {0}".format(self.output_file_path, self.__class__.__name__))
+        logging.info(
+            "Successful {1} quantum result in {0}".format(
+                self.output_file_path, self.__class__.__name__
+            )
+        )
         return True
 
     def parse(self):
@@ -183,7 +225,9 @@ class Gaussian:
         Parses the results of the Gaussian calculation, and returns a QMData object.
         """
         parser = cclib.parser.Gaussian(self.output_file_path)
-        parser.logger.setLevel(logging.ERROR)  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        parser.logger.setLevel(
+            logging.ERROR
+        )  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclib_data = parser.parse()
         radical_number = sum([i.radical_electrons for i in self.molecule.atoms])
         qm_data = parse_cclib_data(cclib_data, radical_number + 1)
@@ -192,15 +236,15 @@ class Gaussian:
 
 class GaussianMol(QMMolecule, Gaussian):
     """
-    A base Class for calculations of molecules using Gaussian. 
-    
+    A base Class for calculations of molecules using Gaussian.
+
     Inherits from both :class:`QMMolecule` and :class:`Gaussian`.
     """
 
     def input_file_keywords(self, attempt):
         """
         Return the top keywords for attempt number `attempt`.
-    
+
         NB. `attempt` begins at 1, not 0.
         """
         assert attempt <= self.max_attempts
@@ -214,10 +258,16 @@ class GaussianMol(QMMolecule, Gaussian):
         for the `attempt`.
         """
         molfile = self.get_mol_file_path_for_calculation(attempt)
-        atomline = re.compile('\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)')
+        atomline = re.compile(
+            r"\s*([\- ][0-9.]+\s+[\-0-9.]+\s+[\-0-9.]+)\s+([A-Za-z]+)"
+        )
 
-        output = ['', self.geometry.unique_id_long, '']
-        output.append("{charge}   {mult}".format(charge=0, mult=(self.molecule.get_radical_count() + 1)))
+        output = ["", self.geometry.unique_id_long, ""]
+        output.append(
+            "{charge}   {mult}".format(
+                charge=0, mult=(self.molecule.get_radical_count() + 1)
+            )
+        )
 
         atom_count = 0
         with open(molfile) as molinput:
@@ -228,17 +278,17 @@ class GaussianMol(QMMolecule, Gaussian):
                     atom_count += 1
         assert atom_count == len(self.molecule.atoms)
 
-        output.append('')
-        input_string = '\n'.join(output)
+        output.append("")
+        input_string = "\n".join(output)
 
         top_keys = self.input_file_keywords(attempt)
-        with open(self.input_file_path, 'w') as gaussian_file:
+        with open(self.input_file_path, "w") as gaussian_file:
             gaussian_file.write(top_keys)
-            gaussian_file.write('\n')
+            gaussian_file.write("\n")
             gaussian_file.write(input_string)
-            gaussian_file.write('\n')
-            if self.usePolar:
-                gaussian_file.write('\n\n\n')
+            gaussian_file.write("\n")
+            if self.use_polar:
+                gaussian_file.write("\n\n\n")
                 raise NotImplementedError("Not sure what should be here, if anything.")
                 # gaussian_file.write(polar_keys)
 
@@ -253,23 +303,41 @@ class GaussianMol(QMMolecule, Gaussian):
 
         if self.verify_output_file():
             logging.info("Found a successful output file already; using that.")
-            source = "QM {0} calculation found from previous run.".format(self.__class__.__name__)
+            source = "QM {0} calculation found from previous run.".format(
+                self.__class__.__name__
+            )
         else:
             self.create_geometry()
             success = False
             for attempt in range(1, self.max_attempts + 1):
                 self.write_input_file(attempt)
-                logging.info('Trying {3} attempt {0} of {1} on molecule {2}.'.format(attempt, self.max_attempts,
-                                                                                     self.molecule.to_smiles(),
-                                                                                     self.__class__.__name__))
+                logging.info(
+                    "Trying {3} attempt {0} of {1} on molecule {2}.".format(
+                        attempt,
+                        self.max_attempts,
+                        self.molecule.to_smiles(),
+                        self.__class__.__name__,
+                    )
+                )
                 success = self.run()
                 if success:
-                    logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.max_attempts,
-                                                                                       self.molecule.to_augmented_inchi()))
-                    source = "QM {0} calculation attempt {1}".format(self.__class__.__name__, attempt)
+                    logging.info(
+                        "Attempt {0} of {1} on species {2} succeeded.".format(
+                            attempt,
+                            self.max_attempts,
+                            self.molecule.to_augmented_inchi(),
+                        )
+                    )
+                    source = "QM {0} calculation attempt {1}".format(
+                        self.__class__.__name__, attempt
+                    )
                     break
             else:
-                logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.to_augmented_inchi()))
+                logging.error(
+                    "QM thermo calculation failed for {0}.".format(
+                        self.molecule.to_augmented_inchi()
+                    )
+                )
                 return None
         result = self.parse()  # parsed in cclib
         result.source = source
@@ -285,10 +353,11 @@ class GaussianMol(QMMolecule, Gaussian):
 class GaussianMolPM3(GaussianMol):
     """
     Gaussian PM3 calculations for molecules
-    
+
     This is a class of its own in case you wish to do anything differently,
     but for now it's only the 'pm3' in the keywords that differs.
     """
+
     #: Keywords that will be added at the top of the qm input file
     keywords = [
         # The combinations of keywords were derived by Greg Magoon for pm3 in Gaussian. His comments are attached to each combination.
@@ -312,13 +381,15 @@ class GaussianMolPM3(GaussianMol):
         "# pm3 opt=(calcall,small,maxcyc=100) IOP(2/16=3)",  # used to address troublesome FILUFGAZMJGNEN-UHFFFAOYAImult3 case (InChI=1/C5H6/c1-3-5-4-2/h3H,1H2,2H3/mult3)
     ]
 
+
 class GaussianMolPM6(GaussianMol):
     """
     Gaussian PM6 calculations for molecules
-    
+
     This is a class of its own in case you wish to do anything differently,
     but for now it's only the 'pm6' in the keywords that differs.
     """
+
     #: Keywords that will be added at the top of the qm input file
     keywords = [
         # The combinations of keywords were derived by Greg Magoon for pm3. For now, we assume similar ones will work for pm6:

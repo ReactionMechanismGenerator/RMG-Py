@@ -217,9 +217,7 @@ class ObservablesTestCase(object):
         conditions_broken = []
         variables_failed = []
 
-        print('')
         print('{0} Comparison'.format(self))
-        print('================')
         # Check the species profile observables
         if 'species' in self.observables:
             old_species_dict = get_rmg_species_from_user_species(self.observables['species'], self.old_sim.species_list)
@@ -317,12 +315,10 @@ class ObservablesTestCase(object):
 
         if fail_header_printed:
             print('')
-            print('The following reaction conditions were had some discrepancies:')
-            print('')
+            print('The following reaction conditions had some discrepancies:')
             for index in conditions_broken:
                 print("Condition {0:d}:".format(index + 1))
                 print(str(self.conditions[index]))
-                print('')
 
             return variables_failed
         else:

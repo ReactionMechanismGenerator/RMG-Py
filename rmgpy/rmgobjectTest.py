@@ -256,6 +256,23 @@ class TestRMGObject(unittest.TestCase):
         self.assertEqual(obj.a[1].c, 5.0)
         self.assertEqual(obj.b, [])
 
+    def test_ignore_aux_and_mol(self):
+        """Test ignoring specific keys"""
+        data = {'a': [{'class': 'PseudoRMGObject', 'b': 'foobar'},
+                      {'class': 'PseudoRMGObject', 'c': 5.0}],
+                'mol': 7.0,
+                'aux': 2.5}
+        obj = PseudoRMGObject()
+        obj.make_object(data, class_dict={'PseudoRMGObject': PseudoRMGObject})
+        self.assertIsInstance(obj.a, list)
+
+        with self.assertRaises(TypeError):
+            data = {'a': [{'class': 'PseudoRMGObject', 'b': 'foobar'},
+                          {'class': 'PseudoRMGObject', 'c': 5.0}],
+                    'new_key': 2.5}
+            obj = PseudoRMGObject()
+            obj.make_object(data, class_dict={'PseudoRMGObject': PseudoRMGObject})
+
 
 class TestExpandAndMakeFromDictionaries(unittest.TestCase):
     """

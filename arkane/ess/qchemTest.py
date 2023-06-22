@@ -149,6 +149,19 @@ class QChemLogTest(unittest.TestCase):
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HinderedRotor)]) == 0)
 
+    def test_load_negative_frequency(self):
+        """
+        Load an imaginary frequency from a QChem output file.
+        """
+        log = QChemLog(os.path.join(self.data_path, 'ts004630.log'))
+        imaginary_freq = log.load_negative_frequency()
+        self.assertEqual(imaginary_freq, -647.47)
+
+        # verify that an error is raised if there are no negative frequencies
+        with self.assertRaises(LogError):
+            log = QChemLog(os.path.join(self.data_path, 'npropyl.out'))
+            imaginary_freq = log.load_negative_frequency()
+
 ################################################################################
 
 

@@ -37,6 +37,7 @@ import logging
 from rmgpy.data.base import LogicNode
 from rmgpy.exceptions import DatabaseError
 from rmgpy.molecule import Group, Molecule
+from rmgpy.molecule.fragment import Fragment
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 
@@ -151,7 +152,7 @@ def ensure_species(input_list, resonance=False, keep_isomorphic=False):
     in place to only have :class:`Species` objects. Returns None.
     """
     for index, item in enumerate(input_list):
-        if isinstance(item, Molecule):
+        if isinstance(item, Molecule) or isinstance(item, Fragment):
             new_item = Species(molecule=[item])
         elif isinstance(item, Species):
             new_item = item

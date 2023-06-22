@@ -501,16 +501,30 @@ cdef class Graph(object):
         else:
             self.vertices = self.ordered_vertices
 
-    cpdef bint is_isomorphic(self, Graph other, dict initial_map=None, bint save_order=False, bint strict=True) except -2:
+    cpdef bint is_isomorphic(self, Graph other, dict initial_map=None, bint generate_initial_map=False, bint save_order=False, bint strict=True) except -2:
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
 
         Args:
             initial_map (dict, optional): initial atom mapping to use
+            generate_initial_map (bool, optional): if ``True``, initialize map by pairing atoms with same labels
             save_order (bool, optional):  if ``True``, reset atom order after performing atom isomorphism
             strict (bool, optional):     if ``False``, perform isomorphism ignoring electrons
         """
+        if generate_initial_map:
+            initial_map = dict()
+            for atom in self.vertices:
+                if atom.label and atom.label != '':
+                    for a in other.vertices:
+                        if a.label == atom.label:
+                            initial_map[atom] = a
+                            break
+                    else:
+                        return False
+            if not self.is_mapping_valid(other, initial_map, equivalent=True):
+                return False
+
         return vf2.is_isomorphic(self, other, initial_map, save_order=save_order, strict=strict)
 
     cpdef list find_isomorphism(self, Graph other, dict initial_map=None, bint save_order=False, bint strict=True):

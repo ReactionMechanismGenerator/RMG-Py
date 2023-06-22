@@ -110,7 +110,7 @@ cdef class Graph(object):
     
     cpdef restore_vertex_order(self)
 
-    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?) except -2
+    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint strict=?) except -2
 
     cpdef list find_isomorphism(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?)
 

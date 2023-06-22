@@ -124,12 +124,12 @@ The Abraham LSER provides an estimate of the the partition coefficient (:math:`K
 between the vapor phase and a particular solvent (component 1) at 298 K:
 
 .. math:: \log_{10} K = c + eE + sS + aA + bB + lL
-	:label: AbModelEqn
+	:label: AbModelEqn1
 
 where the partition coefficient is the ratio of the equilibrium concentrations of the solute in liquid and vapor phases
 
 .. math:: K = \frac{c_{\rm 2, liquid}}{c_{\rm 2, gas}}
-	:label: AbModelEqn
+	:label: AbModelEqn2
 
 The Abraham model is used in RMG to estimate :math:`\Delta G_{\rm solv}^{*}` which is related to the :math:`K` of a solute according to the following expression:
 
@@ -211,7 +211,6 @@ defined as the ratio of the equilibrium mole fractions of the solute (component 
 of the solvent (component 1):
 
 .. math:: K_{2,1}^{\infty} = \frac{y_{2}}{x_{2}}
-	:label: linear_extrapolation
 
 Recently, Chung et al. ([Chung2020]_) has shown that the following piecewise function combining two separate correlations
 ([Japas1989]_, [Harvey1996]_) can accurately predict the K-factor from room temperature up to the critical temperature

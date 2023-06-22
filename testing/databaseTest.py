@@ -89,11 +89,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             self.compat_func_name = test_name
             yield test, None
 
-            test = lambda x: self.kinetics_check_groups_nonidentical(family_name)
-            test_name = "Kinetics family {0}: groups are not identical?".format(family_name)
-            test.description = test_name
-            self.compat_func_name = test_name
-            yield test, family_name
+            if not family.auto_generated:
+                test = lambda x: self.kinetics_check_groups_nonidentical(family_name)
+                test_name = "Kinetics family {0}: groups are not identical?".format(family_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
 
             test = lambda x: self.kinetics_check_child_parent_relationships(family_name)
             test_name = "Kinetics family {0}: parent-child relationships are correct?".format(family_name)
@@ -115,6 +116,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
 
             test = lambda x: self.kinetics_check_reactant_and_product_template(family_name)
             test_name = "Kinetics family {0}: reactant and product templates correctly defined?".format(family_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, family_name
+
+            test = lambda x: self.kinetics_check_num_reactant_and_product(family_name)
+            test_name = "Kinetics family {0}: number of reactant and product defined?".format(family_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, family_name
@@ -390,7 +397,9 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
     def kinetics_check_surface_training_reactions_can_be_used(self, family_name):
         """Test that surface training reactions can be averaged and used for generating rate rules"""
         family = self.database.kinetics.families[family_name]
-        family.add_rules_from_training(thermo_database=self.database.thermo)
+        if not family.auto_generated:
+            family.add_rules_from_training(thermo_database=self.database.thermo)
+            family.fill_rules_by_averaging_up(verbose=True)
 
     def general_check_metal_database_has_catalyst_properties(self, library):
         """Test that each entry has catalyst properties"""
@@ -968,6 +977,20 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                     boo = True
 
             if boo:
+                raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
+
+    def kinetics_check_num_reactant_and_product(self, family_name):
+        """
+        This test checks that if the number of reactants and products are specified in the groups.py for
+        rate rules that are generated from the ATG.
+        """
+        family = self.database.kinetics.families[family_name]
+        if family.auto_generated:
+            if not getattr(family, 'reactant_num'):
+                logging.error(f'The number of reactants is not defined in the family {family_name}')
+            if not getattr(family, 'product_num'):
+                logging.error(f'The number of products is not defined in the family {family_name}')
+            if not getattr(family, 'reactant_num') or not getattr(family, 'product_num'):
                 raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_check_cd_atom_type(self, family_name):

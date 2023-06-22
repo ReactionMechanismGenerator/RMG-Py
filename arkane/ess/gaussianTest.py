@@ -232,6 +232,20 @@ class GaussianLogTest(unittest.TestCase):
         vlist, _ = log.load_scan_energies()
         self.assertEqual(len(vlist), 37)
 
+    def test_load_negative_frequency(self):
+        """
+        Load an imaginary frequency from a Gaussian output file.
+        """
+        log = GaussianLog(os.path.join(self.data_path, 'hr_scan_with_freq.log'))
+        imaginary_freq = log.load_negative_frequency()
+        self.assertEqual(imaginary_freq, -556.0124)
+
+        # verify that an error is raised if there are no negative frequencies
+        with self.assertRaises(LogError):
+            log = GaussianLog(os.path.join(self.data_path, 'rocbs-qb3_85_methanol.out'))
+            imaginary_freq = log.load_negative_frequency()
+
+
 ################################################################################
 
 

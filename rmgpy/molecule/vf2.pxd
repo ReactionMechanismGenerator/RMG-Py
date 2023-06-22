@@ -31,7 +31,7 @@ cdef class VF2:
 
     cdef Graph graph1, graph2
 
-    cpdef Graph graphA, graphB
+    cdef Graph graphA, graphB
     
     cdef dict initial_mapping
     cdef bint subgraph

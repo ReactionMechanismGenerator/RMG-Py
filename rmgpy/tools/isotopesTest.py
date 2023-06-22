@@ -65,8 +65,9 @@ def setUpModule():
 
     # Prepare the database by loading training reactions and averaging the rate rules
     for family in database.kinetics.families.values():
-        family.add_rules_from_training(thermo_database=database.thermo)
-        family.fill_rules_by_averaging_up(verbose=True)
+        if not family.auto_generated:
+            family.add_rules_from_training(thermo_database=database.thermo)
+            family.fill_rules_by_averaging_up(verbose=True)
 
 
 def tearDownModule():

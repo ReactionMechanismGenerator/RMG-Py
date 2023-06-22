@@ -240,7 +240,7 @@ class MetalDatabase(object):
             raise DatabaseError("Cannot search for nothing.")
         assert isinstance(metal, str)
 
-        facet = re.search('\d+', metal)
+        facet = re.search(r'\d+', metal)
 
         if facet is not None:
             try:

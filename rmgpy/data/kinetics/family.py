@@ -62,6 +62,7 @@ from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
 from rmgpy.tools.uncertainty import KineticParameterUncertainty
+from rmgpy.molecule.fragment import Fragment
 
 ################################################################################
 
@@ -72,17 +73,17 @@ class TemplateReaction(Reaction):
     to attributes inherited from :class:`Reaction`, this class includes the
     following attributes:
 
-    ============ ========================= =====================================
-    Attribute    Type                      Description
-    ============ ========================= =====================================
-    `family`     ``str``                   The kinetics family that the reaction was created from.
-    `estimator`  ``str``                   Whether the kinetics came from rate rules or group additivity.
-    `reverse`    :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
-    `is_forward`  ``bool``                 Whether the reaction was generated in the forward direction of the family.
-    `labeled_atoms`   ``dict``             Keys are 'reactants' or 'products', values are dictionaries.
-                                           Keys in the second level dictionary are template labels (e.g., '*1'),
-                                           values are the respective Atom object instance in the reactants.
-    ============ ========================= =====================================
+    =============== ========================= =====================================
+    Attribute       Type                      Description
+    =============== ========================= =====================================
+    `family`        ``str``                   The kinetics family that the reaction was created from.
+    `estimator`     ``str``                   Whether the kinetics came from rate rules or group additivity.
+    `reverse`       :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
+    `is_forward`    ``bool``                  Whether the reaction was generated in the forward direction of the family.
+    `labeled_atoms` ``dict``                  Keys are 'reactants' or 'products', values are dictionaries.
+                                              Keys in the second level dictionary are template labels (e.g., ``*1``),
+                                              values are the respective Atom object instance in the reactants.
+    =============== ========================= =====================================
     """
 
     def __init__(self,
@@ -1167,6 +1168,13 @@ class KineticsFamily(Database):
         For each reaction involving real reactants and products in the training
         set, add a rate rule for that reaction.
         """
+        if self.auto_generated:
+            warnings.warn(f'add_rules_from_training should be only called for non-ATG families, '
+                          f'but {self.label} is an ATG family. Skip this function call. '
+                          f'Calling add_rules_from_training on ATG families may be deprecated in RMG-Py 3.2',
+                          DeprecationWarning)
+            return
+
         try:
             depository = self.get_training_depository()
         except:
@@ -1354,7 +1362,12 @@ class KineticsFamily(Database):
         Fill in gaps in the kinetics rate rules by averaging child nodes
         recursively starting from the top level root template.
         """
-
+        if self.auto_generated:
+            warnings.warn(f'fill_rules_by_averaging_up should be only called for non-ATG families, '
+                          f'but {self.label} is an ATG family. Skip this function call. '
+                          f'Calling fill_rules_by_averaging_up on ATG families may be deprecated in RMG-Py 3.2',
+                          DeprecationWarning)
+            return
         self.rules.fill_rules_by_averaging_up(self.get_root_template(), {}, verbose)
 
     def apply_recipe(self, reactant_structures, forward=True, unique=True, relabel_atoms=True):
@@ -1376,9 +1389,11 @@ class KineticsFamily(Database):
         # Also copy structures so we don't modify the originals
         # Since the tagging has already occurred, both the reactants and the
         # products will have tags
-        if isinstance(reactant_structures[0], Group):
+        if any(isinstance(reactant, Fragment) for reactant in reactant_structures):
+            reactant_structure = Fragment()
+        elif isinstance(reactant_structures[0], Group):
             reactant_structure = Group()
-        else:
+        elif isinstance(reactant_structures[0], Molecule):
             reactant_structure = Molecule()
         for s in reactant_structures:
             reactant_structure = reactant_structure.merge(s.copy(deep=True))
@@ -1394,7 +1409,7 @@ class KineticsFamily(Database):
         product_structure = reactant_structure
 
         if not product_structure.props['validAromatic']:
-            if isinstance(product_structure, Molecule):
+            if isinstance(product_structure, Molecule) or isinstance(product_structure, Fragment):
                 # For molecules, kekulize the product to redistribute bonds appropriately
                 product_structure.kekulize()
             else:
@@ -1415,7 +1430,12 @@ class KineticsFamily(Database):
                 if atom.label != '':
                     atom_labels[atom.label] = atom
 
-            if label == 'h_abstraction':
+            if label in ('1,2_xy_interchange'):
+                # Labels for nodes are swapped
+                atom_labels['*1'].label = '*4'
+                atom_labels['*4'].label = '*1'
+
+            if label in ('h_abstraction','f_abstraction','cl_abstraction','br_abstraction'):
                 # '*2' is the H that migrates
                 # it moves from '*1' to '*3'
                 atom_labels['*1'].label = '*3'
@@ -1493,24 +1513,29 @@ class KineticsFamily(Database):
             product_num = self.product_num or len(template.products)
 
         # Split product structure into multiple species if necessary
-        product_structures = product_structure.split()
-
-        # Make sure we've made the expected number of products
-        if product_num != len(product_structures):
-            # We have a different number of products than expected by the template.
-            # By definition this means that the template is not a match, so
-            # we return None to indicate that we could not generate the product
-            # structures
-            # We need to think this way in order to distinguish between
-            # intermolecular and intramolecular versions of reaction families,
-            # which will have very different kinetics
-            # Unfortunately this may also squash actual errors with malformed
-            # reaction templates
-            return None
+        if (isinstance(product_structure, Group) and self.auto_generated and self.label in ["Intra_R_Add_Endocyclic","Intra_R_Add_Exocyclic"]):
+            product_structures = [product_structure]
+        else:
+            product_structures = product_structure.split()
+            # Make sure we've made the expected number of products
+            if product_num != len(product_structures):
+                # We have a different number of products than expected by the template.
+                # By definition this means that the template is not a match, so
+                # we return None to indicate that we could not generate the product
+                # structures
+                # We need to think this way in order to distinguish between
+                # intermolecular and intramolecular versions of reaction families,
+                # which will have very different kinetics
+                # Unfortunately this may also squash actual errors with malformed
+                # reaction templates
+                return None
 
         # Remove vdW bonds
         for struct in product_structures:
-            struct.remove_van_der_waals_bonds()
+            if isinstance(struct, Fragment):
+                continue
+            else:
+                struct.remove_van_der_waals_bonds()
 
         # Make sure we don't create a different net charge between reactants and products
         reactant_net_charge = product_net_charge = 0
@@ -1527,6 +1552,8 @@ class KineticsFamily(Database):
             # (families with charged substances), the charge of structures will be updated
             if isinstance(struct, Molecule):
                 struct.update(sort_atoms=not self.save_order)
+            elif isinstance(struct, Fragment):
+                struct.update()
             elif isinstance(struct, Group):
                 struct.reset_ring_membership()
                 if label in ['1,2_insertion_co', 'r_addition_com', 'co_disproportionation',
@@ -1957,7 +1984,7 @@ class KineticsFamily(Database):
         will return an empty list. Each item in the list of reactants should
         be a list of :class:`Molecule` objects, each representing a resonance
         structure of the species of interest.
-        
+
         This method returns all reactions, and degenerate reactions can then be
         found using `rmgpy.data.kinetics.common.find_degenerate_reactions`.
 
@@ -2133,10 +2160,6 @@ class KineticsFamily(Database):
                     # No reaction with these reactants in this template
                     return []
 
-                if adsorbate_molecules[0].contains_surface_site():
-                    # An adsorbed molecule can't adsorb again
-                    return []
-
                 for r in template_reactants:
                     if not r.is_surface_site():
                         template_adsorbate = r
@@ -2170,8 +2193,9 @@ class KineticsFamily(Database):
         elif len(reactants) == 3 and len(template_reactants) == 3:
             """
             This could be a surface reaction
-                A + X + X <=> BX + CX  (dissociative adsorption)
-                A + X + X <=> AXX      (bidentate adsorption)
+                A + X + X <=> BX + CX    (dissociative adsorption)
+                A + X + X <=> AXX        (bidentate adsorption)
+                ABX + X + X <=> AXX + BX (dissociation to bidentate)
             or a termolecular gas phase reaction
                 A + B + C <=> stuff
             We check the two scenarios in that order.
@@ -2199,10 +2223,6 @@ class KineticsFamily(Database):
                     adsorbate_molecules = reactants[0]
                 else:
                     # Three reactants not containing two surface sites
-                    return []
-
-                if adsorbate_molecules[0].contains_surface_site():
-                    # An adsorbed molecule can't adsorb again
                     return []
 
                 for r in template_reactants:
@@ -2378,7 +2398,7 @@ class KineticsFamily(Database):
             for reactant in reaction.reactants:
                 for product in reaction.products:
                     pairs.append([reactant, product])
-        elif self.label.lower() == 'h_abstraction':
+        elif self.label.lower() in ('h_abstraction','f_abstraction','cl_abstraction','br_abstraction'):
             # Hardcoding for hydrogen abstraction: pair the reactant containing
             # *1 with the product containing *3 and vice versa
             assert len(reaction.reactants) == len(reaction.products) == 2

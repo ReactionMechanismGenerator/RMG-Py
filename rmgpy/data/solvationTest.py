@@ -383,7 +383,7 @@ class TestSoluteDatabase(TestCase):
         solute_data = self.database.get_solute_data(species)
         solvent_data = self.database.get_solvent_data('benzene')
         T = 500 # in K
-        delG, Kfactor = self.database.get_T_dep_solvation_energy_from_LSER_298(solute_data, solvent_data, T)
+        delG, Kfactor, kH = self.database.get_T_dep_solvation_energy_from_LSER_298(solute_data, solvent_data, T)
         self.assertAlmostEqual(Kfactor, 0.403, 3)
         self.assertAlmostEqual(delG/1000, -13.59, 2) # delG is in J/mol
         # For temperature greater than or equal to the critical temperature of the solvent,
@@ -398,7 +398,7 @@ class TestSoluteDatabase(TestCase):
         delS298 = (delH298 - delG298) / 298 # in J/mol/K
         solvent_name = 'benzene'
         T = 500  # in K
-        delG, Kfactor = self.database.get_T_dep_solvation_energy_from_input_298(delG298, delH298, delS298, solvent_name, T)
+        delG, Kfactor, kH = self.database.get_T_dep_solvation_energy_from_input_298(delG298, delH298, delS298, solvent_name, T)
         self.assertAlmostEqual(Kfactor, 0.567, 3)
         self.assertAlmostEqual(delG / 1000, -12.18, 2)  # delG is in J/mol
         # test that it raises InputError for T above the critical temperature

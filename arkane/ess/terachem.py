@@ -346,7 +346,7 @@ class TeraChemLog(ESSAdapter):
         Return the imaginary frequency from a transition state frequency
         calculation in cm^-1.
         """
-        frequency = None
+        frequencies = []
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
@@ -356,12 +356,18 @@ class TeraChemLog(ESSAdapter):
                     # example:
                     # 'Mode  Eigenvalue(AU)  Frequency(cm-1)  Intensity(km/mol)   Vib.Temp(K)      ZPE(AU) ...'
                     # '  1     0.0331810528   170.5666870932i     52.2294230772  245.3982965841   0.0003885795 ...'
-                    frequency = -1 * float(line.split()[2][:-1])  # remove 'i'
+                    while 'i' in line:
+                        frequencies.append(-1 * float(line.split()[2][:-1]))  # remove 'i'
+                        line = f.readline()
                     break
                 f.readline()
-        if frequency is None:
+        if len(frequencies) == 1:
+            return frequencies[0]
+        elif len(frequencies) > 1:
+            logging.info('More than one imaginary frequency in TeraChem output file {0}.'.format(self.path))
+            return frequencies[0]
+        else:
             raise LogError(f'Unable to find imaginary frequency in TeraChem output file {self.path}.')
-        return frequency
 
     def load_scan_pivot_atoms(self):
         """Not implemented for TeraChem"""
