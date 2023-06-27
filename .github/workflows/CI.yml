@@ -12,6 +12,11 @@
 # them. These 'answers' are re-generated daily, or on any push to main, and retrieved whenever
 # a push is made to a non-main branch. The new proposed changes are referred to as "Dynamic".
 #
+# The `workflow_call` section below allows running this exact file from RMG-database, saving
+# us from having to maintain two copies of it. The only liens needed to facilitate that are
+# the `workflow_call` block in the `on` section and the passed `rmg-db-branch` so that we can
+# pull appropriately for RMG-database.
+#
 # Changelog:
 # 2023-04    - Jackson Burns - Added this header, regression tests, cleanup of action in 
 #              in general, and documentation throughout the file.
@@ -20,6 +25,7 @@
 # 2023-06-06 - added matrix build for libstdcxx-ng versions 12 and 13 on ubuntu. Only expect 12 to work.
 # 2023-06-07 - updated regression testing. Now fails if significant changes are detected.
 # 2023-06-15 - revert changes from 06-06, both now work
+# 2023-06-27 - add option to run from RMG-database with GitHub resuable workflows
 name: Continuous Integration
 
 on:
@@ -32,6 +38,14 @@ on:
   pull_request:
   # allow calling from other repos in the ReactionMechanismGenerator organization
   workflow_call:
+    inputs:
+      rmg-db-branch:
+        # if calling from RMG-database, must provide a branch
+        required: true
+        type: string
+        # if running on RMG-Py but Twin-PR with RMG-database, set the branch of RMG-database
+        # here
+        default: "main"
 
 # this prevents one PR from simultaneously running multiple runners, which will clog up the queue
 # and prevent other PRs from running the CI
@@ -49,15 +63,19 @@ jobs:
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: 
-      # Update this if needed to match a pull request on the RMG-database:
-      RMG_DATABASE_BRANCH: main
+      # if running on RMG-Py, set `default` on line ~50 to whatever branch of RMG-database you are developing on
+      RMG_DATABASE_BRANCH: ${{ inputs.rmg-db-branch }}
+
       # This is true only if this is a reference case for the regression testing:
       REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && matrix.os =='ubuntu-latest' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
     defaults:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout RMG-Py
+        uses: actions/checkout@v3
+        with:
+          repository: ReactionMechanismGenerator/RMG-Py
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
