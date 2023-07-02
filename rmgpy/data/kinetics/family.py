@@ -4688,8 +4688,10 @@ def average_kinetics(kinetics_list):
     if isinstance(kinetics_list[0], SurfaceChargeTransfer) or isinstance(kinetics_list[0], ArrheniusChargeTransfer):
         if electrons is None:
             electrons = kinetics_list[0].electrons.value_si
-        assert all(np.abs(k.V0.value_si) < 0.0001 for k in kinetics_list), [k.V0.value_si for k in kinetics_list]
-        assert all(np.abs(k.alpha.value_si - 0.5) < 0.001 for k in kinetics_list), [k.alpha for k in kinetics_list]
+        if not all(np.abs(k.V0.value_si) < 0.0001 for k in kinetics_list):
+            raise ValueError(f"Trying to average charge transfer rates with non-zero V0 values: {[k.V0.value_si for k in kinetics_list]}")
+        if not all(np.abs(k.alpha.value_si - 0.5) < 0.001 for k in kinetics_list):
+            raise ValueError(f"Trying to average charge transfer rates with alpha values not equal to 0.5: {[k.alpha for k in kinetics_list]}")
     V0 = 0.0
     count = 0
     for kinetics in kinetics_list:
