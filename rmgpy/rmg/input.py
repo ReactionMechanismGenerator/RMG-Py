@@ -39,7 +39,6 @@ from rmgpy.exceptions import DatabaseError, InputError
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.group import Group
 from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration
-from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.solver.liquid import LiquidReactor
@@ -48,7 +47,7 @@ from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.util import as_list
 from rmgpy.data.surface import MetalDatabase
-from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor, ConstantTPIdealGasReactor
+ 
 from rmgpy.data.vaporLiquidMassTransfer import liquidVolumetricMassTransferCoefficientPowerLaw
 from rmgpy.molecule.fragment import Fragment
 
@@ -433,7 +432,7 @@ def constant_V_ideal_gas_reactor(temperature,
                    terminationRateRatio=None,
                    balanceSpecies=None):
     logging.debug('Found ConstantVIdealGasReactor reaction system')
-
+    from rmgpy.rmg.reactors import ConstantVIdealGasReactor
     for key, value in initialMoleFractions.items():
         if not isinstance(value, list):
             initialMoleFractions[key] = float(value)
@@ -534,6 +533,7 @@ def constant_TP_ideal_gas_reactor(temperature,
                    terminationRateRatio=None,
                    balanceSpecies=None):
     logging.debug('Found ConstantTPIdealGasReactor reaction system')
+    from rmgpy.rmg.reactors import ConstantTPIdealGasReactor
 
     for key, value in initialMoleFractions.items():
         if not isinstance(value, list):
@@ -636,6 +636,7 @@ def liquid_cat_reactor(temperature,
                    terminationTime=None,
                    terminationRateRatio=None,
                    constantSpecies=[]):
+    from rmgpy.rmg.reactors import ConstantTLiquidSurfaceReactor
     for spec, conc in initialConcentrations.items():
         if not isinstance(conc, list):
             concentration = Quantity(conc)
@@ -731,7 +732,7 @@ def constant_T_V_liquid_reactor(temperature,
                     terminationRateRatio=None,
                     constantSpecies=[]):
 
-
+    from rmgpy.rmg.reactors import ConstantTVLiquidReactor
     ################################################# check input ########################################################
 
     if not isinstance(temperature, list):
@@ -1492,6 +1493,8 @@ def read_input_file(path, rmg0):
     `rmg`.
     """
     global rmg, species_dict, mol_to_frag
+    from rmgpy.rmg.model import CoreEdgeReactionModel
+    from rmgpy.rmg.reactors import Reactor
 
     full_path = os.path.abspath(os.path.expandvars(path))
     try:
