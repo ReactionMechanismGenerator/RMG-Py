@@ -37,12 +37,15 @@ from unittest import mock
 import numpy as np
 
 from rmgpy import settings
+import rmgpy.data.kinetics.family
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.thermo import ThermoDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
+from rmgpy.kinetics import Arrhenius
+
 
 
 ###################################################
@@ -1090,6 +1093,23 @@ multiplicity 2
         self.assertEqual([(label, str(atom)) for label, atom in
                           reaction_list_2[0].labeled_atoms['products'].items()],
                          [('*1', 'C'), ('*2', 'C.'), ('*3', 'H')])
+        
+    def test_average_kinetics(self):
+        """
+        Test that the average kinetics are calculated correctly
+        """
+        k1 = Arrhenius(A=(1e+13, 'cm^3/(mol*s)'), n=0, Ea=(0, 'kJ/mol'), T0=(1, 'K'))
+        k2 = Arrhenius(A=(4e+13, 'cm^3/(mol*s)'), n=1, Ea=(10, 'kJ/mol'), T0=(1, 'K'))
+        kav = rmgpy.data.kinetics.family.average_kinetics([k1, k2])
+        self.assertAlmostEqual(kav.A.value_si, 2.0e7, 2) # m3/mol/s
+        self.assertAlmostEqual(kav.n.value_si, 0.5, 6)
+        self.assertAlmostEqual(kav.Ea.value_si, 5.0e3, 2)
+        self.assertAlmostEqual(kav.T0.value_si, 1.0, 6)
+        self.assertEqual(kav.A.units, 'm^3/(mol*s)')
+        self.assertAlmostEqual(np.log(kav.get_rate_coefficient(300)),
+                               np.average([np.log(k1.get_rate_coefficient(300)), 
+                                           np.log(k2.get_rate_coefficient(300))]), 6)
+
 
 
 ################################################################################
