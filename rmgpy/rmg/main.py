@@ -52,7 +52,7 @@ from cantera import ck2yaml
 from scipy.optimize import brute
 
 import rmgpy.util as util
-from rmgpy.rmg.model import Species
+from rmgpy.species import Species
 from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy import settings
 from rmgpy.chemkin import ChemkinWriter
