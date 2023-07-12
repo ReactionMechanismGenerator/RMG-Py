@@ -96,6 +96,7 @@ class PDepReaction(rmgpy.reaction.Reaction):
                                self.specific_collider,
                                self.network,
                                self.kinetics,
+                               self.network_kinetics,
                                self.reversible,
                                self.transition_state,
                                self.duplicate,
