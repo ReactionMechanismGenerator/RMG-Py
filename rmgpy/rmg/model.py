@@ -1712,8 +1712,8 @@ class CoreEdgeReactionModel:
                                       kinetics=rxn.kinetics, duplicate=rxn.duplicate,
                                       reversible=rxn.reversible
                                       )
-            if r and getattr(r.kinetics, 'coverage_dependence', None):
             r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.new_reaction_list
+            if r is not None and getattr(rxn.kinetics, 'coverage_dependence', None):
                 self.process_coverage_dependence(r.kinetics)
             if not isNew:
                 logging.info("This library reaction was not new: {0}".format(rxn))
