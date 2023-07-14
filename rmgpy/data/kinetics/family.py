@@ -4693,6 +4693,12 @@ def average_kinetics(kinetics_list):
     logA /= count
     n /= count
     Ea /= count
+
+    ## The above could be replaced with something like:
+    # logA, n, Ea = np.mean([[np.log10(k.A.value_si),
+    #                   k.n.value_si,
+    #                   k.Ea.value_si] for k in kinetics_list], axis=1)
+
     Aunits = kinetics_list[0].A.units
     if Aunits in {'cm^3/(mol*s)', 'cm^3/(molecule*s)', 'm^3/(molecule*s)'}:
         Aunits = 'm^3/(mol*s)'
