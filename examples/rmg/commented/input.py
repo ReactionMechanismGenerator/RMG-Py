@@ -271,6 +271,8 @@ generatedSpeciesConstraints(
     maximumNitrogenAtoms=0,
     maximumSiliconAtoms=0,
     maximumSulfurAtoms=0,
+    maximumSurfaceSites=2, # maximum number of surface sites (for heterogeneous catalysis)
+    maximumSurfaceBondOrder=2, # maximum bond order of each surface sites (for heterogeneous catalysis)
     # max number of non-hydrogen atoms
     # maximumHeavyAtoms=20,
     # maximum radicals on a molecule
