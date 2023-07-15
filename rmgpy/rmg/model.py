@@ -1608,7 +1608,7 @@ class CoreEdgeReactionModel:
                                       kinetics=rxn.kinetics, duplicate=rxn.duplicate,
                                       reversible=rxn.reversible
                                       )
-            r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.newReactionlist
+            r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.new_reaction_list
             if getattr(r.kinetics, 'coverage_dependence', None):
                 self.process_coverage_dependence(r.kinetics)
             if not isNew:
@@ -1712,8 +1712,8 @@ class CoreEdgeReactionModel:
                                       kinetics=rxn.kinetics, duplicate=rxn.duplicate,
                                       reversible=rxn.reversible
                                       )
-            r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.newReactionlist
-            if getattr(r.kinetics, 'coverage_dependence', None):
+            r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.new_reaction_list
+            if r is not None and getattr(rxn.kinetics, 'coverage_dependence', None):
                 self.process_coverage_dependence(r.kinetics)
             if not isNew:
                 logging.info("This library reaction was not new: {0}".format(rxn))
@@ -1760,9 +1760,6 @@ class CoreEdgeReactionModel:
             self.add_species_to_edge(spec)
 
         for rxn in self.new_reaction_list:
-            # Note that we haven't actually evaluated any fluxes at this point
-            # Instead, we remove the comment below if the reaction is moved to
-            # the core later in the mechanism generation
             if not (self.pressure_dependence and rxn.elementary_high_p and rxn.is_unimolecular()
                     and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius) and \
                     (self.pressure_dependence.maximum_atoms is None or self.pressure_dependence.maximum_atoms >= \

@@ -459,6 +459,7 @@ class TestMomentOfInertia(unittest.TestCase):
         """Test that the correct mass/number/isotope is returned from get_element_mass"""
         self.assertEqual(get_element_mass(1), (1.00782503224, 1))  # test input by integer
         self.assertEqual(get_element_mass('Si'), (27.97692653465, 14))  # test string input and most common isotope
+        self.assertEqual(get_element_mass('SI'), (27.97692653465, 14))  # test string in all caps
         self.assertEqual(get_element_mass('C', 13), (13.00335483507, 6))  # test specific isotope
         self.assertEqual(get_element_mass('Bk'), (247.0703073, 97))  # test a two-element array (no isotope data)
 

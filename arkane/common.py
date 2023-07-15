@@ -390,7 +390,11 @@ def get_element_mass(input_element, isotope=None):
         number = input_element
     elif isinstance(input_element, str):
         symbol = input_element
-        number = next(key for key, value in symbol_by_number.items() if value == input_element)
+        try:
+            number = number_by_symbol[symbol]
+        except KeyError:
+            symbol = input_element.capitalize()
+            number = number_by_symbol[symbol]
 
     if symbol is None or number is None:
         raise ValueError('Could not identify element {0}'.format(input_element))
@@ -434,6 +438,7 @@ symbol_by_number = {1: 'H', 2: 'He', 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8
                     92: 'U', 93: 'Np', 94: 'Pu', 95: 'Am', 96: 'Cm', 97: 'Bk', 98: 'Cf', 99: 'Es', 100: 'Fm', 101: 'Md',
                     102: 'No', 103: 'Lr', 104: 'Rf', 105: 'Db', 106: 'Sg', 107: 'Bh', 108: 'Hs', 109: 'Mt', 110: 'Ds',
                     111: 'Rg', 112: 'Cn', 113: 'Nh', 114: 'Fl', 115: 'Mc', 116: 'Lv', 117: 'Ts', 118: 'Og'}
+number_by_symbol = {value: key for key, value in symbol_by_number.items()}
 
 # Structure of mass_by_symbol items: list(list(isotope1, mass1, weight1), list(isotope2, mass2, weight2), ...)
 mass_by_symbol = {

@@ -3621,9 +3621,12 @@ class KineticsFamily(Database):
         inds = inds.tolist()
         revinds = [inds.index(x) for x in np.arange(len(inputs))]
 
-        pool = mp.Pool(nprocs)
+        if nprocs > 1:
+            pool = mp.Pool(nprocs)
+            kinetics_list = np.array(pool.map(_make_rule, inputs[inds]))
+        else:
+            kinetics_list = np.array(list(map(_make_rule, inputs[inds])))
 
-        kinetics_list = np.array(pool.map(_make_rule, inputs[inds]))
         kinetics_list = kinetics_list[revinds]  # fix order
 
         for i, kinetics in enumerate(kinetics_list):
@@ -4670,3 +4673,61 @@ def _child_make_tree_nodes(family, child_conn, template_rxn_map, obj, T, nprocs,
                            extension_iter_max=extension_iter_max, extension_iter_item_cap=extension_iter_item_cap)
 
     child_conn.send(list(family.groups.entries.values()))
+
+def average_kinetics(kinetics_list):
+    """
+    Based on averaging log k.
+    Hence we average n, Ea, arithmetically, but we
+    average log A (geometric average)
+    """
+    logA = 0.0
+    n = 0.0
+    Ea = 0.0
+    count = 0
+    for kinetics in kinetics_list:
+        count += 1
+        logA += np.log10(kinetics.A.value_si)
+        n += kinetics.n.value_si
+        Ea += kinetics.Ea.value_si
+
+    logA /= count
+    n /= count
+    Ea /= count
+
+    ## The above could be replaced with something like:
+    # logA, n, Ea = np.mean([[np.log10(k.A.value_si),
+    #                   k.n.value_si,
+    #                   k.Ea.value_si] for k in kinetics_list], axis=1)
+
+    Aunits = kinetics_list[0].A.units
+    if Aunits in {'cm^3/(mol*s)', 'cm^3/(molecule*s)', 'm^3/(molecule*s)'}:
+        Aunits = 'm^3/(mol*s)'
+    elif Aunits in {'cm^6/(mol^2*s)', 'cm^6/(molecule^2*s)', 'm^6/(molecule^2*s)'}:
+        Aunits = 'm^6/(mol^2*s)'
+    elif Aunits in {'s^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)'}:
+        # they were already in SI
+        pass
+    elif Aunits in {'m^2/(mol*s)', 'cm^2/(mol*s)', 'm^2/(molecule*s)', 'cm^2/(molecule*s)'}:
+        # surface: bimolecular (Langmuir-Hinshelwood)
+        Aunits = 'm^2/(mol*s)'
+    elif Aunits in {'m^5/(mol^2*s)', 'cm^5/(mol^2*s)', 'm^5/(molecule^2*s)', 'cm^5/(molecule^2*s)'}:
+        # surface: dissociative adsorption
+        Aunits = 'm^5/(mol^2*s)'
+    elif Aunits == '':
+        # surface: sticking coefficient
+        pass
+    else:
+        raise Exception(f'Invalid units {Aunits} for averaging kinetics.')
+
+    if type(kinetics) not in [Arrhenius,]:
+        raise Exception(f'Invalid kinetics type {type(kinetics)!r} for {self!r}.')
+
+    if False:
+        pass
+    else:
+        averaged_kinetics = Arrhenius(
+            A=(10 ** logA, Aunits),
+            n=n,
+            Ea=(Ea * 0.001, "kJ/mol"),
+        )
+    return averaged_kinetics
