@@ -601,7 +601,9 @@ multiplicity 2
         """Test that we can handle bridged aromatics.
 
         This is affected by how we perceive rings. Using get_smallest_set_of_smallest_rings gives
-        non-deterministic output, so using get_all_cycles_of_size allows this test to pass."""
+        non-deterministic output, so using get_all_cycles_of_size allows this test to pass.
+
+        Update: Highly-strained fused rings are no longer considered aromatic."""
         mol = Molecule(smiles='c12c3cccc1c3ccc2')
         arom = Molecule().from_adjacency_list("""
 1  C u0 p0 c0 {2,B} {3,B} {8,B}
@@ -624,14 +626,16 @@ multiplicity 2
 
         out = generate_resonance_structures(mol)
 
-        self.assertEqual(len(out), 3)
-        self.assertTrue(arom.is_isomorphic(out[0]))
+        self.assertEqual(len(out), 1)
+        self.assertFalse(arom.is_isomorphic(out[0]))
 
     def test_polycyclic_aromatic_with_non_aromatic_ring(self):
         """Test that we can make aromatic resonance structures when there is a pseudo-aromatic ring.
 
         This applies in cases where RDKit misidentifies one ring as aromatic, but there are other
-        rings in the molecule that are actually aromatic."""
+        rings in the molecule that are actually aromatic.
+
+        Update: Highly-strained fused rings are no longer considered aromatic."""
         mol = Molecule(smiles='c1c2cccc1C(=C)C=[C]2')
         arom = Molecule().from_adjacency_list("""
 multiplicity 2
@@ -656,8 +660,8 @@ multiplicity 2
 
         out = generate_resonance_structures(mol)
 
-        self.assertEqual(len(out), 2)
-        self.assertTrue(arom.is_isomorphic(out[0]))
+        self.assertEqual(len(out), 5)
+        self.assertFalse(any(arom.is_isomorphic(res) for res in out))
 
     def test_polycyclic_aromatic_with_non_aromatic_ring2(self):
         """Test that we can make aromatic resonance structures when there is a pseudo-aromatic ring.
@@ -1164,9 +1168,11 @@ multiplicity 2
         self.assertEqual(len(out), 7)
         self.assertTrue(any([m.is_isomorphic(aromatic) for m in out]))
 
-    @work_in_progress
     def test_inconsistent_aromatic_structure_generation(self):
-        """Test an unusual case of inconsistent aromaticity perception."""
+        """Test an unusual case of inconsistent aromaticity perception.
+
+        Update: Highly-strained fused rings are no longer considered aromatic.
+        That prevents the inconsistent aromatic structure for this molecule."""
         mol1 = Molecule().from_adjacency_list("""
 multiplicity 2
 1  C u0 p0 c0 {2,S} {6,S} {11,S} {12,S}
