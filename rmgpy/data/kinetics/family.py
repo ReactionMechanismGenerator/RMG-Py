@@ -4512,6 +4512,16 @@ def average_kinetics(kinetics_list):
     logA = 0.0
     n = 0.0
     Ea = 0.0
+    alpha = 0.5
+    electrons = None
+    if isinstance(kinetics_list[0], (SurfaceChargeTransfer, ArrheniusChargeTransfer)):
+        if electrons is None:
+            electrons = kinetics_list[0].electrons.value_si
+        if not all(np.abs(k.V0.value_si) < 0.0001 for k in kinetics_list):
+            raise ValueError(f"Trying to average charge transfer rates with non-zero V0 values: {[k.V0.value_si for k in kinetics_list]}")
+        if not all(np.abs(k.alpha.value_si - 0.5) < 0.001 for k in kinetics_list):
+            raise ValueError(f"Trying to average charge transfer rates with alpha values not equal to 0.5: {[k.alpha for k in kinetics_list]}")
+    V0 = 0.0
     count = 0
     for kinetics in kinetics_list:
         count += 1
@@ -4521,6 +4531,7 @@ def average_kinetics(kinetics_list):
 
     logA /= count
     n /= count
+    alpha /= count
     Ea /= count
 
     ## The above could be replaced with something like:
@@ -4546,13 +4557,29 @@ def average_kinetics(kinetics_list):
         # surface: sticking coefficient
         pass
     else:
-        raise Exception(f'Invalid units {Aunits} for averaging kinetics.')
+        raise ValueError(f'Invalid units {Aunits} for averaging kinetics.')
 
-    if type(kinetics) not in [Arrhenius,]:
-        raise Exception(f'Invalid kinetics type {type(kinetics)!r} for {self!r}.')
+    if type(kinetics) not in {Arrhenius, SurfaceChargeTransfer, ArrheniusChargeTransfer}:
+        raise TypeError(f'Invalid kinetics type {type(kinetics)!r} for {self!r}.')
 
-    if False:
-        pass
+    if isinstance(kinetics, SurfaceChargeTransfer):
+        averaged_kinetics = SurfaceChargeTransfer(
+            A=(10 ** logA, Aunits),
+            n=n,
+            electrons=electrons,
+            alpha=alpha,
+            V0=(V0,'V'),
+            Ea=(Ea * 0.001, "kJ/mol"),
+            )
+    elif isinstance(kinetics, ArrheniusChargeTransfer):
+        averaged_kinetics = ArrheniusChargeTransfer(
+            A=(10 ** logA, Aunits),
+            n=n,
+            electrons=electrons,
+            alpha=alpha,
+            V0=(V0,'V'),
+            Ea=(Ea * 0.001, "kJ/mol"),
+            )
     else:
         averaged_kinetics = Arrhenius(
             A=(10 ** logA, Aunits),
