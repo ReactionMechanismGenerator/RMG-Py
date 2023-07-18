@@ -4571,11 +4571,13 @@ def _make_rule(rr):
     if n > 1:
         kin = arr().fit_to_reactions(rs, recipe=recipe)
     if n == 1 or kin.E0.value_si < 0.0:
+        # still run it through the averaging function when n=1 to standardize the units and run checks
         kin = average_kinetics([r.kinetics for r in rs])
-        #kin.comment = "Only one reaction or Arrhenius BM fit bad. Instead averaged from {} reactions.".format(n)
         if n == 1:
             kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
+            kin.comment = f"Only one reaction rate: {rs[0]!s}"
         else:
+            kin.comment = f"Blowers-Masel fit was bad (E0<0) so instead averaged from {n} reactions."
             dlnks = np.array([
                 np.log(
                         average_kinetics([r.kinetics for r in rs[list(set(range(len(rs))) - {i})]]).get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
@@ -4589,34 +4591,31 @@ def _make_rule(rr):
             mu = np.dot(ws, dlnks) / V1
             s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
             kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
-    else:
-        if n == 1:
-            kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
-        else:
-            if isinstance(rs[0].kinetics, Arrhenius):
-                dlnks = np.array([
-                    np.log(
-                        arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
-                .to_arrhenius(rxn.get_enthalpy_of_reaction(Tref))
-                .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
-            ) for i, rxn in enumerate(rs)
-        ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
-            else:
-                dlnks = np.array([
-                    np.log(
-                        arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
-                        .to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(Tref))
-                        .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
-                    ) for i, rxn in enumerate(rs)
-                ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
-            varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * 8.314 * Tref)) ** 2
-            # weighted average calculations
-            ws = 1.0 / varis
-            V1 = ws.sum()
-            V2 = (ws ** 2).sum()
-            mu = np.dot(ws, dlnks) / V1
-            s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
-            kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
+    else: # Blowers-Masel fit was good
+        if isinstance(rs[0].kinetics, Arrhenius):
+            dlnks = np.array([
+                np.log(
+                    arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
+                    .to_arrhenius(rxn.get_enthalpy_of_reaction(Tref))
+                    .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                ) for i, rxn in enumerate(rs)
+            ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
+        else: # SurfaceChargeTransfer or ArrheniusChargeTransfer
+            dlnks = np.array([
+                np.log(
+                    arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
+                    .to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(Tref))
+                    .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                ) for i, rxn in enumerate(rs)
+            ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
+        varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * 8.314 * Tref)) ** 2
+        # weighted average calculations
+        ws = 1.0 / varis
+        V1 = ws.sum()
+        V2 = (ws ** 2).sum()
+        mu = np.dot(ws, dlnks) / V1
+        s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
+        kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
 
     #site solute parameters
     site_datas = [get_site_solute_data(rxn) for rxn in rxns]
