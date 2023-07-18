@@ -559,7 +559,7 @@ cdef class ArrheniusBM(KineticsModel):
         """
         Return the rate coefficient in the appropriate combination of m^3,
         mol, and s at temperature `T` in K and enthalpy of reaction `dHrxn`
-        in J/mol.
+        in J/mol, evaluated at 298 K.
         """
         cdef double A, n, Ea
         Ea = self.get_activation_energy(dHrxn)
@@ -570,7 +570,7 @@ cdef class ArrheniusBM(KineticsModel):
     cpdef double get_activation_energy(self, double dHrxn) except -1:
         """
         Return the activation energy in J/mol corresponding to the given
-        enthalpy of reaction `dHrxn` in J/mol.
+        enthalpy of reaction `dHrxn` in J/mol, evaluated at 298 K.
         """
         cdef double w0, E0
         E0 = self._E0.value_si
@@ -586,7 +586,8 @@ cdef class ArrheniusBM(KineticsModel):
     cpdef Arrhenius to_arrhenius(self, double dHrxn):
         """
         Return an :class:`Arrhenius` instance of the kinetics model using the
-        given enthalpy of reaction `dHrxn` to determine the activation energy.
+        given enthalpy of reaction `dHrxn` (in J/mol, evaluated at 298 K)
+        to determine the activation energy.
         """
         return Arrhenius(
             A=self.A,
@@ -615,7 +616,6 @@ cdef class ArrheniusBM(KineticsModel):
             w0 = sum(w0s) / len(w0s)
 
         if len(rxns) == 1:
-            T = 1000.0
             rxn = rxns[0]
             dHrxn = rxn.get_enthalpy_of_reaction(298.0)
             A = rxn.kinetics.A.value_si
@@ -632,7 +632,7 @@ cdef class ArrheniusBM(KineticsModel):
             self.Tmin = rxn.kinetics.Tmin
             self.Tmax = rxn.kinetics.Tmax
             self.solute = None
-            self.comment = 'Fitted to {0} reaction at temperature: {1} K'.format(len(rxns), T)
+            self.comment = 'Fitted to 1 reaction.'
         else:
             # define optimization function
             def kfcn(xs, lnA, n, E0):

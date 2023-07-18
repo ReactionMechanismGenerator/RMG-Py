@@ -3658,13 +3658,13 @@ class KineticsFamily(Database):
                         if kinetics.E0.value_si < 0.0 or len(L) == 1:
                             kinetics = average_kinetics([r.kinetics for r in L])
                         else:
-                            kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(298.0))
+                            kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(298.))
                     else:
                         kinetics = ArrheniusChargeTransferBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
                         if kinetics.E0.value_si < 0.0 or len(L) == 1:
                             kinetics = average_kinetics([r.kinetics for r in L])
                         else:
-                            kinetics = kinetics.to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(298.0))
+                            kinetics = kinetics.to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(298.))
 
                     k = kinetics.get_rate_coefficient(T)
                     errors[rxn] = np.log(k / krxn)
@@ -4596,7 +4596,7 @@ def _make_rule(rr):
             dlnks = np.array([
                 np.log(
                     arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
-                    .to_arrhenius(rxn.get_enthalpy_of_reaction(Tref))
+                    .to_arrhenius(rxn.get_enthalpy_of_reaction(298.))
                     .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
                 ) for i, rxn in enumerate(rs)
             ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
@@ -4604,7 +4604,7 @@ def _make_rule(rr):
             dlnks = np.array([
                 np.log(
                     arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
-                    .to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(Tref))
+                    .to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(298.))
                     .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
                 ) for i, rxn in enumerate(rs)
             ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
