@@ -528,7 +528,13 @@ class TestArrheniusBM(unittest.TestCase):
         """
         Hrxn = -44000  # J/mol
         Ea = self.arrhenius_bm.get_activation_energy(Hrxn)
-        self.assertAlmostEqual(Ea, 95074, delta=1e1)
+
+        w = self.w0
+        E0 = self.E0
+        Vp = 2 * w * (w + E0)/(w - E0)
+        Ea_exp = (w + Hrxn/2) * (Vp - 2*w + Hrxn)**2 / (Vp*Vp - 4*w*w + Hrxn*Hrxn)
+
+        self.assertAlmostEqual(Ea, Ea_exp, delta=1e1)
 
 
 ################################################################################
