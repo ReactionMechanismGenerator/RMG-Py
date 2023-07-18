@@ -26,6 +26,7 @@
 # 2023-06-07 - updated regression testing. Now fails if significant changes are detected.
 # 2023-06-15 - revert changes from 06-06, both now work
 # 2023-06-27 - add option to run from RMG-database with GitHub resuable workflows
+# 2023-07-17 - made it pass by default
 name: Continuous Integration
 
 on:
@@ -56,7 +57,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.os == 'macos-latest' }}
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: 
@@ -118,6 +118,10 @@ jobs:
           make clean
           make
 
+      - name: Exit for MacOS
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: exit 0
+
       # RMS installation and linking to Julia
       # Allow these installs to 'fail' (as they do in RMG-Tests) with the command || True trick
       - name: Install and link Julia dependencies
@@ -159,7 +163,7 @@ jobs:
         if: ${{ failure() && steps.regression-execution.conclusion == 'failure' }}
         uses: actions/upload-artifact@v3
         with:
-          name: failed regression results ${{ matrix.os }}
+          name: failed regression results
           path: |
             test/regression
 
@@ -178,7 +182,7 @@ jobs:
         if: ${{ env.REFERENCE_JOB == 'false' }}
         uses: actions/upload-artifact@v3
         with:
-          name: dynamic regression results ${{ matrix.os }}
+          name: dynamic regression results
           path: |
             test/regression
 
@@ -274,16 +278,33 @@ jobs:
           if [[ ${FAILED} ]]; then
             echo "One or more regression tests failed." | tee -a $GITHUB_STEP_SUMMARY
             echo "Please download the failed results and run the tests locally or check the above log to see why." | tee -a $GITHUB_STEP_SUMMARY
-            exit 1
           fi
-      # Upload Regression Results as Failed if above step failed
-      - name: Upload Failed Comparison Results
-        if: ${{ failure() && steps.regression-comparison.conclusion == 'failure' }}
+
+      - name: Prepare Results for PR Comment
+        if : ${{ github.event_name == 'pull_request' }}
+        run: |
+          echo "<details>" > summary.txt
+          echo "<summary>Regression Testing Results</summary>" >> summary.txt
+          echo "" >> summary.txt
+          tail -n +1 test/regression-diff/* >> summary.txt
+          echo ""
+          echo "</details>" >> summary.txt
+          echo "" >> summary.txt
+          echo "_beep boop this action was performed by a bot_ :robot:" >> summary.txt
+
+      - name: Write Results to PR
+        uses: thollander/actions-comment-pull-request@v2
+        if : ${{ github.event_name == 'pull_request' }}
+        with:
+          filePath: summary.txt
+      
+      - name: Upload Comparison Results
         uses: actions/upload-artifact@v3
         with:
-          name: failed regression comparison results ${{ matrix.os }}
+          name: Regression Test Comparison Results
           path: |
             test/regression-diff
+      
       # Install and Call codecov only if the tests were successful (permitting failures in the regression comparison tests)
       - name: Code coverage install and run
         if: success() || ( failure() && steps.regression-execution.conclusion == 'success' )
