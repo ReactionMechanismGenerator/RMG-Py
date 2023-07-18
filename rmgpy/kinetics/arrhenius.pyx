@@ -605,6 +605,9 @@ cdef class ArrheniusBM(KineticsModel):
         """
         Fit an ArrheniusBM model to a list of reactions at the given temperatures,
         w0 must be either given or estimated using the family object
+
+        WARNING: there's a lot of code duplication with ArrheniusChargeTransferBM.fit_to_reactions
+                 so anything you change here you should probably change there too and vice versa!
         """
         assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
 
@@ -654,23 +657,22 @@ cdef class ArrheniusBM(KineticsModel):
                 for T in Ts:
                     xdata.append([T, rxn.get_enthalpy_of_reaction(298.0)])
                     ydata.append(np.log(rxn.get_rate_coefficient(T)))
-
                     sigmas.append(s / (8.314 * T))
 
             xdata = np.array(xdata)
             ydata = np.array(ydata)
 
             # fit parameters
-            boo = True
+            keep_trying = True
             xtol = 1e-8
             ftol = 1e-8
-            while boo:
-                boo = False
+            while keep_trying:
+                keep_trying = False
                 try:
                     params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[1.0, 1.0, w0 / 10.0], xtol=xtol, ftol=ftol)
                 except RuntimeError:
                     if xtol < 1.0:
-                        boo = True
+                        keep_trying = True
                         xtol *= 10.0
                         ftol *= 10.0
                     else:
@@ -687,6 +689,8 @@ cdef class ArrheniusBM(KineticsModel):
         # fill in parameters
         A_units = ['', 's^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)']
         order = len(rxns[0].reactants)
+        if order != 1 and rxn.is_surface_reaction():
+            raise NotImplementedError("Units not implemented for surface reactions.")
         self.A = (A, A_units[order])
 
         self.n = n
@@ -1534,8 +1538,11 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
 
     def fit_to_reactions(self, rxns, w0=None, recipe=None, Ts=None):
         """
-        Fit an ArrheniusBM model to a list of reactions at the given temperatures,
+        Fit an ArrheniusChargeTransferBM model to a list of reactions at the given temperatures,
         w0 must be either given or estimated using the family object
+
+        WARNING: there's a lot of code duplication with ArrheniusBM.fit_to_reactions
+                 so anything you change here you should probably change there too and vice versa!
         """
         assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
 
@@ -1588,23 +1595,22 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
                 for T in Ts:
                     xdata.append([T, rxn.get_enthalpy_of_reaction(298.0)])
                     ydata.append(np.log(rxn.get_rate_coefficient(T)))
-
                     sigmas.append(s / (8.314 * T))
 
             xdata = np.array(xdata)
             ydata = np.array(ydata)
 
             # fit parameters
-            boo = True
+            keep_trying = True
             xtol = 1e-8
             ftol = 1e-8
-            while boo:
-                boo = False
+            while keep_trying:
+                keep_trying = False
                 try:
                     params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[1.0, 1.0, w0 / 10.0], xtol=xtol, ftol=ftol)
                 except RuntimeError:
                     if xtol < 1.0:
-                        boo = True
+                        keep_trying = True
                         xtol *= 10.0
                         ftol *= 10.0
                     else:
@@ -1620,6 +1626,8 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
         # fill in parameters
         A_units = ['', 's^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)']
         order = len(rxns[0].reactants)
+        if order != 1 and rxn.is_surface_reaction():
+            raise NotImplementedError("Units not implemented for surface reactions")
         self.A = (A, A_units[order])
 
         self.n = n
