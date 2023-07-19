@@ -158,9 +158,8 @@ def checkSpecies(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig):
                                          'Cp(800K)', 'Cp(1000K)', 'Cp(1500K)')
                                  )
                     logger.error("|----------|----------|----------|----------|----------|----------|----------|----------|----------|")
-
                     [printThermo(spc) for spc in [spec1, spec2]]
-
+                    logger.error('')
                     if spec1.thermo.comment != spec2.thermo.comment:
                         [printSpeciesComments(spc) for spc in [spec1, spec2]]
                     else:
@@ -272,7 +271,7 @@ def printReactionComments(rxn):
 
 
 def printSpeciesComments(spc):
-    logger.error('thermo: {}'.format(spc.thermo.comment))
+    logger.error('thermo: {}'.format(spc.thermo.comment.replace('\n',' ')))
 
 
 def printKinetics(rxn):
