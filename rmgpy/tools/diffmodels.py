@@ -352,8 +352,8 @@ def execute(chemkin1, species_dict1, thermo1, chemkin2, species_dict2, thermo2, 
         model2.species, model2.reactions = load_chemkin_file(
             chemkin2, species_dict2, thermo_path=thermo2, surface_path=surface_path2)
     except KeyError:
-        if 'surface_path1' in kwargs or 'surface_path2':
-            logging.warning('please specify 2 surface input files if you are comparing a surface mechanism')
+        if 'surface_path1' in kwargs or 'surface_path2' in kwargs:
+            logging.warning('Please specify 2 surface input files if you are comparing a surface mechanism')
 
         model1.species, model1.reactions = load_chemkin_file(chemkin1, species_dict1, thermo_path=thermo1)
         model2.species, model2.reactions = load_chemkin_file(chemkin2, species_dict2, thermo_path=thermo2)

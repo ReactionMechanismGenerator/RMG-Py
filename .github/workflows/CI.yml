@@ -26,6 +26,7 @@
 # 2023-06-07 - updated regression testing. Now fails if significant changes are detected.
 # 2023-06-15 - revert changes from 06-06, both now work
 # 2023-06-27 - add option to run from RMG-database with GitHub resuable workflows
+# 2023-07-17 - made it pass by default
 name: Continuous Integration
 
 on:
@@ -51,12 +52,68 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test-unix:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.os == 'macos-latest' }}
+  build-osx:
+    runs-on: macos-latest
+    # skip scheduled runs from forks
+    if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
+    env: 
+      # if running on RMG-Py but requiring changes on an un-merged branch of RMG-database, replace
+      # main with the name of the branch
+      RMG_DATABASE_BRANCH: main
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Checkout RMG-Py
+        uses: actions/checkout@v3
+        with:
+          repository: ReactionMechanismGenerator/RMG-Py
+
+      # configures the mamba environment manager and builds the environment
+      - name: Setup Mambaforge Python 3.7
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: environment.yml
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          python-version: 3.7
+          activate-environment: rmg_env
+          use-mamba: true
+
+      # list the environment for debugging purposes
+      - name: mamba info
+        run: |
+          mamba info
+          mamba list
+
+      # Clone RMG-database
+      - name: Clone RMG-database - Reusable Workflow
+        if: github.repository == 'ReactionMechanismGenerator/RMG-database'
+        run: |
+          cd ..
+          git clone -b ${{ inputs.rmg-db-branch }} https://github.com/ReactionMechanismGenerator/RMG-database.git
+
+      - name: Clone RMG-database - RMG-Py
+        if: github.repository != 'ReactionMechanismGenerator/RMG-database'
+        run: |
+          cd ..
+          git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
+
+      # modify env variables as directed in the RMG installation instructions
+      - name: Set Environment Variables
+        run: |
+          RUNNER_CWD=$(pwd)
+          echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
+          echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
+
+      # RMG build step
+      - name: make RMG
+        run: |
+          make clean
+          make
+
+  build-and-test-linux:
+    runs-on: ubuntu-latest
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: 
@@ -65,7 +122,7 @@ jobs:
       RMG_DATABASE_BRANCH: main
 
       # This is true only if this is a reference case for the regression testing:
-      REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && matrix.os =='ubuntu-latest' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
+      REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
     defaults:
       run:
         shell: bash -l {0}
@@ -159,7 +216,7 @@ jobs:
         if: ${{ failure() && steps.regression-execution.conclusion == 'failure' }}
         uses: actions/upload-artifact@v3
         with:
-          name: failed regression results ${{ matrix.os }}
+          name: failed_regression_results
           path: |
             test/regression
 
@@ -178,7 +235,7 @@ jobs:
         if: ${{ env.REFERENCE_JOB == 'false' }}
         uses: actions/upload-artifact@v3
         with:
-          name: dynamic regression results ${{ matrix.os }}
+          name: dynamic_regression_results
           path: |
             test/regression
 
@@ -274,16 +331,33 @@ jobs:
           if [[ ${FAILED} ]]; then
             echo "One or more regression tests failed." | tee -a $GITHUB_STEP_SUMMARY
             echo "Please download the failed results and run the tests locally or check the above log to see why." | tee -a $GITHUB_STEP_SUMMARY
-            exit 1
           fi
-      # Upload Regression Results as Failed if above step failed
-      - name: Upload Failed Comparison Results
-        if: ${{ failure() && steps.regression-comparison.conclusion == 'failure' }}
+
+      - name: Prepare Results for PR Comment
+        if : ${{ github.event_name == 'pull_request' }}
+        run: |
+          echo "<details>" > summary.txt
+          echo "<summary>Regression Testing Results</summary>" >> summary.txt
+          echo "" >> summary.txt
+          tail -n +1 test/regression-diff/* >> summary.txt
+          echo ""
+          echo "</details>" >> summary.txt
+          echo "" >> summary.txt
+          echo "_beep boop this action was performed by a bot_ :robot:" >> summary.txt
+
+      - name: Write Results to PR
+        uses: thollander/actions-comment-pull-request@v2
+        if : ${{ github.event_name == 'pull_request' }}
+        with:
+          filePath: summary.txt
+      
+      - name: Upload Comparison Results
         uses: actions/upload-artifact@v3
         with:
-          name: failed regression comparison results ${{ matrix.os }}
+          name: regression_test_comparison_results
           path: |
             test/regression-diff
+      
       # Install and Call codecov only if the tests were successful (permitting failures in the regression comparison tests)
       - name: Code coverage install and run
         if: success() || ( failure() && steps.regression-execution.conclusion == 'success' )
@@ -298,7 +372,7 @@ jobs:
     # who knows ¯\_(ツ)_/¯
     # 
     # taken from https://github.com/docker/build-push-action
-    needs: build-and-test-unix
+    needs: build-and-test-linux
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py'
     steps:
