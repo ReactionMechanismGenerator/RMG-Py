@@ -269,6 +269,7 @@ jobs:
         env:
           REFERENCE: stable_regression_results
         run: |
+          exec 2> >(tee -a regression.stderr >&2) 1> >(tee -a regression.stdout)
           mkdir -p "test/regression-diff"
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation;
           do
@@ -284,6 +285,7 @@ jobs:
             echo -n 'Current:   '
             grep "Memory used:" test/regression/"$regr_test"/RMG.log | tail -1
 
+            echo "<details><summary>"
             # Compare the edge and core
             if python-jl scripts/checkModels.py \
                 "$regr_test-core" \
@@ -292,12 +294,15 @@ jobs:
                 test/regression/"$regr_test"/chemkin/chem_annotated.inp \
                 test/regression/"$regr_test"/chemkin/species_dictionary.txt
             then
-              echo "$regr_test Passed Core Comparison"
+              echo "$regr_test Passed Core Comparison ✅"
             else
-              echo "$regr_test Failed Core Comparison" | tee -a $GITHUB_STEP_SUMMARY
+              echo "$regr_test Failed Core Comparison ❌" | tee -a $GITHUB_STEP_SUMMARY
               cp "$regr_test-core.log" test/regression-diff/
               export FAILED=Yes
             fi
+            echo "</summary>"
+            cat "$regr_test-core.log"
+            echo "</details>\n<details><summary>"
             if python-jl scripts/checkModels.py \
                 "$regr_test-edge" \
                 $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated.inp \
@@ -305,59 +310,64 @@ jobs:
                 test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
                 test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt
             then
-              echo "$regr_test Passed Edge Comparison"
+              echo "$regr_test Passed Edge Comparison ✅"
             else
-              echo "$regr_test Failed Edge Comparison" | tee -a $GITHUB_STEP_SUMMARY
+              echo "$regr_test Failed Edge Comparison ❌" | tee -a $GITHUB_STEP_SUMMARY
               cp "$regr_test-edge.log" test/regression-diff/
               export FAILED=Yes
             fi
+            echo "</summary>"
+            cat "$regr_test-edge.log"
+            echo "</details>\n"
 
             # Check for Regression between Reference and Dynamic (skip superminimal)
             if [ -f test/regression/"$regr_test"/regression_input.py ];
             then
+              echo "<details>"
               if python-jl rmgpy/tools/regression.py \
                 test/regression/"$regr_test"/regression_input.py \
                 $REFERENCE/"$regr_test"/chemkin \
                 test/regression/"$regr_test"/chemkin
               then
-                echo "$regr_test Passed Observable Testing"
+                echo "<summary>$regr_test Passed Observable Testing ✅</summary>"
               else
-                echo "$regr_test Failed Observable Testing" | tee -a $GITHUB_STEP_SUMMARY
+                echo "<summary>$regr_test Failed Observable Testing ❌</summary>" | tee -a $GITHUB_STEP_SUMMARY
                 export FAILED=Yes
               fi
+              echo "</details>"
             fi
             echo ""
           done
           if [[ ${FAILED} ]]; then
-            echo "One or more regression tests failed." | tee -a $GITHUB_STEP_SUMMARY
-            echo "Please download the failed results and run the tests locally or check the above log to see why." | tee -a $GITHUB_STEP_SUMMARY
+            echo "⚠️ One or more regression tests failed." | tee -a $GITHUB_STEP_SUMMARY >&2
+            echo "Please download the failed results and run the tests locally or check the log to see why." | tee -a $GITHUB_STEP_SUMMARY >&2
           fi
 
       - name: Prepare Results for PR Comment
         if : ${{ github.event_name == 'pull_request' }}
         run: |
-          echo "<details>" > summary.txt
-          echo "<summary>Regression Testing Results</summary>" >> summary.txt
-          echo "" >> summary.txt
-          tail -n +1 test/regression-diff/* >> summary.txt
-          echo ""
+          echo "## Regression Testing Results" > summary.txt
+          cat regression.stderr >> summary.txt
+          echo "<details>" >> summary.txt
+          echo "<summary>Detailed regression test results.</summary>" >> summary.txt
+          cat regression.stdout >> summary.txt
           echo "</details>" >> summary.txt
           echo "" >> summary.txt
-          echo "_beep boop this action was performed by a bot_ :robot:" >> summary.txt
+          echo "_beep boop this comment was written by a bot_ :robot:" >> summary.txt
 
       - name: Write Results to PR
         uses: thollander/actions-comment-pull-request@v2
         if : ${{ github.event_name == 'pull_request' }}
         with:
           filePath: summary.txt
-      
+
       - name: Upload Comparison Results
         uses: actions/upload-artifact@v3
         with:
           name: regression_test_comparison_results
           path: |
             test/regression-diff
-      
+
       # Install and Call codecov only if the tests were successful (permitting failures in the regression comparison tests)
       - name: Code coverage install and run
         if: success() || ( failure() && steps.regression-execution.conclusion == 'success' )
@@ -370,7 +380,7 @@ jobs:
     # technically we could live without the 'needs' since _in theory_
     # nothing will ever be merged into main that fails the tests, but
     # who knows ¯\_(ツ)_/¯
-    # 
+    #
     # taken from https://github.com/docker/build-push-action
     needs: build-and-test-linux
     runs-on: ubuntu-latest
