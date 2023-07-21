@@ -274,7 +274,7 @@ jobs:
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation;
           do
             echo ""
-            echo "## Regression test $regr_test:"
+            echo "### Regression test $regr_test:"
             # Memory Usage and Execution Time
             echo -n 'Reference: '
             grep "Execution time" $REFERENCE/"$regr_test"/RMG.log | tail -1
@@ -285,7 +285,7 @@ jobs:
             echo -n 'Current:   '
             grep "Memory used:" test/regression/"$regr_test"/RMG.log | tail -1
 
-            echo "<details><summary>"
+            echo "<details>"
             # Compare the edge and core
             if python-jl scripts/checkModels.py \
                 "$regr_test-core" \
@@ -294,15 +294,16 @@ jobs:
                 test/regression/"$regr_test"/chemkin/chem_annotated.inp \
                 test/regression/"$regr_test"/chemkin/species_dictionary.txt
             then
-              echo "$regr_test Passed Core Comparison ✅"
+              echo "<summary>$regr_test Passed Core Comparison ✅</summary>"
             else
-              echo "$regr_test Failed Core Comparison ❌"
+              echo "<summary>$regr_test Failed Core Comparison ❌</summary>"
               cp "$regr_test-core.log" test/regression-diff/
               export FAILED=Yes
             fi
-            echo "</summary>"
+            echo "" # blank line so next block is interpreted as markdown
             cat "$regr_test-core.log"
-            echo "</details>\n<details><summary>"
+            echo "</details>"
+            echo "<details>"
             if python-jl scripts/checkModels.py \
                 "$regr_test-edge" \
                 $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated.inp \
@@ -310,15 +311,15 @@ jobs:
                 test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
                 test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt
             then
-              echo "$regr_test Passed Edge Comparison ✅"
+              echo "<summary>$regr_test Passed Edge Comparison ✅</summary>"
             else
-              echo "$regr_test Failed Edge Comparison ❌"
+              echo "<summary>$regr_test Failed Edge Comparison ❌</summary>"
               cp "$regr_test-edge.log" test/regression-diff/
               export FAILED=Yes
             fi
-            echo "</summary>"
+            echo "" # blank line so next block is interpreted as markdown
             cat "$regr_test-edge.log"
-            echo "</details>\n"
+            echo "</details>"
 
             # Check for Regression between Reference and Dynamic (skip superminimal)
             if [ -f test/regression/"$regr_test"/regression_input.py ];
