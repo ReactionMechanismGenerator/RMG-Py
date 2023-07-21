@@ -1,0 +1,37 @@
+# testing.yml
+# to test the regression log annotator
+name: Testing
+
+on:
+  pull_request:
+
+# this prevents one PR from simultaneously running multiple runners, which will clog up the queue
+# and prevent other PRs from running the CI
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test-linux:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Prepare Results for PR Comment
+        if : ${{ github.event_name == 'pull_request' }}
+        run: |
+          echo "# Hurrah it works" > summary.txt
+          echo "<details>" >> summary.txt
+          echo "<summary>Fake Regression Testing Results</summary>" >> summary.txt
+          echo " Foo bar yadda yadda" >> summary.txt
+          echo "</details>" >> summary.txt
+          echo "_beep boop this action was performed by a bot_ :robot:" >> summary.txt
+          cat summary.txt > $GITHUB_STEP_SUMMARY
+
+      - name: Upload regression summary artifact
+        uses: actions/upload-artifact@v3
+        if : ${{ github.event_name == 'pull_request' }}
+        with:
+          name: regression_summary
+          path: summary.txt
