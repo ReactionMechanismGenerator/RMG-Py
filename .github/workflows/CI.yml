@@ -354,6 +354,7 @@ jobs:
           echo "</details>" >> summary.txt
           echo "" >> summary.txt
           echo "_beep boop this comment was written by a bot_ :robot:" >> summary.txt
+          cat summary.txt > $GITHUB_STEP_SUMMARY
 
       - name: Write Results to PR
         uses: thollander/actions-comment-pull-request@v2
