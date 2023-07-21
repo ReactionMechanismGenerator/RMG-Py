@@ -296,7 +296,7 @@ jobs:
             then
               echo "$regr_test Passed Core Comparison ✅"
             else
-              echo "$regr_test Failed Core Comparison ❌" | tee -a $GITHUB_STEP_SUMMARY
+              echo "$regr_test Failed Core Comparison ❌"
               cp "$regr_test-core.log" test/regression-diff/
               export FAILED=Yes
             fi
@@ -312,7 +312,7 @@ jobs:
             then
               echo "$regr_test Passed Edge Comparison ✅"
             else
-              echo "$regr_test Failed Edge Comparison ❌" | tee -a $GITHUB_STEP_SUMMARY
+              echo "$regr_test Failed Edge Comparison ❌"
               cp "$regr_test-edge.log" test/regression-diff/
               export FAILED=Yes
             fi
@@ -331,7 +331,7 @@ jobs:
               then
                 echo "<summary>$regr_test Passed Observable Testing ✅</summary>"
               else
-                echo "<summary>$regr_test Failed Observable Testing ❌</summary>" | tee -a $GITHUB_STEP_SUMMARY
+                echo "<summary>$regr_test Failed Observable Testing ❌</summary>"
                 export FAILED=Yes
               fi
               echo "</details>"
