@@ -1,0 +1,14 @@
+name: Update PR on CI complete
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - complete
+
+jobs:
+  on_pr_finish:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "${{ toJson(github.event) }}"

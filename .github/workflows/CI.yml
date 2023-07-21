@@ -336,20 +336,24 @@ jobs:
       - name: Prepare Results for PR Comment
         if : ${{ github.event_name == 'pull_request' }}
         run: |
-          echo "<details>" > summary.txt
-          echo "<summary>Regression Testing Results</summary>" >> summary.txt
-          echo "" >> summary.txt
-          tail -n +1 test/regression-diff/* >> summary.txt
-          echo ""
-          echo "</details>" >> summary.txt
-          echo "" >> summary.txt
-          echo "_beep boop this action was performed by a bot_ :robot:" >> summary.txt
+          mkdir -p artifacts
+          echo "<details>" > artifacts/message.md
+          echo "<summary>Regression Testing Results</summary>" >> artifacts/message.md
+          echo "" >> artifacts/message.md
+          tail -n +1 test/regression-diff/* >> artifacts/message.md
+          echo "" >> artifacts/message.md
+          echo "</details>" >> artifacts/message.md
+          echo "" >> artifacts/message.md
+          echo "_beep boop this action was performed by a bot_ :robot:" >> artifacts/message.md
 
-      - name: Write Results to PR
-        uses: thollander/actions-comment-pull-request@v2
-        if : ${{ github.event_name == 'pull_request' }}
+      
+
+      - name: Save PR message as artifact
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v1
         with:
-          filePath: summary.txt
+            name: pr_message
+            path: artifacts
       
       - name: Upload Comparison Results
         uses: actions/upload-artifact@v3
