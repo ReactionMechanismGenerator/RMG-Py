@@ -18,12 +18,12 @@ jobs:
       - name: main
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          WORKFLOW_NAME: "CI"
+          WORKFLOW_NAME: "Continuous Integration"
           # the name of the artifact whose content comment published by PR. Must have a single markdown file inside.
           MSG_ARTIFACT_NAME: "pr_message"
           # How far back to look for finished runs, in minutes.
           # Set to 10-20 minutes higher than cron's job frequency set above.
-          IGNORE_RUNS_OLDER_THAN: 6000  # 30
+          IGNORE_RUNS_OLDER_THAN: 30
           # How far back to look for updated pull requests, in minutes.
           # Should be bigger than IGNORE_RUNS_OLDER_THAN by the maximum time a pull request jobs may take
           IGNORE_PRS_OLDER_THAN: 80

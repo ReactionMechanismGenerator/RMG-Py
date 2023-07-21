@@ -3,9 +3,9 @@ name: Update PR on CI complete
 on:
   workflow_run:
     workflows:
-      - CI
+      - Continuous Integration
     types:
-      - complete
+      - completed
 
 jobs:
   on_pr_finish:
