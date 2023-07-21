@@ -357,6 +357,13 @@ jobs:
           echo "_beep boop this comment was written by a bot_ :robot:" >> summary.txt
           cat summary.txt > $GITHUB_STEP_SUMMARY
 
+      - name: Upload regression summary artifact
+        uses: actions/upload-artifact@v3
+        if : ${{ github.event_name == 'pull_request' }}
+        with:
+          name: regression_summary
+          path: summary.txt
+
       - name: Write Results to PR
         uses: thollander/actions-comment-pull-request@v2
         if : ${{ github.event_name == 'pull_request' }}
