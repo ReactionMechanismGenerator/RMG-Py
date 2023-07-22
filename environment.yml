@@ -63,7 +63,7 @@ dependencies:
   - pyparsing
   - pyyaml
   - networkx
-  - nose
+  - pytest
   - matplotlib >=1.5
   - mpmath
   - pandas
