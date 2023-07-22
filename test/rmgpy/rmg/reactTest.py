@@ -29,7 +29,7 @@
 
 import itertools
 import os
-import unittest
+
 
 import numpy as np
 
@@ -50,7 +50,7 @@ TESTFAMILIES = [
 ]
 
 
-class TestReact(unittest.TestCase):
+class TestReact:
     def setUp(self):
         """
         A method that is run before each unit test in this class.
@@ -63,9 +63,7 @@ class TestReact(unittest.TestCase):
         path = os.path.join(settings["database.directory"])
 
         # forbidden structure loading
-        self.rmg.database.load_forbidden_structures(
-            os.path.join(path, "forbiddenStructures.py")
-        )
+        self.rmg.database.load_forbidden_structures(os.path.join(path, "forbiddenStructures.py"))
         # kinetics family loading
         self.rmg.database.load_kinetics(
             os.path.join(path, "kinetics"),
@@ -84,11 +82,9 @@ class TestReact(unittest.TestCase):
         spc_tuples = [((spc_a, spc), ["H_Abstraction"]) for spc in spcs]
 
         reaction_list = list(itertools.chain.from_iterable(react(spc_tuples, procnum)))
-        self.assertIsNotNone(reaction_list)
-        self.assertEqual(len(reaction_list), 3)
-        self.assertTrue(
-            all([isinstance(rxn, TemplateReaction) for rxn in reaction_list])
-        )
+        assert reaction_list is not None
+        assert len(reaction_list) == 3
+        assert all([isinstance(rxn, TemplateReaction) for rxn in reaction_list])
 
     def test_react_parallel(self):
         """
@@ -104,11 +100,9 @@ class TestReact(unittest.TestCase):
         spc_tuples = [((spc_a, spc), ["H_Abstraction"]) for spc in spcs]
 
         reaction_list = list(itertools.chain.from_iterable(react(spc_tuples, procnum)))
-        self.assertIsNotNone(reaction_list)
-        self.assertEqual(len(reaction_list), 3)
-        self.assertTrue(
-            all([isinstance(rxn, TemplateReaction) for rxn in reaction_list])
-        )
+        assert reaction_list is not None
+        assert len(reaction_list) == 3
+        assert all([isinstance(rxn, TemplateReaction) for rxn in reaction_list])
 
         # Reset module level maxproc back to default
         rmgpy.rmg.main.maxproc = 1
@@ -127,18 +121,14 @@ class TestReact(unittest.TestCase):
         ]
 
         n = len(spcs)
-        reaction_list, spc_tuples = react_all(
-            spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum
-        )
-        self.assertIsNotNone(reaction_list)
-        self.assertEqual(len(reaction_list), 34)
-        self.assertEqual(len(spc_tuples), 34)
+        reaction_list, spc_tuples = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
+        assert reaction_list is not None
+        assert len(reaction_list) == 34
+        assert len(spc_tuples) == 34
 
         flat_rxn_list = list(itertools.chain.from_iterable(reaction_list))
-        self.assertEqual(len(flat_rxn_list), 44)
-        self.assertTrue(
-            all([isinstance(rxn, TemplateReaction) for rxn in flat_rxn_list])
-        )
+        assert len(flat_rxn_list) == 44
+        assert all([isinstance(rxn, TemplateReaction) for rxn in flat_rxn_list])
 
     def test_react_all_parallel(self):
         """
@@ -157,18 +147,14 @@ class TestReact(unittest.TestCase):
         ]
 
         n = len(spcs)
-        reaction_list, spc_tuples = react_all(
-            spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum
-        )
-        self.assertIsNotNone(reaction_list)
-        self.assertEqual(len(reaction_list), 94)
-        self.assertEqual(len(spc_tuples), 94)
+        reaction_list, spc_tuples = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
+        assert reaction_list is not None
+        assert len(reaction_list) == 94
+        assert len(spc_tuples) == 94
 
         flat_rxn_list = list(itertools.chain.from_iterable(reaction_list))
-        self.assertEqual(len(flat_rxn_list), 44)
-        self.assertTrue(
-            all([isinstance(rxn, TemplateReaction) for rxn in flat_rxn_list])
-        )
+        assert len(flat_rxn_list) == 44
+        assert all([isinstance(rxn, TemplateReaction) for rxn in flat_rxn_list])
 
         # Reset module level maxproc back to default
         rmgpy.rmg.main.maxproc = 1

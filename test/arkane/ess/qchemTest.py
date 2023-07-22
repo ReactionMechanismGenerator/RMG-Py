@@ -32,7 +32,7 @@ This module contains unit tests of the :mod:`arkane.ess.qchem` module.
 """
 
 import os
-import unittest
+
 
 from rmgpy.statmech import (
     IdealGasTranslation,
@@ -44,11 +44,10 @@ from rmgpy.statmech import (
 
 from arkane.ess.qchem import QChemLog
 from arkane.exceptions import LogError
+import pytest
 
-################################################################################
 
-
-class QChemLogTest(unittest.TestCase):
+class QChemLogTest:
     """
     Contains unit tests for the qchem module, used for parsing QChem log files.
     """
@@ -58,16 +57,14 @@ class QChemLogTest(unittest.TestCase):
         """
         A method that is run before all unit tests in this class.
         """
-        cls.data_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "data", "qchem"
-        )
+        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "qchem")
 
     def test_check_for_errors(self):
         """
         Uses a QChem log file that reached to maximum number of optimization cycles
         to test if errors are properly parsed.
         """
-        with self.assertRaises(LogError):
+        with pytest.raises(LogError):
             QChemLog(os.path.join(self.data_path, "formyl_azide.out"))
 
     def test_number_of_atoms_from_qchem_log(self):
@@ -76,9 +73,9 @@ class QChemLogTest(unittest.TestCase):
         number of atoms can be properly read.
         """
         log = QChemLog(os.path.join(self.data_path, "npropyl.out"))
-        self.assertEqual(log.get_number_of_atoms(), 10)
+        assert log.get_number_of_atoms() == 10
         log = QChemLog(os.path.join(self.data_path, "co.out"))
-        self.assertEqual(log.get_number_of_atoms(), 2)
+        assert log.get_number_of_atoms() == 2
 
     def test_energy_from_qchem_log(self):
         """
@@ -86,11 +83,11 @@ class QChemLogTest(unittest.TestCase):
         molecular energies can be properly read.
         """
         log = QChemLog(os.path.join(self.data_path, "npropyl.out"))
-        self.assertAlmostEqual(log.load_energy(), -310896203.5432524, delta=1e-7)
+        assert abs(log.load_energy() - -310896203.5432524) < 1e-7
         log = QChemLog(os.path.join(self.data_path, "co.out"))
-        self.assertAlmostEqual(log.load_energy(), -297402545.0217114, delta=1e-7)
+        assert abs(log.load_energy() - -297402545.0217114) < 1e-7
         log = QChemLog(os.path.join(self.data_path, "CH4_sp.out"))
-        self.assertAlmostEqual(log.load_energy(), -106356735.53661588, delta=1e-7)
+        assert abs(log.load_energy() - -106356735.53661588) < 1e-7
 
     def test_zero_point_energy_from_qchem_log(self):
         """
@@ -98,13 +95,11 @@ class QChemLogTest(unittest.TestCase):
         zero point energies can be properly read.
         """
         log = QChemLog(os.path.join(self.data_path, "npropyl.out"))
-        self.assertAlmostEqual(log.load_zero_point_energy(), 228785.304, delta=1e-3)
+        assert abs(log.load_zero_point_energy() - 228785.304) < 1e-3
         log = QChemLog(os.path.join(self.data_path, "co.out"))
-        self.assertAlmostEqual(log.load_zero_point_energy(), 13476.664, delta=1e-3)
-        log = QChemLog(
-            os.path.join(self.data_path, "formyl_azide.out"), check_for_errors=False
-        )
-        self.assertAlmostEqual(log.load_zero_point_energy(), 83014.744, delta=1e-3)
+        assert abs(log.load_zero_point_energy() - 13476.664) < 1e-3
+        log = QChemLog(os.path.join(self.data_path, "formyl_azide.out"), check_for_errors=False)
+        assert abs(log.load_zero_point_energy() - 83014.744) < 1e-3
 
     def test_load_vibrations_from_qchem_log(self):
         """
@@ -113,12 +108,12 @@ class QChemLogTest(unittest.TestCase):
         """
         log = QChemLog(os.path.join(self.data_path, "npropyl.out"))
         conformer, unscaled_frequencies = log.load_conformer()
-        self.assertEqual(len(conformer.modes[2]._frequencies.value), 24)
-        self.assertEqual(conformer.modes[2]._frequencies.value[5], 881.79)
+        assert len(conformer.modes[2]._frequencies.value) == 24
+        assert conformer.modes[2]._frequencies.value[5] == 881.79
         log = QChemLog(os.path.join(self.data_path, "co.out"))
         conformer, unscaled_frequencies = log.load_conformer()
-        self.assertEqual(len(conformer.modes[2]._frequencies.value), 1)
-        self.assertEqual(conformer.modes[2]._frequencies.value, 2253.16)
+        assert len(conformer.modes[2]._frequencies.value) == 1
+        assert conformer.modes[2]._frequencies.value == 2253.16
 
     def test_load_npropyl_modes_from_qchem_log(self):
         """
@@ -128,34 +123,10 @@ class QChemLogTest(unittest.TestCase):
         log = QChemLog(os.path.join(self.data_path, "npropyl.out"))
         conformer, unscaled_frequencies = log.load_conformer()
 
-        self.assertTrue(
-            len(
-                [
-                    mode
-                    for mode in conformer.modes
-                    if isinstance(mode, IdealGasTranslation)
-                ]
-            )
-            == 1
-        )
-        self.assertTrue(
-            len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)])
-            == 1
-        )
-        self.assertTrue(
-            len(
-                [
-                    mode
-                    for mode in conformer.modes
-                    if isinstance(mode, HarmonicOscillator)
-                ]
-            )
-            == 1
-        )
-        self.assertTrue(
-            len([mode for mode in conformer.modes if isinstance(mode, HinderedRotor)])
-            == 0
-        )
+        assert len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1
+        assert len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1
+        assert len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1
+        assert len([mode for mode in conformer.modes if isinstance(mode, HinderedRotor)]) == 0
 
     def test_spin_multiplicity_from_qchem_log(self):
         """
@@ -164,10 +135,10 @@ class QChemLogTest(unittest.TestCase):
         """
         log = QChemLog(os.path.join(self.data_path, "npropyl.out"))
         conformer, unscaled_frequencies = log.load_conformer()
-        self.assertEqual(conformer.spin_multiplicity, 2)
+        assert conformer.spin_multiplicity == 2
         log = QChemLog(os.path.join(self.data_path, "co.out"))
         conformer, unscaled_frequencies = log.load_conformer()
-        self.assertEqual(conformer.spin_multiplicity, 1)
+        assert conformer.spin_multiplicity == 1
 
     def test_load_co_modes_from_qchem_log(self):
         """
@@ -178,38 +149,11 @@ class QChemLogTest(unittest.TestCase):
         conformer, unscaled_frequencies = log.load_conformer()
         E0 = log.load_energy()
 
-        self.assertTrue(
-            len(
-                [
-                    mode
-                    for mode in conformer.modes
-                    if isinstance(mode, IdealGasTranslation)
-                ]
-            )
-            == 1
-        )
-        self.assertTrue(
-            len([mode for mode in conformer.modes if isinstance(mode, LinearRotor)])
-            == 1
-        )
-        self.assertTrue(
-            len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)])
-            == 0
-        )
-        self.assertTrue(
-            len(
-                [
-                    mode
-                    for mode in conformer.modes
-                    if isinstance(mode, HarmonicOscillator)
-                ]
-            )
-            == 1
-        )
-        self.assertTrue(
-            len([mode for mode in conformer.modes if isinstance(mode, HinderedRotor)])
-            == 0
-        )
+        assert len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1
+        assert len([mode for mode in conformer.modes if isinstance(mode, LinearRotor)]) == 1
+        assert len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 0
+        assert len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1
+        assert len([mode for mode in conformer.modes if isinstance(mode, HinderedRotor)]) == 0
 
     def test_load_negative_frequency(self):
         """
@@ -217,9 +161,9 @@ class QChemLogTest(unittest.TestCase):
         """
         log = QChemLog(os.path.join(self.data_path, "ts004630.log"))
         imaginary_freq = log.load_negative_frequency()
-        self.assertEqual(imaginary_freq, -647.47)
+        assert imaginary_freq == -647.47
 
         # verify that an error is raised if there are no negative frequencies
-        with self.assertRaises(LogError):
+        with pytest.raises(LogError):
             log = QChemLog(os.path.join(self.data_path, "npropyl.out"))
             imaginary_freq = log.load_negative_frequency()

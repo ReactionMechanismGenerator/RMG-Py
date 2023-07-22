@@ -28,7 +28,7 @@
 ###############################################################################
 
 import os
-import unittest
+
 
 import numpy as np
 
@@ -44,10 +44,7 @@ from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
 
 
-################################################################################
-
-
-class SimpleReactorCheck(unittest.TestCase):
+class SimpleReactorCheck:
     def test_solve(self):
         """
         Test the simple batch reactor with a simple kinetic model. Here we
@@ -129,9 +126,7 @@ class SimpleReactorCheck(unittest.TestCase):
             termination=[],
         )
 
-        rxn_system.initialize_model(
-            core_species, core_reactions, edge_species, edge_reactions
-        )
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
 
@@ -158,29 +153,13 @@ class SimpleReactorCheck(unittest.TestCase):
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                species_rates[i, 0],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                -species_rates[i, 1],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                -species_rates[i, 2],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                species_rates[i, 3],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
+            assert abs(reaction_rates[i, 0] - species_rates[i, 0]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 2]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - species_rates[i, 3]) < 1e-6 * reaction_rates[i, 0]
 
         # Check that we've reached equilibrium
-        self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
+        assert abs(reaction_rates[-1, 0] - 0.0) < 1e-2
 
         # Unit test for the jacobian function:
         # Solve a reaction system and check if the analytical jacobian matches the finite difference jacobian
@@ -316,12 +295,8 @@ class SimpleReactorCheck(unittest.TestCase):
                 n_sims=1,
                 termination=[],
             )
-            rxn_system0.initialize_model(
-                core_species, core_reactions, edge_species, edge_reactions
-            )
-            dydt0 = rxn_system0.residual(
-                0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape)
-            )[0]
+            rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+            dydt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
             num_core_species = len(core_species)
             dN = 0.000001 * sum(rxn_system0.y)
             dN_array = dN * np.eye(num_core_species)
@@ -329,11 +304,7 @@ class SimpleReactorCheck(unittest.TestCase):
             dydt = []
             for i in range(num_core_species):
                 rxn_system0.y[i] += dN
-                dydt.append(
-                    rxn_system0.residual(
-                        0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape)
-                    )[0]
-                )
+                dydt.append(rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0])
                 rxn_system0.y[i] -= dN  # reset y to original y0
 
             # Let the solver compute the jacobian
@@ -343,11 +314,7 @@ class SimpleReactorCheck(unittest.TestCase):
             for i in range(num_core_species):
                 for j in range(num_core_species):
                     jacobian[i, j] = (dydt[j][i] - dydt0[i]) / dN
-                    self.assertAlmostEqual(
-                        jacobian[i, j],
-                        solver_jacobian[i, j],
-                        delta=abs(1e-4 * jacobian[i, j]),
-                    )
+                    assert abs(jacobian[i, j] - solver_jacobian[i, j]) < abs(1e-4 * jacobian[i, j])
 
         # print 'Solver jacobian'
         # print solver_jacobian
@@ -405,21 +372,15 @@ class SimpleReactorCheck(unittest.TestCase):
             n_sims=1,
             termination=[],
         )
-        rxn_system0.initialize_model(
-            core_species, core_reactions, edge_species, edge_reactions
-        )
-        dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[
-            0
-        ]
+        rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+        dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
         solver_dfdk = rxn_system0.compute_rate_derivative()
         # print 'Solver d(dy/dt)/dk'
         # print solver_dfdk
 
         integration_time = 1e-8
         rxn_system0.termination.append(TerminationTime((integration_time, "s")))
-        model_settings = ModelSettings(
-            tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0
-        )
+        model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0)
         simulator_settings = SimulatorSettings()
         rxn_system0.simulate(
             core_species,
@@ -438,9 +399,7 @@ class SimpleReactorCheck(unittest.TestCase):
 
         for i in range(len(rxn_list)):
             k0 = rxn_list[i].get_rate_coefficient(T, P)
-            rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si * (
-                1 + 1e-3
-            )
+            rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si * (1 + 1e-3)
             dk = rxn_list[i].get_rate_coefficient(T, P) - k0
 
             rxn_system = SimpleReactor(
@@ -456,19 +415,13 @@ class SimpleReactorCheck(unittest.TestCase):
                 n_sims=1,
                 termination=[],
             )
-            rxn_system.initialize_model(
-                core_species, core_reactions, edge_species, edge_reactions
-            )
+            rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-            dfdt = rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))[
-                0
-            ]
+            dfdt = rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))[0]
             dfdk[:, i] = (dfdt - dfdt0) / dk
 
             rxn_system.termination.append(TerminationTime((integration_time, "s")))
-            model_settings = ModelSettings(
-                tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0
-            )
+            model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0)
             simulator_settings = SimulatorSettings()
 
             rxn_system.simulate(
@@ -482,15 +435,11 @@ class SimpleReactorCheck(unittest.TestCase):
                 simulator_settings=simulator_settings,
             )
 
-            rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si / (
-                1 + 1e-3
-            )  # reset A factor
+            rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si / (1 + 1e-3)  # reset A factor
 
         for i in range(num_core_species):
             for j in range(len(rxn_list)):
-                self.assertAlmostEqual(
-                    dfdk[i, j], solver_dfdk[i, j], delta=abs(1e-3 * dfdk[i, j])
-                )
+                assert abs(dfdk[i, j] - solver_dfdk[i, j]) < abs(1e-3 * dfdk[i, j])
 
         # print 'Numerical d(dy/dt)/dk'
         # print dfdk
@@ -514,9 +463,7 @@ class SimpleReactorCheck(unittest.TestCase):
         """
         Test the solver's ability to simulate a model with collision efficiencies.
         """
-        chem_file = os.path.join(
-            os.path.dirname(__file__), "files", "collider_model", "chem.inp"
-        )
+        chem_file = os.path.join(os.path.dirname(__file__), "files", "collider_model", "chem.inp")
         dictionary_file = os.path.join(
             os.path.dirname(__file__),
             "files",
@@ -585,7 +532,7 @@ class SimpleReactorCheck(unittest.TestCase):
             ]
         )
         for i in range(len(simulated_mole_fracs)):
-            self.assertAlmostEqual(simulated_mole_fracs[i], expected_mole_fracs[i])
+            assert round(abs(simulated_mole_fracs[i] - expected_mole_fracs[i]), 7) == 0
 
         # Advance to time = 5 s
         rxn_system.advance(5)
@@ -609,7 +556,7 @@ class SimpleReactorCheck(unittest.TestCase):
             ]
         )
         for i in range(len(simulated_mole_fracs)):
-            self.assertAlmostEqual(simulated_mole_fracs[i], expected_mole_fracs[i])
+            assert round(abs(simulated_mole_fracs[i] - expected_mole_fracs[i]), 7) == 0
 
         # Try a new set of conditions
 
@@ -657,15 +604,13 @@ class SimpleReactorCheck(unittest.TestCase):
             ]
         )
         for i in range(len(simulated_mole_fracs)):
-            self.assertAlmostEqual(simulated_mole_fracs[i], expected_mole_fracs[i])
+            assert round(abs(simulated_mole_fracs[i] - expected_mole_fracs[i]), 7) == 0
 
     def test_specific_collider_model(self):
         """
         Test the solver's ability to simulate a model with specific third body species collision efficiencies.
         """
-        chem_file = os.path.join(
-            os.path.dirname(__file__), "files", "specific_collider_model", "chem.inp"
-        )
+        chem_file = os.path.join(os.path.dirname(__file__), "files", "specific_collider_model", "chem.inp")
         dictionary_file = os.path.join(
             os.path.dirname(__file__),
             "files",
@@ -729,7 +674,7 @@ class SimpleReactorCheck(unittest.TestCase):
         )
         # order: Ar, N2, O2, H, CH3, CH4
         for i in range(len(simulated_mole_fracs)):
-            self.assertAlmostEqual(simulated_mole_fracs[i], expected_mole_fracs[i], 6)
+            assert round(abs(simulated_mole_fracs[i] - expected_mole_fracs[i]), 6) == 0
 
         # Advance to time = 5 s
         rxn_system.advance(5)
@@ -747,7 +692,7 @@ class SimpleReactorCheck(unittest.TestCase):
         )
         # order: Ar, N2, O2, H, CH3, CH4
         for i in range(len(simulated_mole_fracs)):
-            self.assertAlmostEqual(simulated_mole_fracs[i], expected_mole_fracs[i], 6)
+            assert round(abs(simulated_mole_fracs[i] - expected_mole_fracs[i]), 6) == 0
 
         # Try a new set of conditions
         T = 850  # K
@@ -788,4 +733,4 @@ class SimpleReactorCheck(unittest.TestCase):
         )
         # order: Ar, N2, O2, H, CH3, CH4
         for i in range(len(simulated_mole_fracs)):
-            self.assertAlmostEqual(simulated_mole_fracs[i], expected_mole_fracs[i], 6)
+            assert round(abs(simulated_mole_fracs[i] - expected_mole_fracs[i]), 6) == 0

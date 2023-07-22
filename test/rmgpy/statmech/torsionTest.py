@@ -31,16 +31,14 @@
 This script contains unit tests of the :mod:`rmgpy.statmech.torsion` module.
 """
 
-import unittest
+
 import numpy as np
 
 import rmgpy.constants as constants
 from rmgpy.statmech.torsion import FreeRotor, HinderedRotor
 
-################################################################################
 
-
-class TestHinderedRotor(unittest.TestCase):
+class TestHinderedRotor:
     """
     Contains unit tests of the HinderedRotor class.
     """
@@ -77,9 +75,9 @@ class TestHinderedRotor(unittest.TestCase):
         """
         b_exp = 10.7535
         b_act = self.mode.rotationalConstant.value_si
-        self.assertAlmostEqual(b_exp, b_act, 4)
+        assert round(abs(b_exp - b_act), 4) == 0
         b_act2 = self.freemode.rotationalConstant.value_si
-        self.assertAlmostEqual(b_exp, b_act2, 4)
+        assert round(abs(b_exp - b_act2), 4) == 0
 
     def test_set_rotational_constant(self):
         """
@@ -92,8 +90,8 @@ class TestHinderedRotor(unittest.TestCase):
         i_exp = 0.5 * self.inertia
         i_act = self.mode.inertia.value_si * constants.Na * 1e23
         i_act2 = self.freemode.inertia.value_si * constants.Na * 1e23
-        self.assertAlmostEqual(i_exp, i_act, 4)
-        self.assertAlmostEqual(i_exp, i_act2, 4)
+        assert round(abs(i_exp - i_act), 4) == 0
+        assert round(abs(i_exp - i_act2), 4) == 0
 
     def test_get_potential_cosine(self):
         """
@@ -120,12 +118,10 @@ class TestHinderedRotor(unittest.TestCase):
         Test the FreeRotor.get_partition_function() method
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        q_exp_list = np.sqrt(
-            8 * np.pi**3 * constants.kB * t_list * self.freemode.inertia.value_si
-        ) / (self.symmetry * constants.h)
+        q_exp_list = np.sqrt(8 * np.pi**3 * constants.kB * t_list * self.freemode.inertia.value_si) / (self.symmetry * constants.h)
         for temperature, q_exp in zip(t_list, q_exp_list):
             q_act = self.freemode.get_partition_function(temperature)
-            self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
+            assert abs(q_exp - q_act) < 1e-4 * q_exp
 
     def test_get_partition_function_classical_cosine(self):
         """
@@ -138,7 +134,7 @@ class TestHinderedRotor(unittest.TestCase):
         q_exp_list = np.array([0.741953, 1.30465, 2.68553, 3.88146, 4.91235])
         for temperature, q_exp in zip(t_list, q_exp_list):
             q_act = self.mode.get_partition_function(temperature)
-            self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
+            assert abs(q_exp - q_act) < 1e-4 * q_exp
 
     def test_get_partition_function_classical_fourier(self):
         """
@@ -150,7 +146,7 @@ class TestHinderedRotor(unittest.TestCase):
         q_exp_list = np.array([0.745526, 1.30751, 2.68722, 3.88258, 4.91315])
         for temperature, q_exp in zip(t_list, q_exp_list):
             q_act = self.mode.get_partition_function(temperature)
-            self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
+            assert abs(q_exp - q_act) < 1e-4 * q_exp
 
     def test_get_partition_function_quantum_cosine(self):
         """
@@ -163,7 +159,7 @@ class TestHinderedRotor(unittest.TestCase):
         q_exp_list = np.array([1.39947, 1.94793, 3.30171, 4.45856, 5.45188])
         for temperature, q_exp in zip(t_list, q_exp_list):
             q_act = self.mode.get_partition_function(temperature)
-            self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
+            assert abs(q_exp - q_act) < 1e-4 * q_exp
 
     def test_get_partition_function_quantum_fourier(self):
         """
@@ -175,7 +171,7 @@ class TestHinderedRotor(unittest.TestCase):
         q_exp_list = np.array([1.39364, 1.94182, 3.29509, 4.45205, 5.44563])
         for temperature, q_exp in zip(t_list, q_exp_list):
             q_act = self.mode.get_partition_function(temperature)
-            self.assertAlmostEqual(q_exp, q_act, delta=5e-4 * q_exp)
+            assert abs(q_exp - q_act) < 5e-4 * q_exp
 
     def test_get_heat_capacity_free(self):
         """
@@ -185,7 +181,7 @@ class TestHinderedRotor(unittest.TestCase):
         t_list = np.array([300, 500, 1000, 1500, 2000])
         for temperature in t_list:
             cv_act = self.freemode.get_heat_capacity(temperature)
-            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
+            assert abs(cv_exp - cv_act) < 1e-4 * cv_exp
 
     def test_get_heat_capacity_classical_cosine(self):
         """
@@ -195,12 +191,10 @@ class TestHinderedRotor(unittest.TestCase):
         self.mode.quantum = False
         self.mode.fourier = None
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = (
-            np.array([1.01741, 0.951141, 0.681919, 0.589263, 0.552028]) * constants.R
-        )
+        cv_exp_list = np.array([1.01741, 0.951141, 0.681919, 0.589263, 0.552028]) * constants.R
         for temperature, cv_exp in zip(t_list, cv_exp_list):
             cv_act = self.mode.get_heat_capacity(temperature)
-            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
+            assert abs(cv_exp - cv_act) < 1e-4 * cv_exp
 
     def test_get_heat_capacity_classical_fourier(self):
         """
@@ -209,12 +203,10 @@ class TestHinderedRotor(unittest.TestCase):
         """
         self.mode.quantum = False
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = (
-            np.array([1.17682, 1.01369, 0.698588, 0.596797, 0.556293]) * constants.R
-        )
+        cv_exp_list = np.array([1.17682, 1.01369, 0.698588, 0.596797, 0.556293]) * constants.R
         for temperature, cv_exp in zip(t_list, cv_exp_list):
             cv_act = self.mode.get_heat_capacity(temperature)
-            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
+            assert abs(cv_exp - cv_act) < 1e-4 * cv_exp
 
     def test_get_heat_capacity_quantum_cosine(self):
         """
@@ -224,12 +216,10 @@ class TestHinderedRotor(unittest.TestCase):
         self.mode.quantum = True
         self.mode.fourier = None
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = (
-            np.array([1.01271, 0.945341, 0.684451, 0.591949, 0.554087]) * constants.R
-        )
+        cv_exp_list = np.array([1.01271, 0.945341, 0.684451, 0.591949, 0.554087]) * constants.R
         for temperature, cv_exp in zip(t_list, cv_exp_list):
             cv_act = self.mode.get_heat_capacity(temperature)
-            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
+            assert abs(cv_exp - cv_act) < 1e-4 * cv_exp
 
     def test_get_heat_capacity_quantum_fourier(self):
         """
@@ -238,12 +228,10 @@ class TestHinderedRotor(unittest.TestCase):
         """
         self.mode.quantum = True
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = (
-            np.array([1.01263, 0.946618, 0.685345, 0.592427, 0.554374]) * constants.R
-        )
+        cv_exp_list = np.array([1.01263, 0.946618, 0.685345, 0.592427, 0.554374]) * constants.R
         for temperature, cv_exp in zip(t_list, cv_exp_list):
             cv_act = self.mode.get_heat_capacity(temperature)
-            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-3 * cv_exp)
+            assert abs(cv_exp - cv_act) < 1e-3 * cv_exp
 
     def test_get_enthalpy_free(self):
         """
@@ -253,7 +241,7 @@ class TestHinderedRotor(unittest.TestCase):
         h_exp_list = constants.R * t_list / 2.0
         for temperature, h_exp in zip(t_list, h_exp_list):
             h_act = self.freemode.get_enthalpy(temperature)
-            self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
+            assert abs(h_exp - h_act) < 1e-4 * h_exp
 
     def test_get_enthalpy_classical_cosine(self):
         """
@@ -263,14 +251,10 @@ class TestHinderedRotor(unittest.TestCase):
         self.mode.quantum = False
         self.mode.fourier = None
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = (
-            np.array([1.09556, 1.09949, 0.962738, 0.854617, 0.784333])
-            * constants.R
-            * t_list
-        )
+        h_exp_list = np.array([1.09556, 1.09949, 0.962738, 0.854617, 0.784333]) * constants.R * t_list
         for temperature, h_exp in zip(t_list, h_exp_list):
             h_act = self.mode.get_enthalpy(temperature)
-            self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
+            assert abs(h_exp - h_act) < 1e-4 * h_exp
 
     def test_get_enthalpy_classical_fourier(self):
         """
@@ -279,14 +263,10 @@ class TestHinderedRotor(unittest.TestCase):
         """
         self.mode.quantum = False
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = (
-            np.array([1.08882, 1.09584, 0.961543, 0.854054, 0.784009])
-            * constants.R
-            * t_list
-        )
+        h_exp_list = np.array([1.08882, 1.09584, 0.961543, 0.854054, 0.784009]) * constants.R * t_list
         for temperature, h_exp in zip(t_list, h_exp_list):
             h_act = self.mode.get_enthalpy(temperature)
-            self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
+            assert abs(h_exp - h_act) < 1e-4 * h_exp
 
     def test_get_enthalpy_quantum_cosine(self):
         """
@@ -296,14 +276,10 @@ class TestHinderedRotor(unittest.TestCase):
         self.mode.quantum = True
         self.mode.fourier = None
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = (
-            np.array([0.545814, 0.727200, 0.760918, 0.717496, 0.680767])
-            * constants.R
-            * t_list
-        )
+        h_exp_list = np.array([0.545814, 0.727200, 0.760918, 0.717496, 0.680767]) * constants.R * t_list
         for temperature, h_exp in zip(t_list, h_exp_list):
             h_act = self.mode.get_enthalpy(temperature)
-            self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
+            assert abs(h_exp - h_act) < 1e-4 * h_exp
 
     def test_get_enthalpy_quantum_fourier(self):
         """
@@ -312,27 +288,18 @@ class TestHinderedRotor(unittest.TestCase):
         """
         self.mode.quantum = True
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = (
-            np.array([0.548251, 0.728974, 0.762396, 0.718702, 0.681764])
-            * constants.R
-            * t_list
-        )
+        h_exp_list = np.array([0.548251, 0.728974, 0.762396, 0.718702, 0.681764]) * constants.R * t_list
         for temperature, h_exp in zip(t_list, h_exp_list):
             h_act = self.mode.get_enthalpy(temperature)
-            self.assertAlmostEqual(h_exp, h_act, delta=2e-3 * h_exp)
+            assert abs(h_exp - h_act) < 2e-3 * h_exp
 
     def test_get_entropy_free(self):
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        pf = np.array(
-            [
-                self.freemode.get_partition_function(temperature)
-                for temperature in t_list
-            ]
-        )
+        pf = np.array([self.freemode.get_partition_function(temperature) for temperature in t_list])
         s_exp_list = constants.R * (np.log(pf) + 0.5)
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.freemode.get_entropy(temperature)
-            self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
+            assert abs(s_exp - s_act) < 1e-4 * s_exp
 
     def test_get_entropy_classical_cosine(self):
         """
@@ -342,12 +309,10 @@ class TestHinderedRotor(unittest.TestCase):
         self.mode.quantum = False
         self.mode.fourier = None
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = (
-            np.array([0.797089, 1.36543, 1.95062, 2.21083, 2.37608]) * constants.R
-        )
+        s_exp_list = np.array([0.797089, 1.36543, 1.95062, 2.21083, 2.37608]) * constants.R
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.mode.get_entropy(temperature)
-            self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
+            assert abs(s_exp - s_act) < 1e-4 * s_exp
 
     def test_get_entropy_classical_fourier(self):
         """
@@ -356,12 +321,10 @@ class TestHinderedRotor(unittest.TestCase):
         """
         self.mode.quantum = False
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = (
-            np.array([0.795154, 1.36396, 1.95005, 2.21055, 2.37592]) * constants.R
-        )
+        s_exp_list = np.array([0.795154, 1.36396, 1.95005, 2.21055, 2.37592]) * constants.R
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.mode.get_entropy(temperature)
-            self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
+            assert abs(s_exp - s_act) < 1e-4 * s_exp
 
     def test_get_entropy_quantum_cosine(self):
         """
@@ -371,12 +334,10 @@ class TestHinderedRotor(unittest.TestCase):
         self.mode.quantum = True
         self.mode.fourier = None
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = (
-            np.array([0.881906, 1.39397, 1.95536, 2.21232, 2.37673]) * constants.R
-        )
+        s_exp_list = np.array([0.881906, 1.39397, 1.95536, 2.21232, 2.37673]) * constants.R
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.mode.get_entropy(temperature)
-            self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
+            assert abs(s_exp - s_act) < 1e-4 * s_exp
 
     def test_get_entropy_quantum_fourier(self):
         """
@@ -385,12 +346,10 @@ class TestHinderedRotor(unittest.TestCase):
         """
         self.mode.quantum = True
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = (
-            np.array([0.880170, 1.39260, 1.95483, 2.21207, 2.37658]) * constants.R
-        )
+        s_exp_list = np.array([0.880170, 1.39260, 1.95483, 2.21207, 2.37658]) * constants.R
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.mode.get_entropy(temperature)
-            self.assertAlmostEqual(s_exp, s_act, delta=1e-3 * s_exp)
+            assert abs(s_exp - s_act) < 1e-3 * s_exp
 
     def test_get_sum_of_states_classical_cosine(self):
         """
@@ -403,10 +362,7 @@ class TestHinderedRotor(unittest.TestCase):
         sum_states = self.mode.get_sum_of_states(e_list)
         dens_states = self.mode.get_density_of_states(e_list)
         for n in range(10, len(e_list)):
-            self.assertTrue(
-                0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25,
-                "{0} != {1}".format(np.sum(dens_states[0:n]), sum_states[n]),
-            )
+            assert 0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25, "{0} != {1}".format(np.sum(dens_states[0:n]), sum_states[n])
 
     def test_get_sum_of_states_classical_fourier(self):
         """
@@ -417,9 +373,7 @@ class TestHinderedRotor(unittest.TestCase):
         e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
         try:
             sum_states = self.mode.get_sum_of_states(e_list)
-            self.fail(
-                "NotImplementedError not raised by HinderedRotor.get_sum_of_states()"
-            )
+            self.fail("NotImplementedError not raised by HinderedRotor.get_sum_of_states()")
         except NotImplementedError:
             pass
 
@@ -434,10 +388,7 @@ class TestHinderedRotor(unittest.TestCase):
         sum_states = self.mode.get_sum_of_states(e_list)
         dens_states = self.mode.get_density_of_states(e_list)
         for n in range(10, len(e_list)):
-            self.assertTrue(
-                0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25,
-                "{0} != {1}".format(np.sum(dens_states[0:n]), sum_states[n]),
-            )
+            assert 0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25, "{0} != {1}".format(np.sum(dens_states[0:n]), sum_states[n])
 
     def test_get_sum_of_states_quantum_fourier(self):
         """
@@ -449,10 +400,7 @@ class TestHinderedRotor(unittest.TestCase):
         sum_states = self.mode.get_sum_of_states(e_list)
         dens_states = self.mode.get_density_of_states(e_list)
         for n in range(10, len(e_list)):
-            self.assertTrue(
-                0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25,
-                "{0} != {1}".format(np.sum(dens_states[0:n]), sum_states[n]),
-            )
+            assert 0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25, "{0} != {1}".format(np.sum(dens_states[0:n]), sum_states[n])
 
     def test_get_density_of_states_classical_cosine(self):
         """
@@ -466,7 +414,7 @@ class TestHinderedRotor(unittest.TestCase):
         temperature = 100
         q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
         q_exp = self.mode.get_partition_function(temperature)
-        self.assertAlmostEqual(q_exp, q_act, delta=1e-2 * q_exp)
+        assert abs(q_exp - q_act) < 1e-2 * q_exp
 
     def test_get_density_of_states_classical_fourier(self):
         """
@@ -477,9 +425,7 @@ class TestHinderedRotor(unittest.TestCase):
         e_list = np.arange(0, 10000 * 11.96, 1 * 11.96)
         try:
             dens_states = self.mode.get_density_of_states(e_list)
-            self.fail(
-                "NotImplementedError not raised by HinderedRotor.get_density_of_states()"
-            )
+            self.fail("NotImplementedError not raised by HinderedRotor.get_density_of_states()")
         except NotImplementedError:
             pass
 
@@ -495,7 +441,7 @@ class TestHinderedRotor(unittest.TestCase):
         temperature = 100
         q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
         q_exp = self.mode.get_partition_function(temperature)
-        self.assertAlmostEqual(q_exp, q_act, delta=1e-2 * q_exp)
+        assert abs(q_exp - q_act) < 1e-2 * q_exp
 
     def test_get_density_of_states_quantum_fourier(self):
         """
@@ -508,7 +454,7 @@ class TestHinderedRotor(unittest.TestCase):
         temperature = 100
         q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
         q_exp = self.mode.get_partition_function(temperature)
-        self.assertAlmostEqual(q_exp, q_act, delta=1e-2 * q_exp)
+        assert abs(q_exp - q_act) < 1e-2 * q_exp
 
     def test_repr(self):
         """
@@ -517,18 +463,18 @@ class TestHinderedRotor(unittest.TestCase):
         """
         namespace = {}
         exec("mode = {0!r}".format(self.mode), globals(), namespace)
-        self.assertIn("mode", namespace)
+        assert "mode" in namespace
         mode = namespace["mode"]
-        self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
-        self.assertEqual(self.mode.inertia.units, mode.inertia.units, 6)
-        self.assertEqual(self.mode.fourier.value.shape, mode.fourier.value.shape)
+        assert round(abs(self.mode.inertia.value - mode.inertia.value), 6) == 0
+        assert self.mode.inertia.units == mode.inertia.units, 6
+        assert self.mode.fourier.value.shape == mode.fourier.value.shape
         for A0, A in zip(self.mode.fourier.value.flat, mode.fourier.value.flat):
-            self.assertAlmostEqual(A0 / A, 1.0, 6)
-        self.assertEqual(self.mode.fourier.units, mode.fourier.units)
-        self.assertAlmostEqual(self.mode.barrier.value, mode.barrier.value, 6)
-        self.assertEqual(self.mode.barrier.units, mode.barrier.units)
-        self.assertEqual(self.mode.symmetry, mode.symmetry)
-        self.assertEqual(self.mode.quantum, mode.quantum)
+            assert round(abs(A0 / A - 1.0), 6) == 0
+        assert self.mode.fourier.units == mode.fourier.units
+        assert round(abs(self.mode.barrier.value - mode.barrier.value), 6) == 0
+        assert self.mode.barrier.units == mode.barrier.units
+        assert self.mode.symmetry == mode.symmetry
+        assert self.mode.quantum == mode.quantum
 
     def test_pickle(self):
         """
@@ -538,13 +484,13 @@ class TestHinderedRotor(unittest.TestCase):
         import pickle
 
         mode = pickle.loads(pickle.dumps(self.mode, -1))
-        self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
-        self.assertEqual(self.mode.inertia.units, mode.inertia.units, 6)
-        self.assertEqual(self.mode.fourier.value.shape, mode.fourier.value.shape)
+        assert round(abs(self.mode.inertia.value - mode.inertia.value), 6) == 0
+        assert self.mode.inertia.units == mode.inertia.units, 6
+        assert self.mode.fourier.value.shape == mode.fourier.value.shape
         for A0, A in zip(self.mode.fourier.value.flat, mode.fourier.value.flat):
-            self.assertAlmostEqual(A0 / A, 1.0, 6)
-        self.assertEqual(self.mode.fourier.units, mode.fourier.units)
-        self.assertAlmostEqual(self.mode.barrier.value, mode.barrier.value, 6)
-        self.assertEqual(self.mode.barrier.units, mode.barrier.units)
-        self.assertEqual(self.mode.symmetry, mode.symmetry)
-        self.assertEqual(self.mode.quantum, mode.quantum)
+            assert round(abs(A0 / A - 1.0), 6) == 0
+        assert self.mode.fourier.units == mode.fourier.units
+        assert round(abs(self.mode.barrier.value - mode.barrier.value), 6) == 0
+        assert self.mode.barrier.units == mode.barrier.units
+        assert self.mode.symmetry == mode.symmetry
+        assert self.mode.quantum == mode.quantum

@@ -28,7 +28,7 @@
 ###############################################################################
 
 import os
-import unittest
+
 
 import numpy as np
 
@@ -85,7 +85,7 @@ def tearDownModule():
     rmg.database = None
 
 
-class IsotopesTest(unittest.TestCase):
+class IsotopesTest:
     @classmethod
     def setUpClass(cls):
         global database
@@ -136,14 +136,14 @@ class IsotopesTest(unittest.TestCase):
         spc_list = [eth, ethi]
 
         clusters = cluster(spc_list)
-        self.assertEquals(len(clusters), 1)
-        self.assertEquals(len(clusters[0]), 2)
+        assert len(clusters) == 1
+        assert len(clusters[0]) == 2
 
         spc_list = [meth, ethi]
 
         clusters = cluster(spc_list)
-        self.assertEquals(len(clusters), 2)
-        self.assertEquals(len(clusters[0]), 1)
+        assert len(clusters) == 2
+        assert len(clusters[0]) == 1
 
     def test_cluster_with_reactions(self):
         """
@@ -196,20 +196,20 @@ class IsotopesTest(unittest.TestCase):
         same_cluster_list = [rxn0, rxn1]
 
         clusters = cluster(same_cluster_list)
-        self.assertEquals(len(clusters), 1)
-        self.assertEquals(len(clusters[0]), 2)
+        assert len(clusters) == 1
+        assert len(clusters[0]) == 2
 
         same_cluster_list = [rxn2, rxn3]
 
         clusters = cluster(same_cluster_list)
-        self.assertEquals(len(clusters), 1)
-        self.assertEquals(len(clusters[0]), 2)
+        assert len(clusters) == 1
+        assert len(clusters[0]) == 2
 
         multi_cluster_list = [rxn0, rxn1, rxn2, rxn3, rxn4, rxn5]
 
         clusters = cluster(multi_cluster_list)
-        self.assertEquals(len(clusters), 4)
-        self.assertEquals(len(clusters[0]), 1)
+        assert len(clusters) == 4
+        assert len(clusters[0]) == 1
 
     def test_remove_isotope_for_reactions(self):
         """
@@ -245,7 +245,7 @@ class IsotopesTest(unittest.TestCase):
         labeled_rxn = Reaction(reactants=[ethi], products=[ethi])
         stripped = remove_isotope(labeled_rxn)
 
-        self.assertTrue(unlabeled_rxn.is_isomorphic(stripped))
+        assert unlabeled_rxn.is_isomorphic(stripped)
 
     def test_remove_isotope_for_species(self):
         """
@@ -280,7 +280,7 @@ class IsotopesTest(unittest.TestCase):
 
         stripped = remove_isotope(ethi)
 
-        self.assertTrue(eth.is_isomorphic(stripped))
+        assert eth.is_isomorphic(stripped)
 
     def test_inplace_remove_isotope_for_reactions(self):
         """
@@ -317,11 +317,11 @@ class IsotopesTest(unittest.TestCase):
         stored_labeled_rxn = labeled_rxn.copy()
         modified_atoms = remove_isotope(labeled_rxn, inplace=True)
 
-        self.assertTrue(unlabeled_rxn.is_isomorphic(labeled_rxn))
+        assert unlabeled_rxn.is_isomorphic(labeled_rxn)
 
         redo_isotope(modified_atoms)
 
-        self.assertTrue(stored_labeled_rxn.is_isomorphic(labeled_rxn))
+        assert stored_labeled_rxn.is_isomorphic(labeled_rxn)
 
     def test_ensure_reaction_direction(self):
         """
@@ -436,32 +436,22 @@ multiplicity 2
 
         for rxn in rxns:
             # ensure there is a methane in reactants for each reaction
-            self.assertTrue(
-                any(
-                    [
-                        compare_isotopomers(methane, reactant)
-                        for reactant in rxn.reactants
-                    ]
-                ),
-                msg="ensureReactionDirection didnt flip the proper reactants and products",
-            )
+            assert any(
+                [compare_isotopomers(methane, reactant) for reactant in rxn.reactants]
+            ), "ensureReactionDirection didnt flip the proper reactants and products"
 
             # ensure kinetics is correct
             if any([dipropyli.is_isomorphic(reactant) for reactant in rxn.reactants]):
-                self.assertAlmostEqual(
-                    rxn.kinetics.A.value,
-                    0.5,
-                    msg="The A value returned, {0}, is incorrect. "
+                assert round(abs(rxn.kinetics.A.value - 0.5), 7) == 0, (
+                    "The A value returned, {0}, is incorrect. "
                     "Check the reactions degeneracy and how A.value is obtained. "
-                    "The reaction is:{1}".format(rxn.kinetics.A.value, rxn),
+                    "The reaction is:{1}".format(rxn.kinetics.A.value, rxn)
                 )
             else:
-                self.assertAlmostEqual(
-                    rxn.kinetics.A.value,
-                    1.0,
-                    msg="The A value returned, {0}, is incorrect. "
+                assert round(abs(rxn.kinetics.A.value - 1.0), 7) == 0, (
+                    "The A value returned, {0}, is incorrect. "
                     "Check the reactions degeneracy and how A.value is obtained. "
-                    "The reaction is:{1}".format(rxn.kinetics.A.value, rxn),
+                    "The reaction is:{1}".format(rxn.kinetics.A.value, rxn)
                 )
 
     def test_ensure_reaction_direction_with_multiple_ts(self):
@@ -517,16 +507,13 @@ multiplicity 2
         rxn_cluster = [rxn, rxni]
         ensure_reaction_direction(rxn_cluster)
 
-        self.assertEqual(rxn_cluster[0].degeneracy, 2)
-        self.assertEqual(rxn_cluster[1].degeneracy, 2)
+        assert rxn_cluster[0].degeneracy == 2
+        assert rxn_cluster[1].degeneracy == 2
 
-        self.assertIn("R2Hall", rxn_cluster[0].template)
-        self.assertIn("R2Hall", rxn_cluster[1].template)
+        assert "R2Hall" in rxn_cluster[0].template
+        assert "R2Hall" in rxn_cluster[1].template
 
-        self.assertAlmostEqual(
-            rxn_cluster[0].kinetics.get_rate_coefficient(298),
-            rxn_cluster[1].kinetics.get_rate_coefficient(298),
-        )
+        assert round(abs(rxn_cluster[0].kinetics.get_rate_coefficient(298) - rxn_cluster[1].kinetics.get_rate_coefficient(298)), 7) == 0
 
     def test_compare_isotopomers_works_on_species(self):
         """
@@ -556,7 +543,7 @@ multiplicity 2
 8 H u0 p0 c0 {2,S}
 """
         )
-        self.assertTrue(compare_isotopomers(ethii, ethi))
+        assert compare_isotopomers(ethii, ethi)
 
     def test_compare_isotopomers_does_not_alter_species(self):
         """
@@ -591,11 +578,7 @@ multiplicity 2
         # ensure species still have labels
         for atom in ethii.molecule[0].atoms:
             if atom.element.symbol == "C":
-                self.assertEqual(
-                    atom.element.isotope,
-                    13,
-                    "compareIsotopomer removed the isotope of a species.",
-                )
+                assert atom.element.isotope == 13, "compareIsotopomer removed the isotope of a species."
 
     def test_compare_isotopomers_fails_on_species(self):
         """
@@ -623,7 +606,7 @@ multiplicity 2
 6 H u0 p0 c0 {2,S}
 """
         )
-        self.assertFalse(compare_isotopomers(ethane, ethenei))
+        assert not compare_isotopomers(ethane, ethenei)
 
     def test_compare_isotopomers_works_on_reactions(self):
         """
@@ -702,13 +685,9 @@ multiplicity 2
 """
         )
 
-        reaction2 = TemplateReaction(
-            reactants=[propanei, h], products=[npropyli, h2], family="H_Abstraction"
-        )
-        reaction3 = TemplateReaction(
-            reactants=[propane, h], products=[h2, npropyl], family="H_Abstraction"
-        )
-        self.assertTrue(compare_isotopomers(reaction2, reaction3))
+        reaction2 = TemplateReaction(reactants=[propanei, h], products=[npropyli, h2], family="H_Abstraction")
+        reaction3 = TemplateReaction(reactants=[propane, h], products=[h2, npropyl], family="H_Abstraction")
+        assert compare_isotopomers(reaction2, reaction3)
 
     def test_compare_isotopomers_fails_on_reactions(self):
         """
@@ -772,14 +751,10 @@ multiplicity 2
 """
         )
 
-        reaction2 = TemplateReaction(
-            reactants=[propanei, h], products=[npropyli, h2], family="H_Abstraction"
-        )
+        reaction2 = TemplateReaction(reactants=[propanei, h], products=[npropyli, h2], family="H_Abstraction")
 
-        magic_reaction = TemplateReaction(
-            reactants=[propane, h], products=[propanei, h], family="H_Abstraction"
-        )
-        self.assertFalse(compare_isotopomers(reaction2, magic_reaction))
+        magic_reaction = TemplateReaction(reactants=[propane, h], products=[propanei, h], family="H_Abstraction")
+        assert not compare_isotopomers(reaction2, magic_reaction)
 
     def test_correct_entropy(self):
         """
@@ -863,11 +838,8 @@ multiplicity 2
 
         correct_entropy(propanei, propane)
 
-        self.assertAlmostEqual(propane.get_enthalpy(298), propanei.get_enthalpy(298))
-        self.assertAlmostEqual(
-            propanei.get_entropy(298) - propane.get_entropy(298),
-            constants.R * np.log(2),
-        )
+        assert round(abs(propane.get_enthalpy(298) - propanei.get_enthalpy(298)), 7) == 0
+        assert round(abs(propanei.get_entropy(298) - propane.get_entropy(298) - constants.R * np.log(2)), 7) == 0
 
     def test_generate_isotopomers(self):
         """
@@ -894,16 +866,16 @@ multiplicity 2
         )
 
         spcs = generate_isotopomers(spc, 0)
-        self.assertEquals(len(spcs), 0)
+        assert len(spcs) == 0
 
         spcs = generate_isotopomers(spc)
-        self.assertEquals(len(spcs), 1)
+        assert len(spcs) == 1
 
         spcs = generate_isotopomers(spc, 2)
-        self.assertEquals(len(spcs), 2)
+        assert len(spcs) == 2
 
         spcs = generate_isotopomers(spc, 3)
-        self.assertEquals(len(spcs), 2)
+        assert len(spcs) == 2
 
     def test_is_enriched(self):
         """
@@ -940,19 +912,15 @@ multiplicity 2
 """
         )
 
-        self.assertTrue(is_enriched(npropyli))
-        self.assertFalse(is_enriched(npropyl))
+        assert is_enriched(npropyli)
+        assert not is_enriched(npropyl)
 
-        enriched_reaction = TemplateReaction(
-            reactants=[npropyl], products=[npropyli], family="H_Abstraction"
-        )
-        self.assertTrue(is_enriched(enriched_reaction))
+        enriched_reaction = TemplateReaction(reactants=[npropyl], products=[npropyli], family="H_Abstraction")
+        assert is_enriched(enriched_reaction)
 
-        bare_reaction = TemplateReaction(
-            reactants=[npropyl], products=[npropyl], family="H_Abstraction"
-        )
+        bare_reaction = TemplateReaction(reactants=[npropyl], products=[npropyl], family="H_Abstraction")
 
-        self.assertFalse(is_enriched(bare_reaction))
+        assert not is_enriched(bare_reaction)
 
     def test_get_labeled_reactants(self):
         """
@@ -960,15 +928,13 @@ multiplicity 2
         """
         reactant_pair = [Species().from_smiles("C"), Species().from_smiles("[H]")]
         product_pair = [Species().from_smiles("[H][H]"), Species().from_smiles("[CH3]")]
-        rxn = TemplateReaction(
-            reactants=reactant_pair, products=product_pair, family="H_Abstraction"
-        )
+        rxn = TemplateReaction(reactants=reactant_pair, products=product_pair, family="H_Abstraction")
         labeled_reactants = get_labeled_reactants(rxn, self.family)
         r1_labels = labeled_reactants[0].get_all_labeled_atoms()
-        self.assertIn("*1", list(r1_labels.keys()))
-        self.assertIn("*2", list(r1_labels.keys()))
+        assert "*1" in list(r1_labels.keys())
+        assert "*2" in list(r1_labels.keys())
         r2_labels = labeled_reactants[1].get_all_labeled_atoms()
-        self.assertIn("*3", list(r2_labels.keys()))
+        assert "*3" in list(r2_labels.keys())
 
     def test_get_reduced_mass(self):
         """
@@ -993,9 +959,7 @@ multiplicity 2
             ),
         ]
         reduced_mass = get_reduced_mass(reactants, labels, True)
-        self.assertAlmostEqual(
-            reduced_mass, 1 / (1 / 1.008 + 1 / (1.008 + 12.01)) / 1000, places=6
-        )
+        assert round(abs(reduced_mass - 1 / (1 / 1.008 + 1 / (1.008 + 12.01)) / 1000), 6) == 0
 
     def test_get_reduced_mass2(self):
         """
@@ -1020,9 +984,7 @@ multiplicity 2
             ),
         ]
         reduced_mass = get_reduced_mass(reactants, labels, True)
-        self.assertAlmostEqual(
-            reduced_mass, 1 / (1 / 1.008 + 1 / (1.008 + 13.01)) / 1000, places=6
-        )
+        assert round(abs(reduced_mass - 1 / (1 / 1.008 + 1 / (1.008 + 13.01)) / 1000), 6) == 0
 
     def test_get_kinetic_isotope_effect_simple(self):
         reactant_pair = [Species().from_smiles("C"), Species().from_smiles("[H]")]
@@ -1073,12 +1035,8 @@ multiplicity 2
         )
         rxn_cluster = [[rxn_labeled, rxn_unlabeled]]
         apply_kinetic_isotope_effect_simple(rxn_cluster, self.database.kinetics)
-        expected_kie = (
-            (1 / 1.008 + 1 / (13.01 + 1.008)) / (1 / 1.008 + 1 / (12.01 + 1.008))
-        ) ** 0.5
-        self.assertAlmostEqual(
-            rxn_cluster[0][0].kinetics.A.value, 1e5 * expected_kie, places=-1
-        )
+        expected_kie = ((1 / 1.008 + 1 / (13.01 + 1.008)) / (1 / 1.008 + 1 / (12.01 + 1.008))) ** 0.5
+        assert round(abs(rxn_cluster[0][0].kinetics.A.value - 1e5 * expected_kie), -1) == 0
 
     def test_generate_isotope_reactions(self):
         """
@@ -1140,23 +1098,22 @@ multiplicity 3
 
         new_reactions = generate_isotope_reactions([reaction], isotope_list)
 
-        self.assertEqual(len(new_reactions), 4)
+        assert len(new_reactions) == 4
 
         degeneracies_found = set()
         for rxn in new_reactions:
-            self.assertEqual(rxn.template, reaction.template)
+            assert rxn.template == reaction.template
             degeneracies_found.add(rxn.degeneracy)
-            self.assertIsNotNone(
-                rxn.kinetics, "kinetics not obtained for reaction {}.".format(rxn)
-            )
-            self.assertAlmostEqual(
-                reaction.kinetics.get_rate_coefficient(298),
-                rxn.kinetics.get_rate_coefficient(298)
-                * reaction.degeneracy
-                / rxn.degeneracy,
+            assert rxn.kinetics is not None, "kinetics not obtained for reaction {}.".format(rxn)
+            assert (
+                round(
+                    abs(reaction.kinetics.get_rate_coefficient(298) - rxn.kinetics.get_rate_coefficient(298) * reaction.degeneracy / rxn.degeneracy),
+                    7,
+                )
+                == 0
             )
 
-        self.assertEqual(degeneracies_found, set([3]))
+        assert degeneracies_found == set([3])
 
     def test_generate_isotope_reactions_limited_labeling(self):
         """
@@ -1165,24 +1122,18 @@ multiplicity 3
         """
         max_number_labels = 1
         methyl = Species().from_smiles("[CH3]")
-        methyl_isotopologues = [methyl] + generate_isotopomers(
-            methyl, max_number_labels
-        )
+        methyl_isotopologues = [methyl] + generate_isotopomers(methyl, max_number_labels)
         methane = Species().from_smiles("C")
-        methane_isotopologues = [methane] + generate_isotopomers(
-            methane, max_number_labels
-        )
+        methane_isotopologues = [methane] + generate_isotopomers(methane, max_number_labels)
         ethyl = Species().from_smiles("C[CH2]")
         ethyl_isotopologues = [ethyl] + generate_isotopomers(ethyl, max_number_labels)
         ethane = Species().from_smiles("CC")
-        ethane_isotopologues = [ethane] + generate_isotopomers(
-            ethane, max_number_labels
-        )
+        ethane_isotopologues = [ethane] + generate_isotopomers(ethane, max_number_labels)
 
-        self.assertEqual(len(methyl_isotopologues), 2)
-        self.assertEqual(len(methane_isotopologues), 2)
-        self.assertEqual(len(ethane_isotopologues), 2)
-        self.assertEqual(len(ethyl_isotopologues), 3)
+        assert len(methyl_isotopologues) == 2
+        assert len(methane_isotopologues) == 2
+        assert len(ethane_isotopologues) == 2
+        assert len(ethyl_isotopologues) == 3
 
         reaction = TemplateReaction(
             reactants=[ethyl, methane],
@@ -1201,20 +1152,19 @@ multiplicity 3
 
         new_reactions = generate_isotope_reactions([reaction], isotope_list)
 
-        self.assertEqual(len(new_reactions), 6)
+        assert len(new_reactions) == 6
 
         degeneracies_found = set()
         for rxn in new_reactions:
-            self.assertEqual(rxn.template, reaction.template)
+            assert rxn.template == reaction.template
             degeneracies_found.add(rxn.degeneracy)
-            self.assertIsNotNone(
-                rxn.kinetics, "kinetics not obtained for reaction {}.".format(rxn)
-            )
-            self.assertAlmostEqual(
-                reaction.kinetics.get_rate_coefficient(298),
-                rxn.kinetics.get_rate_coefficient(298)
-                * reaction.degeneracy
-                / rxn.degeneracy,
+            assert rxn.kinetics is not None, "kinetics not obtained for reaction {}.".format(rxn)
+            assert (
+                round(
+                    abs(reaction.kinetics.get_rate_coefficient(298) - rxn.kinetics.get_rate_coefficient(298) * reaction.degeneracy / rxn.degeneracy),
+                    7,
+                )
+                == 0
             )
 
-        self.assertEqual(degeneracies_found, set([4]))
+        assert degeneracies_found == set([4])

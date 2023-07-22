@@ -31,17 +31,14 @@
 This module contains unit tests of the :mod:`arkane.kinetics` module.
 """
 
-import unittest
 
 from rmgpy.reaction import Reaction
 from rmgpy.species import TransitionState
 
 from arkane.kinetics import KineticsJob
 
-################################################################################
 
-
-class ArkaneKineticsTest(unittest.TestCase):
+class ArkaneKineticsTest:
     """
     Contains unit tests for the Arkane Kinetics module
     """
@@ -53,9 +50,9 @@ class ArkaneKineticsTest(unittest.TestCase):
         rxn = Reaction(transition_state=TransitionState())
         t_list = [50.7, 100, 300, 800, 1255]
         kjob = KineticsJob(rxn, Tlist=(t_list, "K"))
-        self.assertEqual(min(t_list), kjob.Tmin.value_si)
-        self.assertEqual(max(t_list), kjob.Tmax.value_si)
-        self.assertEqual(len(t_list), kjob.Tcount)
+        assert min(t_list) == kjob.Tmin.value_si
+        assert max(t_list) == kjob.Tmax.value_si
+        assert len(t_list) == kjob.Tcount
 
     def test_give_temperature_range_for_kineticsjob(self):
         """
@@ -63,18 +60,15 @@ class ArkaneKineticsTest(unittest.TestCase):
         """
         rxn = Reaction(transition_state=TransitionState())
         kjob = KineticsJob(rxn, Tmin=(50, "K"), Tmax=(4000, "K"), Tcount=5)
-        self.assertEqual(5, len(kjob.Tlist.value_si))
-        self.assertEqual(50, min(kjob.Tlist.value_si))
-        self.assertAlmostEqual(4000, max(kjob.Tlist.value_si))
+        assert 5 == len(kjob.Tlist.value_si)
+        assert 50 == min(kjob.Tlist.value_si)
+        assert round(abs(4000 - max(kjob.Tlist.value_si)), 7) == 0
         inverse_tlist = 1 / kjob.Tlist.value_si
-        self.assertAlmostEqual(
+        assert (
+            round(abs(inverse_tlist[1] - inverse_tlist[0] - inverse_tlist[-1] - inverse_tlist[-2]), 7) == 0
+        ), "The points for fitting do not appear 1/T spaced. " "Obtained values of {0} and {1}".format(
             inverse_tlist[1] - inverse_tlist[0],
             inverse_tlist[-1] - inverse_tlist[-2],
-            msg="The points for fitting do not appear 1/T spaced. "
-            "Obtained values of {0} and {1}".format(
-                inverse_tlist[1] - inverse_tlist[0],
-                inverse_tlist[-1] - inverse_tlist[-2],
-            ),
         )
 
     def test_get_tlist_for_kineticsjob(self):
@@ -83,19 +77,16 @@ class ArkaneKineticsTest(unittest.TestCase):
         """
         rxn = Reaction(transition_state=TransitionState())
         kjob = KineticsJob(rxn)
-        self.assertAlmostEqual(298, kjob.Tmin.value_si)
-        self.assertAlmostEqual(2500, kjob.Tmax.value_si)
-        self.assertEqual(50, kjob.Tcount)
-        self.assertEqual(50, len(kjob.Tlist.value_si))
-        self.assertAlmostEqual(298, min(kjob.Tlist.value_si))
-        self.assertAlmostEqual(2500, max(kjob.Tlist.value_si))
+        assert round(abs(298 - kjob.Tmin.value_si), 7) == 0
+        assert round(abs(2500 - kjob.Tmax.value_si), 7) == 0
+        assert 50 == kjob.Tcount
+        assert 50 == len(kjob.Tlist.value_si)
+        assert round(abs(298 - min(kjob.Tlist.value_si)), 7) == 0
+        assert round(abs(2500 - max(kjob.Tlist.value_si)), 7) == 0
         inverse_tlist = 1 / kjob.Tlist.value_si
-        self.assertAlmostEqual(
+        assert (
+            round(abs(inverse_tlist[1] - inverse_tlist[0] - inverse_tlist[-1] - inverse_tlist[-2]), 7) == 0
+        ), "The points for fitting do not appear 1/T spaced. " "Obtained values of {0} and {1}".format(
             inverse_tlist[1] - inverse_tlist[0],
             inverse_tlist[-1] - inverse_tlist[-2],
-            msg="The points for fitting do not appear 1/T spaced. "
-            "Obtained values of {0} and {1}".format(
-                inverse_tlist[1] - inverse_tlist[0],
-                inverse_tlist[-1] - inverse_tlist[-2],
-            ),
         )

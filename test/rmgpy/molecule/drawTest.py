@@ -33,17 +33,14 @@ This module contains unit tests of the rmgpy.molecule.atomtype module.
 
 import os
 import os.path
-import unittest
+
 
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.draw import MoleculeDrawer
 from rmgpy.species import Species
 
 
-################################################################################
-
-
-class TestMoleculeDrawer(unittest.TestCase):
+class TestMoleculeDrawer:
     """
     Contains unit tests of the MoleculeDrawer class.
     """
@@ -66,13 +63,11 @@ class TestMoleculeDrawer(unittest.TestCase):
         path = "test_molecule.png"
         if os.path.exists(path):
             os.unlink(path)
-        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(
-            self.molecule, file_format="png", target=path
-        )
-        self.assertTrue(os.path.exists(path), "File doesn't exist")
-        self.assertGreater(width, height)
+        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(self.molecule, file_format="png", target=path)
+        assert os.path.exists(path), "File doesn't exist"
+        assert width > height
         os.unlink(path)
-        self.assertIsInstance(surface, ImageSurface)
+        assert isinstance(surface, ImageSurface)
 
     def test_draw_pdf(self):
         """
@@ -85,11 +80,9 @@ class TestMoleculeDrawer(unittest.TestCase):
         path = "test_molecule.pdf"
         if os.path.exists(path):
             os.unlink(path)
-        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(
-            self.molecule, file_format="pdf", target=path
-        )
-        self.assertIsInstance(surface, PDFSurface)
-        self.assertGreater(width, height)
+        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(self.molecule, file_format="pdf", target=path)
+        assert isinstance(surface, PDFSurface)
+        assert width > height
         os.unlink(path)
 
     def test_draw_polycycle(self):
@@ -104,11 +97,9 @@ class TestMoleculeDrawer(unittest.TestCase):
         if os.path.exists(path):
             os.unlink(path)
         polycycle = Molecule(smiles="C123CC4CC1COCC2CCC34")
-        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(
-            polycycle, file_format="pdf", target=path
-        )
-        self.assertIsInstance(surface, PDFSurface)
-        self.assertGreater(width, height)
+        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(polycycle, file_format="pdf", target=path)
+        assert isinstance(surface, PDFSurface)
+        assert width > height
         os.unlink(path)
 
     def test_draw_pdf_without_file(self):
@@ -119,11 +110,9 @@ class TestMoleculeDrawer(unittest.TestCase):
             from cairocffi import PDFSurface
         except ImportError:
             from cairo import PDFSurface
-        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(
-            self.molecule, file_format="pdf"
-        )
-        self.assertIsInstance(surface, PDFSurface)
-        self.assertGreater(width, height)
+        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(self.molecule, file_format="pdf")
+        assert isinstance(surface, PDFSurface)
+        assert width > height
 
     def test_draw_non_standard_bonds(self):
         spec = Species().from_smiles("[CH2]C=C[CH2]")
@@ -132,11 +121,9 @@ class TestMoleculeDrawer(unittest.TestCase):
             from cairocffi import PDFSurface
         except ImportError:
             from cairo import PDFSurface
-        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(
-            hybrid, file_format="pdf"
-        )
-        self.assertGreater(width, height)
-        self.assertIsInstance(surface, PDFSurface)
+        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(hybrid, file_format="pdf")
+        assert width > height
+        assert isinstance(surface, PDFSurface)
 
     def test_draw_hydrogen_bond_adsorbate(self):
         molecule = Molecule().from_adjacency_list(
@@ -158,10 +145,5 @@ class TestMoleculeDrawer(unittest.TestCase):
             from cairocffi import PDFSurface
         except ImportError:
             from cairo import PDFSurface
-        surface, _cr, (_xoff, _yoff, _width, _height) = self.drawer.draw(
-            molecule, file_format="pdf"
-        )
-        self.assertIsInstance(surface, PDFSurface)
-
-
-################################################################################
+        surface, _cr, (_xoff, _yoff, _width, _height) = self.drawer.draw(molecule, file_format="pdf")
+        assert isinstance(surface, PDFSurface)

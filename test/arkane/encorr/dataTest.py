@@ -31,7 +31,7 @@
 This script contains unit tests for the :mod:`arkane.encorr.data` module.
 """
 
-import unittest
+
 from collections import Counter
 
 import numpy as np
@@ -53,13 +53,14 @@ from arkane.encorr.data import (
 from arkane.encorr.reference import ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
 from arkane.modelchem import LOT, LevelOfTheory
+import pytest
 
 DATABASE = ReferenceDatabase()
 DATABASE.load()
 LEVEL_OF_THEORY = LevelOfTheory(method="wb97m-v", basis="def2-tzvpd", software="qchem")
 
 
-class TestDataLoading(unittest.TestCase):
+class TestDataLoading:
     """
     A class for testing that the quantum correction data is loaded
     correctly from the RMG database.
@@ -69,29 +70,29 @@ class TestDataLoading(unittest.TestCase):
         """
         Test that the necessary dictionaries are available.
         """
-        self.assertTrue(hasattr(data, "atom_hf"))
-        self.assertTrue(hasattr(data, "atom_thermal"))
-        self.assertTrue(hasattr(data, "SOC"))
-        self.assertTrue(hasattr(data, "atom_energies"))
-        self.assertTrue(hasattr(data, "pbac"))
-        self.assertTrue(hasattr(data, "mbac"))
-        self.assertTrue(hasattr(data, "freq_dict"))
+        assert hasattr(data, "atom_hf")
+        assert hasattr(data, "atom_thermal")
+        assert hasattr(data, "SOC")
+        assert hasattr(data, "atom_energies")
+        assert hasattr(data, "pbac")
+        assert hasattr(data, "mbac")
+        assert hasattr(data, "freq_dict")
 
     def test_level_of_theory(self):
         """
         Test that level of theory objects were created.
         """
         for lot in data.atom_energies.keys():
-            self.assertIsInstance(lot, LOT)
+            assert isinstance(lot, LOT)
         for lot in data.pbac.keys():
-            self.assertIsInstance(lot, LOT)
+            assert isinstance(lot, LOT)
         for lot in data.mbac.keys():
-            self.assertIsInstance(lot, LOT)
+            assert isinstance(lot, LOT)
         for lot in data.freq_dict.keys():
-            self.assertIsInstance(lot, LOT)
+            assert isinstance(lot, LOT)
 
 
-class TestMolecule(unittest.TestCase):
+class TestMolecule:
     """
     A class for testing that the Molecule wrapper class functions
     properly.
@@ -103,12 +104,12 @@ class TestMolecule(unittest.TestCase):
         """
         rmg_mol = RMGMolecule(smiles="C")
         mol = Molecule(smiles="C")
-        self.assertIsInstance(mol, RMGMolecule)
-        self.assertTrue(hasattr(mol, "id"))
-        self.assertFalse(hasattr(rmg_mol, "id"))
+        assert isinstance(mol, RMGMolecule)
+        assert hasattr(mol, "id")
+        assert not hasattr(rmg_mol, "id")
 
 
-class TestStats(unittest.TestCase):
+class TestStats:
     """
     A class for testing that the Stats class functions properly.
     """
@@ -118,11 +119,11 @@ class TestStats(unittest.TestCase):
         Test that a Stats instance contains the correct attributes.
         """
         stats = Stats(1.0, 2.0)
-        self.assertTrue(hasattr(stats, "rmse"))
-        self.assertTrue(hasattr(stats, "mae"))
+        assert hasattr(stats, "rmse")
+        assert hasattr(stats, "mae")
 
 
-class TestBACDatapoint(unittest.TestCase):
+class TestBACDatapoint:
     """
     A class for testing that the BACDatapoint class functions properly.
     """
@@ -140,96 +141,90 @@ class TestBACDatapoint(unittest.TestCase):
         is not defined.
         """
         self.datapoint.level_of_theory = None
-        with self.assertRaises(BondAdditivityCorrectionError):
+        with pytest.raises(BondAdditivityCorrectionError):
             _ = self.datapoint.calc_data
 
     def test_weight(self):
         """
         Test that weight is initialized to 1.
         """
-        self.assertEqual(self.datapoint.weight, 1)
+        assert self.datapoint.weight == 1
 
     def test_mol(self):
         """
         Test that BACDatapoint can be converted to a Molecule.
         """
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = self.datapoint.mol
 
         # From adjacency list
         mol_adj = self.datapoint.to_mol(from_geo=False)
-        self.assertIsInstance(mol_adj, Molecule)
-        self.assertIs(mol_adj, self.datapoint.mol)
+        assert isinstance(mol_adj, Molecule)
+        assert mol_adj is self.datapoint.mol
         mol_adj2 = self.datapoint.to_mol(from_geo=False)
-        self.assertIs(mol_adj, mol_adj2)  # Check that cached molecule is used
+        assert mol_adj is mol_adj2  # Check that cached molecule is used
 
         # From geometry
         mol_geo = self.datapoint.to_mol(from_geo=True)
-        self.assertIsNot(mol_geo, mol_adj)  # Check that cached molecule is NOT used
+        assert mol_geo is not mol_adj  # Check that cached molecule is NOT used
         coords_spc = np.vstack(tuple(a.coords for a in mol_geo.atoms))
         coords_dp = self.spc.calculated_data[LEVEL_OF_THEORY].xyz_dict["coords"]
-        self.assertIsNone(np.testing.assert_allclose(coords_dp, coords_spc))
-        self.assertIsInstance(mol_geo, Molecule)
-        self.assertIs(mol_geo, self.datapoint.mol)
+        assert np.testing.assert_allclose(coords_dp, coords_spc) is None
+        assert isinstance(mol_geo, Molecule)
+        assert mol_geo is self.datapoint.mol
         mol_geo2 = self.datapoint.to_mol(from_geo=True)
-        self.assertIs(mol_geo, mol_geo2)  # Check that cached molecule is used
+        assert mol_geo is mol_geo2  # Check that cached molecule is used
 
     def test_bonds(self):
         """
         Test that bonds can be obtained.
         """
         bonds = self.datapoint.bonds
-        self.assertIsInstance(bonds, Counter)
+        assert isinstance(bonds, Counter)
         bonds2 = self.datapoint.bonds
-        self.assertIs(bonds, bonds2)  # Check that cached bonds are used
+        assert bonds is bonds2  # Check that cached bonds are used
 
     def test_ref_data(self):
         """
         Test that reference data can be obtained.
         """
         ref_data = self.datapoint.ref_data
-        self.assertIsInstance(ref_data, float)
+        assert isinstance(ref_data, float)
 
     def test_calc_data(self):
         """
         Test that calculated data can be obtained.
         """
         calc_data = self.datapoint.calc_data
-        self.assertIsInstance(calc_data, float)
+        assert isinstance(calc_data, float)
 
     def test_bac_data(self):
         """
         Test that `bac_data` can be used.
         """
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = self.datapoint.bac_data
 
         self.datapoint.bac_data = 1.0
-        self.assertIsInstance(self.datapoint.bac_data, float)
+        assert isinstance(self.datapoint.bac_data, float)
 
     def test_substructs(self):
         """
         Test that BACDatapoint can be decomposed into substructures.
         """
         substructs = self.datapoint.substructs
-        self.assertIsInstance(substructs, Counter)
+        assert isinstance(substructs, Counter)
 
         # Check that exactly one of 'neutral', 'cation', or 'anion' is set
         # and same for 'singlet', 'doublet', 'triplet+'.
-        self.assertEqual(
-            sum(substructs[k] for k in ("neutral", "cation", "anion")), 1
-        )  # Can only be one of these
-        self.assertEqual(
-            sum(substructs[k] for k in ("singlet", "doublet", "triplet+")), 1
-        )
+        assert sum(substructs[k] for k in ("neutral", "cation", "anion")) == 1  # Can only be one of these
+        assert sum(substructs[k] for k in ("singlet", "doublet", "triplet+")) == 1
 
         substructs2 = self.datapoint.substructs
-        self.assertIs(
-            substructs, substructs2
-        )  # Check that cached substructures are used
+        assert substructs is substructs2  # Check that cached substructures are used
 
 
-class TestDatasetProperty(unittest.TestCase):
+class TestDatasetProperty:
     """
     A class for testing that the DatasetProperty descriptor functions
     properly.
@@ -260,11 +255,11 @@ class TestDatasetProperty(unittest.TestCase):
         """
         s = self.make_set()
         dset_prop = type(s).__dict__["val"]
-        self.assertIsInstance(dset_prop, DatasetProperty)
-        self.assertEqual(dset_prop.pub_attr, "val")
-        self.assertEqual(dset_prop.priv_attr, "_val")
-        self.assertFalse(dset_prop.asarray)
-        self.assertFalse(dset_prop.settable)
+        assert isinstance(dset_prop, DatasetProperty)
+        assert dset_prop.pub_attr == "val"
+        assert dset_prop.priv_attr == "_val"
+        assert not dset_prop.asarray
+        assert not dset_prop.settable
 
     def test_get(self):
         """
@@ -272,12 +267,12 @@ class TestDatasetProperty(unittest.TestCase):
         data contained in the set.
         """
         s = self.make_set(asarray=False)
-        self.assertListEqual(s.val, list(range(10)))
-        self.assertListEqual(s._val, list(range(10)))  # Check that list was cached
-        self.assertIsNone(s.val2)
+        assert s.val == list(range(10))
+        assert s._val == list(range(10))  # Check that list was cached
+        assert s.val2 is None
 
         s = self.make_set(asarray=True)
-        self.assertIsInstance(s.val, np.ndarray)
+        assert isinstance(s.val, np.ndarray)
 
     def test_set(self):
         """
@@ -285,20 +280,20 @@ class TestDatasetProperty(unittest.TestCase):
         data contained in the set.
         """
         s = self.make_set(settable=False)
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             s.val = list(range(9, -1, -1))
 
         s = self.make_set(asarray=True, settable=True)
-        with self.assertRaises(ValueError):  # Try setting with wrong length data
+        with pytest.raises(ValueError):  # Try setting with wrong length data
             s.val = list(range(9))
         s.val = list(range(9, -1, -1))
-        self.assertIsInstance(s.val, np.ndarray)
-        with self.assertRaises(AttributeError):  # Check that cache is not available
+        assert isinstance(s.val, np.ndarray)
+        with pytest.raises(AttributeError):  # Check that cache is not available
             _ = s._val
-        self.assertTrue(all(d.val == v for d, v in zip(s.data, list(range(9, -1, -1)))))
+        assert all(d.val == v for d, v in zip(s.data, list(range(9, -1, -1))))
 
 
-class TestBACDataset(unittest.TestCase):
+class TestBACDataset:
     """
     A class for testing that the BACDataset class functions properly.
     """
@@ -308,16 +303,14 @@ class TestBACDataset(unittest.TestCase):
         cls.species = list(DATABASE.reference_sets.values())[0][:5]
 
     def setUp(self):
-        self.dataset = BACDataset(
-            [BACDatapoint(spc, level_of_theory=LEVEL_OF_THEORY) for spc in self.species]
-        )
+        self.dataset = BACDataset([BACDatapoint(spc, level_of_theory=LEVEL_OF_THEORY) for spc in self.species])
 
     def test_append(self):
         """
         Test that a datapoint can be appended.
         """
         self.dataset.append(BACDatapoint(self.species[0]))
-        self.assertEqual(len(self.dataset), len(self.species) + 1)
+        assert len(self.dataset) == len(self.species) + 1
 
     def test_sort(self):
         """
@@ -326,68 +319,66 @@ class TestBACDataset(unittest.TestCase):
         self.dataset.sort(key=lambda d: d.spc.smiles)  # Sort by SMILES
         smiles = sorted(spc.smiles for spc in self.species)
         smiles_from_dset = [d.spc.smiles for d in self.dataset]
-        self.assertListEqual(smiles, smiles_from_dset)
+        assert smiles == smiles_from_dset
 
     def test_attrs(self):
         """
         Test that DatasetProperty attributes behave properly.
         """
-        self.assertIsInstance(self.dataset.bonds, list)
-        self.assertEqual(len(self.dataset.bonds), len(self.species))
-        self.assertIsInstance(self.dataset.ref_data, np.ndarray)
-        self.assertEqual(len(self.dataset.ref_data), len(self.species))
-        self.assertIsInstance(self.dataset.calc_data, np.ndarray)
-        self.assertEqual(len(self.dataset.calc_data), len(self.species))
-        self.assertIsInstance(self.dataset.substructs, list)
-        self.assertEqual(len(self.dataset.substructs), len(self.species))
+        assert isinstance(self.dataset.bonds, list)
+        assert len(self.dataset.bonds) == len(self.species)
+        assert isinstance(self.dataset.ref_data, np.ndarray)
+        assert len(self.dataset.ref_data) == len(self.species)
+        assert isinstance(self.dataset.calc_data, np.ndarray)
+        assert len(self.dataset.calc_data) == len(self.species)
+        assert isinstance(self.dataset.substructs, list)
+        assert len(self.dataset.substructs) == len(self.species)
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = self.dataset.bac_data
         self.dataset.bac_data = list(range(len(self.species)))
-        self.assertIsInstance(self.dataset.bac_data, np.ndarray)
-        self.assertEqual(len(self.dataset.bac_data), len(self.species))
+        assert isinstance(self.dataset.bac_data, np.ndarray)
+        assert len(self.dataset.bac_data) == len(self.species)
 
-        self.assertIsInstance(self.dataset.weight, np.ndarray)
-        self.assertTrue(
-            all(w1 == w2 for w1, w2 in zip(self.dataset.weight, self.dataset.weights))
-        )
-        self.assertEqual(len(self.dataset.weights), len(self.species))
+        assert isinstance(self.dataset.weight, np.ndarray)
+        assert all(w1 == w2 for w1, w2 in zip(self.dataset.weight, self.dataset.weights))
+        assert len(self.dataset.weights) == len(self.species)
 
     def test_get_mols(self):
         """
         Test that molecules can be retrieved.
         """
         mols = self.dataset.get_mols()
-        self.assertIsInstance(mols, list)
-        self.assertEqual(len(mols), len(self.species))
+        assert isinstance(mols, list)
+        assert len(mols) == len(self.species)
 
     def test_calculate_stats(self):
         """
         Test that RMSE and MAE are calculated correctly.
         """
         stats_calc = self.dataset.calculate_stats()
-        self.assertLessEqual(stats_calc.mae, stats_calc.rmse)
+        assert stats_calc.mae <= stats_calc.rmse
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = self.dataset.calculate_stats(for_bac_data=True)
 
         self.dataset.bac_data = list(range(len(self.species)))
         stats_bac = self.dataset.calculate_stats(for_bac_data=True)
-        self.assertLessEqual(stats_bac.mae, stats_bac.rmse)
-        self.assertNotEqual(stats_calc, stats_bac)
+        assert stats_bac.mae <= stats_bac.rmse
+        assert stats_calc != stats_bac
 
     def test_compute_weights(self):
         """
         Test that weights can be computed.
         """
-        with self.assertRaises(NotImplementedError):
+        with pytest.raises(NotImplementedError):
             self.dataset.compute_weights(weight_type="")
 
         self.dataset.compute_weights()
-        self.assertTrue(all(0 <= w < 1 for w in self.dataset.weights))
+        assert all(0 <= w < 1 for w in self.dataset.weights)
 
 
-class TestFuncs(unittest.TestCase):
+class TestFuncs:
     """
     A class for testing that the functions in the data module work.
     """
@@ -397,70 +388,66 @@ class TestFuncs(unittest.TestCase):
         Test that a reference dataset can be extracted.
         """
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY)
-        self.assertIsInstance(dataset, BACDataset)
+        assert isinstance(dataset, BACDataset)
 
         # Test only retrieving specific indices
         idxs = 211
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, idxs=idxs)
-        self.assertEqual(len(dataset), 1)
-        self.assertEqual(dataset[0].spc.index, idxs)
+        assert len(dataset) == 1
+        assert dataset[0].spc.index == idxs
         idxs = [211, 362]
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, idxs=idxs)
-        self.assertEqual(len(dataset), 2)
+        assert len(dataset) == 2
         for d in dataset:
-            self.assertTrue(d.spc.index in {211, 362})
+            assert d.spc.index in {211, 362}
 
         # Test excluding indices
         idxs = 211
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, exclude_idxs=idxs)
         for d in dataset:
-            self.assertNotEqual(d.spc.index, idxs)
+            assert d.spc.index != idxs
         idxs = [211, 362]
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, exclude_idxs=idxs)
         for d in dataset:
-            self.assertTrue(d.spc.index not in {211, 362})
+            assert d.spc.index not in {211, 362}
 
         # Test excluding elements
         elements = "N"
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, exclude_elements=elements)
         for d in dataset:
-            self.assertFalse(elements in d.spc.formula)
+            assert not (elements in d.spc.formula)
         elements = ["N", "O"]
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, exclude_elements=elements)
         for d in dataset:
-            self.assertFalse(any(e in d.spc.formula for e in elements))
+            assert not any(e in d.spc.formula for e in elements)
 
         # Test specifying charge
         charges = "negative"
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, charge=charges)
         for d in dataset:
-            self.assertTrue(d.spc.charge < 0)
+            assert d.spc.charge < 0
         charges = 1
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, charge=charges)
         for d in dataset:
-            self.assertTrue(d.spc.charge == 1)
+            assert d.spc.charge == 1
         charges = ["positive", "neutral"]
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, charge=charges)
         for d in dataset:
-            self.assertTrue(d.spc.charge >= 0)
+            assert d.spc.charge >= 0
         charges = [-1, "positive"]
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, charge=charges)
         for d in dataset:
-            self.assertTrue(d.spc.charge > 0 or d.spc.charge == -1)
+            assert d.spc.charge > 0 or d.spc.charge == -1
 
         # Test specifying multiplicity
         multiplicities = 2
-        dataset = extract_dataset(
-            DATABASE, LEVEL_OF_THEORY, multiplicity=multiplicities
-        )
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, multiplicity=multiplicities)
         for d in dataset:
-            self.assertTrue(d.spc.multiplicity == 2)
+            assert d.spc.multiplicity == 2
         multiplicities = [2, 3]
-        dataset = extract_dataset(
-            DATABASE, LEVEL_OF_THEORY, multiplicity=multiplicities
-        )
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, multiplicity=multiplicities)
         for d in dataset:
-            self.assertTrue(d.spc.multiplicity in {2, 3})
+            assert d.spc.multiplicity in {2, 3}
 
     def test_geo_to_mol(self):
         """
@@ -470,12 +457,8 @@ class TestFuncs(unittest.TestCase):
         nums = (1, 1)
         coords = np.array([[0, 0, 0], [0, 0, 0.74]])
         mol = geo_to_mol(coords, nums=nums)
-        self.assertIsInstance(mol, Molecule)
-        self.assertTrue(
-            mol.to_single_bonds().is_isomorphic(
-                Molecule(smiles="[H][H]").to_single_bonds()
-            )
-        )
+        assert isinstance(mol, Molecule)
+        assert mol.to_single_bonds().is_isomorphic(Molecule(smiles="[H][H]").to_single_bonds())
 
         # Methane
         symbols = ("H", "C", "H", "H", "H")
@@ -489,10 +472,8 @@ class TestFuncs(unittest.TestCase):
             ]
         )
         mol = geo_to_mol(coords, symbols=symbols)
-        self.assertIsInstance(mol, Molecule)
-        self.assertTrue(
-            mol.to_single_bonds().is_isomorphic(Molecule(smiles="C").to_single_bonds())
-        )
+        assert isinstance(mol, Molecule)
+        assert mol.to_single_bonds().is_isomorphic(Molecule(smiles="C").to_single_bonds())
 
     def test_pybel_to_rmg(self):
         """
@@ -504,13 +485,6 @@ class TestFuncs(unittest.TestCase):
         mol = _pybel_to_rmg(pybel_mol)
 
         for atom, pybel_atom in zip(mol.atoms, pybel_mol.atoms):
-            self.assertEqual(atom.number, pybel_atom.atomicnum)
-            self.assertIsNone(
-                np.testing.assert_allclose(atom.coords, pybel_atom.coords)
-            )
-            self.assertEqual(
-                Counter(a.number for a in atom.bonds),
-                Counter(
-                    a.GetAtomicNum() for a in pybel.ob.OBAtomAtomIter(pybel_atom.OBAtom)
-                ),
-            )
+            assert atom.number == pybel_atom.atomicnum
+            assert np.testing.assert_allclose(atom.coords, pybel_atom.coords) is None
+            assert Counter(a.number for a in atom.bonds) == Counter(a.GetAtomicNum() for a in pybel.ob.OBAtomAtomIter(pybel_atom.OBAtom))

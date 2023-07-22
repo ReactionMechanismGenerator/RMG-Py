@@ -29,7 +29,7 @@
 
 import os
 import shutil
-import unittest
+
 
 import numpy as np
 
@@ -43,7 +43,7 @@ mol1 = Molecule().from_smiles("C1=CC=C2C=CC=CC2=C1")
 MOPAC_CLOSE_ENOUGH_PERCENT = 0.005  # 0.5%
 
 
-class TestMopacMolPM3(unittest.TestCase):
+class TestMopacMolPM3:
     """
     Contains unit tests for the Geometry class.
     """
@@ -79,25 +79,15 @@ class TestMopacMolPM3(unittest.TestCase):
 
         self.qmmol1.generate_thermo_data()
         result = self.qmmol1.qm_data
-        self.assertTrue(self.qmmol1.verify_output_file())
-        self.assertTrue(
-            self.qmmol1.thermo.comment.startswith("QM MopacMolPM3 calculation")
-        )
-        self.assertEqual(result.numberOfAtoms, 18)
-        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        assert self.qmmol1.verify_output_file()
+        assert self.qmmol1.thermo.comment.startswith("QM MopacMolPM3 calculation")
+        assert result.numberOfAtoms == 18
+        assert isinstance(result.atomicNumbers, np.ndarray)
         if result.molecularMass.units == "amu":
-            self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
+            assert round(abs(result.molecularMass.value - 128.173), 2) == 0
 
-        self.assertAlmostEqual(
-            self.qmmol1.thermo.H298.value_si,
-            169708,
-            delta=169708 * MOPAC_CLOSE_ENOUGH_PERCENT,
-        )
-        self.assertAlmostEqual(
-            self.qmmol1.thermo.S298.value_si,
-            334.500,
-            delta=334.500 * MOPAC_CLOSE_ENOUGH_PERCENT,
-        )
+        assert abs(self.qmmol1.thermo.H298.value_si - 169708) < 169708 * MOPAC_CLOSE_ENOUGH_PERCENT
+        assert abs(self.qmmol1.thermo.S298.value_si - 334.500) < 334.500 * MOPAC_CLOSE_ENOUGH_PERCENT
 
     def test_load_thermo_data(self):
         """
@@ -109,27 +99,17 @@ class TestMopacMolPM3(unittest.TestCase):
         self.qmmol1.generate_thermo_data()
         result = self.qmmol1.qm_data
 
-        self.assertTrue(
-            self.qmmol1.thermo.comment.startswith("QM MopacMolPM3 calculation")
-        )
-        self.assertEqual(result.numberOfAtoms, 18)
-        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        assert self.qmmol1.thermo.comment.startswith("QM MopacMolPM3 calculation")
+        assert result.numberOfAtoms == 18
+        assert isinstance(result.atomicNumbers, np.ndarray)
         if result.molecularMass.units == "amu":
-            self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
+            assert round(abs(result.molecularMass.value - 128.173), 2) == 0
 
-        self.assertAlmostEqual(
-            self.qmmol1.thermo.H298.value_si,
-            169708,
-            delta=169708 * MOPAC_CLOSE_ENOUGH_PERCENT,
-        )
-        self.assertAlmostEqual(
-            self.qmmol1.thermo.S298.value_si,
-            334.500,
-            delta=334.500 * MOPAC_CLOSE_ENOUGH_PERCENT,
-        )
+        assert abs(self.qmmol1.thermo.H298.value_si - 169708) < 169708 * MOPAC_CLOSE_ENOUGH_PERCENT
+        assert abs(self.qmmol1.thermo.S298.value_si - 334.500) < 334.500 * MOPAC_CLOSE_ENOUGH_PERCENT
 
 
-class TestMopacMolPM6(unittest.TestCase):
+class TestMopacMolPM6:
     """
     Contains unit tests for the Geometry class.
     """
@@ -165,26 +145,16 @@ class TestMopacMolPM6(unittest.TestCase):
 
         self.qmmol1.generate_thermo_data()
         result = self.qmmol1.qm_data
-        self.assertTrue(self.qmmol1.verify_output_file())
+        assert self.qmmol1.verify_output_file()
 
-        self.assertTrue(
-            self.qmmol1.thermo.comment.startswith("QM MopacMolPM6 calculation")
-        )
-        self.assertEqual(result.numberOfAtoms, 18)
-        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        assert self.qmmol1.thermo.comment.startswith("QM MopacMolPM6 calculation")
+        assert result.numberOfAtoms == 18
+        assert isinstance(result.atomicNumbers, np.ndarray)
         if result.molecularMass.units == "amu":
-            self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
+            assert round(abs(result.molecularMass.value - 128.173), 2) == 0
 
-        self.assertAlmostEqual(
-            self.qmmol1.thermo.H298.value_si,
-            167704,
-            delta=167704 * MOPAC_CLOSE_ENOUGH_PERCENT,
-        )
-        self.assertAlmostEqual(
-            self.qmmol1.thermo.S298.value_si,
-            338.099,
-            delta=338.099 * MOPAC_CLOSE_ENOUGH_PERCENT,
-        )
+        assert abs(self.qmmol1.thermo.H298.value_si - 167704) < 167704 * MOPAC_CLOSE_ENOUGH_PERCENT
+        assert abs(self.qmmol1.thermo.S298.value_si - 338.099) < 338.099 * MOPAC_CLOSE_ENOUGH_PERCENT
 
     def test_load_thermo_data(self):
         """
@@ -196,27 +166,17 @@ class TestMopacMolPM6(unittest.TestCase):
         self.qmmol1.generate_thermo_data()
         result = self.qmmol1.qm_data
 
-        self.assertTrue(
-            self.qmmol1.thermo.comment.startswith("QM MopacMolPM6 calculation")
-        )
-        self.assertEqual(result.numberOfAtoms, 18)
-        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        assert self.qmmol1.thermo.comment.startswith("QM MopacMolPM6 calculation")
+        assert result.numberOfAtoms == 18
+        assert isinstance(result.atomicNumbers, np.ndarray)
         if result.molecularMass.units == "amu":
-            self.assertEqual(result.molecularMass.value, 128.173)
+            assert result.molecularMass.value == 128.173
 
-        self.assertAlmostEqual(
-            self.qmmol1.thermo.H298.value_si,
-            167704,
-            delta=167704 * MOPAC_CLOSE_ENOUGH_PERCENT,
-        )  # to 0 decimal place
-        self.assertAlmostEqual(
-            self.qmmol1.thermo.S298.value_si,
-            338.099,
-            delta=338.099 * MOPAC_CLOSE_ENOUGH_PERCENT,
-        )
+        assert abs(self.qmmol1.thermo.H298.value_si - 167704) < 167704 * MOPAC_CLOSE_ENOUGH_PERCENT  # to 0 decimal place
+        assert abs(self.qmmol1.thermo.S298.value_si - 338.099) < 338.099 * MOPAC_CLOSE_ENOUGH_PERCENT
 
 
-class TestMopacMolPM7(unittest.TestCase):
+class TestMopacMolPM7:
     """
     Contains unit tests for the Geometry class.
     """
@@ -253,26 +213,16 @@ class TestMopacMolPM7(unittest.TestCase):
 
         self.qmmol1.generate_thermo_data()
         result = self.qmmol1.qm_data
-        self.assertTrue(self.qmmol1.verify_output_file())
+        assert self.qmmol1.verify_output_file()
 
-        self.assertTrue(
-            self.qmmol1.thermo.comment.startswith("QM MopacMolPM7 calculation")
-        )
-        self.assertEqual(result.numberOfAtoms, 18)
-        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        assert self.qmmol1.thermo.comment.startswith("QM MopacMolPM7 calculation")
+        assert result.numberOfAtoms == 18
+        assert isinstance(result.atomicNumbers, np.ndarray)
         if result.molecularMass.units == "amu":
-            self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
+            assert round(abs(result.molecularMass.value - 128.173), 2) == 0
 
-        self.assertAlmostEqual(
-            self.qmmol1.thermo.H298.value_si,
-            166169,
-            delta=166169 * MOPAC_CLOSE_ENOUGH_PERCENT,
-        )
-        self.assertAlmostEqual(
-            self.qmmol1.thermo.S298.value_si,
-            336.333,
-            delta=336.333 * MOPAC_CLOSE_ENOUGH_PERCENT,
-        )
+        assert abs(self.qmmol1.thermo.H298.value_si - 166169) < 166169 * MOPAC_CLOSE_ENOUGH_PERCENT
+        assert abs(self.qmmol1.thermo.S298.value_si - 336.333) < 336.333 * MOPAC_CLOSE_ENOUGH_PERCENT
 
     def test_load_thermo_data(self):
         """
@@ -284,24 +234,11 @@ class TestMopacMolPM7(unittest.TestCase):
         self.qmmol1.generate_thermo_data()
         result = self.qmmol1.qm_data
 
-        self.assertTrue(
-            self.qmmol1.thermo.comment.startswith("QM MopacMolPM7 calculation")
-        )
-        self.assertEqual(result.numberOfAtoms, 18)
-        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        assert self.qmmol1.thermo.comment.startswith("QM MopacMolPM7 calculation")
+        assert result.numberOfAtoms == 18
+        assert isinstance(result.atomicNumbers, np.ndarray)
         if result.molecularMass.units == "amu":
-            self.assertAlmostEqual(result.molecularMass.value, 128.173, 2)
+            assert round(abs(result.molecularMass.value - 128.173), 2) == 0
 
-        self.assertAlmostEqual(
-            self.qmmol1.thermo.H298.value_si,
-            166169,
-            delta=166169 * MOPAC_CLOSE_ENOUGH_PERCENT,
-        )
-        self.assertAlmostEqual(
-            self.qmmol1.thermo.S298.value_si,
-            336.333,
-            delta=336.333 * MOPAC_CLOSE_ENOUGH_PERCENT,
-        )
-
-
-################################################################################
+        assert abs(self.qmmol1.thermo.H298.value_si - 166169) < 166169 * MOPAC_CLOSE_ENOUGH_PERCENT
+        assert abs(self.qmmol1.thermo.S298.value_si - 336.333) < 336.333 * MOPAC_CLOSE_ENOUGH_PERCENT

@@ -32,17 +32,14 @@ This script contains unit tests of the :mod:`rmgpy.thermo` object conversion
 methods.
 """
 
-import unittest
 
 import numpy as np
 
 import rmgpy.constants as constants
 from rmgpy.thermo import Wilhoit, NASA, NASAPolynomial, ThermoData
 
-################################################################################
 
-
-class TestConverter(unittest.TestCase):
+class TestConverter:
     """
     Contains unit tests of the thermodynamics model conversion functions.
     """
@@ -104,10 +101,7 @@ class TestConverter(unittest.TestCase):
         self.thermodata = ThermoData(
             Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
             Cpdata=(
-                np.array(
-                    [6.38268, 7.80327, 9.22175, 10.5528, 12.8323, 14.6013, 17.40890]
-                )
-                * constants.R,
+                np.array([6.38268, 7.80327, 9.22175, 10.5528, 12.8323, 14.6013, 17.40890]) * constants.R,
                 "J/(mol*K)",
             ),
             H298=(-81.7, "kJ/mol"),
@@ -130,14 +124,14 @@ class TestConverter(unittest.TestCase):
         for T in Tlist:
             cp_wilhoit = wilhoit.get_heat_capacity(T)
             cp_nasa = nasa.get_heat_capacity(T)
-            self.assertAlmostEqual(cp_nasa, cp_wilhoit, delta=1e0)
+            assert abs(cp_nasa - cp_wilhoit) < 1e0
             h_wilhoit = wilhoit.get_enthalpy(T)
             h_nasa = nasa.get_enthalpy(T)
-            self.assertAlmostEqual(h_nasa, h_wilhoit, delta=2e1)
+            assert abs(h_nasa - h_wilhoit) < 2e1
             s_wilhoit = wilhoit.get_entropy(T)
             s_nasa = nasa.get_entropy(T)
-            self.assertAlmostEqual(s_nasa, s_wilhoit, delta=1e0)
-        self.assertAlmostEqual(wilhoit.E0.value_si, nasa.E0.value_si, delta=1e1)
+            assert abs(s_nasa - s_wilhoit) < 1e0
+        assert abs(wilhoit.E0.value_si - nasa.E0.value_si) < 1e1
 
     def test_convert_wilhoit_to_thermo_data(self):
         """
@@ -149,15 +143,15 @@ class TestConverter(unittest.TestCase):
         for T in Tlist:
             cp_wilhoit = wilhoit.get_heat_capacity(T)
             cp_thermodata = thermodata.get_heat_capacity(T)
-            self.assertAlmostEqual(cp_thermodata, cp_wilhoit, 4)
+            assert round(abs(cp_thermodata - cp_wilhoit), 4) == 0
         T = 298
         h_wilhoit = wilhoit.get_enthalpy(T)
         h_thermodata = thermodata.get_enthalpy(T)
-        self.assertAlmostEqual(h_thermodata, h_wilhoit, 4)
+        assert round(abs(h_thermodata - h_wilhoit), 4) == 0
         s_wilhoit = wilhoit.get_entropy(T)
         s_thermodata = thermodata.get_entropy(T)
-        self.assertAlmostEqual(s_thermodata, s_wilhoit, 4)
-        self.assertAlmostEqual(wilhoit.E0.value_si, thermodata.E0.value_si, delta=1e1)
+        assert round(abs(s_thermodata - s_wilhoit), 4) == 0
+        assert abs(wilhoit.E0.value_si - thermodata.E0.value_si) < 1e1
 
     def test_convert_nasa_to_wilhoit(self):
         """
@@ -169,14 +163,14 @@ class TestConverter(unittest.TestCase):
         for T in Tlist:
             cp_wilhoit = wilhoit.get_heat_capacity(T)
             cp_nasa = nasa.get_heat_capacity(T)
-            self.assertAlmostEqual(cp_nasa, cp_wilhoit, delta=1e0)
+            assert abs(cp_nasa - cp_wilhoit) < 1e0
             h_wilhoit = wilhoit.get_enthalpy(T)
             h_nasa = nasa.get_enthalpy(T)
-            self.assertAlmostEqual(h_nasa, h_wilhoit, delta=2e1)
+            assert abs(h_nasa - h_wilhoit) < 2e1
             s_wilhoit = wilhoit.get_entropy(T)
             s_nasa = nasa.get_entropy(T)
-            self.assertAlmostEqual(s_nasa, s_wilhoit, delta=1e0)
-        self.assertAlmostEqual(nasa.E0.value_si, wilhoit.E0.value_si, delta=2e1)
+            assert abs(s_nasa - s_wilhoit) < 1e0
+        assert abs(nasa.E0.value_si - wilhoit.E0.value_si) < 2e1
 
     def test_convert_nasa_to_thermo_data(self):
         """
@@ -188,15 +182,15 @@ class TestConverter(unittest.TestCase):
         for T in Tlist:
             cp_thermodata = thermodata.get_heat_capacity(T)
             cp_nasa = nasa.get_heat_capacity(T)
-            self.assertAlmostEqual(cp_nasa, cp_thermodata, 4)
+            assert round(abs(cp_nasa - cp_thermodata), 4) == 0
         T = 298
         h_thermodata = thermodata.get_enthalpy(T)
         h_nasa = nasa.get_enthalpy(T)
-        self.assertAlmostEqual(h_nasa, h_thermodata, 4)
+        assert round(abs(h_nasa - h_thermodata), 4) == 0
         s_thermodata = thermodata.get_entropy(T)
         s_nasa = nasa.get_entropy(T)
-        self.assertAlmostEqual(s_nasa, s_thermodata, 4)
-        self.assertAlmostEqual(nasa.E0.value_si, thermodata.E0.value_si, delta=1e1)
+        assert round(abs(s_nasa - s_thermodata), 4) == 0
+        assert abs(nasa.E0.value_si - thermodata.E0.value_si) < 1e1
 
     def test_convert_thermo_data_to_wilhoit(self):
         """
@@ -208,15 +202,15 @@ class TestConverter(unittest.TestCase):
         for T in Tlist:
             cp_wilhoit = wilhoit.get_heat_capacity(T)
             cp_thermodata = thermodata.get_heat_capacity(T)
-            self.assertAlmostEqual(cp_thermodata, cp_wilhoit, 3)
+            assert round(abs(cp_thermodata - cp_wilhoit), 3) == 0
         T = 298
         h_wilhoit = wilhoit.get_enthalpy(T)
         h_thermodata = thermodata.get_enthalpy(T)
-        self.assertAlmostEqual(h_thermodata, h_wilhoit, 3)
+        assert round(abs(h_thermodata - h_wilhoit), 3) == 0
         s_wilhoit = wilhoit.get_entropy(T)
         s_thermodata = thermodata.get_entropy(T)
-        self.assertAlmostEqual(s_thermodata, s_wilhoit, 3)
-        self.assertAlmostEqual(thermodata.E0.value_si, wilhoit.E0.value_si, delta=1e1)
+        assert round(abs(s_thermodata - s_wilhoit), 3) == 0
+        assert abs(thermodata.E0.value_si - wilhoit.E0.value_si) < 1e1
 
     def test_convert_thermo_data_to_nasa(self):
         """
@@ -228,15 +222,15 @@ class TestConverter(unittest.TestCase):
         for T in Tlist:
             cp_thermodata = thermodata.get_heat_capacity(T)
             cp_nasa = nasa.get_heat_capacity(T)
-            self.assertAlmostEqual(cp_nasa, cp_thermodata, delta=1e0)
+            assert abs(cp_nasa - cp_thermodata) < 1e0
         T = 298
         h_thermodata = thermodata.get_enthalpy(T)
         h_nasa = nasa.get_enthalpy(T)
-        self.assertAlmostEqual(h_nasa, h_thermodata, delta=1e0)
+        assert abs(h_nasa - h_thermodata) < 1e0
         s_thermodata = thermodata.get_entropy(T)
         s_nasa = nasa.get_entropy(T)
-        self.assertAlmostEqual(s_nasa, s_thermodata, delta=1e0)
-        self.assertAlmostEqual(thermodata.E0.value_si, nasa.E0.value_si, delta=1e1)
+        assert abs(s_nasa - s_thermodata) < 1e0
+        assert abs(thermodata.E0.value_si - nasa.E0.value_si) < 1e1
 
     def test_wilhoit_nasa_wilhoit(self):
         """
@@ -249,14 +243,14 @@ class TestConverter(unittest.TestCase):
         for T in Tlist:
             cp_1 = wilhoit1.get_heat_capacity(T)
             cp_2 = wilhoit2.get_heat_capacity(T)
-            self.assertAlmostEqual(cp_1, cp_2, delta=1e0)
+            assert abs(cp_1 - cp_2) < 1e0
             h_1 = wilhoit1.get_enthalpy(T)
             h_2 = wilhoit2.get_enthalpy(T)
-            self.assertAlmostEqual(h_1, h_2, delta=2e1)
+            assert abs(h_1 - h_2) < 2e1
             s_1 = wilhoit1.get_entropy(T)
             s_2 = wilhoit2.get_entropy(T)
-            self.assertAlmostEqual(s_1, s_2, delta=1e0)
-        self.assertAlmostEqual(wilhoit1.E0.value_si, wilhoit2.E0.value_si, delta=1e1)
+            assert abs(s_1 - s_2) < 1e0
+        assert abs(wilhoit1.E0.value_si - wilhoit2.E0.value_si) < 1e1
 
     def test_wilhoit_thermo_data_wilhoit(self):
         """
@@ -269,14 +263,11 @@ class TestConverter(unittest.TestCase):
         for T in Tlist:
             cp_1 = wilhoit1.get_heat_capacity(T)
             cp_2 = wilhoit2.get_heat_capacity(T)
-            self.assertAlmostEqual(cp_1, cp_2, delta=1e0)
+            assert abs(cp_1 - cp_2) < 1e0
             h_1 = wilhoit1.get_enthalpy(T)
             h_2 = wilhoit2.get_enthalpy(T)
-            self.assertAlmostEqual(h_1, h_2, delta=2e1)
+            assert abs(h_1 - h_2) < 2e1
             s_1 = wilhoit1.get_entropy(T)
             s_2 = wilhoit2.get_entropy(T)
-            self.assertAlmostEqual(s_1, s_2, delta=1e0)
-        self.assertAlmostEqual(wilhoit1.E0.value_si, wilhoit2.E0.value_si, delta=1e1)
-
-
-################################################################################
+            assert abs(s_1 - s_2) < 1e0
+        assert abs(wilhoit1.E0.value_si - wilhoit2.E0.value_si) < 1e1

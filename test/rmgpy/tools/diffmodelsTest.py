@@ -29,12 +29,12 @@
 
 import os.path
 import shutil
-import unittest
+
 
 from rmgpy.tools.diffmodels import execute
 
 
-class DiffModelsTest(unittest.TestCase):
+class DiffModelsTest:
     def test_identical_models(self):
         folder = os.path.join(os.getcwd(), "rmgpy/tools/data/diffmodels")
 
@@ -71,15 +71,7 @@ class DiffModelsTest(unittest.TestCase):
             "surface_path2": chemkin_surf2,
         }
 
-        execute(
-            chemkin_gas1,
-            species_dict1,
-            None,
-            chemkin_gas2,
-            species_dict2,
-            None,
-            **kwargs
-        )
+        execute(chemkin_gas1, species_dict1, None, chemkin_gas2, species_dict2, None, **kwargs)
 
         shutil.rmtree(os.path.join(folder, "species1"))
         shutil.rmtree(os.path.join(folder, "species2"))

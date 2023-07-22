@@ -31,7 +31,6 @@
 This script contains unit tests of the :mod:`rmgpy.pdep.network` module.
 """
 
-import unittest
 
 from rmgpy.pdep.collision import SingleExponentialDown
 from rmgpy.pdep.configuration import Configuration
@@ -46,10 +45,7 @@ from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.transport import TransportData
 
 
-################################################################################
-
-
-class TestNetwork(unittest.TestCase):
+class TestNetwork:
     """
     Contains unit tests of the :class:`Network` class.
     """
@@ -154,9 +150,7 @@ class TestNetwork(unittest.TestCase):
             ),
             molecular_weight=(74.07, "g/mol"),
             transport_data=TransportData(sigma=(5.94, "angstrom"), epsilon=(559, "K")),
-            energy_transfer_model=SingleExponentialDown(
-                alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85
-            ),
+            energy_transfer_model=SingleExponentialDown(alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85),
         )
 
         self.nC4H8 = Species(
@@ -242,9 +236,7 @@ class TestNetwork(unittest.TestCase):
                         inertia=([0.630578, 1.15529, 1.78586], "amu*angstrom^2"),
                         symmetry=2,
                     ),
-                    HarmonicOscillator(
-                        frequencies=([1622.09, 3771.85, 3867.85], "cm^-1")
-                    ),
+                    HarmonicOscillator(frequencies=([1622.09, 3771.85, 3867.85], "cm^-1")),
                 ],
                 spin_multiplicity=1,
                 optical_isomers=1,
@@ -355,47 +347,47 @@ class TestNetwork(unittest.TestCase):
         """
         Test that the network `label` property was properly set.
         """
-        self.assertEqual("n-butanol", self.network.label)
+        assert "n-butanol" == self.network.label
 
     def test_isomers(self):
         """
         Test that the network `isomers` property was properly set.
         """
-        self.assertEqual(1, len(self.network.isomers))
-        self.assertEqual(1, self.network.n_isom)
+        assert 1 == len(self.network.isomers)
+        assert 1 == self.network.n_isom
 
     def test_reactants(self):
         """
         Test that the network `reactants` property was properly set.
         """
-        self.assertEqual(0, len(self.network.reactants))
-        self.assertEqual(0, self.network.n_reac)
+        assert 0 == len(self.network.reactants)
+        assert 0 == self.network.n_reac
 
     def test_products(self):
         """
         Test that the network `products` property was properly set.
         """
-        self.assertEqual(1, len(self.network.products))
-        self.assertEqual(1, self.network.n_prod)
+        assert 1 == len(self.network.products)
+        assert 1 == self.network.n_prod
 
     def test_path_reactions(self):
         """
         Test that the network `path_reactions` property was properly set.
         """
-        self.assertEqual(1, len(self.network.path_reactions))
+        assert 1 == len(self.network.path_reactions)
 
     def test_bath_gas(self):
         """
         Test that the network `bath_gas` property was properly set.
         """
-        self.assertEqual(1, len(self.network.bath_gas))
-        self.assertTrue(self.N2 in self.network.bath_gas)
+        assert 1 == len(self.network.bath_gas)
+        assert self.N2 in self.network.bath_gas
 
     def test_net_reactions(self):
         """
         Test that the network `net_reactions` property was properly set.
         """
-        self.assertEqual(0, len(self.network.net_reactions))
+        assert 0 == len(self.network.net_reactions)
 
     def test_repr(self):
         """
@@ -405,7 +397,7 @@ class TestNetwork(unittest.TestCase):
         # ensure species strings
         labels = ["dehydration", "H2O", "N2", "TS", "n-C4H8", "n-C4H10O"]
         for label in labels:
-            self.assertIn(label, output)
+            assert label in output
 
         # ensure classes are used as well
         attributes = [
@@ -421,7 +413,7 @@ class TestNetwork(unittest.TestCase):
             "SingleExponentialDown",
         ]
         for label in attributes:
-            self.assertIn(label, output)
+            assert label in output
 
     def test_str(self):
         """
@@ -431,7 +423,7 @@ class TestNetwork(unittest.TestCase):
         # ensure species strings
         labels = ["dehydration", "H2O", "N2", "n-C4H8", "n-C4H10O"]
         for label in labels:
-            self.assertIn(label, output)
+            assert label in output
 
         # ensure this extra fluff is not in Network string
         attributes = [
@@ -448,7 +440,7 @@ class TestNetwork(unittest.TestCase):
             "SingleExponentialDown",
         ]
         for label in attributes:
-            self.assertNotIn(label, output)
+            assert label not in output
 
     def test_collision_matrix_memory_handling(self):
         net = Network()
@@ -459,9 +451,7 @@ class TestNetwork(unittest.TestCase):
         try:
             net.calculate_collision_model()
         except MemoryError:
-            raise AssertionError(
-                "Large collision matrix resulted in memory error, handling failed"
-            )
+            raise AssertionError("Large collision matrix resulted in memory error, handling failed")
         except:
             pass
 
@@ -470,10 +460,7 @@ class TestNetwork(unittest.TestCase):
         Ensures all species are in the get_species_list
         """
         species_list = self.network.get_all_species()
-        self.assertIn(self.nC4H10O, species_list)
-        self.assertIn(self.nC4H8, species_list)
-        self.assertIn(self.H2O, species_list)
-        self.assertIn(self.N2, species_list)
-
-
-################################################################################
+        assert self.nC4H10O in species_list
+        assert self.nC4H8 in species_list
+        assert self.H2O in species_list
+        assert self.N2 in species_list

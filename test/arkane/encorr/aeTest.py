@@ -34,13 +34,14 @@ This script contains unit tests for the :mod:`arkane.encorr.ae` module.
 import importlib
 import os
 import tempfile
-import unittest
+
 
 from arkane.encorr.ae import AE, SPECIES_LABELS
 from arkane.modelchem import LevelOfTheory
+import pytest
 
 
-class TestAE(unittest.TestCase):
+class TestAE:
     """
     A class for testing that the AEJob class functions properly.
     """
@@ -55,26 +56,26 @@ class TestAE(unittest.TestCase):
         Test that the species for fitting can be loaded.
         """
         self.ae._load_refdata()
-        self.assertIsNotNone(self.ae.ref_data)
+        assert self.ae.ref_data is not None
         for spc in self.ae.ref_data.values():
             spc_ref_data = spc.reference_data[self.ae.ref_data_src]
-            self.assertIsNotNone(spc_ref_data.atomization_energy)
-            self.assertIsNotNone(spc_ref_data.zpe)
+            assert spc_ref_data.atomization_energy is not None
+            assert spc_ref_data.zpe is not None
 
         # Test that new instance already has data loaded
         ae = AE(self.species_energies)
-        self.assertIsNotNone(ae.ref_data)
+        assert ae.ref_data is not None
 
     def test_fit(self):
         """
         Test that atom energies can be fitted.
         """
-        self.assertIsNone(self.ae.atom_energies)
-        self.assertIsNone(self.ae.confidence_intervals)
+        assert self.ae.atom_energies is None
+        assert self.ae.confidence_intervals is None
 
         self.ae.fit()
-        self.assertIsNotNone(self.ae.atom_energies)
-        self.assertIsNotNone(self.ae.confidence_intervals)
+        assert self.ae.atom_energies is not None
+        assert self.ae.confidence_intervals is not None
 
     def test_write_to_database(self):
         """
@@ -82,35 +83,33 @@ class TestAE(unittest.TestCase):
         """
         # Check that error is raised when no energies are available
         self.ae.atom_energies = None
-        with self.assertRaises(ValueError) as e:
+        with pytest.raises(ValueError) as e:
             self.ae.write_to_database("test")
-        self.assertIn("No atom energies", str(e.exception))
+        assert "No atom energies" in str(e.exception)
 
         # Check that error is raised if energies already exist
         self.ae.atom_energies = {"H": 1.0, "C": 2.0}
         tmp_datafile_fd, tmp_datafile_path = tempfile.mkstemp(suffix=".py")
 
         lot = LevelOfTheory(method="wb97m-v", basis="def2-tzvpd", software="Q-Chem")
-        with self.assertRaises(ValueError) as e:
+        with pytest.raises(ValueError) as e:
             self.ae.write_to_database(lot, alternate_path=tmp_datafile_path)
-        self.assertIn("overwrite", str(e.exception))
+        assert "overwrite" in str(e.exception)
 
         # Dynamically set data file as module
-        spec = importlib.util.spec_from_file_location(
-            os.path.basename(tmp_datafile_path), tmp_datafile_path
-        )
+        spec = importlib.util.spec_from_file_location(os.path.basename(tmp_datafile_path), tmp_datafile_path)
         module = importlib.util.module_from_spec(spec)
 
         # Check that existing energies can be overwritten
         self.ae.write_to_database(lot, overwrite=True, alternate_path=tmp_datafile_path)
         spec.loader.exec_module(module)  # Load data as module
-        self.assertEqual(self.ae.atom_energies, module.atom_energies[repr(lot)])
+        assert self.ae.atom_energies == module.atom_energies[repr(lot)]
 
         # Check that new energies can be written
         lot = LevelOfTheory("test")
         self.ae.write_to_database(lot, alternate_path=tmp_datafile_path)
         spec.loader.exec_module(module)  # Reload data module
-        self.assertEqual(self.ae.atom_energies, module.atom_energies[repr(lot)])
+        assert self.ae.atom_energies == module.atom_energies[repr(lot)]
 
         os.close(tmp_datafile_fd)
         os.remove(tmp_datafile_path)

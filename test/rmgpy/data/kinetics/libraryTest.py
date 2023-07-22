@@ -30,7 +30,7 @@
 import logging
 import os.path
 import shutil
-import unittest
+
 
 import rmgpy
 from rmgpy import settings
@@ -44,7 +44,7 @@ from rmgpy.kinetics.model import PDepKineticsModel
 ###################################################
 
 
-class TestLibrary(unittest.TestCase):
+class TestLibrary:
     @classmethod
     def setUpClass(cls):
         """
@@ -69,20 +69,14 @@ class TestLibrary(unittest.TestCase):
         """
         lib_rxns = self.libraries["GRI-Mech3.0"].get_library_reactions()
         for rxn in lib_rxns:
-            self.assertIsInstance(rxn, LibraryReaction)
+            assert isinstance(rxn, LibraryReaction)
 
-        lib_rxns = self.libraries[
-            "ethane-oxidation"
-        ].get_library_reactions()  # should have no direct library reactions
+        lib_rxns = self.libraries["ethane-oxidation"].get_library_reactions()  # should have no direct library reactions
         for rxn in lib_rxns:
             if isinstance(rxn.kinetics, PDepKineticsModel):
-                self.assertIsInstance(
-                    rxn, LibraryReaction
-                )  # can load pdep as networks yet so load as libraries
+                assert isinstance(rxn, LibraryReaction)  # can load pdep as networks yet so load as libraries
             else:
-                self.assertIsInstance(
-                    rxn, TemplateReaction
-                )  # all reactions are template based
+                assert isinstance(rxn, TemplateReaction)  # all reactions are template based
 
     def test_save_library(self):
         """
@@ -102,9 +96,7 @@ class TestLibrary(unittest.TestCase):
                 shutil.rmtree(copy_path)
             os.makedirs(copy_path)
             try:
-                self.libraries[library_name].save(
-                    os.path.join(copy_path, "reactions.py")
-                )
+                self.libraries[library_name].save(os.path.join(copy_path, "reactions.py"))
                 self.database.load_libraries(
                     os.path.join(
                         settings["test_data.directory"],
@@ -114,19 +106,11 @@ class TestLibrary(unittest.TestCase):
                     ),
                     libraries=None,
                 )  # this loads all of them, including the new copy
-                original_rxns = self.database.libraries[
-                    library_name
-                ].get_library_reactions()
-                copy_rxns = self.database.libraries[
-                    library_name + "-copy"
-                ].get_library_reactions()
+                original_rxns = self.database.libraries[library_name].get_library_reactions()
+                copy_rxns = self.database.libraries[library_name + "-copy"].get_library_reactions()
                 for i in range(len(original_rxns)):
-                    if (
-                        repr(original_rxns[i]).strip() != repr(copy_rxns[i]).strip()
-                    ):  # if it's representation looks different...
-                        self.assertIsInstance(
-                            copy_rxns[i], TemplateReaction
-                        )  # ...it must be a TemplateReaction
+                    if repr(original_rxns[i]).strip() != repr(copy_rxns[i]).strip():  # if it's representation looks different...
+                        assert isinstance(copy_rxns[i], TemplateReaction)  # ...it must be a TemplateReaction
                     # Todo: we need to check more carefully for equivalence,
                     # eg. is the metal attribute saved for surface reactions?
             finally:
@@ -134,12 +118,8 @@ class TestLibrary(unittest.TestCase):
 
     def test_loading_external_kinetic_library(self):
         """This tests loading a kinetic library which is not in the RMG-database repo"""
-        kinetic_lib_in_db_path = os.path.join(
-            settings["database.directory"], "kinetics", "libraries", "NOx2018"
-        )
-        kinetic_lib_in_test_dir_path = os.path.join(
-            os.path.dirname(rmgpy.__file__), "test_data", "copied_kinetic_lib"
-        )
+        kinetic_lib_in_db_path = os.path.join(settings["database.directory"], "kinetics", "libraries", "NOx2018")
+        kinetic_lib_in_test_dir_path = os.path.join(os.path.dirname(rmgpy.__file__), "test_data", "copied_kinetic_lib")
         os.makedirs(kinetic_lib_in_test_dir_path)
         for file_name in ["reactions.py", "dictionary.txt"]:
             shutil.copyfile(
@@ -147,7 +127,7 @@ class TestLibrary(unittest.TestCase):
                 dst=os.path.join(kinetic_lib_in_test_dir_path, file_name),
             )
         self.database.load_libraries(path="", libraries=[kinetic_lib_in_test_dir_path])
-        self.assertIn("copied_kinetic_lib", list(self.database.libraries.keys()))
+        assert "copied_kinetic_lib" in list(self.database.libraries.keys())
         shutil.rmtree(kinetic_lib_in_test_dir_path, ignore_errors=True)
 
     def test_generate_high_p_limit_kinetics(self):
@@ -157,29 +137,24 @@ class TestLibrary(unittest.TestCase):
         """
         lib_rxns = self.libraries["lib_net"].get_library_reactions()
         for rxn in lib_rxns:
-            self.assertIsNone(rxn.network_kinetics)
+            assert rxn.network_kinetics is None
             logging.debug("Processing reaction {0}".format(rxn))
             success = rxn.generate_high_p_limit_kinetics()
-            if (
-                isinstance(rxn.kinetics, PDepArrhenius)
-                and rxn.kinetics.pressures.value_si[-1] < 9000000
-            ) or not rxn.is_unimolecular():
+            if (isinstance(rxn.kinetics, PDepArrhenius) and rxn.kinetics.pressures.value_si[-1] < 9000000) or not rxn.is_unimolecular():
                 # generate_high_p_limit_kinetics() should return `False` if the reaction is not unimolecular
                 # or if it is a PDepArrhenius or Chebyshev with Pmax < 90 bar
-                self.assertFalse(success)
+                assert not success
             else:
-                self.assertTrue(success)
+                assert success
                 if isinstance(rxn.kinetics, Arrhenius):
                     # If the library reaction is already an Arrhenius expression, network_kinetics isn't generated
-                    self.assertIsNone(rxn.network_kinetics)
+                    assert rxn.network_kinetics is None
                 else:
-                    self.assertTrue(isinstance(rxn.network_kinetics, Arrhenius))
+                    assert isinstance(rxn.network_kinetics, Arrhenius)
                     if isinstance(rxn.kinetics, Troe):
                         # This block quantitative tests the "H + CH2 <=> CH3" reaction
                         # from the test library test_data/testing_database/kinetics/libraries/lib_net/reactions.py
                         # 1. Check that the T exponent in the modified Arrhenius (the "n") equals to 0
-                        self.assertAlmostEqual(rxn.network_kinetics.n.value_si, 0)
+                        assert round(abs(rxn.network_kinetics.n.value_si - 0), 7) == 0
                         # 2. Check that the pre-exponential factor equals to 6e+8 m^3/(mol*s)
-                        self.assertAlmostEqual(
-                            int(rxn.network_kinetics.A.value_si), 6e8
-                        )
+                        assert round(abs(int(rxn.network_kinetics.A.value_si) - 6e8), 7) == 0

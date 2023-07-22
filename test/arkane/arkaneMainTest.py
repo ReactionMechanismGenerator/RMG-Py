@@ -34,7 +34,7 @@ This module contains unit tests of the :mod:`arkane.main` module.
 import logging
 import os
 import shutil
-import unittest
+
 
 from nose.plugins.attrib import attr
 
@@ -43,11 +43,9 @@ import rmgpy
 from arkane import Arkane
 from arkane.common import clean_dir
 
-################################################################################
-
 
 @attr("functional")
-class TestArkaneExamples(unittest.TestCase):
+class TestArkaneExamples:
     """
     Run all of Arkane's examples, and report which one failed
     """
@@ -55,12 +53,8 @@ class TestArkaneExamples(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
-        cls.base_path = os.path.join(
-            os.path.dirname(os.path.dirname(rmgpy.__file__)), "examples", "arkane"
-        )
-        cls.test_base_path = os.path.join(
-            os.path.dirname(os.path.dirname(rmgpy.__file__)), "testing", "arkane"
-        )
+        cls.base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), "examples", "arkane")
+        cls.test_base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), "testing", "arkane")
         cls.failed = []
         cls.example_types = ["species", "reactions", "explorer", "networks", "bac"]
 
@@ -69,12 +63,8 @@ class TestArkaneExamples(unittest.TestCase):
             example_type_path = os.path.join(self.base_path, example_type)
             for example in sorted(os.listdir(example_type_path)):
                 path = os.path.join(example_type_path, example)
-                arkane = Arkane(
-                    input_file=os.path.join(path, "input.py"), output_directory=path
-                )
-                arkane.plot = (
-                    example_type != "bac"
-                )  # Don't plot BAC examples because they require a lot of memory
+                arkane = Arkane(input_file=os.path.join(path, "input.py"), output_directory=path)
+                arkane.plot = example_type != "bac"  # Don't plot BAC examples because they require a lot of memory
                 logging.info("running {}".format(example))
                 arkane.execute()
                 with open(os.path.join(path, "arkane.log"), "r") as f:
@@ -87,7 +77,7 @@ class TestArkaneExamples(unittest.TestCase):
         error_message = "Arkane example(s) failed: "
         for example_type, example_name in self.failed:
             error_message += "{1} in {0}; ".format(example_name, example_type)
-        self.assertFalse(self.failed, error_message)
+        assert not self.failed, error_message
 
     def test_arkane_two_parameter_arrhenius_fit(self):
         test_path = os.path.join(self.test_base_path, "two_parameter_arrhenius_fit")
@@ -95,9 +85,7 @@ class TestArkaneExamples(unittest.TestCase):
         for file in file_to_remove:
             if os.path.exists(os.path.join(test_path, file)):
                 os.remove(os.path.join(test_path, file))
-        arkane = Arkane(
-            input_file=os.path.join(test_path, "input.py"), output_directory=test_path
-        )
+        arkane = Arkane(input_file=os.path.join(test_path, "input.py"), output_directory=test_path)
         arkane.plot = False
         arkane.save_rmg_libraries = False
         arkane.execute()
@@ -110,21 +98,17 @@ class TestArkaneExamples(unittest.TestCase):
                 n_output = reverse_output[i - 5].split("=")[1].strip().replace(",", "")
                 break
         msg_expected = "# kinetics fitted using the two-parameter Arrhenius equation k = A * exp(-Ea/RT)"
-        self.assertEqual(msg_output, msg_expected)
+        assert msg_output == msg_expected
         n_expected = "0"
-        self.assertEqual(n_output, n_expected)
+        assert n_output == n_expected
 
     @classmethod
     def tearDownClass(cls):
         """A function that is run ONCE after all unit tests in this class."""
         cls.extensions_to_delete = ["pdf", "csv", "txt", "inp"]
         cls.files_to_delete = ["arkane.log", "output.py", "supporting_information.csv"]
-        cls.files_to_keep = [
-            "README.txt"
-        ]  # files to keep that have extensions marked for deletion
-        cls.base_path = os.path.join(
-            os.path.dirname(os.path.dirname(rmgpy.__file__)), "examples", "arkane"
-        )
+        cls.files_to_keep = ["README.txt"]  # files to keep that have extensions marked for deletion
+        cls.base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), "examples", "arkane")
         for example_type in cls.example_types:
             example_type_path = os.path.join(cls.base_path, example_type)
             for example in os.listdir(example_type_path):
@@ -137,9 +121,7 @@ class TestArkaneExamples(unittest.TestCase):
                     files_to_keep=cls.files_to_keep,
                     sub_dir_to_keep=["r0"],
                 )
-        cls.test_base_path = os.path.join(
-            os.path.dirname(os.path.dirname(rmgpy.__file__)), "testing", "arkane"
-        )
+        cls.test_base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), "testing", "arkane")
         tests = ["two_parameter_arrhenius_fit"]
         for test in tests:
             test_path = os.path.join(cls.test_base_path, test)

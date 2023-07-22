@@ -31,7 +31,7 @@
 This script contains unit tests of the :mod:`arkane.multidimensionalTorsions` module.
 """
 
-import unittest
+
 import os
 import zipfile
 import shutil
@@ -41,10 +41,9 @@ from rmgpy.statmech.ndTorsions import HinderedRotor2D, HinderedRotorClassicalND
 from arkane.ess.factory import ess_factory
 
 RMG_PATH = os.path.abspath(os.path.dirname(os.path.dirname(rmgpy.__file__)))
-Q2DTOR_PATH = os.path.join(RMG_PATH, "external", "Q2DTor", "src", "Q2DTor.py")
 
 
-class TestHinderedRotor2D(unittest.TestCase):
+class TestHinderedRotor2D:
     """
     Contains unit tests of the StatmechJob class.
     """
@@ -54,9 +53,7 @@ class TestHinderedRotor2D(unittest.TestCase):
         """A method that is run before each unit test in this class"""
         cls.path = os.path.join(RMG_PATH, "arkane", "data", "CH2CHOOH", "CH2CHOOHscans")
         if not os.path.exists(cls.path):
-            zippath = os.path.join(
-                RMG_PATH, "arkane", "data", "CH2CHOOH", "CH2CHOOHscans.zip"
-            )
+            zippath = os.path.join(RMG_PATH, "arkane", "data", "CH2CHOOH", "CH2CHOOHscans.zip")
             with zipfile.ZipFile(zippath, "r") as zip_ref:
                 zip_ref.extractall(os.path.dirname(cls.path))
 
@@ -72,36 +69,22 @@ class TestHinderedRotor2D(unittest.TestCase):
             top2=[6, 7, 8],
         )
 
-    @unittest.skipIf(not os.path.isfile(Q2DTOR_PATH), "Q2DTor not installed")
-    def test_q2dtor_setup(self):
-        self.hd2d.read_scan()
-        self.assertAlmostEquals(self.hd2d.Es[0] / 10**9, -594373977.268 / 10**9, 3)
-        self.hd2d.get_torsions()
-        self.assertEqual(self.hd2d.torsion1, [2, 1, 6, 7])
-        self.hd2d.write_inp()
-        self.hd2d.write_pes()
-        self.hd2d.get_ics_file()
-
     def test_partition_function_calc(self):
         self.hd2d.read_eigvals()
-        self.assertAlmostEqual(self.hd2d.get_partition_function(300.0), 3.29752, 4)
+        assert round(abs(self.hd2d.get_partition_function(300.0) - 3.29752), 4) == 0
 
     @classmethod
     def tearDownClass(cls):
         """A function that is run ONCE after all unit tests in this class."""
         if os.path.exists(cls.path):
             shutil.rmtree(cls.path)  # delete unzipped and created files
-        if os.path.exists(
-            os.path.join(os.path.dirname(cls.path), "r0", "IOfiles", "r0.pes")
-        ):
-            os.remove(
-                os.path.join(os.path.dirname(cls.path), "r0", "IOfiles", "r0.pes")
-            )
+        if os.path.exists(os.path.join(os.path.dirname(cls.path), "r0", "IOfiles", "r0.pes")):
+            os.remove(os.path.join(os.path.dirname(cls.path), "r0", "IOfiles", "r0.pes"))
         if os.path.exists(os.path.join(os.path.dirname(cls.path), "r0", "r0.out")):
             os.remove(os.path.join(os.path.dirname(cls.path), "r0", "r0.out"))
 
 
-class TestHinderedRotorClassicalND(unittest.TestCase):
+class TestHinderedRotorClassicalND:
     """
     Contains unit tests of the StatmechJob class.
     """
@@ -113,9 +96,7 @@ class TestHinderedRotorClassicalND(unittest.TestCase):
         rotpath = os.path.join(RMG_PATH, "arkane", "data", "TolueneRot1.log")
         log = ess_factory(freqpath)
 
-        conf, unscaled_freqs = log.load_conformer(
-            symmetry=1, spin_multiplicity=1, optical_isomers=1, label="Toulene"
-        )
+        conf, unscaled_freqs = log.load_conformer(symmetry=1, spin_multiplicity=1, optical_isomers=1, label="Toulene")
         coordinates, number, mass = log.load_geometry()
         conf.coordinates = (coordinates, "angstroms")
         conf.number = number
@@ -135,8 +116,6 @@ class TestHinderedRotorClassicalND(unittest.TestCase):
 
     def test_hindered_rotor_nd(self):
         self.hdnd.read_scan()
-        self.assertAlmostEqual(self.hdnd.Es[0], 8.58538448, 4)
+        assert round(abs(self.hdnd.Es[0] - 8.58538448), 4) == 0
         self.hdnd.fit()
-        self.assertAlmostEqual(
-            self.hdnd.calc_partition_function(300.0), 2.899287634962152, 5
-        )
+        assert round(abs(self.hdnd.calc_partition_function(300.0) - 2.899287634962152), 5) == 0

@@ -31,7 +31,6 @@
 This script contains unit tests of the :mod:`rmgpy.thermo.thermodata` module.
 """
 
-import unittest
 
 import numpy as np
 
@@ -39,10 +38,7 @@ import rmgpy.constants as constants
 from rmgpy.thermo.thermodata import ThermoData
 
 
-################################################################################
-
-
-class TestThermoData(unittest.TestCase):
+class TestThermoData:
     """
     Contains unit tests of the :class:`ThermoData` class.
     """
@@ -54,9 +50,7 @@ class TestThermoData(unittest.TestCase):
         self.H298 = -32.9725
         self.S298 = 27.5727
         self.Tdata = np.array([300, 400, 500, 600, 800, 1000, 1500])
-        self.Cpdata = np.array(
-            [6.3827, 7.80327, 9.22175, 10.5528, 12.8323, 14.6013, 17.4089]
-        )
+        self.Cpdata = np.array([6.3827, 7.80327, 9.22175, 10.5528, 12.8323, 14.6013, 17.4089])
         self.Cp0 = 4.0
         self.CpInf = 21.5
         self.Tmin = 100.0
@@ -80,71 +74,65 @@ class TestThermoData(unittest.TestCase):
         """
         Test that the ThermoData Tdata property was properly set.
         """
-        self.assertEqual(self.thermodata.Tdata.value_si.shape, self.Tdata.shape)
+        assert self.thermodata.Tdata.value_si.shape == self.Tdata.shape
         for T, T0 in zip(self.thermodata.Tdata.value_si, self.Tdata):
-            self.assertAlmostEqual(T, T0, 4)
+            assert round(abs(T - T0), 4) == 0
 
     def test_cp_data(self):
         """
         Test that the ThermoData Cpdata property was properly set.
         """
-        self.assertEqual(self.thermodata.Cpdata.value_si.shape, self.Cpdata.shape)
+        assert self.thermodata.Cpdata.value_si.shape == self.Cpdata.shape
         for Cp, Cp0 in zip(self.thermodata.Cpdata.value_si / constants.R, self.Cpdata):
-            self.assertAlmostEqual(Cp, Cp0, 4)
+            assert round(abs(Cp - Cp0), 4) == 0
 
     def test_h298(self):
         """
         Test that the ThermoData H298 property was properly set.
         """
-        self.assertAlmostEqual(
-            self.thermodata.H298.value_si / constants.R / 298.0, self.H298, 4
-        )
+        assert round(abs(self.thermodata.H298.value_si / constants.R / 298.0 - self.H298), 4) == 0
 
     def test_s298(self):
         """
         Test that the ThermoData S298 property was properly set.
         """
-        self.assertAlmostEqual(
-            self.thermodata.S298.value_si / constants.R, self.S298, 4
-        )
+        assert round(abs(self.thermodata.S298.value_si / constants.R - self.S298), 4) == 0
 
     def test_cp0(self):
         """
         Test that the ThermoData Cp0 property was properly set.
         """
-        self.assertAlmostEqual(self.thermodata.Cp0.value_si / constants.R, self.Cp0, 4)
+        assert round(abs(self.thermodata.Cp0.value_si / constants.R - self.Cp0), 4) == 0
 
     def test_cp_inf(self):
         """
         Test that the ThermoData CpInf property was properly set.
         """
-        self.assertAlmostEqual(
-            self.thermodata.CpInf.value_si / constants.R, self.CpInf, 4
-        )
+        assert round(abs(self.thermodata.CpInf.value_si / constants.R - self.CpInf), 4) == 0
 
     def test_temperature_min(self):
         """
         Test that the ThermoData Tmin property was properly set.
         """
-        self.assertAlmostEqual(self.thermodata.Tmin.value_si, self.Tmin, 6)
+        assert round(abs(self.thermodata.Tmin.value_si - self.Tmin), 6) == 0
 
     def test_temperature_max(self):
         """
         Test that the ThermoData Tmax property was properly set.
         """
-        self.assertAlmostEqual(self.thermodata.Tmax.value_si, self.Tmax, 6)
+        assert round(abs(self.thermodata.Tmax.value_si - self.Tmax), 6) == 0
 
     def test_e0(self):
         """
         Test that the ThermoData E0 property was properly set.
         """
-        self.assertAlmostEqual(self.thermodata.E0.value_si, self.E0, 6)
+        assert round(abs(self.thermodata.E0.value_si - self.E0), 6) == 0
 
     def test_comment(self):
         """
         Test that the ThermoData comment property was properly set.
         """
-        self.assertEqual(self.thermodata.comment, self.comment)
+        assert self.thermodata.comment == self.comment
 
     def test_is_temperature_valid(self):
         """
@@ -154,7 +142,7 @@ class TestThermoData(unittest.TestCase):
         valid_data = [True, True, True, True, True, True, True, True, True, True]
         for T, valid in zip(Tdata, valid_data):
             valid0 = self.thermodata.is_temperature_valid(T)
-            self.assertEqual(valid0, valid)
+            assert valid0 == valid
 
     def test_get_heat_capacity(self):
         """
@@ -180,7 +168,7 @@ class TestThermoData(unittest.TestCase):
         )
         for T, cp_exp in zip(Tlist, cp_exp_list):
             cp_act = self.thermodata.get_heat_capacity(T)
-            self.assertAlmostEqual(cp_exp, cp_act, 2)
+            assert round(abs(cp_exp - cp_act), 2) == 0
 
     def test_get_enthalpy(self):
         """
@@ -207,7 +195,7 @@ class TestThermoData(unittest.TestCase):
         )
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = self.thermodata.get_enthalpy(T)
-            self.assertAlmostEqual(h_exp, h_act, delta=1e0)
+            assert abs(h_exp - h_act) < 1e0
 
     def test_get_entropy(self):
         """
@@ -233,7 +221,7 @@ class TestThermoData(unittest.TestCase):
         )
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = self.thermodata.get_entropy(T)
-            self.assertAlmostEqual(s_exp, s_act, 3)
+            assert round(abs(s_exp - s_act), 3) == 0
 
     def test_get_free_energy(self):
         """
@@ -243,7 +231,7 @@ class TestThermoData(unittest.TestCase):
         for T in Tlist:
             g_exp = self.thermodata.get_enthalpy(T) - T * self.thermodata.get_entropy(T)
             g_act = self.thermodata.get_free_energy(T)
-            self.assertAlmostEqual(g_exp, g_act, 3)
+            assert round(abs(g_exp - g_act), 3) == 0
 
     def test_pickle(self):
         """
@@ -253,34 +241,30 @@ class TestThermoData(unittest.TestCase):
         import pickle
 
         thermodata = pickle.loads(pickle.dumps(self.thermodata))
-        self.assertEqual(
-            self.thermodata.Tdata.value.shape, thermodata.Tdata.value.shape
-        )
+        assert self.thermodata.Tdata.value.shape == thermodata.Tdata.value.shape
         for T, T0 in zip(self.thermodata.Tdata.value, thermodata.Tdata.value):
-            self.assertAlmostEqual(T, T0, 4)
-        self.assertEqual(self.thermodata.Tdata.units, thermodata.Tdata.units)
-        self.assertEqual(
-            self.thermodata.Cpdata.value.shape, thermodata.Cpdata.value.shape
-        )
+            assert round(abs(T - T0), 4) == 0
+        assert self.thermodata.Tdata.units == thermodata.Tdata.units
+        assert self.thermodata.Cpdata.value.shape == thermodata.Cpdata.value.shape
         for Cp, Cp0 in zip(self.thermodata.Cpdata.value, thermodata.Cpdata.value):
-            self.assertAlmostEqual(Cp, Cp0, 3)
-        self.assertEqual(self.thermodata.Cpdata.units, thermodata.Cpdata.units)
-        self.assertAlmostEqual(self.thermodata.H298.value, thermodata.H298.value, 4)
-        self.assertEqual(self.thermodata.H298.units, thermodata.H298.units)
-        self.assertAlmostEqual(self.thermodata.S298.value, thermodata.S298.value, 2)
-        self.assertEqual(self.thermodata.S298.units, thermodata.S298.units)
-        self.assertAlmostEqual(self.thermodata.Cp0.value, thermodata.Cp0.value, 4)
-        self.assertEqual(self.thermodata.Cp0.units, thermodata.Cp0.units)
-        self.assertAlmostEqual(self.thermodata.CpInf.value, thermodata.CpInf.value, 3)
-        self.assertEqual(self.thermodata.CpInf.units, thermodata.CpInf.units)
-        self.assertAlmostEqual(self.thermodata.Tmin.value, thermodata.Tmin.value, 4)
-        self.assertEqual(self.thermodata.Tmin.units, thermodata.Tmin.units)
-        self.assertAlmostEqual(self.thermodata.Tmax.value, thermodata.Tmax.value, 4)
-        self.assertEqual(self.thermodata.Tmax.units, thermodata.Tmax.units)
-        self.assertAlmostEqual(self.thermodata.E0.value, thermodata.E0.value, 4)
-        self.assertEqual(self.thermodata.E0.units, thermodata.E0.units)
-        self.assertEqual(self.thermodata.label, thermodata.label)
-        self.assertEqual(self.thermodata.comment, thermodata.comment)
+            assert round(abs(Cp - Cp0), 3) == 0
+        assert self.thermodata.Cpdata.units == thermodata.Cpdata.units
+        assert round(abs(self.thermodata.H298.value - thermodata.H298.value), 4) == 0
+        assert self.thermodata.H298.units == thermodata.H298.units
+        assert round(abs(self.thermodata.S298.value - thermodata.S298.value), 2) == 0
+        assert self.thermodata.S298.units == thermodata.S298.units
+        assert round(abs(self.thermodata.Cp0.value - thermodata.Cp0.value), 4) == 0
+        assert self.thermodata.Cp0.units == thermodata.Cp0.units
+        assert round(abs(self.thermodata.CpInf.value - thermodata.CpInf.value), 3) == 0
+        assert self.thermodata.CpInf.units == thermodata.CpInf.units
+        assert round(abs(self.thermodata.Tmin.value - thermodata.Tmin.value), 4) == 0
+        assert self.thermodata.Tmin.units == thermodata.Tmin.units
+        assert round(abs(self.thermodata.Tmax.value - thermodata.Tmax.value), 4) == 0
+        assert self.thermodata.Tmax.units == thermodata.Tmax.units
+        assert round(abs(self.thermodata.E0.value - thermodata.E0.value), 4) == 0
+        assert self.thermodata.E0.units == thermodata.E0.units
+        assert self.thermodata.label == thermodata.label
+        assert self.thermodata.comment == thermodata.comment
 
     def test_repr(self):
         """
@@ -289,36 +273,32 @@ class TestThermoData(unittest.TestCase):
         """
         namespace = {}
         exec("thermodata = {0!r}".format(self.thermodata), globals(), namespace)
-        self.assertIn("thermodata", namespace)
+        assert "thermodata" in namespace
         thermodata = namespace["thermodata"]
-        self.assertEqual(
-            self.thermodata.Tdata.value.shape, thermodata.Tdata.value.shape
-        )
+        assert self.thermodata.Tdata.value.shape == thermodata.Tdata.value.shape
         for T, T0 in zip(self.thermodata.Tdata.value, thermodata.Tdata.value):
-            self.assertAlmostEqual(T, T0, 4)
-        self.assertEqual(self.thermodata.Tdata.units, thermodata.Tdata.units)
-        self.assertEqual(
-            self.thermodata.Cpdata.value.shape, thermodata.Cpdata.value.shape
-        )
+            assert round(abs(T - T0), 4) == 0
+        assert self.thermodata.Tdata.units == thermodata.Tdata.units
+        assert self.thermodata.Cpdata.value.shape == thermodata.Cpdata.value.shape
         for Cp, Cp0 in zip(self.thermodata.Cpdata.value, thermodata.Cpdata.value):
-            self.assertAlmostEqual(Cp, Cp0, 3)
-        self.assertEqual(self.thermodata.Cpdata.units, thermodata.Cpdata.units)
-        self.assertAlmostEqual(self.thermodata.H298.value, thermodata.H298.value, 4)
-        self.assertEqual(self.thermodata.H298.units, thermodata.H298.units)
-        self.assertAlmostEqual(self.thermodata.S298.value, thermodata.S298.value, 2)
-        self.assertEqual(self.thermodata.S298.units, thermodata.S298.units)
-        self.assertAlmostEqual(self.thermodata.Cp0.value, thermodata.Cp0.value, 4)
-        self.assertEqual(self.thermodata.Cp0.units, thermodata.Cp0.units)
-        self.assertAlmostEqual(self.thermodata.CpInf.value, thermodata.CpInf.value, 3)
-        self.assertEqual(self.thermodata.CpInf.units, thermodata.CpInf.units)
-        self.assertAlmostEqual(self.thermodata.Tmin.value, thermodata.Tmin.value, 4)
-        self.assertEqual(self.thermodata.Tmin.units, thermodata.Tmin.units)
-        self.assertAlmostEqual(self.thermodata.Tmax.value, thermodata.Tmax.value, 4)
-        self.assertEqual(self.thermodata.Tmax.units, thermodata.Tmax.units)
-        self.assertAlmostEqual(self.thermodata.E0.value, thermodata.E0.value, 4)
-        self.assertEqual(self.thermodata.E0.units, thermodata.E0.units)
-        self.assertEqual(self.thermodata.label, thermodata.label)
-        self.assertEqual(self.thermodata.comment, thermodata.comment)
+            assert round(abs(Cp - Cp0), 3) == 0
+        assert self.thermodata.Cpdata.units == thermodata.Cpdata.units
+        assert round(abs(self.thermodata.H298.value - thermodata.H298.value), 4) == 0
+        assert self.thermodata.H298.units == thermodata.H298.units
+        assert round(abs(self.thermodata.S298.value - thermodata.S298.value), 2) == 0
+        assert self.thermodata.S298.units == thermodata.S298.units
+        assert round(abs(self.thermodata.Cp0.value - thermodata.Cp0.value), 4) == 0
+        assert self.thermodata.Cp0.units == thermodata.Cp0.units
+        assert round(abs(self.thermodata.CpInf.value - thermodata.CpInf.value), 3) == 0
+        assert self.thermodata.CpInf.units == thermodata.CpInf.units
+        assert round(abs(self.thermodata.Tmin.value - thermodata.Tmin.value), 4) == 0
+        assert self.thermodata.Tmin.units == thermodata.Tmin.units
+        assert round(abs(self.thermodata.Tmax.value - thermodata.Tmax.value), 4) == 0
+        assert self.thermodata.Tmax.units == thermodata.Tmax.units
+        assert round(abs(self.thermodata.E0.value - thermodata.E0.value), 4) == 0
+        assert self.thermodata.E0.units == thermodata.E0.units
+        assert self.thermodata.label == thermodata.label
+        assert self.thermodata.comment == thermodata.comment
 
     def test_is_all_zeros(self):
         """Test whether a ThermoData object has all zero values"""
@@ -352,8 +332,8 @@ class TestThermoData(unittest.TestCase):
             H298=(3.0, "kJ/mol"),
             S298=(7.0, "J/(mol*K)"),
         )
-        self.assertTrue(td1.is_all_zeros())
-        self.assertFalse(td2.is_all_zeros())
-        self.assertFalse(td3.is_all_zeros())
-        self.assertFalse(td4.is_all_zeros())
-        self.assertFalse(td5.is_all_zeros())
+        assert td1.is_all_zeros()
+        assert not td2.is_all_zeros()
+        assert not td3.is_all_zeros()
+        assert not td4.is_all_zeros()
+        assert not td5.is_all_zeros()

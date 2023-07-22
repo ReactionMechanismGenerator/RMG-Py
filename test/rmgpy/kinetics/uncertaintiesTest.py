@@ -31,14 +31,13 @@
 This script contains unit tests of the :mod:`rmgpy.kinetics.arrhenius` module.
 """
 
-import unittest
 
 import numpy as np
 
 from rmgpy.kinetics.uncertainties import RateUncertainty
 
 
-class TestUncertainties(unittest.TestCase):
+class TestUncertainties:
     """
     Contains unit tests for the RateUncertainty class
     """
@@ -49,4 +48,4 @@ class TestUncertainties(unittest.TestCase):
         """
         unc = RateUncertainty(mu=0.3, var=0.6, Tref=1000.0, N=1, correlation="ab")
         u = unc.get_expected_log_uncertainty()
-        self.assertAlmostEqual(u, 0.3 + np.sqrt(0.6 * 2.0 / np.pi))
+        assert round(abs(u - 0.3 + np.sqrt(0.6 * 2.0 / np.pi)), 7) == 0

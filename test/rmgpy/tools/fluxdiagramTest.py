@@ -30,7 +30,7 @@
 import os
 import os.path
 import shutil
-import unittest
+
 
 from nose.plugins.attrib import attr
 
@@ -39,7 +39,7 @@ from rmgpy.tools.fluxdiagram import create_flux_diagram
 
 
 @attr("functional")
-class FluxDiagramTest(unittest.TestCase):
+class FluxDiagramTest:
     def test_avi_simple(self):
         folder = os.path.join(os.path.dirname(rmgpy.__file__), "tools", "data", "flux")
 
@@ -71,7 +71,7 @@ class FluxDiagramTest(unittest.TestCase):
 
         speciesdir = os.path.join(folder, "species")
 
-        self.assertTrue(os.path.isfile(simfile))
+        assert os.path.isfile(simfile)
 
         shutil.rmtree(outputdir)
         shutil.rmtree(speciesdir)
@@ -82,16 +82,14 @@ class FluxDiagramTest(unittest.TestCase):
         input_file = os.path.join(folder, "input_liquid.py")
         chemkin_file = os.path.join(folder, "chemkin", "chem.inp")
         dict_file = os.path.join(folder, "chemkin", "species_dictionary.txt")
-        create_flux_diagram(
-            input_file, chemkin_file, dict_file, diffusion_limited=False
-        )
+        create_flux_diagram(input_file, chemkin_file, dict_file, diffusion_limited=False)
 
         outputdir = os.path.join(folder, "flux")
         simfile = os.path.join(outputdir, "1", "flux_diagram.avi")
 
         speciesdir = os.path.join(folder, "species")
 
-        self.assertTrue(os.path.isfile(simfile))
+        assert os.path.isfile(simfile)
 
         shutil.rmtree(outputdir)
         shutil.rmtree(speciesdir)

@@ -31,18 +31,15 @@
 This script contains unit tests of the :mod:`rmgpy.kinetics.chebyshev` module.
 """
 
-import unittest
 
 import numpy as np
 
 from rmgpy.exceptions import KineticsError
 from rmgpy.kinetics.chebyshev import Chebyshev
+import pytest
 
 
-################################################################################
-
-
-class TestChebyshev(unittest.TestCase):
+class TestChebyshev:
     """
     Contains unit tests of the Chebyshev class.
     """
@@ -80,51 +77,51 @@ class TestChebyshev(unittest.TestCase):
         """
         Test that the Chebyshev coeffs property was properly set.
         """
-        self.assertEqual(self.chebyshev.coeffs.value.shape, self.coeffs.shape)
+        assert self.chebyshev.coeffs.value.shape == self.coeffs.shape
         for i in range(self.chebyshev.coeffs.value.shape[0]):
             for j in range(self.chebyshev.coeffs.value.shape[1]):
                 C0 = float(self.coeffs[i, j])
                 C = float(self.chebyshev.coeffs.value_si[i, j])
                 if i == 0 and j == 0:
                     C0 -= 6  # Unit conversion from cm^3/(mol*s) to m^3/(mol*s)
-                self.assertAlmostEqual(C0, C, delta=1e-6 * C0)
+                assert abs(C0 - C) < 1e-6 * C0
 
     def test_temperature_min(self):
         """
         Test that the Chebyshev Tmin property was properly set.
         """
-        self.assertAlmostEqual(self.chebyshev.Tmin.value_si, self.Tmin, 6)
+        assert round(abs(self.chebyshev.Tmin.value_si - self.Tmin), 6) == 0
 
     def test_temperature_max(self):
         """
         Test that the Chebyshev Tmax property was properly set.
         """
-        self.assertAlmostEqual(self.chebyshev.Tmax.value_si, self.Tmax, 6)
+        assert round(abs(self.chebyshev.Tmax.value_si - self.Tmax), 6) == 0
 
     def test_pressure_min(self):
         """
         Test that the Chebyshev Pmin property was properly set.
         """
-        self.assertAlmostEqual(self.chebyshev.Pmin.value_si * 1e-5, self.Pmin, 6)
+        assert round(abs(self.chebyshev.Pmin.value_si * 1e-5 - self.Pmin), 6) == 0
 
     def test_pressure_max(self):
         """
         Test that the Chebyshev Pmax property was properly set.
         """
-        self.assertAlmostEqual(self.chebyshev.Pmax.value_si * 1e-5, self.Pmax, 6)
+        assert round(abs(self.chebyshev.Pmax.value_si * 1e-5 - self.Pmax), 6) == 0
 
     def test_comment(self):
         """
         Test that the Chebyshev comment property was properly set.
         """
-        self.assertEqual(self.chebyshev.comment, self.comment)
+        assert self.chebyshev.comment == self.comment
 
     def test_is_pressure_dependent(self):
         """
         Test the Chebyshev.is_pressure_dependent() method.
 
         """
-        self.assertTrue(self.chebyshev.is_pressure_dependent())
+        assert self.chebyshev.is_pressure_dependent()
 
     def test_get_rate_coefficient(self):
         """
@@ -143,12 +140,7 @@ class TestChebyshev(unittest.TestCase):
         for t in range(Tlist.shape[0]):
             for p in range(Plist.shape[0]):
                 Kact = self.chebyshev.get_rate_coefficient(Tlist[t], Plist[p])
-                self.assertAlmostEqual(
-                    Kact / Kexp[t, p],
-                    1.0,
-                    4,
-                    "{0} != {1} within 4 places".format(Kexp[t, p], Kact),
-                )
+                assert round(abs(Kact / Kexp[t, p] - 1.0), 4) == 0, "{0} != {1} within 4 places".format(Kexp[t, p], Kact)
 
     def test_fit_to_data(self):
         """
@@ -182,9 +174,7 @@ class TestChebyshev(unittest.TestCase):
         kdata = np.zeros((nT, nP))
         for t in range(nT):
             for p in range(nP):
-                kdata[t, p] = (
-                    self.chebyshev.get_rate_coefficient(Tdata[t], Pdata[p]) * 1e6
-                )
+                kdata[t, p] = self.chebyshev.get_rate_coefficient(Tdata[t], Pdata[p]) * 1e6
         chebyshev = Chebyshev().fit_to_data(
             Tdata,
             Pdata,
@@ -200,7 +190,7 @@ class TestChebyshev(unittest.TestCase):
         for t in range(nT):
             for p in range(nP):
                 kfit = chebyshev.get_rate_coefficient(Tdata[t], Pdata[p]) * 1e6
-                self.assertAlmostEqual(kfit, kdata[t, p], delta=1e-4 * kdata[t, p])
+                assert abs(kfit - kdata[t, p]) < 1e-4 * kdata[t, p]
 
     def test_fit_to_data2(self):
         """
@@ -216,7 +206,7 @@ class TestChebyshev(unittest.TestCase):
         for t in range(nT):
             for p in range(nP):
                 kdata[t, p] = self.chebyshev.get_rate_coefficient(Tdata[t], Pdata[p])
-        with self.assertRaises(KineticsError):
+        with pytest.raises(KineticsError):
             Chebyshev().fit_to_data(
                 Tdata,
                 Pdata,
@@ -238,26 +228,22 @@ class TestChebyshev(unittest.TestCase):
         import pickle
 
         chebyshev = pickle.loads(pickle.dumps(self.chebyshev, -1))
-        self.assertEqual(
-            self.chebyshev.coeffs.value.shape[0], chebyshev.coeffs.value.shape[0]
-        )
-        self.assertEqual(
-            self.chebyshev.coeffs.value.shape[1], chebyshev.coeffs.value.shape[1]
-        )
+        assert self.chebyshev.coeffs.value.shape[0] == chebyshev.coeffs.value.shape[0]
+        assert self.chebyshev.coeffs.value.shape[1] == chebyshev.coeffs.value.shape[1]
         for i in range(self.chebyshev.coeffs.value.shape[0]):
             for j in range(self.chebyshev.coeffs.value.shape[1]):
                 C0 = self.chebyshev.coeffs.value_si[i, j]
                 C = chebyshev.coeffs.value_si[i, j]
-                self.assertAlmostEqual(C0, C, delta=1e-4 * C0)
-        self.assertAlmostEqual(self.chebyshev.Tmin.value, chebyshev.Tmin.value, 4)
-        self.assertEqual(self.chebyshev.Tmin.units, chebyshev.Tmin.units)
-        self.assertAlmostEqual(self.chebyshev.Tmax.value, chebyshev.Tmax.value, 4)
-        self.assertEqual(self.chebyshev.Tmax.units, chebyshev.Tmax.units)
-        self.assertAlmostEqual(self.chebyshev.Pmin.value, chebyshev.Pmin.value, 4)
-        self.assertEqual(self.chebyshev.Pmin.units, chebyshev.Pmin.units)
-        self.assertAlmostEqual(self.chebyshev.Pmax.value, chebyshev.Pmax.value, 4)
-        self.assertEqual(self.chebyshev.Pmax.units, chebyshev.Pmax.units)
-        self.assertEqual(self.chebyshev.comment, chebyshev.comment)
+                assert abs(C0 - C) < 1e-4 * C0
+        assert round(abs(self.chebyshev.Tmin.value - chebyshev.Tmin.value), 4) == 0
+        assert self.chebyshev.Tmin.units == chebyshev.Tmin.units
+        assert round(abs(self.chebyshev.Tmax.value - chebyshev.Tmax.value), 4) == 0
+        assert self.chebyshev.Tmax.units == chebyshev.Tmax.units
+        assert round(abs(self.chebyshev.Pmin.value - chebyshev.Pmin.value), 4) == 0
+        assert self.chebyshev.Pmin.units == chebyshev.Pmin.units
+        assert round(abs(self.chebyshev.Pmax.value - chebyshev.Pmax.value), 4) == 0
+        assert self.chebyshev.Pmax.units == chebyshev.Pmax.units
+        assert self.chebyshev.comment == chebyshev.comment
 
     def test_repr(self):
         """
@@ -266,41 +252,35 @@ class TestChebyshev(unittest.TestCase):
         """
         namespace = {}
         exec("chebyshev = {0!r}".format(self.chebyshev), globals(), namespace)
-        self.assertIn("chebyshev", namespace)
+        assert "chebyshev" in namespace
         chebyshev = namespace["chebyshev"]
-        self.assertEqual(
-            self.chebyshev.coeffs.value.shape[0], chebyshev.coeffs.value.shape[0]
-        )
-        self.assertEqual(
-            self.chebyshev.coeffs.value.shape[1], chebyshev.coeffs.value.shape[1]
-        )
+        assert self.chebyshev.coeffs.value.shape[0] == chebyshev.coeffs.value.shape[0]
+        assert self.chebyshev.coeffs.value.shape[1] == chebyshev.coeffs.value.shape[1]
         for i in range(self.chebyshev.coeffs.value.shape[0]):
             for j in range(self.chebyshev.coeffs.value.shape[1]):
                 C0 = self.chebyshev.coeffs.value[i, j]
                 C = chebyshev.coeffs.value[i, j]
-                self.assertAlmostEqual(C0, C, delta=1e-4 * C0)
-        self.assertAlmostEqual(self.chebyshev.Tmin.value, chebyshev.Tmin.value, 4)
-        self.assertEqual(self.chebyshev.Tmin.units, chebyshev.Tmin.units)
-        self.assertAlmostEqual(self.chebyshev.Tmax.value, chebyshev.Tmax.value, 4)
-        self.assertEqual(self.chebyshev.Tmax.units, chebyshev.Tmax.units)
-        self.assertAlmostEqual(self.chebyshev.Pmin.value, chebyshev.Pmin.value, 4)
-        self.assertEqual(self.chebyshev.Pmin.units, chebyshev.Pmin.units)
-        self.assertAlmostEqual(self.chebyshev.Pmax.value, chebyshev.Pmax.value, 4)
-        self.assertEqual(self.chebyshev.Pmax.units, chebyshev.Pmax.units)
-        self.assertEqual(self.chebyshev.comment, chebyshev.comment)
+                assert abs(C0 - C) < 1e-4 * C0
+        assert round(abs(self.chebyshev.Tmin.value - chebyshev.Tmin.value), 4) == 0
+        assert self.chebyshev.Tmin.units == chebyshev.Tmin.units
+        assert round(abs(self.chebyshev.Tmax.value - chebyshev.Tmax.value), 4) == 0
+        assert self.chebyshev.Tmax.units == chebyshev.Tmax.units
+        assert round(abs(self.chebyshev.Pmin.value - chebyshev.Pmin.value), 4) == 0
+        assert self.chebyshev.Pmin.units == chebyshev.Pmin.units
+        assert round(abs(self.chebyshev.Pmax.value - chebyshev.Pmax.value), 4) == 0
+        assert self.chebyshev.Pmax.units == chebyshev.Pmax.units
+        assert self.chebyshev.comment == chebyshev.comment
 
     def test_change_rate(self):
         """
         Test the Chebyshev.change_rate() method.
         """
-        Tlist = np.array(
-            [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]
-        )
+        Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
         k0list = np.array([self.chebyshev.get_rate_coefficient(T, 1e5) for T in Tlist])
         self.chebyshev.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
             kact = self.chebyshev.get_rate_coefficient(T, 1e5)
-            self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
+            assert abs(2 * kexp - kact) < 1e-6 * kexp
 
     def test_is_identical_to(self):
         """
@@ -309,7 +289,7 @@ class TestChebyshev(unittest.TestCase):
         # Trivial case, compare to a KineticsModel
         from rmgpy.kinetics.model import KineticsModel
 
-        self.assertFalse(self.chebyshev.is_identical_to(KineticsModel()))
+        assert not self.chebyshev.is_identical_to(KineticsModel())
 
         # Compare to identical Chebyshev
         new_chebyshev = Chebyshev(
@@ -321,7 +301,7 @@ class TestChebyshev(unittest.TestCase):
             Pmax=(self.Pmax, "bar"),
             comment=self.comment,
         )
-        self.assertTrue(self.chebyshev.is_identical_to(new_chebyshev))
+        assert self.chebyshev.is_identical_to(new_chebyshev)
 
         # Compare to Chebyshev with different Tmin/Tmax
         new_chebyshev = Chebyshev(
@@ -333,7 +313,7 @@ class TestChebyshev(unittest.TestCase):
             Pmax=(self.Pmax, "bar"),
             comment=self.comment,
         )
-        self.assertFalse(self.chebyshev.is_identical_to(new_chebyshev))
+        assert not self.chebyshev.is_identical_to(new_chebyshev)
 
         new_chebyshev = Chebyshev(
             coeffs=self.coeffs,
@@ -344,7 +324,7 @@ class TestChebyshev(unittest.TestCase):
             Pmax=(self.Pmax, "bar"),
             comment=self.comment,
         )
-        self.assertFalse(self.chebyshev.is_identical_to(new_chebyshev))
+        assert not self.chebyshev.is_identical_to(new_chebyshev)
 
         # Compare to Chebyshev with different degreeT/degreeP
         new_chebyshev = Chebyshev(
@@ -356,7 +336,7 @@ class TestChebyshev(unittest.TestCase):
             Pmax=(self.Pmax, "bar"),
             comment=self.comment,
         )
-        self.assertFalse(self.chebyshev.is_identical_to(new_chebyshev))
+        assert not self.chebyshev.is_identical_to(new_chebyshev)
 
         new_chebyshev = Chebyshev(
             coeffs=self.coeffs[:, 0:-1],  # Remove one P dimension
@@ -367,7 +347,7 @@ class TestChebyshev(unittest.TestCase):
             Pmax=(self.Pmax, "bar"),
             comment=self.comment,
         )
-        self.assertFalse(self.chebyshev.is_identical_to(new_chebyshev))
+        assert not self.chebyshev.is_identical_to(new_chebyshev)
 
         # Compare to Chebyshev with different units
         new_chebyshev = Chebyshev(
@@ -379,7 +359,7 @@ class TestChebyshev(unittest.TestCase):
             Pmax=(self.Pmax, "bar"),
             comment=self.comment,
         )
-        self.assertFalse(self.chebyshev.is_identical_to(new_chebyshev))
+        assert not self.chebyshev.is_identical_to(new_chebyshev)
 
         # Compare to Chebyshev with slightly different coefficients
         new_chebyshev = Chebyshev(
@@ -391,7 +371,4 @@ class TestChebyshev(unittest.TestCase):
             Pmax=(self.Pmax, "bar"),
             comment=self.comment,
         )
-        self.assertFalse(self.chebyshev.is_identical_to(new_chebyshev))
-
-
-################################################################################
+        assert not self.chebyshev.is_identical_to(new_chebyshev)

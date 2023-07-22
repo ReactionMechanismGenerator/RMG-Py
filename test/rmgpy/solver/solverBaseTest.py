@@ -29,7 +29,7 @@
 
 import os.path
 import pickle
-import unittest
+
 
 import rmgpy
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
@@ -45,7 +45,7 @@ class ConcentrationPrinter(object):
         self.data.append((subject.t, subject.core_species_concentrations))
 
 
-class ReactionSystemTest(unittest.TestCase):
+class ReactionSystemTest:
     def setUp(self):
         self.listener = ConcentrationPrinter()
 
@@ -86,10 +86,8 @@ class ReactionSystemTest(unittest.TestCase):
             surface_reactions,
         )
 
-        self.assertEquals(len(surface_species), 1)  # only H should be left
-        self.assertEquals(
-            len(surface_reactions), 2
-        )  # all the reactions with H should stay
+        assert len(surface_species) == 1  # only H should be left
+        assert len(surface_reactions) == 2  # all the reactions with H should stay
 
     def test_surface_layering_constraint(self):
         """
@@ -120,17 +118,13 @@ class ReactionSystemTest(unittest.TestCase):
             surface_reactions,
         )
 
-        self.assertEquals(
-            len(reaction_system.surface_species_indices), 1
-        )  # surface_species_indices calculated correctly
-        self.assertEquals(
-            reaction_system.surface_species_indices[0], 5
-        )  # surface_species_indices calculated correctly
+        assert len(reaction_system.surface_species_indices) == 1  # surface_species_indices calculated correctly
+        assert reaction_system.surface_species_indices[0] == 5  # surface_species_indices calculated correctly
 
         inds = reaction_system.get_layering_indices()
 
-        self.assertEquals(inds[0], 1)  # worked correctly
-        self.assertEquals(inds[1], 2)
+        assert inds[0] == 1  # worked correctly
+        assert inds[1] == 2
 
     def test_add_reactions_to_surface(self):
         """
@@ -159,9 +153,7 @@ class ReactionSystemTest(unittest.TestCase):
         )
 
         new_surface_reactions = edge_reactions
-        new_surface_reaction_inds = [
-            edge_reactions.index(i) for i in new_surface_reactions
-        ]
+        new_surface_reaction_inds = [edge_reactions.index(i) for i in new_surface_reactions]
 
         surface_species, surface_reactions = reaction_system.add_reactions_to_surface(
             new_surface_reactions,
@@ -171,12 +163,8 @@ class ReactionSystemTest(unittest.TestCase):
             edge_species,
         )
 
-        self.assertEqual(
-            set(surface_species), set(edge_species)
-        )  # all edge species should now be in the surface
-        self.assertEqual(
-            set(surface_reactions), set(edge_reactions)
-        )  # all edge reactions should now be in the surface
+        assert set(surface_species) == set(edge_species)  # all edge species should now be in the surface
+        assert set(surface_reactions) == set(edge_reactions)  # all edge reactions should now be in the surface
 
     def test_attach_detach(self):
         """
@@ -186,10 +174,10 @@ class ReactionSystemTest(unittest.TestCase):
 
         reaction_system = self.rmg.reaction_systems[0]
         reaction_system.attach(self.listener)
-        self.assertNotEqual(reaction_system._observers, [])
+        assert reaction_system._observers != []
 
         reaction_system.detach(self.listener)
-        self.assertEquals(reaction_system._observers, [])
+        assert reaction_system._observers == []
 
     def test_listen(self):
         """
@@ -201,11 +189,9 @@ class ReactionSystemTest(unittest.TestCase):
 
         reaction_model = self.rmg.reaction_model
 
-        self.assertEqual(self.listener.data, [])
+        assert self.listener.data == []
 
-        model_settings = ModelSettings(
-            tol_move_to_core=1, tol_keep_in_edge=0, tol_interrupt_simulation=1
-        )
+        model_settings = ModelSettings(tol_move_to_core=1, tol_keep_in_edge=0, tol_interrupt_simulation=1)
         simulator_settings = SimulatorSettings()
 
         # run simulation:
@@ -220,7 +206,7 @@ class ReactionSystemTest(unittest.TestCase):
             simulator_settings=simulator_settings,
         )
 
-        self.assertNotEqual(self.listener.data, [])
+        assert self.listener.data != []
 
     def test_pickle(self):
         """
@@ -229,13 +215,9 @@ class ReactionSystemTest(unittest.TestCase):
         rxn_sys1 = self.rmg.reaction_systems[0]
         rxn_sys = pickle.loads(pickle.dumps(rxn_sys1))
 
-        self.assertIsNotNone(rxn_sys)
-        self.assertTrue(isinstance(rxn_sys, rmgpy.solver.simple.SimpleReactor))
-        self.assertEqual(rxn_sys.T.value_si, rxn_sys1.T.value_si)
-        self.assertEqual(rxn_sys.P.value_si, rxn_sys1.P.value_si)
-        self.assertEqual(
-            rxn_sys.termination[0].conversion, rxn_sys1.termination[0].conversion
-        )
-        self.assertEqual(
-            rxn_sys.termination[1].time.value_si, rxn_sys1.termination[1].time.value_si
-        )
+        assert rxn_sys is not None
+        assert isinstance(rxn_sys, rmgpy.solver.simple.SimpleReactor)
+        assert rxn_sys.T.value_si == rxn_sys1.T.value_si
+        assert rxn_sys.P.value_si == rxn_sys1.P.value_si
+        assert rxn_sys.termination[0].conversion == rxn_sys1.termination[0].conversion
+        assert rxn_sys.termination[1].time.value_si == rxn_sys1.termination[1].time.value_si

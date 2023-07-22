@@ -28,7 +28,7 @@
 ###############################################################################
 
 import os
-import unittest
+
 
 from external.wip import work_in_progress
 from rmgpy import settings
@@ -45,7 +45,7 @@ from rmgpy.util import parse_command_line_arguments
 ###################################################
 
 
-class TestRMGWorkFlow(unittest.TestCase):
+class TestRMGWorkFlow:
     @classmethod
     def setUpClass(cls):
         """
@@ -107,7 +107,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         mol_C3H2O = Molecule().from_smiles("C=C=C=O")
 
         target_rxns = find_target_rxns_containing(mol_H, mol_C3H2O, new_reactions)
-        self.assertEqual(len(target_rxns), 2)
+        assert len(target_rxns) == 2
 
         # reverse the order of molecules in spc
         spc.molecule = list(reversed(spc.molecule))
@@ -117,13 +117,11 @@ class TestRMGWorkFlow(unittest.TestCase):
         new_reactions_reverse.extend(react_species((spc,)))
 
         # try to pick out the target reaction
-        target_rxns_reverse = find_target_rxns_containing(
-            mol_H, mol_C3H2O, new_reactions_reverse
-        )
-        self.assertEqual(len(target_rxns_reverse), 2)
+        target_rxns_reverse = find_target_rxns_containing(mol_H, mol_C3H2O, new_reactions_reverse)
+        assert len(target_rxns_reverse) == 2
 
         # whatever order of molecules in spc, the reaction template matched should be same
-        self.assertEqual(target_rxns[0].template, target_rxns_reverse[0].template)
+        assert target_rxns[0].template == target_rxns_reverse[0].template
 
     def test_check_for_existing_species_for_bi_aromatics(self):
         """
@@ -179,7 +177,7 @@ class TestRMGWorkFlow(unittest.TestCase):
 """
         )
         spec = rmg_test.reaction_model.check_for_existing_species(mol_test)
-        self.assertIsNotNone(spec)
+        assert spec is not None
 
 
 def find_target_rxns_containing(mol1, mol2, reactions):
@@ -196,7 +194,7 @@ def find_target_rxns_containing(mol1, mol2, reactions):
     return target_rxns
 
 
-class TestRMGScript(unittest.TestCase):
+class TestRMGScript:
     """
     Contains unit tests for rmg.py
     """
@@ -210,17 +208,17 @@ class TestRMGScript(unittest.TestCase):
         args = parse_command_line_arguments(["input.py"])
 
         # Test default values
-        self.assertEqual(args.walltime, "00:00:00:00")
-        self.assertEqual(args.output_directory, os.path.abspath(os.path.dirname("./")))
-        self.assertEqual(args.debug, False)
-        self.assertEqual(args.file, "input.py")
-        self.assertEqual(args.maxiter, None)
-        self.assertEqual(args.kineticsdatastore, False)
-        self.assertEqual(args.postprocess, False)
-        self.assertEqual(args.profile, False)
-        self.assertEqual(args.quiet, False)
-        self.assertEqual(args.restart, "")
-        self.assertEqual(args.verbose, False)
+        assert args.walltime == "00:00:00:00"
+        assert args.output_directory == os.path.abspath(os.path.dirname("./"))
+        assert args.debug == False
+        assert args.file == "input.py"
+        assert args.maxiter == None
+        assert args.kineticsdatastore == False
+        assert args.postprocess == False
+        assert args.profile == False
+        assert args.quiet == False
+        assert args.restart == ""
+        assert args.verbose == False
 
     def test_parse_command_line_non_defaults(self):
         """
@@ -246,12 +244,12 @@ class TestRMGScript(unittest.TestCase):
         )
 
         # Test expected values
-        self.assertEqual(args.walltime, "01:20:33:45")
-        self.assertEqual(args.output_directory, "/test/output/dir/")
-        self.assertEqual(args.debug, True)
-        self.assertEqual(args.file, "other_name.py")
-        self.assertEqual(args.maxiter, 100)
-        self.assertEqual(args.kineticsdatastore, True)
-        self.assertEqual(args.postprocess, True)
-        self.assertEqual(args.profile, True)
-        self.assertEqual(args.restart, "test/seed/")
+        assert args.walltime == "01:20:33:45"
+        assert args.output_directory == "/test/output/dir/"
+        assert args.debug == True
+        assert args.file == "other_name.py"
+        assert args.maxiter == 100
+        assert args.kineticsdatastore == True
+        assert args.postprocess == True
+        assert args.profile == True
+        assert args.restart == "test/seed/"

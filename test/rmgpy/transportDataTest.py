@@ -31,16 +31,15 @@
 This script contains unit test of the :mod: 'rmgpy.transport' module and :mod: 'rmgpy.data.transport' module
 """
 
-import unittest
 
 import rmgpy.constants as constants
 from rmgpy.quantity import DipoleMoment, Length, Volume, Energy
 from rmgpy.transport import TransportData
 
-#################################################################################
+#
 
 
-class TestTransportData(unittest.TestCase):
+class TestTransportData:
     """
     Contains unit test of the :class: 'transportData' class
     """
@@ -71,51 +70,43 @@ class TestTransportData(unittest.TestCase):
         """
         Test that the TransportData shapeIndex property was properly set.
         """
-        self.assertAlmostEqual(self.transport.shapeIndex, self.shapeIndex, 6)
+        assert round(abs(self.transport.shapeIndex - self.shapeIndex), 6) == 0
 
     def test_epsilon(self):
         """
         Test that the TransportData epsilon property was properly set.
         """
-        self.assertAlmostEqual(
-            self.transport.epsilon.value_si, self.epsilon.value_si, 6
-        )
+        assert round(abs(self.transport.epsilon.value_si - self.epsilon.value_si), 6) == 0
 
     def test_sigma(self):
         """
         Test that the TransportData sigma property was properly set.
         """
-        self.assertAlmostEqual(
-            self.transport.sigma.value_si * 1e10, self.sigma.value_si * 1e10, 6
-        )
+        assert round(abs(self.transport.sigma.value_si * 1e10 - self.sigma.value_si * 1e10), 6) == 0
 
     def test_dipole_moment(self):
         """
         Test that the TransportData dipoleMoment property was properly set.
         """
-        self.assertAlmostEqual(
-            self.transport.dipoleMoment.value_si, self.dipoleMoment.value_si, 6
-        )
+        assert round(abs(self.transport.dipoleMoment.value_si - self.dipoleMoment.value_si), 6) == 0
 
     def test_polarizability(self):
         """
         Test that the TransportData polarizability property was properly set.
         """
-        self.assertAlmostEqual(
-            self.transport.polarizability.value_si, self.polarizability.value_si, 6
-        )
+        assert round(abs(self.transport.polarizability.value_si - self.polarizability.value_si), 6) == 0
 
     def test_rotrelaxcollnum(self):
         """
         Test that the TransportData rotrelaxcollnum property was properly set.
         """
-        self.assertAlmostEqual(self.transport.rotrelaxcollnum, self.rotrelaxcollnum, 6)
+        assert round(abs(self.transport.rotrelaxcollnum - self.rotrelaxcollnum), 6) == 0
 
     def test_comment(self):
         """
         Test that the TransportData comment property was properly set.
         """
-        self.assertEqual(self.transport.comment, self.comment)
+        assert self.transport.comment == self.comment
 
     def test_get_collision_frequency(self):
         """
@@ -126,7 +117,7 @@ class TestTransportData(unittest.TestCase):
         M = P / constants.R / T
         mu = 1.0
         omega = self.transport.get_collision_frequency(T, M, mu)
-        self.assertAlmostEqual(omega / 1.17737e10, 1.0, 4)
+        assert round(abs(omega / 1.17737e10 - 1.0), 4) == 0
 
     def test_pickle(self):
         """
@@ -135,23 +126,13 @@ class TestTransportData(unittest.TestCase):
         import pickle
 
         transport = pickle.loads(pickle.dumps(self.transport, -1))
-        self.assertAlmostEqual(self.transport.shapeIndex, transport.shapeIndex, 4)
-        self.assertAlmostEqual(
-            self.transport.epsilon.value_si, transport.epsilon.value_si, 4
-        )
-        self.assertAlmostEqual(
-            self.transport.sigma.value_si, transport.sigma.value_si, 4
-        )
-        self.assertAlmostEqual(
-            self.transport.dipoleMoment.value_si, transport.dipoleMoment.value_si, 4
-        )
-        self.assertAlmostEqual(
-            self.transport.polarizability.value_si, transport.polarizability.value_si, 4
-        )
-        self.assertAlmostEqual(
-            self.transport.rotrelaxcollnum, transport.rotrelaxcollnum, 4
-        )
-        self.assertEqual(self.transport.comment, transport.comment)
+        assert round(abs(self.transport.shapeIndex - transport.shapeIndex), 4) == 0
+        assert round(abs(self.transport.epsilon.value_si - transport.epsilon.value_si), 4) == 0
+        assert round(abs(self.transport.sigma.value_si - transport.sigma.value_si), 4) == 0
+        assert round(abs(self.transport.dipoleMoment.value_si - transport.dipoleMoment.value_si), 4) == 0
+        assert round(abs(self.transport.polarizability.value_si - transport.polarizability.value_si), 4) == 0
+        assert round(abs(self.transport.rotrelaxcollnum - transport.rotrelaxcollnum), 4) == 0
+        assert self.transport.comment == transport.comment
 
     def test_repr(self):
         """
@@ -159,25 +140,15 @@ class TestTransportData(unittest.TestCase):
         """
         namespace = {}
         exec("transport = {0!r}".format(self.transport), globals(), namespace)
-        self.assertIn("transport", namespace)
+        assert "transport" in namespace
         transport = namespace["transport"]
-        self.assertAlmostEqual(self.transport.shapeIndex, transport.shapeIndex, 4)
-        self.assertAlmostEqual(
-            self.transport.epsilon.value_si, transport.epsilon.value_si, 4
-        )
-        self.assertAlmostEqual(
-            self.transport.sigma.value_si, transport.sigma.value_si, 4
-        )
-        self.assertAlmostEqual(
-            self.transport.dipoleMoment.value_si, transport.dipoleMoment.value_si, 4
-        )
-        self.assertAlmostEqual(
-            self.transport.polarizability.value_si, transport.polarizability.value_si, 4
-        )
-        self.assertAlmostEqual(
-            self.transport.rotrelaxcollnum, transport.rotrelaxcollnum, 4
-        )
-        self.assertEqual(self.transport.comment, transport.comment)
+        assert round(abs(self.transport.shapeIndex - transport.shapeIndex), 4) == 0
+        assert round(abs(self.transport.epsilon.value_si - transport.epsilon.value_si), 4) == 0
+        assert round(abs(self.transport.sigma.value_si - transport.sigma.value_si), 4) == 0
+        assert round(abs(self.transport.dipoleMoment.value_si - transport.dipoleMoment.value_si), 4) == 0
+        assert round(abs(self.transport.polarizability.value_si - transport.polarizability.value_si), 4) == 0
+        assert round(abs(self.transport.rotrelaxcollnum - transport.rotrelaxcollnum), 4) == 0
+        assert self.transport.comment == transport.comment
 
     def test_to_cantera(self):
         """
@@ -208,19 +179,13 @@ class TestTransportData(unittest.TestCase):
 
         ct_transport = ct_species.transport
 
-        self.assertAlmostEqual(rmg_ct_transport.geometry, ct_transport.geometry)
-        self.assertAlmostEqual(
-            rmg_ct_transport.acentric_factor, ct_transport.acentric_factor
-        )
-        self.assertAlmostEqual(rmg_ct_transport.diameter, ct_transport.diameter)
-        self.assertAlmostEqual(rmg_ct_transport.dipole, ct_transport.dipole)
-        self.assertAlmostEqual(
-            rmg_ct_transport.polarizability, ct_transport.polarizability
-        )
-        self.assertAlmostEqual(
-            rmg_ct_transport.rotational_relaxation, ct_transport.rotational_relaxation
-        )
-        self.assertAlmostEqual(rmg_ct_transport.well_depth, ct_transport.well_depth)
+        assert round(abs(rmg_ct_transport.geometry - ct_transport.geometry), 7) == 0
+        assert round(abs(rmg_ct_transport.acentric_factor - ct_transport.acentric_factor), 7) == 0
+        assert round(abs(rmg_ct_transport.diameter - ct_transport.diameter), 7) == 0
+        assert round(abs(rmg_ct_transport.dipole - ct_transport.dipole), 7) == 0
+        assert round(abs(rmg_ct_transport.polarizability - ct_transport.polarizability), 7) == 0
+        assert round(abs(rmg_ct_transport.rotational_relaxation - ct_transport.rotational_relaxation), 7) == 0
+        assert round(abs(rmg_ct_transport.well_depth - ct_transport.well_depth), 7) == 0
 
 
-#################################################################################
+#

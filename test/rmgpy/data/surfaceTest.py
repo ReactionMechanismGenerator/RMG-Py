@@ -28,18 +28,18 @@
 ###############################################################################
 
 import os
-from unittest import TestCase
 
 from rmgpy import settings
 from rmgpy.data.surface import MetalDatabase
 from rmgpy.data.base import Entry
 from rmgpy.exceptions import DatabaseError
 from rmgpy.quantity import Energy, SurfaceConcentration
+import pytest
 
 ###################################################
 
 
-class TestMetalDatabase(TestCase):
+class TestMetalDatabase:
     def setUp(self):
         self.database = MetalDatabase()
         self.database.load(os.path.join(settings["database.directory"], "surface"))
@@ -73,14 +73,8 @@ class TestMetalDatabase(TestCase):
             """,
         )
 
-        self.assertEqual(
-            repr(self.database.get_binding_energies(test_entry.label)),
-            repr(test_entry.binding_energies),
-        )
-        self.assertEqual(
-            repr(self.database.get_surface_site_density(test_entry.label)),
-            repr(test_entry.surface_site_density),
-        )
+        assert repr(self.database.get_binding_energies(test_entry.label)) == repr(test_entry.binding_energies)
+        assert repr(self.database.get_surface_site_density(test_entry.label)) == repr(test_entry.surface_site_density)
 
     def test_write_entry_to_database(self):
         """Test we can write an entry to the database"""
@@ -107,14 +101,8 @@ class TestMetalDatabase(TestCase):
         self.database.add_entry(test_entry)
 
         # test to see if the entry was added
-        self.assertEqual(
-            repr(self.database.get_binding_energies(test_entry.label)),
-            repr(test_entry.binding_energies),
-        )
-        self.assertEqual(
-            repr(self.database.get_surface_site_density(test_entry.label)),
-            repr(test_entry.surface_site_density),
-        )
+        assert repr(self.database.get_binding_energies(test_entry.label)) == repr(test_entry.binding_energies)
+        assert repr(self.database.get_surface_site_density(test_entry.label)) == repr(test_entry.surface_site_density)
 
         # write the new entry
         self.database.save(os.path.join(settings["database.directory"], "surface"))
@@ -127,9 +115,7 @@ class TestMetalDatabase(TestCase):
         ) as f:
             if "Me111" in f.read():
                 self.database.remove_entry(test_entry)
-                self.database.save(
-                    os.path.join(settings["database.directory"], "surface")
-                )
+                self.database.save(os.path.join(settings["database.directory"], "surface"))
             else:
                 raise DatabaseError("Unable to write entry to database.")
 
@@ -137,15 +123,15 @@ class TestMetalDatabase(TestCase):
         """Test we can obtain metal parameters from a string"""
 
         test_pt111 = "Pt111"
-        self.assertIsNotNone(self.database.get_binding_energies(test_pt111))
+        assert self.database.get_binding_energies(test_pt111) is not None
 
         test_notexistent = "Pt000"
-        with self.assertRaises(DatabaseError):
+        with pytest.raises(DatabaseError):
             self.database.get_binding_energies(test_notexistent)
 
     def test_load_all_entries_on_one_metal(self):
         """Test we can load all entries from the database on one metal"""
 
-        self.assertGreaterEqual(len(self.database.get_all_entries_on_metal("Pt")), 2)
-        self.assertGreaterEqual(len(self.database.get_all_entries_on_metal("Ni")), 2)
-        self.assertGreaterEqual(len(self.database.get_all_entries_on_metal("Co")), 2)
+        assert len(self.database.get_all_entries_on_metal("Pt")) >= 2
+        assert len(self.database.get_all_entries_on_metal("Ni")) >= 2
+        assert len(self.database.get_all_entries_on_metal("Co")) >= 2

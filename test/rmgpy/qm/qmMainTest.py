@@ -30,7 +30,7 @@
 import os
 import shutil
 import subprocess
-import unittest
+
 
 from rmgpy import get_path
 from rmgpy.molecule import Molecule
@@ -38,12 +38,13 @@ from rmgpy.qm.gaussian import Gaussian
 from rmgpy.qm.main import QMSettings, QMCalculator
 from rmgpy.qm.mopac import Mopac
 from rmgpy.species import Species
+import pytest
 
 
 MOPAC_CLOSE_ENOUGH_PERCENT = 0.005  # 0.5%
 
 
-class TestQMSettings(unittest.TestCase):
+class TestQMSettings:
     """
     Contains unit tests for the QMSettings class.
     """
@@ -74,11 +75,11 @@ class TestQMSettings(unittest.TestCase):
         except AssertionError:
             self.fail("check_all_set() raised unexpected AssertionError.")
 
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             self.settings2.check_all_set()
 
 
-class TestQMCalculator(unittest.TestCase):
+class TestQMCalculator:
     """
     Contains unit tests for the QMSettings class.
     """
@@ -95,39 +96,27 @@ class TestQMCalculator(unittest.TestCase):
         rmg_path = os.path.normpath(os.path.join(get_path(), ".."))
         self.fileStore = os.path.join(rmg_path, "testing", "qm", "QMfiles")
 
-        self.mop1 = QMCalculator(
-            software="mopac", method="pm3", fileStore=self.fileStore
-        )
+        self.mop1 = QMCalculator(software="mopac", method="pm3", fileStore=self.fileStore)
 
         self.mop2 = QMCalculator(
             software="mopac",
             method="pm6",
         )
 
-        self.mop3 = QMCalculator(
-            software="mopac", method="pm7", fileStore=self.fileStore
-        )
+        self.mop3 = QMCalculator(software="mopac", method="pm7", fileStore=self.fileStore)
 
-        self.mop4 = QMCalculator(
-            software="mopac", method="pm8", fileStore=self.fileStore
-        )
+        self.mop4 = QMCalculator(software="mopac", method="pm8", fileStore=self.fileStore)
 
         self.gauss1 = QMCalculator(
             software="gaussian",
             method="pm3",
         )
 
-        self.gauss2 = QMCalculator(
-            software="gaussian", method="pm6", fileStore=self.fileStore
-        )
+        self.gauss2 = QMCalculator(software="gaussian", method="pm6", fileStore=self.fileStore)
 
-        self.gauss3 = QMCalculator(
-            software="gaussian", method="pm7", fileStore=self.fileStore
-        )
+        self.gauss3 = QMCalculator(software="gaussian", method="pm7", fileStore=self.fileStore)
 
-        self.molpro1 = QMCalculator(
-            software="molpro", method="mp2", fileStore=self.fileStore
-        )
+        self.molpro1 = QMCalculator(software="molpro", method="mp2", fileStore=self.fileStore)
 
         self.qmmol1 = QMCalculator(fileStore=self.fileStore)
 
@@ -137,18 +126,18 @@ class TestQMCalculator(unittest.TestCase):
         """
         Test that set_default_output_directory() works correctly.
         """
-        self.assertIsNotNone(self.mop1.settings.fileStore)
-        self.assertIsNotNone(self.mop3.settings.fileStore)
-        self.assertIsNotNone(self.gauss2.settings.fileStore)
+        assert self.mop1.settings.fileStore is not None
+        assert self.mop3.settings.fileStore is not None
+        assert self.gauss2.settings.fileStore is not None
 
-        self.assertIsNone(self.mop2.settings.fileStore)
-        self.assertIsNone(self.gauss1.settings.fileStore)
+        assert self.mop2.settings.fileStore is None
+        assert self.gauss1.settings.fileStore is None
 
-        self.assertIsNone(self.mop1.settings.scratchDirectory)
-        self.assertIsNone(self.mop2.settings.scratchDirectory)
-        self.assertIsNone(self.mop3.settings.scratchDirectory)
-        self.assertIsNone(self.gauss1.settings.scratchDirectory)
-        self.assertIsNone(self.gauss2.settings.scratchDirectory)
+        assert self.mop1.settings.scratchDirectory is None
+        assert self.mop2.settings.scratchDirectory is None
+        assert self.mop3.settings.scratchDirectory is None
+        assert self.gauss1.settings.scratchDirectory is None
+        assert self.gauss2.settings.scratchDirectory is None
 
         # Now set the default directories for those not set
         outputDirectory = os.path.join(self.mop1.settings.fileStore, "..", "..")
@@ -158,16 +147,16 @@ class TestQMCalculator(unittest.TestCase):
         self.gauss1.set_default_output_directory(outputDirectory)
         self.gauss2.set_default_output_directory(outputDirectory)
 
-        self.assertIsNotNone(self.mop1.settings.fileStore)
-        self.assertIsNotNone(self.mop2.settings.fileStore)
-        self.assertIsNotNone(self.mop3.settings.fileStore)
-        self.assertIsNotNone(self.gauss1.settings.fileStore)
-        self.assertIsNotNone(self.gauss2.settings.fileStore)
-        self.assertIsNotNone(self.mop1.settings.scratchDirectory)
-        self.assertIsNotNone(self.mop2.settings.scratchDirectory)
-        self.assertIsNotNone(self.mop3.settings.scratchDirectory)
-        self.assertIsNotNone(self.gauss1.settings.scratchDirectory)
-        self.assertIsNotNone(self.gauss2.settings.scratchDirectory)
+        assert self.mop1.settings.fileStore is not None
+        assert self.mop2.settings.fileStore is not None
+        assert self.mop3.settings.fileStore is not None
+        assert self.gauss1.settings.fileStore is not None
+        assert self.gauss2.settings.fileStore is not None
+        assert self.mop1.settings.scratchDirectory is not None
+        assert self.mop2.settings.scratchDirectory is not None
+        assert self.mop3.settings.scratchDirectory is not None
+        assert self.gauss1.settings.scratchDirectory is not None
+        assert self.gauss2.settings.scratchDirectory is not None
 
     def test_initialize(self):
         """
@@ -191,9 +180,7 @@ class TestQMCalculator(unittest.TestCase):
         except AssertionError:
             self.fail("initialize() raised unexpected AssertionError.")
         except Exception:
-            self.fail(
-                "initialize() raised Exception. Output file paths not correctly set."
-            )
+            self.fail("initialize() raised Exception. Output file paths not correctly set.")
 
     def test_get_thermo_data(self):
         """
@@ -206,7 +193,7 @@ class TestQMCalculator(unittest.TestCase):
 
         mol = Molecule().from_smiles("C1=CC=C2C=CC=CC2=C1")
 
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.mop4.get_thermo_data(mol)
             self.gauss3.get_thermo_data(mol)
             self.molpro1.get_thermo_data(mol)
@@ -244,28 +231,16 @@ class TestQMCalculator(unittest.TestCase):
         thermo2 = self.mop2.get_thermo_data(mol)
         thermo3 = self.mop3.get_thermo_data(mol)
 
-        self.assertTrue(thermo1.comment.startswith("QM MopacMolPM3"))
-        self.assertTrue(thermo2.comment.startswith("QM MopacMolPM6"))
-        self.assertTrue(thermo3.comment.startswith("QM MopacMolPM7"))
+        assert thermo1.comment.startswith("QM MopacMolPM3")
+        assert thermo2.comment.startswith("QM MopacMolPM6")
+        assert thermo3.comment.startswith("QM MopacMolPM7")
 
-        self.assertAlmostEqual(
-            thermo1.H298.value_si, 169708, delta=169708 * MOPAC_CLOSE_ENOUGH_PERCENT
-        )
-        self.assertAlmostEqual(
-            thermo1.S298.value_si, 334.500, delta=334.500 * MOPAC_CLOSE_ENOUGH_PERCENT
-        )
-        self.assertAlmostEqual(
-            thermo2.H298.value_si, 167704, delta=167704 * MOPAC_CLOSE_ENOUGH_PERCENT
-        )
-        self.assertAlmostEqual(
-            thermo2.S298.value_si, 338.099, delta=338.099 * MOPAC_CLOSE_ENOUGH_PERCENT
-        )
-        self.assertAlmostEqual(
-            thermo3.H298.value_si, 166168, delta=166168 * MOPAC_CLOSE_ENOUGH_PERCENT
-        )
-        self.assertAlmostEqual(
-            thermo3.S298.value_si, 336.333, delta=336.333 * MOPAC_CLOSE_ENOUGH_PERCENT
-        )
+        assert abs(thermo1.H298.value_si - 169708) < 169708 * MOPAC_CLOSE_ENOUGH_PERCENT
+        assert abs(thermo1.S298.value_si - 334.500) < 334.500 * MOPAC_CLOSE_ENOUGH_PERCENT
+        assert abs(thermo2.H298.value_si - 167704) < 167704 * MOPAC_CLOSE_ENOUGH_PERCENT
+        assert abs(thermo2.S298.value_si - 338.099) < 338.099 * MOPAC_CLOSE_ENOUGH_PERCENT
+        assert abs(thermo3.H298.value_si - 166168) < 166168 * MOPAC_CLOSE_ENOUGH_PERCENT
+        assert abs(thermo3.S298.value_si - 336.333) < 336.333 * MOPAC_CLOSE_ENOUGH_PERCENT
 
     @unittest.skipIf(
         NO_GAUSSIAN,
@@ -296,21 +271,13 @@ class TestQMCalculator(unittest.TestCase):
         thermo1 = self.gauss1.get_thermo_data(mol)
         thermo2 = self.gauss2.get_thermo_data(mol)
 
-        self.assertTrue(thermo1.comment.startswith("QM GaussianMolPM3"))
-        self.assertTrue(thermo2.comment.startswith("QM GaussianMolPM6"))
+        assert thermo1.comment.startswith("QM GaussianMolPM3")
+        assert thermo2.comment.startswith("QM GaussianMolPM6")
 
-        self.assertAlmostEqual(
-            thermo1.H298.value_si, 169908.3376, 0
-        )  # to 1 decimal place
-        self.assertAlmostEqual(
-            thermo1.S298.value_si, 335.5438748, 0
-        )  # to 1 decimal place
-        self.assertAlmostEqual(
-            thermo2.H298.value_si, 169326.2504, 0
-        )  # to 1 decimal place
-        self.assertAlmostEqual(
-            thermo2.S298.value_si, 338.2696063, 0
-        )  # to 1 decimal place
+        assert round(abs(thermo1.H298.value_si - 169908.3376), 0) == 0  # to 1 decimal place
+        assert round(abs(thermo1.S298.value_si - 335.5438748), 0) == 0  # to 1 decimal place
+        assert round(abs(thermo2.H298.value_si - 169326.2504), 0) == 0  # to 1 decimal place
+        assert round(abs(thermo2.S298.value_si - 338.2696063), 0) == 0  # to 1 decimal place
 
     def test_run_jobs(self):
         """Test that run_jobs() works properly."""
@@ -329,6 +296,3 @@ class TestQMCalculator(unittest.TestCase):
         spc_list = [spc1, spc2]
 
         qm.run_jobs(spc_list, procnum=1)
-
-
-################################################################################

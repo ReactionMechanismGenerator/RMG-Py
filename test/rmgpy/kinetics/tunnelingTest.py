@@ -31,17 +31,13 @@
 This script contains unit tests of the :mod:`rmgpy.kinetics.tunneling` module.
 """
 
-import unittest
 
 import numpy as np
 
 from rmgpy.kinetics.tunneling import Wigner, Eckart
 
 
-################################################################################
-
-
-class TestWigner(unittest.TestCase):
+class TestWigner:
     """
     Contains unit tests of the :class:`Wigner` class.
     """
@@ -59,7 +55,7 @@ class TestWigner(unittest.TestCase):
         """
         Test that the Wigner frequency property was properly set.
         """
-        self.assertAlmostEqual(self.tunneling.frequency.value_si, self.frequency, 4)
+        assert round(abs(self.tunneling.frequency.value_si - self.frequency), 4) == 0
 
     def test_calculate_tunneling_factor(self):
         """
@@ -69,7 +65,7 @@ class TestWigner(unittest.TestCase):
         kexplist = np.array([4.90263, 2.40495, 1.35124, 1.15611, 1.08781])
         for T, kexp in zip(Tlist, kexplist):
             kact = self.tunneling.calculate_tunneling_factor(T)
-            self.assertAlmostEqual(kexp, kact, 4)
+            assert round(abs(kexp - kact), 4) == 0
 
     def test_pickle(self):
         """
@@ -79,10 +75,8 @@ class TestWigner(unittest.TestCase):
         import pickle
 
         tunneling = pickle.loads(pickle.dumps(self.tunneling, -1))
-        self.assertAlmostEqual(
-            self.tunneling.frequency.value, tunneling.frequency.value, 2
-        )
-        self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
+        assert round(abs(self.tunneling.frequency.value - tunneling.frequency.value), 2) == 0
+        assert self.tunneling.frequency.units == tunneling.frequency.units
 
     def test_repr(self):
         """
@@ -91,18 +85,13 @@ class TestWigner(unittest.TestCase):
         """
         namespace = {}
         exec("tunneling = {0!r}".format(self.tunneling), globals(), namespace)
-        self.assertIn("tunneling", namespace)
+        assert "tunneling" in namespace
         tunneling = namespace["tunneling"]
-        self.assertAlmostEqual(
-            self.tunneling.frequency.value, tunneling.frequency.value, 2
-        )
-        self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
+        assert round(abs(self.tunneling.frequency.value - tunneling.frequency.value), 2) == 0
+        assert self.tunneling.frequency.units == tunneling.frequency.units
 
 
-################################################################################
-
-
-class TestEckart(unittest.TestCase):
+class TestEckart:
     """
     Contains unit tests of the :class:`Eckart` class.
     """
@@ -126,25 +115,25 @@ class TestEckart(unittest.TestCase):
         """
         Test that the Eckart frequency property was properly set.
         """
-        self.assertAlmostEqual(self.tunneling.frequency.value_si, self.frequency, 4)
+        assert round(abs(self.tunneling.frequency.value_si - self.frequency), 4) == 0
 
     def test_e0_reac(self):
         """
         Test that the Eckart E0_reac property was properly set.
         """
-        self.assertAlmostEqual(self.tunneling.E0_reac.value_si * 0.001, self.E0_reac, 4)
+        assert round(abs(self.tunneling.E0_reac.value_si * 0.001 - self.E0_reac), 4) == 0
 
     def test_e0_ts(self):
         """
         Test that the Eckart E0_TS property was properly set.
         """
-        self.assertAlmostEqual(self.tunneling.E0_TS.value_si * 0.001, self.E0_TS, 4)
+        assert round(abs(self.tunneling.E0_TS.value_si * 0.001 - self.E0_TS), 4) == 0
 
     def test_e0_prod(self):
         """
         Test that the Eckart E0_prod property was properly set.
         """
-        self.assertAlmostEqual(self.tunneling.E0_prod.value_si * 0.001, self.E0_prod, 4)
+        assert round(abs(self.tunneling.E0_prod.value_si * 0.001 - self.E0_prod), 4) == 0
 
     def test_calculate_tunneling_factor(self):
         """
@@ -154,7 +143,7 @@ class TestEckart(unittest.TestCase):
         kexplist = np.array([1623051.0, 7.69349, 1.46551, 1.18111, 1.09858])
         for T, kexp in zip(Tlist, kexplist):
             kact = self.tunneling.calculate_tunneling_factor(T)
-            self.assertAlmostEqual(kexp, kact, delta=1e-3 * kexp)
+            assert abs(kexp - kact) < 1e-3 * kexp
 
     def test_pickle(self):
         """
@@ -164,16 +153,14 @@ class TestEckart(unittest.TestCase):
         import pickle
 
         tunneling = pickle.loads(pickle.dumps(self.tunneling, -1))
-        self.assertAlmostEqual(
-            self.tunneling.frequency.value, tunneling.frequency.value, 2
-        )
-        self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
-        self.assertAlmostEqual(self.tunneling.E0_reac.value, tunneling.E0_reac.value, 3)
-        self.assertEqual(self.tunneling.E0_reac.units, tunneling.E0_reac.units)
-        self.assertAlmostEqual(self.tunneling.E0_TS.value, tunneling.E0_TS.value, 3)
-        self.assertEqual(self.tunneling.E0_TS.units, tunneling.E0_TS.units)
-        self.assertAlmostEqual(self.tunneling.E0_prod.value, tunneling.E0_prod.value, 3)
-        self.assertEqual(self.tunneling.E0_prod.units, tunneling.E0_prod.units)
+        assert round(abs(self.tunneling.frequency.value - tunneling.frequency.value), 2) == 0
+        assert self.tunneling.frequency.units == tunneling.frequency.units
+        assert round(abs(self.tunneling.E0_reac.value - tunneling.E0_reac.value), 3) == 0
+        assert self.tunneling.E0_reac.units == tunneling.E0_reac.units
+        assert round(abs(self.tunneling.E0_TS.value - tunneling.E0_TS.value), 3) == 0
+        assert self.tunneling.E0_TS.units == tunneling.E0_TS.units
+        assert round(abs(self.tunneling.E0_prod.value - tunneling.E0_prod.value), 3) == 0
+        assert self.tunneling.E0_prod.units == tunneling.E0_prod.units
 
     def test_repr(self):
         """
@@ -182,15 +169,13 @@ class TestEckart(unittest.TestCase):
         """
         namespace = {}
         exec("tunneling = {0!r}".format(self.tunneling), globals(), namespace)
-        self.assertIn("tunneling", namespace)
+        assert "tunneling" in namespace
         tunneling = namespace["tunneling"]
-        self.assertAlmostEqual(
-            self.tunneling.frequency.value, tunneling.frequency.value, 2
-        )
-        self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
-        self.assertAlmostEqual(self.tunneling.E0_reac.value, tunneling.E0_reac.value, 3)
-        self.assertEqual(self.tunneling.E0_reac.units, tunneling.E0_reac.units)
-        self.assertAlmostEqual(self.tunneling.E0_TS.value, tunneling.E0_TS.value, 3)
-        self.assertEqual(self.tunneling.E0_TS.units, tunneling.E0_TS.units)
-        self.assertAlmostEqual(self.tunneling.E0_prod.value, tunneling.E0_prod.value, 3)
-        self.assertEqual(self.tunneling.E0_prod.units, tunneling.E0_prod.units)
+        assert round(abs(self.tunneling.frequency.value - tunneling.frequency.value), 2) == 0
+        assert self.tunneling.frequency.units == tunneling.frequency.units
+        assert round(abs(self.tunneling.E0_reac.value - tunneling.E0_reac.value), 3) == 0
+        assert self.tunneling.E0_reac.units == tunneling.E0_reac.units
+        assert round(abs(self.tunneling.E0_TS.value - tunneling.E0_TS.value), 3) == 0
+        assert self.tunneling.E0_TS.units == tunneling.E0_TS.units
+        assert round(abs(self.tunneling.E0_prod.value - tunneling.E0_prod.value), 3) == 0
+        assert self.tunneling.E0_prod.units == tunneling.E0_prod.units

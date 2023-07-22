@@ -27,16 +27,12 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
 
 from rmgpy.data.base import Entry, Database, ForbiddenStructures
 from rmgpy.molecule import Group, Molecule
 
 
-################################################################################
-
-
-class TestBaseDatabase(unittest.TestCase):
+class TestBaseDatabase:
     """
     Contains unit tests for the base class of rmgpy.data.
     """
@@ -85,32 +81,16 @@ class TestBaseDatabase(unittest.TestCase):
             )
         )
         # The group should match to itself
-        self.assertTrue(
-            self.database.match_node_to_structure(
-                entry1, entry1.item, atoms=entry1.item.get_all_labeled_atoms()
-            )
-        )
+        assert self.database.match_node_to_structure(entry1, entry1.item, atoms=entry1.item.get_all_labeled_atoms())
 
         # These groups should not match each other
-        self.assertFalse(
-            self.database.match_node_to_structure(
-                entry1, entry2.item, atoms=entry2.item.get_all_labeled_atoms()
-            )
-        )
+        assert not self.database.match_node_to_structure(entry1, entry2.item, atoms=entry2.item.get_all_labeled_atoms())
 
         # entry1 contains more labels than entry3, therefore cannot be matched by entry3
-        self.assertFalse(
-            self.database.match_node_to_structure(
-                entry3, entry1.item, atoms=entry1.item.get_all_labeled_atoms()
-            )
-        )
+        assert not self.database.match_node_to_structure(entry3, entry1.item, atoms=entry1.item.get_all_labeled_atoms())
 
         # entry3 contains fewer labels than entry1, therefore it can be matched
-        self.assertTrue(
-            self.database.match_node_to_structure(
-                entry1, entry3.item, atoms=entry3.item.get_all_labeled_atoms()
-            )
-        )
+        assert self.database.match_node_to_structure(entry1, entry3.item, atoms=entry3.item.get_all_labeled_atoms())
 
     def test_match_node_to_node(self):
         """
@@ -131,11 +111,11 @@ class TestBaseDatabase(unittest.TestCase):
                 """
             )
         )
-        self.assertTrue(self.database.match_node_to_node(entry1, entry1))
-        self.assertFalse(self.database.match_node_to_node(entry1, entry2))
+        assert self.database.match_node_to_node(entry1, entry1)
+        assert not self.database.match_node_to_node(entry1, entry2)
 
 
-class TestForbiddenStructures(unittest.TestCase):
+class TestForbiddenStructures:
     def setUp(self):
         self.database = ForbiddenStructures()
 
@@ -160,7 +140,7 @@ multiplicity 3
 """
         )
 
-        self.assertTrue(self.database.is_molecule_forbidden(molecule))
+        assert self.database.is_molecule_forbidden(molecule)
 
     def test_forbidden_molecule(self):
         """Test that we can load and check a forbidden molecule."""
@@ -178,7 +158,7 @@ multiplicity 3
 """
         )
 
-        self.assertTrue(self.database.is_molecule_forbidden(molecule))
+        assert self.database.is_molecule_forbidden(molecule)
 
     def test_forbidden_species(self):
         """Test that we can load and check a forbidden species.
@@ -236,8 +216,5 @@ multiplicity 3
 """
         )
 
-        self.assertTrue(self.database.is_molecule_forbidden(molecule1))
-        self.assertTrue(self.database.is_molecule_forbidden(molecule2))
-
-
-################################################################################
+        assert self.database.is_molecule_forbidden(molecule1)
+        assert self.database.is_molecule_forbidden(molecule2)

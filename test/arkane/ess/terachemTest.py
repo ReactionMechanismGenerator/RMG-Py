@@ -32,7 +32,7 @@ This module contains unit tests of the :mod:`arkane.ess.terachem` module.
 """
 
 import os
-import unittest
+
 
 import numpy as np
 
@@ -40,11 +40,10 @@ from rmgpy.statmech.conformer import Conformer
 
 from arkane.exceptions import LogError
 from arkane.ess.terachem import TeraChemLog
+import pytest
 
-################################################################################
 
-
-class TeraChemLogTest(unittest.TestCase):
+class TeraChemLogTest:
     """
     Contains unit tests for the terachem module, used for parsing TeraChem files.
     """
@@ -54,37 +53,29 @@ class TeraChemLogTest(unittest.TestCase):
         """
         A method that is run before all unit tests in this class.
         """
-        cls.data_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "data", "terachem"
-        )
+        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "terachem")
 
     def test_get_number_of_atoms(self):
         """Uses various TeraChem log files to test that number of atoms can be properly read."""
-        log_file = TeraChemLog(
-            os.path.join(self.data_path, "ethane_minimize_output.out")
-        )
-        self.assertEqual(log_file.get_number_of_atoms(), 6)
+        log_file = TeraChemLog(os.path.join(self.data_path, "ethane_minimize_output.out"))
+        assert log_file.get_number_of_atoms() == 6
         log_file = TeraChemLog(os.path.join(self.data_path, "ethane_coords.xyz"))
-        self.assertEqual(log_file.get_number_of_atoms(), 6)
+        assert log_file.get_number_of_atoms() == 6
         log_file = TeraChemLog(os.path.join(self.data_path, "formaldehyde_coords.xyz"))
-        self.assertEqual(log_file.get_number_of_atoms(), 4)
+        assert log_file.get_number_of_atoms() == 4
         log_file = TeraChemLog(os.path.join(self.data_path, "ethane_output.geometry"))
-        self.assertEqual(log_file.get_number_of_atoms(), 6)
-        log_file = TeraChemLog(
-            os.path.join(self.data_path, "formaldehyde_output.geometry")
-        )
-        self.assertEqual(log_file.get_number_of_atoms(), 4)
+        assert log_file.get_number_of_atoms() == 6
+        log_file = TeraChemLog(os.path.join(self.data_path, "formaldehyde_output.geometry"))
+        assert log_file.get_number_of_atoms() == 4
 
     def test_load_force_constant_matrix(self):
         """Test loading the Hessian"""
         log_file = TeraChemLog(os.path.join(self.data_path, "ethanol_freq_output.out"))
         hessian = log_file.load_force_constant_matrix()
-        self.assertEqual(len(hessian), 27)  # 9 atoms * 3 dof = 27
-        self.assertEqual(len(hessian[0]), 27)
+        assert len(hessian) == 27  # 9 atoms * 3 dof = 27
+        assert len(hessian[0]) == 27
 
-        log_file = TeraChemLog(
-            os.path.join(self.data_path, "ethylamine_freq_output.out")
-        )
+        log_file = TeraChemLog(os.path.join(self.data_path, "ethylamine_freq_output.out"))
         hessian = log_file.load_force_constant_matrix()
         expected_hessian = [
             [
@@ -1068,14 +1059,10 @@ class TeraChemLogTest(unittest.TestCase):
                 np.float64,
             ),
         )
-        np.testing.assert_almost_equal(
-            numbers, np.array([6, 6, 1, 1, 1, 1], np.float64)
-        )
+        np.testing.assert_almost_equal(numbers, np.array([6, 6, 1, 1, 1, 1], np.float64))
         np.testing.assert_almost_equal(
             masses,
-            np.array(
-                [12.0, 12.0, 1.00782503, 1.00782503, 1.00782503, 1.00782503], np.float64
-            ),
+            np.array([12.0, 12.0, 1.00782503, 1.00782503, 1.00782503, 1.00782503], np.float64),
         )
 
         log_file = TeraChemLog(os.path.join(self.data_path, "formaldehyde_coords.xyz"))
@@ -1093,9 +1080,7 @@ class TeraChemLogTest(unittest.TestCase):
             ),
         )
         np.testing.assert_almost_equal(numbers, np.array([6, 8, 1, 1], np.float64))
-        np.testing.assert_almost_equal(
-            masses, np.array([12.0, 15.99491462, 1.00782503, 1.00782503], np.float64)
-        )
+        np.testing.assert_almost_equal(masses, np.array([12.0, 15.99491462, 1.00782503, 1.00782503], np.float64))
 
         log_file = TeraChemLog(os.path.join(self.data_path, "ethane_output.geometry"))
         coords, numbers, masses = log_file.load_geometry()
@@ -1113,19 +1098,13 @@ class TeraChemLogTest(unittest.TestCase):
                 np.float64,
             ),
         )
-        np.testing.assert_almost_equal(
-            numbers, np.array([6, 6, 1, 1, 1, 1], np.float64)
-        )
+        np.testing.assert_almost_equal(numbers, np.array([6, 6, 1, 1, 1, 1], np.float64))
         np.testing.assert_almost_equal(
             masses,
-            np.array(
-                [12.0, 12.0, 1.00782504, 1.00782504, 1.00782504, 1.00782504], np.float64
-            ),
+            np.array([12.0, 12.0, 1.00782504, 1.00782504, 1.00782504, 1.00782504], np.float64),
         )
 
-        log_file = TeraChemLog(
-            os.path.join(self.data_path, "formaldehyde_output.geometry")
-        )
+        log_file = TeraChemLog(os.path.join(self.data_path, "formaldehyde_output.geometry"))
         coords, numbers, masses = log_file.load_geometry()
         np.testing.assert_almost_equal(
             coords,
@@ -1140,13 +1119,9 @@ class TeraChemLogTest(unittest.TestCase):
             ),
         )
         np.testing.assert_almost_equal(numbers, np.array([6, 8, 1, 1], np.float64))
-        np.testing.assert_almost_equal(
-            masses, np.array([12.0, 15.99491464, 1.00782504, 1.00782504], np.float64)
-        )
+        np.testing.assert_almost_equal(masses, np.array([12.0, 15.99491464, 1.00782504, 1.00782504], np.float64))
 
-        log_file = TeraChemLog(
-            os.path.join(self.data_path, "ethylamine_freq_output.out")
-        )
+        log_file = TeraChemLog(os.path.join(self.data_path, "ethylamine_freq_output.out"))
         coords, numbers, masses = log_file.load_geometry()
         np.testing.assert_almost_equal(
             coords,
@@ -1166,9 +1141,7 @@ class TeraChemLogTest(unittest.TestCase):
                 np.float64,
             ),
         )
-        np.testing.assert_almost_equal(
-            numbers, np.array([7, 6, 6, 1, 1, 1, 1, 1, 1, 1], np.float64)
-        )
+        np.testing.assert_almost_equal(numbers, np.array([7, 6, 6, 1, 1, 1, 1, 1, 1, 1], np.float64))
         np.testing.assert_almost_equal(
             masses,
             np.array(
@@ -1188,9 +1161,7 @@ class TeraChemLogTest(unittest.TestCase):
             ),
         )
 
-        log_file = TeraChemLog(
-            os.path.join(self.data_path, "formaldehyde_freq_output.out")
-        )
+        log_file = TeraChemLog(os.path.join(self.data_path, "formaldehyde_freq_output.out"))
         coords, numbers, masses = log_file.load_geometry()
         np.testing.assert_almost_equal(
             coords,
@@ -1205,24 +1176,18 @@ class TeraChemLogTest(unittest.TestCase):
             ),
         )
         np.testing.assert_almost_equal(numbers, np.array([8, 6, 1, 1], np.float64))
-        np.testing.assert_almost_equal(
-            masses, np.array([15.99491462, 12.0, 1.00782503, 1.00782503], np.float64)
-        )
+        np.testing.assert_almost_equal(masses, np.array([15.99491462, 12.0, 1.00782503, 1.00782503], np.float64))
 
     def test_load_conformer(self):
         """
         Test parsing frequencies and spin multiplicity from a TeraChem log file.
         Translation and rotation modes are not read from the TeraCHem log, and are instead added in statmech.
         """
-        log_file = TeraChemLog(
-            os.path.join(self.data_path, "formaldehyde_freq_output.out")
-        )
+        log_file = TeraChemLog(os.path.join(self.data_path, "formaldehyde_freq_output.out"))
         conformer, unscaled_freqs = log_file.load_conformer()
-        self.assertIsInstance(conformer, Conformer)
-        self.assertEqual(len(conformer.modes), 1)
-        np.testing.assert_almost_equal(
-            conformer.modes[0].frequencies.value_si, unscaled_freqs
-        )
+        assert isinstance(conformer, Conformer)
+        assert len(conformer.modes) == 1
+        np.testing.assert_almost_equal(conformer.modes[0].frequencies.value_si, unscaled_freqs)
         expected_freqs = [
             1198.6352081,
             1276.1991058,
@@ -1231,59 +1196,41 @@ class TeraChemLogTest(unittest.TestCase):
             2916.3917533,
             2965.8683956,
         ]
-        np.testing.assert_almost_equal(
-            conformer.modes[0].frequencies.value_si, expected_freqs
-        )
-        self.assertEqual(conformer.spin_multiplicity, 1)
+        np.testing.assert_almost_equal(conformer.modes[0].frequencies.value_si, expected_freqs)
+        assert conformer.spin_multiplicity == 1
 
-        failed_log_file = TeraChemLog(
-            os.path.join(self.data_path, "failed_freq_job.out")
-        )
-        with self.assertRaises(LogError):
+        failed_log_file = TeraChemLog(os.path.join(self.data_path, "failed_freq_job.out"))
+        with pytest.raises(LogError):
             failed_log_file.load_conformer()
 
     def test_load_energy(self):
         """Test loading the energy in J/mol from a TeraChem output.out or results.dat file"""
-        output_file = TeraChemLog(
-            os.path.join(self.data_path, "formaldehyde_sp_terachem_output.out")
-        )
-        results_file = TeraChemLog(
-            os.path.join(self.data_path, "formaldehyde_sp_terachem_results.dat")
-        )
-        freq_file = TeraChemLog(
-            os.path.join(self.data_path, "formaldehyde_freq_output.out")
-        )
-        opt_file = TeraChemLog(
-            os.path.join(self.data_path, "ethane_minimize_output.out")
-        )
+        output_file = TeraChemLog(os.path.join(self.data_path, "formaldehyde_sp_terachem_output.out"))
+        results_file = TeraChemLog(os.path.join(self.data_path, "formaldehyde_sp_terachem_results.dat"))
+        freq_file = TeraChemLog(os.path.join(self.data_path, "formaldehyde_freq_output.out"))
+        opt_file = TeraChemLog(os.path.join(self.data_path, "ethane_minimize_output.out"))
         e_elect_1 = output_file.load_energy()
         e_elect_2 = results_file.load_energy()
         e_elect_3 = freq_file.load_energy()
         e_elect_4 = opt_file.load_energy()
-        self.assertEqual(e_elect_1, e_elect_2)
-        self.assertEqual(e_elect_1, e_elect_3)
-        self.assertAlmostEqual(e_elect_1, -300621953.7863082)
-        self.assertAlmostEqual(e_elect_4, -206346606.4271929)
+        assert e_elect_1 == e_elect_2
+        assert e_elect_1 == e_elect_3
+        assert round(abs(e_elect_1 - -300621953.7863082), 7) == 0
+        assert round(abs(e_elect_4 - -206346606.4271929), 7) == 0
 
     def test_load_zero_point_energy(self):
         """Test loading the ZPE from a TeraChem freq output file"""
-        log_file = TeraChemLog(
-            os.path.join(self.data_path, "ethylamine_freq_output.out")
-        )
+        log_file = TeraChemLog(os.path.join(self.data_path, "ethylamine_freq_output.out"))
         zpe = log_file.load_zero_point_energy()
-        self.assertAlmostEqual(zpe, 243113.46765236984)
+        assert round(abs(zpe - 243113.46765236984), 7) == 0
 
-        log_file = TeraChemLog(
-            os.path.join(self.data_path, "formaldehyde_freq_output.out")
-        )
+        log_file = TeraChemLog(os.path.join(self.data_path, "formaldehyde_freq_output.out"))
         zpe = log_file.load_zero_point_energy()
-        self.assertAlmostEqual(zpe, 70663.2091453692)
+        assert round(abs(zpe - 70663.2091453692), 7) == 0
 
     def test_load_scan_energies(self):
         """Test loading a PES scan from a TeraCHem log file"""
-        log_file = TeraChemLog(
-            os.path.join(self.data_path, "ethanol_scan_terachem_output.out")
-        )
+        log_file = TeraChemLog(os.path.join(self.data_path, "ethanol_scan_terachem_output.out"))
         v_list, angles = log_file.load_scan_energies()
         print(angles)
         expected_v_list = [

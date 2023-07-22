@@ -29,7 +29,7 @@
 
 import os.path
 import shutil
-import unittest
+
 
 from nose.plugins.attrib import attr
 
@@ -39,7 +39,7 @@ from rmgpy.tools.generatereactions import execute
 
 
 @attr("functional")
-class GenerateReactionsTest(unittest.TestCase):
+class GenerateReactionsTest:
     def test(self):
         folder = os.path.join(os.path.dirname(rmgpy.__file__), "tools/data/generate")
 
@@ -48,9 +48,9 @@ class GenerateReactionsTest(unittest.TestCase):
         rmg = RMG(input_file=input_file, output_directory=folder)
         rmg = execute(rmg)
 
-        self.assertIsNotNone(rmg)
-        self.assertIsNotNone(rmg.reaction_model.output_species_list)
-        self.assertIsNotNone(rmg.reaction_model.output_reaction_list)
+        assert rmg is not None
+        assert rmg.reaction_model.output_species_list is not None
+        assert rmg.reaction_model.output_reaction_list is not None
 
         shutil.rmtree(os.path.join(folder, "pdep"))
         os.remove(os.path.join(folder, "restart_from_seed.py"))
@@ -69,16 +69,14 @@ class GenerateReactionsTest(unittest.TestCase):
         from rmgpy.reaction import Reaction
         from rmgpy.molecule import Molecule
 
-        folder = os.path.join(
-            os.path.dirname(rmgpy.__file__), "tools/data/generate/duplicates"
-        )
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), "tools/data/generate/duplicates")
 
         input_file = os.path.join(folder, "input.py")
 
         rmg = RMG(input_file=input_file, output_directory=folder)
         rmg = execute(rmg)
 
-        self.assertIsNotNone(rmg)
+        assert rmg is not None
 
         rxn_flagged = Reaction(
             reactants=[Molecule(smiles="[CH]=O"), Molecule(smiles="C=O")],
@@ -90,7 +88,7 @@ class GenerateReactionsTest(unittest.TestCase):
             if reaction.is_isomorphic(rxn_flagged):
                 count += 1
 
-        self.assertEquals(count, 1)
+        assert count == 1
 
         shutil.rmtree(os.path.join(folder, "pdep"))
         os.remove(os.path.join(folder, "restart_from_seed.py"))
@@ -110,16 +108,14 @@ class GenerateReactionsTest(unittest.TestCase):
         from rmgpy.reaction import Reaction
         from rmgpy.molecule import Molecule
 
-        folder = os.path.join(
-            os.path.dirname(rmgpy.__file__), "tools/data/generate/libraryReaction"
-        )
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), "tools/data/generate/libraryReaction")
 
         input_file = os.path.join(folder, "input.py")
 
         rmg = RMG(input_file=input_file, output_directory=folder)
         rmg = execute(rmg)
 
-        self.assertIsNotNone(rmg)
+        assert rmg is not None
 
         # Assert that the flagged reaction occurs
         rxn_flagged = Reaction(
@@ -132,10 +128,10 @@ class GenerateReactionsTest(unittest.TestCase):
             if reaction.is_isomorphic(rxn_flagged):
                 count += 1
 
-        self.assertEquals(count, 1)
+        assert count == 1
 
         # Assert that the core only has 1 reaction
-        self.assertEquals(len(rmg.reaction_model.core.reactions), 1)
+        assert len(rmg.reaction_model.core.reactions) == 1
         shutil.rmtree(os.path.join(folder, "pdep"))
         os.remove(os.path.join(folder, "restart_from_seed.py"))
 

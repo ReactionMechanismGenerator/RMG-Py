@@ -32,7 +32,7 @@ This script contains unit tests of the :mod:`rmgpy.pdep.network` module.
 """
 
 import numpy as np
-import unittest
+
 
 from rmgpy.pdep.collision import SingleExponentialDown
 from rmgpy.pdep.configuration import Configuration
@@ -45,10 +45,7 @@ from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.transport import TransportData
 
 
-################################################################################
-
-
-class TestConfiguration(unittest.TestCase):
+class TestConfiguration:
     """
     Contains unit tests of the :class:`Network` class.
     """
@@ -153,9 +150,7 @@ class TestConfiguration(unittest.TestCase):
             ),
             molecular_weight=(74.07, "g/mol"),
             transport_data=TransportData(sigma=(5.94, "angstrom"), epsilon=(559, "K")),
-            energy_transfer_model=SingleExponentialDown(
-                alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85
-            ),
+            energy_transfer_model=SingleExponentialDown(alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85),
         )
 
         self.nC4H8 = Species(
@@ -241,9 +236,7 @@ class TestConfiguration(unittest.TestCase):
                         inertia=([0.630578, 1.15529, 1.78586], "amu*angstrom^2"),
                         symmetry=2,
                     ),
-                    HarmonicOscillator(
-                        frequencies=([1622.09, 3771.85, 3867.85], "cm^-1")
-                    ),
+                    HarmonicOscillator(frequencies=([1622.09, 3771.85, 3867.85], "cm^-1")),
                 ],
                 spin_multiplicity=1,
                 optical_isomers=1,
@@ -260,7 +253,7 @@ class TestConfiguration(unittest.TestCase):
         # ensure species strings
         labels = ["H2O", "n-C4H8"]
         for label in labels:
-            self.assertIn(label, output)
+            assert label in output
 
         # ensure classes are used as well
         attributes = [
@@ -278,7 +271,7 @@ class TestConfiguration(unittest.TestCase):
             "fourier",
         ]
         for label in attributes:
-            self.assertIn(label, output)
+            assert label in output
 
     def test_str(self):
         """
@@ -288,7 +281,7 @@ class TestConfiguration(unittest.TestCase):
         # ensure species strings
         labels = ["H2O", "n-C4H8"]
         for label in labels:
-            self.assertIn(label, output)
+            assert label in output
 
         # ensure this extra fluff is not in Network string
         attributes = [
@@ -304,7 +297,7 @@ class TestConfiguration(unittest.TestCase):
             "SingleExponentialDown",
         ]
         for label in attributes:
-            self.assertNotIn(label, output)
+            assert label not in output
 
     def test_no_nan_in_densStates(self):
         """
@@ -313,7 +306,4 @@ class TestConfiguration(unittest.TestCase):
         """
         elist = np.linspace(0, 1e5)
         self.configuration.calculate_density_of_states(elist)
-        self.assertFalse(np.isnan(self.configuration.dens_states).any())
-
-
-################################################################################
+        assert not np.isnan(self.configuration.dens_states).any()

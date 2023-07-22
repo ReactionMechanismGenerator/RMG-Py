@@ -30,7 +30,6 @@
 import logging
 import os
 import shutil
-import unittest
 from unittest.mock import patch
 
 from nose.plugins.attrib import attr
@@ -43,6 +42,7 @@ from rmgpy import get_path
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.rmg.model import CoreEdgeReactionModel
+import pytest
 
 ###################################################
 
@@ -50,7 +50,7 @@ originalPath = get_path()
 
 
 @attr("functional")
-class TestMain(unittest.TestCase):
+class TestMain:
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
@@ -58,12 +58,8 @@ class TestMain(unittest.TestCase):
         cls.outputDir = "output"
         cls.databaseDirectory = settings["database.directory"]
 
-        cls.seedKinetics = os.path.join(
-            cls.databaseDirectory, "kinetics", "libraries", "testSeed"
-        )
-        cls.seedKineticsEdge = os.path.join(
-            cls.databaseDirectory, "kinetics", "libraries", "testSeed_edge"
-        )
+        cls.seedKinetics = os.path.join(cls.databaseDirectory, "kinetics", "libraries", "testSeed")
+        cls.seedKineticsEdge = os.path.join(cls.databaseDirectory, "kinetics", "libraries", "testSeed_edge")
 
         os.mkdir(os.path.join(cls.testDir, cls.outputDir))
 
@@ -91,55 +87,43 @@ class TestMain(unittest.TestCase):
 
     def test_rmg_execute(self):
         """Test that RMG.execute completed successfully."""
-        self.assertIsInstance(self.rmg.database, RMGDatabase)
-        self.assertTrue(self.rmg.done)
+        assert isinstance(self.rmg.database, RMGDatabase)
+        assert self.rmg.done
 
     def test_rmg_increases_reactions(self):
         """Test that RMG.execute increases reactions and species."""
-        self.assertTrue(len(self.rmg.reaction_model.core.reactions) > 0)
-        self.assertTrue(len(self.rmg.reaction_model.core.species) > 1)
-        self.assertTrue(len(self.rmg.reaction_model.edge.reactions) > 0)
-        self.assertTrue(len(self.rmg.reaction_model.edge.species) > 0)
+        assert len(self.rmg.reaction_model.core.reactions) > 0
+        assert len(self.rmg.reaction_model.core.species) > 1
+        assert len(self.rmg.reaction_model.edge.reactions) > 0
+        assert len(self.rmg.reaction_model.edge.species) > 0
 
     def test_rmg_seed_mechanism_creation(self):
         """Test that the expected seed mechanisms are created in output directory."""
         seed_dir = os.path.join(self.testDir, self.outputDir, "seed")
-        self.assertTrue(os.path.exists)
+        assert os.path.exists
 
-        self.assertTrue(
-            os.path.exists(os.path.join(seed_dir, "seed"))
-        )  # kinetics library folder made
+        assert os.path.exists(os.path.join(seed_dir, "seed"))  # kinetics library folder made
 
-        self.assertTrue(
-            os.path.exists(os.path.join(seed_dir, "seed", "dictionary.txt"))
-        )  # dictionary file made
-        self.assertTrue(
-            os.path.exists(os.path.join(seed_dir, "seed", "reactions.py"))
-        )  # reactions file made
+        assert os.path.exists(os.path.join(seed_dir, "seed", "dictionary.txt"))  # dictionary file made
+        assert os.path.exists(os.path.join(seed_dir, "seed", "reactions.py"))  # reactions file made
 
     def test_rmg_seed_edge_mechanism_creation(self):
         """Test that the expected seed mechanisms are created in output directory."""
         seed_dir = os.path.join(self.testDir, self.outputDir, "seed")
-        self.assertTrue(os.path.exists)
+        assert os.path.exists
 
-        self.assertTrue(
-            os.path.exists(os.path.join(seed_dir, "seed_edge"))
-        )  # kinetics library folder made
+        assert os.path.exists(os.path.join(seed_dir, "seed_edge"))  # kinetics library folder made
 
-        self.assertTrue(
-            os.path.exists(os.path.join(seed_dir, "seed_edge", "dictionary.txt"))
-        )  # dictionary file made
-        self.assertTrue(
-            os.path.exists(os.path.join(seed_dir, "seed_edge", "reactions.py"))
-        )  # reactions file made
+        assert os.path.exists(os.path.join(seed_dir, "seed_edge", "dictionary.txt"))  # dictionary file made
+        assert os.path.exists(os.path.join(seed_dir, "seed_edge", "reactions.py"))  # reactions file made
 
     def test_rmg_seed_library_creation(self):
         """Test that seed mechanisms are created in the correct database locations."""
-        self.assertTrue(os.path.exists(self.seedKinetics))
+        assert os.path.exists(self.seedKinetics)
 
     def test_rmg_seed_edge_library_creation(self):
         """Test that edge seed mechanisms are created in the correct database locations."""
-        self.assertTrue(os.path.exists(self.seedKinetics))
+        assert os.path.exists(self.seedKinetics)
 
     def test_rmg_seed_works(self):
         """Test that the created seed libraries work.
@@ -158,32 +142,24 @@ class TestMain(unittest.TestCase):
         )
 
         self.rmg.reaction_model = CoreEdgeReactionModel()
-        self.rmg.reaction_model.add_reaction_library_to_edge(
-            "testSeed"
-        )  # try adding seed as library
-        self.assertTrue(len(self.rmg.reaction_model.edge.species) > 0)
-        self.assertTrue(len(self.rmg.reaction_model.edge.reactions) > 0)
+        self.rmg.reaction_model.add_reaction_library_to_edge("testSeed")  # try adding seed as library
+        assert len(self.rmg.reaction_model.edge.species) > 0
+        assert len(self.rmg.reaction_model.edge.reactions) > 0
 
         self.rmg.reaction_model = CoreEdgeReactionModel()
-        self.rmg.reaction_model.add_seed_mechanism_to_core(
-            "testSeed"
-        )  # try adding seed as seed mech
-        self.assertTrue(len(self.rmg.reaction_model.core.species) > 0)
-        self.assertTrue(len(self.rmg.reaction_model.core.reactions) > 0)
+        self.rmg.reaction_model.add_seed_mechanism_to_core("testSeed")  # try adding seed as seed mech
+        assert len(self.rmg.reaction_model.core.species) > 0
+        assert len(self.rmg.reaction_model.core.reactions) > 0
 
         self.rmg.reaction_model = CoreEdgeReactionModel()
-        self.rmg.reaction_model.add_reaction_library_to_edge(
-            "testSeed_edge"
-        )  # try adding seed as library
-        self.assertTrue(len(self.rmg.reaction_model.edge.species) > 0)
-        self.assertTrue(len(self.rmg.reaction_model.edge.reactions) > 0)
+        self.rmg.reaction_model.add_reaction_library_to_edge("testSeed_edge")  # try adding seed as library
+        assert len(self.rmg.reaction_model.edge.species) > 0
+        assert len(self.rmg.reaction_model.edge.reactions) > 0
 
         self.rmg.reaction_model = CoreEdgeReactionModel()
-        self.rmg.reaction_model.add_seed_mechanism_to_core(
-            "testSeed_edge"
-        )  # try adding seed as seed mech
-        self.assertTrue(len(self.rmg.reaction_model.core.species) > 0)
-        self.assertTrue(len(self.rmg.reaction_model.core.reactions) > 0)
+        self.rmg.reaction_model.add_seed_mechanism_to_core("testSeed_edge")  # try adding seed as seed mech
+        assert len(self.rmg.reaction_model.core.species) > 0
+        assert len(self.rmg.reaction_model.core.reactions) > 0
 
     def test_rmg_memory(self):
         """
@@ -214,7 +190,7 @@ class TestMain(unittest.TestCase):
 
 
 @attr("functional")
-class TestRestartWithFilters(unittest.TestCase):
+class TestRestartWithFilters:
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
@@ -236,7 +212,7 @@ class TestRestartWithFilters(unittest.TestCase):
         """
         self.rmg.execute()
         with open(os.path.join(self.outputDir, "RMG.log"), "r") as f:
-            self.assertIn("MODEL GENERATION COMPLETED", f.read())
+            assert "MODEL GENERATION COMPLETED" in f.read()
 
     @classmethod
     def tearDownClass(cls):
@@ -251,7 +227,7 @@ class TestRestartWithFilters(unittest.TestCase):
 
 
 @attr("functional")
-class TestRestartNoFilters(unittest.TestCase):
+class TestRestartNoFilters:
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
@@ -273,7 +249,7 @@ class TestRestartNoFilters(unittest.TestCase):
         """
         self.rmg.execute()
         with open(os.path.join(self.outputDir, "RMG.log"), "r") as f:
-            self.assertIn("MODEL GENERATION COMPLETED", f.read())
+            assert "MODEL GENERATION COMPLETED" in f.read()
 
     @classmethod
     def tearDownClass(cls):
@@ -288,7 +264,7 @@ class TestRestartNoFilters(unittest.TestCase):
 
 
 @attr("functional")
-class TestMainFunctions(unittest.TestCase):
+class TestMainFunctions:
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
@@ -312,11 +288,9 @@ class TestMainFunctions(unittest.TestCase):
         Test that saveSeedModulus argument from superminimal_input.py saved the correct number of seeds
         """
         path = os.path.join(self.outputDir, "previous_seeds")
-        num_dir_actual = sum(
-            os.path.isdir(os.path.join(path, i)) for i in os.listdir(path)
-        )
+        num_dir_actual = sum(os.path.isdir(os.path.join(path, i)) for i in os.listdir(path))
         num_dir_expected = self.max_iter // 2 + 1  # +1 is for saving iteration 0
-        self.assertEqual(num_dir_actual, num_dir_expected)
+        assert num_dir_actual == num_dir_expected
 
     def test_max_iter(self):
         """
@@ -327,7 +301,7 @@ class TestMainFunctions(unittest.TestCase):
 
         num_iter_actual = num_rows
         num_iter_expected = self.max_iter + 1  # +1 is for saving iteration 0
-        self.assertEqual(num_iter_actual, num_iter_expected)
+        assert num_iter_actual == num_iter_expected
 
     @classmethod
     def tearDownClass(cls):
@@ -341,7 +315,7 @@ class TestMainFunctions(unittest.TestCase):
         shutil.rmtree(cls.outputDir)
 
 
-class TestProfiling(unittest.TestCase):
+class TestProfiling:
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
@@ -362,9 +336,7 @@ class TestProfiling(unittest.TestCase):
         profile_file = os.path.join(self.test_dir, "RMG.profile")
         make_profile_graph(profile_file)
         if self.display_found:  # Check that the profile graph was made
-            self.assertTrue(
-                os.path.exists(os.path.join(self.test_dir, "RMG.profile.dot.pdf"))
-            )
+            assert os.path.exists(os.path.join(self.test_dir, "RMG.profile.dot.pdf"))
         else:  # We can't test making a profile graph on this system, but at least test that this was recognized
             mock_logging.warning.assert_called_with(
                 "Could not find a display, which is required in order to generate "
@@ -387,7 +359,7 @@ class TestProfiling(unittest.TestCase):
             os.remove(os.path.join(cls.test_dir, "RMG.profile.dot.ps2"))
 
 
-class TestCanteraOutput(unittest.TestCase):
+class TestCanteraOutput:
     def setUp(self):
         self.chemkin_files = {
             """ELEMENTS
@@ -543,14 +515,10 @@ CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! G
             f.close()
 
             if works:
-                self.rmg.generate_cantera_files(
-                    os.path.join(os.getcwd(), "chem001.inp")
-                )
+                self.rmg.generate_cantera_files(os.path.join(os.getcwd(), "chem001.inp"))
             else:
-                with self.assertRaises(InputError):
-                    self.rmg.generate_cantera_files(
-                        os.path.join(os.getcwd(), "chem001.inp")
-                    )
+                with pytest.raises(InputError):
+                    self.rmg.generate_cantera_files(os.path.join(os.getcwd(), "chem001.inp"))
 
             # clean up
             os.chdir(originalPath)

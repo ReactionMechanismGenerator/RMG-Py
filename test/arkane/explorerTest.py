@@ -32,18 +32,16 @@ This module contains unit tests of the :mod:`arkane.explorer` module.
 """
 
 import os
-import unittest
+
 
 from nose.plugins.attrib import attr
 
 from arkane import Arkane
 from arkane.explorer import ExplorerJob
 
-################################################################################
-
 
 @attr("functional")
-class TestExplorerJob(unittest.TestCase):
+class TestExplorerJob:
     """
     Contains tests for ExplorerJob class execute method
     """
@@ -53,11 +51,7 @@ class TestExplorerJob(unittest.TestCase):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
 
-        cls.job_list = arkane.load_input_file(
-            os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), "data", "methoxy_explore.py"
-            )
-        )
+        cls.job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "methoxy_explore.py"))
         for job in cls.job_list:
             if not isinstance(job, ExplorerJob):
                 job.execute(output_file=None, plot=None)
@@ -86,13 +80,13 @@ class TestExplorerJob(unittest.TestCase):
         """
         test that the right number of reactions are in output network
         """
-        self.assertIn(len(self.explorer_job.networks[0].path_reactions), [6, 7])
+        assert len(self.explorer_job.networks[0].path_reactions) in [6, 7]
 
     def test_isomers(self):
         """
         test that the right number of isomers are in the output network
         """
-        self.assertEqual(len(self.explorer_job.networks[0].isomers), 2)
+        assert len(self.explorer_job.networks[0].isomers) == 2
 
     def test_job_rxns(self):
         """
@@ -100,4 +94,4 @@ class TestExplorerJob(unittest.TestCase):
         ended up in the final network
         """
         for rxn in self.explorer_job.job_rxns:
-            self.assertIn(rxn, self.explorer_job.networks[0].path_reactions)
+            assert rxn in self.explorer_job.networks[0].path_reactions

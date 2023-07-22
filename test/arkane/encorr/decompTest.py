@@ -31,27 +31,22 @@
 This script contains unit tests for the :mod:`arkane.encorr.decomp` module.
 """
 
-import unittest
+
 from collections import Counter
 
 from arkane.encorr.decomp import substruct_decomp, get_substructs, _smi_to_mol
 
 
-class TestBAC(unittest.TestCase):
+class TestBAC:
     """
     A class for testing that the decomp module functions properly.
     """
 
     @classmethod
     def setUpClass(cls):
-        cls.smi = (
-            "[CH3:1][O:2][C:3](=[C:4]1[CH:5]2[O:6][CH:7]3[N:8]1[CH:9]=[CH:10][CH:11]23)"
-            "[S:12](=[O:13])(=[O:14])[Cl:15]"
-        )
+        cls.smi = "[CH3:1][O:2][C:3](=[C:4]1[CH:5]2[O:6][CH:7]3[N:8]1[CH:9]=[CH:10][CH:11]23)" "[S:12](=[O:13])(=[O:14])[Cl:15]"
         cls.mol = _smi_to_mol(cls.smi)
-        cls.idx_map = {
-            atom.GetIdx(): atom.GetAtomMapNum() for atom in cls.mol.GetAtoms()
-        }
+        cls.idx_map = {atom.GetIdx(): atom.GetAtomMapNum() for atom in cls.mol.GetAtoms()}
 
     def test_substruct_decomp(self):
         """
@@ -74,12 +69,9 @@ class TestBAC(unittest.TestCase):
         ]
 
         substruct_idxs = substruct_decomp(self.mol)
-        substruct_map_nums_sorted = sorted(
-            sorted(self.idx_map[idx] for idx in substruct)
-            for substruct in substruct_idxs
-        )
+        substruct_map_nums_sorted = sorted(sorted(self.idx_map[idx] for idx in substruct) for substruct in substruct_idxs)
 
-        self.assertListEqual(substruct_map_nums_sorted, map_num_list_sorted)
+        assert substruct_map_nums_sorted == map_num_list_sorted
 
     def test_get_substructs(self):
         """
@@ -100,4 +92,4 @@ class TestBAC(unittest.TestCase):
             }
         )
 
-        self.assertEqual(get_substructs(self.smi), substruct_counts)
+        assert get_substructs(self.smi) == substruct_counts

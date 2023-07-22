@@ -31,16 +31,14 @@
 This script contains unit tests of the :mod:`rmgobject` module.
 """
 
-import unittest
+
 from dataclasses import dataclass
 
 import numpy as np
 
 from rmgpy.quantity import ScalarQuantity, ArrayQuantity
 from rmgpy.rmgobject import RMGObject, expand_to_dict, recursive_make_object
-
-
-################################################################################
+import pytest
 
 
 class PseudoRMGObject(RMGObject):
@@ -56,7 +54,7 @@ class PseudoRMGObject(RMGObject):
         self.d = d
 
 
-class TestRMGObject(unittest.TestCase):
+class TestRMGObject:
     """
     Contains unit tests for the RMGObject class
     """
@@ -68,7 +66,7 @@ class TestRMGObject(unittest.TestCase):
 
         expected = {"class": "PseudoRMGObject", "a": 1, "b": 5}
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_read_int(self):
         """Test reading ints"""
@@ -76,10 +74,10 @@ class TestRMGObject(unittest.TestCase):
         obj = PseudoRMGObject()
         obj.make_object(data, class_dict={"PseudoRMGObject": PseudoRMGObject})
 
-        self.assertIsInstance(obj.a, int)
-        self.assertEqual(obj.a, 1)
-        self.assertIsInstance(obj.b, int)
-        self.assertEqual(obj.b, 5)
+        assert isinstance(obj.a, int)
+        assert obj.a == 1
+        assert isinstance(obj.b, int)
+        assert obj.b == 5
 
     def test_save_float(self):
         """Test saving floats"""
@@ -88,7 +86,7 @@ class TestRMGObject(unittest.TestCase):
 
         expected = {"class": "PseudoRMGObject", "a": 1.0, "b": 5.0}
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_read_float(self):
         """Test reading floats"""
@@ -96,10 +94,10 @@ class TestRMGObject(unittest.TestCase):
         obj = PseudoRMGObject()
         obj.make_object(data, class_dict={"PseudoRMGObject": PseudoRMGObject})
 
-        self.assertIsInstance(obj.a, float)
-        self.assertEqual(obj.a, 1.0)
-        self.assertIsInstance(obj.a, float)
-        self.assertEqual(obj.b, 5.0)
+        assert isinstance(obj.a, float)
+        assert obj.a == 1.0
+        assert isinstance(obj.a, float)
+        assert obj.b == 5.0
 
     def test_save_str(self):
         """Test saving strings"""
@@ -108,7 +106,7 @@ class TestRMGObject(unittest.TestCase):
 
         expected = {"class": "PseudoRMGObject", "a": "foo", "b": "bar"}
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_read_str(self):
         """Test reading strings"""
@@ -116,8 +114,8 @@ class TestRMGObject(unittest.TestCase):
         obj = PseudoRMGObject()
         obj.make_object(data, class_dict={"PseudoRMGObject": PseudoRMGObject})
 
-        self.assertEqual(obj.a, "foo")
-        self.assertEqual(obj.b, "bar")
+        assert obj.a == "foo"
+        assert obj.b == "bar"
 
     def test_save_empty_str(self):
         """Test saving empty strings"""
@@ -126,7 +124,7 @@ class TestRMGObject(unittest.TestCase):
 
         expected = {"class": "PseudoRMGObject", "b": "bar"}
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_read_empty_str(self):
         """Test reading empty strings"""
@@ -134,8 +132,8 @@ class TestRMGObject(unittest.TestCase):
         obj = PseudoRMGObject()
         obj.make_object(data, class_dict={"PseudoRMGObject": PseudoRMGObject})
 
-        self.assertEqual(obj.a, "")
-        self.assertEqual(obj.b, "bar")
+        assert obj.a == ""
+        assert obj.b == "bar"
 
     def test_save_dict(self):
         """Test saving dictionaries"""
@@ -144,7 +142,7 @@ class TestRMGObject(unittest.TestCase):
 
         expected = {"class": "PseudoRMGObject", "a": {"foo": "bar"}}
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_read_dict(self):
         """Test reading dictionaries"""
@@ -152,7 +150,7 @@ class TestRMGObject(unittest.TestCase):
         obj = PseudoRMGObject()
         obj.make_object(data, class_dict={"PseudoRMGObject": PseudoRMGObject})
 
-        self.assertEqual(obj.a, {"foo": "bar"})
+        assert obj.a == {"foo": "bar"}
 
     def test_save_mix(self):
         """Test saving mix of builtin types"""
@@ -167,7 +165,7 @@ class TestRMGObject(unittest.TestCase):
             "d": {"foo": "bar"},
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_read_mix(self):
         """Test reading mix of builtin types"""
@@ -175,12 +173,12 @@ class TestRMGObject(unittest.TestCase):
         obj = PseudoRMGObject()
         obj.make_object(data, class_dict={"PseudoRMGObject": PseudoRMGObject})
 
-        self.assertIsInstance(obj.a, int)
-        self.assertEqual(obj.a, 1)
-        self.assertIsInstance(obj.b, float)
-        self.assertEqual(obj.b, 5.0)
-        self.assertEqual(obj.c, "foobar")
-        self.assertEqual(obj.d, {"foo": "bar"})
+        assert isinstance(obj.a, int)
+        assert obj.a == 1
+        assert isinstance(obj.b, float)
+        assert obj.b == 5.0
+        assert obj.c == "foobar"
+        assert obj.d == {"foo": "bar"}
 
     def test_save_numpy(self):
         """Test saving numpy array"""
@@ -192,7 +190,7 @@ class TestRMGObject(unittest.TestCase):
             "a": {"object": [1.0, 2.0, 3.0], "class": "np_array"},
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_save_object(self):
         """Test saving another object"""
@@ -204,7 +202,7 @@ class TestRMGObject(unittest.TestCase):
             "a": {"class": "PseudoRMGObject", "b": "foobar"},
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_read_object(self):
         """Test reading an object"""
@@ -212,8 +210,8 @@ class TestRMGObject(unittest.TestCase):
         obj = PseudoRMGObject()
         obj.make_object(data, class_dict={"PseudoRMGObject": PseudoRMGObject})
 
-        self.assertIsInstance(obj.a, PseudoRMGObject)
-        self.assertEqual(obj.a.b, "foobar")
+        assert isinstance(obj.a, PseudoRMGObject)
+        assert obj.a.b == "foobar"
 
     def test_save_object_list(self):
         """Test saving a list of objects"""
@@ -228,7 +226,7 @@ class TestRMGObject(unittest.TestCase):
             ],
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_read_object_list(self):
         """Test reading a list of objects"""
@@ -241,18 +239,16 @@ class TestRMGObject(unittest.TestCase):
         obj = PseudoRMGObject()
         obj.make_object(data, class_dict={"PseudoRMGObject": PseudoRMGObject})
 
-        self.assertIsInstance(obj.a, list)
-        self.assertEqual(len(obj.a), 2)
-        self.assertIsInstance(obj.a[0], PseudoRMGObject)
-        self.assertEqual(obj.a[0].b, "foobar")
-        self.assertIsInstance(obj.a[1], PseudoRMGObject)
-        self.assertEqual(obj.a[1].c, 5.0)
+        assert isinstance(obj.a, list)
+        assert len(obj.a) == 2
+        assert isinstance(obj.a[0], PseudoRMGObject)
+        assert obj.a[0].b == "foobar"
+        assert isinstance(obj.a[1], PseudoRMGObject)
+        assert obj.a[1].c == 5.0
 
     def test_save_empty_list(self):
         """Test saving an empty list"""
-        obj = PseudoRMGObject(
-            a=[PseudoRMGObject(b="foobar"), PseudoRMGObject(c=5.0)], b=[]
-        )
+        obj = PseudoRMGObject(a=[PseudoRMGObject(b="foobar"), PseudoRMGObject(c=5.0)], b=[])
         result = obj.as_dict()
 
         expected = {
@@ -264,7 +260,7 @@ class TestRMGObject(unittest.TestCase):
             "b": [],
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_read_empty_list(self):
         """Test reading an smpty list"""
@@ -278,13 +274,13 @@ class TestRMGObject(unittest.TestCase):
         obj = PseudoRMGObject()
         obj.make_object(data, class_dict={"PseudoRMGObject": PseudoRMGObject})
 
-        self.assertIsInstance(obj.a, list)
-        self.assertEqual(len(obj.a), 2)
-        self.assertIsInstance(obj.a[0], PseudoRMGObject)
-        self.assertEqual(obj.a[0].b, "foobar")
-        self.assertIsInstance(obj.a[1], PseudoRMGObject)
-        self.assertEqual(obj.a[1].c, 5.0)
-        self.assertEqual(obj.b, [])
+        assert isinstance(obj.a, list)
+        assert len(obj.a) == 2
+        assert isinstance(obj.a[0], PseudoRMGObject)
+        assert obj.a[0].b == "foobar"
+        assert isinstance(obj.a[1], PseudoRMGObject)
+        assert obj.a[1].c == 5.0
+        assert obj.b == []
 
     def test_ignore_aux_and_mol(self):
         """Test ignoring specific keys"""
@@ -298,9 +294,9 @@ class TestRMGObject(unittest.TestCase):
         }
         obj = PseudoRMGObject()
         obj.make_object(data, class_dict={"PseudoRMGObject": PseudoRMGObject})
-        self.assertIsInstance(obj.a, list)
+        assert isinstance(obj.a, list)
 
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             data = {
                 "a": [
                     {"class": "PseudoRMGObject", "b": "foobar"},
@@ -312,7 +308,7 @@ class TestRMGObject(unittest.TestCase):
             obj.make_object(data, class_dict={"PseudoRMGObject": PseudoRMGObject})
 
 
-class TestExpandAndMakeFromDictionaries(unittest.TestCase):
+class TestExpandAndMakeFromDictionaries:
     """
     Contains unit tests for the expand_to_dict and recursive_make_object function utilized by RMGObjects
     """
@@ -417,93 +413,79 @@ class TestExpandAndMakeFromDictionaries(unittest.TestCase):
         """
         Test that objects nested inside of lists can be expanded
         """
-        self.assertEqual(expand_to_dict(self.list_of_objects), self.list_dict)
+        assert expand_to_dict(self.list_of_objects) == self.list_dict
 
     def test_expanding_objects_in_dictionary(self):
         """
         Test that objects nested inside of dictionaries can be expanded
         """
-        self.assertEqual(expand_to_dict(self.dictionary_of_objects), self.objects_dict)
+        assert expand_to_dict(self.dictionary_of_objects) == self.objects_dict
 
     def test_expanding_np_arrays(self):
         """
         Test that np_arrays are expanded properly
         """
-        self.assertEqual(expand_to_dict(self.np_array), self.np_dict)
+        assert expand_to_dict(self.np_array) == self.np_dict
 
     def test_expanding_rmg_objects(self):
         """
         Test that RMGObjects (even when nested) can be expanded using the as_dict method
         """
-        self.assertEqual(
-            expand_to_dict(self.highly_nested_object), self.highly_nest_dictionary
-        )
-        self.assertEqual(
-            self.highly_nested_object.as_dict(), self.highly_nest_dictionary
-        )
+        assert expand_to_dict(self.highly_nested_object) == self.highly_nest_dictionary
+        assert self.highly_nested_object.as_dict() == self.highly_nest_dictionary
 
     def test_make_object_from_dict(self):
         """
         Test that RMGObjects can be recreated from their dictionary representation
         """
-        created_from_function = recursive_make_object(
-            self.highly_nest_dictionary, self.class_dictionary
-        )
+        created_from_function = recursive_make_object(self.highly_nest_dictionary, self.class_dictionary)
         created_from_object = PseudoRMGObject.__new__(PseudoRMGObject)
-        created_from_object.make_object(
-            self.highly_nest_dictionary, self.class_dictionary
-        )
+        created_from_object.make_object(self.highly_nest_dictionary, self.class_dictionary)
         orig_obj = self.highly_nested_object
 
         for obj in (created_from_function, created_from_object):
-            self.assertEqual(orig_obj.b, obj.b)
-            self.assertEqual(type(orig_obj.a), type(obj.a))
-            self.assertEqual(type(orig_obj.a.a), type(obj.a.a))
-            self.assertTrue(np.array_equal(orig_obj.a.a.b, obj.a.a.b))
-            self.assertEqual(type(orig_obj.a.a.c), type(obj.a.a.c))
-            self.assertEqual(orig_obj.a.a.c.c.units, obj.a.a.c.c.units)
-            self.assertTrue(np.array_equal(orig_obj.a.a.c.c.value, obj.a.a.c.c.value))
-            self.assertEqual(type(orig_obj.a.a.c.d), type(obj.a.a.c.d))
-            self.assertEqual(orig_obj.a.a.c.d.a.units, obj.a.a.c.d.a.units)
-            self.assertTrue(orig_obj.a.a.c.d.a.value, obj.a.a.c.d.a.value)
-            self.assertEqual(type(orig_obj.a.a.c.d.b), type(orig_obj.a.a.c.d.b))
+            assert orig_obj.b == obj.b
+            assert type(orig_obj.a) == type(obj.a)
+            assert type(orig_obj.a.a) == type(obj.a.a)
+            assert np.array_equal(orig_obj.a.a.b, obj.a.a.b)
+            assert type(orig_obj.a.a.c) == type(obj.a.a.c)
+            assert orig_obj.a.a.c.c.units == obj.a.a.c.c.units
+            assert np.array_equal(orig_obj.a.a.c.c.value, obj.a.a.c.c.value)
+            assert type(orig_obj.a.a.c.d) == type(obj.a.a.c.d)
+            assert orig_obj.a.a.c.d.a.units == obj.a.a.c.d.a.units
+            assert orig_obj.a.a.c.d.a.value, obj.a.a.c.d.a.value
+            assert type(orig_obj.a.a.c.d.b) == type(orig_obj.a.a.c.d.b)
 
     def test_make_all_but_final_object_from_dict(self):
         """
         Test the `make_final_object=False` option for the recursive_make_object function
         """
-        final_obj_dict = recursive_make_object(
-            self.input_dict, self.class_dictionary, make_final_object=False
-        )
-        self.assertTrue(
-            np.array_equal(final_obj_dict["a"].b, self.final_obj_dict["a"].b)
-        )
+        final_obj_dict = recursive_make_object(self.input_dict, self.class_dictionary, make_final_object=False)
+        assert np.array_equal(final_obj_dict["a"].b, self.final_obj_dict["a"].b)
 
     def test_float_creation(self):
         """
         Test that strings of floats are recreated as floats
         """
         obj = recursive_make_object("5.0", self.class_dictionary)
-        self.assertEqual(obj, 5.0)
-        self.assertEqual(type(obj), float)
+        assert obj == 5.0
+        assert type(obj) == float
 
     def test_int_creation(self):
         """
         Test that strings of ints are recreated as ints
         """
         obj = recursive_make_object("5", self.class_dictionary)
-        self.assertEqual(obj, 5)
-        self.assertEqual(type(obj), int)
+        assert obj == 5
+        assert type(obj) == int
 
     def test_np_array_creation(self):
         """
         Test that numpy arrays can be recreated from their dictionary representation
         """
-        self.assertTrue(
-            np.array_equal(
-                recursive_make_object(self.np_dict, self.class_dictionary),
-                self.np_array,
-            )
+        assert np.array_equal(
+            recursive_make_object(self.np_dict, self.class_dictionary),
+            self.np_array,
         )
 
     def test_hashable_class_key_creation(self):
@@ -519,6 +501,6 @@ class TestExpandAndMakeFromDictionaries(unittest.TestCase):
         class_dictionary = {"Data": Data}
         key, val = list(recursive_make_object(input_dict, class_dictionary).items())[0]
 
-        self.assertIsInstance(key, Data)
-        self.assertEqual(key, Data("test"))
-        self.assertEqual(val, "test")
+        assert isinstance(key, Data)
+        assert key == Data("test")
+        assert val == "test"

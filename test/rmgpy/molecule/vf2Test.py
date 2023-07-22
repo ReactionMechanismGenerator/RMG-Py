@@ -27,7 +27,6 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
 
 from numpy import testing
 
@@ -35,10 +34,8 @@ from rmgpy.molecule.graph import get_vertex_connectivity_value
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.vf2 import VF2
 
-################################################################################
 
-
-class TestVF2(unittest.TestCase):
+class TestVF2:
     """
     Contains unit tests of the methods for computing symmetry numbers for a
     given Molecule object.
@@ -54,24 +51,16 @@ class TestVF2(unittest.TestCase):
 
         self.mol.sort_vertices()
 
-        ordered_original_connectivity_order = [
-            get_vertex_connectivity_value(atom) for atom in self.mol.atoms
-        ]
+        ordered_original_connectivity_order = [get_vertex_connectivity_value(atom) for atom in self.mol.atoms]
 
         self.vf2.graphA = self.mol
         self.vf2.graphB = self.mol2
 
-        final_connectivity_order = [
-            get_vertex_connectivity_value(atom) for atom in self.vf2.graphA.atoms
-        ]
-        final_connectivity_order2 = [
-            get_vertex_connectivity_value(atom) for atom in self.vf2.graphB.atoms
-        ]
+        final_connectivity_order = [get_vertex_connectivity_value(atom) for atom in self.vf2.graphA.atoms]
+        final_connectivity_order2 = [get_vertex_connectivity_value(atom) for atom in self.vf2.graphB.atoms]
 
         testing.assert_array_equal(final_connectivity_order, final_connectivity_order2)
-        testing.assert_array_equal(
-            final_connectivity_order, ordered_original_connectivity_order
-        )
+        testing.assert_array_equal(final_connectivity_order, ordered_original_connectivity_order)
 
     def test_feasible(self):
         """
@@ -87,20 +76,15 @@ class TestVF2(unittest.TestCase):
         for atom1 in self.vf2.graphA.atoms:
             for atom2 in self.vf2.graphB.atoms:
                 # same connectivity values should result in `feasible` being true
-                if get_vertex_connectivity_value(
-                    atom1
-                ) == get_vertex_connectivity_value(atom2):
-                    self.assertTrue(self.vf2.feasible(atom1, atom2))
+                if get_vertex_connectivity_value(atom1) == get_vertex_connectivity_value(atom2):
+                    assert self.vf2.feasible(atom1, atom2)
                 else:  # different connectivity values should return false
-                    self.assertFalse(self.vf2.feasible(atom1, atom2))
+                    assert not self.vf2.feasible(atom1, atom2)
 
     def test_clear_mapping(self):
         """Test that vertex mapping is cleared after isomorphism."""
         self.vf2.is_isomorphic(self.mol, self.mol2, None)
 
         for atom in self.mol.atoms:
-            self.assertIsNone(atom.mapping)
-            self.assertFalse(atom.terminal)
-
-
-################################################################################
+            assert atom.mapping is None
+            assert not atom.terminal

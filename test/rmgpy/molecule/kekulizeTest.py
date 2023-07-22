@@ -27,13 +27,12 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
 
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.kekulize import AromaticRing
 
 
-class KekulizeTest(unittest.TestCase):
+class KekulizeTest:
     def setUp(self):
         """To be run before each test."""
         molecule = Molecule().from_adjacency_list(
@@ -58,20 +57,18 @@ class KekulizeTest(unittest.TestCase):
 
         ring_atoms, ring_bonds = molecule.get_aromatic_rings()
 
-        self.aromatic_ring = AromaticRing(
-            ring_atoms[0], set(ring_bonds[0]), bonds - set(ring_bonds[0])
-        )
+        self.aromatic_ring = AromaticRing(ring_atoms[0], set(ring_bonds[0]), bonds - set(ring_bonds[0]))
 
     def test_aromatic_ring(self):
         """Test that the AromaticRing class works properly for kekulization."""
         self.aromatic_ring.update()
 
-        self.assertEqual(self.aromatic_ring.endo_dof, 6)
-        self.assertEqual(self.aromatic_ring.exo_dof, 0)
+        assert self.aromatic_ring.endo_dof == 6
+        assert self.aromatic_ring.exo_dof == 0
 
         result = self.aromatic_ring.kekulize()
 
-        self.assertTrue(result)
+        assert result
 
     def test_aromatic_bond(self):
         """Test that the AromaticBond class works properly for kekulization."""
@@ -81,12 +78,12 @@ class KekulizeTest(unittest.TestCase):
             self.aromatic_ring.unresolved,
         )
 
-        self.assertEqual(len(resolved), 0)
-        self.assertEqual(len(unresolved), 6)
+        assert len(resolved) == 0
+        assert len(unresolved) == 6
 
         for bond in unresolved:
             bond.update()
-            self.assertEqual(bond.endo_dof, 2)
-            self.assertEqual(bond.exo_dof, 0)
-            self.assertTrue(bond.double_possible)
-            self.assertFalse(bond.double_required)
+            assert bond.endo_dof == 2
+            assert bond.exo_dof == 0
+            assert bond.double_possible
+            assert not bond.double_required

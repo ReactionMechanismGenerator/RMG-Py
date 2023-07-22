@@ -32,7 +32,7 @@ This script contains unit tests of the :mod:`rmgpy.thermo.wilhoit` module.
 """
 
 import os.path
-import unittest
+
 
 import numpy as np
 
@@ -40,10 +40,8 @@ import rmgpy.constants as constants
 from rmgpy.quantity import ScalarQuantity
 from rmgpy.thermo.wilhoit import Wilhoit
 
-################################################################################
 
-
-class TestWilhoit(unittest.TestCase):
+class TestWilhoit:
     """
     Contains unit tests of the :class:`Wilhoit` class.
     """
@@ -91,81 +89,79 @@ class TestWilhoit(unittest.TestCase):
         """
         Test that the Wilhoit Cp0 property was properly set.
         """
-        self.assertAlmostEqual(self.wilhoit.Cp0.value_si / constants.R, self.Cp0, 6)
+        assert round(abs(self.wilhoit.Cp0.value_si / constants.R - self.Cp0), 6) == 0
 
     def test_cp_inf(self):
         """
         Test that the Wilhoit CpInf property was properly set.
         """
-        self.assertAlmostEqual(self.wilhoit.CpInf.value_si / constants.R, self.CpInf, 6)
+        assert round(abs(self.wilhoit.CpInf.value_si / constants.R - self.CpInf), 6) == 0
 
     def test_a0(self):
         """
         Test that the Wilhoit a0 property was properly set.
         """
-        self.assertAlmostEqual(self.wilhoit.a0, self.a0, 6)
+        assert round(abs(self.wilhoit.a0 - self.a0), 6) == 0
 
     def test_a1(self):
         """
         Test that the Wilhoit a1 property was properly set.
         """
-        self.assertAlmostEqual(self.wilhoit.a1, self.a1, 6)
+        assert round(abs(self.wilhoit.a1 - self.a1), 6) == 0
 
     def test_a2(self):
         """
         Test that the Wilhoit a2 property was properly set.
         """
-        self.assertAlmostEqual(self.wilhoit.a2, self.a2, 6)
+        assert round(abs(self.wilhoit.a2 - self.a2), 6) == 0
 
     def test_a3(self):
         """
         Test that the Wilhoit a3 property was properly set.
         """
-        self.assertAlmostEqual(self.wilhoit.a3, self.a3, 6)
+        assert round(abs(self.wilhoit.a3 - self.a3), 6) == 0
 
     def test_b(self):
         """
         Test that the Wilhoit B property was properly set.
         """
-        self.assertAlmostEqual(self.wilhoit.B.value_si, self.B, 6)
+        assert round(abs(self.wilhoit.B.value_si - self.B), 6) == 0
 
     def test_h0(self):
         """
         Test that the Wilhoit H0 property was properly set.
         """
-        self.assertAlmostEqual(self.wilhoit.H0.value_si / constants.R, self.H0, 6)
+        assert round(abs(self.wilhoit.H0.value_si / constants.R - self.H0), 6) == 0
 
     def test_s0(self):
         """
         Test that the Wilhoit S0 property was properly set.
         """
-        self.assertAlmostEqual(self.wilhoit.S0.value_si / constants.R, self.S0, 6)
+        assert round(abs(self.wilhoit.S0.value_si / constants.R - self.S0), 6) == 0
 
     def test_temperature_min(self):
         """
         Test that the Wilhoit Tmin property was properly set.
         """
-        self.assertAlmostEqual(self.wilhoit.Tmin.value_si, self.Tmin, 6)
+        assert round(abs(self.wilhoit.Tmin.value_si - self.Tmin), 6) == 0
 
     def test_temperature_max(self):
         """
         Test that the Wilhoit Tmax property was properly set.
         """
-        self.assertAlmostEqual(self.wilhoit.Tmax.value_si, self.Tmax, 6)
+        assert round(abs(self.wilhoit.Tmax.value_si - self.Tmax), 6) == 0
 
     def test_e0(self):
         """
         Test that the Wilhoit E0 property is properly calculated from Enthalpy at 0.001 K
         """
-        self.assertAlmostEqual(
-            self.wilhoit.E0.value_si, self.wilhoit.get_enthalpy(0.001), 1
-        )
+        assert round(abs(self.wilhoit.E0.value_si - self.wilhoit.get_enthalpy(0.001)), 1) == 0
 
     def test_comment(self):
         """
         Test that the Wilhoit comment property was properly set.
         """
-        self.assertEqual(self.wilhoit.comment, self.comment)
+        assert self.wilhoit.comment == self.comment
 
     def test_is_temperature_valid(self):
         """
@@ -175,7 +171,7 @@ class TestWilhoit(unittest.TestCase):
         valid_data = [False, True, True, True, True, True, True, True, True, True]
         for T, valid in zip(Tdata, valid_data):
             valid0 = self.wilhoit.is_temperature_valid(T)
-            self.assertEqual(valid0, valid)
+            assert valid0 == valid
 
     def test_get_heat_capacity(self):
         """
@@ -201,12 +197,7 @@ class TestWilhoit(unittest.TestCase):
         )
         for T, cp_exp in zip(Tlist, cp_exp_list):
             cp_act = self.wilhoit.get_heat_capacity(T)
-            self.assertAlmostEqual(
-                cp_exp / cp_act,
-                1.0,
-                3,
-                "{0} != {1} within 3 places".format(cp_exp, cp_act),
-            )
+            assert round(abs(cp_exp / cp_act - 1.0), 3) == 0, "{0} != {1} within 3 places".format(cp_exp, cp_act)
 
     def test_get_enthalpy(self):
         """
@@ -233,9 +224,7 @@ class TestWilhoit(unittest.TestCase):
         )
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = self.wilhoit.get_enthalpy(T)
-            self.assertAlmostEqual(
-                h_exp / h_act, 1.0, 3, "{0} != {1}".format(h_exp, h_act)
-            )
+            assert round(abs(h_exp / h_act - 1.0), 3) == 0, "{0} != {1}".format(h_exp, h_act)
 
     def test_get_entropy(self):
         """
@@ -261,9 +250,7 @@ class TestWilhoit(unittest.TestCase):
         )
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = self.wilhoit.get_entropy(T)
-            self.assertAlmostEqual(
-                s_exp / s_act, 1.0, 4, "{0} != {1}".format(s_exp, s_act)
-            )
+            assert round(abs(s_exp / s_act - 1.0), 4) == 0, "{0} != {1}".format(s_exp, s_act)
 
     def test_get_free_energy(self):
         """
@@ -273,9 +260,7 @@ class TestWilhoit(unittest.TestCase):
         for T in Tlist:
             g_exp = self.wilhoit.get_enthalpy(T) - T * self.wilhoit.get_entropy(T)
             g_act = self.wilhoit.get_free_energy(T)
-            self.assertAlmostEqual(
-                g_exp / g_act, 1.0, 4, "{0} != {1}".format(g_exp, g_act)
-            )
+            assert round(abs(g_exp / g_act - 1.0), 4) == 0, "{0} != {1}".format(g_exp, g_act)
 
     def test_pickle(self):
         """
@@ -285,27 +270,27 @@ class TestWilhoit(unittest.TestCase):
         import pickle
 
         wilhoit = pickle.loads(pickle.dumps(self.wilhoit))
-        self.assertAlmostEqual(self.wilhoit.Cp0.value, wilhoit.Cp0.value, 4)
-        self.assertEqual(self.wilhoit.Cp0.units, wilhoit.Cp0.units)
-        self.assertAlmostEqual(self.wilhoit.CpInf.value, wilhoit.CpInf.value, 3)
-        self.assertEqual(self.wilhoit.CpInf.units, wilhoit.CpInf.units)
-        self.assertAlmostEqual(self.wilhoit.a0, wilhoit.a0, 4)
-        self.assertAlmostEqual(self.wilhoit.a1, wilhoit.a1, 4)
-        self.assertAlmostEqual(self.wilhoit.a2, wilhoit.a2, 4)
-        self.assertAlmostEqual(self.wilhoit.a3, wilhoit.a3, 4)
-        self.assertAlmostEqual(self.wilhoit.B.value, wilhoit.B.value, 4)
-        self.assertEqual(self.wilhoit.B.units, wilhoit.B.units)
-        self.assertAlmostEqual(self.wilhoit.H0.value, wilhoit.H0.value, 4)
-        self.assertEqual(self.wilhoit.H0.units, wilhoit.H0.units)
-        self.assertAlmostEqual(self.wilhoit.S0.value, wilhoit.S0.value, 3)
-        self.assertEqual(self.wilhoit.S0.units, wilhoit.S0.units)
-        self.assertAlmostEqual(self.wilhoit.Tmin.value, wilhoit.Tmin.value, 4)
-        self.assertEqual(self.wilhoit.Tmin.units, wilhoit.Tmin.units)
-        self.assertAlmostEqual(self.wilhoit.Tmax.value, wilhoit.Tmax.value, 4)
-        self.assertEqual(self.wilhoit.Tmax.units, wilhoit.Tmax.units)
-        self.assertAlmostEqual(self.wilhoit.E0.value, wilhoit.E0.value, 4)
-        self.assertEqual(self.wilhoit.E0.units, wilhoit.E0.units)
-        self.assertEqual(self.wilhoit.comment, wilhoit.comment)
+        assert round(abs(self.wilhoit.Cp0.value - wilhoit.Cp0.value), 4) == 0
+        assert self.wilhoit.Cp0.units == wilhoit.Cp0.units
+        assert round(abs(self.wilhoit.CpInf.value - wilhoit.CpInf.value), 3) == 0
+        assert self.wilhoit.CpInf.units == wilhoit.CpInf.units
+        assert round(abs(self.wilhoit.a0 - wilhoit.a0), 4) == 0
+        assert round(abs(self.wilhoit.a1 - wilhoit.a1), 4) == 0
+        assert round(abs(self.wilhoit.a2 - wilhoit.a2), 4) == 0
+        assert round(abs(self.wilhoit.a3 - wilhoit.a3), 4) == 0
+        assert round(abs(self.wilhoit.B.value - wilhoit.B.value), 4) == 0
+        assert self.wilhoit.B.units == wilhoit.B.units
+        assert round(abs(self.wilhoit.H0.value - wilhoit.H0.value), 4) == 0
+        assert self.wilhoit.H0.units == wilhoit.H0.units
+        assert round(abs(self.wilhoit.S0.value - wilhoit.S0.value), 3) == 0
+        assert self.wilhoit.S0.units == wilhoit.S0.units
+        assert round(abs(self.wilhoit.Tmin.value - wilhoit.Tmin.value), 4) == 0
+        assert self.wilhoit.Tmin.units == wilhoit.Tmin.units
+        assert round(abs(self.wilhoit.Tmax.value - wilhoit.Tmax.value), 4) == 0
+        assert self.wilhoit.Tmax.units == wilhoit.Tmax.units
+        assert round(abs(self.wilhoit.E0.value - wilhoit.E0.value), 4) == 0
+        assert self.wilhoit.E0.units == wilhoit.E0.units
+        assert self.wilhoit.comment == wilhoit.comment
 
     def test_repr(self):
         """
@@ -314,29 +299,29 @@ class TestWilhoit(unittest.TestCase):
         """
         namespace = {}
         exec("wilhoit = {0!r}".format(self.wilhoit), globals(), namespace)
-        self.assertIn("wilhoit", namespace)
+        assert "wilhoit" in namespace
         wilhoit = namespace["wilhoit"]
-        self.assertAlmostEqual(self.wilhoit.Cp0.value, wilhoit.Cp0.value, 4)
-        self.assertEqual(self.wilhoit.Cp0.units, wilhoit.Cp0.units)
-        self.assertAlmostEqual(self.wilhoit.CpInf.value, wilhoit.CpInf.value, 3)
-        self.assertEqual(self.wilhoit.CpInf.units, wilhoit.CpInf.units)
-        self.assertAlmostEqual(self.wilhoit.a0, wilhoit.a0, 4)
-        self.assertAlmostEqual(self.wilhoit.a1, wilhoit.a1, 4)
-        self.assertAlmostEqual(self.wilhoit.a2, wilhoit.a2, 4)
-        self.assertAlmostEqual(self.wilhoit.a3, wilhoit.a3, 4)
-        self.assertAlmostEqual(self.wilhoit.B.value, wilhoit.B.value, 4)
-        self.assertEqual(self.wilhoit.B.units, wilhoit.B.units)
-        self.assertAlmostEqual(self.wilhoit.H0.value, wilhoit.H0.value, 4)
-        self.assertEqual(self.wilhoit.H0.units, wilhoit.H0.units)
-        self.assertAlmostEqual(self.wilhoit.S0.value, wilhoit.S0.value, 3)
-        self.assertEqual(self.wilhoit.S0.units, wilhoit.S0.units)
-        self.assertAlmostEqual(self.wilhoit.Tmin.value, wilhoit.Tmin.value, 4)
-        self.assertEqual(self.wilhoit.Tmin.units, wilhoit.Tmin.units)
-        self.assertAlmostEqual(self.wilhoit.Tmax.value, wilhoit.Tmax.value, 4)
-        self.assertEqual(self.wilhoit.Tmax.units, wilhoit.Tmax.units)
-        self.assertAlmostEqual(self.wilhoit.E0.value, wilhoit.E0.value, 1)
-        self.assertEqual(self.wilhoit.E0.units, wilhoit.E0.units)
-        self.assertEqual(self.wilhoit.comment, wilhoit.comment)
+        assert round(abs(self.wilhoit.Cp0.value - wilhoit.Cp0.value), 4) == 0
+        assert self.wilhoit.Cp0.units == wilhoit.Cp0.units
+        assert round(abs(self.wilhoit.CpInf.value - wilhoit.CpInf.value), 3) == 0
+        assert self.wilhoit.CpInf.units == wilhoit.CpInf.units
+        assert round(abs(self.wilhoit.a0 - wilhoit.a0), 4) == 0
+        assert round(abs(self.wilhoit.a1 - wilhoit.a1), 4) == 0
+        assert round(abs(self.wilhoit.a2 - wilhoit.a2), 4) == 0
+        assert round(abs(self.wilhoit.a3 - wilhoit.a3), 4) == 0
+        assert round(abs(self.wilhoit.B.value - wilhoit.B.value), 4) == 0
+        assert self.wilhoit.B.units == wilhoit.B.units
+        assert round(abs(self.wilhoit.H0.value - wilhoit.H0.value), 4) == 0
+        assert self.wilhoit.H0.units == wilhoit.H0.units
+        assert round(abs(self.wilhoit.S0.value - wilhoit.S0.value), 3) == 0
+        assert self.wilhoit.S0.units == wilhoit.S0.units
+        assert round(abs(self.wilhoit.Tmin.value - wilhoit.Tmin.value), 4) == 0
+        assert self.wilhoit.Tmin.units == wilhoit.Tmin.units
+        assert round(abs(self.wilhoit.Tmax.value - wilhoit.Tmax.value), 4) == 0
+        assert self.wilhoit.Tmax.units == wilhoit.Tmax.units
+        assert round(abs(self.wilhoit.E0.value - wilhoit.E0.value), 1) == 0
+        assert self.wilhoit.E0.units == wilhoit.E0.units
+        assert self.wilhoit.comment == wilhoit.comment
 
     def test_fit_to_data(self):
         """
@@ -358,27 +343,27 @@ class TestWilhoit(unittest.TestCase):
         for T in Tdata:
             cp_exp = self.wilhoit.get_heat_capacity(T)
             cp_act = wilhoit.get_heat_capacity(T)
-            self.assertAlmostEqual(cp_act, cp_exp, 4)
+            assert round(abs(cp_act - cp_exp), 4) == 0
             h_exp = self.wilhoit.get_enthalpy(T)
             h_act = wilhoit.get_enthalpy(T)
-            self.assertAlmostEqual(h_act, h_exp, 3)
+            assert round(abs(h_act - h_exp), 3) == 0
             s_exp = self.wilhoit.get_entropy(T)
             s_act = wilhoit.get_entropy(T)
-            self.assertAlmostEqual(s_act, s_exp, 4)
+            assert round(abs(s_act - s_exp), 4) == 0
 
         # Check that the fit reproduces the input parameters
         # Since we're fitting to data generated from a Wilhoit (and since the
         # fitting algorithm is linear least-squares), we should get the same
         # Wilhoit parameters (with a small allowance for fitting error)
-        self.assertAlmostEqual(wilhoit.Cp0.value_si, self.wilhoit.Cp0.value_si, 6)
-        self.assertAlmostEqual(wilhoit.CpInf.value_si, self.wilhoit.CpInf.value_si, 6)
-        self.assertAlmostEqual(wilhoit.a0, self.wilhoit.a0, 2)
-        self.assertAlmostEqual(wilhoit.a1, self.wilhoit.a1, 2)
-        self.assertAlmostEqual(wilhoit.a2, self.wilhoit.a2, 2)
-        self.assertAlmostEqual(wilhoit.a3, self.wilhoit.a3, 2)
-        self.assertAlmostEqual(wilhoit.B.value_si, self.wilhoit.B.value_si, 2)
-        self.assertAlmostEqual(wilhoit.H0.value_si, self.wilhoit.H0.value_si, 0)
-        self.assertAlmostEqual(wilhoit.S0.value_si, self.wilhoit.S0.value_si, 2)
+        assert round(abs(wilhoit.Cp0.value_si - self.wilhoit.Cp0.value_si), 6) == 0
+        assert round(abs(wilhoit.CpInf.value_si - self.wilhoit.CpInf.value_si), 6) == 0
+        assert round(abs(wilhoit.a0 - self.wilhoit.a0), 2) == 0
+        assert round(abs(wilhoit.a1 - self.wilhoit.a1), 2) == 0
+        assert round(abs(wilhoit.a2 - self.wilhoit.a2), 2) == 0
+        assert round(abs(wilhoit.a3 - self.wilhoit.a3), 2) == 0
+        assert round(abs(wilhoit.B.value_si - self.wilhoit.B.value_si), 2) == 0
+        assert round(abs(wilhoit.H0.value_si - self.wilhoit.H0.value_si), 0) == 0
+        assert round(abs(wilhoit.S0.value_si - self.wilhoit.S0.value_si), 2) == 0
 
     def test_to_wilhoit(self):
         """
@@ -395,9 +380,7 @@ class TestWilhoit(unittest.TestCase):
             os.path.join(settings["database.directory"], "thermo"),
             thermo_libraries=["Narayanaswamy"],
         )
-        database.load_solvation(
-            os.path.join(settings["database.directory"], "solvation")
-        )
+        database.load_solvation(os.path.join(settings["database.directory"], "solvation"))
 
         spc = Species().from_smiles("CC")
         spc.get_thermo_data()
@@ -411,8 +394,8 @@ class TestWilhoit(unittest.TestCase):
         nasa_to_wh = nasa.to_wilhoit()
         s_nasa_to_wh = nasa_to_wh.get_entropy(T)
 
-        self.assertAlmostEqual(s_nasa, s_nasa_to_wh, -1)
-        self.assertEqual(nasa.comment, nasa_to_wh.comment)
+        assert round(abs(s_nasa - s_nasa_to_wh), -1) == 0
+        assert nasa.comment == nasa_to_wh.comment
 
         # wilhoit to nasa conversion done in nasaTest.py
 
@@ -423,55 +406,52 @@ class TestWilhoit(unittest.TestCase):
         wilhoit = td.to_wilhoit(B=1000.0)
         s_wh = wilhoit.get_entropy(T)
 
-        self.assertAlmostEqual(s_td, s_wh, -1)
-        self.assertEqual(td.comment, wilhoit.comment)
+        assert round(abs(s_td - s_wh), -1) == 0
+        assert td.comment == wilhoit.comment
 
         # wilhoit back to thermodata
         td = wilhoit.to_thermo_data()
         s_td = td.get_entropy(T)
 
-        self.assertAlmostEqual(s_td, s_wh, -1)
-        self.assertEqual(td.comment, wilhoit.comment)
+        assert round(abs(s_td - s_wh), -1) == 0
+        assert td.comment == wilhoit.comment
 
     def test_wilhoit_as_dict(self):
         """
         Test that a Wilhoit object can be converted to a dictionary representation properly
         """
         wilhoit_dict = self.wilhoit.as_dict()
-        self.assertEqual(
-            wilhoit_dict,
-            {
-                "comment": "C2H6",
-                "B": {"units": "K", "class": "ScalarQuantity", "value": 1068.68},
-                "Tmin": {"units": "K", "class": "ScalarQuantity", "value": 300.0},
-                "H0": {
-                    "units": "kJ/mol",
-                    "class": "ScalarQuantity",
-                    "value": -782.292041536,
-                },
-                "Tmax": {"units": "K", "class": "ScalarQuantity", "value": 3000.0},
-                "S0": {
-                    "units": "J/(mol*K)",
-                    "class": "ScalarQuantity",
-                    "value": -984.93235312,
-                },
-                "a1": -16.3067,
-                "a0": 0.0977518,
-                "a3": -12.6785,
-                "a2": 26.2524,
-                "Cp0": {
-                    "units": "J/(mol*K)",
-                    "class": "ScalarQuantity",
-                    "value": 33.257888,
-                },
-                "CpInf": {
-                    "units": "J/(mol*K)",
-                    "class": "ScalarQuantity",
-                    "value": 178.76114800000002,
-                },
-                "class": "Wilhoit",
+        assert wilhoit_dict == {
+            "comment": "C2H6",
+            "B": {"units": "K", "class": "ScalarQuantity", "value": 1068.68},
+            "Tmin": {"units": "K", "class": "ScalarQuantity", "value": 300.0},
+            "H0": {
+                "units": "kJ/mol",
+                "class": "ScalarQuantity",
+                "value": -782.292041536,
             },
-        )
+            "Tmax": {"units": "K", "class": "ScalarQuantity", "value": 3000.0},
+            "S0": {
+                "units": "J/(mol*K)",
+                "class": "ScalarQuantity",
+                "value": -984.93235312,
+            },
+            "a1": -16.3067,
+            "a0": 0.0977518,
+            "a3": -12.6785,
+            "a2": 26.2524,
+            "Cp0": {
+                "units": "J/(mol*K)",
+                "class": "ScalarQuantity",
+                "value": 33.257888,
+            },
+            "CpInf": {
+                "units": "J/(mol*K)",
+                "class": "ScalarQuantity",
+                "value": 178.76114800000002,
+            },
+            "class": "Wilhoit",
+        }
 
     def test_make_wilhoit(self):
         """

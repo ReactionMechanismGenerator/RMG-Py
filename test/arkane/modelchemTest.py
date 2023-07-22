@@ -31,7 +31,7 @@
 This script contains unit tests for the :mod:`arkane.modelchem` module.
 """
 
-import unittest
+
 from dataclasses import FrozenInstanceError
 
 from arkane.modelchem import (
@@ -42,11 +42,10 @@ from arkane.modelchem import (
     str_to_lot,
     get_software_id,
 )
+import pytest
 
 # Instances for use in tests
-FREQ = LevelOfTheory(
-    method="wB97X-D", basis="def2-TZVP", software="Gaussian 16", args="very-tight"
-)
+FREQ = LevelOfTheory(method="wB97X-D", basis="def2-TZVP", software="Gaussian 16", args="very-tight")
 ENERGY = LevelOfTheory(method="DLPNO-CCSD(T)-F12", basis="def2-TZVP", software="Orca")
 COMPOSITE = CompositeLevelOfTheory(freq=FREQ, energy=ENERGY)
 
@@ -61,9 +60,7 @@ FREQ_DICT = {
     "method": "wb97xd",
     "basis": "def2tzvp",
     "software": "gaussian",
-    "args": [
-        "verytight"
-    ],  # This is a list instead of tuple because that's what YAML files expect
+    "args": ["verytight"],  # This is a list instead of tuple because that's what YAML files expect
 }
 ENERGY_DICT = {
     "class": "LevelOfTheory",
@@ -83,7 +80,7 @@ ENERGY_MODELCHEM = "dlpnoccsd(t)f12/def2tzvp"
 COMPOSITE_MODELCHEM = f"{ENERGY_MODELCHEM}//{FREQ_MODELCHEM}"
 
 
-class TestLevelOfTheory(unittest.TestCase):
+class TestLevelOfTheory:
     """
     A class for testing that the LevelOfTheory class functions properly.
     """
@@ -92,85 +89,85 @@ class TestLevelOfTheory(unittest.TestCase):
         """
         Test that instance behaves correctly.
         """
-        self.assertEqual(FREQ.method, "wb97xd")
-        self.assertEqual(FREQ.basis, "def2tzvp")
-        self.assertEqual(FREQ.software, "gaussian")
-        self.assertTupleEqual(FREQ.args, ("verytight",))
-        with self.assertRaises(FrozenInstanceError):
+        assert FREQ.method == "wb97xd"
+        assert FREQ.basis == "def2tzvp"
+        assert FREQ.software == "gaussian"
+        assert FREQ.args == ("verytight",)
+        with pytest.raises(FrozenInstanceError):
             FREQ.method = ""
 
-        self.assertEqual(repr(FREQ), FREQ_REPR)
-        self.assertEqual(repr(ENERGY), ENERGY_REPR)
+        assert repr(FREQ) == FREQ_REPR
+        assert repr(ENERGY) == ENERGY_REPR
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = LevelOfTheory(method=FREQ.method)
         lot = LevelOfTheory(method=FREQ.method, software=FREQ.software)
-        self.assertIsNone(lot.basis)
-        self.assertIsNone(lot.auxiliary_basis)
-        self.assertIsNone(lot.cabs)
-        self.assertIsNone(lot.software_version)
-        self.assertIsNone(lot.solvent)
-        self.assertIsNone(lot.solvation_method)
-        self.assertIsNone(lot.args)
+        assert lot.basis is None
+        assert lot.auxiliary_basis is None
+        assert lot.cabs is None
+        assert lot.software_version is None
+        assert lot.solvent is None
+        assert lot.solvation_method is None
+        assert lot.args is None
 
-        self.assertIsInstance(FREQ, LOT)
+        assert isinstance(FREQ, LOT)
 
     def test_comparison(self):
         """
         Test comparisons between instances.
         """
-        self.assertIsInstance(hash(FREQ), int)
-        self.assertNotEqual(FREQ, ENERGY)
-        with self.assertRaises(TypeError):
+        assert isinstance(hash(FREQ), int)
+        assert FREQ != ENERGY
+        with pytest.raises(TypeError):
             _ = ENERGY > FREQ
 
         # Test args in different order
         lot1 = LevelOfTheory("method", args=("arg1", "arg2"))
         lot2 = LevelOfTheory("method", args=("arg2", "arg1"))
-        self.assertEqual(lot1, lot2)
+        assert lot1 == lot2
 
     def test_simple(self):
         """
         Test that simple level of theory can be obtained.
         """
         lot = FREQ.simple()
-        self.assertIsNot(lot, FREQ)
-        self.assertEqual(lot.method, FREQ.method)
-        self.assertEqual(lot.basis, FREQ.basis)
-        self.assertEqual(lot.software, FREQ.software)
+        assert lot is not FREQ
+        assert lot.method == FREQ.method
+        assert lot.basis == FREQ.basis
+        assert lot.software == FREQ.software
         for attr, val in lot.__dict__.items():
             if attr not in {"method", "basis", "software"}:
-                self.assertIsNone(val)
+                assert val is None
 
     def test_to_model_chem(self):
         """
         Test conversion to model chemistry.
         """
-        self.assertEqual(FREQ.to_model_chem(), FREQ_MODELCHEM)
-        self.assertEqual(ENERGY.to_model_chem(), ENERGY_MODELCHEM)
+        assert FREQ.to_model_chem() == FREQ_MODELCHEM
+        assert ENERGY.to_model_chem() == ENERGY_MODELCHEM
 
         lot = LevelOfTheory(method="CBS-QB3", software="g16")
-        self.assertEqual(lot.to_model_chem(), "cbsqb3")
+        assert lot.to_model_chem() == "cbsqb3"
 
     def test_update(self):
         """
         Test updating attributes.
         """
         lot = FREQ.update(software="Q-Chem")
-        self.assertIsNot(lot, FREQ)
-        self.assertEqual(lot.software, "qchem")
-        with self.assertRaises(TypeError):
+        assert lot is not FREQ
+        assert lot.software == "qchem"
+        with pytest.raises(TypeError):
             FREQ.update(test="test")
 
     def test_as_dict(self):
         """
         Test conversion to dictionary.
         """
-        self.assertDictEqual(FREQ.as_dict(), FREQ_DICT)
-        self.assertDictEqual(ENERGY.as_dict(), ENERGY_DICT)
+        assert FREQ.as_dict() == FREQ_DICT
+        assert ENERGY.as_dict() == ENERGY_DICT
 
 
-class TestCompositeLevelOfTheory(unittest.TestCase):
+class TestCompositeLevelOfTheory:
     """
     A class for testing that the CompositeLevelOfTheory class functions properly.
     """
@@ -179,22 +176,22 @@ class TestCompositeLevelOfTheory(unittest.TestCase):
         """
         Test that instance behaves correctly.
         """
-        self.assertIs(COMPOSITE.freq, FREQ)
-        self.assertIs(COMPOSITE.energy, ENERGY)
-        self.assertEqual(repr(COMPOSITE), COMPOSITE_REPR)
-        with self.assertRaises(FrozenInstanceError):
+        assert COMPOSITE.freq is FREQ
+        assert COMPOSITE.energy is ENERGY
+        assert repr(COMPOSITE) == COMPOSITE_REPR
+        with pytest.raises(FrozenInstanceError):
             COMPOSITE.energy = ""
 
-        self.assertIsInstance(COMPOSITE, LOT)
+        assert isinstance(COMPOSITE, LOT)
 
     def test_comparison(self):
         """
         Test comparisons between instances.
         """
         other = CompositeLevelOfTheory(freq=ENERGY, energy=FREQ)
-        self.assertIsInstance(hash(COMPOSITE), int)
-        self.assertNotEqual(COMPOSITE, other)
-        with self.assertRaises(TypeError):
+        assert isinstance(hash(COMPOSITE), int)
+        assert COMPOSITE != other
+        with pytest.raises(TypeError):
             _ = COMPOSITE > other
 
     def test_simple(self):
@@ -202,33 +199,33 @@ class TestCompositeLevelOfTheory(unittest.TestCase):
         Test that simple level of theory can be obtained.
         """
         lot = COMPOSITE.simple()
-        self.assertIsNot(lot, COMPOSITE)
-        self.assertEqual(lot.freq.method, COMPOSITE.freq.method)
-        self.assertEqual(lot.freq.basis, COMPOSITE.freq.basis)
-        self.assertEqual(lot.freq.software, COMPOSITE.freq.software)
-        self.assertEqual(lot.energy.method, COMPOSITE.energy.method)
-        self.assertEqual(lot.energy.basis, COMPOSITE.energy.basis)
+        assert lot is not COMPOSITE
+        assert lot.freq.method == COMPOSITE.freq.method
+        assert lot.freq.basis == COMPOSITE.freq.basis
+        assert lot.freq.software == COMPOSITE.freq.software
+        assert lot.energy.method == COMPOSITE.energy.method
+        assert lot.energy.basis == COMPOSITE.energy.basis
         for attr, val in lot.freq.__dict__.items():
             if attr not in {"method", "basis", "software"}:
-                self.assertIsNone(val)
+                assert val is None
         for attr, val in lot.energy.__dict__.items():
             if attr not in {"method", "basis"}:
-                self.assertIsNone(val)
+                assert val is None
 
     def test_to_model_chem(self):
         """
         Test conversion to model chemistry.
         """
-        self.assertEqual(COMPOSITE.to_model_chem(), COMPOSITE_MODELCHEM)
+        assert COMPOSITE.to_model_chem() == COMPOSITE_MODELCHEM
 
     def test_as_dict(self):
         """
         Test conversion to dictionary.
         """
-        self.assertDictEqual(COMPOSITE.as_dict(), COMPOSITE_DICT)
+        assert COMPOSITE.as_dict() == COMPOSITE_DICT
 
 
-class TestFuncs(unittest.TestCase):
+class TestFuncs:
     """
     A class for testing that the functions in the modelchem module work.
     """
@@ -237,45 +234,39 @@ class TestFuncs(unittest.TestCase):
         """
         Test model chemistry to quantum calculation settings conversion.
         """
-        self.assertEqual(
-            model_chem_to_lot(FREQ_MODELCHEM, software="gaussian", args="verytight"),
-            FREQ,
-        )
-        self.assertEqual(
+        assert model_chem_to_lot(FREQ_MODELCHEM, software="gaussian", args="verytight") == FREQ
+        assert (
             model_chem_to_lot(
                 FREQ_MODELCHEM,
                 freq_settings={"software": "gaussian", "args": "verytight"},
-            ),
-            FREQ,
+            )
+            == FREQ
         )
-        self.assertEqual(
+        assert (
             model_chem_to_lot(
                 FREQ_MODELCHEM,
                 freq_settings={"software": "gaussian", "args": "verytight"},
                 energy_settings={"unused setting": None},
-            ),
-            FREQ,
+            )
+            == FREQ
         )
-        self.assertEqual(
-            model_chem_to_lot(ENERGY_MODELCHEM, energy_settings={"software": "orca"}),
-            ENERGY,
-        )
-        self.assertEqual(
+        assert model_chem_to_lot(ENERGY_MODELCHEM, energy_settings={"software": "orca"}) == ENERGY
+        assert (
             model_chem_to_lot(
                 COMPOSITE_MODELCHEM,
                 freq_settings={"software": "gaussian", "args": "verytight"},
                 energy_settings={"software": "orca"},
-            ),
-            COMPOSITE,
+            )
+            == COMPOSITE
         )
 
     def test_str_to_lot(self):
         """
         Test key to quantum calculation settings conversion.
         """
-        self.assertEqual(str_to_lot(FREQ_REPR), FREQ)
-        self.assertEqual(str_to_lot(ENERGY_REPR), ENERGY)
-        self.assertEqual(str_to_lot(COMPOSITE_REPR), COMPOSITE)
+        assert str_to_lot(FREQ_REPR) == FREQ
+        assert str_to_lot(ENERGY_REPR) == ENERGY
+        assert str_to_lot(COMPOSITE_REPR) == COMPOSITE
 
     def test_get_software_id(self):
         """
@@ -283,23 +274,23 @@ class TestFuncs(unittest.TestCase):
         """
         test_names = ["gaussian", "Gaussian 09", "g-16", "Gau  03"]
         for name in test_names:
-            self.assertEqual(get_software_id(name), "gaussian")
+            assert get_software_id(name) == "gaussian"
 
         test_names = ["qchem", "QChem", "Q-Chem"]
         for name in test_names:
-            self.assertEqual(get_software_id(name), "qchem")
+            assert get_software_id(name) == "qchem"
 
         test_names = ["molpro", "Molpro", "MOLPRO"]
         for name in test_names:
-            self.assertEqual(get_software_id(name), "molpro")
+            assert get_software_id(name) == "molpro"
 
         test_names = ["orca", "Orca", "ORCA"]
         for name in test_names:
-            self.assertEqual(get_software_id(name), "orca")
+            assert get_software_id(name) == "orca"
 
         test_names = ["terachem", "Terachem", "TeraChem", "Tera-Chem", "Tera Chem"]
         for name in test_names:
-            self.assertEqual(get_software_id(name), "terachem")
+            assert get_software_id(name) == "terachem"
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             get_software_id("g")

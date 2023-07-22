@@ -27,7 +27,6 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
 from unittest.mock import patch
 
 import rmgpy.rmg.input as inp
@@ -54,7 +53,7 @@ def tearDownModule():
     rmg = None
 
 
-class TestInputDatabase(unittest.TestCase):
+class TestInputDatabase:
     """
     Contains unit tests rmgpy.rmg.input.database
     """
@@ -71,8 +70,8 @@ class TestInputDatabase(unittest.TestCase):
         global rmg
         # add database properties to RMG
         inp.database(reactionLibraries=["test"])
-        self.assertIsInstance(rmg.reaction_libraries[0], tuple)
-        self.assertFalse(rmg.reaction_libraries[0][1])
+        assert isinstance(rmg.reaction_libraries[0], tuple)
+        assert not rmg.reaction_libraries[0][1]
 
     def test_importing_database_reaction_libraries_from_false_tuple(self):
         """
@@ -81,8 +80,8 @@ class TestInputDatabase(unittest.TestCase):
         global rmg
         # add database properties to RMG
         inp.database(reactionLibraries=[("test", False)])
-        self.assertIsInstance(rmg.reaction_libraries[0], tuple)
-        self.assertFalse(rmg.reaction_libraries[0][1])
+        assert isinstance(rmg.reaction_libraries[0], tuple)
+        assert not rmg.reaction_libraries[0][1]
 
     def test_importing_database_reaction_libraries_from_true_tuple(self):
         """
@@ -91,11 +90,11 @@ class TestInputDatabase(unittest.TestCase):
         global rmg
         # add database properties to RMG
         inp.database(reactionLibraries=[("test", True)])
-        self.assertIsInstance(rmg.reaction_libraries[0], tuple)
-        self.assertTrue(rmg.reaction_libraries[0][1])
+        assert isinstance(rmg.reaction_libraries[0], tuple)
+        assert rmg.reaction_libraries[0][1]
 
 
-class TestInputMLEstimator(unittest.TestCase):
+class TestInputMLEstimator:
     """
     Contains unit tests rmgpy.rmg.input.mlEstimator
     """
@@ -114,11 +113,11 @@ class TestInputMLEstimator(unittest.TestCase):
         global rmg
         # add database properties to RMG
         inp.ml_estimator(thermo=True)
-        self.assertIsInstance(rmg.ml_estimator, MLEstimator)
-        self.assertIsInstance(rmg.ml_settings, dict)
+        assert isinstance(rmg.ml_estimator, MLEstimator)
+        assert isinstance(rmg.ml_settings, dict)
 
 
-class TestInputThemoCentralDatabase(unittest.TestCase):
+class TestInputThemoCentralDatabase:
     """
     Contains unit tests rmgpy.rmg.input.thermo_central_database
     """
@@ -141,15 +140,15 @@ class TestInputThemoCentralDatabase(unittest.TestCase):
             password="some_pw",
             application="some_app",
         )
-        self.assertEqual(rmg.thermo_central_database.host, "some_host")
-        self.assertEqual(rmg.thermo_central_database.port, 0)
-        self.assertEqual(rmg.thermo_central_database.username, "some_usr")
-        self.assertEqual(rmg.thermo_central_database.password, "some_pw")
-        self.assertEqual(rmg.thermo_central_database.application, "some_app")
-        self.assertEqual(rmg.thermo_central_database.client, None)
+        assert rmg.thermo_central_database.host == "some_host"
+        assert rmg.thermo_central_database.port == 0
+        assert rmg.thermo_central_database.username == "some_usr"
+        assert rmg.thermo_central_database.password == "some_pw"
+        assert rmg.thermo_central_database.application == "some_app"
+        assert rmg.thermo_central_database.client == None
 
 
-class TestInputReactors(unittest.TestCase):
+class TestInputReactors:
     """
     Contains unit tests for reactor input classes
     """
@@ -196,9 +195,9 @@ class TestInputReactors(unittest.TestCase):
 
         global rmg
         reactor = rmg.reaction_systems[0]
-        self.assertEqual(reactor.initial_mole_fractions["A"], 0.5)
-        self.assertEqual(reactor.initial_mole_fractions["B"], 0.3)
-        self.assertEqual(reactor.initial_mole_fractions["C"], 0.2)
+        assert reactor.initial_mole_fractions["A"] == 0.5
+        assert reactor.initial_mole_fractions["B"] == 0.3
+        assert reactor.initial_mole_fractions["C"] == 0.2
 
     @patch("rmgpy.rmg.input.logging")
     def test_simple_reactor_mole_fractions_normalize_1(self, mock_logging):
@@ -216,13 +215,11 @@ class TestInputReactors(unittest.TestCase):
 
         global rmg
         reactor = rmg.reaction_systems[0]
-        self.assertEqual(reactor.initial_mole_fractions["A"], 0.5)
-        self.assertEqual(reactor.initial_mole_fractions["B"], 0.3)
-        self.assertEqual(reactor.initial_mole_fractions["C"], 0.2)
+        assert reactor.initial_mole_fractions["A"] == 0.5
+        assert reactor.initial_mole_fractions["B"] == 0.3
+        assert reactor.initial_mole_fractions["C"] == 0.2
 
-        mock_logging.warning.assert_called_with(
-            "Initial mole fractions do not sum to one; normalizing."
-        )
+        mock_logging.warning.assert_called_with("Initial mole fractions do not sum to one; normalizing.")
 
     @patch("rmgpy.rmg.input.logging")
     def test_simple_reactor_mole_fractions_normalize_2(self, mock_logging):
@@ -240,13 +237,11 @@ class TestInputReactors(unittest.TestCase):
 
         global rmg
         reactor = rmg.reaction_systems[0]
-        self.assertEqual(reactor.initial_mole_fractions["A"], 0.5)
-        self.assertEqual(reactor.initial_mole_fractions["B"], 0.3)
-        self.assertEqual(reactor.initial_mole_fractions["C"], 0.2)
+        assert reactor.initial_mole_fractions["A"] == 0.5
+        assert reactor.initial_mole_fractions["B"] == 0.3
+        assert reactor.initial_mole_fractions["C"] == 0.2
 
-        mock_logging.warning.assert_called_with(
-            "Initial mole fractions do not sum to one; normalizing."
-        )
+        mock_logging.warning.assert_called_with("Initial mole fractions do not sum to one; normalizing.")
 
     def test_simple_reactor_mole_fractions_ranged(self):
         """Test that SimpleReactor ranged mole fractions are not normalized"""
@@ -263,9 +258,9 @@ class TestInputReactors(unittest.TestCase):
 
         global rmg
         reactor = rmg.reaction_systems[0]
-        self.assertEqual(reactor.initial_mole_fractions["A"], [5, 8])
-        self.assertEqual(reactor.initial_mole_fractions["B"], 3)
-        self.assertEqual(reactor.initial_mole_fractions["C"], 2)
+        assert reactor.initial_mole_fractions["A"] == [5, 8]
+        assert reactor.initial_mole_fractions["B"] == 3
+        assert reactor.initial_mole_fractions["C"] == 2
 
     def test_liquid_reactor_concentrations(self):
         """Test that LiquidReactor concentrations are set properly"""
@@ -283,9 +278,9 @@ class TestInputReactors(unittest.TestCase):
         reactor = rmg.reaction_systems[0]
 
         # Values get converted to default SI units, mol/m^3
-        self.assertEqual(reactor.initial_concentrations["A"], 300)
-        self.assertEqual(reactor.initial_concentrations["B"], 200)
-        self.assertEqual(reactor.initial_concentrations["C"], 100)
+        assert reactor.initial_concentrations["A"] == 300
+        assert reactor.initial_concentrations["B"] == 200
+        assert reactor.initial_concentrations["C"] == 100
 
     def test_surface_reactor_mole_fractions(self):
         """Test that SurfaceReactor mole fractions are set properly"""
@@ -304,9 +299,9 @@ class TestInputReactors(unittest.TestCase):
 
         global rmg
         reactor = rmg.reaction_systems[0]
-        self.assertEqual(reactor.initial_gas_mole_fractions["A"], 0.5)
-        self.assertEqual(reactor.initial_gas_mole_fractions["B"], 0.3)
-        self.assertEqual(reactor.initial_gas_mole_fractions["C"], 0.2)
+        assert reactor.initial_gas_mole_fractions["A"] == 0.5
+        assert reactor.initial_gas_mole_fractions["B"] == 0.3
+        assert reactor.initial_gas_mole_fractions["C"] == 0.2
 
     @patch("rmgpy.rmg.input.logging")
     def test_surface_reactor_mole_fractions_normalize_1(self, mock_logging):
@@ -326,13 +321,11 @@ class TestInputReactors(unittest.TestCase):
 
         global rmg
         reactor = rmg.reaction_systems[0]
-        self.assertEqual(reactor.initial_gas_mole_fractions["A"], 0.5)
-        self.assertEqual(reactor.initial_gas_mole_fractions["B"], 0.3)
-        self.assertEqual(reactor.initial_gas_mole_fractions["C"], 0.2)
+        assert reactor.initial_gas_mole_fractions["A"] == 0.5
+        assert reactor.initial_gas_mole_fractions["B"] == 0.3
+        assert reactor.initial_gas_mole_fractions["C"] == 0.2
 
-        mock_logging.warning.assert_called_with(
-            "Initial gas mole fractions do not sum to one; renormalizing."
-        )
+        mock_logging.warning.assert_called_with("Initial gas mole fractions do not sum to one; renormalizing.")
 
     def test_mb_sampled_reactor_mole_fractions(self):
         """Test that MBSampledReactor mole fractions are set properly"""
@@ -351,9 +344,9 @@ class TestInputReactors(unittest.TestCase):
 
         global rmg
         reactor = rmg.reaction_systems[0]
-        self.assertEqual(reactor.initial_mole_fractions["A"], 0.5)
-        self.assertEqual(reactor.initial_mole_fractions["B"], 0.3)
-        self.assertEqual(reactor.initial_mole_fractions["C"], 0.2)
+        assert reactor.initial_mole_fractions["A"] == 0.5
+        assert reactor.initial_mole_fractions["B"] == 0.3
+        assert reactor.initial_mole_fractions["C"] == 0.2
 
     @patch("rmgpy.rmg.input.logging")
     def test_mb_sampled_reactor_mole_fractions_normalize_1(self, mock_logging):
@@ -373,10 +366,8 @@ class TestInputReactors(unittest.TestCase):
 
         global rmg
         reactor = rmg.reaction_systems[0]
-        self.assertEqual(reactor.initial_mole_fractions["A"], 0.5)
-        self.assertEqual(reactor.initial_mole_fractions["B"], 0.3)
-        self.assertEqual(reactor.initial_mole_fractions["C"], 0.2)
+        assert reactor.initial_mole_fractions["A"] == 0.5
+        assert reactor.initial_mole_fractions["B"] == 0.3
+        assert reactor.initial_mole_fractions["C"] == 0.2
 
-        mock_logging.warning.assert_called_with(
-            "Initial mole fractions do not sum to one; normalizing."
-        )
+        mock_logging.warning.assert_called_with("Initial mole fractions do not sum to one; normalizing.")
