@@ -117,7 +117,7 @@ class TestArkaneExamples:
                     files_to_keep=cls.files_to_keep,
                     sub_dir_to_keep=["r0"],
                 )
-        cls.test_base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+        cls.test_base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "arkane", "data")
         tests = ["two_parameter_arrhenius_fit"]
         for test in tests:
             test_path = os.path.join(cls.test_base_path, test)

@@ -252,7 +252,7 @@ entry(
         H298=(429.5, "kJ/mol"),
         S298=(7.9, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -280,7 +280,7 @@ entry(
         H298=(427, "kJ/mol"),
         S298=(8.8, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -309,7 +309,7 @@ entry(
         H298=(429.8, "kJ/mol"),
         S298=(5.5, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -337,7 +337,7 @@ entry(
         H298=(430.6, "kJ/mol"),
         S298=(9.8, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -363,7 +363,7 @@ entry(
         H298=(429.9, "kJ/mol"),
         S298=(7, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -389,7 +389,7 @@ entry(
         H298=(431.1, "kJ/mol"),
         S298=(5.1, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -416,7 +416,7 @@ entry(
         H298=(431.9, "kJ/mol"),
         S298=(9, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -444,7 +444,7 @@ entry(
         H298=(432.3, "kJ/mol"),
         S298=(6.9, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -471,7 +471,7 @@ entry(
         H298=(430.9, "kJ/mol"),
         S298=(3.7, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -497,7 +497,7 @@ entry(
         H298=(435.3, "kJ/mol"),
         S298=(8.1, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -524,7 +524,7 @@ entry(
         H298=(431.8, "kJ/mol"),
         S298=(6.7, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -550,7 +550,7 @@ entry(
         H298=(429.5, "kJ/mol"),
         S298=(8.7, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -577,7 +577,7 @@ entry(
         H298=(430.1, "kJ/mol"),
         S298=(9.7, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -690,7 +690,7 @@ entry(
         H298=(376.8, "kJ/mol"),
         S298=(-3.9, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -716,7 +716,7 @@ entry(
         H298=(374, "kJ/mol"),
         S298=(-16.5, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -741,7 +741,7 @@ entry(
         H298=(373.5, "kJ/mol"),
         S298=(-1.3, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -768,7 +768,7 @@ entry(
         H298=(374.9, "kJ/mol"),
         S298=(-8.1, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -813,7 +813,7 @@ entry(
         H298=(430, "kJ/mol"),
         S298=(6.1, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -837,7 +837,7 @@ entry(
         H298=(402.4, "kJ/mol"),
         S298=(-7.8, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -885,7 +885,7 @@ entry(
         H298=(430, "kJ/mol"),
         S298=(6.1, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -911,7 +911,7 @@ entry(
         H298=(420.3, "kJ/mol"),
         S298=(16.4, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -2418,7 +2418,7 @@ entry(
         H298=(286.3, "kJ/mol"),
         S298=(-9.6, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -2509,7 +2509,7 @@ entry(
         H298=(318, "kJ/mol"),
         S298=(-22, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -2554,7 +2554,7 @@ entry(
         H298=(416.9, "kJ/mol"),
         S298=(13.8, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -2579,7 +2579,7 @@ entry(
         H298=(335.4, "kJ/mol"),
         S298=(-19.9, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -2603,7 +2603,7 @@ entry(
         H298=(379.1, "kJ/mol"),
         S298=(-5.7, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -2651,7 +2651,7 @@ entry(
         H298=(382.7, "kJ/mol"),
         S298=(-13, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -2676,7 +2676,7 @@ entry(
         H298=(416.9, "kJ/mol"),
         S298=(13.8, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -2702,7 +2702,7 @@ entry(
         H298=(365.4, "kJ/mol"),
         S298=(8.3, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -3263,7 +3263,7 @@ entry(
         H298=(369.4, "kJ/mol"),
         S298=(-0.8, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -3288,7 +3288,7 @@ entry(
         H298=(335.4, "kJ/mol"),
         S298=(-17.3, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -3314,7 +3314,7 @@ entry(
         H298=(307.4, "kJ/mol"),
         S298=(-27.9, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -3339,7 +3339,7 @@ entry(
         H298=(361.8, "kJ/mol"),
         S298=(3.5, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -3365,7 +3365,7 @@ entry(
         H298=(313.4, "kJ/mol"),
         S298=(0.5, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -3392,7 +3392,7 @@ entry(
         H298=(287.1, "kJ/mol"),
         S298=(-27.5, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -3415,7 +3415,7 @@ entry(
         H298=(413.3, "kJ/mol"),
         S298=(1.2, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -3684,7 +3684,7 @@ entry(
         H298=(409.4, "kJ/mol"),
         S298=(13.7, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -3775,7 +3775,7 @@ entry(
         H298=(402, "kJ/mol"),
         S298=(3.9, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -3944,7 +3944,7 @@ entry(
         H298=(328.3, "kJ/mol"),
         S298=(4.5, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -4036,7 +4036,7 @@ entry(
         H298=(333.9, "kJ/mol"),
         S298=(-7.4, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -4060,7 +4060,7 @@ entry(
         H298=(356.6, "kJ/mol"),
         S298=(0.2, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -4083,7 +4083,7 @@ entry(
         H298=(398.4, "kJ/mol"),
         S298=(14.4, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -4854,7 +4854,7 @@ entry(
         H298=(408.4, "kJ/mol"),
         S298=(15.1, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -4960,7 +4960,7 @@ entry(
         H298=(376.2, "kJ/mol"),
         S298=(6.7, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -4985,7 +4985,7 @@ entry(
         H298=(373.3, "kJ/mol"),
         S298=(7.5, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5011,7 +5011,7 @@ entry(
         H298=(375.2, "kJ/mol"),
         S298=(10.4, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5038,7 +5038,7 @@ entry(
         H298=(373.6, "kJ/mol"),
         S298=(1.2, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5064,7 +5064,7 @@ entry(
         H298=(371.9, "kJ/mol"),
         S298=(10.6, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5089,7 +5089,7 @@ entry(
         H298=(374.9, "kJ/mol"),
         S298=(6.8, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5115,7 +5115,7 @@ entry(
         H298=(375.3, "kJ/mol"),
         S298=(8.7, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5138,7 +5138,7 @@ entry(
         H298=(379.9, "kJ/mol"),
         S298=(7.2, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5161,7 +5161,7 @@ entry(
         H298=(378, "kJ/mol"),
         S298=(8.3, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5185,7 +5185,7 @@ entry(
         H298=(379.4, "kJ/mol"),
         S298=(0.8, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5210,7 +5210,7 @@ entry(
         H298=(330.2, "kJ/mol"),
         S298=(-19.6, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5234,7 +5234,7 @@ entry(
         H298=(381.7, "kJ/mol"),
         S298=(6.7, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5258,7 +5258,7 @@ entry(
         H298=(376.2, "kJ/mol"),
         S298=(4.6, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5317,7 +5317,7 @@ entry(
         H298=(415.2, "kJ/mol"),
         S298=(-4.3, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5759,7 +5759,7 @@ entry(
         H298=(462.3, "kJ/mol"),
         S298=(9.6, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5783,7 +5783,7 @@ entry(
         H298=(420.2, "kJ/mol"),
         S298=(-2.3, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5808,7 +5808,7 @@ entry(
         H298=(424, "kJ/mol"),
         S298=(1.7, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5833,7 +5833,7 @@ entry(
         H298=(404, "kJ/mol"),
         S298=(5.6, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -5875,7 +5875,7 @@ entry(
         H298=(457.4, "kJ/mol"),
         S298=(26.7, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6143,7 +6143,7 @@ entry(
         H298=(447.6, "kJ/mol"),
         S298=(-6.8, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6167,7 +6167,7 @@ entry(
         H298=(446.1, "kJ/mol"),
         S298=(-4.6, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6192,7 +6192,7 @@ entry(
         H298=(445.9, "kJ/mol"),
         S298=(2.7, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6218,7 +6218,7 @@ entry(
         H298=(462.1, "kJ/mol"),
         S298=(10.4, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6243,7 +6243,7 @@ entry(
         H298=(459.1, "kJ/mol"),
         S298=(16.3, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6267,7 +6267,7 @@ entry(
         H298=(449, "kJ/mol"),
         S298=(8, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6292,7 +6292,7 @@ entry(
         H298=(450.7, "kJ/mol"),
         S298=(8.5, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6347,7 +6347,7 @@ entry(
         H298=(358.1, "kJ/mol"),
         S298=(3.3, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6370,7 +6370,7 @@ entry(
         H298=(354.8, "kJ/mol"),
         S298=(7.4, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6413,7 +6413,7 @@ entry(
         H298=(460.9, "kJ/mol"),
         S298=(6, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6437,7 +6437,7 @@ entry(
         H298=(479.5, "kJ/mol"),
         S298=(16, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6473,7 +6473,7 @@ entry(
         H298=(442.9, "kJ/mol"),
         S298=(3.8, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6496,7 +6496,7 @@ entry(
         H298=(461, "kJ/mol"),
         S298=(2.6, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
@@ -6518,7 +6518,7 @@ entry(
         H298=(444.4, "kJ/mol"),
         S298=(0.8, "J/(mol*K)"),
     ),
-    shortDesc="""\Derived from CBS-QB3 calculation with 1DHR treatment""",
+    shortDesc="""\\Derived from CBS-QB3 calculation with 1DHR treatment""",
     longDesc="""
 Derived using calculations at B3LYP/6-311G(d,p)/CBS-QB3 level of theory. 1DH-rotors
 optimized at the B3LYP/6-31G(d).Paraskevas et al, Chem. Eur. J. 2013, 19, 16431-16452,
