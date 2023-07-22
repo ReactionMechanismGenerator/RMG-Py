@@ -28,7 +28,6 @@
 ###############################################################################
 
 
-from external.wip import work_in_progress
 from rmgpy.exceptions import InchiException
 from rmgpy.molecule.inchi import (
     InChI,
@@ -96,7 +95,7 @@ class AugmentedInChITest:
         assert aug_inchi1 == aug_inchi2
         assert not aug_inchi1 != aug_inchi2
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_reduce(self):
         import pickle
 
@@ -296,7 +295,7 @@ multiplicity 3
         assert U_LAYER_PREFIX + "1,1" == ulayer
         assert not player
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_nitrate(self):
         """
         Test that N atom in the p-layer has correct symbol.

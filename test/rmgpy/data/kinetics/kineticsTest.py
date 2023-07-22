@@ -32,7 +32,6 @@ import os
 
 import numpy as np
 
-from external.wip import work_in_progress
 from rmgpy import settings
 from rmgpy.chemkin import load_chemkin_file
 from rmgpy.data.base import Entry, DatabaseError, ForbiddenStructures
@@ -47,9 +46,6 @@ from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.species import Species
 import pytest
-
-
-###################################################
 
 
 def setUpModule():

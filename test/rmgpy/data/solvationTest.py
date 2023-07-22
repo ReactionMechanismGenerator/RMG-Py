@@ -45,8 +45,6 @@ from rmgpy.rmg.main import Species
 from rmgpy.exceptions import InputError
 import pytest
 
-###################################################
-
 
 class TestSoluteDatabase:
     @classmethod

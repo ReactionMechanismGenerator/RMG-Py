@@ -35,7 +35,7 @@ import os
 import shutil
 
 
-from nose.plugins.attrib import attr
+import pytest
 
 import rmgpy
 
@@ -45,7 +45,7 @@ from arkane.output import prettify, get_str_xyz
 from rmgpy.species import Species
 
 
-@attr("functional")
+@pytest.mark.functional
 class OutputTest:
     """
     Contains functional tests for Arkane's output module.

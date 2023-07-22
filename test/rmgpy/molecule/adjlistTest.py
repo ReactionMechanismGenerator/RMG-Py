@@ -30,7 +30,6 @@
 import logging
 
 
-from external.wip import work_in_progress
 from rmgpy.molecule.adjlist import InvalidAdjacencyListError
 from rmgpy.molecule.group import Group
 from rmgpy.molecule.molecule import Molecule
@@ -686,7 +685,7 @@ class TestMoleculeAdjLists:
         assert "H" in adjlist
         assert "{1,0.5}" in adjlist
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_from_adjacency_list_for_non_integer_bonds(self):
         """
         Test molecule can be created from the adjacency list for molecules with bond orders
@@ -777,7 +776,7 @@ class TestMoleculeAdjLists:
         molecule_new = Molecule().from_adjacency_list(adjlist_new)
         assert molecule.is_isomorphic(molecule_new)
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_from_old_adjacency_list5(self):
         """
         Test we can read an old style adjacency list with implicit hydrogens 5

@@ -31,14 +31,13 @@ import os
 import os.path
 import shutil
 
-
-from nose.plugins.attrib import attr
+import pytest
 
 import rmgpy
 from rmgpy.tools.fluxdiagram import create_flux_diagram
 
 
-@attr("functional")
+@pytest.mark.functional
 class FluxDiagramTest:
     def test_avi_simple(self):
         folder = os.path.join(os.path.dirname(rmgpy.__file__), "tools", "data", "flux")

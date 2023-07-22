@@ -36,8 +36,6 @@ from rmgpy.exceptions import DatabaseError
 from rmgpy.quantity import Energy, SurfaceConcentration
 import pytest
 
-###################################################
-
 
 class TestMetalDatabase:
     def setUp(self):

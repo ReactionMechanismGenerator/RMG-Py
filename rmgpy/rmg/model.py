@@ -1135,8 +1135,7 @@ class CoreEdgeReactionModel:
 
         rxn_list = []
         if spec in self.edge.species:
-            if not self.edge.phase_system.in_nose:
-                self.edge.phase_system.pass_species(spec.label,self.core.phase_system)
+            self.edge.phase_system.pass_species(spec.label,self.core.phase_system)
             # If species was in edge, remove it
             logging.debug("Removing species %s from edge.", spec)
             self.edge.species.remove(spec)
@@ -1159,15 +1158,14 @@ class CoreEdgeReactionModel:
                 self.add_reaction_to_core(rxn)
                 logging.debug("Moving reaction from edge to core: %s", rxn)
         else:
-            if not self.core.phase_system.in_nose:
-                if spec.molecule[0].contains_surface_site():
-                    self.core.phase_system.phases["Surface"].add_species(spec,edge_phase=self.edge.phase_system.phases["Surface"])
-                    self.edge.phase_system.species_dict[spec.label] = spec 
-                    self.core.phase_system.species_dict[spec.label] = spec
-                else:
-                    self.core.phase_system.phases["Default"].add_species(spec,edge_phase=self.edge.phase_system.phases["Default"])
-                    self.edge.phase_system.species_dict[spec.label] = spec
-                    self.core.phase_system.species_dict[spec.label] = spec
+            if spec.molecule[0].contains_surface_site():
+                self.core.phase_system.phases["Surface"].add_species(spec,edge_phase=self.edge.phase_system.phases["Surface"])
+                self.edge.phase_system.species_dict[spec.label] = spec 
+                self.core.phase_system.species_dict[spec.label] = spec
+            else:
+                self.core.phase_system.phases["Default"].add_species(spec,edge_phase=self.edge.phase_system.phases["Default"])
+                self.edge.phase_system.species_dict[spec.label] = spec
+                self.core.phase_system.species_dict[spec.label] = spec
             
         return rxn_list
 
@@ -1176,13 +1174,12 @@ class CoreEdgeReactionModel:
         Add a species `spec` to the reaction model edge.
         """
         self.edge.species.append(spec)
-        if not self.edge.phase_system.in_nose:
-            if spec.molecule[0].contains_surface_site():
-                self.edge.phase_system.phases["Surface"].add_species(spec)
-                self.edge.phase_system.species_dict[spec.label] = spec
-            else:
-                self.edge.phase_system.phases["Default"].add_species(spec)
-                self.edge.phase_system.species_dict[spec.label] = spec
+        if spec.molecule[0].contains_surface_site():
+            self.edge.phase_system.phases["Surface"].add_species(spec)
+            self.edge.phase_system.species_dict[spec.label] = spec
+        else:
+            self.edge.phase_system.phases["Default"].add_species(spec)
+            self.edge.phase_system.species_dict[spec.label] = spec
                 
 
     def set_thermodynamic_filtering_parameters(self, Tmax, thermo_tol_keep_spc_in_edge,
@@ -1484,17 +1481,16 @@ class CoreEdgeReactionModel:
             if rxn not in self.edge.reactions: 
                 #If a reaction is not in edge but is going to add to core, it is either a seed mechanism or a newly generated reaction where all reactants and products are already in core
                 #If the reaction is in edge, then the corresponding rms_rxn was moved from edge phase to core phase in pass_species already.
-                if not self.core.phase_system.in_nose:
-                    rms_species_list = self.core.phase_system.get_rms_species_list()
-                    species_names = self.core.phase_system.get_species_names()
-                    bits = np.array([spc.molecule[0].contains_surface_site() for spc in rxn.reactants+rxn.products])
-                    if all(bits):
-                        self.core.phase_system.phases["Surface"].add_reaction(rxn,self.edge.phase_system.phases["Surface"])
-                    elif all(bits==False):
-                        self.core.phase_system.phases["Default"].add_reaction(rxn,self.edge.phase_system.phases["Default"])
-                    else:
-                        self.core.phase_system.interfaces[frozenset({"Default","Surface"})].add_reaction(rxn,species_names,rms_species_list)
-                        self.edge.phase_system.interfaces[frozenset({"Default","Surface"})].add_reaction(rxn,species_names,rms_species_list)
+                rms_species_list = self.core.phase_system.get_rms_species_list()
+                species_names = self.core.phase_system.get_species_names()
+                bits = np.array([spc.molecule[0].contains_surface_site() for spc in rxn.reactants+rxn.products])
+                if all(bits):
+                    self.core.phase_system.phases["Surface"].add_reaction(rxn,self.edge.phase_system.phases["Surface"])
+                elif all(bits==False):
+                    self.core.phase_system.phases["Default"].add_reaction(rxn,self.edge.phase_system.phases["Default"])
+                else:
+                    self.core.phase_system.interfaces[frozenset({"Default","Surface"})].add_reaction(rxn,species_names,rms_species_list)
+                    self.edge.phase_system.interfaces[frozenset({"Default","Surface"})].add_reaction(rxn,species_names,rms_species_list)
 
         if rxn in self.edge.reactions:
             self.edge.reactions.remove(rxn)
@@ -1508,16 +1504,15 @@ class CoreEdgeReactionModel:
         edge).
         """
         self.edge.reactions.append(rxn)
-        if not self.edge.phase_system.in_nose:
-            rms_species_list = self.edge.phase_system.get_rms_species_list()
-            species_names = self.edge.phase_system.get_species_names()
-            bits = np.array([spc.molecule[0].contains_surface_site() for spc in rxn.reactants+rxn.products])
-            if all(bits):
-                self.edge.phase_system.phases["Surface"].add_reaction(rxn)
-            elif all(bits==False):
-                self.edge.phase_system.phases["Default"].add_reaction(rxn)
-            else:
-                self.edge.phase_system.interfaces[frozenset(["Default","Surface"])].add_reaction(rxn,species_names,rms_species_list)
+        rms_species_list = self.edge.phase_system.get_rms_species_list()
+        species_names = self.edge.phase_system.get_species_names()
+        bits = np.array([spc.molecule[0].contains_surface_site() for spc in rxn.reactants+rxn.products])
+        if all(bits):
+            self.edge.phase_system.phases["Surface"].add_reaction(rxn)
+        elif all(bits==False):
+            self.edge.phase_system.phases["Default"].add_reaction(rxn)
+        else:
+            self.edge.phase_system.interfaces[frozenset(["Default","Surface"])].add_reaction(rxn,species_names,rms_species_list)
 
     def get_model_size(self):
         """

@@ -28,7 +28,6 @@
 ###############################################################################
 
 
-from external.wip import work_in_progress
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.resonance import (
     _clar_optimization,

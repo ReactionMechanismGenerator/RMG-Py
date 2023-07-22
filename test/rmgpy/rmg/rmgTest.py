@@ -30,7 +30,6 @@
 import os
 
 
-from external.wip import work_in_progress
 from rmgpy import settings
 from rmgpy.data.base import ForbiddenStructures
 from rmgpy.data.rmg import RMGDatabase
@@ -40,9 +39,6 @@ from rmgpy.rmg.main import RMG
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.species import Species
 from rmgpy.util import parse_command_line_arguments
-
-
-###################################################
 
 
 class TestRMGWorkFlow:
@@ -80,7 +76,7 @@ class TestRMGWorkFlow:
 
         rmgpy.data.rmg.database = None
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_deterministic_reaction_template_matching(self):
         """
         Test RMG work flow can match reaction template for kinetics estimation

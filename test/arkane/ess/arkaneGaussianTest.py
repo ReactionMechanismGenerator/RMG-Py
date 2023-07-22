@@ -37,7 +37,6 @@ import os
 import numpy as np
 
 import rmgpy.constants as constants
-from external.wip import work_in_progress
 from rmgpy.statmech import (
     IdealGasTranslation,
     LinearRotor,

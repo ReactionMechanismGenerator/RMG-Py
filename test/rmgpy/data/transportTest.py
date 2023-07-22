@@ -30,7 +30,6 @@
 import os
 
 
-from external.wip import work_in_progress
 from rmgpy import settings
 from rmgpy.data.transport import CriticalPointGroupContribution, TransportDatabase
 from rmgpy.molecule import Molecule

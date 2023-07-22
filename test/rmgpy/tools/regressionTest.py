@@ -30,14 +30,13 @@
 import os
 import os.path
 
-
-from nose.plugins.attrib import attr
+import pytest
 
 import rmgpy
 from rmgpy.tools.regression import read_input_file, run
 
 
-@attr("functional")
+@pytest.mark.functional
 class regressionTest:
     def test(self):
         folder = os.path.join(os.path.dirname(rmgpy.__file__), "tools/data/regression")

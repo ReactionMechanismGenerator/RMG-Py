@@ -32,7 +32,6 @@ This module contains unit test for the translator module.
 """
 
 import re
-from external.wip import work_in_progress
 from unittest.mock import patch
 
 from rmgpy.molecule.adjlist import ConsistencyChecker
@@ -1282,7 +1281,7 @@ class InChIParsingTest:
         u_indices = [1, 2, 3, 4]
         self.compare(inchi, u_indices)
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_co(self):
         inchi = "CO/c1-2"
         p_indices = [1, 2]
@@ -1385,7 +1384,7 @@ class InChIParsingTest:
         u_indices = [4, 5]
         self.compare(inchi, u_indices)
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_c6h6o4(self):
         """
         This test used to pass with OpenBabel < 3.0, but I think the inchi is invalid?
@@ -1435,7 +1434,7 @@ class InChIParsingTest:
         inchi = "InChI=1S/H3N/h1H3"
         self.compare(inchi)
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_ammonium(self):
         """
         has same inchi as ammonia but gets a proton layer: /p+1
@@ -1455,7 +1454,7 @@ class InChIParsingTest:
         inchi = "InChI=1S/C4H4N2/c1-2-5-4-6-3-1/h1-4H"
         self.compare(inchi)
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_nitrate(self):
         """
         - Mobile H spread over oxygen 2, 3, 4
