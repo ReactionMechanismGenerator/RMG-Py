@@ -41,30 +41,11 @@ jobs:
 
       - name: 'Get pull request number'
         id: pr_number
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            let fs = require('fs');
-            let readline = require('readline');
-            let issue_number = 0;
-            const fileStream = fs.createReadStream('summary.txt');
-            const rl = readline.createInterface({
-              input: fileStream,
-              crlfDelay: Infinity
-            });
-            rl.on('line', (line) => {
-              console.log('First line:', line);
-              issue_number = Number(line);
-              rl.close();
-              fileStream.close();
-              return issue_number;
-            });
-
+        run: |
+          echo "PR_NUMBER=$( head summary.txt )" >> $GITHUB_ENV
+      - run: env
       - name: Write Results to PR
         uses: thollander/actions-comment-pull-request@v2
-        env:
-          PR_NUMBER: ${{ steps.pr_number.outputs.result }}
         with:
           filePath: summary.txt
           pr_number: ${{ env.PR_NUMBER }}
