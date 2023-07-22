@@ -36,9 +36,6 @@ from rmgpy.rmg.output import save_output_html
 from rmgpy.chemkin import load_chemkin_file
 
 
-###################################################
-
-
 class TestOutput:
     def test_save_output_html(self):
         """

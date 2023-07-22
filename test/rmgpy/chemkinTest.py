@@ -60,9 +60,6 @@ from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient
 import pytest
 
 
-###################################################
-
-
 class ChemkinTest:
     @mock.patch("rmgpy.chemkin.logging")
     def test_read_thermo_entry_bad_element_count(self, mock_logging):

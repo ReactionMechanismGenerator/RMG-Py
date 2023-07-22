@@ -36,7 +36,6 @@ import logging
 import rmgpy.molecule
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.atomtype import get_atomtype
-from external.wip import work_in_progress
 
 
 class TestAtomType:
@@ -160,7 +159,7 @@ class TestAtomType:
                 failed.append(name)
         assert not failed, f"Couldn't make sample molecules for types {', '.join(failed)}"
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_make_sample_molecule_wip(self):
         """
         Test we can make a sample molecule for some failing atom types.
@@ -176,7 +175,7 @@ class TestAtomType:
                 failed.append(name)
         assert not failed, f"Couldn't make sample molecules for types {', '.join(failed)}"
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_make_sample_molecule_right(self):
         """
         Test we can make the correct sample molecule for each atom type.

@@ -40,8 +40,6 @@ from rmgpy.rmg.main import RMG
 from rmgpy.rmg.react import react, react_all
 from rmgpy.species import Species
 
-###################################################
-
 TESTFAMILIES = [
     "H_Abstraction",
     "R_Recombination",

@@ -30,8 +30,6 @@
 import itertools
 import logging
 
-from nose.tools import assert_equal, assert_true, assert_false
-
 from rmgpy.molecule.atomtypedatabase import create_atom_types
 from rmgpy.molecule.element import PeriodicSystem
 from rmgpy.molecule.group import Group
@@ -102,17 +100,8 @@ def retrieve_unspecified_valency(atom_type, unpaired_electrons):
     if atom_type not in molecule_atom_types:
         t = group_atomtypes[atom_type]
         order = 2 * t.double + 3 * t.triple + int(3 * t.benzene / 2)
-        return (
-            PeriodicSystem.valence_electrons[t.element]
-            - 2 * t.lp
-            - unpaired_electrons
-            - order
-        )
-    return (
-        PeriodicSystem.valence_electrons[atom_type]
-        - 2 * PeriodicSystem.lone_pairs[atom_type]
-        - unpaired_electrons
-    )
+        return PeriodicSystem.valence_electrons[t.element] - 2 * t.lp - unpaired_electrons - order
+    return PeriodicSystem.valence_electrons[atom_type] - 2 * PeriodicSystem.lone_pairs[atom_type] - unpaired_electrons
 
 
 def load_cases_group_atom_types():
@@ -132,9 +121,7 @@ def load_cases_group_atom_types():
     cross_element_unpaired = list(itertools.product(a_types, u_e))
 
     for item in cross_element_unpaired:
-        charges = (
-            []
-        )  # list containing tuples of charge for graph 1 and graph 2 [(0,0), (0,1), ...]
+        charges = []  # list containing tuples of charge for graph 1 and graph 2 [(0,0), (0,1), ...]
 
         # for each atom we need to determine the unspecified valency, and generate
         # a list of possible charges that go along with that unspecified valency.
@@ -144,14 +131,8 @@ def load_cases_group_atom_types():
             # if the unspecified valency allows for that.
             charges.append(list(range(min(val, 1) + 1)))
 
-        charge_combos = list(
-            itertools.product(charges[0], charges[1])
-        )  # cross product for both graphs
-        for (
-            charge_combo
-        ) in (
-            charge_combos
-        ):  # combine charge tuple with the cross product of element and unpaired
+        charge_combos = list(itertools.product(charges[0], charges[1]))  # cross product for both graphs
+        for charge_combo in charge_combos:  # combine charge tuple with the cross product of element and unpaired
             output.append(item[0] + item[1] + tuple(charge_combo))
 
     return output
@@ -168,9 +149,7 @@ def load_cases_molecule_atom_types():
     unpaired_electrons = list(itertools.product(list(range(3)), repeat=2))
     cross_element_unpaired = list(itertools.product(a_types, unpaired_electrons))
     for item in cross_element_unpaired:
-        charges = (
-            []
-        )  # list containing tuples of charge for graph 1 and graph 2 [(0,0), (0,1), ...]
+        charges = []  # list containing tuples of charge for graph 1 and graph 2 [(0,0), (0,1), ...]
 
         # for each atom we need to determine the unspecified valency, and generate
         # a list of possible charges that go along with that unspecified valency.
@@ -183,14 +162,8 @@ def load_cases_molecule_atom_types():
             else:
                 charges.append((0, 0))
 
-        charge_combos = list(
-            itertools.product(charges[0], charges[1])
-        )  # cross product for both graphs
-        for (
-            charge_combo
-        ) in (
-            charge_combos
-        ):  # combine charge tuple with the cross product of element and unpaired
+        charge_combos = list(itertools.product(charges[0], charges[1]))  # cross product for both graphs
+        for charge_combo in charge_combos:  # combine charge tuple with the cross product of element and unpaired
             output.append(item[0] + item[1] + tuple(charge_combo))
 
     return output
@@ -223,9 +196,7 @@ def run_parameter_tests():
         mol2, adjlist2 = create_molecule(e2, u2, c2)
 
         exp = mol_atom_type_comparison(e1, e2, u1, u2, c1, c2)
-        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(
-            adjlist1, adjlist2, exp
-        )
+        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjlist1, adjlist2, exp)
 
         if mol1 is not None and mol2 is not None:
             calc = mol1.is_isomorphic(mol2)
@@ -241,9 +212,7 @@ def run_parameter_tests():
         mol2, adjlist2 = create_molecule(e2, u2, c2)
 
         exp = mol_atom_type_comparison(e1, e2, u1, u2, c1, c2)
-        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(
-            adjlist1, adjlist2, exp
-        )
+        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjlist1, adjlist2, exp)
 
         if mol1 is not None and mol2 is not None:
             calc = len(mol1.find_isomorphism(mol2)) > 0
@@ -253,13 +222,9 @@ def run_parameter_tests():
         mol1, adjlist1 = create_molecule(e1, u1, c1)
         group1, adjlist2 = create_group(e2, u2, c2)
 
-        exp = mol_atom_type_comparison(
-            e1, e2, u1, u2, c1, c2
-        )  # string comparison will give us expected value!
+        exp = mol_atom_type_comparison(e1, e2, u1, u2, c1, c2)  # string comparison will give us expected value!
 
-        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(
-            adjlist1, adjlist2, exp
-        )
+        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjlist1, adjlist2, exp)
 
         if mol1 is not None and group1 is not None:
             calc = mol1.is_subgraph_isomorphic(group1)
@@ -269,13 +234,9 @@ def run_parameter_tests():
         mol1, adjlist1 = create_molecule(e1, u1, c1)
         group1, adjlist2 = create_group(e2, u2, c2)
 
-        exp = mol_atom_type_comparison(
-            e1, e2, u1, u2, c1, c2
-        )  # string comparison will give us expected value!
+        exp = mol_atom_type_comparison(e1, e2, u1, u2, c1, c2)  # string comparison will give us expected value!
 
-        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(
-            adjlist1, adjlist2, exp
-        )
+        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjlist1, adjlist2, exp)
 
         if mol1 is not None and group1 is not None:
             calc = len(mol1.find_subgraph_isomorphisms(group1)) > 0
@@ -304,12 +265,8 @@ def run_parameter_tests():
         if mol1 is not None and group1 is not None:
             a1 = mol1.atoms[0].atomtype
             a2 = group1.atoms[0].atomtype[0]
-            exp = group_atom_type_comparison(
-                a1, a2, u1, u2, c1, c2
-            )  # string comparison will give us expected value!
-            err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(
-                adjlist1, adjlist2, exp
-            )
+            exp = group_atom_type_comparison(a1, a2, u1, u2, c1, c2)  # string comparison will give us expected value!
+            err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjlist1, adjlist2, exp)
 
             calc = mol1.is_subgraph_isomorphic(group1)
             assert calc == exp, err
@@ -321,9 +278,7 @@ def run_parameter_tests():
             a1 = mol1.atoms[0].atomtype
             a2 = group1.atoms[0].atomtype[0]
             exp = group_atom_type_comparison(a1, a2, u1, u2, c1, c2)
-            err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(
-                adjlist1, adjlist2, exp
-            )
+            err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjlist1, adjlist2, exp)
 
             calc = len(mol1.find_subgraph_isomorphisms(group1)) > 0
             assert calc == exp, err
@@ -633,7 +588,5 @@ def test_isomorphism_wrong_mapping():
 
     mapping = {}
     for label in ["*1", "*2", "*3", "*4"]:
-        mapping[n1butane.get_labeled_atoms(label)[0]] = n2butane.get_labeled_atoms(
-            label
-        )[0]
+        mapping[n1butane.get_labeled_atoms(label)[0]] = n2butane.get_labeled_atoms(label)[0]
     assert not n1butane.is_isomorphic(n2butane, initial_map=mapping)

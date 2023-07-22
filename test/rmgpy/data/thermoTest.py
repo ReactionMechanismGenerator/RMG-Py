@@ -34,7 +34,6 @@ import shutil
 
 import rmgpy
 import rmgpy.constants as constants
-from external.wip import work_in_progress
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.thermo import (

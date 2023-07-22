@@ -41,9 +41,6 @@ from rmgpy.kinetics import Arrhenius, Troe, PDepArrhenius
 from rmgpy.kinetics.model import PDepKineticsModel
 
 
-###################################################
-
-
 class TestLibrary:
     @classmethod
     def setUpClass(cls):

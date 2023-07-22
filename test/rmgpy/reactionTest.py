@@ -35,7 +35,6 @@ This module contains unit tests of the rmgpy.reaction module.
 import cantera as ct
 import numpy
 import yaml
-from external.wip import work_in_progress
 from copy import deepcopy
 
 import rmgpy.constants as constants

@@ -33,18 +33,15 @@ This module contains unit tests of the :mod:`arkane.main` module.
 
 import logging
 import os
-import shutil
 
-
-from nose.plugins.attrib import attr
-
+import pytest
 import rmgpy
 
 from arkane import Arkane
 from arkane.common import clean_dir
 
 
-@attr("functional")
+@pytest.mark.functional
 class TestArkaneExamples:
     """
     Run all of Arkane's examples, and report which one failed

@@ -34,13 +34,13 @@ This module contains unit tests of the :mod:`arkane.explorer` module.
 import os
 
 
-from nose.plugins.attrib import attr
+import pytest
 
 from arkane import Arkane
 from arkane.explorer import ExplorerJob
 
 
-@attr("functional")
+@pytest.mark.functional
 class TestExplorerJob:
     """
     Contains tests for ExplorerJob class execute method

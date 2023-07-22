@@ -36,8 +36,7 @@ import logging
 from copy import copy
 from collections import defaultdict
 
-import nose
-import nose.tools
+import pytest
 import numpy as np
 import quantities as pq
 
@@ -53,6 +52,7 @@ from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.quantity import ScalarQuantity
 
 
+@pytest.mark.database
 class TestDatabase:
     """
     Contains unit tests for the database for rigorous error checking.
@@ -937,7 +937,7 @@ class TestDatabase:
         """
         family = self.database.kinetics.families[family_name]
         if family.own_reverse:
-            nose.tools.assert_equal(family.forward_template.reactants, family.forward_template.products)
+            assert family.forward_template.reactants == family.forward_template.products)
         else:
             tst = []
             reactant_labels = [reactant.label for reactant in family.forward_template.reactants]
@@ -1123,7 +1123,7 @@ The following adjList may have atoms in a different ordering than the input file
             end_labels[end_group] = set(labels)
 
         # get boundary atoms to test that backbones have labels between end groups
-        nose.tools.assert_is_not_none(family.boundary_atoms)
+        assert family.boundary_atoms is not None
 
         # set of all end_labels should be backbone label
         backbone_label = set([])

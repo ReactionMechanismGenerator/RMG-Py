@@ -32,7 +32,7 @@ import os
 import shutil
 from unittest.mock import patch
 
-from nose.plugins.attrib import attr
+import pytest
 
 import pandas as pd
 
@@ -42,14 +42,11 @@ from rmgpy import get_path
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.rmg.model import CoreEdgeReactionModel
-import pytest
-
-###################################################
 
 originalPath = get_path()
 
 
-@attr("functional")
+@pytest.mark.functional
 class TestMain:
     @classmethod
     def setUpClass(cls):
@@ -189,7 +186,7 @@ class TestMain:
                     self.fail("The output Cantera file is not loadable in Cantera.")
 
 
-@attr("functional")
+@pytest.mark.functional
 class TestRestartWithFilters:
     @classmethod
     def setUpClass(cls):
@@ -226,7 +223,7 @@ class TestRestartWithFilters:
         shutil.rmtree(cls.outputDir)
 
 
-@attr("functional")
+@pytest.mark.functional
 class TestRestartNoFilters:
     @classmethod
     def setUpClass(cls):
@@ -263,7 +260,7 @@ class TestRestartNoFilters:
         shutil.rmtree(cls.outputDir)
 
 
-@attr("functional")
+@pytest.mark.functional
 class TestMainFunctions:
     @classmethod
     def setUpClass(cls):

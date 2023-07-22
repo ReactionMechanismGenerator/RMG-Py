@@ -28,7 +28,6 @@
 ###############################################################################
 
 
-from external.wip import work_in_progress
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
 from rmgpy.molecule.symmetry import (
@@ -296,7 +295,7 @@ multiplicity 3
         molecule = Molecule().from_smiles("C=C=C(C(C(C(C=C=C)=C=C)=C=C)=C=C)")
         assert calculate_axis_symmetry_number(molecule) == 2
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_axis_symmetry_number3(self):
         """
         Test the Molecule.calculate_axis_symmetry_number() on C=C=[C]C(C)(C)[C]=C=C
@@ -566,7 +565,7 @@ multiplicity 3
         """
         assert Species().from_smiles("C=C=[C]C(C)(C)[C]=C=C").get_symmetry_number() == 18
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_total_symmetry_number2(self):
         """
         Test the Molecule.calculate_symmetry_number() on C(=CC(c1ccccc1)C([CH]CCCCCC)C=Cc1ccccc1)[CH]CCCCCC

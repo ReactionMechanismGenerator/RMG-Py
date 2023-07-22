@@ -47,9 +47,6 @@ from rmgpy.species import Species
 from rmgpy.kinetics import Arrhenius
 
 
-###################################################
-
-
 class TestFamily:
     @classmethod
     def setUpClass(cls):

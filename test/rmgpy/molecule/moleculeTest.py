@@ -28,7 +28,6 @@
 ###############################################################################
 
 
-from external.wip import work_in_progress
 from rmgpy.exceptions import InchiException
 from rmgpy.molecule.element import get_element, element_list
 from rmgpy.molecule.group import Group, ActionError
@@ -1949,7 +1948,7 @@ multiplicity 2
         assert spc2.props == {}
         assert spc3.props == {"foo": "bla"}
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_count_internal_rotors_dimethyl_acetylene(self):
         """
         Test the Molecule.count_internal_rotors() method for dimethylacetylene.

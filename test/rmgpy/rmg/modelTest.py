@@ -32,7 +32,7 @@ import os
 
 
 import numpy as np
-from nose.plugins.attrib import attr
+import pytest
 
 from rmgpy import settings
 from rmgpy.data.base import ForbiddenStructures
@@ -44,9 +44,6 @@ from rmgpy.rmg.main import RMG
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.rmg.react import react
 from rmgpy.species import Species
-
-
-###################################################
 
 
 class TestSpecies:
@@ -1003,7 +1000,7 @@ class TestCoreEdgeReactionModel:
         rmgpy.data.rmg.database = None
 
 
-@attr("functional")
+@pytest.mark.functional
 class TestEnlarge:
     """
     Contains unit tests for CoreEdgeReactionModel.enlarge.

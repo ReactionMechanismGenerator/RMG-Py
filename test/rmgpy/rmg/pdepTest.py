@@ -46,9 +46,6 @@ from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.transport import TransportData
 
 
-###################################################
-
-
 class TestPdep:
     def setUp(self):
         """

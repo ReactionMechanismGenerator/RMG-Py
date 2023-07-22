@@ -33,9 +33,6 @@ import rmgpy.rmg.input as inp
 from rmgpy.rmg.main import RMG
 
 
-###################################################
-
-
 def setUpModule():
     """
     A method that is run before the class.

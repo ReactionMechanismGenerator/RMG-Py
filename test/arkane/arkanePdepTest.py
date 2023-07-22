@@ -36,7 +36,7 @@ import os
 import shutil
 
 
-from nose.plugins.attrib import attr
+import pytest
 
 from rmgpy import settings
 from rmgpy.chemkin import read_reactions_block
@@ -46,7 +46,7 @@ from rmgpy.species import Species
 from arkane.main import Arkane
 
 
-@attr("functional")
+@pytest.mark.functional
 class ArkaneTest:
     """
     Contains unit tests for the sensitivity module in Arkane

@@ -30,15 +30,14 @@
 import os.path
 import shutil
 
-
-from nose.plugins.attrib import attr
+import pytest
 
 import rmgpy
 from rmgpy.rmg.main import RMG
 from rmgpy.tools.generatereactions import execute
 
 
-@attr("functional")
+@pytest.mark.functional
 class GenerateReactionsTest:
     def test(self):
         folder = os.path.join(os.path.dirname(rmgpy.__file__), "tools/data/generate")
