@@ -27,6 +27,7 @@
 # 2023-06-15 - revert changes from 06-06, both now work
 # 2023-06-27 - add option to run from RMG-database with GitHub resuable workflows
 # 2023-07-17 - made it pass by default
+# 2023-07-21 - upload the regression results summary as artifact (for use as a comment on PRs)
 name: Continuous Integration
 
 on:
@@ -347,7 +348,8 @@ jobs:
       - name: Prepare Results for PR Comment
         if : ${{ github.event_name == 'pull_request' }}
         run: |
-          echo "## Regression Testing Results" > summary.txt
+          echo $PR_NUMBER > summary.txt
+          echo "## Regression Testing Results" >> summary.txt
           cat regression.stderr >> summary.txt
           echo "<details>" >> summary.txt
           echo "<summary>Detailed regression test results.</summary>" >> summary.txt
@@ -358,17 +360,12 @@ jobs:
           cat summary.txt > $GITHUB_STEP_SUMMARY
 
       - name: Upload regression summary artifact
+       # the annotate workflow uses this artifact to add a comment to the PR
         uses: actions/upload-artifact@v3
         if : ${{ github.event_name == 'pull_request' }}
         with:
           name: regression_summary
           path: summary.txt
-
-      - name: Write Results to PR
-        uses: thollander/actions-comment-pull-request@v2
-        if : ${{ github.event_name == 'pull_request' }}
-        with:
-          filePath: summary.txt
 
       - name: Upload Comparison Results
         uses: actions/upload-artifact@v3
