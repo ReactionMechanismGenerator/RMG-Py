@@ -148,7 +148,7 @@ class ChemkinTest:
         This example tests if family and templates info can be correctly
         parsed from comments like '!Template reaction: R_Recombination'.
         """
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py")
+        folder = os.path.join(os.path.dirname(__file__), "test_data", "chemkin", "chemkin_py")
 
         chemkin_path = os.path.join(folder, "minimal", "chem.inp")
         dictionary_path = os.path.join(folder, "minimal", "species_dictionary.txt")

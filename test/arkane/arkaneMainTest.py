@@ -35,7 +35,6 @@ import logging
 import os
 
 import pytest
-import rmgpy
 
 from arkane import Arkane
 from arkane.common import clean_dir
@@ -50,8 +49,8 @@ class TestArkaneExamples:
     @classmethod
     def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
-        cls.base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), "examples", "arkane")
-        cls.test_base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), "testing", "arkane")
+        cls.base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "examples", "arkane")
+        cls.test_base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "arkane", "data")
         cls.failed = []
         cls.example_types = ["species", "reactions", "explorer", "networks", "bac"]
 
@@ -105,7 +104,7 @@ class TestArkaneExamples:
         cls.extensions_to_delete = ["pdf", "csv", "txt", "inp"]
         cls.files_to_delete = ["arkane.log", "output.py", "supporting_information.csv"]
         cls.files_to_keep = ["README.txt"]  # files to keep that have extensions marked for deletion
-        cls.base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), "examples", "arkane")
+        cls.base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "examples", "arkane")
         for example_type in cls.example_types:
             example_type_path = os.path.join(cls.base_path, example_type)
             for example in os.listdir(example_type_path):
@@ -118,7 +117,7 @@ class TestArkaneExamples:
                     files_to_keep=cls.files_to_keep,
                     sub_dir_to_keep=["r0"],
                 )
-        cls.test_base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), "testing", "arkane")
+        cls.test_base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
         tests = ["two_parameter_arrhenius_fit"]
         for test in tests:
             test_path = os.path.join(cls.test_base_path, test)
