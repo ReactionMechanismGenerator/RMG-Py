@@ -41,7 +41,7 @@ from arkane.kinetics import KineticsJob
 ################################################################################
 
 
-class KineticsTest(unittest.TestCase):
+class ArkaneKineticsTest(unittest.TestCase):
     """
     Contains unit tests for the Arkane Kinetics module
     """
@@ -52,7 +52,7 @@ class KineticsTest(unittest.TestCase):
         """
         rxn = Reaction(transition_state=TransitionState())
         t_list = [50.7, 100, 300, 800, 1255]
-        kjob = KineticsJob(rxn, Tlist=(t_list, 'K'))
+        kjob = KineticsJob(rxn, Tlist=(t_list, "K"))
         self.assertEqual(min(t_list), kjob.Tmin.value_si)
         self.assertEqual(max(t_list), kjob.Tmax.value_si)
         self.assertEqual(len(t_list), kjob.Tcount)
@@ -62,16 +62,20 @@ class KineticsTest(unittest.TestCase):
         Ensures that Tlist is set when a range of temperatures is specified
         """
         rxn = Reaction(transition_state=TransitionState())
-        kjob = KineticsJob(rxn, Tmin=(50, 'K'), Tmax=(4000, 'K'), Tcount=5)
+        kjob = KineticsJob(rxn, Tmin=(50, "K"), Tmax=(4000, "K"), Tcount=5)
         self.assertEqual(5, len(kjob.Tlist.value_si))
         self.assertEqual(50, min(kjob.Tlist.value_si))
         self.assertAlmostEqual(4000, max(kjob.Tlist.value_si))
         inverse_tlist = 1 / kjob.Tlist.value_si
-        self.assertAlmostEqual(inverse_tlist[1] - inverse_tlist[0],
-                               inverse_tlist[-1] - inverse_tlist[-2],
-                               msg='The points for fitting do not appear 1/T spaced. '
-                                   'Obtained values of {0} and {1}'.format(inverse_tlist[1] - inverse_tlist[0],
-                                                                           inverse_tlist[-1] - inverse_tlist[-2]))
+        self.assertAlmostEqual(
+            inverse_tlist[1] - inverse_tlist[0],
+            inverse_tlist[-1] - inverse_tlist[-2],
+            msg="The points for fitting do not appear 1/T spaced. "
+            "Obtained values of {0} and {1}".format(
+                inverse_tlist[1] - inverse_tlist[0],
+                inverse_tlist[-1] - inverse_tlist[-2],
+            ),
+        )
 
     def test_get_tlist_for_kineticsjob(self):
         """
@@ -86,14 +90,19 @@ class KineticsTest(unittest.TestCase):
         self.assertAlmostEqual(298, min(kjob.Tlist.value_si))
         self.assertAlmostEqual(2500, max(kjob.Tlist.value_si))
         inverse_tlist = 1 / kjob.Tlist.value_si
-        self.assertAlmostEqual(inverse_tlist[1] - inverse_tlist[0],
-                               inverse_tlist[-1] - inverse_tlist[-2],
-                               msg='The points for fitting do not appear 1/T spaced. '
-                                   'Obtained values of {0} and {1}'.format(inverse_tlist[1] - inverse_tlist[0],
-                                                                           inverse_tlist[-1] - inverse_tlist[-2]))
+        self.assertAlmostEqual(
+            inverse_tlist[1] - inverse_tlist[0],
+            inverse_tlist[-1] - inverse_tlist[-2],
+            msg="The points for fitting do not appear 1/T spaced. "
+            "Obtained values of {0} and {1}".format(
+                inverse_tlist[1] - inverse_tlist[0],
+                inverse_tlist[-1] - inverse_tlist[-2],
+            ),
+        )
+
 
 ################################################################################
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
