@@ -243,7 +243,7 @@ class TestQMCalculator:
 
     @pytest.mark.skipif(
         NO_GAUSSIAN,
-        "Gaussian not found. Try resetting your environment variables if you want to use it.",
+        reason="Gaussian not found. Try resetting your environment variables if you want to use it.",
     )
     def test_get_thermo_data_gaussian(self):
         """

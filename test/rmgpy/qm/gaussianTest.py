@@ -53,7 +53,7 @@ class TestGaussianMolPM3:
 
     @pytest.mark.skipif(
         NO_GAUSSIAN,
-        "Gaussian not found. Try resetting your environment variables if you want to use it.",
+        reason="Gaussian not found. Try resetting your environment variables if you want to use it.",
     )
     def setUp(self):
         """
@@ -117,7 +117,7 @@ class TestGaussianMolPM6:
 
     @pytest.mark.skipif(
         NO_GAUSSIAN,
-        "Gaussian not found. Try resetting your environment variables if you want to use it.",
+        reason="Gaussian not found. Try resetting your environment variables if you want to use it.",
     )
     def setUp(self):
         """
@@ -137,7 +137,7 @@ class TestGaussianMolPM6:
 
         self.qmmol1 = GaussianMolPM6(mol1, qm.settings)
 
-    @pytest.mark.skipif("g03" in executable_path, "This test was shown not to work on g03.")
+    @pytest.mark.skipif("g03" in executable_path, reason="This test was shown not to work on g03.")
     def test_generate_thermo_data(self):
         """
         Test that generate_thermo_data() works correctly for gaussian PM6.
@@ -158,7 +158,7 @@ class TestGaussianMolPM6:
         if result.molecularMass.units == "amu":
             assert round(abs(result.molecularMass.value - 128.0626), 3) == 0
 
-    @pytest.mark.skipif("g03" in executable_path, "This test was shown not to work on g03.")
+    @pytest.mark.skipif("g03" in executable_path, reason="This test was shown not to work on g03.")
     def test_load_thermo_data(self):
         """
         Test that generate_thermo_data() can load thermo from the previous gaussian PM6 run.
