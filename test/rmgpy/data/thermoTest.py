@@ -1218,7 +1218,7 @@ class TestThermoAccuracy:
         global database
         cls.database = database.thermo
 
-    def setup_class(self):
+    def setup_method(self):
         """
         A function run before each unit test in this class.
         """
@@ -1482,7 +1482,7 @@ class TestThermoAccuracyAromatics:
         global database
         cls.database = database.thermo
 
-    def setup_class(self):
+    def setup_method(self):
         self.Tlist = [300, 400, 500, 600, 800, 1000, 1500]
         self.testCases = [
             # SMILES         symm    H298   S298  Cp300  Cp400  Cp500  Cp600  Cp800 Cp1000 Cp1500
@@ -1513,10 +1513,6 @@ class TestThermoAccuracyAromatics:
                 90.24,
             ],
         ]
-
-    def __init__(self, *args, **kwargs):
-        super(TestThermoAccuracyAromatics, self).__init__(*args, **kwargs)
-        self._testMethodDoc = self._testMethodDoc.strip().split("\n")[0] + " for Aromatics.\n"
 
     def test_long_distance_interaction_in_aromatic_molecule(self):
         """
