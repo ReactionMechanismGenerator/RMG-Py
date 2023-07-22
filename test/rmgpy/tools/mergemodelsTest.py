@@ -29,12 +29,12 @@
 
 import os
 import os.path
-import unittest
+
 
 from rmgpy.tools.mergemodels import get_models_to_merge, combine_models
 
 
-class MergeModelsTest(unittest.TestCase):
+class MergeModelsTest:
     def test_merge_different_models(self):
         folder = os.path.join(os.getcwd(), "rmgpy/tools/data/diffmodels")
 
@@ -44,15 +44,13 @@ class MergeModelsTest(unittest.TestCase):
         chemkin2 = os.path.join(folder, "chem2.inp")
         species_dict2 = os.path.join(folder, "species_dictionary2.txt")
 
-        models = get_models_to_merge(
-            ((chemkin3, species_dict3, None), (chemkin2, species_dict2, None))
-        )
+        models = get_models_to_merge(((chemkin3, species_dict3, None), (chemkin2, species_dict2, None)))
         final_model = combine_models(models)
         species = final_model.species
         reactions = final_model.reactions
 
         # make sure all species are included
-        self.assertEqual(len(species), 15)
+        assert len(species) == 15
 
         # make sure indexes are redone by checking a random species
         h_index = False
@@ -62,21 +60,12 @@ class MergeModelsTest(unittest.TestCase):
                     h_index = s.index
                 else:
                     # found second matching label, make sure index different
-                    self.assertNotEqual(s.index, h_index)
+                    assert s.index != h_index
                     break
         else:
             raise Exception("Could not find two species identical labels")
 
         # make sure reaction rates come from first model
         for r in reactions:
-            if (
-                len(r.reactants) == 2
-                and r.reactants[0].label == "CH3"
-                and r.reactants[1].label == "CH3"
-            ):
-                self.assertAlmostEqual(
-                    r.kinetics.A.value_si,
-                    8.260e9,
-                    places=0,
-                    msg="Kinetics did not match from first input model",
-                )
+            if len(r.reactants) == 2 and r.reactants[0].label == "CH3" and r.reactants[1].label == "CH3":
+                assert round(abs(r.kinetics.A.value_si - 8.260e9), 0) == 0, "Kinetics did not match from first input model"

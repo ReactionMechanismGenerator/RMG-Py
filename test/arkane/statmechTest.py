@@ -32,7 +32,7 @@ This module contains unit tests of the :mod:`arkane.statmech` module.
 """
 
 import os
-import unittest
+
 
 import numpy as np
 
@@ -43,11 +43,10 @@ from arkane import Arkane
 from arkane.ess.qchem import QChemLog
 from arkane.modelchem import LevelOfTheory
 from arkane.statmech import ScanLog, StatMechJob, determine_rotor_symmetry, is_linear
+import pytest
 
-################################################################################
 
-
-class TestStatmech(unittest.TestCase):
+class TestStatmech:
     """
     Contains unit tests of the StatmechJob class.
     """
@@ -56,37 +55,29 @@ class TestStatmech(unittest.TestCase):
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        cls.job_list = arkane.load_input_file(
-            os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), "data", "Benzyl", "input.py"
-            )
-        )
+        cls.job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "Benzyl", "input.py"))
 
     def test_gaussian_log_file_error(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are not the same"""
         job = self.job_list[-2]
-        self.assertTrue(isinstance(job, StatMechJob))
-        with self.assertRaises(InputError):
+        assert isinstance(job, StatMechJob)
+        with pytest.raises(InputError):
             job.load()
 
     def test_rotor_symmetry_determination(self):
         """
         Test that the correct symmetry number is determined for rotor potential scans.
         """
-        path1 = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "data", "NCC_NRotor.out"
-        )
-        path2 = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "data", "NCC_CRotor.out"
-        )
+        path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "NCC_NRotor.out")
+        path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "NCC_CRotor.out")
         scan_log1 = QChemLog(path1)
         scan_log2 = QChemLog(path2)
         v_list1, angle = scan_log1.load_scan_energies()
         v_list2, angle = scan_log2.load_scan_energies()
         symmetry1 = determine_rotor_symmetry(energies=v_list1, label="NCC", pivots=[])
         symmetry2 = determine_rotor_symmetry(energies=v_list2, label="NCC", pivots=[])
-        self.assertEqual(symmetry1, 1)
-        self.assertEqual(symmetry2, 3)
+        assert symmetry1 == 1
+        assert symmetry2 == 3
 
     def test_is_linear(self):
         """Test that we can determine the linearity of a molecule from it's coordinates"""
@@ -180,18 +171,18 @@ class TestStatmech(unittest.TestCase):
             ]
         )  # C#CC#C at wb97xd/6-311+g(d,p), linear
 
-        self.assertTrue(is_linear(xyz1))
-        self.assertTrue(is_linear(xyz6))
-        self.assertTrue(is_linear(xyz7))
-        self.assertTrue(is_linear(xyz9))
-        self.assertTrue(is_linear(xyz11))
-        self.assertTrue(is_linear(xyz12))
-        self.assertFalse(is_linear(xyz2))
-        self.assertFalse(is_linear(xyz3))
-        self.assertFalse(is_linear(xyz4))
-        self.assertFalse(is_linear(xyz5))
-        self.assertFalse(is_linear(xyz8))
-        self.assertFalse(is_linear(xyz10))
+        assert is_linear(xyz1)
+        assert is_linear(xyz6)
+        assert is_linear(xyz7)
+        assert is_linear(xyz9)
+        assert is_linear(xyz11)
+        assert is_linear(xyz12)
+        assert not is_linear(xyz2)
+        assert not is_linear(xyz3)
+        assert not is_linear(xyz4)
+        assert not is_linear(xyz5)
+        assert not is_linear(xyz8)
+        assert not is_linear(xyz10)
 
     def test_specifying_absolute_file_paths(self):
         """Test specifying absolute file paths of statmech files"""
@@ -215,26 +206,22 @@ frequencies = Log('{freq}')
 rotors = [HinderedRotor(scanLog=Log('{scan}'), pivots=[1, 2], top=[1, 3], symmetry=1, fit='fourier')]
 
 """
-        abs_arkane_path = os.path.abspath(
-            os.path.dirname(__file__)
-        )  # this is the absolute path to `.../RMG-Py/arkane`
+        abs_arkane_path = os.path.abspath(os.path.dirname(__file__))  # this is the absolute path to `.../RMG-Py/arkane`
         energy_path = os.path.join("arkane", "data", "H2O2", "sp_a19032.out")
         freq_path = os.path.join("arkane", "data", "H2O2", "freq_a19031.out")
         scan_path = os.path.join("arkane", "data", "H2O2", "scan_a19034.out")
-        h2o2_input = h2o2_input.format(
-            energy=energy_path, freq=freq_path, scan=scan_path
-        )
+        h2o2_input = h2o2_input.format(energy=energy_path, freq=freq_path, scan=scan_path)
         h2o2_path = os.path.join(abs_arkane_path, "data", "H2O2", "H2O2.py")
         if not os.path.exists(os.path.dirname(h2o2_path)):
             os.makedirs(os.path.dirname(h2o2_path))
         with open(h2o2_path, "w") as f:
             f.write(h2o2_input)
         h2o2 = Species(label="H2O2", smiles="OO")
-        self.assertIsNone(h2o2.conformer)
+        assert h2o2.conformer is None
         statmech_job = StatMechJob(species=h2o2, path=h2o2_path)
         statmech_job.level_of_theory = LevelOfTheory("b3lyp", "6-311+g(3df,2p)")
         statmech_job.load(pdep=False, plot=False)
-        self.assertAlmostEqual(h2o2.conformer.E0.value_si, -146031.49933673252)
+        assert round(abs(h2o2.conformer.E0.value_si - -146031.49933673252), 7) == 0
         os.remove(h2o2_path)
 
     def test_hinder_rotor_from_1d_array(self):
@@ -359,32 +346,24 @@ rotors = [HinderedRotor1DArray(
                 6.14367036e-01,
             ]
         )
-        abs_arkane_path = os.path.abspath(
-            os.path.dirname(__file__)
-        )  # this is the absolute path to `.../RMG-Py/arkane`
+        abs_arkane_path = os.path.abspath(os.path.dirname(__file__))  # this is the absolute path to `.../RMG-Py/arkane`
         energy_path = os.path.join("arkane", "data", "H2O2", "sp_a19032.out")
         freq_path = os.path.join("arkane", "data", "H2O2", "freq_a19031.out")
-        h2o2_input = h2o2_input.format(
-            energy=energy_path, freq=freq_path, angles=angles, energies=energies
-        )
+        h2o2_input = h2o2_input.format(energy=energy_path, freq=freq_path, angles=angles, energies=energies)
         h2o2_path = os.path.join(abs_arkane_path, "data", "H2O2", "H2O2_PES.py")
         os.makedirs(os.path.dirname(h2o2_path), exist_ok=True)
         with open(h2o2_path, "w") as f:
             f.write(h2o2_input)
         h2o2 = Species(label="H2O2", smiles="OO")
-        self.assertIsNone(h2o2.conformer)
+        assert h2o2.conformer is None
         statmech_job = StatMechJob(species=h2o2, path=h2o2_path)
         statmech_job.level_of_theory = LevelOfTheory("b3lyp", "6-311+g(3df,2p)")
         statmech_job.load(pdep=False, plot=False)
-        self.assertEqual(len(statmech_job.raw_hindered_rotor_data), 1)
-        self.assertEqual(statmech_job.raw_hindered_rotor_data[0][2], 1)
-        self.assertTrue(
-            np.allclose(statmech_job.raw_hindered_rotor_data[0][3], angles, atol=1e-6)
-        )
-        self.assertTrue(
-            np.allclose(statmech_job.raw_hindered_rotor_data[0][4], energies, atol=1e-6)
-        )
-        self.assertAlmostEqual(h2o2.conformer.E0.value_si, -146031.49933673252)
+        assert len(statmech_job.raw_hindered_rotor_data) == 1
+        assert statmech_job.raw_hindered_rotor_data[0][2] == 1
+        assert np.allclose(statmech_job.raw_hindered_rotor_data[0][3], angles, atol=1e-6)
+        assert np.allclose(statmech_job.raw_hindered_rotor_data[0][4], energies, atol=1e-6)
+        assert round(abs(h2o2.conformer.E0.value_si - -146031.49933673252), 7) == 0
         os.remove(h2o2_path)
 
     def test_scanlog_class(self):
@@ -477,21 +456,21 @@ rotors = [HinderedRotor1DArray(
         scanpath1 = os.path.join(abs_arkane_path, "data", "H2O2", "scan.txt")
         scanlog1 = ScanLog(scanpath1)
         angles1, energies1 = scanlog1.load()
-        self.assertTrue(np.allclose(angles, angles1, atol=1e-6))
-        self.assertTrue(np.allclose(energies, energies1, atol=1e-6))
+        assert np.allclose(angles, angles1, atol=1e-6)
+        assert np.allclose(energies, energies1, atol=1e-6)
 
         scanpath2 = os.path.join(abs_arkane_path, "data", "H2O2", "scan.yml")
         scanlog2 = ScanLog(scanpath2)
         angles2, energies2 = scanlog2.load()
-        self.assertTrue(np.allclose(angles, angles2, atol=1e-6))
+        assert np.allclose(angles, angles2, atol=1e-6)
         print(energies, energies2)
-        self.assertTrue(np.allclose(energies, energies2, atol=1e-6))
+        assert np.allclose(energies, energies2, atol=1e-6)
 
         scanpath3 = os.path.join(abs_arkane_path, "data", "H2O2", "scan.csv")
         scanlog3 = ScanLog(scanpath3)
         angles3, energies3 = scanlog3.load()
-        self.assertTrue(np.allclose(angles, angles3, atol=1e-6))
-        self.assertTrue(np.allclose(energies, energies3, atol=1e-6))
+        assert np.allclose(angles, angles3, atol=1e-6)
+        assert np.allclose(energies, energies3, atol=1e-6)
 
     def test_hindered_rotor_from_scan_logs(self):
         """
@@ -599,9 +578,7 @@ frequencies = Log('{freq}')
 rotors = [HinderedRotor(scanLog=ScanLog('{scan}'), pivots=[1, 2], top=[1, 3], symmetry=1, fit='fourier')]
 
 """
-        abs_arkane_path = os.path.abspath(
-            os.path.dirname(__file__)
-        )  # this is the absolute path to `.../RMG-Py/arkane`
+        abs_arkane_path = os.path.abspath(os.path.dirname(__file__))  # this is the absolute path to `.../RMG-Py/arkane`
         energy_path = os.path.join(abs_arkane_path, "data", "H2O2", "sp_a19032.out")
         freq_path = os.path.join(abs_arkane_path, "data", "H2O2", "freq_a19031.out")
         h2o2_path = os.path.join(abs_arkane_path, "data", "H2O2", "H2O2.py")
@@ -610,23 +587,13 @@ rotors = [HinderedRotor(scanLog=ScanLog('{scan}'), pivots=[1, 2], top=[1, 3], sy
 
         for file in ["scan.txt", "scan.csv", "scan.yml"]:
             scan_path = os.path.join(abs_arkane_path, "data", "H2O2", file)
-            h2o2_input_tmp = h2o2_input.format(
-                energy=energy_path, freq=freq_path, scan=scan_path
-            )
+            h2o2_input_tmp = h2o2_input.format(energy=energy_path, freq=freq_path, scan=scan_path)
             with open(h2o2_path, "w") as f:
                 f.write(h2o2_input_tmp)
             statmech_job = StatMechJob(species=h2o2, path=h2o2_path)
             statmech_job.level_of_theory = LevelOfTheory("b3lyp", "6-311+g(3df,2p)")
             statmech_job.load(pdep=False, plot=False)
-            self.assertEqual(len(statmech_job.raw_hindered_rotor_data), 1)
-            self.assertTrue(
-                np.allclose(
-                    statmech_job.raw_hindered_rotor_data[0][3], angles, atol=1e-6
-                )
-            )
-            self.assertTrue(
-                np.allclose(
-                    statmech_job.raw_hindered_rotor_data[0][4], energies, atol=1e-6
-                )
-            )
+            assert len(statmech_job.raw_hindered_rotor_data) == 1
+            assert np.allclose(statmech_job.raw_hindered_rotor_data[0][3], angles, atol=1e-6)
+            assert np.allclose(statmech_job.raw_hindered_rotor_data[0][4], energies, atol=1e-6)
             os.remove(h2o2_path)

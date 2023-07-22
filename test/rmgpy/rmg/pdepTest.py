@@ -28,7 +28,7 @@
 ###############################################################################
 
 import logging
-import unittest
+
 from copy import deepcopy
 
 from rmgpy.kinetics.arrhenius import Arrhenius
@@ -49,7 +49,7 @@ from rmgpy.transport import TransportData
 ###################################################
 
 
-class TestPdep(unittest.TestCase):
+class TestPdep:
     def setUp(self):
         """
         A method that is run before each unit test in this class.
@@ -150,9 +150,7 @@ class TestPdep(unittest.TestCase):
             ),
             molecular_weight=(74.07, "g/mol"),
             transport_data=TransportData(sigma=(5.94, "angstrom"), epsilon=(559, "K")),
-            energy_transfer_model=SingleExponentialDown(
-                alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85
-            ),
+            energy_transfer_model=SingleExponentialDown(alpha0=(447.5 * 0.011962, "kJ/mol"), T0=(300, "K"), n=0.85),
         )
 
         self.nC4H10O.from_smiles("CCCCO")
@@ -242,9 +240,7 @@ class TestPdep(unittest.TestCase):
                         inertia=([0.630578, 1.15529, 1.78586], "amu*angstrom^2"),
                         symmetry=2,
                     ),
-                    HarmonicOscillator(
-                        frequencies=([1622.09, 3771.85, 3867.85], "cm^-1")
-                    ),
+                    HarmonicOscillator(frequencies=([1622.09, 3771.85, 3867.85], "cm^-1")),
                 ],
                 spin_multiplicity=1,
                 optical_isomers=1,
@@ -346,9 +342,7 @@ class TestPdep(unittest.TestCase):
             reactants=[self.nC4H10O],
             products=[self.nC4H8, self.H2O],
             transition_state=self.TS,
-            kinetics=Arrhenius(
-                A=(0.0387, "m^3/(mol*s)"), n=2.7, Ea=(2.6192e4, "J/mol"), T0=(1, "K")
-            ),
+            kinetics=Arrhenius(A=(0.0387, "m^3/(mol*s)"), n=2.7, Ea=(2.6192e4, "J/mol"), T0=(1, "K")),
         )
 
         self.network = Network(
@@ -368,9 +362,9 @@ class TestPdep(unittest.TestCase):
 
     def test_energy_filter(self):
         rxns = self.pdepnetwork.get_energy_filtered_reactions(1000.0, 0.0)
-        self.assertEquals(len(rxns), 1)
-        self.assertEquals(rxns[0], self.pdepnetwork.path_reactions[0])
+        assert len(rxns) == 1
+        assert rxns[0] == self.pdepnetwork.path_reactions[0]
 
     def test_flux_filter(self):
         prods = self.pdepnetwork.get_rate_filtered_products(1000.0, 100000.0, 1.0)
-        self.assertEquals(len(prods), 0)
+        assert len(prods) == 0

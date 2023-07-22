@@ -34,16 +34,13 @@ This script contains unit tests of the :mod:`rmgpy.stats` module.
 import os
 import os.path
 import shutil
-import unittest
+
 
 from rmgpy.rmg.main import RMG, CoreEdgeReactionModel
 from rmgpy.stats import ExecutionStatsWriter
 
 
-################################################################################
-
-
-class TestExecutionStatsWriter(unittest.TestCase):
+class TestExecutionStatsWriter:
     """
     Contains unit tests of the ExecutionStatsWriter.
     """
@@ -74,7 +71,7 @@ class TestExecutionStatsWriter(unittest.TestCase):
 
         statsfile = os.path.join(folder, "statistics.xls")
 
-        self.assertTrue(os.path.isfile(statsfile))
+        assert os.path.isfile(statsfile)
 
     def tearDown(self):
         shutil.rmtree(self.rmg.output_directory)

@@ -28,7 +28,7 @@
 ###############################################################################
 
 import os
-import unittest
+
 
 import numpy as np
 
@@ -37,7 +37,7 @@ from rmgpy.data.rmg import RMGDatabase
 from rmgpy.tools.uncertainty import Uncertainty
 
 
-class TestUncertainty(unittest.TestCase):
+class TestUncertainty:
     @classmethod
     def setUpClass(cls):
         """This method is run once before all tests in this class."""
@@ -75,9 +75,7 @@ class TestUncertainty(unittest.TestCase):
         # Prepare the database by loading training reactions and averaging the rate rules verbosely
         for family in cls.uncertainty.database.kinetics.families.values():
             if not family.auto_generated:
-                family.add_rules_from_training(
-                    thermo_database=cls.uncertainty.database.thermo
-                )
+                family.add_rules_from_training(thermo_database=cls.uncertainty.database.thermo)
                 family.fill_rules_by_averaging_up(verbose=True)
 
     @classmethod
@@ -94,14 +92,8 @@ class TestUncertainty(unittest.TestCase):
         """
         # Step 1: parse comments for sources
         self.uncertainty.extract_sources_from_model()
-        self.assertEqual(
-            len(self.uncertainty.species_sources_dict),
-            len(self.uncertainty.species_list),
-        )
-        self.assertEqual(
-            len(self.uncertainty.reaction_sources_dict),
-            len(self.uncertainty.reaction_list),
-        )
+        assert len(self.uncertainty.species_sources_dict) == len(self.uncertainty.species_list)
+        assert len(self.uncertainty.reaction_sources_dict) == len(self.uncertainty.reaction_list)
 
         # Step 2: compile sources to obtain overall list
         self.uncertainty.compile_all_sources()
@@ -121,29 +113,16 @@ class TestUncertainty(unittest.TestCase):
         }
         rad_expected = {"Acetyl", "HOOJ", "Cds_P", "CCJ", "CsJOH", "CJ3"}
         other_expected = {"ketene", "R"}
-        self.assertEqual(
-            set(self.uncertainty.all_thermo_sources), {"GAV", "Library", "QM"}
-        )
-        self.assertEqual(
-            set(self.uncertainty.all_thermo_sources["GAV"]),
-            {"group", "radical", "other"},
-        )
-        grp = set(
-            [e.label for e in self.uncertainty.all_thermo_sources["GAV"]["group"]]
-        )
-        rad = set(
-            [e.label for e in self.uncertainty.all_thermo_sources["GAV"]["radical"]]
-        )
-        other = set(
-            [e.label for e in self.uncertainty.all_thermo_sources["GAV"]["other"]]
-        )
-        self.assertEqual(grp, grp_expected)
-        self.assertEqual(rad, rad_expected)
-        self.assertEqual(other, other_expected)
-        self.assertEqual(
-            sorted(self.uncertainty.all_thermo_sources["Library"]), [0, 1, 5, 13, 14]
-        )
-        self.assertFalse(self.uncertainty.all_thermo_sources["QM"])
+        assert set(self.uncertainty.all_thermo_sources) == {"GAV", "Library", "QM"}
+        assert set(self.uncertainty.all_thermo_sources["GAV"]) == {"group", "radical", "other"}
+        grp = set([e.label for e in self.uncertainty.all_thermo_sources["GAV"]["group"]])
+        rad = set([e.label for e in self.uncertainty.all_thermo_sources["GAV"]["radical"]])
+        other = set([e.label for e in self.uncertainty.all_thermo_sources["GAV"]["other"]])
+        assert grp == grp_expected
+        assert rad == rad_expected
+        assert other == other_expected
+        assert sorted(self.uncertainty.all_thermo_sources["Library"]) == [0, 1, 5, 13, 14]
+        assert not self.uncertainty.all_thermo_sources["QM"]
 
         # Check kinetics sources
         rr_expected = {
@@ -165,29 +144,13 @@ class TestUncertainty(unittest.TestCase):
             "C_rad/H2/O;O_Csrad",
             "CO_pri_rad;O_Csrad",
         }
-        self.assertEqual(
-            set(self.uncertainty.all_kinetic_sources),
-            {"Rate Rules", "Training", "Library", "PDep"},
-        )
-        self.assertEqual(
-            list(self.uncertainty.all_kinetic_sources["Rate Rules"].keys()),
-            ["Disproportionation"],
-        )
-        rr = set(
-            [
-                e.label
-                for e in self.uncertainty.all_kinetic_sources["Rate Rules"][
-                    "Disproportionation"
-                ]
-            ]
-        )
-        self.assertEqual(rr, rr_expected)
-        self.assertEqual(
-            list(self.uncertainty.all_kinetic_sources["Training"].keys()),
-            ["Disproportionation"],
-        )
-        self.assertEqual(self.uncertainty.all_kinetic_sources["Library"], [0])
-        self.assertEqual(self.uncertainty.all_kinetic_sources["PDep"], [4])
+        assert set(self.uncertainty.all_kinetic_sources) == {"Rate Rules", "Training", "Library", "PDep"}
+        assert list(self.uncertainty.all_kinetic_sources["Rate Rules"].keys()) == ["Disproportionation"]
+        rr = set([e.label for e in self.uncertainty.all_kinetic_sources["Rate Rules"]["Disproportionation"]])
+        assert rr == rr_expected
+        assert list(self.uncertainty.all_kinetic_sources["Training"].keys()) == ["Disproportionation"]
+        assert self.uncertainty.all_kinetic_sources["Library"] == [0]
+        assert self.uncertainty.all_kinetic_sources["PDep"] == [4]
 
         # Step 3: assign and propagate uncertainties
         self.uncertainty.assign_parameter_uncertainties()
@@ -200,6 +163,4 @@ class TestUncertainty(unittest.TestCase):
             [1.5, 1.5, 2.0, 1.9, 3.1, 1.5, 1.9, 2.0, 2.0, 1.9, 2.2, 1.9, 2.0, 1.5],
             rtol=1e-4,
         )
-        np.testing.assert_allclose(
-            kinetic_unc, [0.5, 1.5, 5.806571, 0.5, 2.0], rtol=1e-4
-        )
+        np.testing.assert_allclose(kinetic_unc, [0.5, 1.5, 5.806571, 0.5, 2.0], rtol=1e-4)

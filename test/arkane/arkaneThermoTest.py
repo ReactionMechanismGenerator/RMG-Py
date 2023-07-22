@@ -32,17 +32,15 @@ This module contains unit tests of the :mod:`arkane.thermo` module.
 """
 
 import os
-import unittest
+
 
 from rmgpy.species import Species
 
 from arkane.ess.gaussian import GaussianLog
 from arkane.thermo import ThermoJob
 
-################################################################################
 
-
-class ArkaneTestThermo(unittest.TestCase):
+class ArkaneTestThermo:
     """
     Contains unit tests of the ThermoJob class.
     """
@@ -51,9 +49,7 @@ class ArkaneTestThermo(unittest.TestCase):
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         spc = Species().from_smiles("CCO")
-        log = GaussianLog(
-            os.path.join(os.path.dirname(__file__), "data", "gaussian", "ethylene.log")
-        )
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), "data", "gaussian", "ethylene.log"))
         spc.conformer = log.load_conformer()[0]
         coords, numbers, masses = log.load_geometry()
         spc.conformer.coordinates = coords, "angstroms"
@@ -64,4 +60,4 @@ class ArkaneTestThermo(unittest.TestCase):
     def test_element_count_from_conformer(self):
         """Test Getting an element count dictionary from the species.conformer attribute"""
         element_count = self.thermo_job.element_count_from_conformer()
-        self.assertEqual(element_count, {"H": 4, "C": 2})
+        assert element_count == {"H": 4, "C": 2}

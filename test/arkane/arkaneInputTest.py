@@ -32,7 +32,6 @@ This module contains unit tests of the :mod:`arkane.input` module.
 """
 
 import os
-import unittest
 
 import rmgpy
 from rmgpy.exceptions import InputError
@@ -53,11 +52,10 @@ from arkane.input import (
     process_model_chemistry,
 )
 from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory
+import pytest
 
-################################################################################
 
-
-class InputTest(unittest.TestCase):
+class InputTest:
     """
     Contains unit tests for the Arkane input module
     """
@@ -70,18 +68,12 @@ class InputTest(unittest.TestCase):
         kwargs = {
             "E0": (28.69, "kcal/mol"),
             "structure": SMILES("C=O"),
-            "collisionModel": TransportData(
-                sigma=(3.69e-10, "m"), epsilon=(4.0, "kJ/mol")
-            ),
-            "energyTransferModel": SingleExponentialDown(
-                alpha0=(0.956, "kJ/mol"), T0=(300, "K"), n=0.95
-            ),
+            "collisionModel": TransportData(sigma=(3.69e-10, "m"), epsilon=(4.0, "kJ/mol")),
+            "energyTransferModel": SingleExponentialDown(alpha0=(0.956, "kJ/mol"), T0=(300, "K"), n=0.95),
             "spinMultiplicity": 1,
             "opticalIsomers": 1,
             "modes": [
-                HarmonicOscillator(
-                    frequencies=([1180, 1261, 1529, 1764, 2931, 2999], "cm^-1")
-                ),
+                HarmonicOscillator(frequencies=([1180, 1261, 1529, 1764, 2931, 2999], "cm^-1")),
                 NonlinearRotor(
                     rotationalConstant=(
                         [1.15498821005263, 1.3156969584727, 9.45570474524524],
@@ -95,14 +87,14 @@ class InputTest(unittest.TestCase):
         }
 
         spc0 = species(label0, **kwargs)
-        self.assertEqual(spc0.label, "CH2O")
-        self.assertEqual(spc0.smiles, "C=O")
-        self.assertAlmostEqual(spc0.conformer.E0.value_si, 120038.96)
-        self.assertEqual(spc0.conformer.spin_multiplicity, 1)
-        self.assertEqual(spc0.conformer.optical_isomers, 1)
-        self.assertEqual(len(spc0.conformer.modes), 3)
-        self.assertIsInstance(spc0.transport_data, TransportData)
-        self.assertIsInstance(spc0.energy_transfer_model, SingleExponentialDown)
+        assert spc0.label == "CH2O"
+        assert spc0.smiles == "C=O"
+        assert round(abs(spc0.conformer.E0.value_si - 120038.96), 7) == 0
+        assert spc0.conformer.spin_multiplicity == 1
+        assert spc0.conformer.optical_isomers == 1
+        assert len(spc0.conformer.modes) == 3
+        assert isinstance(spc0.transport_data, TransportData)
+        assert isinstance(spc0.energy_transfer_model, SingleExponentialDown)
 
     def test_species_atomic_nasa_polynomial(self):
         """
@@ -128,15 +120,13 @@ class InputTest(unittest.TestCase):
                 Tmax=(6000, "K"),
                 comment="""Thermo library: FFCM1(-)""",
             ),
-            "energyTransferModel": SingleExponentialDown(
-                alpha0=(3.5886, "kJ/mol"), T0=(300, "K"), n=0.85
-            ),
+            "energyTransferModel": SingleExponentialDown(alpha0=(3.5886, "kJ/mol"), T0=(300, "K"), n=0.85),
         }
         spc0 = species(label0, **kwargs)
-        self.assertEqual(spc0.label, label0)
-        self.assertEqual(spc0.smiles, "[H]")
-        self.assertTrue(spc0.has_statmech())
-        self.assertEqual(spc0.thermo, kwargs["thermo"])
+        assert spc0.label == label0
+        assert spc0.smiles == "[H]"
+        assert spc0.has_statmech()
+        assert spc0.thermo == kwargs["thermo"]
 
     def test_species_polyatomic_nasa_polynomial(self):
         """
@@ -178,14 +168,12 @@ class InputTest(unittest.TestCase):
                 Tmax=(5000, "K"),
                 comment="""Thermo library: Fulvene_H + radical(CbJ)""",
             ),
-            "energyTransferModel": SingleExponentialDown(
-                alpha0=(3.5886, "kJ/mol"), T0=(300, "K"), n=0.85
-            ),
+            "energyTransferModel": SingleExponentialDown(alpha0=(3.5886, "kJ/mol"), T0=(300, "K"), n=0.85),
         }
         spc0 = species(label0, **kwargs)
-        self.assertEqual(spc0.label, label0)
-        self.assertTrue(spc0.has_statmech())
-        self.assertEqual(spc0.thermo, kwargs["thermo"])
+        assert spc0.label == label0
+        assert spc0.has_statmech()
+        assert spc0.thermo == kwargs["thermo"]
 
     def test_transition_state(self):
         """
@@ -214,12 +202,12 @@ class InputTest(unittest.TestCase):
         }
 
         ts0 = transitionState(label0, **kwargs)
-        self.assertEqual(ts0.label, "TS1")
-        self.assertAlmostEqual(ts0.conformer.E0.value_si, 167150.8)
-        self.assertEqual(ts0.conformer.spin_multiplicity, 2)
-        self.assertEqual(ts0.conformer.optical_isomers, 1)
-        self.assertEqual(ts0.frequency.value_si, -1934.0)
-        self.assertEqual(len(ts0.conformer.modes), 3)
+        assert ts0.label == "TS1"
+        assert round(abs(ts0.conformer.E0.value_si - 167150.8), 7) == 0
+        assert ts0.conformer.spin_multiplicity == 2
+        assert ts0.conformer.optical_isomers == 1
+        assert ts0.frequency.value_si == -1934.0
+        assert len(ts0.conformer.modes) == 3
 
     def test_reaction(self):
         """
@@ -247,30 +235,20 @@ class InputTest(unittest.TestCase):
             spinMultiplicity=2,
             opticalIsomers=1,
             molecularWeight=(31.01843, "amu"),
-            collisionModel=TransportData(
-                sigma=(3.69e-10, "m"), epsilon=(4.0, "kJ/mol")
-            ),
-            energyTransferModel=SingleExponentialDown(
-                alpha0=(0.956, "kJ/mol"), T0=(300, "K"), n=0.95
-            ),
+            collisionModel=TransportData(sigma=(3.69e-10, "m"), epsilon=(4.0, "kJ/mol")),
+            energyTransferModel=SingleExponentialDown(alpha0=(0.956, "kJ/mol"), T0=(300, "K"), n=0.95),
         )
 
         species(
             label="formaldehyde",
             E0=(28.69, "kcal/mol"),
             molecularWeight=(30.0106, "g/mol"),
-            collisionModel=TransportData(
-                sigma=(3.69e-10, "m"), epsilon=(4.0, "kJ/mol")
-            ),
-            energyTransferModel=SingleExponentialDown(
-                alpha0=(0.956, "kJ/mol"), T0=(300, "K"), n=0.95
-            ),
+            collisionModel=TransportData(sigma=(3.69e-10, "m"), epsilon=(4.0, "kJ/mol")),
+            energyTransferModel=SingleExponentialDown(alpha0=(0.956, "kJ/mol"), T0=(300, "K"), n=0.95),
             spinMultiplicity=1,
             opticalIsomers=1,
             modes=[
-                HarmonicOscillator(
-                    frequencies=([1180, 1261, 1529, 1764, 2931, 2999], "cm^-1")
-                ),
+                HarmonicOscillator(frequencies=([1180, 1261, 1529, 1764, 2931, 2999], "cm^-1")),
                 NonlinearRotor(
                     rotationalConstant=(
                         [1.15498821005263, 1.3156969584727, 9.45570474524524],
@@ -287,12 +265,8 @@ class InputTest(unittest.TestCase):
             label="H",
             E0=(0.000, "kcal/mol"),
             molecularWeight=(1.00783, "g/mol"),
-            collisionModel=TransportData(
-                sigma=(3.69e-10, "m"), epsilon=(4.0, "kJ/mol")
-            ),
-            energyTransferModel=SingleExponentialDown(
-                alpha0=(0.956, "kJ/mol"), T0=(300, "K"), n=0.95
-            ),
+            collisionModel=TransportData(sigma=(3.69e-10, "m"), epsilon=(4.0, "kJ/mol")),
+            energyTransferModel=SingleExponentialDown(alpha0=(0.956, "kJ/mol"), T0=(300, "K"), n=0.95),
             modes=[IdealGasTranslation(mass=(1.00783, "g/mol"))],
             spinMultiplicity=2,
             opticalIsomers=1,
@@ -324,18 +298,16 @@ class InputTest(unittest.TestCase):
         products = ["methoxy"]
         tunneling = "Eckart"
 
-        rxn = reaction(
-            "CH2O+H=Methoxy", reactants, products, "TS3", tunneling=tunneling
-        )
-        self.assertEqual(rxn.label, "CH2O+H=Methoxy")
-        self.assertEqual(len(rxn.reactants), 2)
-        self.assertEqual(len(rxn.products), 1)
-        self.assertAlmostEqual(rxn.reactants[0].conformer.E0.value_si, 0)
-        self.assertAlmostEqual(rxn.reactants[1].conformer.E0.value_si, 120038.96)
-        self.assertAlmostEqual(rxn.products[0].conformer.E0.value_si, 39496.96)
-        self.assertAlmostEqual(rxn.transition_state.conformer.E0.value_si, 142674.4)
-        self.assertAlmostEqual(rxn.transition_state.frequency.value_si, -967.0)
-        self.assertIsInstance(rxn.transition_state.tunneling, Eckart)
+        rxn = reaction("CH2O+H=Methoxy", reactants, products, "TS3", tunneling=tunneling)
+        assert rxn.label == "CH2O+H=Methoxy"
+        assert len(rxn.reactants) == 2
+        assert len(rxn.products) == 1
+        assert round(abs(rxn.reactants[0].conformer.E0.value_si - 0), 7) == 0
+        assert round(abs(rxn.reactants[1].conformer.E0.value_si - 120038.96), 7) == 0
+        assert round(abs(rxn.products[0].conformer.E0.value_si - 39496.96), 7) == 0
+        assert round(abs(rxn.transition_state.conformer.E0.value_si - 142674.4), 7) == 0
+        assert round(abs(rxn.transition_state.frequency.value_si - -967.0), 7) == 0
+        assert isinstance(rxn.transition_state.tunneling, Eckart)
 
     def test_load_input_file(self):
         """Test loading an Arkane input file"""
@@ -356,24 +328,24 @@ class InputTest(unittest.TestCase):
             model_chemistry,
         ) = load_input_file(path)
 
-        self.assertEqual(len(job_list), 1)
+        assert len(job_list) == 1
 
-        self.assertEqual(len(reaction_dict), 5)
-        self.assertTrue("entrance1" in reaction_dict)
-        self.assertTrue("exit2" in reaction_dict)
+        assert len(reaction_dict) == 5
+        assert "entrance1" in reaction_dict
+        assert "exit2" in reaction_dict
 
-        self.assertEqual(len(species_dict), 9)
-        self.assertTrue("acetyl" in species_dict)
-        self.assertTrue("hydroperoxyl" in species_dict)
+        assert len(species_dict) == 9
+        assert "acetyl" in species_dict
+        assert "hydroperoxyl" in species_dict
 
-        self.assertEqual(len(transition_state_dict), 5)
-        self.assertTrue("entrance1" in transition_state_dict)
-        self.assertTrue("isom1" in transition_state_dict)
+        assert len(transition_state_dict) == 5
+        assert "entrance1" in transition_state_dict
+        assert "isom1" in transition_state_dict
 
-        self.assertEqual(len(network_dict), 1)
-        self.assertTrue("acetyl + O2" in network_dict)
+        assert len(network_dict) == 1
+        assert "acetyl + O2" in network_dict
 
-        self.assertIsNone(model_chemistry)
+        assert model_chemistry is None
 
     def test_process_model_chemistry(self):
         """
@@ -381,25 +353,23 @@ class InputTest(unittest.TestCase):
         """
         mc = "ccsd(t)-f12a/aug-cc-pvtz//b3lyp/6-311++g(3df,3pd)"
         lot = process_model_chemistry(mc)
-        self.assertIsInstance(lot, CompositeLevelOfTheory)
-        self.assertEqual(lot.energy, LevelOfTheory("ccsd(t)-f12a", "aug-cc-pvtz"))
-        self.assertEqual(lot.freq, LevelOfTheory("b3lyp", "6-311++g(3df,3pd)"))
+        assert isinstance(lot, CompositeLevelOfTheory)
+        assert lot.energy == LevelOfTheory("ccsd(t)-f12a", "aug-cc-pvtz")
+        assert lot.freq == LevelOfTheory("b3lyp", "6-311++g(3df,3pd)")
 
         mc = "b3lyp-d3/def2-tzvp"
         lot = process_model_chemistry(mc)
-        self.assertIsInstance(lot, LevelOfTheory)
-        self.assertEqual(lot, LevelOfTheory("b3lyp-d3", "def2-tzvp"))
+        assert isinstance(lot, LevelOfTheory)
+        assert lot == LevelOfTheory("b3lyp-d3", "def2-tzvp")
 
         mc = "cbs-qb3"
         lot = process_model_chemistry(mc)
-        self.assertIsInstance(lot, LevelOfTheory)
-        self.assertEqual(lot, LevelOfTheory("cbs-qb3"))
+        assert isinstance(lot, LevelOfTheory)
+        assert lot == LevelOfTheory("cbs-qb3")
 
         mc = LevelOfTheory("test")
         lot = process_model_chemistry(mc)
-        self.assertIs(mc, lot)
+        assert mc is lot
 
-        with self.assertRaises(InputError):
-            process_model_chemistry(
-                "CCSD(T)-F12a/aug-cc-pVTZ//CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd)"
-            )
+        with pytest.raises(InputError):
+            process_model_chemistry("CCSD(T)-F12a/aug-cc-pVTZ//CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd)")

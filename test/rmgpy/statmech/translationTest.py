@@ -31,17 +31,14 @@
 This script contains unit tests of the :mod:`rmgpy.statmech.translation` module.
 """
 
-import unittest
 
 import numpy as np
 
 import rmgpy.constants as constants
 from rmgpy.statmech.translation import IdealGasTranslation
 
-################################################################################
 
-
-class TestIdealGasTranslation(unittest.TestCase):
+class TestIdealGasTranslation:
     """
     Contains unit tests of the IdealGasTranslation class.
     """
@@ -63,12 +60,10 @@ class TestIdealGasTranslation(unittest.TestCase):
         classical translator.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        q_exp_list = np.array(
-            [7.22597e06, 2.59130e07, 1.46586e08, 4.03944e08, 8.29217e08]
-        )
+        q_exp_list = np.array([7.22597e06, 2.59130e07, 1.46586e08, 4.03944e08, 8.29217e08])
         for temperature, q_exp in zip(t_list, q_exp_list):
             q_act = self.mode.get_partition_function(temperature)
-            self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
+            assert abs(q_exp - q_act) < 1e-4 * q_exp
 
     def test_get_heat_capacity_classical(self):
         """
@@ -79,7 +74,7 @@ class TestIdealGasTranslation(unittest.TestCase):
         cv_exp_list = np.array([2.5, 2.5, 2.5, 2.5, 2.5]) * constants.R
         for temperature, cv_exp in zip(t_list, cv_exp_list):
             cv_act = self.mode.get_heat_capacity(temperature)
-            self.assertAlmostEqual(cv_exp, cv_act, delta=1e-4 * cv_exp)
+            assert abs(cv_exp - cv_act) < 1e-4 * cv_exp
 
     def test_get_enthalpy_classical(self):
         """
@@ -90,7 +85,7 @@ class TestIdealGasTranslation(unittest.TestCase):
         h_exp_list = np.array([2.5, 2.5, 2.5, 2.5, 2.5]) * constants.R * t_list
         for temperature, h_exp in zip(t_list, h_exp_list):
             h_act = self.mode.get_enthalpy(temperature)
-            self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
+            assert abs(h_exp - h_act) < 1e-4 * h_exp
 
     def test_get_entropy_classical(self):
         """
@@ -98,12 +93,10 @@ class TestIdealGasTranslation(unittest.TestCase):
         translator.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = (
-            np.array([18.2932, 19.5703, 21.3031, 22.3168, 23.0360]) * constants.R
-        )
+        s_exp_list = np.array([18.2932, 19.5703, 21.3031, 22.3168, 23.0360]) * constants.R
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.mode.get_entropy(temperature)
-            self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
+            assert abs(s_exp - s_act) < 1e-4 * s_exp
 
     def test_get_sum_of_states_classical(self):
         """
@@ -114,10 +107,7 @@ class TestIdealGasTranslation(unittest.TestCase):
         sum_states = self.mode.get_sum_of_states(e_list)
         dens_states = self.mode.get_density_of_states(e_list)
         for n in range(10, len(e_list)):
-            self.assertTrue(
-                0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25,
-                "{0} != {1}".format(np.sum(dens_states[0:n]), sum_states[n]),
-            )
+            assert 0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25, "{0} != {1}".format(np.sum(dens_states[0:n]), sum_states[n])
 
     def test_get_density_of_states_classical(self):
         """
@@ -129,7 +119,7 @@ class TestIdealGasTranslation(unittest.TestCase):
         temperature = 100
         q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
         q_exp = self.mode.get_partition_function(temperature)
-        self.assertAlmostEqual(q_exp, q_act, delta=1e-6 * q_exp)
+        assert abs(q_exp - q_act) < 1e-6 * q_exp
 
     def test_repr(self):
         """
@@ -138,11 +128,11 @@ class TestIdealGasTranslation(unittest.TestCase):
         """
         namespace = {}
         exec("mode = {0!r}".format(self.mode), globals(), namespace)
-        self.assertIn("mode", namespace)
+        assert "mode" in namespace
         mode = namespace["mode"]
-        self.assertAlmostEqual(self.mode.mass.value, mode.mass.value, 6)
-        self.assertEqual(self.mode.mass.units, mode.mass.units)
-        self.assertEqual(self.mode.quantum, mode.quantum)
+        assert round(abs(self.mode.mass.value - mode.mass.value), 6) == 0
+        assert self.mode.mass.units == mode.mass.units
+        assert self.mode.quantum == mode.quantum
 
     def test_pickle(self):
         """
@@ -152,6 +142,6 @@ class TestIdealGasTranslation(unittest.TestCase):
         import pickle
 
         mode = pickle.loads(pickle.dumps(self.mode, -1))
-        self.assertAlmostEqual(self.mode.mass.value, mode.mass.value, 6)
-        self.assertEqual(self.mode.mass.units, mode.mass.units)
-        self.assertEqual(self.mode.quantum, mode.quantum)
+        assert round(abs(self.mode.mass.value - mode.mass.value), 6) == 0
+        assert self.mode.mass.units == mode.mass.units
+        assert self.mode.quantum == mode.quantum

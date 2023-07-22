@@ -31,7 +31,6 @@
 This script contains unit tests of the :mod:`rmgpy.kinetics.model` module.
 """
 
-import unittest
 
 from rmgpy.kinetics.model import (
     get_reaction_order_from_rate_coefficient_units,
@@ -41,7 +40,7 @@ from rmgpy.kinetics.model import (
 from rmgpy.kinetics.uncertainties import RateUncertainty
 
 
-class TestKineticsModel(unittest.TestCase):
+class TestKineticsModel:
     """
     Contains unit tests of the KineticsModel class
     """
@@ -55,9 +54,7 @@ class TestKineticsModel(unittest.TestCase):
         self.Pmin = 0.1
         self.Pmax = 100.0
         self.comment = "foo bar"
-        self.uncertainty = RateUncertainty(
-            mu=0.3, var=0.6, Tref=1000.0, N=1, correlation="ab"
-        )
+        self.uncertainty = RateUncertainty(mu=0.3, var=0.6, Tref=1000.0, N=1, correlation="ab")
         self.km = KineticsModel(
             Tmin=(self.Tmin, "K"),
             Tmax=(self.Tmax, "K"),
@@ -73,15 +70,15 @@ class TestKineticsModel(unittest.TestCase):
 
         This just checks the Temperature range
         """
-        self.assertTrue(self.km.is_identical_to(self.km))
+        assert self.km.is_identical_to(self.km)
 
         import copy
 
         km = copy.deepcopy(self.km)
-        self.assertTrue(self.km.is_identical_to(self.km))
+        assert self.km.is_identical_to(self.km)
 
         km.Tmax = (self.Tmax - 50, "K")  # discrepancy must be more than 1%!
-        self.assertFalse(self.km.is_identical_to(km))
+        assert not self.km.is_identical_to(km)
 
     def test_repr(self):
         """
@@ -90,12 +87,12 @@ class TestKineticsModel(unittest.TestCase):
         """
         namespace = {}
         exec("km = {0!r}".format(self.km), globals(), namespace)
-        self.assertIn("km", namespace)
+        assert "km" in namespace
         km = namespace["km"]
-        self.assertTrue(self.km.is_identical_to(km))
-        self.assertEqual(dir(self.km), dir(km))
+        assert self.km.is_identical_to(km)
+        assert dir(self.km) == dir(km)
         for att in "Tmax Tmin Pmax Pmin comment uncertainty".split():
-            self.assertEqual(repr(getattr(self.km, att)), repr(getattr(km, att)))
+            assert repr(getattr(self.km, att)) == repr(getattr(km, att))
 
     def test_pickle(self):
         """
@@ -105,16 +102,13 @@ class TestKineticsModel(unittest.TestCase):
         import pickle
 
         km = pickle.loads(pickle.dumps(self.km, -1))
-        self.assertTrue(self.km.is_identical_to(km))
-        self.assertEqual(dir(self.km), dir(km))
+        assert self.km.is_identical_to(km)
+        assert dir(self.km) == dir(km)
         for att in "Tmax Tmin Pmax Pmin comment uncertainty".split():
-            self.assertEqual(repr(getattr(self.km, att)), repr(getattr(km, att)))
+            assert repr(getattr(self.km, att)) == repr(getattr(km, att))
 
 
-################################################################################
-
-
-class TestOrder(unittest.TestCase):
+class TestOrder:
     """
     Contains unit tests of the functions for converting rate coefficient units
     to/from reaction orders.
@@ -125,92 +119,62 @@ class TestOrder(unittest.TestCase):
         Test the conversion of zeroth-order rate coefficient units to an integer
         reaction order.
         """
-        self.assertEqual(
-            0, get_reaction_order_from_rate_coefficient_units("mol/(m^3*s)")
-        )
-        self.assertEqual(
-            0, get_reaction_order_from_rate_coefficient_units("mol/(cm^3*s)")
-        )
-        self.assertEqual(
-            0, get_reaction_order_from_rate_coefficient_units("molecule/(m^3*s)")
-        )
-        self.assertEqual(
-            0, get_reaction_order_from_rate_coefficient_units("molecule/(cm^3*s)")
-        )
+        assert 0 == get_reaction_order_from_rate_coefficient_units("mol/(m^3*s)")
+        assert 0 == get_reaction_order_from_rate_coefficient_units("mol/(cm^3*s)")
+        assert 0 == get_reaction_order_from_rate_coefficient_units("molecule/(m^3*s)")
+        assert 0 == get_reaction_order_from_rate_coefficient_units("molecule/(cm^3*s)")
 
     def test_to_order_first(self):
         """
         Test the conversion of first-order rate coefficient units to an integer
         reaction order.
         """
-        self.assertEqual(1, get_reaction_order_from_rate_coefficient_units("s^-1"))
+        assert 1 == get_reaction_order_from_rate_coefficient_units("s^-1")
 
     def test_to_order_second(self):
         """
         Test the conversion of second-order rate coefficient units to an integer
         reaction order.
         """
-        self.assertEqual(
-            2, get_reaction_order_from_rate_coefficient_units("m^3/(mol*s)")
-        )
-        self.assertEqual(
-            2, get_reaction_order_from_rate_coefficient_units("cm^3/(mol*s)")
-        )
-        self.assertEqual(
-            2, get_reaction_order_from_rate_coefficient_units("m^3/(molecule*s)")
-        )
-        self.assertEqual(
-            2, get_reaction_order_from_rate_coefficient_units("cm^3/(molecule*s)")
-        )
+        assert 2 == get_reaction_order_from_rate_coefficient_units("m^3/(mol*s)")
+        assert 2 == get_reaction_order_from_rate_coefficient_units("cm^3/(mol*s)")
+        assert 2 == get_reaction_order_from_rate_coefficient_units("m^3/(molecule*s)")
+        assert 2 == get_reaction_order_from_rate_coefficient_units("cm^3/(molecule*s)")
 
     def test_to_order_third(self):
         """
         Test the conversion of third-order rate coefficient units to an integer
         reaction order.
         """
-        self.assertEqual(
-            3, get_reaction_order_from_rate_coefficient_units("m^6/(mol^2*s)")
-        )
-        self.assertEqual(
-            3, get_reaction_order_from_rate_coefficient_units("cm^6/(mol^2*s)")
-        )
-        self.assertEqual(
-            3, get_reaction_order_from_rate_coefficient_units("m^6/(molecule^2*s)")
-        )
-        self.assertEqual(
-            3, get_reaction_order_from_rate_coefficient_units("cm^6/(molecule^2*s)")
-        )
+        assert 3 == get_reaction_order_from_rate_coefficient_units("m^6/(mol^2*s)")
+        assert 3 == get_reaction_order_from_rate_coefficient_units("cm^6/(mol^2*s)")
+        assert 3 == get_reaction_order_from_rate_coefficient_units("m^6/(molecule^2*s)")
+        assert 3 == get_reaction_order_from_rate_coefficient_units("cm^6/(molecule^2*s)")
 
     def test_to_units_zeroth(self):
         """
         Test the conversion of a reaction order of zero to rate coefficient
         units.
         """
-        self.assertEqual(
-            "mol/(m^3*s)", get_rate_coefficient_units_from_reaction_order(0)
-        )
+        assert "mol/(m^3*s)" == get_rate_coefficient_units_from_reaction_order(0)
 
     def test_to_units_first(self):
         """
         Test the conversion of a reaction order of one to rate coefficient
         units.
         """
-        self.assertEqual("s^-1", get_rate_coefficient_units_from_reaction_order(1))
+        assert "s^-1" == get_rate_coefficient_units_from_reaction_order(1)
 
     def test_to_units_second(self):
         """
         Test the conversion of a reaction order of two to rate coefficient
         units.
         """
-        self.assertEqual(
-            "m^3/(mol*s)", get_rate_coefficient_units_from_reaction_order(2)
-        )
+        assert "m^3/(mol*s)" == get_rate_coefficient_units_from_reaction_order(2)
 
     def test_to_units_third(self):
         """
         Test the conversion of a reaction order of three to rate coefficient
         units.
         """
-        self.assertEqual(
-            "m^6/(mol^2*s)", get_rate_coefficient_units_from_reaction_order(3)
-        )
+        assert "m^6/(mol^2*s)" == get_rate_coefficient_units_from_reaction_order(3)

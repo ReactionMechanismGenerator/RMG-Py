@@ -34,7 +34,7 @@ This script contains unit tests for the :mod:`arkane.encorr.bac` module.
 import importlib
 import os
 import tempfile
-import unittest
+
 from collections import Counter
 
 import numpy as np
@@ -49,27 +49,22 @@ from arkane.encorr.data import BACDataset, BOND_SYMBOLS, _pybel_to_rmg
 from arkane.encorr.reference import ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
 from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory
+import pytest
 
 
-class TestBAC(unittest.TestCase):
+class TestBAC:
     """
     A class for testing that the BAC class functions properly.
     """
 
     @classmethod
     def setUpClass(cls):
-        cls.lot_get = LevelOfTheory(
-            method="CCSD(T)-F12", basis="cc-pVTZ-F12", software="Molpro"
-        )
+        cls.lot_get = LevelOfTheory(method="CCSD(T)-F12", basis="cc-pVTZ-F12", software="Molpro")
         cls.lot_get_composite = CompositeLevelOfTheory(
             freq=LevelOfTheory(method="wb97xd3", basis="def2tzvp", software="qchem"),
-            energy=LevelOfTheory(
-                method="ccsd(t)f12", basis="ccpvtzf12", software="molpro"
-            ),
+            energy=LevelOfTheory(method="ccsd(t)f12", basis="ccpvtzf12", software="molpro"),
         )
-        cls.lot_fit = LevelOfTheory(
-            method="wB97M-V", basis="def2-TZVPD", software="Q-Chem"
-        )
+        cls.lot_fit = LevelOfTheory(method="wB97M-V", basis="def2-TZVPD", software="Q-Chem")
         cls.lot_nonexisting = LevelOfTheory("notamethod")
 
         cls.bac = BAC(cls.lot_get)
@@ -114,10 +109,7 @@ class TestBAC(unittest.TestCase):
         smi = "C=C(OSC=S)C#CC1C(=O)N=CNC1SSC(O)C#N"
 
         mol = Molecule(smiles=smi, multiplicity=cls.multiplicity)
-        cls.bonds = Counter(
-            f"{b.atom1.element.symbol}{BOND_SYMBOLS[b.order]}{b.atom2.element.symbol}"
-            for b in mol.get_all_edges()
-        )
+        cls.bonds = Counter(f"{b.atom1.element.symbol}{BOND_SYMBOLS[b.order]}{b.atom2.element.symbol}" for b in mol.get_all_edges())
 
         pybel_mol = pybel.readstring("smi", smi)
         pybel_mol.addh()
@@ -133,13 +125,13 @@ class TestBAC(unittest.TestCase):
         """
         self.bac.level_of_theory = self.lot_get
         self.bac.bac_type = "p"
-        self.assertIsInstance(self.bac.bacs, dict)
+        assert isinstance(self.bac.bacs, dict)
 
         self.bac.level_of_theory = self.lot_nonexisting
         self.bac.bac_type = "m"
-        self.assertIsNone(self.bac.bacs)
+        assert self.bac.bacs is None
 
-        with self.assertRaises(BondAdditivityCorrectionError):
+        with pytest.raises(BondAdditivityCorrectionError):
             self.bac.bac_type = ""
 
     def test_load_database(self):
@@ -147,15 +139,13 @@ class TestBAC(unittest.TestCase):
         Test that reference database can be loaded.
         """
         key = self.bac.load_database(names="main")
-        expected_key = (
-            os.path.join(settings["database.directory"], "reference_sets", "main"),
-        )
-        self.assertEqual(key, expected_key)
-        self.assertIsInstance(self.bac.ref_databases[key], ReferenceDatabase)
+        expected_key = (os.path.join(settings["database.directory"], "reference_sets", "main"),)
+        assert key == expected_key
+        assert isinstance(self.bac.ref_databases[key], ReferenceDatabase)
 
         # Test that other instance already has loaded database
         bac = BAC(self.lot_fit)
-        self.assertIsInstance(bac.ref_databases[key], ReferenceDatabase)
+        assert isinstance(bac.ref_databases[key], ReferenceDatabase)
 
     def test_get_correction(self):
         """
@@ -164,41 +154,34 @@ class TestBAC(unittest.TestCase):
         self.bac.level_of_theory = self.lot_get
         self.bac.bac_type = "p"
         corr = self.bac.get_correction(bonds=self.bonds)
-        self.assertIsInstance(corr, ScalarQuantity)
+        assert isinstance(corr, ScalarQuantity)
 
         # Can use actual Melius parameters once they're available in database
         self.bac.bac_type = "m"
-        with self.assertRaises(BondAdditivityCorrectionError):
+        with pytest.raises(BondAdditivityCorrectionError):
             # No multiplicity specified
-            self.bac._get_melius_correction(
-                coords=self.coords, nums=self.nums, params=self.tmp_melius_params
-            )
+            self.bac._get_melius_correction(coords=self.coords, nums=self.nums, params=self.tmp_melius_params)
         corr1 = self.bac._get_melius_correction(
             coords=self.coords,
             nums=self.nums,
             multiplicity=self.multiplicity,
             params=self.tmp_melius_params,
         )
-        self.assertIsInstance(corr1, ScalarQuantity)
+        assert isinstance(corr1, ScalarQuantity)
 
         self.bac.level_of_theory = self.lot_nonexisting
-        with self.assertRaises(BondAdditivityCorrectionError):
+        with pytest.raises(BondAdditivityCorrectionError):
             self.bac.get_correction()
 
     def _clear_bac_data(self):
         self.bac.bacs = None
-        self.bac.species = (
-            self.bac.ref_data
-        ) = self.bac.calc_data = self.bac.bac_data = None
+        self.bac.species = self.bac.ref_data = self.bac.calc_data = self.bac.bac_data = None
 
     def _check_bac_data(self):
-        self.assertIsInstance(self.bac.bacs, dict)
-        self.assertIsInstance(self.bac.dataset, BACDataset)
-        self.assertIsNotNone(self.bac.database_key)
-        self.assertLess(
-            self.bac.dataset.calculate_stats(for_bac_data=True).rmse,
-            self.bac.dataset.calculate_stats().rmse,
-        )
+        assert isinstance(self.bac.bacs, dict)
+        assert isinstance(self.bac.dataset, BACDataset)
+        assert self.bac.database_key is not None
+        assert self.bac.dataset.calculate_stats(for_bac_data=True).rmse < self.bac.dataset.calculate_stats().rmse
 
     def test_fit_petersson(self):
         """
@@ -210,10 +193,10 @@ class TestBAC(unittest.TestCase):
         self.bac.fit()
 
         self._check_bac_data()
-        self.assertIn("C-H", self.bac.bacs)
+        assert "C-H" in self.bac.bacs
 
         self.bac.level_of_theory = self.lot_nonexisting
-        with self.assertRaises(BondAdditivityCorrectionError):
+        with pytest.raises(BondAdditivityCorrectionError):
             self.bac.fit()
 
     def test_fit_melius(self):
@@ -227,31 +210,26 @@ class TestBAC(unittest.TestCase):
         # With molecular correction, no global opt
         self.bac.fit(fit_mol_corr=True, global_opt=False, lsq_max_nfev=50)
         self._check_bac_data()
-        self.assertSetEqual(
-            set(self.bac.bacs.keys()),
-            {"atom_corr", "bond_corr_length", "bond_corr_neighbor", "mol_corr"},
-        )
-        self.assertNotAlmostEqual(self.bac.bacs["mol_corr"], 0.0)
+        assert set(self.bac.bacs.keys()) == {"atom_corr", "bond_corr_length", "bond_corr_neighbor", "mol_corr"}
+        assert round(abs(self.bac.bacs["mol_corr"] - 0.0), 7) != 0
 
         # Without molecular correction, with global opt
         self._clear_bac_data()
-        self.bac.fit(
-            fit_mol_corr=False, global_opt=True, global_opt_iter=1, lsq_max_nfev=50
-        )
+        self.bac.fit(fit_mol_corr=False, global_opt=True, global_opt_iter=1, lsq_max_nfev=50)
         self._check_bac_data()
-        self.assertAlmostEqual(self.bac.bacs["mol_corr"], 0.0)
+        assert round(abs(self.bac.bacs["mol_corr"] - 0.0), 7) == 0
 
     def test_test(self):
         """
         Test that enthalpies of formation can be evaluated.
         """
-        with self.assertRaises(BondAdditivityCorrectionError) as e:
+        with pytest.raises(BondAdditivityCorrectionError) as e:
             self.bac.test(species=[], db_names=[])
-        self.assertIn("several data sources", str(e.exception))
+        assert "several data sources" in str(e.exception)
 
-        with self.assertRaises(BondAdditivityCorrectionError) as e:
+        with pytest.raises(BondAdditivityCorrectionError) as e:
             self.bac.test(species=[])
-        self.assertIn("No data", str(e.exception))
+        assert "No data" in str(e.exception)
 
         self.bac.level_of_theory = self.lot_fit
         self.bac.bac_type = "m"
@@ -259,13 +237,11 @@ class TestBAC(unittest.TestCase):
 
         # Get a few species to test on
         key = self.bac.load_database(names="main")
-        species = self.bac.ref_databases[key].extract_level_of_theory(
-            self.bac.level_of_theory, as_error_canceling_species=False
-        )[:10]
+        species = self.bac.ref_databases[key].extract_level_of_theory(self.bac.level_of_theory, as_error_canceling_species=False)[:10]
 
         dataset = self.bac.test(species=species)
-        self.assertIsInstance(dataset, BACDataset)
-        self.assertIsNotNone(dataset.bac_data)
+        assert isinstance(dataset, BACDataset)
+        assert dataset.bac_data is not None
 
     def test_write_to_database(self):
         """
@@ -273,9 +249,9 @@ class TestBAC(unittest.TestCase):
         """
         # Check that error is raised when no BACs are available
         self.bac.bacs = None
-        with self.assertRaises(BondAdditivityCorrectionError) as e:
+        with pytest.raises(BondAdditivityCorrectionError) as e:
             self.bac.write_to_database()
-        self.assertIn("No BACs", str(e.exception))
+        assert "No BACs" in str(e.exception)
 
         self.bac.level_of_theory = self.lot_get
         self.bac.bac_type = "p"
@@ -284,40 +260,38 @@ class TestBAC(unittest.TestCase):
         tmp_datafile_fd, tmp_datafile_path = tempfile.mkstemp(suffix=".py")
 
         # Check that error is raised if BACs already exist and overwrite is False
-        with self.assertRaises(IOError) as e:
+        with pytest.raises(IOError) as e:
             self.bac.write_to_database(alternate_path=tmp_datafile_path)
-        self.assertIn("overwrite", str(e.exception))
+        assert "overwrite" in str(e.exception)
 
         # Dynamically set data file as module
-        spec = importlib.util.spec_from_file_location(
-            os.path.basename(tmp_datafile_path), tmp_datafile_path
-        )
+        spec = importlib.util.spec_from_file_location(os.path.basename(tmp_datafile_path), tmp_datafile_path)
         module = importlib.util.module_from_spec(spec)
 
         # Check that existing Petersson BACs can be overwritten
         self.bac.write_to_database(overwrite=True, alternate_path=tmp_datafile_path)
         spec.loader.exec_module(module)  # Load data as module
-        self.assertEqual(self.bac.bacs, module.pbac[repr(self.bac.level_of_theory)])
+        assert self.bac.bacs == module.pbac[repr(self.bac.level_of_theory)]
 
         # Check that existing Composite Petersson BACs can be overwritten
         self.bac.level_of_theory = self.lot_get_composite
         self.bac.write_to_database(overwrite=True, alternate_path=tmp_datafile_path)
         spec.loader.exec_module(module)  # Load data as module
-        self.assertEqual(self.bac.bacs, module.pbac[repr(self.bac.level_of_theory)])
+        assert self.bac.bacs == module.pbac[repr(self.bac.level_of_theory)]
 
         # Check that new Petersson BACs can be written
         self.bac.level_of_theory = self.lot_nonexisting
         self.bac.bacs = self.tmp_petersson_params
         self.bac.write_to_database(alternate_path=tmp_datafile_path)
         spec.loader.exec_module(module)  # Reload data module
-        self.assertEqual(self.bac.bacs, module.pbac[repr(self.bac.level_of_theory)])
+        assert self.bac.bacs == module.pbac[repr(self.bac.level_of_theory)]
 
         # Check that new Melius BACs can be written
         self.bac.bac_type = "m"
         self.bac.bacs = self.tmp_melius_params
         self.bac.write_to_database(alternate_path=tmp_datafile_path)
         spec.loader.exec_module(module)
-        self.assertEqual(self.bac.bacs, module.mbac[repr(self.bac.level_of_theory)])
+        assert self.bac.bacs == module.mbac[repr(self.bac.level_of_theory)]
 
         os.close(tmp_datafile_fd)
         os.remove(tmp_datafile_path)
@@ -327,7 +301,7 @@ class TestBAC(unittest.TestCase):
         Test that visual of correlation matrix can be generated.
         """
         self.bac.correlation = None
-        with self.assertRaises(BondAdditivityCorrectionError):
+        with pytest.raises(BondAdditivityCorrectionError):
             self.bac.save_correlation_mat("")
 
         self.bac.bacs = self.tmp_melius_params
@@ -336,10 +310,10 @@ class TestBAC(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdirname:
             tmp_corr_path = os.path.join(tmpdirname, "corr.pdf")
             self.bac.save_correlation_mat(tmp_corr_path)
-            self.assertTrue(os.path.exists(tmp_corr_path))
+            assert os.path.exists(tmp_corr_path)
 
 
-class TestCrossVal(unittest.TestCase):
+class TestCrossVal:
     """
     A class for testing that the CrossVal class functions properly.
     """
@@ -352,11 +326,11 @@ class TestCrossVal(unittest.TestCase):
         """
         Test that CrossVal is initialized correctly.
         """
-        self.assertIsInstance(self.cross_val.level_of_theory, LevelOfTheory)
-        self.assertEqual(self.cross_val.bac_type, "p")
-        self.assertEqual(self.cross_val.n_folds, -1)
-        self.assertIsNone(self.cross_val.dataset)
-        self.assertIsNone(self.cross_val.bacs)
+        assert isinstance(self.cross_val.level_of_theory, LevelOfTheory)
+        assert self.cross_val.bac_type == "p"
+        assert self.cross_val.n_folds == -1
+        assert self.cross_val.dataset is None
+        assert self.cross_val.bacs is None
 
     def test_leave_one_out(self):
         """
@@ -367,17 +341,17 @@ class TestCrossVal(unittest.TestCase):
         self.cross_val.n_folds = -1
         self.cross_val.fit(idxs=idxs)
 
-        self.assertIsInstance(self.cross_val.dataset, BACDataset)
-        self.assertEqual(len(self.cross_val.dataset), 3)
-        self.assertIsNotNone(self.cross_val.dataset.bac_data)
-        self.assertEqual(len(self.cross_val.bacs), 3)
+        assert isinstance(self.cross_val.dataset, BACDataset)
+        assert len(self.cross_val.dataset) == 3
+        assert self.cross_val.dataset.bac_data is not None
+        assert len(self.cross_val.bacs) == 3
 
         train_folds = [[19, 94], [19, 191], [94, 191]]
         for i, bac in enumerate(self.cross_val.bacs):
-            self.assertIsInstance(bac, BAC)
-            self.assertEqual(len(bac.dataset), 2)
+            assert isinstance(bac, BAC)
+            assert len(bac.dataset) == 2
             for d in bac.dataset:
-                self.assertNotEqual(d.spc.index, train_folds[i])
+                assert d.spc.index != train_folds[i]
 
     def test_kfold(self):
         """
@@ -387,10 +361,10 @@ class TestCrossVal(unittest.TestCase):
         self.cross_val.n_folds = 2
         self.cross_val.fit(idxs=idxs)
 
-        self.assertIsInstance(self.cross_val.dataset, BACDataset)
-        self.assertEqual(len(self.cross_val.dataset), 4)
-        self.assertIsNotNone(self.cross_val.dataset.bac_data)
-        self.assertEqual(len(self.cross_val.bacs), 2)
+        assert isinstance(self.cross_val.dataset, BACDataset)
+        assert len(self.cross_val.dataset) == 4
+        assert self.cross_val.dataset.bac_data is not None
+        assert len(self.cross_val.bacs) == 2
 
         train_folds = [
             [0, 1],
@@ -401,7 +375,7 @@ class TestCrossVal(unittest.TestCase):
             [2, 3],
         ]
         for i, bac in enumerate(self.cross_val.bacs):
-            self.assertIsInstance(bac, BAC)
-            self.assertEqual(len(bac.dataset), 2)
+            assert isinstance(bac, BAC)
+            assert len(bac.dataset) == 2
             for d in bac.dataset:
-                self.assertNotEqual(d.spc.index, train_folds[i])
+                assert d.spc.index != train_folds[i]

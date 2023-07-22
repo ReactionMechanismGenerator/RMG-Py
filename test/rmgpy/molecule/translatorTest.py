@@ -32,7 +32,6 @@ This module contains unit test for the translator module.
 """
 
 import re
-import unittest
 from external.wip import work_in_progress
 from unittest.mock import patch
 
@@ -48,32 +47,29 @@ from rmgpy.molecule.inchi import (
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.translator import *
 from rmgpy.species import Species
+import pytest
 
 
-class TranslatorTest(unittest.TestCase):
+class TranslatorTest:
     def test_empty_molecule(self):
         """Test that we can safely return a blank identifier for an empty molecule."""
         mol = Molecule()
 
-        self.assertEqual(mol.to_smiles(), "")
-        self.assertEqual(mol.to_inchi(), "")
+        assert mol.to_smiles() == ""
+        assert mol.to_inchi() == ""
 
     @patch("rmgpy.molecule.translator.logging")
     def test_failure_message(self, mock_logging):
         """Test that we log the molecule adjlist upon failure."""
         mol = Molecule(smiles="[CH2-][N+]#N")
 
-        with self.assertRaisesRegex(ValueError, "Unable to generate identifier type"):
+        with pytest.raises(ValueError, match="Unable to generate identifier type"):
             to_inchi(mol, backend="rdkit")
 
-        mock_logging.error.assert_called_with(
-            "Unable to generate identifier for this molecule:\n{0}".format(
-                mol.to_adjacency_list()
-            )
-        )
+        mock_logging.error.assert_called_with("Unable to generate identifier for this molecule:\n{0}".format(mol.to_adjacency_list()))
 
 
-class InChIGenerationTest(unittest.TestCase):
+class InChIGenerationTest:
     def compare(self, adjlist, aug_inchi):
         spc = Species(molecule=[Molecule().from_adjacency_list(adjlist)])
         spc.generate_resonance_structures()
@@ -82,7 +78,7 @@ class InChIGenerationTest(unittest.TestCase):
 
         exp = re.split(ignore_prefix, aug_inchi)[-1]
         comp = re.split(ignore_prefix, spc.get_augmented_inchi())[-1]
-        self.assertEquals(exp, comp)
+        assert exp == comp
 
     def test_c5h5(self):
         """
@@ -324,7 +320,7 @@ multiplicity 2
         triplet = Species(molecule=[Molecule().from_adjacency_list(adjlist_triplet)])
         singlet_aug_inchi = singlet.get_augmented_inchi()
         triplet_aug_inchi = triplet.get_augmented_inchi()
-        self.assertTrue(singlet_aug_inchi != triplet_aug_inchi)
+        assert singlet_aug_inchi != triplet_aug_inchi
 
     #     def test_c6h5(self):
     #         """Test that the u-layer of phenyl shows atom 1."""
@@ -407,12 +403,10 @@ multiplicity 2
 
         inchi_list = [struct.to_inchi() for struct in res]
 
-        expected_inchi = (
-            "InChI=1S/C15H11/c1-11-5-4-8-15-13(11)10-9-12-6-2-3-7-14(12)15/h2-10H,1H2"
-        )
+        expected_inchi = "InChI=1S/C15H11/c1-11-5-4-8-15-13(11)10-9-12-6-2-3-7-14(12)15/h2-10H,1H2"
 
         for inchi in inchi_list:
-            self.assertEqual(inchi, expected_inchi)
+            assert inchi == expected_inchi
 
     def test_disconnected_molecule(self):
         """Test that we can generate an InChI for a disconnected molecule."""
@@ -420,7 +414,7 @@ multiplicity 2
 
         inchi = "InChI=1S/C4H10O.CH2O/c1-2-3-4-5;1-2/h5H,2-4H2,1H3;1H2"
 
-        self.assertEqual(mol.to_inchi(), inchi)
+        assert mol.to_inchi() == inchi
 
     def test_isotopic_molecule_1(self):
         """Test that we can generate an InChI for an isotopic molecule."""
@@ -428,7 +422,7 @@ multiplicity 2
 
         inchi = "InChI=1S/CH4/h1H4/i1+1"
 
-        self.assertEqual(mol.to_inchi(), inchi)
+        assert mol.to_inchi() == inchi
 
     def test_isotopic_molecule_2(self):
         """Test that we can generate an InChI for an isotopic molecule."""
@@ -436,7 +430,7 @@ multiplicity 2
 
         inchi = "InChI=1S/C2H6/c1-2/h1-2H3/i1+1"
 
-        self.assertEqual(mol.to_inchi(), inchi)
+        assert mol.to_inchi() == inchi
 
     def test_surface_molecule_rdkit(self):
         """Test InChI generation for a surface molecule using RDKit"""
@@ -451,7 +445,7 @@ multiplicity 2
         )
         inchi = "InChI=1S/CH3.Pt/h1H3;"
 
-        self.assertEqual(to_inchi(mol, backend="rdkit"), inchi)
+        assert to_inchi(mol, backend="rdkit") == inchi
 
     def test_surface_molecule_ob(self):
         """Test InChI generation for a surface molecule using OpenBabel"""
@@ -466,13 +460,13 @@ multiplicity 2
         )
         inchi = "InChI=1S/CH3.Pt/h1H3;"
 
-        self.assertEqual(to_inchi(mol, backend="openbabel"), inchi)
+        assert to_inchi(mol, backend="openbabel") == inchi
 
 
-class SMILESGenerationTest(unittest.TestCase):
+class SMILESGenerationTest:
     def compare(self, adjlist, smiles):
         mol = Molecule().from_adjacency_list(adjlist)
-        self.assertEquals(smiles, mol.to_smiles())
+        assert smiles == mol.to_smiles()
 
     def test_ch4(self):
         "Test the SMILES generation for methane"
@@ -824,9 +818,9 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles2 = mol2.to_smiles()
         smiles3 = mol3.to_smiles()
 
-        self.assertNotEqual(smiles1, smiles2)
-        self.assertNotEqual(smiles2, smiles3)
-        self.assertNotEqual(smiles1, smiles3)
+        assert smiles1 != smiles2
+        assert smiles2 != smiles3
+        assert smiles1 != smiles3
 
     def test_surface_molecule_rdkit(self):
         """Test InChI generation for a surface molecule using RDKit"""
@@ -841,7 +835,7 @@ class SMILESGenerationTest(unittest.TestCase):
         )
         smiles = "C[Pt]"
 
-        self.assertEqual(to_smiles(mol, backend="rdkit"), smiles)
+        assert to_smiles(mol, backend="rdkit") == smiles
 
     def test_surface_molecule_ob(self):
         """Test InChI generation for a surface molecule using OpenBabel"""
@@ -856,10 +850,10 @@ class SMILESGenerationTest(unittest.TestCase):
         )
         smiles = "C[Pt]"
 
-        self.assertEqual(to_smiles(mol, backend="openbabel"), smiles)
+        assert to_smiles(mol, backend="openbabel") == smiles
 
 
-class ParsingTest(unittest.TestCase):
+class ParsingTest:
     def setUp(self):
         self.methane = Molecule().from_adjacency_list(
             """
@@ -885,13 +879,13 @@ class ParsingTest(unittest.TestCase):
     def test_from_augmented_inchi(self):
         aug_inchi = "InChI=1S/CH4/h1H4"
         mol = from_augmented_inchi(Molecule(), aug_inchi)
-        self.assertTrue(not mol.inchi == "")
-        self.assertTrue(mol.is_isomorphic(self.methane))
+        assert not mol.inchi == ""
+        assert mol.is_isomorphic(self.methane)
 
         aug_inchi = "InChI=1/CH4/h1H4"
         mol = from_augmented_inchi(Molecule(), aug_inchi)
-        self.assertTrue(not mol.inchi == "")
-        self.assertTrue(mol.is_isomorphic(self.methane))
+        assert not mol.inchi == ""
+        assert mol.is_isomorphic(self.methane)
 
     def compare(self, adjlist, smiles):
         """
@@ -901,22 +895,17 @@ class ParsingTest(unittest.TestCase):
         """
         mol1 = Molecule().from_adjacency_list(adjlist)
         mol2 = Molecule(smiles=smiles)
-        self.assertTrue(
-            mol1.is_isomorphic(mol2),
-            "Parsing SMILES={!r} gave unexpected molecule\n{}".format(
-                smiles, mol2.to_adjacency_list()
-            ),
-        )
+        assert mol1.is_isomorphic(mol2), "Parsing SMILES={!r} gave unexpected molecule\n{}".format(smiles, mol2.to_adjacency_list())
 
     def test_from_smiles(self):
         smiles = "C"
         mol = from_smiles(Molecule(), smiles)
-        self.assertTrue(mol.is_isomorphic(self.methane))
+        assert mol.is_isomorphic(self.methane)
 
         # Test that atomtypes that rely on lone pairs for identity are typed correctly
         smiles = "CN"
         mol = from_smiles(Molecule(), smiles)
-        self.assertEquals(mol.atoms[1].atomtype, ATOMTYPES["N3s"])
+        assert mol.atoms[1].atomtype == ATOMTYPES["N3s"]
 
         # Test N2
         adjlist = """
@@ -1155,45 +1144,37 @@ class ParsingTest(unittest.TestCase):
     def test_from_inchi(self):
         inchi = "InChI=1S/CH4/h1H4"
         mol = from_inchi(Molecule(), inchi)
-        self.assertTrue(mol.is_isomorphic(self.methane))
+        assert mol.is_isomorphic(self.methane)
         # Test that atomtypes that rely on lone pairs for identity are typed correctly
         inchi = "InChI=1S/CH5N/c1-2/h2H2,1H3"
         mol = from_inchi(Molecule(), inchi)
-        self.assertEquals(mol.atoms[1].atomtype, ATOMTYPES["N3s"])
+        assert mol.atoms[1].atomtype == ATOMTYPES["N3s"]
 
     # current implementation of SMARTS is broken
     def test_from_smarts(self):
         smarts = "[CH4]"
         mol = from_smarts(Molecule(), smarts)
-        self.assertTrue(mol.is_isomorphic(self.methane))
+        assert mol.is_isomorphic(self.methane)
 
     def test_incorrect_identifier_type(self):
         """Test that the appropriate error is raised for identifier/type mismatch."""
-        with self.assertRaises(ValueError) as cm:
+        with pytest.raises(ValueError) as cm:
             Molecule().from_smiles("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H")
 
-        self.assertTrue("Improper identifier type" in str(cm.exception))
+        assert "Improper identifier type" in str(cm.exception)
 
     def test_read_inchikey_error(self):
         """Test that the correct error is raised when reading an InChIKey"""
-        with self.assertRaises(ValueError) as cm:
+        with pytest.raises(ValueError) as cm:
             Molecule().from_inchi("InChIKey=UHOVQNZJYSORNB-UHFFFAOYSA-N")
 
-        self.assertTrue("InChIKey is a write-only format" in str(cm.exception))
+        assert "InChIKey is a write-only format" in str(cm.exception)
 
 
-class InChIParsingTest(unittest.TestCase):
+class InChIParsingTest:
     def compare(self, inchi, u_indices=None, p_indices=None):
-        u_layer = (
-            U_LAYER_PREFIX + U_LAYER_SEPARATOR.join(map(str, u_indices))
-            if u_indices
-            else None
-        )
-        p_layer = (
-            P_LAYER_PREFIX + P_LAYER_SEPARATOR.join(map(str, p_indices))
-            if p_indices
-            else None
-        )
+        u_layer = U_LAYER_PREFIX + U_LAYER_SEPARATOR.join(map(str, u_indices)) if u_indices else None
+        p_layer = P_LAYER_PREFIX + P_LAYER_SEPARATOR.join(map(str, p_indices)) if p_indices else None
 
         aug_inchi = compose_aug_inchi(inchi, u_layer, p_layer)
 
@@ -1209,7 +1190,7 @@ class InChIParsingTest(unittest.TestCase):
         ignore_prefix = r"(InChI=1+)(S*)/"
         aug_inchi_expected = re.split(ignore_prefix, aug_inchi)[-1]
         aug_inchi_computed = re.split(ignore_prefix, spc.get_augmented_inchi())[-1]
-        self.assertEquals(aug_inchi_expected, aug_inchi_computed)
+        assert aug_inchi_expected == aug_inchi_computed
 
         return mol
 
@@ -1307,10 +1288,10 @@ class InChIParsingTest(unittest.TestCase):
         p_indices = [1, 2]
         mol = self.compare(inchi, [], p_indices)
 
-        self.assertEqual(mol.atoms[1].lone_pairs, 1)  # Oxygen
+        assert mol.atoms[1].lone_pairs == 1  # Oxygen
 
-        self.assertEqual(mol.atoms[0].charge, -1)
-        self.assertEqual(mol.atoms[1].charge, 1)
+        assert mol.atoms[0].charge == -1
+        assert mol.atoms[1].charge == 1
 
     def test_triplet_methylene(self):
         inchi = "CH2/h1H2"
@@ -1330,7 +1311,7 @@ class InChIParsingTest(unittest.TestCase):
         mol = self.compare(inchi, u_indices)
         for at in mol.atoms:
             if at.is_oxygen():
-                self.assertTrue(at.lone_pairs == 2)
+                assert at.lone_pairs == 2
 
     def test_c6h6(self):
         inchi = "C6H6/c1-3-5-6-4-2/h1,6H,2,5H2"
@@ -1352,12 +1333,7 @@ class InChIParsingTest(unittest.TestCase):
         spc = Species(molecule=[Molecule().from_adjacency_list(adjlist)])
         aug_inchi = spc.get_augmented_inchi()
 
-        self.assertEqual(
-            Species(
-                molecule=[Molecule().from_augmented_inchi(aug_inchi)]
-            ).is_isomorphic(spc),
-            True,
-        )
+        assert Species(molecule=[Molecule().from_augmented_inchi(aug_inchi)]).is_isomorphic(spc) == True
 
     def test_ccco_triplet(self):
         adjlist = """
@@ -1377,12 +1353,7 @@ class InChIParsingTest(unittest.TestCase):
         spc.generate_resonance_structures()
         aug_inchi = spc.get_augmented_inchi()
 
-        self.assertEqual(
-            Species(
-                molecule=[Molecule().from_augmented_inchi(aug_inchi)]
-            ).is_isomorphic(spc),
-            True,
-        )
+        assert Species(molecule=[Molecule().from_augmented_inchi(aug_inchi)]).is_isomorphic(spc) == True
 
     def test_c3h4(self):
         inchi = "C3H4/c1-3-2/h1,3H,2H2"
@@ -1505,12 +1476,12 @@ class InChIParsingTest(unittest.TestCase):
         """Test that we can parse an InChI for an isotopic molecule."""
         mol = Molecule().from_inchi("InChI=1S/CH4/h1H4/i1+1")
 
-        self.assertTrue(len(mol.atoms), 4)
-        self.assertEqual([atom.element.isotope for atom in mol.atoms].count(13), 1)
+        assert len(mol.atoms), 4
+        assert [atom.element.isotope for atom in mol.atoms].count(13) == 1
 
     def test_isotopic_molecule_2(self):
         """Test that we can parse an InChI for an isotopic molecule."""
         mol = Molecule().from_inchi("InChI=1S/C2H6/c1-2/h1-2H3/i1+1")
 
-        self.assertTrue(len(mol.atoms), 6)
-        self.assertEqual([atom.element.isotope for atom in mol.atoms].count(13), 1)
+        assert len(mol.atoms), 6
+        assert [atom.element.isotope for atom in mol.atoms].count(13) == 1

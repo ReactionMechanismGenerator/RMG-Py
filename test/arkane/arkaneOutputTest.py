@@ -33,7 +33,7 @@ This module contains unit tests of the :mod:`arkane.ess.gaussian` module.
 
 import os
 import shutil
-import unittest
+
 
 from nose.plugins.attrib import attr
 
@@ -44,11 +44,9 @@ from arkane.main import Arkane
 from arkane.output import prettify, get_str_xyz
 from rmgpy.species import Species
 
-################################################################################
-
 
 @attr("functional")
-class OutputTest(unittest.TestCase):
+class OutputTest:
     """
     Contains functional tests for Arkane's output module.
     """
@@ -71,10 +69,10 @@ class OutputTest(unittest.TestCase):
         arkane.execute()
         with open(os.path.join(benzyl_path, "output.py"), "r") as f:
             lines = f.readlines()
-        self.assertIn("conformer(\n", lines)
-        self.assertIn("    E0 = (193.749, 'kJ/mol'),\n", lines)
-        self.assertIn("thermo(\n", lines)
-        self.assertIn("        Cp0 = (33.2579, 'J/(mol*K)'),\n", lines)
+        assert "conformer(\n" in lines
+        assert "    E0 = (193.749, 'kJ/mol'),\n" in lines
+        assert "thermo(\n" in lines
+        assert "        Cp0 = (33.2579, 'J/(mol*K)'),\n" in lines
 
     @classmethod
     def tearDownClass(cls):
@@ -101,7 +99,7 @@ class OutputTest(unittest.TestCase):
                 shutil.rmtree(item_path)
 
 
-class OutputUnitTest(unittest.TestCase):
+class OutputUnitTest:
     """
     Contains unit tests for the Arkane's output module.
     """
@@ -155,7 +153,7 @@ class OutputUnitTest(unittest.TestCase):
     spin_multiplicity = 2,
     optical_isomers = 1,
 )"""
-        self.assertEqual(prettify(input_str), expected_output)
+        assert prettify(input_str) == expected_output
 
     def test_get_str_xyz(self):
         """Test generating an xyz string from the species.conformer object"""
@@ -176,4 +174,4 @@ H       0.97742900    0.00000000   -0.47841600
 C      -1.12745800    0.00000000   -0.70256500
 H      -1.12319800    0.00000000   -1.78740100
 H      -2.09943900    0.00000000   -0.22075700"""
-        self.assertEqual(xyz_str, expected_xyz_str)
+        assert xyz_str == expected_xyz_str

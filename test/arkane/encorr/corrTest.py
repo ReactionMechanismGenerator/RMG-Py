@@ -31,7 +31,6 @@
 This script contains unit tests for the :mod:`arkane.encorr.corr` module.
 """
 
-import unittest
 
 import numpy as np
 
@@ -42,24 +41,19 @@ from arkane.encorr.corr import (
 )
 from arkane.exceptions import AtomEnergyCorrectionError
 from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory
+import pytest
 
 
-class TestCorr(unittest.TestCase):
+class TestCorr:
     """
     A class for testing the functions in corr.py.
     """
 
     @classmethod
     def setUpClass(cls):
-        cls.freq_lot = LevelOfTheory(
-            method="wb97X-D3", basis="def2-TZVP", software="Q-Chem"
-        )
-        cls.energy_lot = LevelOfTheory(
-            method="CCSD(T)-F12", basis="cc-pVDZ-F12", software="MOLPRO"
-        )
-        cls.composite_lot = CompositeLevelOfTheory(
-            freq=cls.freq_lot, energy=cls.energy_lot
-        )
+        cls.freq_lot = LevelOfTheory(method="wb97X-D3", basis="def2-TZVP", software="Q-Chem")
+        cls.energy_lot = LevelOfTheory(method="CCSD(T)-F12", basis="cc-pVDZ-F12", software="MOLPRO")
+        cls.composite_lot = CompositeLevelOfTheory(freq=cls.freq_lot, energy=cls.energy_lot)
         cls.lot_nonexisting = LevelOfTheory("notamethod")
 
     def test_get_atom_correction(self):
@@ -72,9 +66,9 @@ class TestCorr(unittest.TestCase):
         aec = get_atom_correction(level_of_theory=self.freq_lot, atoms=atoms)
         # test value is obtained by (atom_hf['H'] - atom_thermal['H']) * 4184 - H atom_energy * 4.35974394e-18 * rmgpy.constants.Na
         test_value = 1524327
-        self.assertAlmostEqual(aec, test_value, places=None, delta=1000)
+        assert abs(aec - test_value) < 1000
 
-        with self.assertRaises(AtomEnergyCorrectionError):
+        with pytest.raises(AtomEnergyCorrectionError):
             aec = get_atom_correction(level_of_theory=self.freq_lot, atoms={"X": 1})
 
     def test_get_bac(self):
@@ -104,7 +98,7 @@ class TestCorr(unittest.TestCase):
         )
         # test value is obtained by BAC(self.freq_lot, bac_type=bac_type).get_correction(bonds=bonds, coords=CCCBDB_coords, nums=nums).value_si
         test_value = 700
-        self.assertAlmostEqual(bac, test_value, places=None, delta=100)
+        assert abs(bac - test_value) < 100
 
         # test Melius BACs
         bac_type = "m"
@@ -117,7 +111,7 @@ class TestCorr(unittest.TestCase):
         )
         # test value is obtained by BAC(self.freq_lot, bac_type=bac_type).get_correction(bonds=bonds, coords=CCCBDB_coords, nums=nums).value_si
         test_value = 949
-        self.assertAlmostEqual(bac, test_value, places=None, delta=100)
+        assert abs(bac - test_value) < 100
 
     def test_assign_frequency_scale_factor(self):
         """
@@ -126,16 +120,16 @@ class TestCorr(unittest.TestCase):
         is used to just test that the values can be queried.
         """
         freq_scale_factor = assign_frequency_scale_factor(None)
-        self.assertAlmostEqual(freq_scale_factor, 1, places=1)
+        assert round(abs(freq_scale_factor - 1), 1) == 0
 
         scaling_factor = assign_frequency_scale_factor(self.lot_nonexisting)
-        self.assertEqual(scaling_factor, 1)
+        assert scaling_factor == 1
 
         freq_scale_factor = assign_frequency_scale_factor(self.freq_lot)
-        self.assertAlmostEqual(freq_scale_factor, 0.984, places=1)
+        assert round(abs(freq_scale_factor - 0.984), 1) == 0
 
         freq_scale_factor = assign_frequency_scale_factor(self.energy_lot)
-        self.assertAlmostEqual(freq_scale_factor, 0.997, places=1)
+        assert round(abs(freq_scale_factor - 0.997), 1) == 0
 
         freq_scale_factor = assign_frequency_scale_factor(self.composite_lot)
-        self.assertAlmostEqual(freq_scale_factor, 0.984, places=1)
+        assert round(abs(freq_scale_factor - 0.984), 1) == 0

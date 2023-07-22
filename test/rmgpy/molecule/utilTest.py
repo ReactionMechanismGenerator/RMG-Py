@@ -27,7 +27,7 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
+
 from scipy.special import comb
 
 from rmgpy.molecule.util import (
@@ -39,7 +39,7 @@ from rmgpy.molecule.util import (
 )
 
 
-class ElementCountTest(unittest.TestCase):
+class ElementCountTest:
     def test_inchi_count(self):
         """Test element counting for InChI"""
         inchi = "InChI=1S/C4H10O/c1-2-3-4-5/h5H,2-4H2,1H3"
@@ -48,7 +48,7 @@ class ElementCountTest(unittest.TestCase):
 
         count = get_element_count(inchi)
 
-        self.assertEqual(count, expected)
+        assert count == expected
 
     def test_inchi_count_disconnected(self):
         """Test element counting for InChI with disconnected molecule"""
@@ -58,10 +58,10 @@ class ElementCountTest(unittest.TestCase):
 
         count = get_element_count(inchi)
 
-        self.assertEqual(count, expected)
+        assert count == expected
 
 
-class PartitionTest(unittest.TestCase):
+class PartitionTest:
     def test_singleton(self):
         """
         Test that a index not part of the parameter list, results in a key-value pair with
@@ -73,8 +73,8 @@ class PartitionTest(unittest.TestCase):
 
         partitions, sample_lists = partition(indices, list_of_samples)
 
-        self.assertEquals(partitions, expected_partitions)
-        self.assertEquals(sample_lists, expected_sample_lists)
+        assert partitions == expected_partitions
+        assert sample_lists == expected_sample_lists
 
     def test_2_elements_in_1_layer(self):
         indices = [1, 3]
@@ -83,8 +83,8 @@ class PartitionTest(unittest.TestCase):
 
         partitions, sample_lists = partition(indices, list_of_samples)
 
-        self.assertEquals(partitions, expected_partitions)
-        self.assertEquals(sample_lists, expected_sample_lists)
+        assert partitions == expected_partitions
+        assert sample_lists == expected_sample_lists
 
     def test_2_elements_in_2_layers(self):
         indices = [1, 5]
@@ -93,8 +93,8 @@ class PartitionTest(unittest.TestCase):
 
         partitions, sample_lists = partition(indices, list_of_samples)
 
-        self.assertEquals(partitions, expected_partitions)
-        self.assertEquals(sample_lists, expected_sample_lists)
+        assert partitions == expected_partitions
+        assert sample_lists == expected_sample_lists
 
     def test_3_elements_in_2_layers(self):
         indices = [1, 4, 5]
@@ -106,8 +106,8 @@ class PartitionTest(unittest.TestCase):
 
         partitions, sample_lists = partition(indices, list_of_samples)
 
-        self.assertEquals(partitions, expected_partitions)
-        self.assertEquals(sample_lists, expected_sample_lists)
+        assert partitions == expected_partitions
+        assert sample_lists == expected_sample_lists
 
     def test_3_elements_in_2_layers_1_singleton(self):
         indices = [1, 5, 7]
@@ -120,20 +120,20 @@ class PartitionTest(unittest.TestCase):
 
         partitions, sample_lists = partition(indices, list_of_samples)
 
-        self.assertEquals(partitions, expected_partitions)
-        self.assertEquals(sample_lists, expected_sample_lists)
+        assert partitions == expected_partitions
+        assert sample_lists == expected_sample_lists
 
 
-class AgglomerateTest(unittest.TestCase):
+class AgglomerateTest:
     def test_normal(self):
         groups = [[1, 2, 3], [4], [5, 6], [7]]
         agglomerates = agglomerate(groups)
         expected = [[1, 2, 3], [5, 6], [4, 7]]
 
-        self.assertEquals(agglomerates, expected)
+        assert agglomerates == expected
 
 
-class ComboGeneratorTest(unittest.TestCase):
+class ComboGeneratorTest:
     def test_2_elements(self):
         samples = [[1, 2, 3], [6]]
         sample_spaces = [[1, 2, 3, 4], [5, 6]]
@@ -147,14 +147,14 @@ class ComboGeneratorTest(unittest.TestCase):
         # we leave out the original combination
         expected -= 1
 
-        self.assertEquals(len(combos), expected)
+        assert len(combos) == expected
 
 
-class SwapTest(unittest.TestCase):
+class SwapTest:
     def test_2_elements_sets(self):
         to_be_swapped = [2, 3]
         sample = [1, 3]
 
         result = swap(to_be_swapped, sample)
         expected = (1, 3, 2)
-        self.assertEquals(result, expected)
+        assert result == expected

@@ -1,5 +1,5 @@
 import os
-import unittest
+
 
 from rmgpy.molecule import resonance
 from rmgpy.molecule.atomtype import ATOMTYPES
@@ -10,7 +10,7 @@ from rmgpy.species import Species
 import rmgpy.molecule.fragment
 
 
-class TestCuttingLabel(unittest.TestCase):
+class TestCuttingLabel:
     def setUp(self):
         """
         A function run before each unit test in this class.
@@ -18,34 +18,27 @@ class TestCuttingLabel(unittest.TestCase):
         self.cutting_label_R = rmgpy.molecule.fragment.CuttingLabel("R")
 
     def test_symbol(self):
-        self.assertEqual("R", self.cutting_label_R.symbol)
+        assert "R" == self.cutting_label_R.symbol
 
     def test_copy(self):
         cutting_label_R_copy = self.cutting_label_R.copy()
 
-        self.assertEqual("R", cutting_label_R_copy.name)
-        self.assertEqual(self.cutting_label_R.label, cutting_label_R_copy.label)
-        self.assertEqual(self.cutting_label_R.charge, cutting_label_R_copy.charge)
-        self.assertEqual(
-            self.cutting_label_R.radical_electrons,
-            cutting_label_R_copy.radical_electrons,
-        )
-        self.assertEqual(
-            self.cutting_label_R.lone_pairs, cutting_label_R_copy.lone_pairs
-        )
-        self.assertEqual(self.cutting_label_R.isotope, cutting_label_R_copy.isotope)
+        assert "R" == cutting_label_R_copy.name
+        assert self.cutting_label_R.label == cutting_label_R_copy.label
+        assert self.cutting_label_R.charge == cutting_label_R_copy.charge
+        assert self.cutting_label_R.radical_electrons == cutting_label_R_copy.radical_electrons
+        assert self.cutting_label_R.lone_pairs == cutting_label_R_copy.lone_pairs
+        assert self.cutting_label_R.isotope == cutting_label_R_copy.isotope
 
 
-class TestFragment(unittest.TestCase):
+class TestFragment:
     def setUp(self):
         """
         A function run before each unit test in this class.
         """
 
         # construct the first fragment
-        atom_C1 = Atom(
-            element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_C1 = Atom(element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0)
 
         cutting_label_R1 = rmgpy.molecule.fragment.CuttingLabel("R")
         cutting_label_L1 = rmgpy.molecule.fragment.CuttingLabel("L")
@@ -61,9 +54,7 @@ class TestFragment(unittest.TestCase):
             self.fragment1.add_edge(bond)
 
         # construct the second fragment
-        atom_C2 = Atom(
-            element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_C2 = Atom(element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0)
 
         cutting_label_R2 = rmgpy.molecule.fragment.CuttingLabel("R")
         cutting_label_L2 = rmgpy.molecule.fragment.CuttingLabel("L")
@@ -79,36 +70,24 @@ class TestFragment(unittest.TestCase):
             self.fragment2.add_edge(bond)
 
     def test_fragment_isomorphism(self):
-        self.assertTrue(self.fragment1.is_isomorphic(self.fragment2))
+        assert self.fragment1.is_isomorphic(self.fragment2)
 
     def test_from_smiles_like_string1(self):
         # generate fragment from SMILES like string
         # the atom type is also calculated
         smiles_like = "C"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         # construct fragment manually
-        atom_C = Atom(
-            element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_C = Atom(element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0)
 
-        atom_H1 = Atom(
-            element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_H1 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
-        atom_H2 = Atom(
-            element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_H2 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
-        atom_H3 = Atom(
-            element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_H3 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
-        atom_H4 = Atom(
-            element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_H4 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
         atom_C.atomtype = ATOMTYPES["Cs"]
         atom_H1.atomtype = ATOMTYPES["H"]
@@ -132,27 +111,19 @@ class TestFragment(unittest.TestCase):
             expected_fragment.add_edge(bond)
         expected_fragment.update()
 
-        self.assertTrue(expected_fragment.is_isomorphic(fragment))
+        assert expected_fragment.is_isomorphic(fragment)
 
     def test_from_SMILES_like_string2(self):
         # generate fragment from SMILES like string
         # the atom type is also calculated
         smiles_like = "RCR"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
-        atom_C = Atom(
-            element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_C = Atom(element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0)
 
-        atom_H1 = Atom(
-            element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_H1 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
-        atom_H2 = Atom(
-            element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_H2 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
         # construct fragment manually
         atom_C.atomtype = ATOMTYPES["Cs"]
@@ -178,27 +149,19 @@ class TestFragment(unittest.TestCase):
             expected_fragment.add_edge(bond)
         expected_fragment.update()
 
-        self.assertTrue(expected_fragment.is_isomorphic(fragment))
+        assert expected_fragment.is_isomorphic(fragment)
 
     def test_from_SMILES_like_string3(self):
         # generate fragment from SMILES like string
         # the atom type is also calculated
         smiles_like = "RCL"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
-        atom_C = Atom(
-            element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_C = Atom(element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0)
 
-        atom_H1 = Atom(
-            element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_H1 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
-        atom_H2 = Atom(
-            element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_H2 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
         # construct fragment manually
         atom_C.atomtype = ATOMTYPES["Cs"]
@@ -224,30 +187,26 @@ class TestFragment(unittest.TestCase):
             expected_fragment.add_edge(bond)
         expected_fragment.update()
 
-        self.assertTrue(expected_fragment.is_isomorphic(fragment))
+        assert expected_fragment.is_isomorphic(fragment)
 
     def test_is_subgraph_isomorphic1(self):
         from rmgpy.molecule.group import Group
 
         smiles_like = "[CH2]CR"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         adj = """
                 1 * R u1
                   """
         other = Group().from_adjacency_list(adj)
 
-        self.assertTrue(fragment.is_subgraph_isomorphic(other))
+        assert fragment.is_subgraph_isomorphic(other)
 
     def test_is_subgraph_isomorphic2(self):
         from rmgpy.molecule.group import Group
 
         smiles_like = "[CH2]CR"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         adj = """
                 1 * Ct  u1 {2,T}
@@ -255,15 +214,13 @@ class TestFragment(unittest.TestCase):
                   """
         other = Group().from_adjacency_list(adj)
 
-        self.assertFalse(fragment.is_subgraph_isomorphic(other))
+        assert not fragment.is_subgraph_isomorphic(other)
 
     def test_is_subgraph_isomorphic3(self):
         from rmgpy.molecule.group import Group
 
         smiles_like = "[CH2]CR"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         adj = """
                 1 * R u1
@@ -280,15 +237,13 @@ class TestFragment(unittest.TestCase):
         group_atom_star = other.vertices[0]
         initial_map = {frag_atom_star: group_atom_star}
 
-        self.assertTrue(fragment.is_subgraph_isomorphic(other, initial_map=initial_map))
+        assert fragment.is_subgraph_isomorphic(other, initial_map=initial_map)
 
     def test_is_subgraph_isomorphic4(self):
         from rmgpy.molecule.group import Group
 
         smiles_like = "[CH2]CR"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.assign_representative_molecule()
 
@@ -308,69 +263,51 @@ class TestFragment(unittest.TestCase):
         group_atom_star = other.vertices[0]
         initial_map = {frag_atom_star: group_atom_star}
 
-        self.assertFalse(
-            fragment.is_subgraph_isomorphic(other, initial_map=initial_map)
-        )
+        assert not fragment.is_subgraph_isomorphic(other, initial_map=initial_map)
 
     def test_assign_representative_species_1(self):
         smiles_like = "RCR"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.assign_representative_species()
 
-        expected_repr_spec = Species().from_smiles(
-            "C=CC(C)(CCCCCCCC(C)(C=C)C(C)C(C)C=CC)C(C)C(C)C=CC"
-        )
+        expected_repr_spec = Species().from_smiles("C=CC(C)(CCCCCCCC(C)(C=C)C(C)C(C)C=CC)C(C)C(C)C=CC")
 
-        self.assertTrue(expected_repr_spec.is_isomorphic(fragment.species_repr))
+        assert expected_repr_spec.is_isomorphic(fragment.species_repr)
 
     def test_assign_representative_species_2(self):
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("CCR")
         fragment.assign_representative_species()
 
-        self.assertEqual(fragment.species_repr.symmetry_number, 3.0)
-        self.assertEqual(fragment.species_repr.smiles.count("C"), 14 + 2)
+        assert fragment.species_repr.symmetry_number == 3.0
+        assert fragment.species_repr.smiles.count("C") == 14 + 2
 
     def test_assign_representative_molecule(self):
         smiles_like = "RCR"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.assign_representative_molecule()
 
-        expected_repr_mol = Molecule().from_smiles(
-            "C=CC(C)(CCCCCCCC(C)(C=C)C(C)C(C)C=CC)C(C)C(C)C=CC"
-        )
+        expected_repr_mol = Molecule().from_smiles("C=CC(C)(CCCCCCCC(C)(C=C)C(C)C(C)C=CC)C(C)C(C)C=CC")
 
-        self.assertTrue(expected_repr_mol.is_isomorphic(fragment.mol_repr))
+        assert expected_repr_mol.is_isomorphic(fragment.mol_repr)
 
     def test_get_molecular_weight1(self):
         fragmental_weight = self.fragment1.get_molecular_weight()
-        self.assertAlmostEqual(fragmental_weight * 1000, 12.01, 2)
+        assert round(abs(fragmental_weight * 1000 - 12.01), 2) == 0
 
     def test_get_molecular_weight2(self):
         smiles_like = "RCR"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
         fragmental_weight = fragment.get_molecular_weight()
-        self.assertAlmostEqual(fragmental_weight * 1000, 14.03, 2)
+        assert round(abs(fragmental_weight * 1000 - 14.03), 2) == 0
 
     def test_update_atomtypes(self):
-        atom_C = Atom(
-            element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_C = Atom(element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0)
 
-        atom_H1 = Atom(
-            element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_H1 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
-        atom_H2 = Atom(
-            element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_H2 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
         cutting_label_R1 = rmgpy.molecule.fragment.CuttingLabel("R")
         cutting_label_R2 = rmgpy.molecule.fragment.CuttingLabel("R")
@@ -396,20 +333,14 @@ class TestFragment(unittest.TestCase):
             if isinstance(v, Atom) and v.is_carbon():
                 break
 
-        self.assertTrue(v.atomtype == ATOMTYPES["Cs"])
+        assert v.atomtype == ATOMTYPES["Cs"]
 
     def test_update(self):
-        atom_C = Atom(
-            element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_C = Atom(element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0)
 
-        atom_H1 = Atom(
-            element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_H1 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
-        atom_H2 = Atom(
-            element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0
-        )
+        atom_H2 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
         cutting_label_R1 = rmgpy.molecule.fragment.CuttingLabel("R")
         cutting_label_R2 = rmgpy.molecule.fragment.CuttingLabel("R")
@@ -435,43 +366,37 @@ class TestFragment(unittest.TestCase):
             if isinstance(v, Atom) and v.is_carbon():
                 break
 
-        self.assertTrue(v.atomtype == ATOMTYPES["Cs"])
-        self.assertTrue(fragment.get_net_charge() == 0)
-        self.assertTrue(fragment.multiplicity == 1)
+        assert v.atomtype == ATOMTYPES["Cs"]
+        assert fragment.get_net_charge() == 0
+        assert fragment.multiplicity == 1
 
     def test_to_adjacency_list1(self):
         # generate fragment from smiles like string
         # the atom type is also calculated
         smiles_like = "C"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.update()
         adj = fragment.to_adjacency_list(remove_h=True)
         expected_adj = """1 C u0 p0 c0\n"""
-        self.assertEqual(adj, expected_adj)
+        assert adj == expected_adj
 
     def test_to_adjacency_list2(self):
         # generate fragment from smiles like string
         # removed H
         smiles_like = "CR"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.update()
         adj = fragment.to_adjacency_list(remove_h=True)
         expected_adj = """1 C u0 p0 c0 {2,S}\n2 R u0 p0 c0 {1,S}\n"""
-        self.assertEqual(adj, expected_adj)
+        assert adj == expected_adj
 
     def test_to_adjacency_list3(self):
         # generate fragment from smiles like string
         # with H
         smiles_like = "CR"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.update()
         adj = fragment.to_adjacency_list()
@@ -481,15 +406,13 @@ class TestFragment(unittest.TestCase):
 4 H u0 p0 c0 {1,S}
 5 H u0 p0 c0 {1,S}
 """
-        self.assertEqual(adj, expected_adj)
+        assert adj == expected_adj
 
     def test_to_adjacency_list4(self):
         # generate fragment from SMILES like string
         # radical species
         smiles_like = "[CH2]R"
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.update()
         adj = fragment.to_adjacency_list()
@@ -499,7 +422,7 @@ class TestFragment(unittest.TestCase):
 3 H u0 p0 c0 {1,S}
 4 H u0 p0 c0 {1,S}
 """
-        self.assertEqual(adj, expected_adj)
+        assert adj == expected_adj
 
     def test_from_adjacency_list1(self):
         adj = """multiplicity 2
@@ -512,14 +435,12 @@ class TestFragment(unittest.TestCase):
 
         # create expected fragment
         smiles_like = "[CH2]R"
-        expected_fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        expected_fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
         expected_fragment.update()
 
-        self.assertTrue(isinstance(fragment.multiplicity, int))
-        self.assertTrue(fragment.multiplicity == 2)
-        self.assertTrue(fragment.is_isomorphic(expected_fragment))
+        assert isinstance(fragment.multiplicity, int)
+        assert fragment.multiplicity == 2
+        assert fragment.is_isomorphic(expected_fragment)
 
     def test_from_adjacency_list2(self):
         adj = """1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
@@ -532,31 +453,25 @@ class TestFragment(unittest.TestCase):
 
         # create expected fragment
         smiles_like = "CR"
-        expected_fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        expected_fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
         expected_fragment.update()
 
-        self.assertTrue(fragment.multiplicity == 1)
-        self.assertTrue(fragment.is_isomorphic(expected_fragment))
+        assert fragment.multiplicity == 1
+        assert fragment.is_isomorphic(expected_fragment)
 
     def test_from_adjacency_list3(self):
         adj = """1 C u0 p0 c0 {2,S}
 2 R u0 p0 c0 {1,S}
 """
-        fragment = rmgpy.molecule.fragment.Fragment().from_adjacency_list(
-            adj, saturate_h=True
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_adjacency_list(adj, saturate_h=True)
 
         # create expected fragment
         smiles_like = "CR"
-        expected_fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            smiles_like
-        )
+        expected_fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
         expected_fragment.update()
 
-        self.assertTrue(fragment.multiplicity == 1)
-        self.assertTrue(fragment.is_isomorphic(expected_fragment))
+        assert fragment.multiplicity == 1
+        assert fragment.is_isomorphic(expected_fragment)
 
     def test_get_aromatic_rings(self):
         adj = """1  C u0 p0 c0 {2,D} {6,S} {8,S}
@@ -576,10 +491,10 @@ class TestFragment(unittest.TestCase):
 
         # create expected fragment
         aromatic_rings, aromatic_bonds = fragment.get_aromatic_rings()
-        self.assertEqual(len(aromatic_rings), 1)
-        self.assertEqual(len(aromatic_rings[0]), 6)
-        self.assertEqual(len(aromatic_bonds), 1)
-        self.assertEqual(len(aromatic_bonds[0]), 6)
+        assert len(aromatic_rings) == 1
+        assert len(aromatic_rings[0]) == 6
+        assert len(aromatic_bonds) == 1
+        assert len(aromatic_bonds[0]) == 6
 
         aromatic_ring_atomset = set(aromatic_rings[0])
         aromatic_bonds_set = set(aromatic_bonds[0])
@@ -599,8 +514,8 @@ class TestFragment(unittest.TestCase):
                 except ValueError:
                     pass
 
-        self.assertEqual(aromatic_ring_atomset, expected_aromatic_ring_atomset)
-        self.assertEqual(aromatic_bonds_set, expected_aromatic_bonds_set)
+        assert aromatic_ring_atomset == expected_aromatic_ring_atomset
+        assert aromatic_bonds_set == expected_aromatic_bonds_set
 
     def test_generate_resonance_structures1(self):
         adj = """1  C u0 p0 c0 {2,S} {3,S} {11,S} {12,S}
@@ -629,50 +544,44 @@ class TestFragment(unittest.TestCase):
 """
         fragment = rmgpy.molecule.fragment.Fragment().from_adjacency_list(adj)
 
-        frag_res = resonance.generate_resonance_structures(
-            fragment, clar_structures=False
-        )
+        frag_res = resonance.generate_resonance_structures(fragment, clar_structures=False)
 
-        self.assertEqual(len(frag_res), 2)
+        assert len(frag_res) == 2
 
     def test_generate_resonance_structures2(self):
         ### use ethylbenzly radical to test if it can generate aromatic fragment or not
 
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            "c1ccccc1[CH]CR"
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("c1ccccc1[CH]CR")
 
-        frag_res = resonance.generate_resonance_structures(
-            fragment, clar_structures=True
-        )
+        frag_res = resonance.generate_resonance_structures(fragment, clar_structures=True)
 
-        self.assertTrue(frag_res[0].is_aromatic())
-        self.assertEqual(len(frag_res), 4)
+        assert frag_res[0].is_aromatic()
+        assert len(frag_res) == 4
 
     def test_fragment_is_identical(self):
-        self.assertTrue(self.fragment1.is_identical(self.fragment2))
+        assert self.fragment1.is_identical(self.fragment2)
 
     def test_fragment_get_formula(self):
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("CCR")
 
-        self.assertTrue(fragment.get_formula() == "C2H5R")
+        assert fragment.get_formula() == "C2H5R"
 
     def test_fragment_is_linear(self):
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("C#CR")
 
-        self.assertTrue(fragment.is_linear())
+        assert fragment.is_linear()
 
     def test_fragment_get_element_count(self):
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("[CH2]CR")
 
-        self.assertEqual(fragment.get_element_count()["C"], 2)
-        self.assertEqual(fragment.get_element_count()["H"], 4)
+        assert fragment.get_element_count()["C"] == 2
+        assert fragment.get_element_count()["H"] == 4
 
     def test_fragment_get_num_atoms(self):
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("[CH2]CR")
 
-        self.assertEqual(fragment.get_num_atoms(element="C"), 2)
-        self.assertEqual(fragment.get_num_atoms(element="H"), 4)
+        assert fragment.get_num_atoms(element="C") == 2
+        assert fragment.get_num_atoms(element="H") == 4
 
     def test_fragment_to_smiles(self):
         adj = """1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
@@ -687,13 +596,11 @@ class TestFragment(unittest.TestCase):
         smiles = fragment.to_smiles()
         expected_smiles = "CR"
 
-        self.assertTrue(smiles, expected_smiles)
+        assert smiles, expected_smiles
 
     def test_sliceitup_arom1(self):
         # test avoid cutting aromatic species at ring position
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            "c1ccccc1CCCCCCCCC"
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("c1ccccc1CCCCCCCCC")
 
         frags = rmgpy.molecule.fragment.Fragment().sliceitup_arom(fragment)
 
@@ -709,29 +616,25 @@ class TestFragment(unittest.TestCase):
                 else:
                     total_element[ele] = num
 
-        self.assertTrue(frags[0].is_aromatic() or frags[1].is_aromatic())
-        self.assertEqual(len(frags), 2)
-        self.assertEqual(expected_element, total_element)
+        assert frags[0].is_aromatic() or frags[1].is_aromatic()
+        assert len(frags) == 2
+        assert expected_element == total_element
 
     def test_sliceitup_arom2(self):
         # do not cut when input is aliphatic species
 
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            "CCCCCCCCCC"
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("CCCCCCCCCC")
         frags = rmgpy.molecule.fragment.Fragment().sliceitup_arom(fragment)
 
-        self.assertEqual(len(frags), 1)
-        self.assertTrue(fragment.is_isomorphic(frags[0]))
+        assert len(frags) == 1
+        assert fragment.is_isomorphic(frags[0])
 
     def test_sliceitup_aliph(self):
         # test avoid cutting species at ring position
 
         import re
 
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            "C1=CCC=CC1CCCCCCCC"
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("C1=CCC=CC1CCCCCCCC")
         frags = rmgpy.molecule.fragment.Fragment().sliceitup_aliph(fragment)
 
         # check element balance
@@ -750,28 +653,24 @@ class TestFragment(unittest.TestCase):
         f0 = re.findall(r"\d", frags[0].to_smiles())
         f1 = re.findall(r"\d", frags[1].to_smiles())
 
-        self.assertTrue(f0 != [] or f1 != [])
-        self.assertEqual(len(frags), 2)
-        self.assertTrue(expected_element == total_element)
+        assert f0 != [] or f1 != []
+        assert len(frags) == 2
+        assert expected_element == total_element
 
     def test_cut_molecule1(self):
         # test output string
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            "CCCCCCCCCC"
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("CCCCCCCCCC")
         new_frags = fragment.cut_molecule(output_smiles=True)
 
-        self.assertEqual(len(new_frags), 2)
-        self.assertTrue(isinstance(new_frags[0], str))
+        assert len(new_frags) == 2
+        assert isinstance(new_frags[0], str)
 
     def test_cut_molecule2(self):
         # test input Fragment
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            "CCCCCCCCCCR"
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("CCCCCCCCCCR")
         new_frags = fragment.cut_molecule()
 
-        self.assertEqual(len(new_frags), 2)
+        assert len(new_frags) == 2
 
     def test_calculate_symmetry_number1(self):
         #  for fragment with 1 CuttingLabel
@@ -779,7 +678,7 @@ class TestFragment(unittest.TestCase):
         fragment.calculate_symmetry_number()
         fsn = fragment.symmetry_number
 
-        self.assertEqual(fsn, 3.0)
+        assert fsn == 3.0
 
     def test_calculate_symmetry_number2(self):
         #  for fragment with 2 CuttingLabel
@@ -787,14 +686,14 @@ class TestFragment(unittest.TestCase):
         fragment.calculate_symmetry_number()
         fsn = fragment.symmetry_number
 
-        self.assertEqual(fsn, 1.0)
+        assert fsn == 1.0
 
     def test_get_symmetry_number1(self):
         # fragment symmetry number == -1
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("CCR")
         fsn = fragment.symmetry_number
 
-        self.assertEqual(fsn, -1)
+        assert fsn == -1
 
     def test_get_symmetry_number2(self):
         # fragment symmetry number != -1
@@ -803,34 +702,32 @@ class TestFragment(unittest.TestCase):
         fsn = fragment.symmetry_number
 
         # fragment.symmetry_number == -1
-        self.assertTrue(fsn != -1)
-        self.assertEqual(fsn, 3.0)
+        assert fsn != -1
+        assert fsn == 3.0
 
     def test_is_radical(self):
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("[CH2]CR")
 
-        self.assertTrue(fragment.is_radical())
+        assert fragment.is_radical()
 
     def test_is_aromatic(self):
-        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string(
-            "c1ccccc1CR"
-        )
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("c1ccccc1CR")
         frag = fragment.generate_resonance_structures()[0]
 
-        self.assertTrue(frag.is_aromatic())
+        assert frag.is_aromatic()
 
     def test_get_representative_molecule(self):
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("CCR")
         mol_repr, _ = fragment.get_representative_molecule()
         ethane = Molecule().from_smiles("CC")
 
-        self.assertTrue(mol_repr.is_isomorphic(ethane))
+        assert mol_repr.is_isomorphic(ethane)
 
     def test_to_rdkit_mol(self):
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("CCR")
         rdmol, _ = fragment.to_rdkit_mol()
 
-        self.assertEqual(rdmol.GetNumAtoms(), 8)
+        assert rdmol.GetNumAtoms() == 8
 
     def test_is_in_cycle_ethane(self):
         """
@@ -838,10 +735,10 @@ class TestFragment(unittest.TestCase):
         """
         frag = rmgpy.molecule.fragment.Fragment(smiles="CC")
         for atom in frag.atoms:
-            self.assertFalse(frag.is_atom_in_cycle(atom))
+            assert not frag.is_atom_in_cycle(atom)
         for atom1 in frag.atoms:
             for atom2, bond in atom1.bonds.items():
-                self.assertFalse(frag.is_bond_in_cycle(bond))
+                assert not frag.is_bond_in_cycle(bond)
 
     def test_is_in_cycle_cyclohexane(self):
         """
@@ -850,12 +747,12 @@ class TestFragment(unittest.TestCase):
         frag = rmgpy.molecule.fragment.Fragment(smiles="C1CCCCC1")
         for atom in frag.atoms:
             if atom.is_hydrogen():
-                self.assertFalse(frag.is_atom_in_cycle(atom))
+                assert not frag.is_atom_in_cycle(atom)
             elif atom.is_carbon():
-                self.assertTrue(frag.is_atom_in_cycle(atom))
+                assert frag.is_atom_in_cycle(atom)
         for atom1 in frag.atoms:
             for atom2, bond in atom1.bonds.items():
                 if atom1.is_carbon() and atom2.is_carbon():
-                    self.assertTrue(frag.is_bond_in_cycle(bond))
+                    assert frag.is_bond_in_cycle(bond)
                 else:
-                    self.assertFalse(frag.is_bond_in_cycle(bond))
+                    assert not frag.is_bond_in_cycle(bond)

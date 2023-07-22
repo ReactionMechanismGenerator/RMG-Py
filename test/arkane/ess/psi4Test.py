@@ -32,7 +32,7 @@ This module contains unit tests of the :mod:`arkane.ess.psi4` module.
 """
 
 import os
-import unittest
+
 
 import numpy as np
 
@@ -45,11 +45,10 @@ from rmgpy.statmech import (
 
 from arkane.exceptions import LogError
 from arkane.ess.psi4 import Psi4Log
+import pytest
 
-################################################################################
 
-
-class Psi4LogTest(unittest.TestCase):
+class Psi4LogTest:
     """
     Contains unit tests for the Psi4Log module, used for parsing Psi4 log files.
     """
@@ -59,15 +58,13 @@ class Psi4LogTest(unittest.TestCase):
         """
         A method that is run before all unit tests in this class.
         """
-        cls.data_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "data", "psi4"
-        )
+        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "psi4")
 
     def test_check_for_errors(self):
         """
         Uses Psi4 log files that had various errors to test if errors are properly parsed.
         """
-        with self.assertRaises(LogError):
+        with pytest.raises(LogError):
             Psi4Log(os.path.join(self.data_path, "IO_error.out"))
 
     def test_number_of_atoms_from_psi4_log(self):
@@ -76,13 +73,13 @@ class Psi4LogTest(unittest.TestCase):
         number of atoms can be properly read.
         """
         log = Psi4Log(os.path.join(self.data_path, "opt_freq.out"))
-        self.assertEqual(log.get_number_of_atoms(), 3)
+        assert log.get_number_of_atoms() == 3
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_ts.out"))
-        self.assertEqual(log.get_number_of_atoms(), 4)
+        assert log.get_number_of_atoms() == 4
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft.out"))
-        self.assertEqual(log.get_number_of_atoms(), 3)
+        assert log.get_number_of_atoms() == 3
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft_ts.out"))
-        self.assertEqual(log.get_number_of_atoms(), 4)
+        assert log.get_number_of_atoms() == 4
 
     def test_energy_from_psi4_log(self):
         """
@@ -90,26 +87,26 @@ class Psi4LogTest(unittest.TestCase):
         molecular energies can be properly read.
         """
         log = Psi4Log(os.path.join(self.data_path, "opt_freq.out"))
-        self.assertAlmostEqual(log.load_energy(), -199599899.9822719, delta=1e-2)
+        assert abs(log.load_energy() - -199599899.9822719) < 1e-2
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_ts.out"))
-        self.assertAlmostEqual(log.load_energy(), -395828407.5987777, delta=1e-2)
+        assert abs(log.load_energy() - -395828407.5987777) < 1e-2
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft.out"))
-        self.assertAlmostEqual(log.load_energy(), -200640009.37231186, delta=1e-2)
+        assert abs(log.load_energy() - -200640009.37231186) < 1e-2
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft_ts.out"))
-        self.assertAlmostEqual(log.load_energy(), -397841662.56434655, delta=1e-2)
+        assert abs(log.load_energy() - -397841662.56434655) < 1e-2
 
     def test_zero_point_energy_from_psi4_log(self):
         """
         Uses Psi4 log files to test that zero-point energies can be properly read.
         """
         log = Psi4Log(os.path.join(self.data_path, "opt_freq.out"))
-        self.assertAlmostEqual(log.load_zero_point_energy(), 60868.832, delta=1e-3)
+        assert abs(log.load_zero_point_energy() - 60868.832) < 1e-3
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft.out"))
-        self.assertAlmostEqual(log.load_zero_point_energy(), 56107.44, delta=1e-3)
+        assert abs(log.load_zero_point_energy() - 56107.44) < 1e-3
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft_ts.out"))
-        self.assertAlmostEqual(log.load_zero_point_energy(), 67328.928, delta=1e-3)
+        assert abs(log.load_zero_point_energy() - 67328.928) < 1e-3
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_ts.out"))
-        self.assertAlmostEqual(log.load_zero_point_energy(), 75136.272, delta=1e-3)
+        assert abs(log.load_zero_point_energy() - 75136.272) < 1e-3
 
     def test_load_force_constant_matrix_from_psi4_log(self):
         """
@@ -190,7 +187,7 @@ class Psi4LogTest(unittest.TestCase):
             ],
             np.float64,
         )
-        self.assertTrue(np.allclose(log.load_force_constant_matrix(), expected_mat_1))
+        assert np.allclose(log.load_force_constant_matrix(), expected_mat_1)
 
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft.out"))
         expected_mat_2 = np.array(
@@ -267,7 +264,7 @@ class Psi4LogTest(unittest.TestCase):
             ],
             np.float64,
         )
-        self.assertTrue(np.allclose(log.load_force_constant_matrix(), expected_mat_2))
+        assert np.allclose(log.load_force_constant_matrix(), expected_mat_2)
 
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft_ts.out"))
         expected_mat_3 = np.array(
@@ -443,7 +440,7 @@ class Psi4LogTest(unittest.TestCase):
             ],
             np.float64,
         )
-        self.assertTrue(np.allclose(log.load_force_constant_matrix(), expected_mat_3))
+        assert np.allclose(log.load_force_constant_matrix(), expected_mat_3)
 
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_ts.out"))
         expected_mat_4 = np.array(
@@ -619,7 +616,7 @@ class Psi4LogTest(unittest.TestCase):
             ],
             np.float64,
         )
-        self.assertTrue(np.allclose(log.load_force_constant_matrix(), expected_mat_4))
+        assert np.allclose(log.load_force_constant_matrix(), expected_mat_4)
 
     def test_load_vibrations_from_psi4_log(self):
         """
@@ -628,12 +625,12 @@ class Psi4LogTest(unittest.TestCase):
         """
         log = Psi4Log(os.path.join(self.data_path, "opt_freq.out"))
         conformer, unscaled_frequencies = log.load_conformer()
-        self.assertEqual(len(conformer.modes[2]._frequencies.value), 3)
-        self.assertEqual(conformer.modes[2]._frequencies.value[2], 4261.7445)
+        assert len(conformer.modes[2]._frequencies.value) == 3
+        assert conformer.modes[2]._frequencies.value[2] == 4261.7445
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft_ts.out"))
         conformer, unscaled_frequencies = log.load_conformer()
-        self.assertEqual(len(conformer.modes[2]._frequencies.value), 5)
-        self.assertEqual(conformer.modes[2]._frequencies.value[2], 1456.2449)
+        assert len(conformer.modes[2]._frequencies.value) == 5
+        assert conformer.modes[2]._frequencies.value[2] == 1456.2449
 
     def test_load_modes_from_psi4_log(self):
         """
@@ -642,31 +639,10 @@ class Psi4LogTest(unittest.TestCase):
         """
         log = Psi4Log(os.path.join(self.data_path, "opt_freq.out"))
         conformer, unscaled_frequencies = log.load_conformer()
-        self.assertTrue(
-            len(
-                [
-                    mode
-                    for mode in conformer.modes
-                    if isinstance(mode, IdealGasTranslation)
-                ]
-            )
-            == 1
-        )
-        self.assertTrue(
-            len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)])
-            == 1
-        )
-        self.assertTrue(
-            len(
-                [
-                    mode
-                    for mode in conformer.modes
-                    if isinstance(mode, HarmonicOscillator)
-                ]
-            )
-            == 1
-        )
-        self.assertEqual(len(unscaled_frequencies), 3)
+        assert len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1
+        assert len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1
+        assert len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1
+        assert len(unscaled_frequencies) == 3
 
     def test_load_negative_frequency(self):
         """
@@ -674,10 +650,10 @@ class Psi4LogTest(unittest.TestCase):
         """
         log_1 = Psi4Log(os.path.join(self.data_path, "opt_freq_dft_ts.out"))
         neg_freq_1 = log_1.load_negative_frequency()
-        self.assertEqual(neg_freq_1, -617.1749)
+        assert neg_freq_1 == -617.1749
         log_2 = Psi4Log(os.path.join(self.data_path, "opt_freq_ts.out"))
         neg_freq_2 = log_2.load_negative_frequency()
-        self.assertEqual(neg_freq_2, -653.3950)
+        assert neg_freq_2 == -653.3950
 
     def test_spin_multiplicity_from_psi4_log(self):
         """
@@ -686,7 +662,7 @@ class Psi4LogTest(unittest.TestCase):
         """
         log = Psi4Log(os.path.join(self.data_path, "opt_freq.out"))
         conformer, unscaled_frequencies = log.load_conformer()
-        self.assertEqual(conformer.spin_multiplicity, 1)
+        assert conformer.spin_multiplicity == 1
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft_ts.out"))
         conformer, unscaled_frequencies = log.load_conformer()
-        self.assertEqual(conformer.spin_multiplicity, 1)
+        assert conformer.spin_multiplicity == 1

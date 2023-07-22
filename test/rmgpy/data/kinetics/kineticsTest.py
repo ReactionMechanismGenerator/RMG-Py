@@ -28,7 +28,7 @@
 ###############################################################################
 
 import os
-import unittest
+
 
 import numpy as np
 
@@ -46,6 +46,7 @@ from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.species import Species
+import pytest
 
 
 ###################################################
@@ -94,29 +95,23 @@ def tearDownModule():
 #####################################################
 
 
-class TestKineticsDatabase(unittest.TestCase):
+class TestKineticsDatabase:
     def test_load_families_incorrect(self):
         """Test invalid methods for loading kinetics families"""
-        path = os.path.join(
-            settings["test_data.directory"], "testing_database", "kinetics", "families"
-        )
+        path = os.path.join(settings["test_data.directory"], "testing_database", "kinetics", "families")
         database = KineticsDatabase()
         database.load_recommended_families(os.path.join(path, "recommended.py"))
 
-        with self.assertRaises(DatabaseError):
+        with pytest.raises(DatabaseError):
             database.load_families(path, families="random")
-        with self.assertRaises(DatabaseError):
-            database.load_families(
-                path, families=["!H_Abstraction", "Disproportionation"]
-            )
-        with self.assertRaises(DatabaseError):
+        with pytest.raises(DatabaseError):
+            database.load_families(path, families=["!H_Abstraction", "Disproportionation"])
+        with pytest.raises(DatabaseError):
             database.load_families(path, families=["fake_family"])
 
     def test_load_families_correct(self):
         """Test valid methods for loading kinetics families."""
-        path = os.path.join(
-            settings["test_data.directory"], "testing_database", "kinetics", "families"
-        )
+        path = os.path.join(settings["test_data.directory"], "testing_database", "kinetics", "families")
         database = KineticsDatabase()
         database.load_recommended_families(os.path.join(path, "recommended.py"))
 
@@ -146,13 +141,9 @@ class TestKineticsDatabase(unittest.TestCase):
             self.fail("Unable to load families using list ['R_Addition_MultipleBond']")
 
         try:
-            database.load_families(
-                path, families=["!H_Abstraction", "!Disproportionation"]
-            )
+            database.load_families(path, families=["!H_Abstraction", "!Disproportionation"])
         except DatabaseError:
-            self.fail(
-                "Unable to load families using list ['!H_Abstraction', '!Disproportionation']"
-            )
+            self.fail("Unable to load families using list ['!H_Abstraction', '!Disproportionation']")
 
         try:
             database.load_families(path, families="!pah")
@@ -165,7 +156,7 @@ class TestKineticsDatabase(unittest.TestCase):
             self.fail("Unable to load families using list ['H_Abstraction', 'pah']")
 
 
-class TestReactionDegeneracy(unittest.TestCase):
+class TestReactionDegeneracy:
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
@@ -207,26 +198,16 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         families = [family_label] if family_label is not None else None
 
-        reaction_list = self.database.kinetics.generate_reactions_from_families(
-            reactants, products, only_families=families
-        )
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=families)
 
-        self.assertEqual(
-            len(reaction_list),
-            expected_rxn_num,
-            "Expected {0} reactions, not {1} for {2} in {3}.".format(
-                expected_rxn_num, len(reaction_list), reactants, family_label
-            ),
+        assert len(reaction_list) == expected_rxn_num, "Expected {0} reactions, not {1} for {2} in {3}.".format(
+            expected_rxn_num, len(reaction_list), reactants, family_label
         )
 
         degeneracy = set([rxn.degeneracy for rxn in reaction_list])
 
-        self.assertEqual(
-            degeneracy,
-            expected_degeneracy,
-            "Expected degeneracies of {0}, not {1} for {2} in {3}.".format(
-                expected_degeneracy, degeneracy, reactants, family_label
-            ),
+        assert degeneracy == expected_degeneracy, "Expected degeneracies of {0}, not {1} for {2} in {3}.".format(
+            expected_degeneracy, degeneracy, reactants, family_label
         )
 
         return reaction_list
@@ -239,9 +220,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         correct_rxn_num = 1
         correct_degeneracy = {6}
 
-        self.assert_correct_reaction_degeneracy(
-            reactants, correct_rxn_num, correct_degeneracy, family_label
-        )
+        self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label)
 
     def test_r_addition_multiple_bond_methyl_naphthalene(self):
         """Test that the proper degeneracy is calculated for H addition to methylnaphthalene"""
@@ -252,9 +231,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         correct_rxn_num = 1
         correct_degeneracy = {1}
 
-        self.assert_correct_reaction_degeneracy(
-            reactants, correct_rxn_num, correct_degeneracy, family_label, products
-        )
+        self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, products)
 
     def test_r_recombination_phenyl(self):
         """Test that the proper degeneracy is calculated for phenyl + H recombination"""
@@ -264,9 +241,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         correct_rxn_num = 1
         correct_degeneracy = {1}
 
-        self.assert_correct_reaction_degeneracy(
-            reactants, correct_rxn_num, correct_degeneracy, family_label
-        )
+        self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label)
 
     def test_r_recombination_h(self):
         """Test that the proper degeneracy is calculated for H + H recombination"""
@@ -276,9 +251,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         correct_rxn_num = 1
         correct_degeneracy = {0.5}
 
-        self.assert_correct_reaction_degeneracy(
-            reactants, correct_rxn_num, correct_degeneracy, family_label
-        )
+        self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label)
 
     def test_degeneracy_for_methyl_methyl_recombination(self):
         """Test that the proper degeneracy is calculated for methyl + methyl recombination"""
@@ -304,9 +277,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         correct_rxn_num = 1
         correct_degeneracy = {0.5}
 
-        self.assert_correct_reaction_degeneracy(
-            reactants, correct_rxn_num, correct_degeneracy, family_label, adjlists=True
-        )
+        self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, adjlists=True)
 
     def test_degeneracy_for_methyl_labeled_methyl_recombination(self):
         """Test that the proper degeneracy is calculated for methyl + labeled methyl recombination"""
@@ -332,9 +303,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         correct_rxn_num = 1
         correct_degeneracy = {1}
 
-        self.assert_correct_reaction_degeneracy(
-            reactants, correct_rxn_num, correct_degeneracy, family_label, adjlists=True
-        )
+        self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, adjlists=True)
 
     def test_degeneracy_for_ethyl_ethyl_disproportionation(self):
         """Test that the proper degeneracy is calculated for ethyl + ethyl disproportionation"""
@@ -366,9 +335,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         correct_rxn_num = 1
         correct_degeneracy = {3}
 
-        self.assert_correct_reaction_degeneracy(
-            reactants, correct_rxn_num, correct_degeneracy, family_label, adjlists=True
-        )
+        self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, adjlists=True)
 
     def test_degeneracy_for_ethyl_labeled_ethyl_disproportionation(self):
         """Test that the proper degeneracy is calculated for ethyl + labeled ethyl disproportionation"""
@@ -400,9 +367,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         correct_rxn_num = 2
         correct_degeneracy = {3}
 
-        self.assert_correct_reaction_degeneracy(
-            reactants, correct_rxn_num, correct_degeneracy, family_label, adjlists=True
-        )
+        self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, adjlists=True)
 
     @work_in_progress
     def test_degeneracy_does_not_include_identical_atom_labels(self):
@@ -468,13 +433,9 @@ class TestReactionDegeneracy(unittest.TestCase):
         mol_d = Molecule().from_smiles("C=CC")
 
         family = database.kinetics.families["Disproportionation"]
-        reaction_list = family._generate_reactions(
-            [mol_a, mol_b], products=[mol_c, mol_d]
-        )
+        reaction_list = family._generate_reactions([mol_a, mol_b], products=[mol_c, mol_d])
 
-        swapped_reaction_list = family._generate_reactions(
-            [mol_b, mol_a], products=[mol_c, mol_d]
-        )
+        swapped_reaction_list = family._generate_reactions([mol_b, mol_a], products=[mol_c, mol_d])
 
         # eliminate rxns that do not match products
         templates = {}
@@ -490,11 +451,7 @@ class TestReactionDegeneracy(unittest.TestCase):
             except KeyError:
                 reverse_templates[rxn.template[0]] = 1
 
-        self.assertEqual(
-            reverse_templates,
-            templates,
-            "The reaction output did not output all the transition states in either order of reactants",
-        )
+        assert reverse_templates == templates, "The reaction output did not output all the transition states in either order of reactants"
 
     def test_propyl_propyl_reaction_is_the_half_propyl_butyl(self):
         """
@@ -508,12 +465,8 @@ class TestReactionDegeneracy(unittest.TestCase):
         propyl = "CC[CH2]"
         butyl = "CCC[CH2]"
 
-        rxn_list_pp = self.assert_correct_reaction_degeneracy(
-            [propyl, propyl], 1, {0.5}, family_label
-        )
-        rxn_list_pb = self.assert_correct_reaction_degeneracy(
-            [propyl, butyl], 1, {1}, family_label
-        )
+        rxn_list_pp = self.assert_correct_reaction_degeneracy([propyl, propyl], 1, {0.5}, family_label)
+        rxn_list_pb = self.assert_correct_reaction_degeneracy([propyl, butyl], 1, {1}, family_label)
 
         family = self.database.kinetics.families[family_label]
 
@@ -527,13 +480,10 @@ class TestReactionDegeneracy(unittest.TestCase):
             degeneracy=pp_reaction.degeneracy,
             estimator="rate rules",
         )
-        self.assertEqual(
-            len(pp_kinetics_list),
-            1,
-            "The propyl and propyl recombination should only return one reaction. It returned {0}. "
-            "Here is the full kinetics: {1}".format(
-                len(pp_kinetics_list), pp_kinetics_list
-            ),
+        assert (
+            len(pp_kinetics_list) == 1
+        ), "The propyl and propyl recombination should only return one reaction. It returned {0}. " "Here is the full kinetics: {1}".format(
+            len(pp_kinetics_list), pp_kinetics_list
         )
 
         pb_kinetics_list = family.get_kinetics(
@@ -542,29 +492,21 @@ class TestReactionDegeneracy(unittest.TestCase):
             degeneracy=pb_reaction.degeneracy,
             estimator="rate rules",
         )
-        self.assertEqual(
-            len(pb_kinetics_list),
-            1,
-            "The propyl and butyl recombination should only return one reaction. It returned {0}. "
-            "Here is the full kinetics: {1}".format(
-                len(pb_kinetics_list), pb_kinetics_list
-            ),
+        assert (
+            len(pb_kinetics_list) == 1
+        ), "The propyl and butyl recombination should only return one reaction. It returned {0}. " "Here is the full kinetics: {1}".format(
+            len(pb_kinetics_list), pb_kinetics_list
         )
 
         # the same reaction group must be found or this test will not work
-        self.assertIn(
-            pb_kinetics_list[0][0].comment,
-            pp_kinetics_list[0][0].comment,
+        assert pb_kinetics_list[0][0].comment in pp_kinetics_list[0][0].comment, (
             "This test found different kinetics for the two groups, so it will not function as expected\n"
             + str(pp_kinetics_list)
-            + str(pb_kinetics_list),
+            + str(pb_kinetics_list)
         )
 
         # test that the kinetics are correct
-        self.assertAlmostEqual(
-            pp_kinetics_list[0][0].get_rate_coefficient(300) * 2,
-            pb_kinetics_list[0][0].get_rate_coefficient(300),
-        )
+        assert round(abs(pp_kinetics_list[0][0].get_rate_coefficient(300) * 2 - pb_kinetics_list[0][0].get_rate_coefficient(300)), 7) == 0
 
     def test_identical_reactants_have_similar_kinetics(self):
         """
@@ -583,12 +525,8 @@ class TestReactionDegeneracy(unittest.TestCase):
         symmetric_product = ["[CH2]CC([CH2])CCC=C"]
         asymmetric_product = ["[CH2]CCC([CH2])CCC=C"]
 
-        rxn_list_bb = self.assert_correct_reaction_degeneracy(
-            [butenyl, butenyl], 1, {1}, family_label, products=symmetric_product
-        )
-        rxn_list_bp = self.assert_correct_reaction_degeneracy(
-            [butenyl, pentenyl], 1, {1}, family_label, products=asymmetric_product
-        )
+        rxn_list_bb = self.assert_correct_reaction_degeneracy([butenyl, butenyl], 1, {1}, family_label, products=symmetric_product)
+        rxn_list_bp = self.assert_correct_reaction_degeneracy([butenyl, pentenyl], 1, {1}, family_label, products=asymmetric_product)
 
         family = self.database.kinetics.families[family_label]
 
@@ -601,13 +539,10 @@ class TestReactionDegeneracy(unittest.TestCase):
             degeneracy=bb_reaction.degeneracy,
             estimator="rate rules",
         )
-        self.assertEqual(
-            len(bb_kinetics_list),
-            1,
-            "The butenyl and butenyl addition should only return one reaction. It returned {0}. "
-            "Here is the full kinetics: {1}".format(
-                len(bb_kinetics_list), bb_kinetics_list
-            ),
+        assert (
+            len(bb_kinetics_list) == 1
+        ), "The butenyl and butenyl addition should only return one reaction. It returned {0}. " "Here is the full kinetics: {1}".format(
+            len(bb_kinetics_list), bb_kinetics_list
         )
 
         bp_kinetics_list = family.get_kinetics(
@@ -616,29 +551,21 @@ class TestReactionDegeneracy(unittest.TestCase):
             degeneracy=bp_reaction.degeneracy,
             estimator="rate rules",
         )
-        self.assertEqual(
-            len(bp_kinetics_list),
-            1,
-            "The butenyl and pentenyl addition should only return one reaction. It returned {0}. "
-            "Here is the full kinetics: {1}".format(
-                len(bp_kinetics_list), bp_kinetics_list
-            ),
+        assert (
+            len(bp_kinetics_list) == 1
+        ), "The butenyl and pentenyl addition should only return one reaction. It returned {0}. " "Here is the full kinetics: {1}".format(
+            len(bp_kinetics_list), bp_kinetics_list
         )
 
         # the same reaction group must be found or this test will not work
-        self.assertIn(
-            bp_kinetics_list[0][0].comment,
-            bb_kinetics_list[0][0].comment,
+        assert bp_kinetics_list[0][0].comment in bb_kinetics_list[0][0].comment, (
             "This test found different kinetics for the two groups, so it will not function as expected\n"
             + str(bb_kinetics_list)
-            + str(bp_kinetics_list),
+            + str(bp_kinetics_list)
         )
 
         # test that the kinetics are correct
-        self.assertAlmostEqual(
-            bb_kinetics_list[0][0].get_rate_coefficient(300),
-            bp_kinetics_list[0][0].get_rate_coefficient(300),
-        )
+        assert round(abs(bb_kinetics_list[0][0].get_rate_coefficient(300) - bp_kinetics_list[0][0].get_rate_coefficient(300)), 7) == 0
 
     def test_reaction_degeneracy_independent_of_generatereactions_direction(self):
         """
@@ -661,23 +588,16 @@ class TestReactionDegeneracy(unittest.TestCase):
         mol_d.assign_atom_ids()
 
         # generate reactions in both directions
-        forward_reactions = family._generate_reactions(
-            [mol_a, mol_b], products=[mol_c, mol_d], forward=True
-        )
-        reverse_reactions = family._generate_reactions(
-            [mol_c, mol_d], products=[mol_a, mol_b], forward=False
-        )
+        forward_reactions = family._generate_reactions([mol_a, mol_b], products=[mol_c, mol_d], forward=True)
+        reverse_reactions = family._generate_reactions([mol_c, mol_d], products=[mol_a, mol_b], forward=False)
 
         forward_reactions = find_degenerate_reactions(forward_reactions)
         reverse_reactions = find_degenerate_reactions(reverse_reactions)
 
-        self.assertEqual(
-            forward_reactions[0].degeneracy,
-            reverse_reactions[0].degeneracy,
-            "the kinetics from forward and reverse directions had different degeneracies, {} and {} "
-            "respectively".format(
-                forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy
-            ),
+        assert (
+            forward_reactions[0].degeneracy == reverse_reactions[0].degeneracy
+        ), "the kinetics from forward and reverse directions had different degeneracies, {} and {} " "respectively".format(
+            forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy
         )
 
     def test_degeneracy_same_reactant_different_resonance_structure(self):
@@ -689,13 +609,9 @@ class TestReactionDegeneracy(unittest.TestCase):
         correct_rxn_num = 1
         correct_degeneracy = {3}
 
-        reaction_list = self.assert_correct_reaction_degeneracy(
-            reactants, correct_rxn_num, correct_degeneracy, family_label, products
-        )
+        reaction_list = self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, products)
 
-        self.assertEqual(
-            set(reaction_list[0].template), {"C_rad/H2/Cd", "Cmethyl_Csrad/H/Cd"}
-        )
+        assert set(reaction_list[0].template) == {"C_rad/H2/Cd", "Cmethyl_Csrad/H/Cd"}
 
     def test_degeneracy_multiple_ts_different_template(self):
         """Test that reactions from different transition states are marked as duplicates."""
@@ -706,12 +622,10 @@ class TestReactionDegeneracy(unittest.TestCase):
         correct_rxn_num = 2
         correct_degeneracy = {3}
 
-        reaction_list = self.assert_correct_reaction_degeneracy(
-            reactants, correct_rxn_num, correct_degeneracy, family_label, products
-        )
+        reaction_list = self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, products)
 
-        self.assertTrue(reaction_list[0].duplicate)
-        self.assertTrue(reaction_list[1].duplicate)
+        assert reaction_list[0].duplicate
+        assert reaction_list[1].duplicate
 
     def test_degeneracy_multiple_resonance_different_template(self):
         """Test that reactions from different resonance structures are not kept."""
@@ -721,11 +635,9 @@ class TestReactionDegeneracy(unittest.TestCase):
         correct_rxn_num = 1
         correct_degeneracy = {6}
 
-        reaction_list = self.assert_correct_reaction_degeneracy(
-            reactants, correct_rxn_num, correct_degeneracy, family_label
-        )
+        reaction_list = self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label)
 
-        self.assertFalse(reaction_list[0].duplicate)
+        assert not reaction_list[0].duplicate
 
     def test_degeneracy_resonance_keep_isomorphic(self):
         """Test that we get the correct degeneracy for [CH2]C=C[CH2] + [H].
@@ -739,12 +651,10 @@ class TestReactionDegeneracy(unittest.TestCase):
         correct_rxn_num = 1
         correct_degeneracy = {2}
 
-        self.assert_correct_reaction_degeneracy(
-            reactants, correct_rxn_num, correct_degeneracy, family_label, products
-        )
+        self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, products)
 
 
-class TestKineticsCommentsParsing(unittest.TestCase):
+class TestKineticsCommentsParsing:
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
@@ -753,9 +663,7 @@ class TestKineticsCommentsParsing(unittest.TestCase):
 
     def test_parse_kinetics(self):
         species, reactions = load_chemkin_file(
-            os.path.join(
-                settings["test_data.directory"], "parsing_data", "chem_annotated.inp"
-            ),
+            os.path.join(settings["test_data.directory"], "parsing_data", "chem_annotated.inp"),
             os.path.join(
                 settings["test_data.directory"],
                 "parsing_data",
@@ -765,45 +673,35 @@ class TestKineticsCommentsParsing(unittest.TestCase):
 
         sources = []
         for reaction in reactions:
-            sources.append(
-                self.database.kinetics.extract_source_from_comments(reaction)
-            )
+            sources.append(self.database.kinetics.extract_source_from_comments(reaction))
 
         # Source 0 comes from a kinetics library
-        self.assertTrue("Library" in sources[0])
-        self.assertEqual(sources[0]["Library"], "GRI-Mech3.0")
+        assert "Library" in sources[0]
+        assert sources[0]["Library"] == "GRI-Mech3.0"
 
-        reconstructed_kinetics = (
-            self.database.kinetics.reconstruct_kinetics_from_source(
-                reactions[0], sources[0], fix_barrier_height=True
-            )
-        )
+        reconstructed_kinetics = self.database.kinetics.reconstruct_kinetics_from_source(reactions[0], sources[0], fix_barrier_height=True)
         A = reconstructed_kinetics.A.value_si
         n = reconstructed_kinetics.n.value_si
-        self.assertAlmostEqual(reactions[0].kinetics.A.value_si, A)
-        self.assertAlmostEqual(reactions[0].kinetics.n.value_si, n)
+        assert round(abs(reactions[0].kinetics.A.value_si - A), 7) == 0
+        assert round(abs(reactions[0].kinetics.n.value_si - n), 7) == 0
 
         # Source 1 comes from a single exact match to a rate rule
-        self.assertTrue("Rate Rules" in sources[1])
-        self.assertEqual(sources[1]["Rate Rules"][0], "Disproportionation")
+        assert "Rate Rules" in sources[1]
+        assert sources[1]["Rate Rules"][0] == "Disproportionation"
         rules = sources[1]["Rate Rules"][1]["rules"]
 
-        self.assertEqual(len(rules), 1)
-        self.assertEqual(rules[0][0].label, "O_pri_rad;Cmethyl_Csrad")
+        assert len(rules) == 1
+        assert rules[0][0].label == "O_pri_rad;Cmethyl_Csrad"
 
-        reconstructed_kinetics = (
-            self.database.kinetics.reconstruct_kinetics_from_source(
-                reactions[1], sources[1], fix_barrier_height=True
-            )
-        )
+        reconstructed_kinetics = self.database.kinetics.reconstruct_kinetics_from_source(reactions[1], sources[1], fix_barrier_height=True)
         A = reconstructed_kinetics.A.value_si
         n = reconstructed_kinetics.n.value_si
-        self.assertAlmostEqual(reactions[1].kinetics.A.value_si, A)
-        self.assertAlmostEqual(reactions[1].kinetics.n.value_si, n)
+        assert round(abs(reactions[1].kinetics.A.value_si - A), 7) == 0
+        assert round(abs(reactions[1].kinetics.n.value_si - n), 7) == 0
 
         # Source 2 comes from an averaged rate rule that even contains a rate rule from a training reaction
-        self.assertTrue("Rate Rules" in sources[2])
-        self.assertEqual(sources[2]["Rate Rules"][0], "Disproportionation")
+        assert "Rate Rules" in sources[2]
+        assert sources[2]["Rate Rules"][0] == "Disproportionation"
         expected_rules = [
             "O2b;O_Csrad",
             "O_atom_triplet;O_Csrad",
@@ -827,53 +725,41 @@ class TestKineticsCommentsParsing(unittest.TestCase):
 
         actual_rule_labels = [rule.label for rule, weight in rules]
 
-        self.assertEqual(len(rules), len(expected_rules))
+        assert len(rules) == len(expected_rules)
         for rule in expected_rules:
-            self.assertTrue(rule in actual_rule_labels)
+            assert rule in actual_rule_labels
 
-        self.assertEqual(len(training), 1)
-        self.assertEqual(
-            training[0][1].index, 0
-        )  # Assert that the index of that training reaction is 1
+        assert len(training) == 1
+        assert training[0][1].index == 0  # Assert that the index of that training reaction is 1
 
-        reconstructed_kinetics = (
-            self.database.kinetics.reconstruct_kinetics_from_source(
-                reactions[2], sources[2], fix_barrier_height=True
-            )
-        )
+        reconstructed_kinetics = self.database.kinetics.reconstruct_kinetics_from_source(reactions[2], sources[2], fix_barrier_height=True)
         A = reconstructed_kinetics.A.value_si
         n = reconstructed_kinetics.n.value_si
-        A = round(
-            A, -int(np.floor(np.log10(abs(A)))) + 3
-        )  # Do some rounding since chemkin format kinetics are rounded
+        A = round(A, -int(np.floor(np.log10(abs(A)))) + 3)  # Do some rounding since chemkin format kinetics are rounded
         n = round(n, 3)
-        self.assertAlmostEqual(reactions[2].kinetics.A.value_si, A)
-        self.assertAlmostEqual(reactions[2].kinetics.n.value_si, n)
+        assert round(abs(reactions[2].kinetics.A.value_si - A), 7) == 0
+        assert round(abs(reactions[2].kinetics.n.value_si - n), 7) == 0
 
         # Source 3 comes from a training reaction match
-        self.assertTrue("Training" in sources[3])
+        assert "Training" in sources[3]
         family_label = sources[3]["Training"][0]
         training_rxn = sources[3]["Training"][1]
 
-        self.assertEqual(family_label, "Disproportionation")
-        self.assertEqual(training_rxn.label, "C2H + CH3O <=> C2H2 + CH2O")
+        assert family_label == "Disproportionation"
+        assert training_rxn.label == "C2H + CH3O <=> C2H2 + CH2O"
 
-        reconstructed_kinetics = (
-            self.database.kinetics.reconstruct_kinetics_from_source(
-                reactions[3], sources[3], fix_barrier_height=True
-            )
-        )
+        reconstructed_kinetics = self.database.kinetics.reconstruct_kinetics_from_source(reactions[3], sources[3], fix_barrier_height=True)
         A = reconstructed_kinetics.A.value_si
         n = reconstructed_kinetics.n.value_si
-        self.assertAlmostEqual(reactions[3].kinetics.A.value_si, A)
-        self.assertAlmostEqual(reactions[3].kinetics.n.value_si, n)
+        assert round(abs(reactions[3].kinetics.A.value_si - A), 7) == 0
+        assert round(abs(reactions[3].kinetics.n.value_si - n), 7) == 0
 
         # Source 3 comes from a pdep reaction
-        self.assertTrue("PDep" in sources[4])
-        self.assertEqual(sources[4]["PDep"], 7)
+        assert "PDep" in sources[4]
+        assert sources[4]["PDep"] == 7
 
 
-class TestKinetics(unittest.TestCase):
+class TestKinetics:
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
@@ -882,9 +768,7 @@ class TestKinetics(unittest.TestCase):
         cls.database = database
 
         cls.species, cls.reactions = load_chemkin_file(
-            os.path.join(
-                settings["test_data.directory"], "parsing_data", "chem_annotated.inp"
-            ),
+            os.path.join(settings["test_data.directory"], "parsing_data", "chem_annotated.inp"),
             os.path.join(
                 settings["test_data.directory"],
                 "parsing_data",
@@ -901,10 +785,8 @@ class TestKinetics(unittest.TestCase):
 
         reaction_list = self.database.kinetics.react_molecules(molecule_tuple)
 
-        self.assertIsNotNone(reaction_list)
-        self.assertTrue(
-            all([isinstance(rxn, TemplateReaction) for rxn in reaction_list])
-        )
+        assert reaction_list is not None
+        assert all([isinstance(rxn, TemplateReaction) for rxn in reaction_list])
 
     def test_ensure_independent_atom_ids(self):
         """
@@ -912,13 +794,13 @@ class TestKinetics(unittest.TestCase):
         """
         s1 = Species().from_smiles("CCC")
         s2 = Species().from_smiles("C=C[CH]C")
-        self.assertEqual(s2.molecule[0].atoms[0].id, -1)
+        assert s2.molecule[0].atoms[0].id == -1
 
         ensure_independent_atom_ids([s1, s2])
         # checks atom id
-        self.assertNotEqual(s2.molecule[0].atoms[0].id, -1)
+        assert s2.molecule[0].atoms[0].id != -1
         # checks second resonance structure id
-        self.assertNotEqual(s2.molecule[1].atoms[0].id, -1)
+        assert s2.molecule[1].atoms[0].id != -1
 
     def test_ensure_independent_atom_ids_no_resonance(self):
         """
@@ -926,14 +808,14 @@ class TestKinetics(unittest.TestCase):
         """
         s1 = Species().from_smiles("CCC")
         s2 = Species().from_smiles("C=C[CH]C")
-        self.assertEqual(s2.molecule[0].atoms[0].id, -1)
+        assert s2.molecule[0].atoms[0].id == -1
 
         ensure_independent_atom_ids([s1, s2], resonance=False)
         # checks resonance structures
-        self.assertEqual(len(s2.molecule), 1)
+        assert len(s2.molecule) == 1
         # checks that atom ids are changed
         for atom in s2.molecule[0].atoms:
-            self.assertNotEqual(atom.id, -1)
+            assert atom.id != -1
 
     def test_save_entry(self):
         """
@@ -970,9 +852,9 @@ class TestKinetics(unittest.TestCase):
         """
         lib = self.database.kinetics.libraries["GRI-Mech3.0"]
         out = lib.check_for_duplicates(True)
-        self.assertIsNone(out)
+        assert out is None
         out = lib.convert_duplicates_to_multi()
-        self.assertIsNone(out)
+        assert out is None
 
     def test_add_reverse_attribute(self):
         """
@@ -1038,11 +920,11 @@ class TestKinetics(unittest.TestCase):
         rxn = TemplateReaction(reactants=[r1, r2], products=[p1, p2])
 
         rxn.degeneracy = family.calculate_degeneracy(rxn)
-        self.assertEqual(rxn.degeneracy, 6)
+        assert rxn.degeneracy == 6
 
         family.add_reverse_attribute(rxn)
 
-        self.assertEqual(rxn.reverse.degeneracy, 6)
+        assert rxn.reverse.degeneracy == 6
 
     def test_calculate_degeneracy_for_non_reactive_molecule(self):
         """
@@ -1068,16 +950,14 @@ class TestKinetics(unittest.TestCase):
 
         family = get_db("kinetics").families["R_Recombination"]
         r1 = Species(molecule=[Molecule().from_adjacency_list(adjlist[0])])
-        r2 = Species(
-            molecule=[Molecule().from_adjacency_list(adjlist[1])]
-        )  # r2 is not the representative structure of
+        r2 = Species(molecule=[Molecule().from_adjacency_list(adjlist[1])])  # r2 is not the representative structure of
         # NO, but it is the correct structure participating in this reaction
         p1 = Species(molecule=[Molecule().from_adjacency_list(adjlist[2])])
         r2.generate_resonance_structures(keep_isomorphic=True)
 
         rxn = TemplateReaction(reactants=[r1, r2], products=[p1])
         rxn.degeneracy = family.calculate_degeneracy(rxn)
-        self.assertEqual(rxn.degeneracy, 1)
+        assert rxn.degeneracy == 1
 
     def test_generate_reactions_from_families_with_resonance(self):
         """Test that we can generate reactions from families with resonance structures"""
@@ -1088,21 +968,15 @@ class TestKinetics(unittest.TestCase):
         expected_product_1 = Molecule().from_smiles("CC=CCO")
         expected_product_2 = Molecule().from_smiles("CC(O)C=C")
 
-        reaction_list = self.database.kinetics.generate_reactions_from_families(
-            reactants, only_families=["R_Recombination"], resonance=True
-        )
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, only_families=["R_Recombination"], resonance=True)
 
-        self.assertEqual(len(reaction_list), 2)
+        assert len(reaction_list) == 2
 
-        case_1 = reaction_list[0].products[0].is_isomorphic(
-            expected_product_1
-        ) and reaction_list[1].products[0].is_isomorphic(expected_product_2)
-        case_2 = reaction_list[0].products[0].is_isomorphic(
-            expected_product_2
-        ) and reaction_list[1].products[0].is_isomorphic(expected_product_1)
+        case_1 = reaction_list[0].products[0].is_isomorphic(expected_product_1) and reaction_list[1].products[0].is_isomorphic(expected_product_2)
+        case_2 = reaction_list[0].products[0].is_isomorphic(expected_product_2) and reaction_list[1].products[0].is_isomorphic(expected_product_1)
 
         # Only one case should be true
-        self.assertTrue(case_1 ^ case_2)
+        assert case_1 ^ case_2
 
     def test_generate_reactions_from_families_no_resonance(self):
         """Test that we can generate reactions from families without resonance structures"""
@@ -1112,13 +986,11 @@ class TestKinetics(unittest.TestCase):
         ]
         expected_product = Molecule().from_smiles("CC=CCO")
 
-        reaction_list = self.database.kinetics.generate_reactions_from_families(
-            reactants, only_families=["R_Recombination"], resonance=False
-        )
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, only_families=["R_Recombination"], resonance=False)
 
-        self.assertEqual(len(reaction_list), 1)
+        assert len(reaction_list) == 1
 
-        self.assertTrue(reaction_list[0].products[0].is_isomorphic(expected_product))
+        assert reaction_list[0].products[0].is_isomorphic(expected_product)
 
     def test_generate_reactions_from_families_product_resonance(self):
         """Test that we can specify the product resonance structure when generating reactions"""
@@ -1131,12 +1003,10 @@ class TestKinetics(unittest.TestCase):
             Molecule().from_smiles("[H][H]"),
         ]
 
-        reaction_list = self.database.kinetics.generate_reactions_from_families(
-            reactants, products, only_families=["H_Abstraction"], resonance=True
-        )
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=["H_Abstraction"], resonance=True)
 
-        self.assertEqual(len(reaction_list), 1)
-        self.assertEqual(reaction_list[0].degeneracy, 2)
+        assert len(reaction_list) == 1
+        assert reaction_list[0].degeneracy == 2
 
     def test_generate_reactions_from_families_product_resonance2(self):
         """Test that we can specify the no product resonance structure when generating reactions"""
@@ -1149,10 +1019,8 @@ class TestKinetics(unittest.TestCase):
             Molecule().from_smiles("[H][H]"),
         ]
 
-        reaction_list = self.database.kinetics.generate_reactions_from_families(
-            reactants, products, only_families=["H_Abstraction"], resonance=False
-        )
-        self.assertEqual(len(reaction_list), 0)
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=["H_Abstraction"], resonance=False)
+        assert len(reaction_list) == 0
 
     def test_generate_reactions_from_libraries(self):
         """Test that we can generate reactions from libraries"""
@@ -1161,11 +1029,9 @@ class TestKinetics(unittest.TestCase):
             Molecule().from_smiles("[H]"),
         ]
 
-        reaction_list = self.database.kinetics.generate_reactions_from_libraries(
-            reactants
-        )
+        reaction_list = self.database.kinetics.generate_reactions_from_libraries(reactants)
 
-        self.assertEqual(len(reaction_list), 3)
+        assert len(reaction_list) == 3
 
     def test_generate_reactions_from_libraries2(self):
         """Test that we can generate reactions from libraries specifying products"""
@@ -1177,11 +1043,9 @@ class TestKinetics(unittest.TestCase):
             Molecule().from_smiles("[CH2]C=O"),
             Molecule().from_smiles("[H][H]"),
         ]
-        reaction_list_2 = self.database.kinetics.generate_reactions_from_libraries(
-            reactants, products
-        )
+        reaction_list_2 = self.database.kinetics.generate_reactions_from_libraries(reactants, products)
 
-        self.assertEqual(len(reaction_list_2), 1)
+        assert len(reaction_list_2) == 1
 
     def test_add_atom_labels_for_reaction(self):
         """Test that add_atom_labels_for_reaction can identify reactions with resonance
@@ -1196,9 +1060,7 @@ class TestKinetics(unittest.TestCase):
             Molecule().from_smiles("C#C[CH2]"),
             Molecule().from_smiles("C#CC"),
         ]
-        reaction = TemplateReaction(
-            reactants=reactants, products=products, family="H_Abstraction"
-        )
+        reaction = TemplateReaction(reactants=reactants, products=products, family="H_Abstraction")
         reaction.ensure_species(reactant_resonance=True, product_resonance=True)
         family = get_db("kinetics").families["H_Abstraction"]
         family.add_atom_labels_for_reaction(reaction, output_with_resonance=False)
@@ -1209,10 +1071,10 @@ class TestKinetics(unittest.TestCase):
             for atom in species.molecule[0].atoms:
                 if atom.label != "":
                     found_labels.append(atom.label)
-        self.assertEqual(len(found_labels), 3)
-        self.assertIn("*1", found_labels)
-        self.assertIn("*2", found_labels)
-        self.assertIn("*3", found_labels)
+        assert len(found_labels) == 3
+        assert "*1" in found_labels
+        assert "*2" in found_labels
+        assert "*3" in found_labels
 
         # test for the products too
         found_labels = []
@@ -1220,10 +1082,10 @@ class TestKinetics(unittest.TestCase):
             for atom in species.molecule[0].atoms:
                 if atom.label != "":
                     found_labels.append(atom.label)
-        self.assertEqual(len(found_labels), 3)
-        self.assertIn("*1", found_labels)
-        self.assertIn("*2", found_labels)
-        self.assertIn("*3", found_labels)
+        assert len(found_labels) == 3
+        assert "*1" in found_labels
+        assert "*2" in found_labels
+        assert "*3" in found_labels
 
     def test_add_atom_labels_for_reaction_2(self):
         """Test that add_atom_labels_for_reaction can identify reactions with identical references
@@ -1236,9 +1098,7 @@ class TestKinetics(unittest.TestCase):
         s2.generate_resonance_structures()
         reactants = [s1, s2]
         products = [s2, s3]
-        reaction = TemplateReaction(
-            reactants=reactants, products=products, family="H_Abstraction"
-        )
+        reaction = TemplateReaction(reactants=reactants, products=products, family="H_Abstraction")
         family = get_db("kinetics").families["H_Abstraction"]
         print(reaction.reactants)
         print(reaction.products)
@@ -1250,14 +1110,10 @@ class TestKinetics(unittest.TestCase):
             for atom in species.molecule[0].atoms:
                 if atom.label != "":
                     found_labels.append(atom.label)
-        self.assertEqual(
-            len(found_labels),
-            3,
-            "wrong number of labels found {0}".format(found_labels),
-        )
-        self.assertIn("*1", found_labels)
-        self.assertIn("*2", found_labels)
-        self.assertIn("*3", found_labels)
+        assert len(found_labels) == 3, "wrong number of labels found {0}".format(found_labels)
+        assert "*1" in found_labels
+        assert "*2" in found_labels
+        assert "*3" in found_labels
 
         # test for the products too
         found_labels = []
@@ -1265,10 +1121,10 @@ class TestKinetics(unittest.TestCase):
             for atom in species.molecule[0].atoms:
                 if atom.label != "":
                     found_labels.append(atom.label)
-        self.assertEqual(len(found_labels), 3)
-        self.assertIn("*1", found_labels)
-        self.assertIn("*2", found_labels)
-        self.assertIn("*3", found_labels)
+        assert len(found_labels) == 3
+        assert "*1" in found_labels
+        assert "*2" in found_labels
+        assert "*3" in found_labels
 
     def test_add_atom_labels_for_reaction_3(self):
         """Test that add_atom_labels_for_reaction can identify reactions with resonance and isotopes"""
@@ -1294,9 +1150,7 @@ class TestKinetics(unittest.TestCase):
         s3 = Species(molecule=[mp1a, mp1b])
         reactants = [s1, s2]
         products = [s1, s3]
-        reaction = TemplateReaction(
-            reactants=reactants, products=products, family="H_Abstraction"
-        )
+        reaction = TemplateReaction(reactants=reactants, products=products, family="H_Abstraction")
         family = get_db("kinetics").families["H_Abstraction"]
         print(reaction.reactants)
         print(reaction.products)
@@ -1308,14 +1162,10 @@ class TestKinetics(unittest.TestCase):
             for atom in species.molecule[0].atoms:
                 if atom.label != "":
                     found_labels.append(atom.label)
-        self.assertEqual(
-            len(found_labels),
-            3,
-            "wrong number of labels found {0}".format(found_labels),
-        )
-        self.assertIn("*1", found_labels)
-        self.assertIn("*2", found_labels)
-        self.assertIn("*3", found_labels)
+        assert len(found_labels) == 3, "wrong number of labels found {0}".format(found_labels)
+        assert "*1" in found_labels
+        assert "*2" in found_labels
+        assert "*3" in found_labels
 
         # test for the products too
         found_labels = []
@@ -1323,10 +1173,10 @@ class TestKinetics(unittest.TestCase):
             for atom in species.molecule[0].atoms:
                 if atom.label != "":
                     found_labels.append(atom.label)
-        self.assertEqual(len(found_labels), 3)
-        self.assertIn("*1", found_labels)
-        self.assertIn("*2", found_labels)
-        self.assertIn("*3", found_labels)
+        assert len(found_labels) == 3
+        assert "*1" in found_labels
+        assert "*2" in found_labels
+        assert "*3" in found_labels
 
     def test_species_preserved_after_generate_reactions(self):
         """
@@ -1335,9 +1185,7 @@ class TestKinetics(unittest.TestCase):
         This tests a case involving identical reactants
         """
         reactant1 = Species(index=1, label="ethyl", smiles="C[CH2]")
-        reactant1_copy = reactant1.copy(
-            deep=True
-        )  # These copies record the state of the original attributes
+        reactant1_copy = reactant1.copy(deep=True)  # These copies record the state of the original attributes
         expected_product_1 = Species(smiles="CC")
         expected_product_2 = Species(smiles="C=C")
 
@@ -1346,44 +1194,37 @@ class TestKinetics(unittest.TestCase):
         )
 
         # First confirm that we get the expected reaction
-        self.assertEqual(len(reaction_list), 1)
+        assert len(reaction_list) == 1
         reaction = reaction_list[0]
-        case_1 = reaction.products[0].is_isomorphic(
-            expected_product_1
-        ) and reaction.products[1].is_isomorphic(expected_product_2)
-        case_2 = reaction.products[0].is_isomorphic(
-            expected_product_2
-        ) and reaction.products[1].is_isomorphic(expected_product_1)
+        case_1 = reaction.products[0].is_isomorphic(expected_product_1) and reaction.products[1].is_isomorphic(expected_product_2)
+        case_2 = reaction.products[0].is_isomorphic(expected_product_2) and reaction.products[1].is_isomorphic(expected_product_1)
         # Only one case should be true
-        self.assertTrue(case_1 or case_2)
+        assert case_1 or case_2
 
         reactant1_out, reactant2_out = reaction.reactants
 
         # The species in the output reaction should be new objects because we made them from Molecule objects
-        self.assertIsNot(reactant1, reactant1_out)
-        self.assertIsNot(reactant1, reactant2_out)
+        assert reactant1 is not reactant1_out
+        assert reactant1 is not reactant2_out
 
         # The molecule objects should be the same references for one output species
-        self.assertIsNot(reactant1.molecule[0], reactant1_out.molecule[0])
-        self.assertIs(reactant1.molecule[0], reactant2_out.molecule[0])
+        assert reactant1.molecule[0] is not reactant1_out.molecule[0]
+        assert reactant1.molecule[0] is reactant2_out.molecule[0]
 
         # They should be isomorphic
-        self.assertTrue(reactant1.is_isomorphic(reactant1_out))
-        self.assertTrue(reactant1.is_isomorphic(reactant2_out))
-        self.assertTrue(reactant1_copy.is_isomorphic(reactant1_out))
-        self.assertTrue(reactant1_copy.is_isomorphic(reactant2_out))
+        assert reactant1.is_isomorphic(reactant1_out)
+        assert reactant1.is_isomorphic(reactant2_out)
+        assert reactant1_copy.is_isomorphic(reactant1_out)
+        assert reactant1_copy.is_isomorphic(reactant2_out)
 
         # Now, we only care whether the original reactants have deviated from the copies
         # The output reactants will be replaced by the original reactants in CERM.check_for_existing_species
-        self.assertEqual(reactant1.index, reactant1_copy.index)
-        self.assertEqual(reactant1.label, reactant1_copy.label)
-        self.assertEqual(reactant1.props, reactant1_copy.props)
-        self.assertEqual(reactant1.molecule, reactant1_copy.molecule)
-        self.assertEqual(
-            reactant1.molecule[0].get_all_labeled_atoms(),
-            reactant1_copy.molecule[0].get_all_labeled_atoms(),
-        )
-        self.assertEqual(reactant1.molecule[0].props, reactant1_copy.molecule[0].props)
+        assert reactant1.index == reactant1_copy.index
+        assert reactant1.label == reactant1_copy.label
+        assert reactant1.props == reactant1_copy.props
+        assert reactant1.molecule == reactant1_copy.molecule
+        assert reactant1.molecule[0].get_all_labeled_atoms() == reactant1_copy.molecule[0].get_all_labeled_atoms()
+        assert reactant1.molecule[0].props == reactant1_copy.molecule[0].props
 
     def test_species_preserved_after_generate_reactions_2(self):
         """
@@ -1394,9 +1235,7 @@ class TestKinetics(unittest.TestCase):
         reactant1 = Species(index=1, label="methyl", smiles="[CH3]")
         reactant2 = Species(index=2, label="benzene", smiles="c1ccccc1")
         reactant2.generate_resonance_structures()  # Only benzene has resonance structures
-        reactant1_copy = reactant1.copy(
-            deep=True
-        )  # These copies record the state of the original attributes
+        reactant1_copy = reactant1.copy(deep=True)  # These copies record the state of the original attributes
         reactant2_copy = reactant2.copy(deep=True)
         expected_product = Species(smiles="CC1[CH]C=CC=C1")
 
@@ -1407,43 +1246,37 @@ class TestKinetics(unittest.TestCase):
         )
 
         # First confirm that we get the expected reaction
-        self.assertEqual(len(reaction_list), 1)
+        assert len(reaction_list) == 1
         reaction = reaction_list[0]
-        self.assertTrue(reaction.products[0].is_isomorphic(expected_product))
+        assert reaction.products[0].is_isomorphic(expected_product)
 
         reactant1_out, reactant2_out = reaction.reactants
 
         # The species in the output reaction should be new objects because we made them from Molecule objects
-        self.assertIsNot(reactant1, reactant1_out)
-        self.assertIsNot(reactant2, reactant2_out)
+        assert reactant1 is not reactant1_out
+        assert reactant2 is not reactant2_out
 
         # However, the molecule objects should be the same references
-        self.assertIs(reactant1.molecule[0], reactant1_out.molecule[0])
-        self.assertIs(reactant2.molecule[0], reactant2_out.molecule[0])
+        assert reactant1.molecule[0] is reactant1_out.molecule[0]
+        assert reactant2.molecule[0] is reactant2_out.molecule[0]
 
         # They should be isomorphic
-        self.assertTrue(reactant1.is_isomorphic(reactant1_out))
-        self.assertTrue(reactant2.is_isomorphic(reactant2_out))
-        self.assertTrue(reactant1_copy.is_isomorphic(reactant1_out))
-        self.assertTrue(reactant2_copy.is_isomorphic(reactant2_out))
+        assert reactant1.is_isomorphic(reactant1_out)
+        assert reactant2.is_isomorphic(reactant2_out)
+        assert reactant1_copy.is_isomorphic(reactant1_out)
+        assert reactant2_copy.is_isomorphic(reactant2_out)
 
         # Now, we only care whether the original reactants have deviated from the copies
         # The output reactants will be replaced by the original reactants in CERM.check_for_existing_species
-        self.assertEqual(reactant1.index, reactant1_copy.index)
-        self.assertEqual(reactant2.index, reactant2_copy.index)
-        self.assertEqual(reactant1.label, reactant1_copy.label)
-        self.assertEqual(reactant2.label, reactant2_copy.label)
-        self.assertEqual(reactant1.props, reactant1_copy.props)
-        self.assertEqual(reactant2.props, reactant2_copy.props)
-        self.assertEqual(reactant1.molecule, reactant1_copy.molecule)
-        self.assertEqual(reactant2.molecule, reactant2_copy.molecule)
-        self.assertEqual(
-            reactant1.molecule[0].get_all_labeled_atoms(),
-            reactant1_copy.molecule[0].get_all_labeled_atoms(),
-        )
-        self.assertEqual(
-            reactant2.molecule[0].get_all_labeled_atoms(),
-            reactant2_copy.molecule[0].get_all_labeled_atoms(),
-        )
-        self.assertEqual(reactant1.molecule[0].props, reactant1_copy.molecule[0].props)
-        self.assertEqual(reactant2.molecule[0].props, reactant2_copy.molecule[0].props)
+        assert reactant1.index == reactant1_copy.index
+        assert reactant2.index == reactant2_copy.index
+        assert reactant1.label == reactant1_copy.label
+        assert reactant2.label == reactant2_copy.label
+        assert reactant1.props == reactant1_copy.props
+        assert reactant2.props == reactant2_copy.props
+        assert reactant1.molecule == reactant1_copy.molecule
+        assert reactant2.molecule == reactant2_copy.molecule
+        assert reactant1.molecule[0].get_all_labeled_atoms() == reactant1_copy.molecule[0].get_all_labeled_atoms()
+        assert reactant2.molecule[0].get_all_labeled_atoms() == reactant2_copy.molecule[0].get_all_labeled_atoms()
+        assert reactant1.molecule[0].props == reactant1_copy.molecule[0].props
+        assert reactant2.molecule[0].props == reactant2_copy.molecule[0].props

@@ -29,7 +29,7 @@
 
 import os
 import shutil
-import unittest
+
 
 from rdkit import Chem
 from rmgpy.molecule import Molecule
@@ -39,7 +39,7 @@ from rmgpy.qm.molecule import Geometry
 scratch_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "scratch")
 
 
-class TestQMMolecule(unittest.TestCase):
+class TestQMMolecule:
     """
     Contains unit tests for the Geometry class in the qm module.
     """
@@ -72,7 +72,7 @@ class TestQMMolecule(unittest.TestCase):
             )
             rdmol, _ = geom.rd_build()
             rdmol, _ = geom.rd_embed(rdmol, num_conf_attempts=20)
-            self.assertEqual(rdmol.GetNumConformers(), 20)
+            assert rdmol.GetNumConformers() == 20
         shutil.rmtree(scratch_dir)
 
     def test_rd_embed_uncommon_species(self):
@@ -96,5 +96,5 @@ class TestQMMolecule(unittest.TestCase):
             )
             rdmol = Chem.rdmolops.AddHs(Chem.MolFromSmiles(smi))
             rdmol, _ = geom.rd_embed(rdmol, num_conf_attempts=20)
-            self.assertEqual(rdmol.GetNumConformers(), 20)
+            assert rdmol.GetNumConformers() == 20
         shutil.rmtree(scratch_dir)

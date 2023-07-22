@@ -32,7 +32,7 @@ This script contains unit tests of the :mod:`rmgpy.thermo.nasa` module.
 """
 
 import os.path
-import unittest
+
 
 import numpy as np
 
@@ -41,10 +41,7 @@ from rmgpy.quantity import ScalarQuantity
 from rmgpy.thermo.nasa import NASA, NASAPolynomial
 
 
-################################################################################
-
-
-class TestNASA(unittest.TestCase):
+class TestNASA:
     """
     Contains unit tests of the MultiNASA class.
     """
@@ -78,9 +75,7 @@ class TestNASA(unittest.TestCase):
         self.comment = "C2H6"
         self.nasa = NASA(
             polynomials=[
-                NASAPolynomial(
-                    coeffs=self.coeffs_low, Tmin=(self.Tmin, "K"), Tmax=(self.Tint, "K")
-                ),
+                NASAPolynomial(coeffs=self.coeffs_low, Tmin=(self.Tmin, "K"), Tmax=(self.Tint, "K")),
                 NASAPolynomial(
                     coeffs=self.coeffs_high,
                     Tmin=(self.Tint, "K"),
@@ -105,60 +100,45 @@ class TestNASA(unittest.TestCase):
         """
         Test that the NASA low-temperature polynomial was properly set.
         """
-        self.assertEqual(len(self.nasa.poly1.coeffs), len(self.coeffs_low))
+        assert len(self.nasa.poly1.coeffs) == len(self.coeffs_low)
         for coeff0, coeff in zip(self.nasa.poly1.coeffs, self.coeffs_low):
-            self.assertAlmostEqual(coeff / coeff0, 1.0, 6)
-        self.assertEqual(self.nasa.poly1.Tmin.value_si, self.Tmin)
-        self.assertEqual(self.nasa.poly1.Tmax.value_si, self.Tint)
+            assert round(abs(coeff / coeff0 - 1.0), 6) == 0
+        assert self.nasa.poly1.Tmin.value_si == self.Tmin
+        assert self.nasa.poly1.Tmax.value_si == self.Tint
 
     def test_poly_high(self):
         """
         Test that the NASA high-temperature polynomial was properly set.
         """
-        self.assertEqual(len(self.nasa.poly2.coeffs), len(self.coeffs_high))
+        assert len(self.nasa.poly2.coeffs) == len(self.coeffs_high)
         for coeff0, coeff in zip(self.nasa.poly2.coeffs, self.coeffs_high):
-            self.assertAlmostEqual(coeff / coeff0, 1.0, 6)
-        self.assertEqual(self.nasa.poly2.Tmin.value_si, self.Tint)
-        self.assertEqual(self.nasa.poly2.Tmax.value_si, self.Tmax)
+            assert round(abs(coeff / coeff0 - 1.0), 6) == 0
+        assert self.nasa.poly2.Tmin.value_si == self.Tint
+        assert self.nasa.poly2.Tmax.value_si == self.Tmax
 
     def test_temperature_min(self):
         """
         Test that the NASA Tmin property was properly set.
         """
-        self.assertAlmostEqual(
-            self.nasa.Tmin.value_si / self.Tmin,
-            1.0,
-            6,
-            "{0} != {1} within 6 places".format(self.nasa.Tmin, self.Tmin),
-        )
+        assert round(abs(self.nasa.Tmin.value_si / self.Tmin - 1.0), 6) == 0, "{0} != {1} within 6 places".format(self.nasa.Tmin, self.Tmin)
 
     def test_temperature_max(self):
         """
         Test that the NASA Tmax property was properly set.
         """
-        self.assertAlmostEqual(
-            self.nasa.Tmax.value_si / self.Tmax,
-            1.0,
-            6,
-            "{0} != {1} within 6 places".format(self.nasa.Tmax, self.Tmax),
-        )
+        assert round(abs(self.nasa.Tmax.value_si / self.Tmax - 1.0), 6) == 0, "{0} != {1} within 6 places".format(self.nasa.Tmax, self.Tmax)
 
     def test_e0(self):
         """
         Test that the NASA E0 property was properly set.
         """
-        self.assertAlmostEqual(
-            self.nasa.E0.value_si / self.E0,
-            1.0,
-            6,
-            "{0} != {1} within 6 places".format(self.nasa.Tmax, self.Tmax),
-        )
+        assert round(abs(self.nasa.E0.value_si / self.E0 - 1.0), 6) == 0, "{0} != {1} within 6 places".format(self.nasa.Tmax, self.Tmax)
 
     def test_comment(self):
         """
         Test that the NASA comment property was properly set.
         """
-        self.assertEqual(self.nasa.comment, self.comment)
+        assert self.nasa.comment == self.comment
 
     def test_is_temperature_valid(self):
         """
@@ -168,7 +148,7 @@ class TestNASA(unittest.TestCase):
         valid_data = [False, True, True, True, True, True, True, True, True, True]
         for T, valid in zip(Tdata, valid_data):
             valid0 = self.nasa.is_temperature_valid(T)
-            self.assertEqual(valid0, valid)
+            assert valid0 == valid
 
     def test_get_heat_capacity(self):
         """
@@ -193,9 +173,7 @@ class TestNASA(unittest.TestCase):
         )
         for T, cp_exp in zip(Tlist, cp_exp_list):
             cp_act = self.nasa.get_heat_capacity(T)
-            self.assertAlmostEqual(
-                cp_exp / cp_act, 1.0, 4, "{0} != {1}".format(cp_exp, cp_act)
-            )
+            assert round(abs(cp_exp / cp_act - 1.0), 4) == 0, "{0} != {1}".format(cp_exp, cp_act)
 
     def test_get_enthalpy(self):
         """
@@ -221,9 +199,7 @@ class TestNASA(unittest.TestCase):
         )
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = self.nasa.get_enthalpy(T)
-            self.assertAlmostEqual(
-                h_exp / h_act, 1.0, 3, "{0} != {1}".format(h_exp, h_act)
-            )
+            assert round(abs(h_exp / h_act - 1.0), 3) == 0, "{0} != {1}".format(h_exp, h_act)
 
     def test_get_entropy(self):
         """
@@ -248,9 +224,7 @@ class TestNASA(unittest.TestCase):
         )
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = self.nasa.get_entropy(T)
-            self.assertAlmostEqual(
-                s_exp / s_act, 1.0, 4, "{0} != {1}".format(s_exp, s_act)
-            )
+            assert round(abs(s_exp / s_act - 1.0), 4) == 0, "{0} != {1}".format(s_exp, s_act)
 
     def test_get_free_energy(self):
         """
@@ -260,9 +234,7 @@ class TestNASA(unittest.TestCase):
         for T in Tlist:
             g_exp = self.nasa.get_enthalpy(T) - T * self.nasa.get_entropy(T)
             g_act = self.nasa.get_free_energy(T)
-            self.assertAlmostEqual(
-                g_exp / g_act, 1.0, 4, "{0} != {1}".format(g_exp, g_act)
-            )
+            assert round(abs(g_exp / g_act - 1.0), 4) == 0, "{0} != {1}".format(g_exp, g_act)
 
     def test_pickle(self):
         """
@@ -272,29 +244,29 @@ class TestNASA(unittest.TestCase):
         import pickle
 
         nasa = pickle.loads(pickle.dumps(self.nasa))
-        self.assertEqual(len(self.nasa.poly1.coeffs), len(nasa.poly1.coeffs))
+        assert len(self.nasa.poly1.coeffs) == len(nasa.poly1.coeffs)
         for coeff0, coeff in zip(self.nasa.poly1.coeffs, nasa.poly1.coeffs):
-            self.assertAlmostEqual(coeff / coeff0, 1.0, 6)
-        self.assertEqual(self.nasa.poly1.Tmin.value, nasa.poly1.Tmin.value)
-        self.assertEqual(self.nasa.poly1.Tmin.units, nasa.poly1.Tmin.units)
-        self.assertEqual(self.nasa.poly1.Tmax.value, nasa.poly1.Tmax.value)
-        self.assertEqual(self.nasa.poly1.Tmax.units, nasa.poly1.Tmax.units)
-        self.assertEqual(self.nasa.poly1.comment, nasa.poly1.comment)
-        self.assertEqual(len(self.nasa.poly2.coeffs), len(nasa.poly2.coeffs))
+            assert round(abs(coeff / coeff0 - 1.0), 6) == 0
+        assert self.nasa.poly1.Tmin.value == nasa.poly1.Tmin.value
+        assert self.nasa.poly1.Tmin.units == nasa.poly1.Tmin.units
+        assert self.nasa.poly1.Tmax.value == nasa.poly1.Tmax.value
+        assert self.nasa.poly1.Tmax.units == nasa.poly1.Tmax.units
+        assert self.nasa.poly1.comment == nasa.poly1.comment
+        assert len(self.nasa.poly2.coeffs) == len(nasa.poly2.coeffs)
         for coeff0, coeff in zip(self.nasa.poly2.coeffs, nasa.poly2.coeffs):
-            self.assertAlmostEqual(coeff / coeff0, 1.0, 6)
-        self.assertEqual(self.nasa.poly2.Tmin.value, nasa.poly2.Tmin.value)
-        self.assertEqual(self.nasa.poly2.Tmin.units, nasa.poly2.Tmin.units)
-        self.assertEqual(self.nasa.poly2.Tmax.value, nasa.poly2.Tmax.value)
-        self.assertEqual(self.nasa.poly2.Tmax.units, nasa.poly2.Tmax.units)
-        self.assertEqual(self.nasa.poly2.comment, nasa.poly2.comment)
-        self.assertEqual(self.nasa.Tmin.value, nasa.Tmin.value)
-        self.assertEqual(self.nasa.Tmin.units, nasa.Tmin.units)
-        self.assertEqual(self.nasa.Tmax.value, nasa.Tmax.value)
-        self.assertEqual(self.nasa.Tmax.units, nasa.Tmax.units)
-        self.assertEqual(self.nasa.E0.value, nasa.E0.value)
-        self.assertEqual(self.nasa.E0.units, nasa.E0.units)
-        self.assertEqual(self.nasa.comment, nasa.comment)
+            assert round(abs(coeff / coeff0 - 1.0), 6) == 0
+        assert self.nasa.poly2.Tmin.value == nasa.poly2.Tmin.value
+        assert self.nasa.poly2.Tmin.units == nasa.poly2.Tmin.units
+        assert self.nasa.poly2.Tmax.value == nasa.poly2.Tmax.value
+        assert self.nasa.poly2.Tmax.units == nasa.poly2.Tmax.units
+        assert self.nasa.poly2.comment == nasa.poly2.comment
+        assert self.nasa.Tmin.value == nasa.Tmin.value
+        assert self.nasa.Tmin.units == nasa.Tmin.units
+        assert self.nasa.Tmax.value == nasa.Tmax.value
+        assert self.nasa.Tmax.units == nasa.Tmax.units
+        assert self.nasa.E0.value == nasa.E0.value
+        assert self.nasa.E0.units == nasa.E0.units
+        assert self.nasa.comment == nasa.comment
 
     def test_repr(self):
         """
@@ -303,31 +275,31 @@ class TestNASA(unittest.TestCase):
         """
         namespace = {}
         exec("nasa = {0!r}".format(self.nasa), globals(), namespace)
-        self.assertIn("nasa", namespace)
+        assert "nasa" in namespace
         nasa = namespace["nasa"]
-        self.assertEqual(len(self.nasa.poly1.coeffs), len(nasa.poly1.coeffs))
+        assert len(self.nasa.poly1.coeffs) == len(nasa.poly1.coeffs)
         for coeff0, coeff in zip(self.nasa.poly1.coeffs, nasa.poly1.coeffs):
-            self.assertAlmostEqual(coeff / coeff0, 1.0, 6)
-        self.assertEqual(self.nasa.poly1.Tmin.value, nasa.poly1.Tmin.value)
-        self.assertEqual(self.nasa.poly1.Tmin.units, nasa.poly1.Tmin.units)
-        self.assertEqual(self.nasa.poly1.Tmax.value, nasa.poly1.Tmax.value)
-        self.assertEqual(self.nasa.poly1.Tmax.units, nasa.poly1.Tmax.units)
-        self.assertEqual(self.nasa.poly1.comment, nasa.poly1.comment)
-        self.assertEqual(len(self.nasa.poly2.coeffs), len(nasa.poly2.coeffs))
+            assert round(abs(coeff / coeff0 - 1.0), 6) == 0
+        assert self.nasa.poly1.Tmin.value == nasa.poly1.Tmin.value
+        assert self.nasa.poly1.Tmin.units == nasa.poly1.Tmin.units
+        assert self.nasa.poly1.Tmax.value == nasa.poly1.Tmax.value
+        assert self.nasa.poly1.Tmax.units == nasa.poly1.Tmax.units
+        assert self.nasa.poly1.comment == nasa.poly1.comment
+        assert len(self.nasa.poly2.coeffs) == len(nasa.poly2.coeffs)
         for coeff0, coeff in zip(self.nasa.poly2.coeffs, nasa.poly2.coeffs):
-            self.assertAlmostEqual(coeff / coeff0, 1.0, 6)
-        self.assertEqual(self.nasa.poly2.Tmin.value, nasa.poly2.Tmin.value)
-        self.assertEqual(self.nasa.poly2.Tmin.units, nasa.poly2.Tmin.units)
-        self.assertEqual(self.nasa.poly2.Tmax.value, nasa.poly2.Tmax.value)
-        self.assertEqual(self.nasa.poly2.Tmax.units, nasa.poly2.Tmax.units)
-        self.assertEqual(self.nasa.poly2.comment, nasa.poly2.comment)
-        self.assertEqual(self.nasa.Tmin.value, nasa.Tmin.value)
-        self.assertEqual(self.nasa.Tmin.units, nasa.Tmin.units)
-        self.assertEqual(self.nasa.Tmax.value, nasa.Tmax.value)
-        self.assertEqual(self.nasa.Tmax.units, nasa.Tmax.units)
-        self.assertEqual(self.nasa.E0.value, nasa.E0.value)
-        self.assertEqual(self.nasa.E0.units, nasa.E0.units)
-        self.assertEqual(self.nasa.comment, nasa.comment)
+            assert round(abs(coeff / coeff0 - 1.0), 6) == 0
+        assert self.nasa.poly2.Tmin.value == nasa.poly2.Tmin.value
+        assert self.nasa.poly2.Tmin.units == nasa.poly2.Tmin.units
+        assert self.nasa.poly2.Tmax.value == nasa.poly2.Tmax.value
+        assert self.nasa.poly2.Tmax.units == nasa.poly2.Tmax.units
+        assert self.nasa.poly2.comment == nasa.poly2.comment
+        assert self.nasa.Tmin.value == nasa.Tmin.value
+        assert self.nasa.Tmin.units == nasa.Tmin.units
+        assert self.nasa.Tmax.value == nasa.Tmax.value
+        assert self.nasa.Tmax.units == nasa.Tmax.units
+        assert self.nasa.E0.value == nasa.E0.value
+        assert self.nasa.E0.units == nasa.E0.units
+        assert self.nasa.comment == nasa.comment
 
     def test_to_cantera(self):
         """
@@ -335,8 +307,8 @@ class TestNASA(unittest.TestCase):
         """
         nasapoly2 = self.nasa.to_cantera()
         # NasaPoly2 units use J/kmol rather than J/mol
-        self.assertAlmostEqual(self.nasa.get_enthalpy(900), nasapoly2.h(900) / 1000, 1)
-        self.assertAlmostEqual(self.nasa.get_entropy(700), nasapoly2.s(700) / 1000, 1)
+        assert round(abs(self.nasa.get_enthalpy(900) - nasapoly2.h(900) / 1000), 1) == 0
+        assert round(abs(self.nasa.get_entropy(700) - nasapoly2.s(700) / 1000), 1) == 0
 
     def test_to_nasa(self):
         """
@@ -353,9 +325,7 @@ class TestNASA(unittest.TestCase):
             os.path.join(settings["database.directory"], "thermo"),
             thermo_libraries=["Narayanaswamy"],
         )
-        database.load_solvation(
-            os.path.join(settings["database.directory"], "solvation")
-        )
+        database.load_solvation(os.path.join(settings["database.directory"], "solvation"))
 
         spc = Species().from_smiles("CC")
         spc.get_thermo_data()
@@ -369,23 +339,23 @@ class TestNASA(unittest.TestCase):
         td = nasa.to_thermo_data()
         s_td = td.get_entropy(T)
 
-        self.assertAlmostEqual(s_nasa, s_td, -1)
-        self.assertEqual(td.comment, nasa.comment)
+        assert round(abs(s_nasa - s_td), -1) == 0
+        assert td.comment == nasa.comment
 
         # thermodata to nasa
         nasa = td.to_nasa(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
         s_nasa = nasa.get_entropy(T)
 
-        self.assertAlmostEqual(s_nasa, s_td, -1)
-        self.assertEqual(td.comment, nasa.comment)
+        assert round(abs(s_nasa - s_td), -1) == 0
+        assert td.comment == nasa.comment
 
         # wilhoit to nasa
         wilhoit = nasa.to_wilhoit()
         nasa = wilhoit.to_nasa(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
         s_nasa = nasa.get_entropy(T)
 
-        self.assertAlmostEqual(s_nasa, s_td, -1)
-        self.assertEqual(wilhoit.comment, nasa.comment)
+        assert round(abs(s_nasa - s_td), -1) == 0
+        assert wilhoit.comment == nasa.comment
 
         # nasa to wilhoi performed in wilhoitTest
 
@@ -394,30 +364,16 @@ class TestNASA(unittest.TestCase):
         Test that NASA.as_dict functions properly with all attributes
         """
         nasa_dict = self.nasa.as_dict()
-        self.assertEqual(nasa_dict["E0"]["value"], self.E0)
-        self.assertEqual(nasa_dict["Tmin"]["value"], self.Tmin)
-        self.assertEqual(nasa_dict["Tmax"]["value"], self.Tmax)
-        self.assertEqual(nasa_dict["comment"], self.comment)
-        self.assertTupleEqual(
-            tuple(nasa_dict["polynomials"]["polynomial1"]["coeffs"]["object"]),
-            tuple(self.coeffs_low),
-        )
-        self.assertTupleEqual(
-            tuple(nasa_dict["polynomials"]["polynomial2"]["coeffs"]["object"]),
-            tuple(self.coeffs_high),
-        )
-        self.assertEqual(
-            nasa_dict["polynomials"]["polynomial1"]["Tmin"]["value"], self.Tmin
-        )
-        self.assertEqual(
-            nasa_dict["polynomials"]["polynomial1"]["Tmax"]["value"], self.Tint
-        )
-        self.assertEqual(
-            nasa_dict["polynomials"]["polynomial2"]["Tmin"]["value"], self.Tint
-        )
-        self.assertEqual(
-            nasa_dict["polynomials"]["polynomial2"]["Tmax"]["value"], self.Tmax
-        )
+        assert nasa_dict["E0"]["value"] == self.E0
+        assert nasa_dict["Tmin"]["value"] == self.Tmin
+        assert nasa_dict["Tmax"]["value"] == self.Tmax
+        assert nasa_dict["comment"] == self.comment
+        assert tuple(nasa_dict["polynomials"]["polynomial1"]["coeffs"]["object"]) == tuple(self.coeffs_low)
+        assert tuple(nasa_dict["polynomials"]["polynomial2"]["coeffs"]["object"]) == tuple(self.coeffs_high)
+        assert nasa_dict["polynomials"]["polynomial1"]["Tmin"]["value"] == self.Tmin
+        assert nasa_dict["polynomials"]["polynomial1"]["Tmax"]["value"] == self.Tint
+        assert nasa_dict["polynomials"]["polynomial2"]["Tmin"]["value"] == self.Tint
+        assert nasa_dict["polynomials"]["polynomial2"]["Tmax"]["value"] == self.Tmax
 
     def test_nasa_as_dict_minimal(self):
         """
@@ -425,39 +381,36 @@ class TestNASA(unittest.TestCase):
         """
         nasa_dict = NASA().as_dict()
         keys = list(nasa_dict.keys())
-        self.assertNotIn("Tmin", keys)
-        self.assertNotIn("Tmax", keys)
-        self.assertNotIn("E0", keys)
-        self.assertNotIn("Cp0", keys)
-        self.assertNotIn("CpInf", keys)
-        self.assertNotIn("label", keys)
-        self.assertNotIn("comment", keys)
+        assert "Tmin" not in keys
+        assert "Tmax" not in keys
+        assert "E0" not in keys
+        assert "Cp0" not in keys
+        assert "CpInf" not in keys
+        assert "label" not in keys
+        assert "comment" not in keys
 
     def test_nasa_polynomial_as_dict(self):
         """
         Test that NASAPolynomial.as_dict returns all non-empty, non-redundant attributes properly.
         """
         nasa_poly_dict = self.nasa.polynomials[0].as_dict()
-        self.assertEqual(
-            nasa_poly_dict,
-            {
-                "coeffs": {
-                    "object": [
-                        4.03055,
-                        -0.00214171,
-                        4.90611e-05,
-                        -5.99027e-08,
-                        2.38945e-11,
-                        -11257.6,
-                        3.5613,
-                    ],
-                    "class": "np_array",
-                },
-                "Tmax": {"units": "K", "class": "ScalarQuantity", "value": 650.73},
-                "Tmin": {"units": "K", "class": "ScalarQuantity", "value": 300.0},
-                "class": "NASAPolynomial",
+        assert nasa_poly_dict == {
+            "coeffs": {
+                "object": [
+                    4.03055,
+                    -0.00214171,
+                    4.90611e-05,
+                    -5.99027e-08,
+                    2.38945e-11,
+                    -11257.6,
+                    3.5613,
+                ],
+                "class": "np_array",
             },
-        )
+            "Tmax": {"units": "K", "class": "ScalarQuantity", "value": 650.73},
+            "Tmin": {"units": "K", "class": "ScalarQuantity", "value": 300.0},
+            "class": "NASAPolynomial",
+        }
 
     def test_make_nasa(self):
         """

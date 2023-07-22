@@ -28,13 +28,13 @@
 ###############################################################################
 
 import os
-import unittest
+
 
 from rmgpy import settings
 from rmgpy.ml.estimator import MLEstimator
 
 
-class TestMLEstimator(unittest.TestCase):
+class TestMLEstimator:
     """
     Contains unit tests for rmgpy.ml.estimator
     """
@@ -44,9 +44,7 @@ class TestMLEstimator(unittest.TestCase):
         Set up the MLEstimator class. This method is run once before all
         other unit tests.
         """
-        models_path = os.path.join(
-            settings["database.directory"], "thermo", "ml", "main"
-        )
+        models_path = os.path.join(settings["database.directory"], "thermo", "ml", "main")
         hf298_path = os.path.join(models_path, "hf298")
         s298_cp_path = os.path.join(models_path, "s298_cp")
         self.ml_estimator = MLEstimator(hf298_path, s298_cp_path)
@@ -58,7 +56,7 @@ class TestMLEstimator(unittest.TestCase):
         smi = "C1C2C1C2"
         thermo = self.ml_estimator.get_thermo_data(smi)
 
-        self.assertTrue(thermo.comment.startswith("ML Estimation"))
-        self.assertAlmostEqual(thermo.Cp0.value_si, 33.3, 1)
-        self.assertAlmostEqual(thermo.CpInf.value_si, 232.8, 1)
-        self.assertEqual(len(thermo.Cpdata.value_si), 7)
+        assert thermo.comment.startswith("ML Estimation")
+        assert round(abs(thermo.Cp0.value_si - 33.3), 1) == 0
+        assert round(abs(thermo.CpInf.value_si - 232.8), 1) == 0
+        assert len(thermo.Cpdata.value_si) == 7

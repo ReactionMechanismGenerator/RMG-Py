@@ -32,7 +32,7 @@ This script contains unit tests of the :mod:`arkane.reference` module.
 """
 
 import os
-import unittest
+
 import shutil
 
 from arkane.encorr.isodesmic import ErrorCancelingSpecies
@@ -45,15 +45,15 @@ from arkane.encorr.reference import (
 )
 from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
+import pytest
 
 
-################################################################################
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(os.path.dirname(FILE_DIR), "data")
 SPECIES_DIR = os.path.join(DATA_DIR, "species")
 
 
-class TestReferenceSpecies(unittest.TestCase):
+class TestReferenceSpecies:
     """
     A class for testing that the ReferenceSpecies class functions properly
     """
@@ -78,31 +78,24 @@ class TestReferenceSpecies(unittest.TestCase):
         if the minimal acceptable input is not given.
         """
         ref_spcs = ReferenceSpecies(species=self.ethane)
-        self.assertEqual(ref_spcs.smiles, "CC")
-        self.assertEqual(ref_spcs.inchi_key, self.ethane.molecule[0].to_inchi_key())
+        assert ref_spcs.smiles == "CC"
+        assert ref_spcs.inchi_key == self.ethane.molecule[0].to_inchi_key()
 
         ref_from_smiles = ReferenceSpecies(smiles="CCC")
-        self.assertEqual(ref_from_smiles.smiles, "CCC")
-        self.assertEqual(
-            ref_from_smiles.inchi_key, self.propane.molecule[0].to_inchi_key()
-        )
+        assert ref_from_smiles.smiles == "CCC"
+        assert ref_from_smiles.inchi_key == self.propane.molecule[0].to_inchi_key()
 
         ref_from_inchi = ReferenceSpecies(inchi="InChI=1S/C2H6/c1-2/h1-2H3")
-        self.assertEqual(ref_from_inchi.smiles, "CC")
-        self.assertEqual(
-            ref_from_inchi.inchi_key, self.ethane.molecule[0].to_inchi_key()
-        )
+        assert ref_from_inchi.smiles == "CC"
+        assert ref_from_inchi.inchi_key == self.ethane.molecule[0].to_inchi_key()
 
         ref_from_adj = ReferenceSpecies(
-            adjacency_list="1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}\n2 H u0 p0 c0 {1,S}\n"
-            "3 H u0 p0 c0 {1,S}\n4 H u0 p0 c0 {1,S}\n5 H u0 p0 c0 {1,S}\n"
+            adjacency_list="1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}\n2 H u0 p0 c0 {1,S}\n" "3 H u0 p0 c0 {1,S}\n4 H u0 p0 c0 {1,S}\n5 H u0 p0 c0 {1,S}\n"
         )
-        self.assertEqual(ref_from_adj.smiles, "C")
-        self.assertEqual(
-            ref_from_adj.inchi_key, self.methane.molecule[0].to_inchi_key()
-        )
+        assert ref_from_adj.smiles == "C"
+        assert ref_from_adj.inchi_key == self.methane.molecule[0].to_inchi_key()
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             ReferenceSpecies()
 
     def load_ref_from_yaml(self):
@@ -112,9 +105,9 @@ class TestReferenceSpecies(unittest.TestCase):
         ref_spcs = ReferenceSpecies.__new__(ReferenceSpecies)
         ref_spcs.load_yaml(os.path.join(SPECIES_DIR, "reference_species_example.yml"))
 
-        self.assertEqual(ref_spcs.smiles, "C#C[CH2]")
-        self.assertEqual(ref_spcs.label, "example_reference_species")
-        self.assertIsInstance(ref_spcs.calculated_data, CalculatedDataEntry)
+        assert ref_spcs.smiles == "C#C[CH2]"
+        assert ref_spcs.label == "example_reference_species"
+        assert isinstance(ref_spcs.calculated_data, CalculatedDataEntry)
 
     def test_save_ref_to_yaml(self):
         """
@@ -122,14 +115,14 @@ class TestReferenceSpecies(unittest.TestCase):
         """
         label = "test_reference_species"
         ref_spcs = ReferenceSpecies(species=self.ethane, label=label)
-        self.assertEqual(ref_spcs.label, label)
+        assert ref_spcs.label == label
         ref_spcs.save_yaml(path=SPECIES_DIR)
 
         loaded_ref = ReferenceSpecies.__new__(ReferenceSpecies)
         load_path = os.path.join(SPECIES_DIR, f"{label}.yml")
         loaded_ref.load_yaml(path=load_path)
 
-        self.assertEqual(loaded_ref.smiles, "CC")
+        assert loaded_ref.smiles == "CC"
 
         # Finally, delete this newly created file
         os.remove(load_path)
@@ -139,27 +132,25 @@ class TestReferenceSpecies(unittest.TestCase):
         Test that the ReferenceDataEntry class functions properly and enforces the standard for storing data
         """
         data_entry = ReferenceDataEntry(self.thermo_data)
-        self.assertIsInstance(data_entry.thermo_data, ThermoData)
-        self.assertEqual(data_entry.thermo_data.H298.value_si, 100000.0)
+        assert isinstance(data_entry.thermo_data, ThermoData)
+        assert data_entry.thermo_data.H298.value_si == 100000.0
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             ReferenceDataEntry({"H298": (100.0, "kJ/mol")})
 
     def test_calculated_data_entry(self):
         """
         Test that the CalculatedDataEntry class functions properly and enforces the standard for storing data
         """
-        data_entry = CalculatedDataEntry(
-            self.thermo_data, xyz_dict=self.xyz_dict, t1_diagnostic=self.t1_diagnostic
-        )
-        self.assertEqual(data_entry.thermo_data.H298.value_si, 100000.0)
-        self.assertIsInstance(data_entry.xyz_dict, dict)
+        data_entry = CalculatedDataEntry(self.thermo_data, xyz_dict=self.xyz_dict, t1_diagnostic=self.t1_diagnostic)
+        assert data_entry.thermo_data.H298.value_si == 100000.0
+        assert isinstance(data_entry.xyz_dict, dict)
 
         data_entry_minimal = CalculatedDataEntry(self.thermo_data)
-        self.assertIsInstance(data_entry_minimal.thermo_data, ThermoData)
+        assert isinstance(data_entry_minimal.thermo_data, ThermoData)
 
 
-class TestReferenceDatabase(unittest.TestCase):
+class TestReferenceDatabase:
     """
     Test that the ReferenceDatabase class functions properly
     """
@@ -173,25 +164,21 @@ class TestReferenceDatabase(unittest.TestCase):
         """
         Test that the main reference set can be loaded properly
         """
-        self.assertIn("main", self.database.reference_sets)
-        self.assertIsInstance(self.database.reference_sets["main"][0], ReferenceSpecies)
+        assert "main" in self.database.reference_sets
+        assert isinstance(self.database.reference_sets["main"][0], ReferenceSpecies)
 
         # Also test that calling load again appends a new set in the database
         data_dir = os.path.join(DATA_DIR)
         testing_dir = os.path.join(data_dir, "testing_set")
-        example_ref_file = os.path.join(
-            data_dir, "species", "reference_species_example.yml"
-        )
+        example_ref_file = os.path.join(data_dir, "species", "reference_species_example.yml")
         spcs_file = os.path.join(testing_dir, "0.yml")
-        if os.path.exists(
-            testing_dir
-        ):  # Delete the testing directory if it existed previously
+        if os.path.exists(testing_dir):  # Delete the testing directory if it existed previously
             shutil.rmtree(testing_dir)
         os.mkdir(testing_dir)
         shutil.copyfile(example_ref_file, spcs_file)
         self.database.load(paths=[testing_dir])
-        self.assertIn("main", self.database.reference_sets)
-        self.assertIn("testing_set", self.database.reference_sets)
+        assert "main" in self.database.reference_sets
+        assert "testing_set" in self.database.reference_sets
 
         # Finally, remove the testing directory
         shutil.rmtree(testing_dir)
@@ -239,33 +226,26 @@ class TestReferenceDatabase(unittest.TestCase):
         }
 
         model_chem_list = database.extract_level_of_theory(LevelOfTheory("good_chem"))
-        self.assertEqual(len(model_chem_list), 2)
-        self.assertIsInstance(model_chem_list[0], ErrorCancelingSpecies)
+        assert len(model_chem_list) == 2
+        assert isinstance(model_chem_list[0], ErrorCancelingSpecies)
 
         for spcs in model_chem_list:
             smiles = spcs.molecule.to_smiles()
-            self.assertNotIn(smiles, ["CCCC"])
-            self.assertIn(smiles, ["CC", "CCC"])
+            assert smiles not in ["CCCC"]
+            assert smiles in ["CC", "CCC"]
 
-            if (
-                smiles == "CC"
-            ):  # Test that `less_precise` is the source since it was set manually as preferred
-                self.assertAlmostEqual(spcs.high_level_hf298.value_si, 25.0 * 4184.0)
+            if smiles == "CC":  # Test that `less_precise` is the source since it was set manually as preferred
+                assert round(abs(spcs.high_level_hf298.value_si - 25.0 * 4184.0), 7) == 0
 
-            if (
-                smiles == "CCC"
-            ):  # Test that `precise` is the source since it has the lowest uncertainty
-                self.assertAlmostEqual(spcs.high_level_hf298.value_si, 100.0 * 1000.0)
+            if smiles == "CCC":  # Test that `precise` is the source since it has the lowest uncertainty
+                assert round(abs(spcs.high_level_hf298.value_si - 100.0 * 1000.0), 7) == 0
 
     def test_list_available_chemistry(self):
         """
         Test that a set of available levels of theory can be return for the reference database
         """
         level_of_theory_list = self.database.list_available_chemistry()
-        self.assertIn(
-            LevelOfTheory(method="wb97m-v", basis="def2-tzvpd", software="qchem"),
-            level_of_theory_list,
-        )
+        assert LevelOfTheory(method="wb97m-v", basis="def2-tzvpd", software="qchem") in level_of_theory_list
 
     def test_get_species_from_index(self):
         """
@@ -273,8 +253,8 @@ class TestReferenceDatabase(unittest.TestCase):
         """
         test_indices = [5, 309, 105]
         retrieved_species = self.database.get_species_from_index(test_indices)
-        self.assertEqual(len(retrieved_species), 3)
-        self.assertEqual(retrieved_species[1].index, 309)
+        assert len(retrieved_species) == 3
+        assert retrieved_species[1].index == 309
 
     def test_get_species_from_label(self):
         """
@@ -282,5 +262,5 @@ class TestReferenceDatabase(unittest.TestCase):
         """
         test_labels = ["1-Butene", "Acetic acid", "Ethanol"]
         retrieved_species = self.database.get_species_from_label(test_labels)
-        self.assertEqual(len(retrieved_species), 3)
-        self.assertEqual(retrieved_species[0].label, "1-Butene")
+        assert len(retrieved_species) == 3
+        assert retrieved_species[0].label == "1-Butene"

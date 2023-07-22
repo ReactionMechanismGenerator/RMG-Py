@@ -28,7 +28,7 @@
 ###############################################################################
 
 import os
-import unittest
+
 
 from external.wip import work_in_progress
 from rmgpy import settings
@@ -39,10 +39,7 @@ from rmgpy.species import Species
 from rmgpy.transport import TransportData
 
 
-################################################################################
-
-
-class TestCriticalPointGroupContribution(unittest.TestCase):
+class TestCriticalPointGroupContribution:
     """
     Contains unit test of the :class: 'criticalPointGroupContribution' class
     """
@@ -69,33 +66,31 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
         """
         Test that the CriticalPointGroupContribution Tc property was properly set.
         """
-        self.assertAlmostEqual(self.criticalPointContribution.Tc, self.Tc, 6)
+        assert round(abs(self.criticalPointContribution.Tc - self.Tc), 6) == 0
 
     def test__pc(self):
         """
         Test that the CriticalPointGroupContribution Pc property was properly set.
         """
-        self.assertAlmostEqual(self.criticalPointContribution.Pc, self.Pc, 6)
+        assert round(abs(self.criticalPointContribution.Pc - self.Pc), 6) == 0
 
     def test__vc(self):
         """
         Test that the CriticalPointGroupContribution Vc property was properly set.
         """
-        self.assertAlmostEqual(self.criticalPointContribution.Vc, self.Vc, 6)
+        assert round(abs(self.criticalPointContribution.Vc - self.Vc), 6) == 0
 
     def test__tb(self):
         """
         Test that the CriticalPointGroupContribution Tb property was properly set.
         """
-        self.assertAlmostEqual(self.criticalPointContribution.Tb, self.Tb, 6)
+        assert round(abs(self.criticalPointContribution.Tb - self.Tb), 6) == 0
 
     def test_structure_index(self):
         """
         Test that the CriticalPointGroupContribution structureIndex property was properly set.
         """
-        self.assertAlmostEqual(
-            self.criticalPointContribution.structureIndex, self.structureIndex, 6
-        )
+        assert round(abs(self.criticalPointContribution.structureIndex - self.structureIndex), 6) == 0
 
     def test_pickle(self):
         """
@@ -103,26 +98,12 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
         """
         import pickle
 
-        criticalPointContribution = pickle.loads(
-            pickle.dumps(self.criticalPointContribution, -1)
-        )
-        self.assertAlmostEqual(
-            self.criticalPointContribution.Tc, criticalPointContribution.Tc, 4
-        )
-        self.assertAlmostEqual(
-            self.criticalPointContribution.Pc, criticalPointContribution.Pc, 4
-        )
-        self.assertAlmostEqual(
-            self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4
-        )
-        self.assertAlmostEqual(
-            self.criticalPointContribution.Tb, criticalPointContribution.Tb, 4
-        )
-        self.assertAlmostEqual(
-            self.criticalPointContribution.structureIndex,
-            criticalPointContribution.structureIndex,
-            4,
-        )
+        criticalPointContribution = pickle.loads(pickle.dumps(self.criticalPointContribution, -1))
+        assert round(abs(self.criticalPointContribution.Tc - criticalPointContribution.Tc), 4) == 0
+        assert round(abs(self.criticalPointContribution.Pc - criticalPointContribution.Pc), 4) == 0
+        assert round(abs(self.criticalPointContribution.Vc - criticalPointContribution.Vc), 4) == 0
+        assert round(abs(self.criticalPointContribution.Tb - criticalPointContribution.Tb), 4) == 0
+        assert round(abs(self.criticalPointContribution.structureIndex - criticalPointContribution.structureIndex), 4) == 0
 
     def test_repr(self):
         """
@@ -134,28 +115,16 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
             globals(),
             namespace,
         )
-        self.assertIn("criticalPointContribution", namespace)
+        assert "criticalPointContribution" in namespace
         criticalPointContribution = namespace["criticalPointContribution"]
-        self.assertAlmostEqual(
-            self.criticalPointContribution.Tc, criticalPointContribution.Tc, 4
-        )
-        self.assertAlmostEqual(
-            self.criticalPointContribution.Pc, criticalPointContribution.Pc, 4
-        )
-        self.assertAlmostEqual(
-            self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4
-        )
-        self.assertAlmostEqual(
-            self.criticalPointContribution.Tb, criticalPointContribution.Tb, 4
-        )
-        self.assertAlmostEqual(
-            self.criticalPointContribution.structureIndex,
-            criticalPointContribution.structureIndex,
-            4,
-        )
+        assert round(abs(self.criticalPointContribution.Tc - criticalPointContribution.Tc), 4) == 0
+        assert round(abs(self.criticalPointContribution.Pc - criticalPointContribution.Pc), 4) == 0
+        assert round(abs(self.criticalPointContribution.Vc - criticalPointContribution.Vc), 4) == 0
+        assert round(abs(self.criticalPointContribution.Tb - criticalPointContribution.Tb), 4) == 0
+        assert round(abs(self.criticalPointContribution.structureIndex - criticalPointContribution.structureIndex), 4) == 0
 
 
-class TestTransportDatabase(unittest.TestCase):
+class TestTransportDatabase:
     """
     Contains unit tests of the :class:`TransportDatabase` class.
     """
@@ -211,15 +180,11 @@ class TestTransportDatabase(unittest.TestCase):
             # check Joback worked.
             # If we don't know what to expect, don't check (just make sure we didn't crash)
             if comment:
-                self.assertTrue(transport_data.comment == comment)
+                assert transport_data.comment == comment
             if sigma:
-                self.assertAlmostEqual(
-                    transport_data.sigma.value_si * 1e10, sigma.value_si * 1e10, 4
-                )
+                assert round(abs(transport_data.sigma.value_si * 1e10 - sigma.value_si * 1e10), 4) == 0
             if epsilon:
-                self.assertAlmostEqual(
-                    transport_data.epsilon.value_si, epsilon.value_si, 1
-                )
+                assert round(abs(transport_data.epsilon.value_si - epsilon.value_si), 1) == 0
 
     @work_in_progress
     def test_joback_on_benzene_bonds(self):
@@ -247,32 +212,20 @@ class TestTransportDatabase(unittest.TestCase):
                                                   """
         )
 
-        critical_point = (
-            self.database.estimate_critical_properties_via_group_additivity(molecule)
-        )
-        self.assertIsNotNone(critical_point)
+        critical_point = self.database.estimate_critical_properties_via_group_additivity(molecule)
+        assert critical_point is not None
 
     def test_Tb_correction_for_halogens(self):
         """
         Test that the halogen `Tb` correction is applied to the critical point estimated from
         group additivity
         """
-        partial_F_mol1 = Molecule(
-            smiles="CCF"
-        )  # partially fluorinated without other halogens
-        partial_F_mol2 = Molecule(
-            smiles="ClCCF"
-        )  # partially fluorinated with other halogens
+        partial_F_mol1 = Molecule(smiles="CCF")  # partially fluorinated without other halogens
+        partial_F_mol2 = Molecule(smiles="ClCCF")  # partially fluorinated with other halogens
         per_F_mol = Molecule(smiles="FC(F)(F)C(F)(F)F")  # perfluorinated
-        partial_hal_mol = Molecule(
-            smiles="BrCCCl"
-        )  # partially halogenated without fluorine
-        per_hal_mol1 = Molecule(
-            smiles="BrC(F)(Cl)C(Br)(F)Cl"
-        )  # perhalogenated with fluorine
-        per_hal_mol2 = Molecule(
-            smiles="BrC(Cl)(Cl)C(Cl)(Br)Cl"
-        )  # perhalogenated without fluorine
+        partial_hal_mol = Molecule(smiles="BrCCCl")  # partially halogenated without fluorine
+        per_hal_mol1 = Molecule(smiles="BrC(F)(Cl)C(Br)(F)Cl")  # perhalogenated with fluorine
+        per_hal_mol2 = Molecule(smiles="BrC(Cl)(Cl)C(Cl)(Br)Cl")  # perhalogenated without fluorine
 
         for mol, comment in [
             (partial_F_mol1, "with partial fluorination Tb correction (-25 K)"),
@@ -282,19 +235,17 @@ class TestTransportDatabase(unittest.TestCase):
             (per_hal_mol1, "with perhalogenated Tb correction (-53.55 K)"),
             (per_hal_mol2, "with perhalogenated Tb correction (-53.55 K)"),
         ]:
-            critical_point = (
-                self.database.estimate_critical_properties_via_group_additivity(mol)
-            )
-            self.assertEqual(critical_point.comment, comment)
+            critical_point = self.database.estimate_critical_properties_via_group_additivity(mol)
+            assert critical_point.comment == comment
 
     def test_get_transport_properties(self):
         """Test that we can retrieve best transport properties for a species."""
 
         for species in self.speciesList:
             transport = self.database.get_transport_properties(species)
-            self.assertIsNotNone(transport)
-            self.assertTrue(isinstance(transport, tuple))
-            self.assertTrue(isinstance(transport[0], TransportData))
+            assert transport is not None
+            assert isinstance(transport, tuple)
+            assert isinstance(transport[0], TransportData)
 
     def test_get_all_transport_properties(self):
         """Test that we can retrieve transport properties from all sources for a species.
@@ -303,10 +254,7 @@ class TestTransportDatabase(unittest.TestCase):
 
         for species in self.speciesList:
             transport = self.database.get_all_transport_properties(species)
-            self.assertIsNotNone(transport)
+            assert transport is not None
             for result in transport:
-                self.assertTrue(isinstance(result, tuple))
-                self.assertTrue(isinstance(result[0], TransportData))
-
-
-################################################################################
+                assert isinstance(result, tuple)
+                assert isinstance(result[0], TransportData)

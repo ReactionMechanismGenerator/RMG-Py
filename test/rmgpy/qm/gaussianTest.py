@@ -29,7 +29,7 @@
 
 import os
 import shutil
-import unittest
+
 
 import numpy as np
 
@@ -44,7 +44,7 @@ NO_GAUSSIAN = not os.path.exists(executable_path)
 mol1 = Molecule().from_smiles("C1=CC=C2C=CC=CC2=C1")
 
 
-class TestGaussianMolPM3(unittest.TestCase):
+class TestGaussianMolPM3:
     """
     Contains unit tests for the Geometry class.
     """
@@ -85,13 +85,11 @@ class TestGaussianMolPM3(unittest.TestCase):
         self.qmmol1.generate_thermo_data()
         result = self.qmmol1.qm_data
 
-        self.assertTrue(
-            self.qmmol1.thermo.comment.startswith("QM GaussianMolPM3 calculation")
-        )
-        self.assertEqual(result.numberOfAtoms, 18)
-        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        assert self.qmmol1.thermo.comment.startswith("QM GaussianMolPM3 calculation")
+        assert result.numberOfAtoms == 18
+        assert isinstance(result.atomicNumbers, np.ndarray)
         if result.molecularMass.units == "amu":
-            self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
+            assert round(abs(result.molecularMass.value - 128.0626), 3) == 0
 
     def test_load_thermo_data(self):
         """
@@ -103,16 +101,14 @@ class TestGaussianMolPM3(unittest.TestCase):
         self.qmmol1.generate_thermo_data()
         result = self.qmmol1.qm_data
 
-        self.assertTrue(
-            self.qmmol1.thermo.comment.startswith("QM GaussianMolPM3 calculation")
-        )
-        self.assertEqual(result.numberOfAtoms, 18)
-        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        assert self.qmmol1.thermo.comment.startswith("QM GaussianMolPM3 calculation")
+        assert result.numberOfAtoms == 18
+        assert isinstance(result.atomicNumbers, np.ndarray)
         if result.molecularMass.units == "amu":
-            self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
+            assert round(abs(result.molecularMass.value - 128.0626), 3) == 0
 
 
-class TestGaussianMolPM6(unittest.TestCase):
+class TestGaussianMolPM6:
     """
     Contains unit tests for the Geometry class.
     """
@@ -139,9 +135,7 @@ class TestGaussianMolPM6(unittest.TestCase):
 
         self.qmmol1 = GaussianMolPM6(mol1, qm.settings)
 
-    @unittest.skipIf(
-        "g03" in executable_path, "This test was shown not to work on g03."
-    )
+    @unittest.skipIf("g03" in executable_path, "This test was shown not to work on g03.")
     def test_generate_thermo_data(self):
         """
         Test that generate_thermo_data() works correctly for gaussian PM6.
@@ -156,17 +150,13 @@ class TestGaussianMolPM6(unittest.TestCase):
         self.qmmol1.generate_thermo_data()
         result = self.qmmol1.qm_data
 
-        self.assertTrue(
-            self.qmmol1.thermo.comment.startswith("QM GaussianMolPM6 calculation")
-        )
-        self.assertEqual(result.numberOfAtoms, 18)
-        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        assert self.qmmol1.thermo.comment.startswith("QM GaussianMolPM6 calculation")
+        assert result.numberOfAtoms == 18
+        assert isinstance(result.atomicNumbers, np.ndarray)
         if result.molecularMass.units == "amu":
-            self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
+            assert round(abs(result.molecularMass.value - 128.0626), 3) == 0
 
-    @unittest.skipIf(
-        "g03" in executable_path, "This test was shown not to work on g03."
-    )
+    @unittest.skipIf("g03" in executable_path, "This test was shown not to work on g03.")
     def test_load_thermo_data(self):
         """
         Test that generate_thermo_data() can load thermo from the previous gaussian PM6 run.
@@ -177,13 +167,8 @@ class TestGaussianMolPM6(unittest.TestCase):
         self.qmmol1.generate_thermo_data()
         result = self.qmmol1.qm_data
 
-        self.assertTrue(
-            self.qmmol1.thermo.comment.startswith("QM GaussianMolPM6 calculation")
-        )
-        self.assertEqual(result.numberOfAtoms, 18)
-        self.assertIsInstance(result.atomicNumbers, np.ndarray)
+        assert self.qmmol1.thermo.comment.startswith("QM GaussianMolPM6 calculation")
+        assert result.numberOfAtoms == 18
+        assert isinstance(result.atomicNumbers, np.ndarray)
         if result.molecularMass.units == "amu":
-            self.assertAlmostEqual(result.molecularMass.value, 128.0626, 3)
-
-
-################################################################################
+            assert round(abs(result.molecularMass.value - 128.0626), 3) == 0

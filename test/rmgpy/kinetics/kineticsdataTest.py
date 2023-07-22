@@ -31,7 +31,6 @@
 This script contains unit tests of the :mod:`rmgpy.kinetics.arrhenius` module.
 """
 
-import unittest
 
 import numpy as np
 
@@ -39,10 +38,7 @@ import rmgpy.constants as constants
 from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
 
 
-################################################################################
-
-
-class TestKineticsData(unittest.TestCase):
+class TestKineticsData:
     """
     Contains unit tests of the :class:`KineticsData` class.
     """
@@ -51,9 +47,7 @@ class TestKineticsData(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.Tdata = np.array(
-            [300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float64
-        )
+        self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float64)
         self.kdata = np.array(
             [
                 4.73e-19,
@@ -84,48 +78,46 @@ class TestKineticsData(unittest.TestCase):
         """
         Test that the KineticsData Tdata property was properly set.
         """
-        self.assertEqual(self.kinetics.Tdata.value_si.shape, self.Tdata.shape)
+        assert self.kinetics.Tdata.value_si.shape == self.Tdata.shape
         for T, T0 in zip(self.kinetics.Tdata.value_si, self.Tdata):
-            self.assertAlmostEqual(T, T0, 4)
+            assert round(abs(T - T0), 4) == 0
 
     def test_kdata(self):
         """
         Test that the KineticsData kdata property was properly set.
         """
-        self.assertEqual(self.kinetics.kdata.value_si.shape, self.kdata.shape)
+        assert self.kinetics.kdata.value_si.shape == self.kdata.shape
         for k, k0 in zip(self.kinetics.kdata.value_si, self.kdata):
             k0 *= constants.Na * 1e-6
-            self.assertAlmostEqual(k, k0, delta=1e-6 * k0)
+            assert abs(k - k0) < 1e-6 * k0
 
     def test_temperature_min(self):
         """
         Test that the KineticsData Tmin property was properly set.
         """
-        self.assertAlmostEqual(self.kinetics.Tmin.value_si, self.Tmin, 6)
+        assert round(abs(self.kinetics.Tmin.value_si - self.Tmin), 6) == 0
 
     def test_temperature_max(self):
         """
         Test that the KineticsData Tmax property was properly set.
         """
-        self.assertAlmostEqual(self.kinetics.Tmax.value_si, self.Tmax, 6)
+        assert round(abs(self.kinetics.Tmax.value_si - self.Tmax), 6) == 0
 
     def test_comment(self):
         """
         Test that the KineticsData comment property was properly set.
         """
-        self.assertEqual(self.kinetics.comment, self.comment)
+        assert self.kinetics.comment == self.comment
 
     def test_is_temperature_valid(self):
         """
         Test the KineticsData.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array(
-            [False, True, True, True, True, True, True, True, True, True], np.bool
-        )
+        validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
         for T, valid in zip(Tdata, validdata):
             valid0 = self.kinetics.is_temperature_valid(T)
-            self.assertEqual(valid0, valid)
+            assert valid0 == valid
 
     def test_get_rate_coefficient(self):
         """
@@ -148,7 +140,7 @@ class TestKineticsData(unittest.TestCase):
         )
         for T, kexp in zip(Tlist, kexplist):
             kact = self.kinetics.get_rate_coefficient(T)
-            self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
+            assert abs(kexp - kact) < 1e-4 * kexp
 
     def test_pickle(self):
         """
@@ -158,19 +150,19 @@ class TestKineticsData(unittest.TestCase):
         import pickle
 
         kinetics = pickle.loads(pickle.dumps(self.kinetics, -1))
-        self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
+        assert self.kinetics.Tdata.value.shape == kinetics.Tdata.value.shape
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):
-            self.assertAlmostEqual(T, T0, 4)
-        self.assertEqual(self.kinetics.Tdata.units, kinetics.Tdata.units)
-        self.assertEqual(self.kinetics.kdata.value.shape, kinetics.kdata.value.shape)
+            assert round(abs(T - T0), 4) == 0
+        assert self.kinetics.Tdata.units == kinetics.Tdata.units
+        assert self.kinetics.kdata.value.shape == kinetics.kdata.value.shape
         for k, k0 in zip(self.kinetics.kdata.value, kinetics.kdata.value):
-            self.assertAlmostEqual(k, k0, 4)
-        self.assertEqual(self.kinetics.kdata.units, kinetics.kdata.units)
-        self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
-        self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertAlmostEqual(self.kinetics.Tmax.value, kinetics.Tmax.value, 4)
-        self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.comment, kinetics.comment)
+            assert round(abs(k - k0), 4) == 0
+        assert self.kinetics.kdata.units == kinetics.kdata.units
+        assert round(abs(self.kinetics.Tmin.value - kinetics.Tmin.value), 4) == 0
+        assert self.kinetics.Tmin.units == kinetics.Tmin.units
+        assert round(abs(self.kinetics.Tmax.value - kinetics.Tmax.value), 4) == 0
+        assert self.kinetics.Tmax.units == kinetics.Tmax.units
+        assert self.kinetics.comment == kinetics.comment
 
     def test_repr(self):
         """
@@ -179,27 +171,24 @@ class TestKineticsData(unittest.TestCase):
         """
         namespace = {}
         exec("kinetics = {0!r}".format(self.kinetics), globals(), namespace)
-        self.assertIn("kinetics", namespace)
+        assert "kinetics" in namespace
         kinetics = namespace["kinetics"]
-        self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
+        assert self.kinetics.Tdata.value.shape == kinetics.Tdata.value.shape
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):
-            self.assertAlmostEqual(T, T0, 4)
-        self.assertEqual(self.kinetics.Tdata.units, kinetics.Tdata.units)
-        self.assertEqual(self.kinetics.kdata.value.shape, kinetics.kdata.value.shape)
+            assert round(abs(T - T0), 4) == 0
+        assert self.kinetics.Tdata.units == kinetics.Tdata.units
+        assert self.kinetics.kdata.value.shape == kinetics.kdata.value.shape
         for k, k0 in zip(self.kinetics.kdata.value, kinetics.kdata.value):
-            self.assertAlmostEqual(k, k0, 4)
-        self.assertEqual(self.kinetics.kdata.units, kinetics.kdata.units)
-        self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
-        self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertAlmostEqual(self.kinetics.Tmax.value, kinetics.Tmax.value, 4)
-        self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.comment, kinetics.comment)
+            assert round(abs(k - k0), 4) == 0
+        assert self.kinetics.kdata.units == kinetics.kdata.units
+        assert round(abs(self.kinetics.Tmin.value - kinetics.Tmin.value), 4) == 0
+        assert self.kinetics.Tmin.units == kinetics.Tmin.units
+        assert round(abs(self.kinetics.Tmax.value - kinetics.Tmax.value), 4) == 0
+        assert self.kinetics.Tmax.units == kinetics.Tmax.units
+        assert self.kinetics.comment == kinetics.comment
 
 
-################################################################################
-
-
-class TestPDepKineticsData(unittest.TestCase):
+class TestPDepKineticsData:
     """
     Contains unit tests of the :class:`PDepKineticsData` class.
     """
@@ -208,9 +197,7 @@ class TestPDepKineticsData(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.Tdata = np.array(
-            [300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float64
-        )
+        self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float64)
         self.Pdata = np.array([1e-1, 1e0, 1e1], np.float64)
         self.kdata = np.array(
             [
@@ -273,70 +260,68 @@ class TestPDepKineticsData(unittest.TestCase):
         """
         Test that the PDepKineticsData Tdata property was properly set.
         """
-        self.assertEqual(self.kinetics.Tdata.value_si.shape, self.Tdata.shape)
+        assert self.kinetics.Tdata.value_si.shape == self.Tdata.shape
         for T, T0 in zip(self.kinetics.Tdata.value_si, self.Tdata):
-            self.assertAlmostEqual(T, T0, 4)
+            assert round(abs(T - T0), 4) == 0
 
     def test_pressure_data(self):
         """
         Test that the PDepKineticsData Pdata property was properly set.
         """
-        self.assertEqual(self.kinetics.Pdata.value_si.shape, self.Pdata.shape)
+        assert self.kinetics.Pdata.value_si.shape == self.Pdata.shape
         for P, P0 in zip(self.kinetics.Pdata.value_si, self.Pdata):
-            self.assertAlmostEqual(P * 1e-5, P0, 4)
+            assert round(abs(P * 1e-5 - P0), 4) == 0
 
     def test_kdata(self):
         """
         Test that the PDepKineticsData kdata property was properly set.
         """
-        self.assertEqual(self.kinetics.kdata.value_si.shape, self.kdata.shape)
+        assert self.kinetics.kdata.value_si.shape == self.kdata.shape
         for i in range(self.kdata.shape[0]):
             for j in range(self.kdata.shape[1]):
                 k0 = self.kdata[i, j] * constants.Na * 1e-6
                 k = self.kinetics.kdata.value_si[i, j]
-                self.assertAlmostEqual(k, k0, delta=1e-6 * k0)
+                assert abs(k - k0) < 1e-6 * k0
 
     def test_temperature_min(self):
         """
         Test that the PDepKineticsData Tmin property was properly set.
         """
-        self.assertAlmostEqual(self.kinetics.Tmin.value_si, self.Tmin, 6)
+        assert round(abs(self.kinetics.Tmin.value_si - self.Tmin), 6) == 0
 
     def test_temperature_max(self):
         """
         Test that the PDepKineticsData Tmax property was properly set.
         """
-        self.assertAlmostEqual(self.kinetics.Tmax.value_si, self.Tmax, 6)
+        assert round(abs(self.kinetics.Tmax.value_si - self.Tmax), 6) == 0
 
     def test_pressure_min(self):
         """
         Test that the PDepKineticsData Pmin property was properly set.
         """
-        self.assertAlmostEqual(self.kinetics.Pmin.value_si * 1e-5, self.Pmin, 6)
+        assert round(abs(self.kinetics.Pmin.value_si * 1e-5 - self.Pmin), 6) == 0
 
     def test_pressure_max(self):
         """
         Test that the PDepKineticsData Pmax property was properly set.
         """
-        self.assertAlmostEqual(self.kinetics.Pmax.value_si * 1e-5, self.Pmax, 6)
+        assert round(abs(self.kinetics.Pmax.value_si * 1e-5 - self.Pmax), 6) == 0
 
     def test_comment(self):
         """
         Test that the PDepKineticsData comment property was properly set.
         """
-        self.assertEqual(self.kinetics.comment, self.comment)
+        assert self.kinetics.comment == self.comment
 
     def test_is_temperature_valid(self):
         """
         Test the PDepKineticsData.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array(
-            [False, True, True, True, True, True, True, True, True, True], np.bool
-        )
+        validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
         for T, valid in zip(Tdata, validdata):
             valid0 = self.kinetics.is_temperature_valid(T)
-            self.assertEqual(valid0, valid)
+            assert valid0 == valid
 
     def test_is_pressure_valid(self):
         """
@@ -346,7 +331,7 @@ class TestPDepKineticsData(unittest.TestCase):
         validdata = np.array([False, True, True, True, False], np.bool)
         for P, valid in zip(Pdata, validdata):
             valid0 = self.kinetics.is_pressure_valid(P)
-            self.assertEqual(valid0, valid)
+            assert valid0 == valid
 
     def test_get_rate_coefficient(self):
         """
@@ -398,7 +383,7 @@ class TestPDepKineticsData(unittest.TestCase):
             for j in range(Plist.shape[0]):
                 kexp = kexplist[i, j]
                 kact = self.kinetics.get_rate_coefficient(Tlist[i], Plist[j])
-                self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
+                assert abs(kexp - kact) < 1e-4 * kexp
 
     def test_pickle(self):
         """
@@ -408,26 +393,26 @@ class TestPDepKineticsData(unittest.TestCase):
         import pickle
 
         kinetics = pickle.loads(pickle.dumps(self.kinetics, -1))
-        self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
+        assert self.kinetics.Tdata.value.shape == kinetics.Tdata.value.shape
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):
-            self.assertAlmostEqual(T, T0, 4)
-        self.assertEqual(self.kinetics.Tdata.units, kinetics.Tdata.units)
-        self.assertEqual(self.kinetics.Pdata.value.shape, kinetics.Pdata.value.shape)
+            assert round(abs(T - T0), 4) == 0
+        assert self.kinetics.Tdata.units == kinetics.Tdata.units
+        assert self.kinetics.Pdata.value.shape == kinetics.Pdata.value.shape
         for P, P0 in zip(self.kinetics.Pdata.value, kinetics.Pdata.value):
-            self.assertAlmostEqual(P, P0, 4)
-        self.assertEqual(self.kinetics.Pdata.units, kinetics.Pdata.units)
-        self.assertEqual(self.kinetics.kdata.value.shape, kinetics.kdata.value.shape)
+            assert round(abs(P - P0), 4) == 0
+        assert self.kinetics.Pdata.units == kinetics.Pdata.units
+        assert self.kinetics.kdata.value.shape == kinetics.kdata.value.shape
         for i in range(self.kinetics.kdata.value.shape[0]):
             for j in range(self.kinetics.kdata.value.shape[1]):
                 k0 = self.kinetics.kdata.value[i, j]
                 k = kinetics.kdata.value[i, j]
-                self.assertAlmostEqual(k, k0, delta=1e-6 * k0)
-        self.assertEqual(self.kinetics.kdata.units, kinetics.kdata.units)
-        self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
-        self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertAlmostEqual(self.kinetics.Tmax.value, kinetics.Tmax.value, 4)
-        self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.comment, kinetics.comment)
+                assert abs(k - k0) < 1e-6 * k0
+        assert self.kinetics.kdata.units == kinetics.kdata.units
+        assert round(abs(self.kinetics.Tmin.value - kinetics.Tmin.value), 4) == 0
+        assert self.kinetics.Tmin.units == kinetics.Tmin.units
+        assert round(abs(self.kinetics.Tmax.value - kinetics.Tmax.value), 4) == 0
+        assert self.kinetics.Tmax.units == kinetics.Tmax.units
+        assert self.kinetics.comment == kinetics.comment
 
     def test_repr(self):
         """
@@ -436,25 +421,25 @@ class TestPDepKineticsData(unittest.TestCase):
         """
         namespace = {}
         exec("kinetics = {0!r}".format(self.kinetics), globals(), namespace)
-        self.assertIn("kinetics", namespace)
+        assert "kinetics" in namespace
         kinetics = namespace["kinetics"]
-        self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
+        assert self.kinetics.Tdata.value.shape == kinetics.Tdata.value.shape
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):
-            self.assertAlmostEqual(T, T0, 4)
-        self.assertEqual(self.kinetics.Tdata.units, kinetics.Tdata.units)
-        self.assertEqual(self.kinetics.Pdata.value.shape, kinetics.Pdata.value.shape)
+            assert round(abs(T - T0), 4) == 0
+        assert self.kinetics.Tdata.units == kinetics.Tdata.units
+        assert self.kinetics.Pdata.value.shape == kinetics.Pdata.value.shape
         for P, P0 in zip(self.kinetics.Pdata.value, kinetics.Pdata.value):
-            self.assertAlmostEqual(P, P0, 4)
-        self.assertEqual(self.kinetics.Pdata.units, kinetics.Pdata.units)
-        self.assertEqual(self.kinetics.kdata.value.shape, kinetics.kdata.value.shape)
+            assert round(abs(P - P0), 4) == 0
+        assert self.kinetics.Pdata.units == kinetics.Pdata.units
+        assert self.kinetics.kdata.value.shape == kinetics.kdata.value.shape
         for i in range(self.kinetics.kdata.value.shape[0]):
             for j in range(self.kinetics.kdata.value.shape[1]):
                 k0 = self.kinetics.kdata.value[i, j]
                 k = kinetics.kdata.value[i, j]
-                self.assertAlmostEqual(k, k0, delta=1e-6 * k0)
-        self.assertEqual(self.kinetics.kdata.units, kinetics.kdata.units)
-        self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
-        self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
-        self.assertAlmostEqual(self.kinetics.Tmax.value, kinetics.Tmax.value, 4)
-        self.assertEqual(self.kinetics.Tmax.units, kinetics.Tmax.units)
-        self.assertEqual(self.kinetics.comment, kinetics.comment)
+                assert abs(k - k0) < 1e-6 * k0
+        assert self.kinetics.kdata.units == kinetics.kdata.units
+        assert round(abs(self.kinetics.Tmin.value - kinetics.Tmin.value), 4) == 0
+        assert self.kinetics.Tmin.units == kinetics.Tmin.units
+        assert round(abs(self.kinetics.Tmax.value - kinetics.Tmax.value), 4) == 0
+        assert self.kinetics.Tmax.units == kinetics.Tmax.units
+        assert self.kinetics.comment == kinetics.comment

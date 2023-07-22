@@ -31,7 +31,6 @@
 This script contains unit tests of the :mod:`arkane.isodesmic` module.
 """
 
-import unittest
 
 import numpy as np
 
@@ -46,11 +45,10 @@ from arkane.encorr.isodesmic import (
     SpeciesConstraints,
 )
 from arkane.modelchem import LevelOfTheory
+import pytest
 
-################################################################################
 
-
-class TestErrorCancelingReactionAndSpecies(unittest.TestCase):
+class TestErrorCancelingReactionAndSpecies:
     """
     Tests that ErrorCancelingReaction objects and ErrorCancelingSpecies object are properly implemented
     """
@@ -69,23 +67,19 @@ class TestErrorCancelingReactionAndSpecies(unittest.TestCase):
         Test that ErrorCancelingSpecies can be created properly
         """
         lot = LevelOfTheory("test")
-        error_canceling_species = ErrorCancelingSpecies(
-            self.molecule1, (123.4, "kcal/mol"), lot, (100.0, "kJ/mol")
-        )
-        self.assertIsInstance(error_canceling_species, ErrorCancelingSpecies)
-        self.assertAlmostEqual(
-            error_canceling_species.low_level_hf298.value_si, 123.4 * 4184
-        )
+        error_canceling_species = ErrorCancelingSpecies(self.molecule1, (123.4, "kcal/mol"), lot, (100.0, "kJ/mol"))
+        assert isinstance(error_canceling_species, ErrorCancelingSpecies)
+        assert round(abs(error_canceling_species.low_level_hf298.value_si - 123.4 * 4184), 7) == 0
 
         # For target species the high level data is not given
         target_species = ErrorCancelingSpecies(self.molecule2, (10.1, "J/mol"), lot)
-        self.assertIs(target_species.high_level_hf298, None)
+        assert target_species.high_level_hf298 is None
 
     def test_molecule_input_in_error_canceling_species(self):
         """
         Test that an exception is raised if an rmgpy Molecule object is not passed to an ErrorCancelingSpecies
         """
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             ErrorCancelingSpecies(self.species, (100.0, "J/mol"), LevelOfTheory("test"))
 
     def test_error_canceling_reactions(self):
@@ -95,25 +89,18 @@ class TestErrorCancelingReactionAndSpecies(unittest.TestCase):
         # Take ethane as the target
         lot = LevelOfTheory("test")
         ethane = ErrorCancelingSpecies(self.molecule1, (100.0, "kJ/mol"), lot)
-        methyl = ErrorCancelingSpecies(
-            self.molecule2, (20.0, "kcal/mol"), lot, (21000.0, "cal/mol")
-        )
+        methyl = ErrorCancelingSpecies(self.molecule2, (20.0, "kcal/mol"), lot, (21000.0, "cal/mol"))
 
         # This reaction is not an isodesmic reaction, but that does not matter for the unit test
         rxn = ErrorCancelingReaction(ethane, {methyl: 2})
-        self.assertAlmostEqual(
-            rxn.calculate_target_thermo().value_si,
-            2 * 21000.0 * 4.184 - (2 * 20.0 * 4184 - 100.0 * 1000),
-        )
+        assert round(abs(rxn.calculate_target_thermo().value_si - 2 * 21000.0 * 4.184 - (2 * 20.0 * 4184 - 100.0 * 1000)), 7) == 0
 
     def test_level_of_theory_consistency(self):
         """
         Test that ErrorCancelingReaction objects properly check that all species use the same level of theory
         """
         # Take ethane as the target
-        ethane = ErrorCancelingSpecies(
-            self.molecule1, (100.0, "kJ/mol"), LevelOfTheory("test_A")
-        )
+        ethane = ErrorCancelingSpecies(self.molecule1, (100.0, "kJ/mol"), LevelOfTheory("test_A"))
         methyl = ErrorCancelingSpecies(
             self.molecule2,
             (20.0, "kcal/mol"),
@@ -122,11 +109,11 @@ class TestErrorCancelingReactionAndSpecies(unittest.TestCase):
         )
 
         # This should throw an exception because the model chemistry is different
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             ErrorCancelingReaction(ethane, {methyl: 2})
 
 
-class TestSpeciesConstraints(unittest.TestCase):
+class TestSpeciesConstraints:
     """
     A class for testing that the SpeciesConstraint class functions properly
     """
@@ -143,9 +130,7 @@ class TestSpeciesConstraints(unittest.TestCase):
         cls.propene = ErrorCancelingSpecies(Molecule(smiles="CC=C"), hf, lot)
         cls.butane = ErrorCancelingSpecies(Molecule(smiles="CCCC"), hf, lot)
         cls.benzene = ErrorCancelingSpecies(Molecule(smiles="c1ccccc1"), hf, lot)
-        cls.caffeine = ErrorCancelingSpecies(
-            Molecule(smiles="CN1C=NC2=C1C(=O)N(C(=O)N2C)C"), hf, lot
-        )
+        cls.caffeine = ErrorCancelingSpecies(Molecule(smiles="CN1C=NC2=C1C(=O)N(C(=O)N2C)C"), hf, lot)
         cls.ethyne = ErrorCancelingSpecies(Molecule(smiles="C#C"), hf, lot)
 
     def test_initializing_constraint_map(self):
@@ -153,46 +138,33 @@ class TestSpeciesConstraints(unittest.TestCase):
         Test that the constraint map is properly initialized when a SpeciesConstraints object is initialized
         """
         caffeine_consts = SpeciesConstraints(self.caffeine, [self.butane, self.benzene])
-        self.assertEqual(
-            set(caffeine_consts.constraint_map.keys()),
-            {
-                "H",
-                "C",
-                "O",
-                "N",
-                "C=O",
-                "C-N",
-                "C-H",
-                "C=C",
-                "C=N",
-                "C-C",
-                "5_ring",
-                "6_ring",
-            },
-        )
+        assert set(caffeine_consts.constraint_map.keys()) == {
+            "H",
+            "C",
+            "O",
+            "N",
+            "C=O",
+            "C-N",
+            "C-H",
+            "C=C",
+            "C=N",
+            "C-C",
+            "5_ring",
+            "6_ring",
+        }
 
-        no_rings = SpeciesConstraints(
-            self.caffeine, [self.butane, self.benzene], conserve_ring_size=False
-        )
-        self.assertEqual(
-            set(no_rings.constraint_map.keys()),
-            {"H", "C", "O", "N", "C=O", "C-N", "C-H", "C=C", "C=N", "C-C"},
-        )
+        no_rings = SpeciesConstraints(self.caffeine, [self.butane, self.benzene], conserve_ring_size=False)
+        assert set(no_rings.constraint_map.keys()) == {"H", "C", "O", "N", "C=O", "C-N", "C-H", "C=C", "C=N", "C-C"}
 
-        atoms_only = SpeciesConstraints(
-            self.caffeine, [self.butane], conserve_ring_size=False, conserve_bonds=False
-        )
-        self.assertEqual(set(atoms_only.constraint_map.keys()), {"H", "C", "O", "N"})
+        atoms_only = SpeciesConstraints(self.caffeine, [self.butane], conserve_ring_size=False, conserve_bonds=False)
+        assert set(atoms_only.constraint_map.keys()) == {"H", "C", "O", "N"}
 
     def test_enumerating_constraints(self):
         """
         Test that a SpeciesConstraints object can properly enumerate the constraints of a given ErrorCancelingSpecies
         """
         spcs_consts = SpeciesConstraints(self.benzene, [])
-        self.assertEqual(
-            set(spcs_consts.constraint_map.keys()),
-            {"C", "H", "C=C", "C-C", "C-H", "6_ring"},
-        )
+        assert set(spcs_consts.constraint_map.keys()) == {"C", "H", "C=C", "C-C", "C-H", "6_ring"}
 
         # Now that we have confirmed that the correct keys are present, overwrite the constraint map to set the order
         spcs_consts.constraint_map = {
@@ -204,53 +176,42 @@ class TestSpeciesConstraints(unittest.TestCase):
             "6_ring": 5,
         }
 
-        self.assertTrue(
-            np.array_equal(
-                spcs_consts._enumerate_constraints(self.propene),
-                np.array([6, 3, 1, 1, 6, 0]),
-            )
+        assert np.array_equal(
+            spcs_consts._enumerate_constraints(self.propene),
+            np.array([6, 3, 1, 1, 6, 0]),
         )
-        self.assertTrue(
-            np.array_equal(
-                spcs_consts._enumerate_constraints(self.butane),
-                np.array([10, 4, 0, 3, 10, 0]),
-            )
+        assert np.array_equal(
+            spcs_consts._enumerate_constraints(self.butane),
+            np.array([10, 4, 0, 3, 10, 0]),
         )
-        self.assertTrue(
-            np.array_equal(
-                spcs_consts._enumerate_constraints(self.benzene),
-                np.array([6, 6, 3, 3, 6, 1]),
-            )
+        assert np.array_equal(
+            spcs_consts._enumerate_constraints(self.benzene),
+            np.array([6, 6, 3, 3, 6, 1]),
         )
 
         # Caffeine and ethyne should return None since they have features not found in benzene
-        self.assertIs(spcs_consts._enumerate_constraints(self.caffeine), None)
-        self.assertIs(spcs_consts._enumerate_constraints(self.ethyne), None)
+        assert spcs_consts._enumerate_constraints(self.caffeine) is None
+        assert spcs_consts._enumerate_constraints(self.ethyne) is None
 
     def test_calculating_constraints(self):
         """
         Test that a SpeciesConstraints object can properly return the target constraint vector and the constraint matrix
         """
-        spcs_consts = SpeciesConstraints(
-            self.caffeine, [self.propene, self.butane, self.benzene, self.ethyne]
-        )
-        self.assertEqual(
-            set(spcs_consts.constraint_map.keys()),
-            {
-                "H",
-                "C",
-                "O",
-                "N",
-                "C=O",
-                "C-N",
-                "C-H",
-                "C=C",
-                "C=N",
-                "C-C",
-                "5_ring",
-                "6_ring",
-            },
-        )
+        spcs_consts = SpeciesConstraints(self.caffeine, [self.propene, self.butane, self.benzene, self.ethyne])
+        assert set(spcs_consts.constraint_map.keys()) == {
+            "H",
+            "C",
+            "O",
+            "N",
+            "C=O",
+            "C-N",
+            "C-H",
+            "C=C",
+            "C=N",
+            "C-C",
+            "5_ring",
+            "6_ring",
+        }
 
         # Now that we have confirmed that the correct keys are present, overwrite the constraint map to set the order
         spcs_consts.constraint_map = {
@@ -271,31 +232,23 @@ class TestSpeciesConstraints(unittest.TestCase):
         target_consts, consts_matrix = spcs_consts.calculate_constraints()
 
         # First, test that ethyne is not included in the reference set
-        self.assertEqual(
-            spcs_consts.reference_species, [self.propene, self.butane, self.benzene]
-        )
+        assert spcs_consts.reference_species == [self.propene, self.butane, self.benzene]
 
         # Then, test the output of the calculation
-        self.assertTrue(
-            np.array_equal(
-                target_consts, np.array([10, 8, 2, 4, 2, 10, 10, 1, 1, 1, 1, 1])
-            )
-        )
-        self.assertTrue(
-            np.array_equal(
-                consts_matrix,
-                np.array(
-                    [
-                        [6, 3, 0, 0, 0, 0, 6, 1, 0, 1, 0, 0],
-                        [10, 4, 0, 0, 0, 0, 10, 0, 0, 3, 0, 0],
-                        [6, 6, 0, 0, 0, 0, 6, 3, 0, 3, 0, 1],
-                    ]
-                ),
-            )
+        assert np.array_equal(target_consts, np.array([10, 8, 2, 4, 2, 10, 10, 1, 1, 1, 1, 1]))
+        assert np.array_equal(
+            consts_matrix,
+            np.array(
+                [
+                    [6, 3, 0, 0, 0, 0, 6, 1, 0, 1, 0, 0],
+                    [10, 4, 0, 0, 0, 0, 10, 0, 0, 3, 0, 0],
+                    [6, 6, 0, 0, 0, 0, 6, 3, 0, 3, 0, 1],
+                ]
+            ),
         )
 
 
-class TestErrorCancelingScheme(unittest.TestCase):
+class TestErrorCancelingScheme:
     """
     A class for testing that the ErrorCancelingScheme class functions properly
     """
@@ -309,36 +262,16 @@ class TestErrorCancelingScheme(unittest.TestCase):
         cls.pyo = pyo
 
         lot = LevelOfTheory("test")
-        cls.propene = ErrorCancelingSpecies(
-            Molecule(smiles="CC=C"), (100, "kJ/mol"), lot, (105, "kJ/mol")
-        )
-        cls.propane = ErrorCancelingSpecies(
-            Molecule(smiles="CCC"), (75, "kJ/mol"), lot, (80, "kJ/mol")
-        )
-        cls.butane = ErrorCancelingSpecies(
-            Molecule(smiles="CCCC"), (150, "kJ/mol"), lot, (145, "kJ/mol")
-        )
-        cls.butene = ErrorCancelingSpecies(
-            Molecule(smiles="C=CCC"), (175, "kJ/mol"), lot, (180, "kJ/mol")
-        )
-        cls.pentane = ErrorCancelingSpecies(
-            Molecule(smiles="CCCCC"), (200, "kJ/mol"), lot, (190, "kJ/mol")
-        )
-        cls.pentene = ErrorCancelingSpecies(
-            Molecule(smiles="C=CCCC"), (225, "kJ/mol"), lot, (220, "kJ/mol")
-        )
-        cls.hexane = ErrorCancelingSpecies(
-            Molecule(smiles="CCCCCC"), (250, "kJ/mol"), lot, (260, "kJ/mol")
-        )
-        cls.hexene = ErrorCancelingSpecies(
-            Molecule(smiles="C=CCCCC"), (275, "kJ/mol"), lot, (275, "kJ/mol")
-        )
-        cls.benzene = ErrorCancelingSpecies(
-            Molecule(smiles="c1ccccc1"), (-50, "kJ/mol"), lot, (-80, "kJ/mol")
-        )
-        cls.caffeine = ErrorCancelingSpecies(
-            Molecule(smiles="CN1C=NC2=C1C(=O)N(C(=O)N2C)C"), (300, "kJ/mol"), lot
-        )
+        cls.propene = ErrorCancelingSpecies(Molecule(smiles="CC=C"), (100, "kJ/mol"), lot, (105, "kJ/mol"))
+        cls.propane = ErrorCancelingSpecies(Molecule(smiles="CCC"), (75, "kJ/mol"), lot, (80, "kJ/mol"))
+        cls.butane = ErrorCancelingSpecies(Molecule(smiles="CCCC"), (150, "kJ/mol"), lot, (145, "kJ/mol"))
+        cls.butene = ErrorCancelingSpecies(Molecule(smiles="C=CCC"), (175, "kJ/mol"), lot, (180, "kJ/mol"))
+        cls.pentane = ErrorCancelingSpecies(Molecule(smiles="CCCCC"), (200, "kJ/mol"), lot, (190, "kJ/mol"))
+        cls.pentene = ErrorCancelingSpecies(Molecule(smiles="C=CCCC"), (225, "kJ/mol"), lot, (220, "kJ/mol"))
+        cls.hexane = ErrorCancelingSpecies(Molecule(smiles="CCCCCC"), (250, "kJ/mol"), lot, (260, "kJ/mol"))
+        cls.hexene = ErrorCancelingSpecies(Molecule(smiles="C=CCCCC"), (275, "kJ/mol"), lot, (275, "kJ/mol"))
+        cls.benzene = ErrorCancelingSpecies(Molecule(smiles="c1ccccc1"), (-50, "kJ/mol"), lot, (-80, "kJ/mol"))
+        cls.caffeine = ErrorCancelingSpecies(Molecule(smiles="CN1C=NC2=C1C(=O)N(C(=O)N2C)C"), (300, "kJ/mol"), lot)
         cls.ethyne = ErrorCancelingSpecies(Molecule(smiles="C#C"), (200, "kJ/mol"), lot)
 
     def test_creating_error_canceling_schemes(self):
@@ -349,15 +282,11 @@ class TestErrorCancelingScheme(unittest.TestCase):
             True,
         )
 
-        self.assertEqual(scheme.reference_species, [self.butane])
+        assert scheme.reference_species == [self.butane]
 
-        isodesmic_scheme = IsodesmicScheme(
-            self.propene, [self.butane, self.benzene, self.caffeine, self.ethyne]
-        )
+        isodesmic_scheme = IsodesmicScheme(self.propene, [self.butane, self.benzene, self.caffeine, self.ethyne])
 
-        self.assertEqual(
-            isodesmic_scheme.reference_species, [self.butane, self.benzene]
-        )
+        assert isodesmic_scheme.reference_species == [self.butane, self.benzene]
 
     def test_find_error_canceling_reaction(self):
         """
@@ -369,20 +298,16 @@ class TestErrorCancelingScheme(unittest.TestCase):
         )
 
         # Note that caffeine and ethyne will not be allowed, so for the full set the indices are [0, 1, 2]
-        rxn, _ = scheme._find_error_canceling_reaction(
-            [0, 1, 2], milp_software=["lpsolve"]
-        )
-        self.assertEqual(rxn.species[self.butane], -1)
-        self.assertEqual(rxn.species[self.propane], 1)
-        self.assertEqual(rxn.species[self.butene], 1)
+        rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software=["lpsolve"])
+        assert rxn.species[self.butane] == -1
+        assert rxn.species[self.propane] == 1
+        assert rxn.species[self.butene] == 1
 
         if self.pyo is not None:
-            rxn, _ = scheme._find_error_canceling_reaction(
-                [0, 1, 2], milp_software=["pyomo"]
-            )
-            self.assertEqual(rxn.species[self.butane], -1)
-            self.assertEqual(rxn.species[self.propane], 1)
-            self.assertEqual(rxn.species[self.butene], 1)
+            rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software=["pyomo"])
+            assert rxn.species[self.butane] == -1
+            assert rxn.species[self.propane] == 1
+            assert rxn.species[self.butene] == 1
 
     def test_multiple_error_canceling_reactions(self):
         """
@@ -402,30 +327,20 @@ class TestErrorCancelingScheme(unittest.TestCase):
             ],
         )
 
-        reaction_list = scheme.multiple_error_canceling_reaction_search(
-            n_reactions_max=20
-        )
-        self.assertEqual(len(reaction_list), 20)
+        reaction_list = scheme.multiple_error_canceling_reaction_search(n_reactions_max=20)
+        assert len(reaction_list) == 20
         reaction_string = reaction_list.__repr__()
         # Consider both permutations of the products in the reaction string
         rxn_str1 = "<ErrorCancelingReaction 1*C=CC + 1*CCCC <=> 1*CCC + 1*C=CCC >"
         rxn_str2 = "<ErrorCancelingReaction 1*C=CC + 1*CCCC <=> 1*C=CCC + 1*CCC >"
-        self.assertTrue(
-            any(rxn_string in reaction_string for rxn_string in [rxn_str1, rxn_str2])
-        )
+        assert any(rxn_string in reaction_string for rxn_string in [rxn_str1, rxn_str2])
 
         if self.pyo is not None:
             # pyomo is slower, so don't test as many
-            reaction_list = scheme.multiple_error_canceling_reaction_search(
-                n_reactions_max=5, milp_software=["pyomo"]
-            )
-            self.assertEqual(len(reaction_list), 5)
+            reaction_list = scheme.multiple_error_canceling_reaction_search(n_reactions_max=5, milp_software=["pyomo"])
+            assert len(reaction_list) == 5
             reaction_string = reaction_list.__repr__()
-            self.assertTrue(
-                any(
-                    rxn_string in reaction_string for rxn_string in [rxn_str1, rxn_str2]
-                )
-            )
+            assert any(rxn_string in reaction_string for rxn_string in [rxn_str1, rxn_str2])
 
     def test_calculate_target_enthalpy(self):
         """
@@ -445,14 +360,10 @@ class TestErrorCancelingScheme(unittest.TestCase):
             ],
         )
 
-        target_thermo, rxn_list = scheme.calculate_target_enthalpy(
-            n_reactions_max=3, milp_software=["lpsolve"]
-        )
-        self.assertEqual(target_thermo.value_si, 115000.0)
-        self.assertIsInstance(rxn_list[0], ErrorCancelingReaction)
+        target_thermo, rxn_list = scheme.calculate_target_enthalpy(n_reactions_max=3, milp_software=["lpsolve"])
+        assert target_thermo.value_si == 115000.0
+        assert isinstance(rxn_list[0], ErrorCancelingReaction)
 
         if self.pyo is not None:
-            target_thermo, _ = scheme.calculate_target_enthalpy(
-                n_reactions_max=3, milp_software=["pyomo"]
-            )
-            self.assertEqual(target_thermo.value_si, 115000.0)
+            target_thermo, _ = scheme.calculate_target_enthalpy(n_reactions_max=3, milp_software=["pyomo"])
+            assert target_thermo.value_si == 115000.0

@@ -27,7 +27,7 @@
 #                                                                             #
 ###############################################################################
 
-import unittest
+
 import time
 
 import numpy as np
@@ -41,10 +41,7 @@ from rmgpy.species import Species
 from rmgpy.thermo import ThermoData, NASA, NASAPolynomial
 
 
-################################################################################
-
-
-class SurfaceReactorCheck(unittest.TestCase):
+class SurfaceReactorCheck:
     def test_solve_h2(self):
         """
         Test the surface batch reactor with a dissociative adsorption of H2
@@ -75,9 +72,7 @@ class SurfaceReactorCheck(unittest.TestCase):
             ),
         )
         hx = Species(
-            molecule=[
-                Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
-            ],
+            molecule=[Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")],
             thermo=ThermoData(
                 Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
                 Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
@@ -89,9 +84,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         rxn1 = Reaction(
             reactants=[h2, x, x],
             products=[hx, hx],
-            kinetics=SurfaceArrhenius(
-                A=(9.05e18, "cm^5/(mol^2*s)"), n=0.5, Ea=(5.0, "kJ/mol"), T0=(1.0, "K")
-            ),
+            kinetics=SurfaceArrhenius(A=(9.05e18, "cm^5/(mol^2*s)"), n=0.5, Ea=(5.0, "kJ/mol"), T0=(1.0, "K")),
         )
 
         core_species = [h2, x, hx]
@@ -112,9 +105,7 @@ class SurfaceReactorCheck(unittest.TestCase):
             termination=[],
         )
 
-        rxn_system.initialize_model(
-            core_species, core_reactions, edge_species, edge_reactions
-        )
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.logspace(-13, -5, 81, dtype=np.float64)
 
@@ -141,24 +132,12 @@ class SurfaceReactorCheck(unittest.TestCase):
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                -1.0 * species_rates[i, 0],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                -0.5 * species_rates[i, 1],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                0.5 * species_rates[i, 2],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
+            assert abs(reaction_rates[i, 0] - -1.0 * species_rates[i, 0]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - -0.5 * species_rates[i, 1]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - 0.5 * species_rates[i, 2]) < 1e-6 * reaction_rates[i, 0]
 
         # Check that we've reached equilibrium
-        self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
+        assert abs(reaction_rates[-1, 0] - 0.0) < 1e-2
 
         # # Visualize the simulation results
         # import pylab
@@ -230,12 +209,8 @@ class SurfaceReactorCheck(unittest.TestCase):
             molecule=[Molecule().from_adjacency_list("1 X u0 p0")],
             thermo=NASA(
                 polynomials=[
-                    NASAPolynomial(
-                        coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(298, "K"), Tmax=(1000, "K")
-                    ),
-                    NASAPolynomial(
-                        coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(1000, "K"), Tmax=(2000, "K")
-                    ),
+                    NASAPolynomial(coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(298, "K"), Tmax=(1000, "K")),
+                    NASAPolynomial(coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(1000, "K"), Tmax=(2000, "K")),
                 ],
                 Tmin=(298, "K"),
                 Tmax=(2000, "K"),
@@ -326,9 +301,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         )
         # in chemkin, the sites are mostly occupied in about 1e-8 seconds.
 
-        rxn_system.initialize_model(
-            core_species, core_reactions, edge_species, edge_reactions
-        )
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.logspace(-13, -5, 81, dtype=np.float64)
 
@@ -336,9 +309,7 @@ class SurfaceReactorCheck(unittest.TestCase):
 
         print(
             "rxn1 rate coefficient",
-            rxn1.get_surface_rate_coefficient(
-                rxn_system.T.value_si, rxn_system.surface_site_density.value_si
-            ),
+            rxn1.get_surface_rate_coefficient(rxn_system.T.value_si, rxn_system.surface_site_density.value_si),
         )
 
         # Integrate to get the solution at each time point
@@ -370,33 +341,16 @@ class SurfaceReactorCheck(unittest.TestCase):
         y = np.array(y, np.float64)
         reaction_rates = np.array(reaction_rates, np.float64)
         species_rates = np.array(species_rates, np.float64)
-        V = (
-            constants.R
-            * rxn_system.T.value_si
-            * np.sum(y)
-            / rxn_system.P_initial.value_si
-        )
+        V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P_initial.value_si
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                -species_rates[i, 0],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                -species_rates[i, 1],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                species_rates[i, 2],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 0]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - species_rates[i, 2]) < 1e-6 * reaction_rates[i, 0]
 
         # Check that we've reached equilibrium by the end
-        self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
+        assert abs(reaction_rates[-1, 0] - 0.0) < 1e-2
 
     def test_solve_h2_coverage_dependence(self):
         """
@@ -429,9 +383,7 @@ class SurfaceReactorCheck(unittest.TestCase):
             ),
         )
         hx = Species(
-            molecule=[
-                Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
-            ],
+            molecule=[Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")],
             thermo=ThermoData(
                 Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
                 Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
@@ -489,21 +441,17 @@ class SurfaceReactorCheck(unittest.TestCase):
             termination=[],
         )
 
-        rxn_system.initialize_model(
-            core_species, core_reactions, edge_species, edge_reactions
-        )
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.logspace(-13, -5, 81, dtype=np.float64)
 
-        self.assertIsInstance(
-            rxn1.kinetics.coverage_dependence, dict
-        )  # check to make sure coverage_dependence is still the correct type
+        assert isinstance(rxn1.kinetics.coverage_dependence, dict)  # check to make sure coverage_dependence is still the correct type
         for species, parameters in rxn1.kinetics.coverage_dependence.items():
-            self.assertIsInstance(species, Species)  # species should be a Species
-            self.assertIsInstance(parameters, dict)
-            self.assertIsNotNone(parameters["a"])
-            self.assertIsNotNone(parameters["m"])
-            self.assertIsNotNone(parameters["E"])
+            assert isinstance(species, Species)  # species should be a Species
+            assert isinstance(parameters, dict)
+            assert parameters["a"] is not None
+            assert parameters["m"] is not None
+            assert parameters["E"] is not None
 
         # Integrate to get the solution at each time point
         t = []
@@ -531,24 +479,12 @@ class SurfaceReactorCheck(unittest.TestCase):
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                -1.0 * species_rates[i, 0],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                -0.5 * species_rates[i, 1],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                0.5 * species_rates[i, 2],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
+            assert abs(reaction_rates[i, 0] - -1.0 * species_rates[i, 0]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - -0.5 * species_rates[i, 1]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - 0.5 * species_rates[i, 2]) < 1e-6 * reaction_rates[i, 0]
 
         # Check that we've reached equilibrium
-        self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
+        assert abs(reaction_rates[-1, 0] - 0.0) < 1e-2
 
     def test_solve_ch3_coverage_dependence(self):
         """
@@ -603,12 +539,8 @@ class SurfaceReactorCheck(unittest.TestCase):
             molecule=[Molecule().from_adjacency_list("1 X u0 p0")],
             thermo=NASA(
                 polynomials=[
-                    NASAPolynomial(
-                        coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(298, "K"), Tmax=(1000, "K")
-                    ),
-                    NASAPolynomial(
-                        coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(1000, "K"), Tmax=(2000, "K")
-                    ),
+                    NASAPolynomial(coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(298, "K"), Tmax=(1000, "K")),
+                    NASAPolynomial(coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(1000, "K"), Tmax=(2000, "K")),
                 ],
                 Tmin=(298, "K"),
                 Tmax=(2000, "K"),
@@ -697,9 +629,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         )
         # in chemkin, the sites are mostly occupied in about 1e-8 seconds.
 
-        rxn_system.initialize_model(
-            core_species, core_reactions, edge_species, edge_reactions
-        )
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.logspace(-13, -5, 81, dtype=np.float64)
 
@@ -707,20 +637,16 @@ class SurfaceReactorCheck(unittest.TestCase):
 
         print(
             "rxn1 rate coefficient",
-            rxn1.get_surface_rate_coefficient(
-                rxn_system.T.value_si, rxn_system.surface_site_density.value_si
-            ),
+            rxn1.get_surface_rate_coefficient(rxn_system.T.value_si, rxn_system.surface_site_density.value_si),
         )
 
-        self.assertIsInstance(
-            rxn1.kinetics.coverage_dependence, dict
-        )  # check to make sure coverage_dependence is still the correct type
+        assert isinstance(rxn1.kinetics.coverage_dependence, dict)  # check to make sure coverage_dependence is still the correct type
         for species, parameters in rxn1.kinetics.coverage_dependence.items():
-            self.assertIsInstance(species, Species)  # species should be a Species
-            self.assertIsInstance(parameters, dict)
-            self.assertIsNotNone(parameters["a"])
-            self.assertIsNotNone(parameters["m"])
-            self.assertIsNotNone(parameters["E"])
+            assert isinstance(species, Species)  # species should be a Species
+            assert isinstance(parameters, dict)
+            assert parameters["a"] is not None
+            assert parameters["m"] is not None
+            assert parameters["E"] is not None
 
         # Integrate to get the solution at each time point
         t = []
@@ -754,33 +680,16 @@ class SurfaceReactorCheck(unittest.TestCase):
         y = np.array(y, np.float64)
         reaction_rates = np.array(reaction_rates, np.float64)
         species_rates = np.array(species_rates, np.float64)
-        V = (
-            constants.R
-            * rxn_system.T.value_si
-            * np.sum(y)
-            / rxn_system.P_initial.value_si
-        )
+        V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P_initial.value_si
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                -species_rates[i, 0],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                -species_rates[i, 1],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                species_rates[i, 2],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 0]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - species_rates[i, 2]) < 1e-6 * reaction_rates[i, 0]
 
         # Check that we've reached equilibrium by the end
-        self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
+        assert abs(reaction_rates[-1, 0] - 0.0) < 1e-2
 
         # Run model with Covdep off so we can test that it is actually being implemented
         rxn_system = SurfaceReactor(
@@ -794,9 +703,7 @@ class SurfaceReactorCheck(unittest.TestCase):
             termination=[],
         )
 
-        rxn_system.initialize_model(
-            core_species, core_reactions, edge_species, edge_reactions
-        )
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.logspace(-13, -5, 81, dtype=np.float64)
 
@@ -826,8 +733,8 @@ class SurfaceReactorCheck(unittest.TestCase):
         species_rates_off = np.array(species_rates_off, np.float64)
 
         # Check that we've reached equilibrium
-        self.assertAlmostEqual(species_rates_off[-1, 0], 0.0, delta=1e-2)
+        assert abs(species_rates_off[-1, 0] - 0.0) < 1e-2
 
         # Check that coverages are different
-        self.assertFalse(np.allclose(y, y_off))
-        self.assertFalse(np.allclose(species_rates, species_rates_off))
+        assert not np.allclose(y, y_off)
+        assert not np.allclose(species_rates, species_rates_off)

@@ -31,7 +31,6 @@
 This module contains unit tests of the rmgpy.species module.
 """
 
-import unittest
 
 from rmgpy.species import Species
 from rmgpy.transport import TransportData
@@ -45,10 +44,7 @@ from rmgpy.statmech import (
 )
 
 
-################################################################################
-
-
-class TestSpecies(unittest.TestCase):
+class TestSpecies:
     """
     Contains unit tests for the Species class.
     """
@@ -158,51 +154,23 @@ class TestSpecies(unittest.TestCase):
         import pickle
 
         species = pickle.loads(pickle.dumps(self.species, -1))
-        self.assertEqual(self.species.index, species.index)
-        self.assertEqual(self.species.label, species.label)
-        self.assertEqual(
-            self.species.molecule[0].multiplicity, species.molecule[0].multiplicity
-        )
-        self.assertEqual(
-            self.species.get_thermo_data().H298.value_si,
-            species.get_thermo_data().H298.value_si,
-        )
-        self.assertEqual(
-            self.species.get_thermo_data().H298.units,
-            species.get_thermo_data().H298.units,
-        )
-        self.assertEqual(
-            len(self.species.conformer.modes), len(species.conformer.modes)
-        )
-        self.assertEqual(len(self.species.molecule), len(species.molecule))
-        self.assertTrue(self.species.molecule[0].is_isomorphic(species.molecule[0]))
-        self.assertEqual(
-            self.species.conformer.E0.value_si, species.conformer.E0.value_si
-        )
-        self.assertEqual(self.species.conformer.E0.units, species.conformer.E0.units)
-        self.assertEqual(
-            self.species.transport_data.sigma.value_si,
-            species.transport_data.sigma.value_si,
-        )
-        self.assertEqual(
-            self.species.transport_data.sigma.units, species.transport_data.sigma.units
-        )
-        self.assertAlmostEqual(
-            self.species.transport_data.epsilon.value_si / 1.381e-23,
-            species.transport_data.epsilon.value_si / 1.381e-23,
-            4,
-        )
-        self.assertEqual(
-            self.species.transport_data.epsilon.units,
-            species.transport_data.epsilon.units,
-        )
-        self.assertEqual(
-            self.species.molecular_weight.value_si, species.molecular_weight.value_si
-        )
-        self.assertEqual(
-            self.species.molecular_weight.units, species.molecular_weight.units
-        )
-        self.assertEqual(self.species.reactive, species.reactive)
+        assert self.species.index == species.index
+        assert self.species.label == species.label
+        assert self.species.molecule[0].multiplicity == species.molecule[0].multiplicity
+        assert self.species.get_thermo_data().H298.value_si == species.get_thermo_data().H298.value_si
+        assert self.species.get_thermo_data().H298.units == species.get_thermo_data().H298.units
+        assert len(self.species.conformer.modes) == len(species.conformer.modes)
+        assert len(self.species.molecule) == len(species.molecule)
+        assert self.species.molecule[0].is_isomorphic(species.molecule[0])
+        assert self.species.conformer.E0.value_si == species.conformer.E0.value_si
+        assert self.species.conformer.E0.units == species.conformer.E0.units
+        assert self.species.transport_data.sigma.value_si == species.transport_data.sigma.value_si
+        assert self.species.transport_data.sigma.units == species.transport_data.sigma.units
+        assert round(abs(self.species.transport_data.epsilon.value_si / 1.381e-23 - species.transport_data.epsilon.value_si / 1.381e-23), 4) == 0
+        assert self.species.transport_data.epsilon.units == species.transport_data.epsilon.units
+        assert self.species.molecular_weight.value_si == species.molecular_weight.value_si
+        assert self.species.molecular_weight.units == species.molecular_weight.units
+        assert self.species.reactive == species.reactive
 
     def test_output(self):
         """
@@ -212,62 +180,34 @@ class TestSpecies(unittest.TestCase):
         """
         namespace = {}
         exec("species = {0!r}".format(self.species), globals(), namespace)
-        self.assertIn("species", namespace)
+        assert "species" in namespace
         species = namespace["species"]
-        self.assertEqual(self.species.index, species.index)
-        self.assertEqual(self.species.label, species.label)
-        self.assertEqual(
-            self.species.molecule[0].multiplicity, species.molecule[0].multiplicity
-        )
-        self.assertEqual(
-            self.species.get_thermo_data().H298.value_si,
-            species.get_thermo_data().H298.value_si,
-        )
-        self.assertEqual(
-            self.species.get_thermo_data().H298.units,
-            species.get_thermo_data().H298.units,
-        )
-        self.assertEqual(
-            len(self.species.conformer.modes), len(species.conformer.modes)
-        )
-        self.assertEqual(len(self.species.molecule), len(species.molecule))
-        self.assertTrue(self.species.molecule[0].is_isomorphic(species.molecule[0]))
-        self.assertEqual(
-            self.species.conformer.E0.value_si, species.conformer.E0.value_si
-        )
-        self.assertEqual(self.species.conformer.E0.units, species.conformer.E0.units)
-        self.assertEqual(
-            self.species.transport_data.sigma.value_si,
-            species.transport_data.sigma.value_si,
-        )
-        self.assertEqual(
-            self.species.transport_data.sigma.units, species.transport_data.sigma.units
-        )
-        self.assertAlmostEqual(
-            self.species.transport_data.epsilon.value_si,
-            species.transport_data.epsilon.value_si,
-            3,
-        )
-        self.assertEqual(
-            self.species.transport_data.epsilon.units,
-            species.transport_data.epsilon.units,
-        )
-        self.assertEqual(
-            self.species.molecular_weight.value_si, species.molecular_weight.value_si
-        )
-        self.assertEqual(
-            self.species.molecular_weight.units, species.molecular_weight.units
-        )
-        self.assertEqual(self.species.reactive, species.reactive)
+        assert self.species.index == species.index
+        assert self.species.label == species.label
+        assert self.species.molecule[0].multiplicity == species.molecule[0].multiplicity
+        assert self.species.get_thermo_data().H298.value_si == species.get_thermo_data().H298.value_si
+        assert self.species.get_thermo_data().H298.units == species.get_thermo_data().H298.units
+        assert len(self.species.conformer.modes) == len(species.conformer.modes)
+        assert len(self.species.molecule) == len(species.molecule)
+        assert self.species.molecule[0].is_isomorphic(species.molecule[0])
+        assert self.species.conformer.E0.value_si == species.conformer.E0.value_si
+        assert self.species.conformer.E0.units == species.conformer.E0.units
+        assert self.species.transport_data.sigma.value_si == species.transport_data.sigma.value_si
+        assert self.species.transport_data.sigma.units == species.transport_data.sigma.units
+        assert round(abs(self.species.transport_data.epsilon.value_si - species.transport_data.epsilon.value_si), 3) == 0
+        assert self.species.transport_data.epsilon.units == species.transport_data.epsilon.units
+        assert self.species.molecular_weight.value_si == species.molecular_weight.value_si
+        assert self.species.molecular_weight.units == species.molecular_weight.units
+        assert self.species.reactive == species.reactive
 
     def test_equality(self):
         """Test that we can perform equality comparison with Species objects"""
         spc1 = Species(smiles="C")
         spc2 = Species(smiles="C")
 
-        self.assertNotEqual(spc1, spc2)
-        self.assertEqual(spc1, spc1)
-        self.assertEqual(spc2, spc2)
+        assert spc1 != spc2
+        assert spc1 == spc1
+        assert spc2 == spc2
 
     def test_less_than(self):
         """Test that we can perform less than comparison with Species objects"""
@@ -276,12 +216,12 @@ class TestSpecies(unittest.TestCase):
         spc3 = Species(index=2, label="b", smiles="C")
         spc4 = Species(index=1, label="a", smiles="CC")
 
-        self.assertLess(spc1, spc2)
-        self.assertLess(spc1, spc3)
-        self.assertLess(spc2, spc3)
-        self.assertLess(spc1, spc4)
-        self.assertLess(spc2, spc4)
-        self.assertLess(spc3, spc4)
+        assert spc1 < spc2
+        assert spc1 < spc3
+        assert spc2 < spc3
+        assert spc1 < spc4
+        assert spc2 < spc4
+        assert spc3 < spc4
 
     def test_greater_than(self):
         """Test that we can perform greater than comparison with Species objects"""
@@ -290,12 +230,12 @@ class TestSpecies(unittest.TestCase):
         spc3 = Species(index=2, label="b", smiles="C")
         spc4 = Species(index=1, label="a", smiles="CC")
 
-        self.assertGreater(spc2, spc1)
-        self.assertGreater(spc3, spc1)
-        self.assertGreater(spc3, spc2)
-        self.assertGreater(spc4, spc1)
-        self.assertGreater(spc4, spc2)
-        self.assertGreater(spc4, spc3)
+        assert spc2 > spc1
+        assert spc3 > spc1
+        assert spc3 > spc2
+        assert spc4 > spc1
+        assert spc4 > spc2
+        assert spc4 > spc3
 
     def test_hash(self):
         """Test behavior of Species hashing using dictionaries and sets"""
@@ -305,32 +245,25 @@ class TestSpecies(unittest.TestCase):
         spc4 = Species(index=1, label="a", smiles="CC")
 
         # Test dictionary behavior
-        self.assertEqual(len(dict.fromkeys([spc1, spc2, spc3, spc4])), 4)
+        assert len(dict.fromkeys([spc1, spc2, spc3, spc4])) == 4
 
         # Test set behavior
-        self.assertEqual(len({spc1, spc2, spc3, spc4}), 4)
+        assert len({spc1, spc2, spc3, spc4}) == 4
 
     def test_to_adjacency_list(self):
         """
         Test that to_adjacency_list() works as expected.
         """
         string = self.species.to_adjacency_list()
-        self.assertTrue(
-            string.startswith(
-                self.species.molecule[0].to_adjacency_list(
-                    label=self.species.label, remove_h=False
-                )
-            ),
-            string,
-        )
+        assert string.startswith(self.species.molecule[0].to_adjacency_list(label=self.species.label, remove_h=False)), string
 
     def test_species_props(self):
         """
         Test a key-value pair is added to the props attribute of Species.
         """
         self.species.props["foo"] = "bar"
-        self.assertIsInstance(self.species.props, dict)
-        self.assertEquals(self.species.props["foo"], "bar")
+        assert isinstance(self.species.props, dict)
+        assert self.species.props["foo"] == "bar"
 
     def test_species_props_object_attribute(self):
         """
@@ -343,16 +276,16 @@ class TestSpecies(unittest.TestCase):
         self.species.props["foo"] = "bar"
         spc3 = Species()
         spc3.props["foo"] = "bla"
-        self.assertEquals(self.species.props["foo"], "bar")
-        self.assertDictEqual(spc2.props, {})
-        self.assertDictEqual(spc3.props, {"foo": "bla"})
+        assert self.species.props["foo"] == "bar"
+        assert spc2.props == {}
+        assert spc3.props == {"foo": "bla"}
 
     def test_resonance_isomers_generated(self):
         """Test that 1-penten-3-yl makes 2-penten-1-yl resonance isomer"""
         spec = Species().from_smiles("C=C[CH]CC")
         spec.generate_resonance_structures()
-        self.assertEquals(len(spec.molecule), 2)
-        self.assertEquals(spec.molecule[1].to_smiles(), "[CH2]C=CCC")
+        assert len(spec.molecule) == 2
+        assert spec.molecule[1].to_smiles() == "[CH2]C=CCC"
 
     def test_resonace_isomers_represented(self):
         """Test that both resonance forms of 1-penten-3-yl are printed by __repr__"""
@@ -360,16 +293,11 @@ class TestSpecies(unittest.TestCase):
         spec.generate_resonance_structures()
         namespace = {}
         exec("spec2 = {0!r}".format(spec), globals(), namespace)
-        self.assertIn("spec2", namespace)
+        assert "spec2" in namespace
         spec2 = namespace["spec2"]
-        self.assertEqual(len(spec.molecule), len(spec2.molecule))
+        assert len(spec.molecule) == len(spec2.molecule)
         for i, j in zip(spec.molecule, spec2.molecule):
-            self.assertTrue(
-                j.is_isomorphic(i),
-                msg="i is not isomorphic with j, where i is {} and j is {}".format(
-                    i.to_smiles(), j.to_smiles()
-                ),
-            )
+            assert j.is_isomorphic(i), "i is not isomorphic with j, where i is {} and j is {}".format(i.to_smiles(), j.to_smiles())
 
     def test_is_isomorphic_to_filtered_resonance_structure(self):
         """
@@ -382,9 +310,7 @@ class TestSpecies(unittest.TestCase):
         is generated, RMG finds the Species it belongs to, if the last exists.
         """
 
-        spc1_correct = Species().from_smiles(
-            "[O]N=O"
-        )  # check charge separation with higher octet deviation
+        spc1_correct = Species().from_smiles("[O]N=O")  # check charge separation with higher octet deviation
         spc1_nonrepresentative = Species().from_adjacency_list(
             """multiplicity 2
                                                                 1 N u1 p1 c0 {2,S} {3,S}
@@ -435,29 +361,15 @@ class TestSpecies(unittest.TestCase):
         )
 
         # check that the structures are not isomorphic if resonance structures are not generated:
-        self.assertFalse(
-            spc1_correct.is_isomorphic(spc1_nonrepresentative, strict=True)
-        )
+        assert not spc1_correct.is_isomorphic(spc1_nonrepresentative, strict=True)
 
         # check that the nonrepresentative structure is isomorphic by generating resonance structures:
-        self.assertTrue(
-            spc1_correct.is_isomorphic(spc1_nonrepresentative, strict=False)
-        )
-        self.assertTrue(
-            spc2_correct.is_isomorphic(spc2_nonrepresentative, strict=False)
-        )
-        self.assertTrue(
-            spc3_correct.is_isomorphic(spc3_nonrepresentative, strict=False)
-        )
-        self.assertTrue(
-            spc4_correct.is_isomorphic(spc4_nonrepresentative, strict=False)
-        )
-        self.assertTrue(
-            spc5_correct.is_isomorphic(spc5_nonrepresentative, strict=False)
-        )
-        self.assertTrue(
-            spc6_correct.is_isomorphic(spc6_nonrepresentative, strict=False)
-        )
+        assert spc1_correct.is_isomorphic(spc1_nonrepresentative, strict=False)
+        assert spc2_correct.is_isomorphic(spc2_nonrepresentative, strict=False)
+        assert spc3_correct.is_isomorphic(spc3_nonrepresentative, strict=False)
+        assert spc4_correct.is_isomorphic(spc4_nonrepresentative, strict=False)
+        assert spc5_correct.is_isomorphic(spc5_nonrepresentative, strict=False)
+        assert spc6_correct.is_isomorphic(spc6_nonrepresentative, strict=False)
 
     def test_get_resonance_hybrid(self):
         """
@@ -471,11 +383,7 @@ class TestSpecies(unittest.TestCase):
         spec = Species().from_smiles("C=C[CH]CC")
         hybrid_mol = spec.get_resonance_hybrid()
 
-        self.assertTrue(
-            hybrid_mol.to_single_bonds().is_isomorphic(
-                spec.molecule[0].to_single_bonds()
-            )
-        )
+        assert hybrid_mol.to_single_bonds().is_isomorphic(spec.molecule[0].to_single_bonds())
 
         # a rough check for intermediate bond orders
         expected_orders = [1, 1.5]
@@ -484,31 +392,25 @@ class TestSpecies(unittest.TestCase):
         for atom in hybrid_mol.atoms:
             for atom2 in atom.bonds:
                 bond = hybrid_mol.get_bond(atom, atom2)
-                self.assertTrue(
-                    any([bond.is_order(otherOrder) for otherOrder in expected_orders]),
-                    "Unexpected bond order {}".format(bond.get_order_num()),
-                )
+                assert any([bond.is_order(otherOrder) for otherOrder in expected_orders]), "Unexpected bond order {}".format(bond.get_order_num())
                 bonds.append(bond)
 
         # ensure all expected orders are present
         for expected_order in expected_orders:
-            self.assertTrue(
-                any([bond.is_order(expected_order) for bond in bonds]),
-                "No bond of order {} found".format(expected_order),
-            )
+            assert any([bond.is_order(expected_order) for bond in bonds]), "No bond of order {} found".format(expected_order)
 
     def test_copy(self):
         """Test that we can make a copy of a Species object."""
 
         spc_cp = self.species.copy()
 
-        self.assertTrue(id(self.species) != id(spc_cp))
-        self.assertTrue(self.species.is_isomorphic(spc_cp))
-        self.assertEquals(self.species.label, spc_cp.label)
-        self.assertEquals(self.species.index, spc_cp.index)
+        assert id(self.species) != id(spc_cp)
+        assert self.species.is_isomorphic(spc_cp)
+        assert self.species.label == spc_cp.label
+        assert self.species.index == spc_cp.index
 
-        self.assertTrue(self.species.molecular_weight.equals(spc_cp.molecular_weight))
-        self.assertEquals(self.species.reactive, spc_cp.reactive)
+        assert self.species.molecular_weight.equals(spc_cp.molecular_weight)
+        assert self.species.reactive == spc_cp.reactive
 
     def test_cantera(self):
         """
@@ -570,12 +472,12 @@ Thermo library: primaryThermoLibrary
                                 polar=1.0,
                                 rot_relax=15.0))"""
         )
-        self.assertEqual(type(rmg_ct_species), type(ct_species))
-        self.assertEqual(rmg_ct_species.name, ct_species.name)
-        self.assertEqual(rmg_ct_species.composition, ct_species.composition)
-        self.assertEqual(rmg_ct_species.size, ct_species.size)
-        self.assertEqual(type(rmg_ct_species.thermo), type(ct_species.thermo))
-        self.assertEqual(type(rmg_ct_species.transport), type(ct_species.transport))
+        assert type(rmg_ct_species) == type(ct_species)
+        assert rmg_ct_species.name == ct_species.name
+        assert rmg_ct_species.composition == ct_species.composition
+        assert rmg_ct_species.size == ct_species.size
+        assert type(rmg_ct_species.thermo) == type(ct_species.thermo)
+        assert type(rmg_ct_species.transport) == type(ct_species.transport)
 
     def test_get_transport_data(self):
         """
@@ -596,35 +498,35 @@ Thermo library: primaryThermoLibrary
             ),
         )
 
-        self.assertTrue(spc.get_transport_data() is spc.transport_data)
+        assert spc.get_transport_data() is spc.transport_data
 
     def test_fingerprint_property(self):
         """Test that the fingerprint property works"""
-        self.assertEqual(self.species2.fingerprint, "C06H06N00O00S00")
+        assert self.species2.fingerprint == "C06H06N00O00S00"
 
     def test_inchi_property(self):
         """Test that the InChI property works"""
-        self.assertEqual(self.species2.inchi, "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H")
+        assert self.species2.inchi == "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"
 
     def test_multiplicity_property(self):
         """Test that the fingerprint property works"""
-        self.assertEqual(self.species2.multiplicity, 1)
+        assert self.species2.multiplicity == 1
 
     def test_smiles_property(self):
         """Test that the InChI property works"""
-        self.assertEqual(self.species2.smiles, "C1=CC=CC=C1")
+        assert self.species2.smiles == "C1=CC=CC=C1"
 
     def test_inchi_instantiation(self):
         """Test that we can create a species using the InChI argument"""
         test = Species(inchi="InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H")
 
-        self.assertTrue(test.is_isomorphic(self.species2))
+        assert test.is_isomorphic(self.species2)
 
     def test_smiles_instantiation(self):
         """Test that we can create a species using the SMILES argument"""
         test = Species(smiles="C1=CC=CC=C1")
 
-        self.assertTrue(test.is_isomorphic(self.species2))
+        assert test.is_isomorphic(self.species2)
 
     def test_is_isomorphic_strict(self):
         """Test that the strict argument to Species.is_isomorphic works"""
@@ -632,24 +534,21 @@ Thermo library: primaryThermoLibrary
         spc2 = Species(smiles="C=C1C=CC=C2C1=C[CH]C1=C2C=CC=C1")
         spc3 = Species(smiles="[CH2]C1=CC2=C(C=C1)C1=C(C=CC=C1)C=C2")
 
-        self.assertFalse(spc1.is_isomorphic(spc2, strict=True))
-        self.assertTrue(spc1.is_isomorphic(spc2, strict=False))
-        self.assertFalse(spc1.is_isomorphic(spc3, strict=True))
-        self.assertFalse(spc1.is_isomorphic(spc3, strict=False))
+        assert not spc1.is_isomorphic(spc2, strict=True)
+        assert spc1.is_isomorphic(spc2, strict=False)
+        assert not spc1.is_isomorphic(spc3, strict=True)
+        assert not spc1.is_isomorphic(spc3, strict=False)
 
         spc1.generate_resonance_structures()
         spc2.generate_resonance_structures()
         spc3.generate_resonance_structures()
 
-        self.assertTrue(spc1.is_isomorphic(spc2, strict=True))
-        self.assertTrue(spc1.is_isomorphic(spc2, strict=False))
-        self.assertFalse(spc1.is_isomorphic(spc3, strict=True))
-        self.assertFalse(spc1.is_isomorphic(spc3, strict=False))
+        assert spc1.is_isomorphic(spc2, strict=True)
+        assert spc1.is_isomorphic(spc2, strict=False)
+        assert not spc1.is_isomorphic(spc3, strict=True)
+        assert not spc1.is_isomorphic(spc3, strict=False)
 
     def test_species_label(self):
         """Test that the species label is not being assigned with the multiplicity string"""
-        self.assertEqual(self.species3.label, "")
-        self.assertEqual(self.species4.label, "Propane")
-
-
-################################################################################
+        assert self.species3.label == ""
+        assert self.species4.label == "Propane"

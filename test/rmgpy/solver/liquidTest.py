@@ -28,7 +28,7 @@
 ###############################################################################
 
 import os
-import unittest
+
 
 import numpy as np
 
@@ -43,10 +43,7 @@ from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
 
 
-################################################################################
-
-
-class LiquidReactorCheck(unittest.TestCase):
+class LiquidReactorCheck:
     @classmethod
     def setUpClass(cls):
         """
@@ -122,9 +119,7 @@ class LiquidReactorCheck(unittest.TestCase):
 
         cls.T = 1000
 
-        cls.file_dir = os.path.join(
-            os.path.dirname(rmgpy.__file__), "solver", "files", "liquid_phase_constSPC"
-        )
+        cls.file_dir = os.path.join(os.path.dirname(rmgpy.__file__), "solver", "files", "liquid_phase_constSPC")
 
     def test_compute_flux(self):
         """
@@ -151,9 +146,7 @@ class LiquidReactorCheck(unittest.TestCase):
 
         rxn_system = LiquidReactor(self.T, c0, 1, termination=[])
 
-        rxn_system.initialize_model(
-            core_species, core_reactions, edge_species, edge_reactions
-        )
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
 
@@ -175,29 +168,13 @@ class LiquidReactorCheck(unittest.TestCase):
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                species_rates[i, 0],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                -species_rates[i, 1],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                -species_rates[i, 2],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
-            self.assertAlmostEqual(
-                reaction_rates[i, 0],
-                species_rates[i, 3],
-                delta=1e-6 * reaction_rates[i, 0],
-            )
+            assert abs(reaction_rates[i, 0] - species_rates[i, 0]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 2]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - species_rates[i, 3]) < 1e-6 * reaction_rates[i, 0]
 
         # Check that we've reached equilibrium
-        self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
+        assert abs(reaction_rates[-1, 0] - 0.0) < 1e-2
 
     def test_jacobian(self):
         """
@@ -353,12 +330,8 @@ class LiquidReactorCheck(unittest.TestCase):
             core_reactions = [rxn]
 
             rxn_system0 = LiquidReactor(self.T, c0, 1, termination=[])
-            rxn_system0.initialize_model(
-                core_species, core_reactions, edge_species, edge_reactions
-            )
-            dydt0 = rxn_system0.residual(
-                0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape)
-            )[0]
+            rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+            dydt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
 
             dN = 0.000001 * sum(rxn_system0.y)
 
@@ -369,11 +342,7 @@ class LiquidReactorCheck(unittest.TestCase):
                 dydt = []
                 for i in range(num_core_species):
                     rxn_system0.y[i] += dN
-                    dydt.append(
-                        rxn_system0.residual(
-                            0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape)
-                        )[0]
-                    )
+                    dydt.append(rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0])
                     rxn_system0.y[i] -= dN  # reset y
 
                 # Compute the jacobian using finite differences
@@ -381,11 +350,7 @@ class LiquidReactorCheck(unittest.TestCase):
                 for i in range(num_core_species):
                     for j in range(num_core_species):
                         jacobian[i, j] = (dydt[j][i] - dydt0[i]) / dN
-                        self.assertAlmostEqual(
-                            jacobian[i, j],
-                            solver_jacobian[i, j],
-                            delta=abs(1e-4 * jacobian[i, j]),
-                        )
+                        assert abs(jacobian[i, j] - solver_jacobian[i, j]) < abs(1e-4 * jacobian[i, j])
             # The forward finite difference is very unstable for reactions
             # 6 and 7. Use Jacobians calculated by hand instead.
             elif rxn_num == 6:
@@ -394,22 +359,14 @@ class LiquidReactorCheck(unittest.TestCase):
                 jacobian = jacobian_rxn6(c0, kforward, kreverse, core_species)
                 for i in range(num_core_species):
                     for j in range(num_core_species):
-                        self.assertAlmostEqual(
-                            jacobian[i, j],
-                            solver_jacobian[i, j],
-                            delta=abs(1e-4 * jacobian[i, j]),
-                        )
+                        assert abs(jacobian[i, j] - solver_jacobian[i, j]) < abs(1e-4 * jacobian[i, j])
             elif rxn_num == 7:
                 kforward = rxn.get_rate_coefficient(self.T)
                 kreverse = kforward / rxn.get_equilibrium_constant(self.T)
                 jacobian = jacobian_rxn7(c0, kforward, kreverse, core_species)
                 for i in range(num_core_species):
                     for j in range(num_core_species):
-                        self.assertAlmostEqual(
-                            jacobian[i, j],
-                            solver_jacobian[i, j],
-                            delta=abs(1e-4 * jacobian[i, j]),
-                        )
+                        assert abs(jacobian[i, j] - solver_jacobian[i, j]) < abs(1e-4 * jacobian[i, j])
 
     def test_compute_derivative(self):
         rxn_list = [
@@ -460,21 +417,15 @@ class LiquidReactorCheck(unittest.TestCase):
         }
 
         rxn_system0 = LiquidReactor(self.T, c0, 1, termination=[])
-        rxn_system0.initialize_model(
-            core_species, core_reactions, edge_species, edge_reactions
-        )
-        dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[
-            0
-        ]
+        rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+        dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
         solver_dfdk = rxn_system0.compute_rate_derivative()
         # print 'Solver d(dy/dt)/dk'
         # print solver_dfdk
 
         integration_time = 1e-8
 
-        model_settings = ModelSettings(
-            tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0
-        )
+        model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0)
         simulator_settings = SimulatorSettings()
 
         rxn_system0.termination.append(TerminationTime((integration_time, "s")))
@@ -504,25 +455,17 @@ class LiquidReactorCheck(unittest.TestCase):
 
         for i in range(len(rxn_list)):
             k0 = rxn_list[i].get_rate_coefficient(self.T)
-            rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si * (
-                1 + 1e-3
-            )
+            rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si * (1 + 1e-3)
             dk = rxn_list[i].get_rate_coefficient(self.T) - k0
 
             rxn_system = LiquidReactor(self.T, c0, 1, termination=[])
-            rxn_system.initialize_model(
-                core_species, core_reactions, edge_species, edge_reactions
-            )
+            rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-            dfdt = rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))[
-                0
-            ]
+            dfdt = rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))[0]
             dfdk[:, i] = (dfdt - dfdt0) / dk
 
             rxn_system.termination.append(TerminationTime((integration_time, "s")))
-            model_settings = ModelSettings(
-                tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0
-            )
+            model_settings = ModelSettings(tol_keep_in_edge=0, tol_move_to_core=1, tol_interrupt_simulation=0)
             simulator_settings = SimulatorSettings()
             rxn_system.simulate(
                 core_species,
@@ -535,15 +478,11 @@ class LiquidReactorCheck(unittest.TestCase):
                 simulator_settings=simulator_settings,
             )
 
-            rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si / (
-                1 + 1e-3
-            )  # reset A factor
+            rxn_list[i].kinetics.A.value_si = rxn_list[i].kinetics.A.value_si / (1 + 1e-3)  # reset A factor
 
         for i in range(num_core_species):
             for j in range(len(rxn_list)):
-                self.assertAlmostEqual(
-                    dfdk[i, j], solver_dfdk[i, j], delta=abs(1e-3 * dfdk[i, j])
-                )
+                assert abs(dfdk[i, j] - solver_dfdk[i, j]) < abs(1e-3 * dfdk[i, j])
 
     def test_store_constant_species_names(self):
         """
@@ -585,16 +524,15 @@ class LiquidReactorCheck(unittest.TestCase):
             constant_species,
         )
         for reactor in [rxn_system1, rxn_system2]:
-            self.assertIsNotNone(reactor.const_spc_names)
+            assert reactor.const_spc_names is not None
 
         # check if Constant species are different in each liquid system
         for spc in rxn_system1.const_spc_names:
             for spc2 in rxn_system2.const_spc_names:
-                self.assertIsNot(
-                    spc,
-                    spc2,
-                    "Constant species declared in two different reactors seem mixed. "
-                    'Species "{0}" appears in both systems and should be.'.format(spc),
+                assert (
+                    spc is not spc2
+                ), "Constant species declared in two different reactors seem mixed. " 'Species "{0}" appears in both systems and should be.'.format(
+                    spc
                 )
 
     def test_liquid_input_reading(self):
@@ -607,21 +545,11 @@ class LiquidReactorCheck(unittest.TestCase):
         rmg.initialize()
 
         for index, reactionSystem in enumerate(rmg.reaction_systems):
-            self.assertIsNotNone(
-                reactionSystem.const_spc_names,
-                "Reactor should contain constant species name and indices after few steps",
-            )
-            self.assertIsNotNone(
-                reactionSystem.const_spc_indices,
-                "Reactor should contain constant species indices in the core species array",
-            )
-            self.assertIs(
-                reactionSystem.const_spc_names[0],
-                rmg.reaction_model.core.species[
-                    reactionSystem.const_spc_indices[0]
-                ].label,
-                "The constant species name from the reaction model and constantSPCnames should be equal",
-            )
+            assert reactionSystem.const_spc_names is not None, "Reactor should contain constant species name and indices after few steps"
+            assert reactionSystem.const_spc_indices is not None, "Reactor should contain constant species indices in the core species array"
+            assert (
+                reactionSystem.const_spc_names[0] is rmg.reaction_model.core.species[reactionSystem.const_spc_indices[0]].label
+            ), "The constant species name from the reaction model and constantSPCnames should be equal"
 
     def test_corespecies_rate(self):
         """
@@ -669,9 +597,7 @@ class LiquidReactorCheck(unittest.TestCase):
         # The test regarding the writing of constantSPCindices from input file is check with the previous test.
         rxn_system.const_spc_indices = [0]
 
-        rxn_system.initialize_model(
-            core_species, core_reactions, edge_species, edge_reactions
-        )
+        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
         tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
 
@@ -680,12 +606,9 @@ class LiquidReactorCheck(unittest.TestCase):
         for t1 in tlist:
             rxn_system.advance(t1)
             t.append(rxn_system.t)
-            self.assertEqual(
-                rxn_system.core_species_rates[0],
-                0,
-                "Core species rate has to be equal to 0 for species hold constant. "
-                "Here it is equal to {0}".format(rxn_system.core_species_rates[0]),
-            )
+            assert (
+                rxn_system.core_species_rates[0] == 0
+            ), "Core species rate has to be equal to 0 for species hold constant. " "Here it is equal to {0}".format(rxn_system.core_species_rates[0])
 
     @classmethod
     def tearDownClass(cls):

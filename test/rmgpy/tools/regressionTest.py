@@ -29,7 +29,7 @@
 
 import os
 import os.path
-import unittest
+
 
 from nose.plugins.attrib import attr
 
@@ -38,7 +38,7 @@ from rmgpy.tools.regression import read_input_file, run
 
 
 @attr("functional")
-class regressionTest(unittest.TestCase):
+class regressionTest:
     def test(self):
         folder = os.path.join(os.path.dirname(rmgpy.__file__), "tools/data/regression")
         benchmark = os.path.join(folder, "benchmark")

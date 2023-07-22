@@ -31,7 +31,6 @@
 This module contains unit tests of the rmgpy.reaction module.
 """
 
-import unittest
 
 import cantera as ct
 import numpy
@@ -65,9 +64,6 @@ from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.thermo import Wilhoit, ThermoData, NASA, NASAPolynomial
 
 
-################################################################################
-
-
 class PseudoSpecies(object):
     """
     Can be used in place of a :class:`rmg.species.Species` for isomorphism checks.
@@ -85,13 +81,11 @@ class PseudoSpecies(object):
     def __str__(self):
         return self.label
 
-    def is_isomorphic(
-        self, other, generate_initial_map=False, strict=True, save_order=False
-    ):
+    def is_isomorphic(self, other, generate_initial_map=False, strict=True, save_order=False):
         return self.label.lower() == other.label.lower()
 
 
-class TestReactionIsomorphism(unittest.TestCase):
+class TestReactionIsomorphism:
     """
     Contains unit tests of the isomorphism testing of the  Reaction class.
     """
@@ -107,78 +101,56 @@ class TestReactionIsomorphism(unittest.TestCase):
 
     def test1to1(self):
         r1 = self.make_reaction("A=B")
-        self.assertTrue(r1.is_isomorphic(self.make_reaction("a=B")))
-        self.assertTrue(r1.is_isomorphic(self.make_reaction("b=A")))
-        self.assertFalse(
-            r1.is_isomorphic(self.make_reaction("B=a"), either_direction=False)
-        )
-        self.assertFalse(r1.is_isomorphic(self.make_reaction("A=C")))
-        self.assertFalse(r1.is_isomorphic(self.make_reaction("A=BB")))
+        assert r1.is_isomorphic(self.make_reaction("a=B"))
+        assert r1.is_isomorphic(self.make_reaction("b=A"))
+        assert not r1.is_isomorphic(self.make_reaction("B=a"), either_direction=False)
+        assert not r1.is_isomorphic(self.make_reaction("A=C"))
+        assert not r1.is_isomorphic(self.make_reaction("A=BB"))
 
     def test1to2(self):
         r1 = self.make_reaction("A=BC")
-        self.assertTrue(r1.is_isomorphic(self.make_reaction("a=Bc")))
-        self.assertTrue(r1.is_isomorphic(self.make_reaction("cb=a")))
-        self.assertTrue(
-            r1.is_isomorphic(self.make_reaction("a=cb"), either_direction=False)
-        )
-        self.assertFalse(
-            r1.is_isomorphic(self.make_reaction("bc=a"), either_direction=False)
-        )
-        self.assertFalse(r1.is_isomorphic(self.make_reaction("a=c")))
-        self.assertFalse(r1.is_isomorphic(self.make_reaction("ab=c")))
+        assert r1.is_isomorphic(self.make_reaction("a=Bc"))
+        assert r1.is_isomorphic(self.make_reaction("cb=a"))
+        assert r1.is_isomorphic(self.make_reaction("a=cb"), either_direction=False)
+        assert not r1.is_isomorphic(self.make_reaction("bc=a"), either_direction=False)
+        assert not r1.is_isomorphic(self.make_reaction("a=c"))
+        assert not r1.is_isomorphic(self.make_reaction("ab=c"))
 
     def test2to2(self):
         r1 = self.make_reaction("AB=CD")
-        self.assertTrue(r1.is_isomorphic(self.make_reaction("ab=cd")))
-        self.assertTrue(
-            r1.is_isomorphic(self.make_reaction("ab=dc"), either_direction=False)
-        )
-        self.assertTrue(r1.is_isomorphic(self.make_reaction("dc=ba")))
-        self.assertFalse(
-            r1.is_isomorphic(self.make_reaction("cd=ab"), either_direction=False)
-        )
-        self.assertFalse(r1.is_isomorphic(self.make_reaction("ab=ab")))
-        self.assertFalse(r1.is_isomorphic(self.make_reaction("ab=cde")))
+        assert r1.is_isomorphic(self.make_reaction("ab=cd"))
+        assert r1.is_isomorphic(self.make_reaction("ab=dc"), either_direction=False)
+        assert r1.is_isomorphic(self.make_reaction("dc=ba"))
+        assert not r1.is_isomorphic(self.make_reaction("cd=ab"), either_direction=False)
+        assert not r1.is_isomorphic(self.make_reaction("ab=ab"))
+        assert not r1.is_isomorphic(self.make_reaction("ab=cde"))
 
     def test2to3(self):
         r1 = self.make_reaction("AB=CDE")
-        self.assertTrue(r1.is_isomorphic(self.make_reaction("ab=cde")))
-        self.assertTrue(
-            r1.is_isomorphic(self.make_reaction("ba=edc"), either_direction=False)
-        )
-        self.assertTrue(r1.is_isomorphic(self.make_reaction("dec=ba")))
-        self.assertFalse(
-            r1.is_isomorphic(self.make_reaction("cde=ab"), either_direction=False)
-        )
-        self.assertFalse(r1.is_isomorphic(self.make_reaction("ab=abc")))
-        self.assertFalse(r1.is_isomorphic(self.make_reaction("abe=cde")))
+        assert r1.is_isomorphic(self.make_reaction("ab=cde"))
+        assert r1.is_isomorphic(self.make_reaction("ba=edc"), either_direction=False)
+        assert r1.is_isomorphic(self.make_reaction("dec=ba"))
+        assert not r1.is_isomorphic(self.make_reaction("cde=ab"), either_direction=False)
+        assert not r1.is_isomorphic(self.make_reaction("ab=abc"))
+        assert not r1.is_isomorphic(self.make_reaction("abe=cde"))
 
     def test2to3_using_check_only_label(self):
         r1 = self.make_reaction("AB=CDE")
-        self.assertTrue(
-            r1.is_isomorphic(self.make_reaction("AB=CDE"), check_only_label=True)
+        assert r1.is_isomorphic(self.make_reaction("AB=CDE"), check_only_label=True)
+        assert r1.is_isomorphic(
+            self.make_reaction("BA=EDC"),
+            either_direction=False,
+            check_only_label=True,
         )
-        self.assertTrue(
-            r1.is_isomorphic(
-                self.make_reaction("BA=EDC"),
-                either_direction=False,
-                check_only_label=True,
-            )
-        )
-        self.assertFalse(
-            r1.is_isomorphic(self.make_reaction("Ab=CDE"), check_only_label=True)
-        )
-        self.assertFalse(
-            r1.is_isomorphic(
-                self.make_reaction("BA=EDd"),
-                either_direction=False,
-                check_only_label=True,
-            )
+        assert not r1.is_isomorphic(self.make_reaction("Ab=CDE"), check_only_label=True)
+        assert not r1.is_isomorphic(
+            self.make_reaction("BA=EDd"),
+            either_direction=False,
+            check_only_label=True,
         )
 
 
-class TestSurfaceReaction(unittest.TestCase):
+class TestSurfaceReaction:
     """Test surface reactions"""
 
     def setUp(self):
@@ -314,9 +286,7 @@ class TestSurfaceReaction(unittest.TestCase):
         rxn1s = Reaction(
             reactants=[s_h2, s_x, s_x],
             products=[s_hx, s_hx],
-            kinetics=SurfaceArrhenius(
-                A=(9.05e18, "cm^5/(mol^2*s)"), n=0.5, Ea=(5.0, "kJ/mol"), T0=(1.0, "K")
-            ),
+            kinetics=SurfaceArrhenius(A=(9.05e18, "cm^5/(mol^2*s)"), n=0.5, Ea=(5.0, "kJ/mol"), T0=(1.0, "K")),
         )
         self.rxn1s = rxn1s
 
@@ -363,20 +333,18 @@ class TestSurfaceReaction(unittest.TestCase):
                         "m": -1.0,
                         "a": 1.0,
                     },
-                    Species().from_adjacency_list(
-                        "1 X u0 p0 c0 {2,S}\n2 H u0 p0 c0 {1,S}"
-                    ): {"E": (0.2, "J/mol"), "m": -2.0, "a": 2.0},
+                    Species().from_adjacency_list("1 X u0 p0 c0 {2,S}\n2 H u0 p0 c0 {1,S}"): {"E": (0.2, "J/mol"), "m": -2.0, "a": 2.0},
                 },
             ),
         )
 
     def test_is_surface_reaction_species(self):
         """Test is_surface_reaction for reaction based on Species"""
-        self.assertTrue(self.rxn1s.is_surface_reaction())
+        assert self.rxn1s.is_surface_reaction()
 
     def test_is_surface_reaction_molecules(self):
         """Test is_surface_reaction for reaction based on Molecules"""
-        self.assertTrue(self.rxn1m.is_surface_reaction())
+        assert self.rxn1m.is_surface_reaction()
 
     def test_methyl_adsorption_surface_arrhenius(self):
         """Test the CH3 adsorption rate given by SurfaceArrhenius"""
@@ -384,27 +352,22 @@ class TestSurfaceReaction(unittest.TestCase):
         surface_site_density = Quantity(2.72e-9, "mol/cm^2").value_si
         calculated = self.rxn2sSA.get_surface_rate_coefficient(T, surface_site_density)
         target = 1e6  # mol/m2
-        self.assertAlmostEqual(numpy.log10(calculated), numpy.log10(target), places=0)
+        assert round(abs(numpy.log10(calculated) - numpy.log10(target)), 0) == 0
 
     def test_methyl_adsorption_sticking_coefficient(self):
         """Test the CH3 adsorption rate given by StickingCoefficient"""
 
         # First, check the molecular weight is in units we expect
-        self.assertAlmostEqual(
-            self.rxn2sSC.reactants[0].molecular_weight.value_si / constants.amu / 1000,
-            15.0345e-3,
-        )  # kg/mol
+        assert round(abs(self.rxn2sSC.reactants[0].molecular_weight.value_si / constants.amu / 1000 - 15.0345e-3), 7) == 0  # kg/mol
 
         T = 800
         surface_site_density = Quantity(2.72e-9, "mol/cm^2").value_si
         calculated = self.rxn2sSC.get_surface_rate_coefficient(T, surface_site_density)
         target = 1e6  # mol/m2
-        self.assertAlmostEqual(numpy.log10(calculated), numpy.log10(target), places=0)
+        assert round(abs(numpy.log10(calculated) - numpy.log10(target)), 0) == 0
 
     def test_get_rate_coefficient_units_from_reaction_order(self):
-        self.assertEqual(
-            self.rxn1s.generate_reverse_rate_coefficient().A.units, "m^2/(mol*s)"
-        )
+        assert self.rxn1s.generate_reverse_rate_coefficient().A.units == "m^2/(mol*s)"
 
     def test_equilibrium_constant_surface_kc(self):
         """
@@ -414,7 +377,7 @@ class TestSurfaceReaction(unittest.TestCase):
         Kclist0 = [15375.20186, 1.566753, 0.017772, 0.0013485, 0.000263180, 8.73504e-05]
         Kclist = self.rxn1s.get_equilibrium_constants(Tlist, type="Kc")
         for i in range(len(Tlist)):
-            self.assertAlmostEqual(Kclist[i] / Kclist0[i], 1.0, 4)
+            assert round(abs(Kclist[i] / Kclist0[i] - 1.0), 4) == 0
 
     def test_reverse_sticking_coeff_rate(self):
         """
@@ -423,16 +386,12 @@ class TestSurfaceReaction(unittest.TestCase):
 
         original_kinetics = self.rxn2sSC.kinetics
         rxn_copy = deepcopy(self.rxn2sSC)
-        reverse_kinetics = self.rxn2sSC.generate_reverse_rate_coefficient(
-            surface_site_density=2.5e-5
-        )
+        reverse_kinetics = self.rxn2sSC.generate_reverse_rate_coefficient(surface_site_density=2.5e-5)
 
         rxn_copy.kinetics = reverse_kinetics
         # reverse reactants, products to ensure Keq is correctly computed
         rxn_copy.reactants, rxn_copy.products = rxn_copy.products, rxn_copy.reactants
-        reverse_reverse_kinetics = rxn_copy.generate_reverse_rate_coefficient(
-            surface_site_density=2.5e-5
-        )
+        reverse_reverse_kinetics = rxn_copy.generate_reverse_rate_coefficient(surface_site_density=2.5e-5)
         rxn_copy.kinetics = reverse_reverse_kinetics
 
         # check that reverting the reverse yields the original
@@ -446,10 +405,10 @@ class TestSurfaceReaction(unittest.TestCase):
         for T in Tlist:
             korig = self.rxn2sSC.get_rate_coefficient(T, P, surface_site_density=2.5e-5)
             krevrev = rxn_copy.get_rate_coefficient(T, P, surface_site_density=2.5e-5)
-            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+            assert round(abs(korig / krevrev - 1.0), 0) == 0
 
 
-class TestReaction(unittest.TestCase):
+class TestReaction:
     """
     Contains unit tests of the Reaction class.
     """
@@ -692,9 +651,7 @@ class TestReaction(unittest.TestCase):
         self.reaction3 = Reaction(
             reactants=[oxygen_atom, so2],
             products=[so3],
-            kinetics=Arrhenius(
-                A=(3.7e11, "cm^3/(mol*s)"), n=0, Ea=(1689, "cal/mol"), T0=(1, "K")
-            ),
+            kinetics=Arrhenius(A=(3.7e11, "cm^3/(mol*s)"), n=0, Ea=(1689, "cal/mol"), T0=(1, "K")),
         )
 
         H2 = Species().from_smiles("[H][H]")
@@ -705,9 +662,7 @@ class TestReaction(unittest.TestCase):
         self.reaction4 = Reaction(
             reactants=[H2, PO3],
             products=[HOPO2, H_atom],
-            kinetics=Arrhenius(
-                A=(2.4e7, "cm^3/(mol*s)"), n=1.38, Ea=(15.38, "kcal/mol"), T0=(1, "K")
-            ),
+            kinetics=Arrhenius(A=(2.4e7, "cm^3/(mol*s)"), n=1.38, Ea=(15.38, "kcal/mol"), T0=(1, "K")),
         )
         self.reaction4_pairs = [(PO3, HOPO2), (H2, H_atom)]
 
@@ -718,13 +673,11 @@ class TestReaction(unittest.TestCase):
         isomerization = Reaction(reactants=[Species()], products=[Species()])
         association = Reaction(reactants=[Species(), Species()], products=[Species()])
         dissociation = Reaction(reactants=[Species()], products=[Species(), Species()])
-        bimolecular = Reaction(
-            reactants=[Species(), Species()], products=[Species(), Species()]
-        )
-        self.assertTrue(isomerization.is_isomerization())
-        self.assertFalse(association.is_isomerization())
-        self.assertFalse(dissociation.is_isomerization())
-        self.assertFalse(bimolecular.is_isomerization())
+        bimolecular = Reaction(reactants=[Species(), Species()], products=[Species(), Species()])
+        assert isomerization.is_isomerization()
+        assert not association.is_isomerization()
+        assert not dissociation.is_isomerization()
+        assert not bimolecular.is_isomerization()
 
     def test_is_association(self):
         """
@@ -733,13 +686,11 @@ class TestReaction(unittest.TestCase):
         isomerization = Reaction(reactants=[Species()], products=[Species()])
         association = Reaction(reactants=[Species(), Species()], products=[Species()])
         dissociation = Reaction(reactants=[Species()], products=[Species(), Species()])
-        bimolecular = Reaction(
-            reactants=[Species(), Species()], products=[Species(), Species()]
-        )
-        self.assertFalse(isomerization.is_association())
-        self.assertTrue(association.is_association())
-        self.assertFalse(dissociation.is_association())
-        self.assertFalse(bimolecular.is_association())
+        bimolecular = Reaction(reactants=[Species(), Species()], products=[Species(), Species()])
+        assert not isomerization.is_association()
+        assert association.is_association()
+        assert not dissociation.is_association()
+        assert not bimolecular.is_association()
 
     def test_is_dissociation(self):
         """
@@ -748,13 +699,11 @@ class TestReaction(unittest.TestCase):
         isomerization = Reaction(reactants=[Species()], products=[Species()])
         association = Reaction(reactants=[Species(), Species()], products=[Species()])
         dissociation = Reaction(reactants=[Species()], products=[Species(), Species()])
-        bimolecular = Reaction(
-            reactants=[Species(), Species()], products=[Species(), Species()]
-        )
-        self.assertFalse(isomerization.is_dissociation())
-        self.assertFalse(association.is_dissociation())
-        self.assertTrue(dissociation.is_dissociation())
-        self.assertFalse(bimolecular.is_dissociation())
+        bimolecular = Reaction(reactants=[Species(), Species()], products=[Species(), Species()])
+        assert not isomerization.is_dissociation()
+        assert not association.is_dissociation()
+        assert dissociation.is_dissociation()
+        assert not bimolecular.is_dissociation()
 
     def test_has_template(self):
         """
@@ -762,31 +711,31 @@ class TestReaction(unittest.TestCase):
         """
         reactants = self.reaction.reactants[:]
         products = self.reaction.products[:]
-        self.assertTrue(self.reaction.has_template(reactants, products))
-        self.assertTrue(self.reaction.has_template(products, reactants))
-        self.assertFalse(self.reaction2.has_template(reactants, products))
-        self.assertFalse(self.reaction2.has_template(products, reactants))
+        assert self.reaction.has_template(reactants, products)
+        assert self.reaction.has_template(products, reactants)
+        assert not self.reaction2.has_template(reactants, products)
+        assert not self.reaction2.has_template(products, reactants)
 
         reactants.reverse()
         products.reverse()
-        self.assertTrue(self.reaction.has_template(reactants, products))
-        self.assertTrue(self.reaction.has_template(products, reactants))
-        self.assertFalse(self.reaction2.has_template(reactants, products))
-        self.assertFalse(self.reaction2.has_template(products, reactants))
+        assert self.reaction.has_template(reactants, products)
+        assert self.reaction.has_template(products, reactants)
+        assert not self.reaction2.has_template(reactants, products)
+        assert not self.reaction2.has_template(products, reactants)
 
         reactants = self.reaction2.reactants[:]
         products = self.reaction2.products[:]
-        self.assertFalse(self.reaction.has_template(reactants, products))
-        self.assertFalse(self.reaction.has_template(products, reactants))
-        self.assertTrue(self.reaction2.has_template(reactants, products))
-        self.assertTrue(self.reaction2.has_template(products, reactants))
+        assert not self.reaction.has_template(reactants, products)
+        assert not self.reaction.has_template(products, reactants)
+        assert self.reaction2.has_template(reactants, products)
+        assert self.reaction2.has_template(products, reactants)
 
         reactants.reverse()
         products.reverse()
-        self.assertFalse(self.reaction.has_template(reactants, products))
-        self.assertFalse(self.reaction.has_template(products, reactants))
-        self.assertTrue(self.reaction2.has_template(reactants, products))
-        self.assertTrue(self.reaction2.has_template(products, reactants))
+        assert not self.reaction.has_template(reactants, products)
+        assert not self.reaction.has_template(products, reactants)
+        assert self.reaction2.has_template(reactants, products)
+        assert self.reaction2.has_template(products, reactants)
 
     def test_enthalpy_of_reaction(self):
         """
@@ -810,7 +759,7 @@ class TestReaction(unittest.TestCase):
         ]
         Hlist = self.reaction2.get_enthalpies_of_reaction(Tlist)
         for i in range(len(Tlist)):
-            self.assertAlmostEqual(Hlist[i] / 1000.0, Hlist0[i] / 1000.0, 2)
+            assert round(abs(Hlist[i] / 1000.0 - Hlist0[i] / 1000.0), 2) == 0
 
     def test_entropy_of_reaction(self):
         """
@@ -834,7 +783,7 @@ class TestReaction(unittest.TestCase):
         ]
         Slist = self.reaction2.get_entropies_of_reaction(Tlist)
         for i in range(len(Tlist)):
-            self.assertAlmostEqual(Slist[i], Slist0[i], 2)
+            assert round(abs(Slist[i] - Slist0[i]), 2) == 0
 
     def test_free_energy_of_reaction(self):
         """
@@ -858,7 +807,7 @@ class TestReaction(unittest.TestCase):
         ]
         Glist = self.reaction2.get_free_energies_of_reaction(Tlist)
         for i in range(len(Tlist)):
-            self.assertAlmostEqual(Glist[i] / 1000.0, Glist0[i] / 1000.0, 2)
+            assert round(abs(Glist[i] / 1000.0 - Glist0[i] / 1000.0), 2) == 0
 
     def test_equilibrium_constant_ka(self):
         """
@@ -882,7 +831,7 @@ class TestReaction(unittest.TestCase):
         ]
         Kalist = self.reaction2.get_equilibrium_constants(Tlist, type="Ka")
         for i in range(len(Tlist)):
-            self.assertAlmostEqual(Kalist[i] / Kalist0[i], 1.0, 4)
+            assert round(abs(Kalist[i] / Kalist0[i] - 1.0), 4) == 0
 
     def test_equilibrium_constant_kc(self):
         """
@@ -906,13 +855,13 @@ class TestReaction(unittest.TestCase):
         ]
         Kclist = self.reaction2.get_equilibrium_constants(Tlist, type="Kc")
         for i in range(len(Tlist)):
-            self.assertAlmostEqual(Kclist[i] / Kclist0[i], 1.0, 4)
+            assert round(abs(Kclist[i] / Kclist0[i] - 1.0), 4) == 0
 
         rxn2_copy = self.reaction2.copy()
         rxn2_copy.reactants[0].molecule = []
         Kclist_2 = rxn2_copy.get_equilibrium_constants(Tlist, type="Kc")
         for i in range(len(Tlist)):
-            self.assertAlmostEqual(Kclist[i] / Kclist_2[i], 1.0, 4)
+            assert round(abs(Kclist[i] / Kclist_2[i] - 1.0), 4) == 0
 
     def test_equilibrium_constant_kp(self):
         """
@@ -936,20 +885,20 @@ class TestReaction(unittest.TestCase):
         ]
         Kplist = self.reaction2.get_equilibrium_constants(Tlist, type="Kp")
         for i in range(len(Tlist)):
-            self.assertAlmostEqual(Kplist[i] / Kplist0[i], 1.0, 4)
+            assert round(abs(Kplist[i] / Kplist0[i] - 1.0), 4) == 0
 
     def test_stoichiometric_coefficient(self):
         """
         Test the Reaction.get_stoichiometric_coefficient() method.
         """
         for reactant in self.reaction.reactants:
-            self.assertEqual(self.reaction.get_stoichiometric_coefficient(reactant), -1)
+            assert self.reaction.get_stoichiometric_coefficient(reactant) == -1
         for product in self.reaction.products:
-            self.assertEqual(self.reaction.get_stoichiometric_coefficient(product), 1)
+            assert self.reaction.get_stoichiometric_coefficient(product) == 1
         for reactant in self.reaction2.reactants:
-            self.assertEqual(self.reaction.get_stoichiometric_coefficient(reactant), 0)
+            assert self.reaction.get_stoichiometric_coefficient(reactant) == 0
         for product in self.reaction2.products:
-            self.assertEqual(self.reaction.get_stoichiometric_coefficient(product), 0)
+            assert self.reaction.get_stoichiometric_coefficient(product) == 0
 
     def test_rate_coefficient(self):
         """
@@ -958,12 +907,7 @@ class TestReaction(unittest.TestCase):
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
         P = 1e5
         for T in Tlist:
-            self.assertAlmostEqual(
-                self.reaction.get_rate_coefficient(T, P)
-                / self.reaction.kinetics.get_rate_coefficient(T),
-                1.0,
-                6,
-            )
+            assert round(abs(self.reaction.get_rate_coefficient(T, P) / self.reaction.kinetics.get_rate_coefficient(T) - 1.0), 6) == 0
 
     def test_generate_reverse_rate_coefficient(self):
         """
@@ -973,11 +917,9 @@ class TestReaction(unittest.TestCase):
         P = 1e5
         reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
         for T in Tlist:
-            kr0 = self.reaction2.get_rate_coefficient(
-                T, P
-            ) / self.reaction2.get_equilibrium_constant(T)
+            kr0 = self.reaction2.get_rate_coefficient(T, P) / self.reaction2.get_equilibrium_constant(T)
             kr = reverse_kinetics.get_rate_coefficient(T)
-            self.assertAlmostEqual(kr0 / kr, 1.0, 0)
+            assert round(abs(kr0 / kr - 1.0), 0) == 0
 
     def test_fix_barrier_height(self):
         """
@@ -996,23 +938,21 @@ class TestReaction(unittest.TestCase):
         # test that endothermicity is matched
         rxn.fix_barrier_height()
         Ea = rxn.kinetics.Ea.value_si
-        self.assertTrue(Ea == 0.0)
+        assert Ea == 0.0
 
         rev_rxn.fix_barrier_height()
         Ea = rev_rxn.kinetics.Ea.value_si
-        H0 = sum([spec.get_thermo_data().E0.value_si for spec in rxn.products]) - sum(
-            [spec.get_thermo_data().E0.value_si for spec in rxn.reactants]
-        )
-        self.assertAlmostEqual(Ea, -H0, 3)
+        H0 = sum([spec.get_thermo_data().E0.value_si for spec in rxn.products]) - sum([spec.get_thermo_data().E0.value_si for spec in rxn.reactants])
+        assert round(abs(Ea - -H0), 3) == 0
 
         # test that Ea is forced to be positive if force_positive is set to True
         Ea = Quantity((-10000.0, "J/mol"))
         rxn.kinetics.Ea = Ea
         rxn.fix_barrier_height()
-        self.assertTrue(rxn.kinetics.Ea.value_si == Ea.value_si)
+        assert rxn.kinetics.Ea.value_si == Ea.value_si
 
         rxn.fix_barrier_height(force_positive=True)
-        self.assertTrue(rxn.kinetics.Ea.value_si == 0.0)
+        assert rxn.kinetics.Ea.value_si == 0.0
 
         # Test for ArrheniusEP handling
         # if calculated Ea < 0 and Ea < E0, Ea is set to min(0,E0)
@@ -1030,11 +970,11 @@ class TestReaction(unittest.TestCase):
             rxn.fix_barrier_height()
             Ea = rxn.kinetics.Ea.value_si
             if i < 2:
-                self.assertTrue(Ea == E0)
+                assert Ea == E0
             elif i < 4:
-                self.assertTrue(Ea == 0.0)
+                assert Ea == 0.0
             else:
-                self.assertTrue(Ea == E0 + H298)
+                assert Ea == E0 + H298
 
     def test_generate_reverse_rate_coefficient_arrhenius(self):
         """
@@ -1071,7 +1011,7 @@ class TestReaction(unittest.TestCase):
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
-            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+            assert round(abs(korig / krevrev - 1.0), 0) == 0
 
     def test_reverse_surface_arrhenius_rate(self):
         """
@@ -1108,7 +1048,7 @@ class TestReaction(unittest.TestCase):
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
-            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+            assert round(abs(korig / krevrev - 1.0), 0) == 0
 
     @work_in_progress
     def test_generate_reverse_rate_coefficient_arrhenius_ep(self):
@@ -1137,14 +1077,12 @@ class TestReaction(unittest.TestCase):
         reverse_reverse_kinetics = self.reaction2.generate_reverse_rate_coefficient()
 
         # check that reverting the reverse yields the original
-        Tlist = numpy.arange(
-            original_kinetics.Tmin, original_kinetics.Tmax, 200.0, numpy.float64
-        )
+        Tlist = numpy.arange(original_kinetics.Tmin, original_kinetics.Tmax, 200.0, numpy.float64)
         P = 1e5
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
-            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+            assert round(abs(korig / krevrev - 1.0), 0) == 0
 
     def test_generate_reverse_rate_coefficient_pdep_arrhenius(self):
         """
@@ -1207,7 +1145,7 @@ class TestReaction(unittest.TestCase):
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
-            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+            assert round(abs(korig / krevrev - 1.0), 0) == 0
 
     def test_generate_reverse_rate_coefficient_pdep_multi_arrhenius(self):
         """
@@ -1294,7 +1232,7 @@ class TestReaction(unittest.TestCase):
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
-            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+            assert round(abs(korig / krevrev - 1.0), 0) == 0
 
     def test_generate_reverse_rate_coefficient_multi_arrhenius(self):
         """
@@ -1354,7 +1292,7 @@ class TestReaction(unittest.TestCase):
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
-            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+            assert round(abs(korig / krevrev - 1.0), 0) == 0
 
     def test_generate_reverse_rate_coefficient_multi_pdep_arrhenius(self):
         """
@@ -1453,7 +1391,7 @@ class TestReaction(unittest.TestCase):
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
-            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+            assert round(abs(korig / krevrev - 1.0), 0) == 0
 
     def test_generate_reverse_rate_coefficient_third_body(self):
         """
@@ -1510,7 +1448,7 @@ class TestReaction(unittest.TestCase):
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
-            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+            assert round(abs(korig / krevrev - 1.0), 0) == 0
 
     def test_generate_reverse_rate_coefficient_lindemann(self):
         """
@@ -1574,7 +1512,7 @@ class TestReaction(unittest.TestCase):
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
-            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+            assert round(abs(korig / krevrev - 1.0), 0) == 0
 
     def test_generate_reverse_rate_coefficient_troe(self):
         """
@@ -1646,7 +1584,7 @@ class TestReaction(unittest.TestCase):
         for T in Tlist:
             korig = original_kinetics.get_rate_coefficient(T, P)
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
-            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
+            assert round(abs(korig / krevrev - 1.0), 0) == 0
 
     def test_tst_calculation(self):
         """
@@ -1654,19 +1592,17 @@ class TestReaction(unittest.TestCase):
         using the reaction H + C2H4 -> C2H5.
         """
         Tlist = 1000.0 / numpy.arange(0.4, 3.35, 0.01)
-        klist = numpy.array(
-            [self.reaction.calculate_tst_rate_coefficient(T) for T in Tlist]
-        )
+        klist = numpy.array([self.reaction.calculate_tst_rate_coefficient(T) for T in Tlist])
         arrhenius = Arrhenius().fit_to_data(Tlist, klist, kunits="m^3/(mol*s)")
         klist2 = numpy.array([arrhenius.get_rate_coefficient(T) for T in Tlist])
 
         # Check that the correct Arrhenius parameters are returned
-        self.assertAlmostEqual(arrhenius.A.value_si, 2265.2488, delta=1e-2)
-        self.assertAlmostEqual(arrhenius.n.value_si, 1.45419, delta=1e-4)
-        self.assertAlmostEqual(arrhenius.Ea.value_si, 6645.24, delta=1e-2)
+        assert abs(arrhenius.A.value_si - 2265.2488) < 1e-2
+        assert abs(arrhenius.n.value_si - 1.45419) < 1e-4
+        assert abs(arrhenius.Ea.value_si - 6645.24) < 1e-2
         # Check that the fit is satisfactory (defined here as always within 5%)
         for i in range(len(Tlist)):
-            self.assertAlmostEqual(klist[i], klist2[i], delta=5e-2 * klist[i])
+            assert abs(klist[i] - klist2[i]) < 5e-2 * klist[i]
 
     def test_pickle(self):
         """
@@ -1677,61 +1613,27 @@ class TestReaction(unittest.TestCase):
 
         reaction = pickle.loads(pickle.dumps(self.reaction, -1))
 
-        self.assertEqual(len(self.reaction.reactants), len(reaction.reactants))
-        self.assertEqual(len(self.reaction.products), len(reaction.products))
+        assert len(self.reaction.reactants) == len(reaction.reactants)
+        assert len(self.reaction.products) == len(reaction.products)
         for reactant0, reactant in zip(self.reaction.reactants, reaction.reactants):
-            self.assertAlmostEqual(
-                reactant0.conformer.E0.value_si / 1e6,
-                reactant.conformer.E0.value_si / 1e6,
-                2,
-            )
-            self.assertEqual(reactant0.conformer.E0.units, reactant.conformer.E0.units)
+            assert round(abs(reactant0.conformer.E0.value_si / 1e6 - reactant.conformer.E0.value_si / 1e6), 2) == 0
+            assert reactant0.conformer.E0.units == reactant.conformer.E0.units
         for product0, product in zip(self.reaction.products, reaction.products):
-            self.assertAlmostEqual(
-                product0.conformer.E0.value_si / 1e6,
-                product.conformer.E0.value_si / 1e6,
-                2,
-            )
-            self.assertEqual(product0.conformer.E0.units, product.conformer.E0.units)
-        self.assertAlmostEqual(
-            self.reaction.transition_state.conformer.E0.value_si / 1e6,
-            reaction.transition_state.conformer.E0.value_si / 1e6,
-            2,
-        )
-        self.assertEqual(
-            self.reaction.transition_state.conformer.E0.units,
-            reaction.transition_state.conformer.E0.units,
-        )
-        self.assertAlmostEqual(
-            self.reaction.transition_state.frequency.value_si,
-            reaction.transition_state.frequency.value_si,
-            2,
-        )
-        self.assertEqual(
-            self.reaction.transition_state.frequency.units,
-            reaction.transition_state.frequency.units,
-        )
+            assert round(abs(product0.conformer.E0.value_si / 1e6 - product.conformer.E0.value_si / 1e6), 2) == 0
+            assert product0.conformer.E0.units == product.conformer.E0.units
+        assert round(abs(self.reaction.transition_state.conformer.E0.value_si / 1e6 - reaction.transition_state.conformer.E0.value_si / 1e6), 2) == 0
+        assert self.reaction.transition_state.conformer.E0.units == reaction.transition_state.conformer.E0.units
+        assert round(abs(self.reaction.transition_state.frequency.value_si - reaction.transition_state.frequency.value_si), 2) == 0
+        assert self.reaction.transition_state.frequency.units == reaction.transition_state.frequency.units
 
-        self.assertAlmostEqual(
-            self.reaction.kinetics.A.value_si, reaction.kinetics.A.value_si, delta=1e-6
-        )
-        self.assertAlmostEqual(
-            self.reaction.kinetics.n.value_si, reaction.kinetics.n.value_si, delta=1e-6
-        )
-        self.assertAlmostEqual(
-            self.reaction.kinetics.T0.value_si,
-            reaction.kinetics.T0.value_si,
-            delta=1e-6,
-        )
-        self.assertAlmostEqual(
-            self.reaction.kinetics.Ea.value_si,
-            reaction.kinetics.Ea.value_si,
-            delta=1e-6,
-        )
-        self.assertEqual(self.reaction.kinetics.comment, reaction.kinetics.comment)
+        assert abs(self.reaction.kinetics.A.value_si - reaction.kinetics.A.value_si) < 1e-6
+        assert abs(self.reaction.kinetics.n.value_si - reaction.kinetics.n.value_si) < 1e-6
+        assert abs(self.reaction.kinetics.T0.value_si - reaction.kinetics.T0.value_si) < 1e-6
+        assert abs(self.reaction.kinetics.Ea.value_si - reaction.kinetics.Ea.value_si) < 1e-6
+        assert self.reaction.kinetics.comment == reaction.kinetics.comment
 
-        self.assertEqual(self.reaction.duplicate, reaction.duplicate)
-        self.assertEqual(self.reaction.degeneracy, reaction.degeneracy)
+        assert self.reaction.duplicate == reaction.duplicate
+        assert self.reaction.degeneracy == reaction.degeneracy
 
     def test_output(self):
         """
@@ -1740,64 +1642,30 @@ class TestReaction(unittest.TestCase):
         """
         namespace = {}
         exec("reaction = {0!r}".format(self.reaction), globals(), namespace)
-        self.assertIn("reaction", namespace)
+        assert "reaction" in namespace
         reaction = namespace["reaction"]
 
-        self.assertEqual(len(self.reaction.reactants), len(reaction.reactants))
-        self.assertEqual(len(self.reaction.products), len(reaction.products))
+        assert len(self.reaction.reactants) == len(reaction.reactants)
+        assert len(self.reaction.products) == len(reaction.products)
         for reactant0, reactant in zip(self.reaction.reactants, reaction.reactants):
-            self.assertAlmostEqual(
-                reactant0.conformer.E0.value_si / 1e6,
-                reactant.conformer.E0.value_si / 1e6,
-                2,
-            )
-            self.assertEqual(reactant0.conformer.E0.units, reactant.conformer.E0.units)
+            assert round(abs(reactant0.conformer.E0.value_si / 1e6 - reactant.conformer.E0.value_si / 1e6), 2) == 0
+            assert reactant0.conformer.E0.units == reactant.conformer.E0.units
         for product0, product in zip(self.reaction.products, reaction.products):
-            self.assertAlmostEqual(
-                product0.conformer.E0.value_si / 1e6,
-                product.conformer.E0.value_si / 1e6,
-                2,
-            )
-            self.assertEqual(product0.conformer.E0.units, product.conformer.E0.units)
-        self.assertAlmostEqual(
-            self.reaction.transition_state.conformer.E0.value_si / 1e6,
-            reaction.transition_state.conformer.E0.value_si / 1e6,
-            2,
-        )
-        self.assertEqual(
-            self.reaction.transition_state.conformer.E0.units,
-            reaction.transition_state.conformer.E0.units,
-        )
-        self.assertAlmostEqual(
-            self.reaction.transition_state.frequency.value_si,
-            reaction.transition_state.frequency.value_si,
-            2,
-        )
-        self.assertEqual(
-            self.reaction.transition_state.frequency.units,
-            reaction.transition_state.frequency.units,
-        )
+            assert round(abs(product0.conformer.E0.value_si / 1e6 - product.conformer.E0.value_si / 1e6), 2) == 0
+            assert product0.conformer.E0.units == product.conformer.E0.units
+        assert round(abs(self.reaction.transition_state.conformer.E0.value_si / 1e6 - reaction.transition_state.conformer.E0.value_si / 1e6), 2) == 0
+        assert self.reaction.transition_state.conformer.E0.units == reaction.transition_state.conformer.E0.units
+        assert round(abs(self.reaction.transition_state.frequency.value_si - reaction.transition_state.frequency.value_si), 2) == 0
+        assert self.reaction.transition_state.frequency.units == reaction.transition_state.frequency.units
 
-        self.assertAlmostEqual(
-            self.reaction.kinetics.A.value_si, reaction.kinetics.A.value_si, delta=1e-6
-        )
-        self.assertAlmostEqual(
-            self.reaction.kinetics.n.value_si, reaction.kinetics.n.value_si, delta=1e-6
-        )
-        self.assertAlmostEqual(
-            self.reaction.kinetics.T0.value_si,
-            reaction.kinetics.T0.value_si,
-            delta=1e-6,
-        )
-        self.assertAlmostEqual(
-            self.reaction.kinetics.Ea.value_si,
-            reaction.kinetics.Ea.value_si,
-            delta=1e-6,
-        )
-        self.assertEqual(self.reaction.kinetics.comment, reaction.kinetics.comment)
+        assert abs(self.reaction.kinetics.A.value_si - reaction.kinetics.A.value_si) < 1e-6
+        assert abs(self.reaction.kinetics.n.value_si - reaction.kinetics.n.value_si) < 1e-6
+        assert abs(self.reaction.kinetics.T0.value_si - reaction.kinetics.T0.value_si) < 1e-6
+        assert abs(self.reaction.kinetics.Ea.value_si - reaction.kinetics.Ea.value_si) < 1e-6
+        assert self.reaction.kinetics.comment == reaction.kinetics.comment
 
-        self.assertEqual(self.reaction.duplicate, reaction.duplicate)
-        self.assertEqual(self.reaction.degeneracy, reaction.degeneracy)
+        assert self.reaction.duplicate == reaction.duplicate
+        assert self.reaction.degeneracy == reaction.degeneracy
 
     def test_degeneracy_updates_rate(self):
         """
@@ -1807,9 +1675,7 @@ class TestReaction(unittest.TestCase):
         prefactor = self.reaction.kinetics.A.value_si
         degeneracyFactor = 2
         self.reaction.degeneracy *= degeneracyFactor
-        self.assertAlmostEqual(
-            self.reaction.kinetics.A.value_si, degeneracyFactor * prefactor
-        )
+        assert round(abs(self.reaction.kinetics.A.value_si - degeneracyFactor * prefactor), 7) == 0
 
     def test_degeneracy_updates_kinetics_comment(self):
         """
@@ -1818,9 +1684,7 @@ class TestReaction(unittest.TestCase):
 
         newDegeneracy = 8
         self.reaction.degeneracy = newDegeneracy
-        self.assertIn(
-            "Multiplied by reaction path degeneracy 8.0", self.reaction.kinetics.comment
-        )
+        assert "Multiplied by reaction path degeneracy 8.0" in self.reaction.kinetics.comment
 
     def test_sulfur_reaction_pairs(self):
         """
@@ -1828,8 +1692,8 @@ class TestReaction(unittest.TestCase):
         """
 
         self.reaction3.generate_pairs()
-        self.assertEqual(len(self.reaction3.pairs[0]), 2)
-        self.assertEqual(len(self.reaction3.pairs[1]), 2)
+        assert len(self.reaction3.pairs[0]) == 2
+        assert len(self.reaction3.pairs[1]) == 2
 
     def test_phosphorus_reaction_pairs(self):
         """
@@ -1837,12 +1701,12 @@ class TestReaction(unittest.TestCase):
         """
 
         self.reaction4.generate_pairs()
-        self.assertEqual(len(self.reaction4.pairs[0]), 2)
-        self.assertEqual(len(self.reaction4.pairs[1]), 2)
-        self.assertEqual(self.reaction4.pairs, self.reaction4_pairs)
+        assert len(self.reaction4.pairs[0]) == 2
+        assert len(self.reaction4.pairs[1]) == 2
+        assert self.reaction4.pairs == self.reaction4_pairs
 
 
-class TestReactionToCantera(unittest.TestCase):
+class TestReactionToCantera:
     """
     Contains unit tests of the Reaction class associated with forming Cantera objects.
     """
@@ -2585,9 +2449,7 @@ reactions:
             index=2,
             reactants=[h, ch4],
             products=[h2, ch3],
-            kinetics=Arrhenius(
-                A=(6.6e08, "cm^3/(mol*s)"), n=1.62, Ea=(10.84, "kcal/mol"), T0=(1, "K")
-            ),
+            kinetics=Arrhenius(A=(6.6e08, "cm^3/(mol*s)"), n=1.62, Ea=(10.84, "kcal/mol"), T0=(1, "K")),
         )
 
         self.ct_arrheniusBi = ct.Reaction.from_yaml(
@@ -2602,9 +2464,7 @@ reactions:
             index=10,
             reactants=[h, ch4],
             products=[h2, ch3],
-            kinetics=Arrhenius(
-                A=(6.6e08, "cm^3/(mol*s)"), n=1.62, Ea=(10.84, "kcal/mol"), T0=(1, "K")
-            ),
+            kinetics=Arrhenius(A=(6.6e08, "cm^3/(mol*s)"), n=1.62, Ea=(10.84, "kcal/mol"), T0=(1, "K")),
             reversible=False,
         )
 
@@ -2620,9 +2480,7 @@ reactions:
             index=15,
             reactants=[h2o2],
             products=[h2, o2],
-            kinetics=Arrhenius(
-                A=(6.6e03, "1/s"), n=1.62, Ea=(10.84, "kcal/mol"), T0=(1, "K")
-            ),
+            kinetics=Arrhenius(A=(6.6e03, "1/s"), n=1.62, Ea=(10.84, "kcal/mol"), T0=(1, "K")),
         )
 
         self.ct_arrheniusMono = ct.Reaction.from_yaml(
@@ -2859,9 +2717,7 @@ reactions:
             reactants=[h, h],
             products=[h2],
             kinetics=ThirdBody(
-                arrheniusLow=Arrhenius(
-                    A=(1e18, "cm^6/(mol^2*s)"), n=-1, Ea=(0, "kcal/mol"), T0=(1, "K")
-                ),
+                arrheniusLow=Arrhenius(A=(1e18, "cm^6/(mol^2*s)"), n=-1, Ea=(0, "kcal/mol"), T0=(1, "K")),
                 efficiencies={
                     Molecule(smiles="O=C=O"): 0.0,
                     Molecule(smiles="[H][H]"): 0.0,
@@ -2889,12 +2745,8 @@ reactions:
             reactants=[h, o2],
             products=[ho2],
             kinetics=Lindemann(
-                arrheniusHigh=Arrhenius(
-                    A=(1.8e10, "cm^3/(mol*s)"), n=0, Ea=(2.385, "kcal/mol"), T0=(1, "K")
-                ),
-                arrheniusLow=Arrhenius(
-                    A=(6.02e14, "cm^6/(mol^2*s)"), n=0, Ea=(3, "kcal/mol"), T0=(1, "K")
-                ),
+                arrheniusHigh=Arrhenius(A=(1.8e10, "cm^3/(mol*s)"), n=0, Ea=(2.385, "kcal/mol"), T0=(1, "K")),
+                arrheniusLow=Arrhenius(A=(6.02e14, "cm^6/(mol^2*s)"), n=0, Ea=(3, "kcal/mol"), T0=(1, "K")),
                 efficiencies={
                     Molecule(smiles="O=C=O"): 3.5,
                     Molecule(smiles="[H][H]"): 2.0,
@@ -2937,18 +2789,15 @@ reactions:
             self.ct_arrheniusMono,
             self.ct_arrheniusTri,
         ]
-        converted_ct_objects = [
-            obj.to_cantera(self.species_list, use_chemkin_identifier=True)
-            for obj in rmg_objects
-        ]
+        converted_ct_objects = [obj.to_cantera(self.species_list, use_chemkin_identifier=True) for obj in rmg_objects]
 
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the reaction class is the same
-            self.assertEqual(type(converted_obj), type(ct_obj))
+            assert type(converted_obj) == type(ct_obj)
             # Check that the reaction string is the same
-            self.assertEqual(repr(converted_obj), repr(ct_obj))
+            assert repr(converted_obj) == repr(ct_obj)
             # Check that the rate is the same. arrhenius string is not going to be identical
-            self.assertEqual(converted_obj.rate.input_data, ct_obj.rate.input_data)
+            assert converted_obj.rate.input_data == ct_obj.rate.input_data
 
     def test_multi_arrhenius(self):
         """
@@ -2956,34 +2805,21 @@ reactions:
         """
         rmg_objects = [self.multiArrhenius]
         ct_objects = [self.ct_multiArrhenius]
-        converted_ct_objects = [
-            obj.to_cantera(self.species_list, use_chemkin_identifier=True)
-            for obj in rmg_objects
-        ]
+        converted_ct_objects = [obj.to_cantera(self.species_list, use_chemkin_identifier=True) for obj in rmg_objects]
 
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the same number of reactions are produced
-            self.assertEqual(len(converted_obj), len(ct_obj))
+            assert len(converted_obj) == len(ct_obj)
 
             for converted_rxn, ct_rxn in zip(converted_obj, ct_obj):
                 # Check that the reaction has the same type
-                self.assertEqual(type(converted_rxn), type(ct_rxn))
+                assert type(converted_rxn) == type(ct_rxn)
                 # Check that the reaction string is the same
-                self.assertEqual(repr(converted_rxn), repr(ct_rxn))
+                assert repr(converted_rxn) == repr(ct_rxn)
                 # Check that the Arrhenius rates are identical
-                self.assertAlmostEqual(
-                    converted_rxn.rate.pre_exponential_factor,
-                    ct_rxn.rate.pre_exponential_factor,
-                    places=3,
-                )
-                self.assertAlmostEqual(
-                    converted_rxn.rate.temperature_exponent,
-                    ct_rxn.rate.temperature_exponent,
-                )
-                self.assertAlmostEqual(
-                    converted_rxn.rate.activation_energy, ct_rxn.rate.activation_energy
-                )
-                # self.assertEqual(converted_rxn.rate.input_data, ct_rxn.rate.input_data)
+                assert round(abs(converted_rxn.rate.pre_exponential_factor - ct_rxn.rate.pre_exponential_factor), 3) == 0
+                assert round(abs(converted_rxn.rate.temperature_exponent - ct_rxn.rate.temperature_exponent), 7) == 0
+                assert round(abs(converted_rxn.rate.activation_energy - ct_rxn.rate.activation_energy), 7) == 0
 
     def test_pdep_arrhenius(self):
         """
@@ -2991,18 +2827,15 @@ reactions:
         """
         rmg_objects = [self.pdepArrhenius]
         ct_objects = [self.ct_pdepArrhenius]
-        converted_ct_objects = [
-            obj.to_cantera(self.species_list, use_chemkin_identifier=True)
-            for obj in rmg_objects
-        ]
+        converted_ct_objects = [obj.to_cantera(self.species_list, use_chemkin_identifier=True) for obj in rmg_objects]
 
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the reaction class is the same
-            self.assertEqual(type(converted_obj), type(ct_obj))
+            assert type(converted_obj) == type(ct_obj)
             # Check that the reaction string is the same
-            self.assertEqual(repr(converted_obj), repr(ct_obj))
+            assert repr(converted_obj) == repr(ct_obj)
             # Check that the Arrhenius rates are identical
-            self.assertEqual(str(converted_obj.rates), str(ct_obj.rates))
+            assert str(converted_obj.rates) == str(ct_obj.rates)
 
     def test_multi_pdep_arrhenius(self):
         """
@@ -3011,91 +2844,50 @@ reactions:
 
         rmg_objects = [self.multiPdepArrhenius]
         ct_objects = [self.ct_multiPdepArrhenius]
-        converted_ct_objects = [
-            obj.to_cantera(self.species_list, use_chemkin_identifier=True)
-            for obj in rmg_objects
-        ]
+        converted_ct_objects = [obj.to_cantera(self.species_list, use_chemkin_identifier=True) for obj in rmg_objects]
 
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the same number of reactions are produced
-            self.assertEqual(len(converted_obj), len(ct_obj))
+            assert len(converted_obj) == len(ct_obj)
 
             for converted_rxn, ct_rxn in zip(converted_obj, ct_obj):
                 # Check that the reaction has the same type
-                self.assertEqual(type(converted_rxn), type(ct_rxn))
+                assert type(converted_rxn) == type(ct_rxn)
                 # Check that the reaction string is the same
-                self.assertEqual(repr(converted_rxn), repr(ct_rxn))
+                assert repr(converted_rxn) == repr(ct_rxn)
                 # Check that the Arrhenius rates are identical
-                self.assertEqual(str(converted_rxn.rates), str(ct_rxn.rates))
+                assert str(converted_rxn.rates) == str(ct_rxn.rates)
 
     def test_chebyshev(self):
         """
         Tests formation of cantera reactions with Chebyshev kinetics.
         """
-        ct_chebyshev = self.chebyshev.to_cantera(
-            self.species_list, use_chemkin_identifier=True
-        )
-        self.assertEqual(type(ct_chebyshev.rate), type(self.ct_chebyshev.rate))
-        self.assertEqual(
-            ct_chebyshev.rate.temperature_range,
-            self.ct_chebyshev.rate.temperature_range,
-        )
-        self.assertEqual(
-            ct_chebyshev.rate.pressure_range, self.ct_chebyshev.rate.pressure_range
-        )
-        self.assertTrue((ct_chebyshev.rate.data == self.ct_chebyshev.rate.data).all())
+        ct_chebyshev = self.chebyshev.to_cantera(self.species_list, use_chemkin_identifier=True)
+        assert type(ct_chebyshev.rate) == type(self.ct_chebyshev.rate)
+        assert ct_chebyshev.rate.temperature_range == self.ct_chebyshev.rate.temperature_range
+        assert ct_chebyshev.rate.pressure_range == self.ct_chebyshev.rate.pressure_range
+        assert (ct_chebyshev.rate.data == self.ct_chebyshev.rate.data).all()
 
     def test_falloff(self):
         """
         Tests formation of cantera reactions with Falloff kinetics.
         """
         ct_troe = self.troe.to_cantera(self.species_list, use_chemkin_identifier=True)
-        self.assertEqual(type(ct_troe.rate), type(self.ct_troe.rate))
-        self.assertAlmostEqual(
-            ct_troe.rate.low_rate.pre_exponential_factor,
-            self.ct_troe.rate.low_rate.pre_exponential_factor,
-            places=3,
-        )
-        self.assertEqual(
-            ct_troe.rate.low_rate.temperature_exponent,
-            self.ct_troe.rate.low_rate.temperature_exponent,
-        )
-        self.assertEqual(
-            ct_troe.rate.low_rate.activation_energy,
-            self.ct_troe.rate.low_rate.activation_energy,
-        )
-        self.assertEqual(ct_troe.efficiencies, self.ct_troe.efficiencies)
+        assert type(ct_troe.rate) == type(self.ct_troe.rate)
+        assert round(abs(ct_troe.rate.low_rate.pre_exponential_factor - self.ct_troe.rate.low_rate.pre_exponential_factor), 3) == 0
+        assert ct_troe.rate.low_rate.temperature_exponent == self.ct_troe.rate.low_rate.temperature_exponent
+        assert ct_troe.rate.low_rate.activation_energy == self.ct_troe.rate.low_rate.activation_energy
+        assert ct_troe.efficiencies == self.ct_troe.efficiencies
 
-        ct_third_body = self.thirdBody.to_cantera(
-            self.species_list, use_chemkin_identifier=True
-        )
-        self.assertEqual(type(ct_third_body.rate), type(self.ct_thirdBody.rate))
-        self.assertAlmostEqual(
-            ct_third_body.rate.pre_exponential_factor,
-            self.ct_thirdBody.rate.pre_exponential_factor,
-            places=3,
-        )
-        self.assertEqual(
-            ct_third_body.rate.temperature_exponent,
-            self.ct_thirdBody.rate.temperature_exponent,
-        )
-        self.assertEqual(
-            ct_third_body.rate.activation_energy,
-            self.ct_thirdBody.rate.activation_energy,
-        )
-        self.assertEqual(ct_third_body.efficiencies, self.ct_thirdBody.efficiencies)
+        ct_third_body = self.thirdBody.to_cantera(self.species_list, use_chemkin_identifier=True)
+        assert type(ct_third_body.rate) == type(self.ct_thirdBody.rate)
+        assert round(abs(ct_third_body.rate.pre_exponential_factor - self.ct_thirdBody.rate.pre_exponential_factor), 3) == 0
+        assert ct_third_body.rate.temperature_exponent == self.ct_thirdBody.rate.temperature_exponent
+        assert ct_third_body.rate.activation_energy == self.ct_thirdBody.rate.activation_energy
+        assert ct_third_body.efficiencies == self.ct_thirdBody.efficiencies
 
-        ct_lindemann = self.lindemann.to_cantera(
-            self.species_list, use_chemkin_identifier=True
-        )
-        self.assertEqual(type(ct_lindemann.rate), type(self.ct_lindemann.rate))
-        self.assertEqual(ct_lindemann.efficiencies, self.ct_lindemann.efficiencies)
-        self.assertEqual(
-            str(ct_lindemann.rate.low_rate), str(self.ct_lindemann.rate.low_rate)
-        )
-        self.assertEqual(
-            str(ct_lindemann.rate.high_rate), str(self.ct_lindemann.rate.high_rate)
-        )
-
-
-################################################################################
+        ct_lindemann = self.lindemann.to_cantera(self.species_list, use_chemkin_identifier=True)
+        assert type(ct_lindemann.rate) == type(self.ct_lindemann.rate)
+        assert ct_lindemann.efficiencies == self.ct_lindemann.efficiencies
+        assert str(ct_lindemann.rate.low_rate) == str(self.ct_lindemann.rate.low_rate)
+        assert str(ct_lindemann.rate.high_rate) == str(self.ct_lindemann.rate.high_rate)

@@ -29,7 +29,7 @@
 
 import os
 import shutil
-import unittest
+
 
 from rmgpy.rmg.model import CoreEdgeReactionModel, ReactionModel
 from rmgpy.rmg.output import save_output_html
@@ -39,7 +39,7 @@ from rmgpy.chemkin import load_chemkin_file
 ###################################################
 
 
-class TestOutput(unittest.TestCase):
+class TestOutput:
     def test_save_output_html(self):
         """
         This example is to test if an HTML file can be generated
@@ -60,6 +60,6 @@ class TestOutput(unittest.TestCase):
         out = os.path.join(folder, "output.html")
         save_output_html(out, cerm)
 
-        self.assertTrue(os.path.isfile(out))
+        assert os.path.isfile(out)
         os.remove(out)
         shutil.rmtree(os.path.join(folder, "species"))

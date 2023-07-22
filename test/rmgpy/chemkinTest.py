@@ -28,7 +28,7 @@
 ###############################################################################
 
 import os
-import unittest
+
 from unittest import mock
 
 import rmgpy
@@ -57,12 +57,13 @@ from rmgpy.thermo import NASA, NASAPolynomial
 from rmgpy.transport import TransportData
 from rmgpy.quantity import Quantity
 from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient
+import pytest
 
 
 ###################################################
 
 
-class ChemkinTest(unittest.TestCase):
+class ChemkinTest:
     @mock.patch("rmgpy.chemkin.logging")
     def test_read_thermo_entry_bad_element_count(self, mock_logging):
         """
@@ -79,7 +80,7 @@ class ChemkinTest(unittest.TestCase):
                 -1.19655244E+04 8.07917520E+00 3.50507145E+00-3.65219841E-03 6.32200490E-05    3
                 -8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
                 """
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             read_thermo_entry(entry)
 
         mock_logging.info.assert_called_with(
@@ -104,12 +105,10 @@ class ChemkinTest(unittest.TestCase):
                 """
         species, thermo, formula = read_thermo_entry(entry)
 
-        mock_logging.warning.assert_called_with(
-            "Was expecting gas phase thermo data for C2H6. Skipping thermo data."
-        )
-        self.assertEqual(species, "C2H6")
-        self.assertIsNone(formula)
-        self.assertIsNone(thermo)
+        mock_logging.warning.assert_called_with("Was expecting gas phase thermo data for C2H6. Skipping thermo data.")
+        assert species == "C2H6"
+        assert formula is None
+        assert thermo is None
 
     @mock.patch("rmgpy.chemkin.logging")
     def test_read_thermo_entry_not_float(self, mock_logging):
@@ -129,12 +128,10 @@ class ChemkinTest(unittest.TestCase):
 """
         species, thermo, formula = read_thermo_entry(entry)
 
-        mock_logging.warning.assert_called_with(
-            "could not convert string to float: 'X.44813916E+00'"
-        )
-        self.assertEqual(species, "C2H6")
-        self.assertIsNone(formula)
-        self.assertIsNone(thermo)
+        mock_logging.warning.assert_called_with("could not convert string to float: 'X.44813916E+00'")
+        assert species == "C2H6"
+        assert formula is None
+        assert thermo is None
 
     def test_read_thermo_entry_no_temperature_range(self):
         """Test that missing temperature range can be handled for thermo entry."""
@@ -143,22 +140,18 @@ class ChemkinTest(unittest.TestCase):
 -1.19655244E+04 8.07917520E+00 3.50507145E+00-3.65219841E-03 6.32200490E-05    3
 -8.01049582E-08 3.19734088E-11-1.15627878E+04 6.67152939E+00                   4
 """
-        species, thermo, formula = read_thermo_entry(
-            entry, Tmin=100.0, Tint=827.28, Tmax=5000.0
-        )
+        species, thermo, formula = read_thermo_entry(entry, Tmin=100.0, Tint=827.28, Tmax=5000.0)
 
-        self.assertEqual(species, "C2H6")
-        self.assertEqual(formula, {"H": 6, "C": 2})
-        self.assertTrue(isinstance(thermo, NASA))
+        assert species == "C2H6"
+        assert formula == {"H": 6, "C": 2}
+        assert isinstance(thermo, NASA)
 
     def test_read_and_write_and_read_template_reaction_family_for_minimal_example(self):
         """
         This example tests if family and templates info can be correctly
         parsed from comments like '!Template reaction: R_Recombination'.
         """
-        folder = os.path.join(
-            os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py"
-        )
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py")
 
         chemkin_path = os.path.join(folder, "minimal", "chem.inp")
         dictionary_path = os.path.join(folder, "minimal", "species_dictionary.txt")
@@ -168,20 +161,14 @@ class ChemkinTest(unittest.TestCase):
 
         # ensure correct reading
         reaction1 = reactions[0]
-        self.assertEqual(reaction1.family, "R_Recombination")
-        self.assertEqual(
-            frozenset("C_methyl;C_methyl".split(";")), frozenset(reaction1.template)
-        )
+        assert reaction1.family == "R_Recombination"
+        assert frozenset("C_methyl;C_methyl".split(";")) == frozenset(reaction1.template)
         reaction2 = reactions[1]
-        self.assertEqual(reaction2.family, "H_Abstraction")
-        self.assertEqual(
-            frozenset(r"C/H3/Cs\H3;C_methyl".split(";")), frozenset(reaction2.template)
-        )
+        assert reaction2.family == "H_Abstraction"
+        assert frozenset(r"C/H3/Cs\H3;C_methyl".split(";")) == frozenset(reaction2.template)
         # save_chemkin_file
         chemkin_save_path = os.path.join(folder, "minimal", "chem_new.inp")
-        dictionary_save_path = os.path.join(
-            folder, "minimal", "species_dictionary_new.txt"
-        )
+        dictionary_save_path = os.path.join(folder, "minimal", "species_dictionary_new.txt")
 
         save_chemkin_file(
             chemkin_save_path,
@@ -192,21 +179,21 @@ class ChemkinTest(unittest.TestCase):
         )
         save_species_dictionary(dictionary_save_path, species, old_style=False)
 
-        self.assertTrue(os.path.isfile(chemkin_save_path))
-        self.assertTrue(os.path.isfile(dictionary_save_path))
+        assert os.path.isfile(chemkin_save_path)
+        assert os.path.isfile(dictionary_save_path)
 
         # read newly written chemkin file to make sure the entire cycle works
         _, reactions2 = load_chemkin_file(chemkin_save_path, dictionary_save_path)
 
         reaction1_new = reactions2[0]
-        self.assertEqual(reaction1_new.family, reaction1_new.family)
-        self.assertEqual(reaction1_new.template, reaction1_new.template)
-        self.assertEqual(reaction1_new.degeneracy, reaction1_new.degeneracy)
+        assert reaction1_new.family == reaction1_new.family
+        assert reaction1_new.template == reaction1_new.template
+        assert reaction1_new.degeneracy == reaction1_new.degeneracy
 
         reaction2_new = reactions2[1]
-        self.assertEqual(reaction2_new.family, reaction2_new.family)
-        self.assertEqual(reaction2_new.template, reaction2_new.template)
-        self.assertEqual(reaction2_new.degeneracy, reaction2_new.degeneracy)
+        assert reaction2_new.family == reaction2_new.family
+        assert reaction2_new.template == reaction2_new.template
+        assert reaction2_new.degeneracy == reaction2_new.degeneracy
 
         # clean up
         os.remove(chemkin_save_path)
@@ -220,9 +207,7 @@ class ChemkinTest(unittest.TestCase):
         an entry in H_Abstraction, the other was just an estimate.'
         won't interfere reaction family info retrival.
         """
-        folder = os.path.join(
-            os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py"
-        )
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py")
 
         chemkin_path = os.path.join(folder, "pdd", "chem.inp")
         dictionary_path = os.path.join(folder, "pdd", "species_dictionary.txt")
@@ -231,16 +216,14 @@ class ChemkinTest(unittest.TestCase):
         species, reactions = load_chemkin_file(chemkin_path, dictionary_path)
 
         reaction1 = reactions[0]
-        self.assertEqual(reaction1.family, "H_Abstraction")
+        assert reaction1.family == "H_Abstraction"
 
         reaction2 = reactions[1]
-        self.assertEqual(reaction2.family, "H_Abstraction")
+        assert reaction2.family == "H_Abstraction"
 
         # save_chemkin_file
         chemkin_save_path = os.path.join(folder, "minimal", "chem_new.inp")
-        dictionary_save_path = os.path.join(
-            folder, "minimal", "species_dictionary_new.txt"
-        )
+        dictionary_save_path = os.path.join(folder, "minimal", "species_dictionary_new.txt")
 
         save_chemkin_file(
             chemkin_save_path,
@@ -251,8 +234,8 @@ class ChemkinTest(unittest.TestCase):
         )
         save_species_dictionary(dictionary_save_path, species, old_style=False)
 
-        self.assertTrue(os.path.isfile(chemkin_save_path))
-        self.assertTrue(os.path.isfile(dictionary_save_path))
+        assert os.path.isfile(chemkin_save_path)
+        assert os.path.isfile(dictionary_save_path)
 
         # clean up
         os.remove(chemkin_save_path)
@@ -283,7 +266,7 @@ class ChemkinTest(unittest.TestCase):
         save_transport_file(temp_transport_path, [Ar])
         species_dict = {"Ar": Ar_write}
         load_transport_file(temp_transport_path, species_dict)
-        self.assertEqual(repr(Ar), repr(Ar_write))
+        assert repr(Ar) == repr(Ar_write)
 
         os.remove(temp_transport_path)
 
@@ -292,22 +275,18 @@ class ChemkinTest(unittest.TestCase):
         Test that the official chemkin names are used as labels for the created Species objects.
         """
 
-        folder = os.path.join(
-            os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py"
-        )
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py")
 
         chemkin_path = os.path.join(folder, "minimal", "chem.inp")
         dictionary_path = os.path.join(folder, "minimal", "species_dictionary.txt")
 
         # load_chemkin_file
-        species, reactions = load_chemkin_file(
-            chemkin_path, dictionary_path, use_chemkin_names=True
-        )
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path, use_chemkin_names=True)
 
         expected = ["Ar", "He", "Ne", "N2", "ethane", "CH3", "C2H5", "C"]
 
         for spc, label in zip(species, expected):
-            self.assertEqual(spc.label, label)
+            assert spc.label == label
 
     def test_reactant_n2_is_reactive_and_gets_right_species_identifier(self):
         """
@@ -315,24 +294,20 @@ class ChemkinTest(unittest.TestCase):
         inert list of RMG, should be treated as reactive species and given right species
         Identifier when it's reacting in reactions.
         """
-        folder = os.path.join(
-            os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py"
-        )
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py")
 
         chemkin_path = os.path.join(folder, "NC", "chem.inp")
         dictionary_path = os.path.join(folder, "NC", "species_dictionary.txt")
 
         # load_chemkin_file
-        species, reactions = load_chemkin_file(
-            chemkin_path, dictionary_path, use_chemkin_names=True
-        )
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path, use_chemkin_names=True)
 
         for n2 in species:
             if n2.label == "N2":
                 break
-        self.assertTrue(n2.reactive)
+        assert n2.reactive
 
-        self.assertEqual(get_species_identifier(n2), "N2(35)")
+        assert get_species_identifier(n2) == "N2(35)"
 
     def test_read_specific_collider(self):
         """
@@ -371,11 +346,9 @@ class ChemkinTest(unittest.TestCase):
         A_units = ["", "s^-1", "cm^3/(mol*s)", "cm^6/(mol^2*s)", "cm^9/(mol^3*s)"]
         A_units_surf = []
         E_units = "kcal/mol"
-        reaction = read_kinetics_entry(
-            entry, species_dict, A_units, A_units_surf, E_units
-        )
+        reaction = read_kinetics_entry(entry, species_dict, A_units, A_units_surf, E_units)
 
-        self.assertEqual(reaction.specific_collider.label, "N2(5)")
+        assert reaction.specific_collider.label == "N2(5)"
 
     def test_process_duplicate_reactions(self):
         """
@@ -387,18 +360,10 @@ class ChemkinTest(unittest.TestCase):
         s3 = Species().from_smiles("[OH]")
         s4 = Species().from_smiles("C[CH2]")
         s5 = Species().from_smiles("O")
-        r1 = Reaction(
-            reactants=[s1], products=[s2, s2], duplicate=False, kinetics=Arrhenius()
-        )
-        r2 = Reaction(
-            reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Arrhenius()
-        )
-        r3 = Reaction(
-            reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Arrhenius()
-        )
-        r4 = Reaction(
-            reactants=[s1, s3], products=[s4, s5], duplicate=False, kinetics=Arrhenius()
-        )
+        r1 = Reaction(reactants=[s1], products=[s2, s2], duplicate=False, kinetics=Arrhenius())
+        r2 = Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Arrhenius())
+        r3 = Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Arrhenius())
+        r4 = Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=False, kinetics=Arrhenius())
         r5 = LibraryReaction(
             reactants=[s1, s3],
             products=[s4, s5],
@@ -444,46 +409,40 @@ class ChemkinTest(unittest.TestCase):
 
         # Test that duplicates are not removed for non-library reactions
         _process_duplicate_reactions(reaction_list_with_duplicate)
-        self.assertEqual(reaction_list_with_duplicate, reaction_list_with_duplicate2)
+        assert reaction_list_with_duplicate == reaction_list_with_duplicate2
 
         # Test that unmarked duplicate reactions are detected if both
         # reactions are p-dep or p-indep
-        self.assertRaisesRegexp(
-            ChemkinError,
-            "Encountered unmarked duplicate reaction",
-            _process_duplicate_reactions,
-            reaction_list_unmarked_duplicate,
-        )
+        with pytest.raises(ChemkinError, match="Encountered unmarked duplicate reaction"):
+            _process_duplicate_reactions(
+                reaction_list_unmarked_duplicate,
+            )
 
         # Test that unequal libraries are recognized
-        self.assertRaisesRegexp(
-            ChemkinError,
-            "from different libraries",
-            _process_duplicate_reactions,
-            reaction_list_unequal_libraries,
-        )
+        with pytest.raises(ChemkinError, match="from different libraries"):
+            _process_duplicate_reactions(
+                reaction_list_unequal_libraries,
+            )
 
         # Test that an error is raised for reactions with kinetics
         # that cannot be merged
-        self.assertRaisesRegexp(
-            ChemkinError,
-            "Mixed kinetics for duplicate reaction",
-            _process_duplicate_reactions,
-            reaction_list_mixed_kinetics,
-        )
+        with pytest.raises(ChemkinError, match="Mixed kinetics for duplicate reaction"):
+            _process_duplicate_reactions(
+                reaction_list_mixed_kinetics,
+            )
 
         # Test that duplicate library reactions are merged successfully
         _process_duplicate_reactions(reaction_list_mergeable)
-        self.assertEqual(len(reaction_list_mergeable), len(reaction_list_merged))
-        self.assertEqual(reaction_list_mergeable[0], reaction_list_merged[0])
+        assert len(reaction_list_mergeable) == len(reaction_list_merged)
+        assert reaction_list_mergeable[0] == reaction_list_merged[0]
         rtest = reaction_list_mergeable[1]
         rtrue = reaction_list_merged[1]
-        self.assertEqual(rtest.reactants, rtrue.reactants)
-        self.assertEqual(rtest.products, rtrue.products)
-        self.assertEqual(rtest.duplicate, rtrue.duplicate)
-        self.assertEqual(rtest.library, rtrue.library)
-        self.assertTrue(isinstance(rtest.kinetics, MultiArrhenius))
-        self.assertTrue(all(isinstance(k, Arrhenius) for k in rtest.kinetics.arrhenius))
+        assert rtest.reactants == rtrue.reactants
+        assert rtest.products == rtrue.products
+        assert rtest.duplicate == rtrue.duplicate
+        assert rtest.library == rtrue.library
+        assert isinstance(rtest.kinetics, MultiArrhenius)
+        assert all(isinstance(k, Arrhenius) for k in rtest.kinetics.arrhenius)
 
     def test_mark_duplicate_reactions(self):
         """Test that we can properly mark duplicate reactions for Chemkin."""
@@ -496,12 +455,8 @@ class ChemkinTest(unittest.TestCase):
 
         # Try initializing with duplicate=False
         reaction_list = [
-            Reaction(
-                reactants=[s1], products=[s2, s2], duplicate=False, kinetics=Arrhenius()
-            ),
-            Reaction(
-                reactants=[s1], products=[s2, s2], duplicate=False, kinetics=Arrhenius()
-            ),
+            Reaction(reactants=[s1], products=[s2, s2], duplicate=False, kinetics=Arrhenius()),
+            Reaction(reactants=[s1], products=[s2, s2], duplicate=False, kinetics=Arrhenius()),
             Reaction(
                 reactants=[s1, s3],
                 products=[s4, s5],
@@ -549,16 +504,12 @@ class ChemkinTest(unittest.TestCase):
         mark_duplicate_reactions(reaction_list)
         duplicate_flags = [rxn.duplicate for rxn in reaction_list]
 
-        self.assertEqual(duplicate_flags, expected_flags)
+        assert duplicate_flags == expected_flags
 
         # Try initializing with duplicate=True
         reaction_list = [
-            Reaction(
-                reactants=[s1], products=[s2, s2], duplicate=True, kinetics=Arrhenius()
-            ),
-            Reaction(
-                reactants=[s1], products=[s2, s2], duplicate=True, kinetics=Arrhenius()
-            ),
+            Reaction(reactants=[s1], products=[s2, s2], duplicate=True, kinetics=Arrhenius()),
+            Reaction(reactants=[s1], products=[s2, s2], duplicate=True, kinetics=Arrhenius()),
             Reaction(
                 reactants=[s1, s3],
                 products=[s4, s5],
@@ -604,14 +555,12 @@ class ChemkinTest(unittest.TestCase):
         mark_duplicate_reactions(reaction_list)
         duplicate_flags = [rxn.duplicate for rxn in reaction_list]
 
-        self.assertEqual(duplicate_flags, expected_flags)
+        assert duplicate_flags == expected_flags
 
     def test_read_write_coverage_dependence(self):
         """Test that we can properly read and write coverage dependent parameters"""
 
-        folder = os.path.join(
-            os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py"
-        )
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py")
 
         s_x_entry = """X                       X   1               G   100.000  5000.000 1554.80      1
  1.60299900E-01-2.52235409E-04 1.14181275E-07-1.21471653E-11 3.85790025E-16    2
@@ -676,21 +625,15 @@ class ChemkinTest(unittest.TestCase):
         A_units_surf = ["", "s^-1", "cm^2/(mol*s)", "cm^4/(mol^2*s)", "cm^6/(mol^3*s)"]
 
         E_units = "kcal/mol"
-        self.rxn1 = read_kinetics_entry(
-            rxn1_entry, species_dict, A_units, A_units_surf, E_units
-        )
+        self.rxn1 = read_kinetics_entry(rxn1_entry, species_dict, A_units, A_units_surf, E_units)
 
-        self.rxn2 = read_kinetics_entry(
-            rxn2_entry, species_dict, A_units, A_units_surf, E_units
-        )
+        self.rxn2 = read_kinetics_entry(rxn2_entry, species_dict, A_units, A_units_surf, E_units)
 
         reactions = [self.rxn1, self.rxn2]
 
         # save_chemkin_file
         chemkin_save_path = os.path.join(folder, "surface", "chem-surface_new.inp")
-        dictionary_save_path = os.path.join(
-            folder, "surface", "species_dictionary_new.txt"
-        )
+        dictionary_save_path = os.path.join(folder, "surface", "species_dictionary_new.txt")
         save_chemkin_file(
             chemkin_save_path,
             species,
@@ -701,9 +644,7 @@ class ChemkinTest(unittest.TestCase):
         save_species_dictionary(dictionary_save_path, species, old_style=False)
 
         # load chemkin file
-        species_load, reactions_load = load_chemkin_file(
-            chemkin_save_path, dictionary_save_path
-        )
+        species_load, reactions_load = load_chemkin_file(chemkin_save_path, dictionary_save_path)
 
         # compare only labels because the objects are different
         species_label = []
@@ -713,27 +654,22 @@ class ChemkinTest(unittest.TestCase):
             species_load_label.append(species_load[s].label)
 
         # check the written chemkin file matches what is expected
-        self.assertTrue(all(i in species_load_label for i in species_label))
+        assert all(i in species_load_label for i in species_label)
 
         for r in range(len(reactions)):
             for s in range(len(reactions[r].products)):
-                self.assertEqual(
-                    reactions[r].products[s].label, reactions_load[r].products[s].label
-                )
+                assert reactions[r].products[s].label == reactions_load[r].products[s].label
             for s in range(len(reactions[r].reactants)):
-                self.assertEqual(
-                    reactions[r].reactants[s].label,
-                    reactions_load[r].reactants[s].label,
-                )
-            self.assertIsNotNone(reactions[r].kinetics.coverage_dependence)
-            self.assertIsNotNone(reactions_load[r].kinetics.coverage_dependence)
+                assert reactions[r].reactants[s].label == reactions_load[r].reactants[s].label
+            assert reactions[r].kinetics.coverage_dependence is not None
+            assert reactions_load[r].kinetics.coverage_dependence is not None
 
         # clean up
         os.remove(chemkin_save_path)
         os.remove(dictionary_save_path)
 
 
-class TestThermoReadWrite(unittest.TestCase):
+class TestThermoReadWrite:
     def setUp(self):
         """This method is run once before each test."""
         coeffs_low = [
@@ -798,15 +734,15 @@ C 1 H 3 N 1 O 2 S 1 X 1
 
         result = write_thermo_entry(species, verbose=False)
 
-        self.assertEqual(result, self.entry1)
+        assert result == self.entry1
 
     def test_read_thermo_block(self):
         """Test that we can read a normal thermo block"""
         species, thermo, formula = read_thermo_entry(self.entry1)
 
-        self.assertEqual(species, "C2H6")
-        self.assertEqual(formula, {"H": 6, "C": 2})
-        self.assertTrue(self.nasa.is_identical_to(thermo))
+        assert species == "C2H6"
+        assert formula == {"H": 6, "C": 2}
+        assert self.nasa.is_identical_to(thermo)
 
     def test_write_thermo_block_5_elem(self):
         """Test that we can write a thermo block for a species with 5 elements"""
@@ -826,15 +762,15 @@ C 1 H 3 N 1 O 2 S 1 X 1
 
         result = write_thermo_entry(species, verbose=False)
 
-        self.assertEqual(result, self.entry2)
+        assert result == self.entry2
 
     def test_read_thermo_block_5_elem(self):
         """Test that we can read a thermo block with 5 elements"""
         species, thermo, formula = read_thermo_entry(self.entry2)
 
-        self.assertEqual(species, "CH3NO2X")
-        self.assertEqual(formula, {"X": 1, "C": 1, "O": 2, "H": 3, "N": 1})
-        self.assertTrue(self.nasa.is_identical_to(thermo))
+        assert species == "CH3NO2X"
+        assert formula == {"X": 1, "C": 1, "O": 2, "H": 3, "N": 1}
+        assert self.nasa.is_identical_to(thermo)
 
     def test_write_thermo_block_6_elem(self):
         """Test that we can write a thermo block for a species with 6 elements"""
@@ -855,29 +791,27 @@ C 1 H 3 N 1 O 2 S 1 X 1
 
         result = write_thermo_entry(species, verbose=False)
 
-        self.assertEqual(result, self.entry3)
+        assert result == self.entry3
 
     def test_read_thermo_block_6_elem(self):
         """Test that we can read a thermo block with 6 elements"""
         species, thermo, formula = read_thermo_entry(self.entry3)
 
-        self.assertEqual(species, "CH3NO2SX")
-        self.assertEqual(formula, {"X": 1, "C": 1, "O": 2, "H": 3, "N": 1, "S": 1})
-        self.assertTrue(self.nasa.is_identical_to(thermo))
+        assert species == "CH3NO2SX"
+        assert formula == {"X": 1, "C": 1, "O": 2, "H": 3, "N": 1, "S": 1}
+        assert self.nasa.is_identical_to(thermo)
 
     def test_write_bidentate_species(self):
         """Test that species with 2 or more surface sites get proper formatting"""
 
-        folder = os.path.join(
-            os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py"
-        )
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py")
         chemkin_path = os.path.join(folder, "surface", "chem-surface.inp")
         dictionary_path = os.path.join(folder, "surface", "species_dictionary.txt")
         chemkin_save_path = os.path.join(folder, "surface", "chem-surface-test.inp")
         species, reactions = load_chemkin_file(chemkin_path, dictionary_path)
 
         surface_atom_count = species[3].molecule[0].get_num_atoms("X")
-        self.assertEqual(surface_atom_count, 3)
+        assert surface_atom_count == 3
         save_chemkin_surface_file(
             chemkin_save_path,
             species,
@@ -895,13 +829,13 @@ C 1 H 3 N 1 O 2 S 1 X 1
                 if i == 4:
                     tridentate_read = line
 
-        self.assertEqual(bidentate_test.strip(), bidentate_read.strip())
-        self.assertEqual(tridentate_test.strip(), tridentate_read.strip())
+        assert bidentate_test.strip() == bidentate_read.strip()
+        assert tridentate_test.strip() == tridentate_read.strip()
 
         os.remove(chemkin_save_path)
 
 
-class TestReadReactionComments(unittest.TestCase):
+class TestReadReactionComments:
     @classmethod
     def setUpClass(cls):
         r = Species().from_smiles("[CH3]")
@@ -912,9 +846,7 @@ class TestReadReactionComments(unittest.TestCase):
         cls.reaction = Reaction(
             reactants=[r, r],
             products=[p],
-            kinetics=Arrhenius(
-                A=(8.26e17, "cm^3/(mol*s)"), n=-1.4, Ea=(1, "kcal/mol"), T0=(1, "K")
-            ),
+            kinetics=Arrhenius(A=(8.26e17, "cm^3/(mol*s)"), n=-1.4, Ea=(1, "kcal/mol"), T0=(1, "K")),
         )
         cls.comments_list = [
             """
@@ -1027,19 +959,10 @@ class TestReadReactionComments(unittest.TestCase):
 
             # only check template if meant to find one
             if self.template_list[index]:
-                self.assertTrue(
-                    new_rxn.template,
-                    "The template was not saved from the reaction comment {}".format(
-                        comment
-                    ),
-                )
-                self.assertEqual(
-                    frozenset(new_rxn.template),
-                    frozenset(self.template_list[index]),
-                    "The reaction template does not match",
-                )
+                assert new_rxn.template, "The template was not saved from the reaction comment {}".format(comment)
+                assert frozenset(new_rxn.template) == frozenset(self.template_list[index]), "The reaction template does not match"
             else:
-                self.assertFalse(new_rxn.template)
+                assert not new_rxn.template
 
     def test_read_reaction_comments_family(self):
         """
@@ -1048,9 +971,7 @@ class TestReadReactionComments(unittest.TestCase):
         for index, comment in enumerate(self.comments_list):
             new_rxn = read_reaction_comments(self.reaction, comment)
 
-            self.assertEqual(
-                new_rxn.family, self.family_list[index], "wrong reaction family stored"
-            )
+            assert new_rxn.family == self.family_list[index], "wrong reaction family stored"
 
     def test_read_reaction_comments_degeneracy(self):
         """
@@ -1065,29 +986,16 @@ class TestReadReactionComments(unittest.TestCase):
             new_rxn = read_reaction_comments(self.reaction, comment)
             new_rate = new_rxn.kinetics.A.value_si
 
-            self.assertEqual(
-                new_rxn.degeneracy,
-                self.degeneracy_list[index],
-                "wrong degeneracy was stored",
-            )
-            self.assertEqual(previous_rate, new_rate)
+            assert new_rxn.degeneracy == self.degeneracy_list[index], "wrong degeneracy was stored"
+            assert previous_rate == new_rate
 
             # Check that the comment only appears once in the kinetics comment
             if new_rxn.degeneracy != 1:
-                self.assertEqual(
-                    new_rxn.kinetics.comment.count(
-                        "Multiplied by reaction path degeneracy {}".format(
-                            new_rxn.degeneracy
-                        )
-                    ),
-                    1,
-                    "Reaction degeneracy comment duplicated while reading Chemkin comments",
-                )
+                assert (
+                    new_rxn.kinetics.comment.count("Multiplied by reaction path degeneracy {}".format(new_rxn.degeneracy)) == 1
+                ), "Reaction degeneracy comment duplicated while reading Chemkin comments"
             else:
-                self.assertTrue(
-                    "Multiplied by reaction path degeneracy"
-                    not in new_rxn.kinetics.comment
-                )
+                assert "Multiplied by reaction path degeneracy" not in new_rxn.kinetics.comment
 
     def test_remove_line_breaks(self):
         """
@@ -1096,12 +1004,10 @@ class TestReadReactionComments(unittest.TestCase):
         for index, comment in enumerate(self.comments_list):
             new_comment = _remove_line_breaks(comment)
             new_comment_lines = len(new_comment.strip().splitlines())
-            self.assertEqual(
-                new_comment_lines,
-                self.expected_lines[index],
-                'Found {} more lines than expected for comment \n\n""{}""\n\n which converted to \n\n""{}""'.format(
-                    new_comment_lines - self.expected_lines[index],
-                    comment.strip(),
-                    new_comment.strip(),
-                ),
+            assert (
+                new_comment_lines == self.expected_lines[index]
+            ), 'Found {} more lines than expected for comment \n\n""{}""\n\n which converted to \n\n""{}""'.format(
+                new_comment_lines - self.expected_lines[index],
+                comment.strip(),
+                new_comment.strip(),
             )
