@@ -40,6 +40,8 @@ from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.species import Species
 from rmgpy.util import parse_command_line_arguments
 
+import pytest
+
 
 class TestRMGWorkFlow:
     @classmethod

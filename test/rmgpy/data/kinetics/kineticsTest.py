@@ -365,7 +365,7 @@ class TestReactionDegeneracy:
 
         self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, adjlists=True)
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_degeneracy_does_not_include_identical_atom_labels(self):
         """
         Test that rxns with identical atom ids are not counted twice for degeneracy

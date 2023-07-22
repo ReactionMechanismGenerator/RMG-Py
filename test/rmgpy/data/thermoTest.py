@@ -1402,7 +1402,7 @@ class TestThermoAccuracy:
             ],
         ]
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_new_thermo_generation(self):
         """
         Test that the new ThermoDatabase generates appropriate thermo data.
@@ -1469,12 +1469,18 @@ class TestThermoAccuracy:
             assert symm == calc_symm, "Symmetry number error for {0}. Expected {1} but calculated {2}.".format(smiles, symm, calc_symm)
 
 
-class TestThermoAccuracyAromatics(TestThermoAccuracy):
+class TestThermoAccuracyAromatics:
     """
     Contains tests for accuracy of thermo estimates and symmetry calculations for aromatics only.
 
     A copy of the above class, but with different test compounds.
     """
+
+    @classmethod
+    def setUpClass(cls):
+        """A function that is run ONCE before all unit tests in this class."""
+        global database
+        cls.database = database.thermo
 
     def setUp(self):
         self.Tlist = [300, 400, 500, 600, 800, 1000, 1500]

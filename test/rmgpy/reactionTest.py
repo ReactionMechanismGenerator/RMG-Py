@@ -37,6 +37,8 @@ import numpy
 import yaml
 from copy import deepcopy
 
+import pytest
+
 import rmgpy.constants as constants
 from rmgpy.kinetics import (
     Arrhenius,
@@ -1049,7 +1051,7 @@ class TestReaction:
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             assert round(abs(korig / krevrev - 1.0), 0) == 0
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_generate_reverse_rate_coefficient_arrhenius_ep(self):
         """
         Test the Reaction.generate_reverse_rate_coefficient() method works for the ArrheniusEP format.

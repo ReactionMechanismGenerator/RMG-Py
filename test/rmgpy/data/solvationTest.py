@@ -89,7 +89,7 @@ class TestSoluteDatabase:
             solute_data = self.database.get_solute_data(species)
             solute_data.set_mcgowan_volume(species)  # even if it was found in library, recalculate
             assert solute_data.V is not None  # so if it wasn't found in library, we should have calculated it
-            assert round(abs(solute_data.V-volume), 7) == 0  # the volume is what we expect given the atoms and bonds
+            assert round(abs(solute_data.V - volume), 7) == 0  # the volume is what we expect given the atoms and bonds
 
     def test_diffusivity(self):
         """Test that for a given solvent viscosity and temperature we can calculate a solute's diffusivity"""
@@ -98,7 +98,7 @@ class TestSoluteDatabase:
         temperature = 298.0
         solvent_viscosity = 0.00089  # water is about 8.9e-4 Pa.s
         d = solute_data.get_stokes_diffusivity(temperature, solvent_viscosity)  # m2/s
-        assert round(abs((d * 1e9)-1.3), 1) == 0
+        assert round(abs((d * 1e9) - 1.3), 1) == 0
         # self-diffusivity of water is about 2e-9 m2/s
 
     def test_solvent_library(self):
@@ -118,7 +118,7 @@ class TestSoluteDatabase:
     def test_viscosity(self):
         """Test we can calculate the solvent viscosity given a temperature and its A-E correlation parameters"""
         solvent_data = self.database.get_solvent_data("water")
-        assert round(abs(solvent_data.get_solvent_viscosity(298)-0.0009155), 7) == 0
+        assert round(abs(solvent_data.get_solvent_viscosity(298) - 0.0009155), 7) == 0
 
     def test_critical_temperature(self):
         """
@@ -127,7 +127,7 @@ class TestSoluteDatabase:
         """
         solvent_data = self.database.get_solvent_data("water")
         solvent_name = solvent_data.name_in_coolprop
-        assert round(abs(get_critical_temperature(solvent_name)-647.096), 7) == 0
+        assert round(abs(get_critical_temperature(solvent_name) - 647.096), 7) == 0
         solvent_data = self.database.get_solvent_data("dibutylether")
         solvent_name = solvent_data.name_in_coolprop
         with pytest.raises(DatabaseError):
@@ -141,8 +141,8 @@ class TestSoluteDatabase:
         """
         compound_name = "Hexane"
         temp = 400  # in K
-        assert round(abs(get_liquid_saturation_density(compound_name, temp)-6383.22), 2) == 0
-        assert round(abs(get_gas_saturation_density(compound_name, temp)-162.99), 2) == 0
+        assert round(abs(get_liquid_saturation_density(compound_name, temp) - 6383.22), 2) == 0
+        assert round(abs(get_gas_saturation_density(compound_name, temp) - 162.99), 2) == 0
         # Unsupported compound name
         with pytest.raises(DatabaseError):
             get_gas_saturation_density("Hexadecane", temp)
@@ -185,11 +185,11 @@ class TestSoluteDatabase:
         for name, smiles, S, B, E, L, A, V in self.testCases:
             species = Species(smiles=smiles)
             solute_data = self.database.get_solute_data_from_groups(species)
-            assert round(abs(solute_data.S-S), 2) == 0
-            assert round(abs(solute_data.B-B), 2) == 0
-            assert round(abs(solute_data.E-E), 2) == 0
-            assert round(abs(solute_data.L-L), 2) == 0
-            assert round(abs(solute_data.A-A), 2) == 0
+            assert round(abs(solute_data.S - S), 2) == 0
+            assert round(abs(solute_data.B - B), 2) == 0
+            assert round(abs(solute_data.E - E), 2) == 0
+            assert round(abs(solute_data.L - L), 2) == 0
+            assert round(abs(solute_data.A - A), 2) == 0
 
     def test_solute_with_resonance_structures(self):
         """
@@ -211,7 +211,7 @@ class TestSoluteDatabase:
             if mol == species.molecule[0]:
                 assert dGsolv_spc == dGsolv_mol
             else:
-                assert round(abs(dGsolv_spc-dGsolv_mol), 7) != 0
+                assert round(abs(dGsolv_spc - dGsolv_mol), 7) != 0
 
     def test_lone_pair_solute_generation(self):
         """Test we can obtain solute parameters via group additivity for a molecule with lone pairs"""
@@ -305,7 +305,7 @@ class TestSoluteDatabase:
         solvent_data = self.database.get_solvent_data("water")
         rad_solvation_correction = self.database.get_solvation_correction(rad_solute_data, solvent_data)
         sat_solvation_correction = self.database.get_solvation_correction(sat_solute_data, solvent_data)
-        assert round(abs(rad_solvation_correction.gibbs / 1000-sat_solvation_correction.gibbs / 1000), 7) != 0
+        assert round(abs(rad_solvation_correction.gibbs / 1000 - sat_solvation_correction.gibbs / 1000), 7) != 0
 
     def test_halogen_solute_group(self):
         """Test that the correct halogen groups can be found for the halogenated species using get_solute_data method"""
@@ -328,8 +328,10 @@ class TestSoluteDatabase:
         # Check the species whose saturated and halogen-replaced form can be found from solute library
         species = Species().from_smiles("[O]CCCC(Br)(I)Cl")
         solute_data = self.database.get_solute_data(species)
-        assert "Solute library: butan-1-ol + halogen(I-(Cs-CsHH)) + halogen(Br-(Cs-CsFCl)) + halogen(Cl-(Cs-CsFBr)) + radical(ROJ)" \
+        assert (
+            "Solute library: butan-1-ol + halogen(I-(Cs-CsHH)) + halogen(Br-(Cs-CsFCl)) + halogen(Cl-(Cs-CsFBr)) + radical(ROJ)"
             == solute_data.comment
+        )
         # Check the species whose saturated and halogen-replaced form cannot be found from solute library
         species = Species().from_smiles("[NH]C(=O)CCCl")
         solute_data = self.database.get_solute_data(species)
@@ -357,12 +359,18 @@ class TestSoluteDatabase:
             solute_data = self.database.get_solute_data(species)
             solvent_data = self.database.get_solvent_data(solventName)
             solvation_correction = self.database.get_solvation_correction(solute_data, solvent_data)
-            assert round(abs(solvation_correction.enthalpy / 1000-H), 2) == 0,  # 2 decimal places, in kJ.
-                "Solvation enthalpy discrepancy ({2:.2f}!={3:.2f}) for {0} in {1}" \
-                "".format(soluteName, solventName, solvation_correction.enthalpy / 1000, H)
-            assert round(abs(solvation_correction.gibbs / 1000-G), 2) == 0,  # 2 decimal places, in kJ.
-                "Solvation Gibbs free energy discrepancy ({2:.2f}!={3:.2f}) for {0} in {1}" \
-                "".format(soluteName, solventName, solvation_correction.gibbs / 1000, G)
+            # 2 decimal places, in kJ.
+            assert (
+                round(abs(solvation_correction.enthalpy / 1000 - H), 2) == 0
+            ), "Solvation enthalpy discrepancy ({2:.2f}!={3:.2f}) for {0} in {1}".format(
+                soluteName, solventName, solvation_correction.enthalpy / 1000, H
+            )
+            # 2 decimal places, in kJ.
+            assert (
+                round(abs(solvation_correction.gibbs / 1000 - G), 2) == 0
+            ), "Solvation Gibbs free energy discrepancy ({2:.2f}!={3:.2f}) for {0} in {1}".format(
+                soluteName, solventName, solvation_correction.gibbs / 1000, G
+            )
 
     def test_Kfactor_parameters(self):
         """Test we can calculate the parameters for K-factor relationships"""
@@ -375,19 +383,21 @@ class TestSoluteDatabase:
         delS298 = correction.entropy  # in J/mol/K
         solvent_name = solvent_data.name_in_coolprop
         kfactor_parameters = self.database.get_Kfactor_parameters(delG298, delH298, delS298, solvent_name)
-        assert round(abs(kfactor_parameters.lower_T[0]--9.780), 3) == 0  # check up to 3 decimal places
-        assert round(abs(kfactor_parameters.lower_T[1]-0.492), 3) == 0
-        assert round(abs(kfactor_parameters.lower_T[2]-10.485), 3) == 0
-        assert round(abs(kfactor_parameters.higher_T-1.147), 3) == 0
-        assert round(abs(kfactor_parameters.T_transition-485.3), 1) == 0
+        assert round(abs(kfactor_parameters.lower_T[0] - -9.780), 3) == 0  # check up to 3 decimal places
+        assert round(abs(kfactor_parameters.lower_T[1] - 0.492), 3) == 0
+        assert round(abs(kfactor_parameters.lower_T[2] - 10.485), 3) == 0
+        assert round(abs(kfactor_parameters.higher_T - 1.147), 3) == 0
+        assert round(abs(kfactor_parameters.T_transition - 485.3), 1) == 0
         # check that DatabaseError is raised when the solvent's name_in_coolprop is None
         solvent_data = self.database.get_solvent_data("chloroform")
         solvent_name = solvent_data.name_in_coolprop
         with pytest.raises(DatabaseError):
-            self.database.get_Kfactor_parameters(delG298,
-            delH298,
-            delS298,
-            solvent_name,)
+            self.database.get_Kfactor_parameters(
+                delG298,
+                delH298,
+                delS298,
+                solvent_name,
+            )
 
     def test_Tdep_solvation_calculation(self):
         """
@@ -401,15 +411,17 @@ class TestSoluteDatabase:
         solvent_data = self.database.get_solvent_data("benzene")
         T = 500  # in K
         delG, Kfactor, kH = self.database.get_T_dep_solvation_energy_from_LSER_298(solute_data, solvent_data, T)
-        assert round(abs(Kfactor-0.403), 3) == 0
-        assert round(abs(delG / 1000--13.59), 2) == 0  # delG is in J/mol
+        assert round(abs(Kfactor - 0.403), 3) == 0
+        assert round(abs(delG / 1000 - -13.59), 2) == 0  # delG is in J/mol
         # For temperature greater than or equal to the critical temperature of the solvent,
         # it should raise InputError
         T = 1000
         with pytest.raises(InputError):
-            self.database.get_T_dep_solvation_energy_from_LSER_298(solute_data,
-            solvent_data,
-            T,)
+            self.database.get_T_dep_solvation_energy_from_LSER_298(
+                solute_data,
+                solvent_data,
+                T,
+            )
 
         # Now test `get_T_dep_solvation_energy_from_input_298` method.
         delG298 = -23570  # in J/mol
@@ -418,16 +430,18 @@ class TestSoluteDatabase:
         solvent_name = "benzene"
         T = 500  # in K
         delG, Kfactor, kH = self.database.get_T_dep_solvation_energy_from_input_298(delG298, delH298, delS298, solvent_name, T)
-        assert round(abs(Kfactor-0.567), 3) == 0
-        assert round(abs(delG / 1000--12.18), 2) == 0  # delG is in J/mol
+        assert round(abs(Kfactor - 0.567), 3) == 0
+        assert round(abs(delG / 1000 - -12.18), 2) == 0  # delG is in J/mol
         # test that it raises InputError for T above the critical temperature
         T = 1000
         with pytest.raises(InputError):
-            self.database.get_T_dep_solvation_energy_from_input_298(delG298,
-            delH298,
-            delS298,
-            solvent_name,
-            T,)
+            self.database.get_T_dep_solvation_energy_from_input_298(
+                delG298,
+                delH298,
+                delS298,
+                solvent_name,
+                T,
+            )
 
     def test_initial_species(self):
         """Test we can check whether the solvent is listed as one of the initial species in various scenarios"""
@@ -443,8 +457,10 @@ class TestSoluteDatabase:
         rmg.solvent = "water"
         solvent_structure = Species().from_smiles("O")
         with pytest.raises(Exception):
-            self.database.check_solvent_in_initial_species(rmg,
-            solvent_structure,)
+            self.database.check_solvent_in_initial_species(
+                rmg,
+                solvent_structure,
+            )
 
         # Case 1-2: the solvent is now octane and it is listed as the initialSpecies. Although the string
         # names of the solute and the solvent are different, because the solvent SMILES is provided,
@@ -460,8 +476,10 @@ class TestSoluteDatabase:
         # Case 2-1: Since 'n-octane and 'octane' are not equal, it raises Exception
         solvent_structure = None
         with pytest.raises(Exception):
-            self.database.check_solvent_in_initial_species(rmg,
-            solvent_structure,)
+            self.database.check_solvent_in_initial_species(
+                rmg,
+                solvent_structure,
+            )
 
         # Case 2-2: The label 'n-ocatne' is corrected to 'octane', so it is identified as the solvent
         rmg.initial_species[0].label = "octane"
@@ -510,10 +528,12 @@ class TestSoluteDatabase:
         # Case 4: when the solventDatabase contains incorrect values for the molecule attribute, it raises Exception
         # This will display the SMILES Parse Error message from the external function, but ignore it.
         with pytest.raises(Exception):
-            solventlibrary.load_entry(index=4,
-            label="benzene",
-            solvent=None,
-            molecule="ring",)
+            solventlibrary.load_entry(
+                index=4,
+                label="benzene",
+                solvent=None,
+                molecule="ring",
+            )
 
         # Case 5: when the solventDatabase contains data for co-solvents.
         solventlibrary.load_entry(index=5, label="methanol_50_water_50", solvent=None, molecule=["CO", "O"])

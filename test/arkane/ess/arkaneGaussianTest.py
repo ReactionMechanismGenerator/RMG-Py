@@ -74,7 +74,7 @@ class ArkaneGaussianLogTest:
         with pytest.raises(LogError):
             GaussianLog(os.path.join(self.data_path, "error_termination.out"))
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_load_ethylene_from_gaussian_log_cbsqb3(self):
         """
         Uses a Gaussian03 log file for ethylene (C2H4) to test that its
@@ -159,7 +159,7 @@ class ArkaneGaussianLogTest:
         assert conformer.spin_multiplicity == 3
         assert conformer.optical_isomers == 1
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_load_ethylene_from_gaussian_log_g3(self):
         """
         Uses a Gaussian03 log file for ethylene (C2H4) to test that its
