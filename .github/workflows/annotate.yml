@@ -1,4 +1,9 @@
-name: Annotate pull requests with regression summaries
+name: Annotate pull request with regression summaries
+# Takes a regression summary from a workflow run and annotates the pull request with it
+# The pull request number is taken from the first line of the summary.txt file.
+# The summary file is in an artifact called regression_summary associated
+# with the workflow run that triggered this workflow.
+# based on https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#using-data-from-the-triggering-workflow
 
 on:
   workflow_run:
@@ -14,7 +19,6 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - run: echo 'The triggering workflow passed'
-      # based on https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#using-data-from-the-triggering-workflow
       - name: 'Download regression_summary artifact'
         uses: actions/github-script@v6
         with:
@@ -42,9 +46,10 @@ jobs:
       - name: 'Get pull request number'
         id: pr_number
         run: |
-          echo "PR_NUMBER=$( head summary.txt )" >> $GITHUB_ENV
-      - run: env
-      - name: Write Results to PR
+          echo "PR_NUMBER=$( head -n 1 summary.txt )" >> $GITHUB_ENV
+          # remove the first line from the file
+          sed -i '1d' summary.txt
+      - name: Write summary to pull request as a comment
         uses: thollander/actions-comment-pull-request@v2
         with:
           filePath: summary.txt
