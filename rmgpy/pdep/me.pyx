@@ -73,7 +73,7 @@ cpdef generate_full_me_matrix(network, bint products=True, bint exclude_associat
     beta = 1. / (constants.R * temperature)
 
     # Construct accounting matrix
-    indices = -np.ones((n_isom, n_grains, n_j), np.int)
+    indices = -np.ones((n_isom, n_grains, n_j), int)
     n_rows = 0
     for r in range(n_grains):
         for s in range(n_j):

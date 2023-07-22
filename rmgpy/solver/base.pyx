@@ -353,8 +353,8 @@ cdef class ReactionSystem(DASx):
             surface_species.remove(core_species[i])
             surface_species_indices.remove(i)
 
-        self.surface_species_indices = np.array(surface_species_indices, dtype=np.int)
-        self.surface_reaction_indices = np.array(surface_reaction_indices, dtype=np.int)
+        self.surface_species_indices = np.array(surface_species_indices, dtype=int)
+        self.surface_reaction_indices = np.array(surface_reaction_indices, dtype=int)
 
         self.valid_layering_indices = self.get_layering_indices()
 
@@ -404,7 +404,7 @@ cdef class ReactionSystem(DASx):
         Creates a matrix for the reactants and products.
         """
 
-        self.reactant_indices = -np.ones((self.num_core_reactions + self.num_edge_reactions, 3), np.int)
+        self.reactant_indices = -np.ones((self.num_core_reactions + self.num_edge_reactions, 3), int)
         self.product_indices = -np.ones_like(self.reactant_indices)
 
         for rxn in itertools.chain(core_reactions, edge_reactions):
@@ -488,7 +488,7 @@ cdef class ReactionSystem(DASx):
 
         pdep_networks = pdep_networks or []
 
-        self.network_indices = -np.ones((self.num_pdep_networks, 3), np.int)
+        self.network_indices = -np.ones((self.num_pdep_networks, 3), int)
         self.network_leak_coefficients = np.zeros((self.num_pdep_networks), float)
 
         for j, network in enumerate(pdep_networks):
@@ -717,7 +717,7 @@ cdef class ReactionSystem(DASx):
             RTP = constants.R * self.T.value_si / self.P.value_si
             # identify sensitive species indices
             sens_species_indices = np.array([species_index[spec] for spec in self.sensitive_species],
-                                               np.int)  # index within core_species list of the sensitive species
+                                               int)  # index within core_species list of the sensitive species
 
         step_time = 1e-12
         prev_time = self.t

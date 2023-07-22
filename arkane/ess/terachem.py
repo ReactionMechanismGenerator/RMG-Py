@@ -191,7 +191,7 @@ class TeraChemLog(ESSAdapter):
                     break
 
         coords = np.array(coords, float)
-        numbers = np.array(numbers, np.int)
+        numbers = np.array(numbers, int)
         masses = np.array(masses, float)
         if len(coords) == 0 or len(numbers) == 0 or len(masses) == 0 \
                 or ((len(coords) != num_of_atoms or len(numbers) != num_of_atoms or len(masses) != num_of_atoms)
