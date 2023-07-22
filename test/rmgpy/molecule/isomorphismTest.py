@@ -212,7 +212,7 @@ def run_parameter_tests():
         raise exc
 
     def success():
-        assert_equal(True, True)
+        assert True == True
 
     def is_isomorphic_mol_atom_types(e1, e2, u1, u2, c1, c2):
         """
@@ -229,7 +229,7 @@ def run_parameter_tests():
 
         if mol1 is not None and mol2 is not None:
             calc = mol1.is_isomorphic(mol2)
-            assert_equal(calc, exp, err)
+            assert calc == exp, err
 
     def find_isomorphisms_mol_atom_types(e1, e2, u1, u2, c1, c2):
         """
@@ -247,7 +247,7 @@ def run_parameter_tests():
 
         if mol1 is not None and mol2 is not None:
             calc = len(mol1.find_isomorphism(mol2)) > 0
-            assert_equal(calc, exp, err)
+            assert calc == exp, err
 
     def is_subgraph_isomorphic_mol_atom_types(e1, e2, u1, u2, c1, c2):
         mol1, adjlist1 = create_molecule(e1, u1, c1)
@@ -263,7 +263,7 @@ def run_parameter_tests():
 
         if mol1 is not None and group1 is not None:
             calc = mol1.is_subgraph_isomorphic(group1)
-            assert_equal(calc, exp, err)
+            assert calc == exp, err
 
     def find_subgraph_isomorphisms_mol_atom_types(e1, e2, u1, u2, c1, c2):
         mol1, adjlist1 = create_molecule(e1, u1, c1)
@@ -279,7 +279,7 @@ def run_parameter_tests():
 
         if mol1 is not None and group1 is not None:
             calc = len(mol1.find_subgraph_isomorphisms(group1)) > 0
-            assert_equal(calc, exp, err)
+            assert calc == exp, err
 
     output = load_cases_molecule_atom_types()
     for args in output:
@@ -312,7 +312,7 @@ def run_parameter_tests():
             )
 
             calc = mol1.is_subgraph_isomorphic(group1)
-            assert_equal(calc, exp, err)
+            assert calc == exp, err
 
     def find_subgraph_isomorphisms_mol_group_atom_types(e1, e2, u1, u2, c1, c2):
         mol1, adjlist1 = create_molecule(e1, u1, c1)
@@ -326,7 +326,7 @@ def run_parameter_tests():
             )
 
             calc = len(mol1.find_subgraph_isomorphisms(group1)) > 0
-            assert_equal(calc, exp, err)
+            assert calc == exp, err
 
     output = load_cases_group_atom_types()
     for args in output:
@@ -366,8 +366,8 @@ def test_multiplicity_mol_mol_distinct_multiplicity():
         saturate_h=True,
     )
 
-    assert_false(mol.is_isomorphic(mol2))
-    assert_false(len(mol.find_isomorphism(mol2)) > 0)
+    assert not mol.is_isomorphic(mol2)
+    assert not len(mol.find_isomorphism(mol2)) > 0
 
 
 def test_multiplicity_mol_mol_identical_multiplicity():
@@ -390,8 +390,8 @@ def test_multiplicity_mol_mol_identical_multiplicity():
         saturate_h=True,
     )
 
-    assert_true(mol.is_isomorphic(mol2))
-    assert_true(len(mol.find_isomorphism(mol2)) > 0)
+    assert mol.is_isomorphic(mol2)
+    assert len(mol.find_isomorphism(mol2)) > 0
 
 
 def test_multiplicity_mol_not_specified_mol_specified():
@@ -413,8 +413,8 @@ def test_multiplicity_mol_not_specified_mol_specified():
         saturate_h=True,
     )
 
-    assert_true(mol.is_isomorphic(mol2))
-    assert_true(len(mol.find_isomorphism(mol2)) > 0)
+    assert mol.is_isomorphic(mol2)
+    assert len(mol.find_isomorphism(mol2)) > 0
 
 
 def test_multiplicity_mol_not_specified_mol_not_specified():
@@ -435,8 +435,8 @@ def test_multiplicity_mol_not_specified_mol_not_specified():
         saturate_h=True,
     )
 
-    assert_true(mol.is_isomorphic(mol2))
-    assert_true(len(mol.find_isomorphism(mol2)) > 0)
+    assert mol.is_isomorphic(mol2)
+    assert len(mol.find_isomorphism(mol2)) > 0
 
 
 def test_isomorphism__r():
@@ -453,7 +453,7 @@ def test_isomorphism__r():
     """
     )
 
-    assert_true(len(mol.find_subgraph_isomorphisms(gp)) > 0)
+    assert len(mol.find_subgraph_isomorphisms(gp)) > 0
 
 
 def test_isomorphism_mol_group_not_identical():
@@ -473,8 +473,8 @@ def test_isomorphism_mol_group_not_identical():
     1 R u0 p0 c0
     """
     )
-    assert_false(mol.is_subgraph_isomorphic(gp))
-    assert_false(len(mol.find_subgraph_isomorphisms(gp)) > 0)
+    assert not mol.is_subgraph_isomorphic(gp)
+    assert not len(mol.find_subgraph_isomorphisms(gp)) > 0
 
 
 def test_isomorphism_group_group():
@@ -500,18 +500,18 @@ def test_isomorphism_group_group():
     """
     )
 
-    assert_false(gp1.is_subgraph_isomorphic(gp2))
-    assert_false(len(gp1.find_subgraph_isomorphisms(gp2)) > 0)
+    assert not gp1.is_subgraph_isomorphic(gp2)
+    assert not len(gp1.find_subgraph_isomorphisms(gp2)) > 0
 
-    assert_true(gp2.is_subgraph_isomorphic(gp1))
-    assert_true(len(gp2.find_subgraph_isomorphisms(gp1)) > 0)
+    assert gp2.is_subgraph_isomorphic(gp1)
+    assert len(gp2.find_subgraph_isomorphisms(gp1)) > 0
 
-    assert_false(gp2.is_identical(gp1))
+    assert not gp2.is_identical(gp1)
 
-    assert_true(gp3.is_subgraph_isomorphic(gp1))
-    assert_true(len(gp3.find_subgraph_isomorphisms(gp1)) > 0)
-    assert_false(gp3.is_subgraph_isomorphic(gp2))
-    assert_false(len(gp3.find_subgraph_isomorphisms(gp2)) > 0)
+    assert gp3.is_subgraph_isomorphic(gp1)
+    assert len(gp3.find_subgraph_isomorphisms(gp1)) > 0
+    assert not gp3.is_subgraph_isomorphic(gp2)
+    assert not len(gp3.find_subgraph_isomorphisms(gp2)) > 0
 
 
 def test_isomorphism_sulfur_group_sulfur_molecule():
@@ -545,9 +545,9 @@ def test_isomorphism_sulfur_group_sulfur_molecule():
 5 H 0 {3,S}
 """
     )
-    assert_true(mol.is_subgraph_isomorphic(gp1))
+    assert mol.is_subgraph_isomorphic(gp1)
 
-    assert_true(mol.is_subgraph_isomorphic(gp2))
+    assert mol.is_subgraph_isomorphic(gp2)
 
 
 def test_isotope_subgraph_isomorphism_molecule_and_group():
@@ -581,9 +581,9 @@ def test_isotope_subgraph_isomorphism_molecule_and_group():
     5 H  u0 {1,S}
     """
     )
-    assert_true(methanei.is_subgraph_isomorphic(group_methane))
-    assert_true(methane.is_subgraph_isomorphic(group_methane))
-    assert_false(methanei.is_isomorphic(methane))
+    assert methanei.is_subgraph_isomorphic(group_methane)
+    assert methane.is_subgraph_isomorphic(group_methane)
+    assert not methanei.is_isomorphic(methane)
 
 
 def test_isomorphism_wrong_mapping():
@@ -628,12 +628,12 @@ def test_isomorphism_wrong_mapping():
         14   H u0 p0 c0 {11,S}
         """
     )
-    assert_false(n1butane.is_isomorphic(n2butane))
-    assert_false(n1butane.is_isomorphic(n2butane, generate_initial_map=True))
+    assert not n1butane.is_isomorphic(n2butane)
+    assert not n1butane.is_isomorphic(n2butane, generate_initial_map=True)
 
     mapping = {}
     for label in ["*1", "*2", "*3", "*4"]:
         mapping[n1butane.get_labeled_atoms(label)[0]] = n2butane.get_labeled_atoms(
             label
         )[0]
-    assert_false(n1butane.is_isomorphic(n2butane, initial_map=mapping))
+    assert not n1butane.is_isomorphic(n2butane, initial_map=mapping)
