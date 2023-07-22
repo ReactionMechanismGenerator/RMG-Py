@@ -42,7 +42,7 @@ from arkane.thermo import ThermoJob
 ################################################################################
 
 
-class TestThermo(unittest.TestCase):
+class ArkaneTestThermo(unittest.TestCase):
     """
     Contains unit tests of the ThermoJob class.
     """
@@ -50,22 +50,25 @@ class TestThermo(unittest.TestCase):
     @classmethod
     def setUp(cls):
         """A method that is run before each unit test in this class"""
-        spc = Species().from_smiles('CCO')
-        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'gaussian', 'ethylene.log'))
+        spc = Species().from_smiles("CCO")
+        log = GaussianLog(
+            os.path.join(os.path.dirname(__file__), "data", "gaussian", "ethylene.log")
+        )
         spc.conformer = log.load_conformer()[0]
         coords, numbers, masses = log.load_geometry()
-        spc.conformer.coordinates = coords, 'angstroms'
+        spc.conformer.coordinates = coords, "angstroms"
         spc.conformer.number = numbers
-        spc.conformer.mass = masses, 'amu'
-        cls.thermo_job = ThermoJob(species=spc, thermo_class='NASA')
+        spc.conformer.mass = masses, "amu"
+        cls.thermo_job = ThermoJob(species=spc, thermo_class="NASA")
 
     def test_element_count_from_conformer(self):
         """Test Getting an element count dictionary from the species.conformer attribute"""
         element_count = self.thermo_job.element_count_from_conformer()
-        self.assertEqual(element_count, {'H': 4, 'C': 2})
+        self.assertEqual(element_count, {"H": 4, "C": 2})
+
 
 ################################################################################
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
