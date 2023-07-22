@@ -40,15 +40,23 @@ from openbabel import pybel
 from rmgpy.molecule import Molecule as RMGMolecule
 
 import arkane.encorr.data as data
-from arkane.encorr.data import (Molecule, Stats, BACDatapoint, DatasetProperty, BACDataset,
-                                extract_dataset, geo_to_mol, _pybel_to_rmg)
+from arkane.encorr.data import (
+    Molecule,
+    Stats,
+    BACDatapoint,
+    DatasetProperty,
+    BACDataset,
+    extract_dataset,
+    geo_to_mol,
+    _pybel_to_rmg,
+)
 from arkane.encorr.reference import ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
 from arkane.modelchem import LOT, LevelOfTheory
 
 DATABASE = ReferenceDatabase()
 DATABASE.load()
-LEVEL_OF_THEORY = LevelOfTheory(method='wb97m-v', basis='def2-tzvpd', software='qchem')
+LEVEL_OF_THEORY = LevelOfTheory(method="wb97m-v", basis="def2-tzvpd", software="qchem")
 
 
 class TestDataLoading(unittest.TestCase):
@@ -61,13 +69,13 @@ class TestDataLoading(unittest.TestCase):
         """
         Test that the necessary dictionaries are available.
         """
-        self.assertTrue(hasattr(data, 'atom_hf'))
-        self.assertTrue(hasattr(data, 'atom_thermal'))
-        self.assertTrue(hasattr(data, 'SOC'))
-        self.assertTrue(hasattr(data, 'atom_energies'))
-        self.assertTrue(hasattr(data, 'pbac'))
-        self.assertTrue(hasattr(data, 'mbac'))
-        self.assertTrue(hasattr(data, 'freq_dict'))
+        self.assertTrue(hasattr(data, "atom_hf"))
+        self.assertTrue(hasattr(data, "atom_thermal"))
+        self.assertTrue(hasattr(data, "SOC"))
+        self.assertTrue(hasattr(data, "atom_energies"))
+        self.assertTrue(hasattr(data, "pbac"))
+        self.assertTrue(hasattr(data, "mbac"))
+        self.assertTrue(hasattr(data, "freq_dict"))
 
     def test_level_of_theory(self):
         """
@@ -93,11 +101,11 @@ class TestMolecule(unittest.TestCase):
         """
         Test that a Molecule contains the `id` attribute.
         """
-        rmg_mol = RMGMolecule(smiles='C')
-        mol = Molecule(smiles='C')
+        rmg_mol = RMGMolecule(smiles="C")
+        mol = Molecule(smiles="C")
         self.assertIsInstance(mol, RMGMolecule)
-        self.assertTrue(hasattr(mol, 'id'))
-        self.assertFalse(hasattr(rmg_mol, 'id'))
+        self.assertTrue(hasattr(mol, "id"))
+        self.assertFalse(hasattr(rmg_mol, "id"))
 
 
 class TestStats(unittest.TestCase):
@@ -110,8 +118,8 @@ class TestStats(unittest.TestCase):
         Test that a Stats instance contains the correct attributes.
         """
         stats = Stats(1.0, 2.0)
-        self.assertTrue(hasattr(stats, 'rmse'))
-        self.assertTrue(hasattr(stats, 'mae'))
+        self.assertTrue(hasattr(stats, "rmse"))
+        self.assertTrue(hasattr(stats, "mae"))
 
 
 class TestBACDatapoint(unittest.TestCase):
@@ -159,7 +167,7 @@ class TestBACDatapoint(unittest.TestCase):
         mol_geo = self.datapoint.to_mol(from_geo=True)
         self.assertIsNot(mol_geo, mol_adj)  # Check that cached molecule is NOT used
         coords_spc = np.vstack(tuple(a.coords for a in mol_geo.atoms))
-        coords_dp = self.spc.calculated_data[LEVEL_OF_THEORY].xyz_dict['coords']
+        coords_dp = self.spc.calculated_data[LEVEL_OF_THEORY].xyz_dict["coords"]
         self.assertIsNone(np.testing.assert_allclose(coords_dp, coords_spc))
         self.assertIsInstance(mol_geo, Molecule)
         self.assertIs(mol_geo, self.datapoint.mol)
@@ -208,11 +216,17 @@ class TestBACDatapoint(unittest.TestCase):
 
         # Check that exactly one of 'neutral', 'cation', or 'anion' is set
         # and same for 'singlet', 'doublet', 'triplet+'.
-        self.assertEqual(sum(substructs[k] for k in ('neutral', 'cation', 'anion')), 1)  # Can only be one of these
-        self.assertEqual(sum(substructs[k] for k in ('singlet', 'doublet', 'triplet+')), 1)
+        self.assertEqual(
+            sum(substructs[k] for k in ("neutral", "cation", "anion")), 1
+        )  # Can only be one of these
+        self.assertEqual(
+            sum(substructs[k] for k in ("singlet", "doublet", "triplet+")), 1
+        )
 
         substructs2 = self.datapoint.substructs
-        self.assertIs(substructs, substructs2)  # Check that cached substructures are used
+        self.assertIs(
+            substructs, substructs2
+        )  # Check that cached substructures are used
 
 
 class TestDatasetProperty(unittest.TestCase):
@@ -235,8 +249,8 @@ class TestDatasetProperty(unittest.TestCase):
             def __len__(self):
                 return len(self.data)
 
-            val = DatasetProperty('val', asarray=asarray, settable=settable)
-            val2 = DatasetProperty('val2', asarray=asarray, settable=settable)
+            val = DatasetProperty("val", asarray=asarray, settable=settable)
+            val2 = DatasetProperty("val2", asarray=asarray, settable=settable)
 
         return Set()
 
@@ -245,10 +259,10 @@ class TestDatasetProperty(unittest.TestCase):
         Test that the descriptor is initialized properly.
         """
         s = self.make_set()
-        dset_prop = type(s).__dict__['val']
+        dset_prop = type(s).__dict__["val"]
         self.assertIsInstance(dset_prop, DatasetProperty)
-        self.assertEqual(dset_prop.pub_attr, 'val')
-        self.assertEqual(dset_prop.priv_attr, '_val')
+        self.assertEqual(dset_prop.pub_attr, "val")
+        self.assertEqual(dset_prop.priv_attr, "_val")
         self.assertFalse(dset_prop.asarray)
         self.assertFalse(dset_prop.settable)
 
@@ -294,7 +308,9 @@ class TestBACDataset(unittest.TestCase):
         cls.species = list(DATABASE.reference_sets.values())[0][:5]
 
     def setUp(self):
-        self.dataset = BACDataset([BACDatapoint(spc, level_of_theory=LEVEL_OF_THEORY) for spc in self.species])
+        self.dataset = BACDataset(
+            [BACDatapoint(spc, level_of_theory=LEVEL_OF_THEORY) for spc in self.species]
+        )
 
     def test_append(self):
         """
@@ -332,7 +348,9 @@ class TestBACDataset(unittest.TestCase):
         self.assertEqual(len(self.dataset.bac_data), len(self.species))
 
         self.assertIsInstance(self.dataset.weight, np.ndarray)
-        self.assertTrue(all(w1 == w2 for w1, w2 in zip(self.dataset.weight, self.dataset.weights)))
+        self.assertTrue(
+            all(w1 == w2 for w1, w2 in zip(self.dataset.weight, self.dataset.weights))
+        )
         self.assertEqual(len(self.dataset.weights), len(self.species))
 
     def test_get_mols(self):
@@ -363,7 +381,7 @@ class TestBACDataset(unittest.TestCase):
         Test that weights can be computed.
         """
         with self.assertRaises(NotImplementedError):
-            self.dataset.compute_weights(weight_type='')
+            self.dataset.compute_weights(weight_type="")
 
         self.dataset.compute_weights()
         self.assertTrue(all(0 <= w < 1 for w in self.dataset.weights))
@@ -403,17 +421,17 @@ class TestFuncs(unittest.TestCase):
             self.assertTrue(d.spc.index not in {211, 362})
 
         # Test excluding elements
-        elements = 'N'
+        elements = "N"
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, exclude_elements=elements)
         for d in dataset:
             self.assertFalse(elements in d.spc.formula)
-        elements = ['N', 'O']
+        elements = ["N", "O"]
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, exclude_elements=elements)
         for d in dataset:
             self.assertFalse(any(e in d.spc.formula for e in elements))
 
         # Test specifying charge
-        charges = 'negative'
+        charges = "negative"
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, charge=charges)
         for d in dataset:
             self.assertTrue(d.spc.charge < 0)
@@ -421,22 +439,26 @@ class TestFuncs(unittest.TestCase):
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, charge=charges)
         for d in dataset:
             self.assertTrue(d.spc.charge == 1)
-        charges = ['positive', 'neutral']
+        charges = ["positive", "neutral"]
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, charge=charges)
         for d in dataset:
             self.assertTrue(d.spc.charge >= 0)
-        charges = [-1, 'positive']
+        charges = [-1, "positive"]
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, charge=charges)
         for d in dataset:
             self.assertTrue(d.spc.charge > 0 or d.spc.charge == -1)
 
         # Test specifying multiplicity
         multiplicities = 2
-        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, multiplicity=multiplicities)
+        dataset = extract_dataset(
+            DATABASE, LEVEL_OF_THEORY, multiplicity=multiplicities
+        )
         for d in dataset:
             self.assertTrue(d.spc.multiplicity == 2)
         multiplicities = [2, 3]
-        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, multiplicity=multiplicities)
+        dataset = extract_dataset(
+            DATABASE, LEVEL_OF_THEORY, multiplicity=multiplicities
+        )
         for d in dataset:
             self.assertTrue(d.spc.multiplicity in {2, 3})
 
@@ -449,32 +471,46 @@ class TestFuncs(unittest.TestCase):
         coords = np.array([[0, 0, 0], [0, 0, 0.74]])
         mol = geo_to_mol(coords, nums=nums)
         self.assertIsInstance(mol, Molecule)
-        self.assertTrue(mol.to_single_bonds().is_isomorphic(Molecule(smiles='[H][H]').to_single_bonds()))
+        self.assertTrue(
+            mol.to_single_bonds().is_isomorphic(
+                Molecule(smiles="[H][H]").to_single_bonds()
+            )
+        )
 
         # Methane
-        symbols = ('H', 'C', 'H', 'H', 'H')
-        coords = np.array([
-            [0.5288, 0.1610, 0.9359],
-            [0.0000, 0.0000, 0.0000],
-            [0.2051, 0.8240, -0.6786],
-            [0.3345, -0.9314, -0.4496],
-            [-1.0685, -0.0537, 0.1921]
-        ])
+        symbols = ("H", "C", "H", "H", "H")
+        coords = np.array(
+            [
+                [0.5288, 0.1610, 0.9359],
+                [0.0000, 0.0000, 0.0000],
+                [0.2051, 0.8240, -0.6786],
+                [0.3345, -0.9314, -0.4496],
+                [-1.0685, -0.0537, 0.1921],
+            ]
+        )
         mol = geo_to_mol(coords, symbols=symbols)
         self.assertIsInstance(mol, Molecule)
-        self.assertTrue(mol.to_single_bonds().is_isomorphic(Molecule(smiles='C').to_single_bonds()))
+        self.assertTrue(
+            mol.to_single_bonds().is_isomorphic(Molecule(smiles="C").to_single_bonds())
+        )
 
     def test_pybel_to_rmg(self):
         """
         Test that a Pybel molecule can be converted to an RMG molecule.
         """
-        pybel_mol = pybel.readstring('smi', 'O=CCN')
+        pybel_mol = pybel.readstring("smi", "O=CCN")
         pybel_mol.addh()
         pybel_mol.make3D()
         mol = _pybel_to_rmg(pybel_mol)
 
         for atom, pybel_atom in zip(mol.atoms, pybel_mol.atoms):
             self.assertEqual(atom.number, pybel_atom.atomicnum)
-            self.assertIsNone(np.testing.assert_allclose(atom.coords, pybel_atom.coords))
-            self.assertEqual(Counter(a.number for a in atom.bonds),
-                             Counter(a.GetAtomicNum() for a in pybel.ob.OBAtomAtomIter(pybel_atom.OBAtom)))
+            self.assertIsNone(
+                np.testing.assert_allclose(atom.coords, pybel_atom.coords)
+            )
+            self.assertEqual(
+                Counter(a.number for a in atom.bonds),
+                Counter(
+                    a.GetAtomicNum() for a in pybel.ob.OBAtomAtomIter(pybel_atom.OBAtom)
+                ),
+            )

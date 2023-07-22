@@ -42,6 +42,7 @@ from rmgpy.species import Species
 
 ################################################################################
 
+
 class TestMoleculeDrawer(unittest.TestCase):
     """
     Contains unit tests of the MoleculeDrawer class.
@@ -52,7 +53,7 @@ class TestMoleculeDrawer(unittest.TestCase):
         A function run before each unit test in this class.
         """
         self.drawer = MoleculeDrawer()
-        self.molecule = Molecule(smiles='CC(=O)CC')
+        self.molecule = Molecule(smiles="CC(=O)CC")
 
     def test_draw_png(self):
         """
@@ -62,10 +63,12 @@ class TestMoleculeDrawer(unittest.TestCase):
             from cairocffi import ImageSurface
         except ImportError:
             from cairo import ImageSurface
-        path = 'test_molecule.png'
+        path = "test_molecule.png"
         if os.path.exists(path):
             os.unlink(path)
-        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(self.molecule, file_format='png', target=path)
+        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(
+            self.molecule, file_format="png", target=path
+        )
         self.assertTrue(os.path.exists(path), "File doesn't exist")
         self.assertGreater(width, height)
         os.unlink(path)
@@ -79,10 +82,12 @@ class TestMoleculeDrawer(unittest.TestCase):
             from cairocffi import PDFSurface
         except ImportError:
             from cairo import PDFSurface
-        path = 'test_molecule.pdf'
+        path = "test_molecule.pdf"
         if os.path.exists(path):
             os.unlink(path)
-        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(self.molecule, file_format='pdf', target=path)
+        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(
+            self.molecule, file_format="pdf", target=path
+        )
         self.assertIsInstance(surface, PDFSurface)
         self.assertGreater(width, height)
         os.unlink(path)
@@ -95,11 +100,13 @@ class TestMoleculeDrawer(unittest.TestCase):
             from cairocffi import PDFSurface
         except ImportError:
             from cairo import PDFSurface
-        path = 'test_molecule.pdf'
+        path = "test_molecule.pdf"
         if os.path.exists(path):
             os.unlink(path)
         polycycle = Molecule(smiles="C123CC4CC1COCC2CCC34")
-        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(polycycle, file_format='pdf', target=path)
+        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(
+            polycycle, file_format="pdf", target=path
+        )
         self.assertIsInstance(surface, PDFSurface)
         self.assertGreater(width, height)
         os.unlink(path)
@@ -112,25 +119,28 @@ class TestMoleculeDrawer(unittest.TestCase):
             from cairocffi import PDFSurface
         except ImportError:
             from cairo import PDFSurface
-        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(self.molecule, file_format='pdf')
+        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(
+            self.molecule, file_format="pdf"
+        )
         self.assertIsInstance(surface, PDFSurface)
         self.assertGreater(width, height)
 
     def test_draw_non_standard_bonds(self):
-
-        spec = Species().from_smiles('[CH2]C=C[CH2]')
+        spec = Species().from_smiles("[CH2]C=C[CH2]")
         hybrid = spec.get_resonance_hybrid()
         try:
             from cairocffi import PDFSurface
         except ImportError:
             from cairo import PDFSurface
-        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(hybrid, file_format='pdf')
+        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(
+            hybrid, file_format="pdf"
+        )
         self.assertGreater(width, height)
         self.assertIsInstance(surface, PDFSurface)
 
     def test_draw_hydrogen_bond_adsorbate(self):
-
-        molecule = Molecule().from_adjacency_list("""
+        molecule = Molecule().from_adjacency_list(
+            """
 1  O u0 p3 c-1 {2,S} {10,H}
 2  N u0 p0 c+1 {1,S} {3,D} {4,S}
 3  O u0 p2 c0 {2,D}
@@ -148,10 +158,13 @@ class TestMoleculeDrawer(unittest.TestCase):
             from cairocffi import PDFSurface
         except ImportError:
             from cairo import PDFSurface
-        surface, _cr, (_xoff, _yoff, _width, _height) = self.drawer.draw(molecule, file_format='pdf')
+        surface, _cr, (_xoff, _yoff, _width, _height) = self.drawer.draw(
+            molecule, file_format="pdf"
+        )
         self.assertIsInstance(surface, PDFSurface)
+
 
 ################################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

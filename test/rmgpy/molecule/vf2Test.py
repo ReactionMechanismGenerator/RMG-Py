@@ -54,21 +54,29 @@ class TestVF2(unittest.TestCase):
 
         self.mol.sort_vertices()
 
-        ordered_original_connectivity_order = [get_vertex_connectivity_value(atom) for atom in self.mol.atoms]
+        ordered_original_connectivity_order = [
+            get_vertex_connectivity_value(atom) for atom in self.mol.atoms
+        ]
 
         self.vf2.graphA = self.mol
         self.vf2.graphB = self.mol2
 
-        final_connectivity_order = [get_vertex_connectivity_value(atom) for atom in self.vf2.graphA.atoms]
-        final_connectivity_order2 = [get_vertex_connectivity_value(atom) for atom in self.vf2.graphB.atoms]
+        final_connectivity_order = [
+            get_vertex_connectivity_value(atom) for atom in self.vf2.graphA.atoms
+        ]
+        final_connectivity_order2 = [
+            get_vertex_connectivity_value(atom) for atom in self.vf2.graphB.atoms
+        ]
 
         testing.assert_array_equal(final_connectivity_order, final_connectivity_order2)
-        testing.assert_array_equal(final_connectivity_order, ordered_original_connectivity_order)
+        testing.assert_array_equal(
+            final_connectivity_order, ordered_original_connectivity_order
+        )
 
     def test_feasible(self):
         """
         Test that feasibility returns correct values on highly functional molecule
-        
+
         `feasible` method isn't perfect in assigning values but it should do a good
         job on highly functional values
         """
@@ -79,7 +87,9 @@ class TestVF2(unittest.TestCase):
         for atom1 in self.vf2.graphA.atoms:
             for atom2 in self.vf2.graphB.atoms:
                 # same connectivity values should result in `feasible` being true
-                if get_vertex_connectivity_value(atom1) == get_vertex_connectivity_value(atom2):
+                if get_vertex_connectivity_value(
+                    atom1
+                ) == get_vertex_connectivity_value(atom2):
                     self.assertTrue(self.vf2.feasible(atom1, atom2))
                 else:  # different connectivity values should return false
                     self.assertFalse(self.vf2.feasible(atom1, atom2))
@@ -95,5 +105,5 @@ class TestVF2(unittest.TestCase):
 
 ################################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

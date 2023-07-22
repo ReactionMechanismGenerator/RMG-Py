@@ -50,12 +50,12 @@ class TestTransportData(unittest.TestCase):
         A function run before each unit test in this class.
         """
         self.shapeIndex = 1
-        self.epsilon = Energy(2.104, 'kJ/mol')
-        self.sigma = Length(3.402, 'angstroms')
-        self.dipoleMoment = DipoleMoment(1.000, 'C*m')
-        self.polarizability = Volume(0.134, 'angstroms^3')
+        self.epsilon = Energy(2.104, "kJ/mol")
+        self.sigma = Length(3.402, "angstroms")
+        self.dipoleMoment = DipoleMoment(1.000, "C*m")
+        self.polarizability = Volume(0.134, "angstroms^3")
         self.rotrelaxcollnum = 0.000
-        self.comment = 'test'
+        self.comment = "test"
 
         self.transport = TransportData(
             shapeIndex=self.shapeIndex,
@@ -77,25 +77,33 @@ class TestTransportData(unittest.TestCase):
         """
         Test that the TransportData epsilon property was properly set.
         """
-        self.assertAlmostEqual(self.transport.epsilon.value_si, self.epsilon.value_si, 6)
+        self.assertAlmostEqual(
+            self.transport.epsilon.value_si, self.epsilon.value_si, 6
+        )
 
     def test_sigma(self):
         """
         Test that the TransportData sigma property was properly set.
         """
-        self.assertAlmostEqual(self.transport.sigma.value_si * 1e10, self.sigma.value_si * 1e10, 6)
+        self.assertAlmostEqual(
+            self.transport.sigma.value_si * 1e10, self.sigma.value_si * 1e10, 6
+        )
 
     def test_dipole_moment(self):
         """
         Test that the TransportData dipoleMoment property was properly set.
         """
-        self.assertAlmostEqual(self.transport.dipoleMoment.value_si, self.dipoleMoment.value_si, 6)
+        self.assertAlmostEqual(
+            self.transport.dipoleMoment.value_si, self.dipoleMoment.value_si, 6
+        )
 
     def test_polarizability(self):
         """
         Test that the TransportData polarizability property was properly set.
         """
-        self.assertAlmostEqual(self.transport.polarizability.value_si, self.polarizability.value_si, 6)
+        self.assertAlmostEqual(
+            self.transport.polarizability.value_si, self.polarizability.value_si, 6
+        )
 
     def test_rotrelaxcollnum(self):
         """
@@ -125,13 +133,24 @@ class TestTransportData(unittest.TestCase):
         Test that a TransportData object can be pickled and unpickled with no loss of information.
         """
         import pickle
+
         transport = pickle.loads(pickle.dumps(self.transport, -1))
         self.assertAlmostEqual(self.transport.shapeIndex, transport.shapeIndex, 4)
-        self.assertAlmostEqual(self.transport.epsilon.value_si, transport.epsilon.value_si, 4)
-        self.assertAlmostEqual(self.transport.sigma.value_si, transport.sigma.value_si, 4)
-        self.assertAlmostEqual(self.transport.dipoleMoment.value_si, transport.dipoleMoment.value_si, 4)
-        self.assertAlmostEqual(self.transport.polarizability.value_si, transport.polarizability.value_si, 4)
-        self.assertAlmostEqual(self.transport.rotrelaxcollnum, transport.rotrelaxcollnum, 4)
+        self.assertAlmostEqual(
+            self.transport.epsilon.value_si, transport.epsilon.value_si, 4
+        )
+        self.assertAlmostEqual(
+            self.transport.sigma.value_si, transport.sigma.value_si, 4
+        )
+        self.assertAlmostEqual(
+            self.transport.dipoleMoment.value_si, transport.dipoleMoment.value_si, 4
+        )
+        self.assertAlmostEqual(
+            self.transport.polarizability.value_si, transport.polarizability.value_si, 4
+        )
+        self.assertAlmostEqual(
+            self.transport.rotrelaxcollnum, transport.rotrelaxcollnum, 4
+        )
         self.assertEqual(self.transport.comment, transport.comment)
 
     def test_repr(self):
@@ -139,47 +158,72 @@ class TestTransportData(unittest.TestCase):
         Test that a TransportData object can be reconstructed from its repr() output with no loss of information
         """
         namespace = {}
-        exec('transport = {0!r}'.format(self.transport), globals(), namespace)
-        self.assertIn('transport', namespace)
-        transport = namespace['transport']
+        exec("transport = {0!r}".format(self.transport), globals(), namespace)
+        self.assertIn("transport", namespace)
+        transport = namespace["transport"]
         self.assertAlmostEqual(self.transport.shapeIndex, transport.shapeIndex, 4)
-        self.assertAlmostEqual(self.transport.epsilon.value_si, transport.epsilon.value_si, 4)
-        self.assertAlmostEqual(self.transport.sigma.value_si, transport.sigma.value_si, 4)
-        self.assertAlmostEqual(self.transport.dipoleMoment.value_si, transport.dipoleMoment.value_si, 4)
-        self.assertAlmostEqual(self.transport.polarizability.value_si, transport.polarizability.value_si, 4)
-        self.assertAlmostEqual(self.transport.rotrelaxcollnum, transport.rotrelaxcollnum, 4)
+        self.assertAlmostEqual(
+            self.transport.epsilon.value_si, transport.epsilon.value_si, 4
+        )
+        self.assertAlmostEqual(
+            self.transport.sigma.value_si, transport.sigma.value_si, 4
+        )
+        self.assertAlmostEqual(
+            self.transport.dipoleMoment.value_si, transport.dipoleMoment.value_si, 4
+        )
+        self.assertAlmostEqual(
+            self.transport.polarizability.value_si, transport.polarizability.value_si, 4
+        )
+        self.assertAlmostEqual(
+            self.transport.rotrelaxcollnum, transport.rotrelaxcollnum, 4
+        )
         self.assertEqual(self.transport.comment, transport.comment)
 
     def test_to_cantera(self):
         """
         Test that the Cantera GasTransportData creation is successful.
         """
-        transport = TransportData(shapeIndex=0, epsilon=(1134.93, 'J/mol'), sigma=(3.33, 'angstrom'),
-                                  dipoleMoment=(2, 'De'), polarizability=(1, 'angstrom^3'),
-                                  rotrelaxcollnum=15.0, comment="""GRI-Mech""")
+        transport = TransportData(
+            shapeIndex=0,
+            epsilon=(1134.93, "J/mol"),
+            sigma=(3.33, "angstrom"),
+            dipoleMoment=(2, "De"),
+            polarizability=(1, "angstrom^3"),
+            rotrelaxcollnum=15.0,
+            comment="""GRI-Mech""",
+        )
         rmg_ct_transport = transport.to_cantera()
         import cantera as ct
-        ct_species = ct.Species.fromCti("""species(name=u'Ar',
+
+        ct_species = ct.Species.fromCti(
+            """species(name=u'Ar',
         atoms='Ar:1',
         transport=gas_transport(geom='atom',
                                 diam=3.33,
                                 well_depth=136.501,
                                 dipole=2.0,
                                 polar=1.0,
-                                rot_relax=15.0))""")
+                                rot_relax=15.0))"""
+        )
 
         ct_transport = ct_species.transport
 
         self.assertAlmostEqual(rmg_ct_transport.geometry, ct_transport.geometry)
-        self.assertAlmostEqual(rmg_ct_transport.acentric_factor, ct_transport.acentric_factor)
+        self.assertAlmostEqual(
+            rmg_ct_transport.acentric_factor, ct_transport.acentric_factor
+        )
         self.assertAlmostEqual(rmg_ct_transport.diameter, ct_transport.diameter)
         self.assertAlmostEqual(rmg_ct_transport.dipole, ct_transport.dipole)
-        self.assertAlmostEqual(rmg_ct_transport.polarizability, ct_transport.polarizability)
-        self.assertAlmostEqual(rmg_ct_transport.rotational_relaxation, ct_transport.rotational_relaxation)
+        self.assertAlmostEqual(
+            rmg_ct_transport.polarizability, ct_transport.polarizability
+        )
+        self.assertAlmostEqual(
+            rmg_ct_transport.rotational_relaxation, ct_transport.rotational_relaxation
+        )
         self.assertAlmostEqual(rmg_ct_transport.well_depth, ct_transport.well_depth)
 
 
 #################################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

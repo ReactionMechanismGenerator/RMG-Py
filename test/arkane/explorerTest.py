@@ -42,7 +42,7 @@ from arkane.explorer import ExplorerJob
 ################################################################################
 
 
-@attr('functional')
+@attr("functional")
 class TestExplorerJob(unittest.TestCase):
     """
     Contains tests for ExplorerJob class execute method
@@ -54,14 +54,21 @@ class TestExplorerJob(unittest.TestCase):
         arkane = Arkane()
 
         cls.job_list = arkane.load_input_file(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'methoxy_explore.py'))
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "data", "methoxy_explore.py"
+            )
+        )
         for job in cls.job_list:
             if not isinstance(job, ExplorerJob):
                 job.execute(output_file=None, plot=None)
             else:
                 thermo_library, kinetics_library, species_list = arkane.get_libraries()
-                job.execute(output_file=None, plot=None, thermo_library=thermo_library,
-                            kinetics_library=kinetics_library)
+                job.execute(
+                    output_file=None,
+                    plot=None,
+                    thermo_library=thermo_library,
+                    kinetics_library=kinetics_library,
+                )
                 cls.thermo_library = thermo_library
                 cls.kinetics_library = kinetics_library
                 cls.explorer_job = cls.job_list[-1]
@@ -72,13 +79,14 @@ class TestExplorerJob(unittest.TestCase):
         """A function that is run ONCE after all unit tests in this class."""
         # Reset module level database
         import rmgpy.data.rmg
+
         rmgpy.data.rmg.database.kinetics = None
 
     def test_reactions(self):
         """
         test that the right number of reactions are in output network
         """
-        self.assertIn(len(self.explorer_job.networks[0].path_reactions), [6,7])
+        self.assertIn(len(self.explorer_job.networks[0].path_reactions), [6, 7])
 
     def test_isomers(self):
         """
@@ -94,8 +102,9 @@ class TestExplorerJob(unittest.TestCase):
         for rxn in self.explorer_job.job_rxns:
             self.assertIn(rxn, self.explorer_job.networks[0].path_reactions)
 
+
 ################################################################################
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

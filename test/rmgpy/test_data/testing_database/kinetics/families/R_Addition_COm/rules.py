@@ -11,34 +11,33 @@ In computing k(T), an asymmetric tunneling correction was employed, the calculat
 temperatures used were from 600 K to 2000 K (in 200 K increments).
 """
 entry(
-    index = 416,
-    label = "COm;Y_rad",
-    kinetics = ArrheniusEP(
-        A = (1e+11, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (5, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (1500, 'K'),
+    index=416,
+    label="COm;Y_rad",
+    kinetics=ArrheniusEP(
+        A=(1e11, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(5, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(1500, "K"),
     ),
-    rank = 0,
+    rank=0,
 )
 
 entry(
-    index = 417,
-    label = "COm;H_rad",
-    kinetics = ArrheniusEP(
-        A = (1.18e+11, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (2.72, 'kcal/mol'),
-        Tmin = (345, 'K'),
-        Tmax = (449, 'K'),
+    index=417,
+    label="COm;H_rad",
+    kinetics=ArrheniusEP(
+        A=(1.18e11, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(2.72, "kcal/mol"),
+        Tmin=(345, "K"),
+        Tmax=(449, "K"),
     ),
-    rank = 4,
-    shortDesc = """Arai et al [102].""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Arai et al [102].""",
+    longDesc="""
 [102] Arai, H.; Nagai, S.; Hatada, M.; Radiat. Phys. Chem. 1981, 17, 211.
 CO + H --> HCO. Data estimated
 
@@ -93,20 +92,19 @@ MRH 1-Sept-2009
 )
 
 entry(
-    index = 418,
-    label = "COm;H_rad",
-    kinetics = ArrheniusEP(
-        A = (1.87e+11, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (1.53, 'kcal/mol'),
-        Tmin = (305, 'K'),
-        Tmax = (375, 'K'),
+    index=418,
+    label="COm;H_rad",
+    kinetics=ArrheniusEP(
+        A=(1.87e11, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(1.53, "kcal/mol"),
+        Tmin=(305, "K"),
+        Tmax=(375, "K"),
     ),
-    rank = 3,
-    shortDesc = """Gordon et al [103].""",
-    longDesc = 
-"""
+    rank=3,
+    shortDesc="""Gordon et al [103].""",
+    longDesc="""
 [103] Gordon, E.B.; Ivanov, B.I; Perminov, A.P; Balalaev, V.E. Chem. Phys. 1978, 35, 79.
 CO + H --> HCO.
 
@@ -131,20 +129,19 @@ H-atom and O2 is 10^4 times faster than the H+CO-->HCO rxn. ***
 )
 
 entry(
-    index = 419,
-    label = "COm;C_methyl",
-    kinetics = ArrheniusEP(
-        A = (5.06e+11, 'cm^3/(mol*s)', '*|/', 3.16),
-        n = 0,
-        alpha = 0,
-        E0 = (6.88, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (500, 'K'),
+    index=419,
+    label="COm;C_methyl",
+    kinetics=ArrheniusEP(
+        A=(5.06e11, "cm^3/(mol*s)", "*|/", 3.16),
+        n=0,
+        alpha=0,
+        E0=(6.88, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Baulch et al. [94]""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Baulch et al. [94]""",
+    longDesc="""
 [94] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Frank, P.; Hayman, G,; Just, T.; Kerr, J.A.; Murrells, T.; Pilling, M.J.; 
 Troe, J.; Walker, R.W.; Warnatz, J. J. Phys. Chem. Ref. Data 1994, 23, 847.
 
@@ -167,20 +164,19 @@ MRH 31-Aug-2009
 )
 
 entry(
-    index = 420,
-    label = "COm;C_rad/H2/Cs",
-    kinetics = ArrheniusEP(
-        A = (1.51e+11, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (4.81, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=420,
+    label="COm;C_rad/H2/Cs",
+    kinetics=ArrheniusEP(
+        A=(1.51e11, "cm^3/(mol*s)", "*|/", 2),
+        n=0,
+        alpha=0,
+        E0=(4.81, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang et al [89] literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang et al [89] literature review.""",
+    longDesc="""
 [89] Tsang, W.; Hampson, R.F. J.Phys. Chem. Ref. Data 1986, 15, 1087.
 CO + C2H5 --> C2H5CO.
 
@@ -201,20 +197,19 @@ MRH 28-Aug-2009
 )
 
 entry(
-    index = 421,
-    label = "COm;Cd_pri_rad",
-    kinetics = ArrheniusEP(
-        A = (1.51e+11, 'cm^3/(mol*s)', '*|/', 5),
-        n = 0,
-        alpha = 0,
-        E0 = (4.81, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=421,
+    label="COm;Cd_pri_rad",
+    kinetics=ArrheniusEP(
+        A=(1.51e11, "cm^3/(mol*s)", "*|/", 5),
+        n=0,
+        alpha=0,
+        E0=(4.81, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang et al [89] literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang et al [89] literature review.""",
+    longDesc="""
 [89] Tsang, W.; Hampson, R.F. J.Phys. Chem. Ref. Data 1986, 15, 1087.
 CO + C2H3 --> CH2=CHCO.
 
@@ -237,20 +232,19 @@ MRH 28-Aug-2009
 )
 
 entry(
-    index = 422,
-    label = "COm;Cb_rad",
-    kinetics = ArrheniusEP(
-        A = (1.48e+12, 'cm^3/(mol*s)', '*|/', 1.5),
-        n = 0,
-        alpha = 0,
-        E0 = (3.33, 'kcal/mol', '+|-', 0.3),
-        Tmin = (295, 'K'),
-        Tmax = (500, 'K'),
+    index=422,
+    label="COm;Cb_rad",
+    kinetics=ArrheniusEP(
+        A=(1.48e12, "cm^3/(mol*s)", "*|/", 1.5),
+        n=0,
+        alpha=0,
+        E0=(3.33, "kcal/mol", "+|-", 0.3),
+        Tmin=(295, "K"),
+        Tmax=(500, "K"),
     ),
-    rank = 3,
-    shortDesc = """Nam et al [104].""",
-    longDesc = 
-"""
+    rank=3,
+    shortDesc="""Nam et al [104].""",
+    longDesc="""
 [104] Nam, G.-J.; Xia, W.; Park, J.; Lin, M. Phys. Chem. A 2000, 104, 1233.	
 Phenyl + CO --> Benzoyl. Original deltaA = 2.8E+11
 
@@ -319,20 +313,19 @@ MRH 1-Sept-2009
 )
 
 entry(
-    index = 423,
-    label = "COm;O_rad/NonDe",
-    kinetics = ArrheniusEP(
-        A = (3.41e+07, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (3, 'kcal/mol'),
-        Tmin = (250, 'K'),
-        Tmax = (2500, 'K'),
+    index=423,
+    label="COm;O_rad/NonDe",
+    kinetics=ArrheniusEP(
+        A=(3.41e07, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(3, "kcal/mol"),
+        Tmin=(250, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 5,
-    shortDesc = """Wang et al. [105].""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""Wang et al. [105].""",
+    longDesc="""
 [105] Wang, B.; Hou, H.; Gu, Y. Phys. Chem. A 1999, 103, 8021.
 RRK(M) extrapolation. CH3O + CO --> CH3OCO, 250K and 2500K
 
@@ -350,20 +343,19 @@ MRH 1-Sept-2009
 )
 
 entry(
-    index = 424,
-    label = "COm;C_methyl",
-    kinetics = ArrheniusEP(
-        A = (3.06e+06, 'cm^3/(mol*s)', '*|/', 3),
-        n = 1.89,
-        alpha = 0,
-        E0 = (4.82, 'kcal/mol', '+|-', 2),
-        Tmin = (600, 'K'),
-        Tmax = (2000, 'K'),
+    index=424,
+    label="COm;C_methyl",
+    kinetics=ArrheniusEP(
+        A=(3.06e06, "cm^3/(mol*s)", "*|/", 3),
+        n=1.89,
+        alpha=0,
+        E0=(4.82, "kcal/mol", "+|-", 2),
+        Tmin=(600, "K"),
+        Tmax=(2000, "K"),
     ),
-    rank = 3,
-    shortDesc = """MRH CBS-QB3 calculations with 1dHR corrections""",
-    longDesc = 
-"""
+    rank=3,
+    shortDesc="""MRH CBS-QB3 calculations with 1dHR corrections""",
+    longDesc="""
 CH3 + CO = CH3CO
 MRH CBS-QB3 calculations with 1D hindered rotor corrections [MRHCBSQB31DHR]_.
 
@@ -375,20 +367,19 @@ CH3CO (doublet): EXTSYM = 1, one hindered rotor (methyl group, symmetry = 3)
 )
 
 entry(
-    index = 425,
-    label = "COm;CH2CH3",
-    kinetics = ArrheniusEP(
-        A = (7.7e+07, 'cm^3/(mol*s)', '*|/', 3),
-        n = 1.37,
-        alpha = 0,
-        E0 = (5.69, 'kcal/mol', '+|-', 2),
-        Tmin = (600, 'K'),
-        Tmax = (2000, 'K'),
+    index=425,
+    label="COm;CH2CH3",
+    kinetics=ArrheniusEP(
+        A=(7.7e07, "cm^3/(mol*s)", "*|/", 3),
+        n=1.37,
+        alpha=0,
+        E0=(5.69, "kcal/mol", "+|-", 2),
+        Tmin=(600, "K"),
+        Tmax=(2000, "K"),
     ),
-    rank = 3,
-    shortDesc = """MRH CBS-QB3 calculations with 1dHR corrections""",
-    longDesc = 
-"""
+    rank=3,
+    shortDesc="""MRH CBS-QB3 calculations with 1dHR corrections""",
+    longDesc="""
 CH3CH2 + CO = CH3CH2CO
 MRH CBS-QB3 calculations with 1D hindered rotor corrections [MRHCBSQB31DHR]_.
 
@@ -400,20 +391,19 @@ CH3CH2CO (doublet): EXTSYM = 1, two hindered rotors (methyl group, symmetry = 3;
 )
 
 entry(
-    index = 426,
-    label = "COm;CH2CH2CH3",
-    kinetics = ArrheniusEP(
-        A = (6.51e+10, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0.45,
-        alpha = 0,
-        E0 = (6.68, 'kcal/mol', '+|-', 2),
-        Tmin = (600, 'K'),
-        Tmax = (2000, 'K'),
+    index=426,
+    label="COm;CH2CH2CH3",
+    kinetics=ArrheniusEP(
+        A=(6.51e10, "cm^3/(mol*s)", "*|/", 3),
+        n=0.45,
+        alpha=0,
+        E0=(6.68, "kcal/mol", "+|-", 2),
+        Tmin=(600, "K"),
+        Tmax=(2000, "K"),
     ),
-    rank = 3,
-    shortDesc = """MRH CBS-QB3 calculations with 1dHR corrections""",
-    longDesc = 
-"""
+    rank=3,
+    shortDesc="""MRH CBS-QB3 calculations with 1dHR corrections""",
+    longDesc="""
 CH3CH2CH2 + CO = CH3CH2CH2CO
 MRH CBS-QB3 calculations with 1D hindered rotor corrections [MRHCBSQB31DHR]_.
 
@@ -425,20 +415,19 @@ CH3CH2CH2CO (doublet): EXTSYM = 1, three hindered rotors (methyl group, symmetry
 )
 
 entry(
-    index = 427,
-    label = "COm;CH(CH3)2",
-    kinetics = ArrheniusEP(
-        A = (8.61e+07, 'cm^3/(mol*s)', '*|/', 3),
-        n = 1.36,
-        alpha = 0,
-        E0 = (4.8, 'kcal/mol', '+|-', 2),
-        Tmin = (600, 'K'),
-        Tmax = (2000, 'K'),
+    index=427,
+    label="COm;CH(CH3)2",
+    kinetics=ArrheniusEP(
+        A=(8.61e07, "cm^3/(mol*s)", "*|/", 3),
+        n=1.36,
+        alpha=0,
+        E0=(4.8, "kcal/mol", "+|-", 2),
+        Tmin=(600, "K"),
+        Tmax=(2000, "K"),
     ),
-    rank = 3,
-    shortDesc = """MRH CBS-QB3 calculations with 1dHR corrections""",
-    longDesc = 
-"""
+    rank=3,
+    shortDesc="""MRH CBS-QB3 calculations with 1dHR corrections""",
+    longDesc="""
 CH3CHCH3 + CO = CH3CH(CO)CH3
 MRH CBS-QB3 calculations with 1D hindered rotor corrections [MRHCBSQB31DHR]_.
 
@@ -450,17 +439,16 @@ CH3CH(CO)CH3 (doublet): EXTSYM = 1, three hindered rotors (methyl group, symmetr
 )
 
 entry(
-    index = 428,
-    label = "COm;S_rad/NonDe",
-    kinetics = ArrheniusEP(
-        A = (78500, 'cm^3/(mol*s)'),
-        n = 2.33,
-        alpha = 0,
-        E0 = (2.23, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2000, 'K'),
+    index=428,
+    label="COm;S_rad/NonDe",
+    kinetics=ArrheniusEP(
+        A=(78500, "cm^3/(mol*s)"),
+        n=2.33,
+        alpha=0,
+        E0=(2.23, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2000, "K"),
     ),
-    rank = 4,
-    shortDesc = """CAC CBS-QB3 calcs, HO""",
+    rank=4,
+    shortDesc="""CAC CBS-QB3 calcs, HO""",
 )
-

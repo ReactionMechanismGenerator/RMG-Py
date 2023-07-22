@@ -55,15 +55,19 @@ class TestStickingCoefficient(unittest.TestCase):
         self.A = 4.3e-2
         self.n = -0.21
         self.Ea = 1.2
-        self.T0 = 1.
-        self.Tmin = 300.
-        self.Tmax = 3000.
-        s = Species().from_adjacency_list('1 X u0 p0 c0')
-        s.label = 'X'
-        self.coverage_dependence = {s: {'a': quantity.Dimensionless(0.0),
-                                        'm': quantity.Dimensionless(-1.0),
-                                        'E': quantity.Energy(0.0, 'J/mol')}}
-        self.comment = 'O2 dissociative'
+        self.T0 = 1.0
+        self.Tmin = 300.0
+        self.Tmax = 3000.0
+        s = Species().from_adjacency_list("1 X u0 p0 c0")
+        s.label = "X"
+        self.coverage_dependence = {
+            s: {
+                "a": quantity.Dimensionless(0.0),
+                "m": quantity.Dimensionless(-1.0),
+                "E": quantity.Energy(0.0, "J/mol"),
+            }
+        }
+        self.comment = "O2 dissociative"
         self.stick = StickingCoefficient(
             A=self.A,
             n=self.n,
@@ -133,7 +137,10 @@ class TestStickingCoefficient(unittest.TestCase):
                 if species.is_identical(species2):
                     match = True
                     for key, value in parameters.items():
-                        self.assertEqual(value.value_si, self.coverage_dependence[species2][key].value_si)
+                        self.assertEqual(
+                            value.value_si,
+                            self.coverage_dependence[species2][key].value_si,
+                        )
             self.assertTrue(match)
 
     def test_is_temperature_valid(self):
@@ -141,7 +148,9 @@ class TestStickingCoefficient(unittest.TestCase):
         Test the StickingCoefficient.is_temperature_valid() method.
         """
         T_data = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 4000])
-        valid_data = np.array([False, True, True, True, True, True, True, True, True, False], np.bool)
+        valid_data = np.array(
+            [False, True, True, True, True, True, True, True, True, False], np.bool
+        )
         for T, valid in zip(T_data, valid_data):
             valid0 = self.stick.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
@@ -152,6 +161,7 @@ class TestStickingCoefficient(unittest.TestCase):
         of information.
         """
         import pickle
+
         stick = pickle.loads(pickle.dumps(self.stick, -1))
         self.assertAlmostEqual(self.stick.A.value, stick.A.value, delta=1e0)
         self.assertEqual(self.stick.A.units, stick.A.units)
@@ -177,7 +187,10 @@ class TestStickingCoefficient(unittest.TestCase):
                 if species.is_identical(species2):
                     match = True
                     for key, value in parameters.items():
-                        self.assertEqual(value.value_si, stick.coverage_dependence[species2][key].value_si)
+                        self.assertEqual(
+                            value.value_si,
+                            stick.coverage_dependence[species2][key].value_si,
+                        )
             self.assertTrue(match)
         self.assertEqual(dir(self.stick), dir(stick))
 
@@ -187,9 +200,9 @@ class TestStickingCoefficient(unittest.TestCase):
         output with no loss of information.
         """
         namespace = {}
-        exec(f'stick = {self.stick!r}', globals(), namespace)
-        self.assertIn('stick', namespace)
-        stick = namespace['stick']
+        exec(f"stick = {self.stick!r}", globals(), namespace)
+        self.assertIn("stick", namespace)
+        stick = namespace["stick"]
         self.assertAlmostEqual(self.stick.A.value, stick.A.value, delta=1e0)
         self.assertEqual(self.stick.A.units, stick.A.units)
         self.assertAlmostEqual(self.stick.n.value, stick.n.value, 4)
@@ -202,10 +215,16 @@ class TestStickingCoefficient(unittest.TestCase):
         self.assertAlmostEqual(self.stick.Tmax.value, stick.Tmax.value, 4)
         self.assertEqual(self.stick.Tmax.units, stick.Tmax.units)
         self.assertEqual(self.stick.comment, stick.comment)
-        self.assertEqual([m.label for m in self.stick.coverage_dependence.keys()], list(stick.coverage_dependence.keys()))
+        self.assertEqual(
+            [m.label for m in self.stick.coverage_dependence.keys()],
+            list(stick.coverage_dependence.keys()),
+        )
         for species, parameters in self.stick.coverage_dependence.items():
             for key, value in parameters.items():
-                self.assertEqual(value.value_si, stick.coverage_dependence[species.label][key].value_si)
+                self.assertEqual(
+                    value.value_si,
+                    stick.coverage_dependence[species.label][key].value_si,
+                )
         self.assertEqual(dir(self.stick), dir(stick))
 
     def test_copy(self):
@@ -214,6 +233,7 @@ class TestStickingCoefficient(unittest.TestCase):
         with no loss of information.
         """
         import copy
+
         stick = copy.deepcopy(self.stick)
         self.assertAlmostEqual(self.stick.A.value, stick.A.value, delta=1e0)
         self.assertEqual(self.stick.A.units, stick.A.units)
@@ -239,7 +259,10 @@ class TestStickingCoefficient(unittest.TestCase):
                 if species.is_identical(species2):
                     match = True
                     for key, value in parameters.items():
-                        self.assertEqual(value.value_si, stick.coverage_dependence[species2][key].value_si)
+                        self.assertEqual(
+                            value.value_si,
+                            stick.coverage_dependence[species2][key].value_si,
+                        )
             self.assertTrue(match)
         self.assertEqual(dir(self.stick), dir(stick))
 
@@ -248,6 +271,7 @@ class TestStickingCoefficient(unittest.TestCase):
         Test that the StickingCoefficient.is_identical_to method works on itself
         """
         self.assertTrue(self.stick.is_identical_to(self.stick))
+
 
 ################################################################################
 
@@ -264,17 +288,21 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.A = 1.44e18
         self.n = -0.087
         self.Ea = 63.4
-        self.T0 = 1.
-        self.Tmin = 300.
-        self.Tmax = 3000.
-        s = Species().from_adjacency_list('1 X u0 p0 c0')
-        s.label = 'X'
-        self.coverage_dependence = {s: {'a': quantity.Dimensionless(0.0),
-                                        'm': quantity.Dimensionless(-1.0),
-                                        'E': quantity.Energy(0.0, 'J/mol')}}
-        self.comment = 'CH3x + Hx <=> CH4 + x + x'
+        self.T0 = 1.0
+        self.Tmin = 300.0
+        self.Tmax = 3000.0
+        s = Species().from_adjacency_list("1 X u0 p0 c0")
+        s.label = "X"
+        self.coverage_dependence = {
+            s: {
+                "a": quantity.Dimensionless(0.0),
+                "m": quantity.Dimensionless(-1.0),
+                "E": quantity.Energy(0.0, "J/mol"),
+            }
+        }
+        self.comment = "CH3x + Hx <=> CH4 + x + x"
         self.surfarr = SurfaceArrhenius(
-            A=(self.A, 'm^2/(mol*s)'),
+            A=(self.A, "m^2/(mol*s)"),
             n=self.n,
             Ea=(self.Ea, "kJ/mol"),
             T0=(self.T0, "K"),
@@ -342,7 +370,10 @@ class TestSurfaceArrhenius(unittest.TestCase):
                 if species.is_identical(species2):
                     match = True
                     for key, value in parameters.items():
-                        self.assertEqual(value.value_si, self.coverage_dependence[species2][key].value_si)
+                        self.assertEqual(
+                            value.value_si,
+                            self.coverage_dependence[species2][key].value_si,
+                        )
             self.assertTrue(match)
 
     def test_is_temperature_valid(self):
@@ -350,7 +381,9 @@ class TestSurfaceArrhenius(unittest.TestCase):
         Test the SurfaceArrhenius.is_temperature_valid() method.
         """
         T_data = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 4000])
-        valid_data = np.array([False, True, True, True, True, True, True, True, True, False], np.bool)
+        valid_data = np.array(
+            [False, True, True, True, True, True, True, True, True, False], np.bool
+        )
         for T, valid in zip(T_data, valid_data):
             valid0 = self.surfarr.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
@@ -361,6 +394,7 @@ class TestSurfaceArrhenius(unittest.TestCase):
         of information.
         """
         import pickle
+
         surfarr = pickle.loads(pickle.dumps(self.surfarr, -1))
         self.assertAlmostEqual(self.surfarr.A.value, surfarr.A.value, delta=1e0)
         self.assertEqual(self.surfarr.A.units, surfarr.A.units)
@@ -386,7 +420,10 @@ class TestSurfaceArrhenius(unittest.TestCase):
                 if species.is_identical(species2):
                     match = True
                     for key, value in parameters.items():
-                        self.assertEqual(value.value_si, surfarr.coverage_dependence[species2][key].value_si)
+                        self.assertEqual(
+                            value.value_si,
+                            surfarr.coverage_dependence[species2][key].value_si,
+                        )
             self.assertTrue(match)
         self.assertEqual(dir(self.surfarr), dir(surfarr))
 
@@ -396,9 +433,9 @@ class TestSurfaceArrhenius(unittest.TestCase):
         output with no loss of information.
         """
         namespace = {}
-        exec('surfarr = {0!r}'.format(self.surfarr), globals(), namespace)
-        self.assertIn('surfarr', namespace)
-        surfarr = namespace['surfarr']
+        exec("surfarr = {0!r}".format(self.surfarr), globals(), namespace)
+        self.assertIn("surfarr", namespace)
+        surfarr = namespace["surfarr"]
         self.assertAlmostEqual(self.surfarr.A.value, surfarr.A.value, delta=1e0)
         self.assertEqual(self.surfarr.A.units, surfarr.A.units)
         self.assertAlmostEqual(self.surfarr.n.value, surfarr.n.value, 4)
@@ -411,10 +448,16 @@ class TestSurfaceArrhenius(unittest.TestCase):
         self.assertAlmostEqual(self.surfarr.Tmax.value, surfarr.Tmax.value, 4)
         self.assertEqual(self.surfarr.Tmax.units, surfarr.Tmax.units)
         self.assertEqual(self.surfarr.comment, surfarr.comment)
-        self.assertEqual([m.label for m in self.surfarr.coverage_dependence.keys()], list(surfarr.coverage_dependence.keys()))
+        self.assertEqual(
+            [m.label for m in self.surfarr.coverage_dependence.keys()],
+            list(surfarr.coverage_dependence.keys()),
+        )
         for species, parameters in self.surfarr.coverage_dependence.items():
             for key, value in parameters.items():
-                self.assertEqual(value.value_si, surfarr.coverage_dependence[species.label][key].value_si)
+                self.assertEqual(
+                    value.value_si,
+                    surfarr.coverage_dependence[species.label][key].value_si,
+                )
         self.assertEqual(dir(self.surfarr), dir(surfarr))
 
     def test_copy(self):
@@ -423,6 +466,7 @@ class TestSurfaceArrhenius(unittest.TestCase):
         with no loss of information.
         """
         import copy
+
         surfarr = copy.deepcopy(self.surfarr)
         self.assertAlmostEqual(self.surfarr.A.value, surfarr.A.value, delta=1e0)
         self.assertEqual(self.surfarr.A.units, surfarr.A.units)
@@ -448,7 +492,10 @@ class TestSurfaceArrhenius(unittest.TestCase):
                 if species.is_identical(species2):
                     match = True
                     for key, value in parameters.items():
-                        self.assertEqual(value.value_si, surfarr.coverage_dependence[species2][key].value_si)
+                        self.assertEqual(
+                            value.value_si,
+                            surfarr.coverage_dependence[species2][key].value_si,
+                        )
             self.assertTrue(match)
         self.assertEqual(dir(self.surfarr), dir(surfarr))
 

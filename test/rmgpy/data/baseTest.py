@@ -35,6 +35,7 @@ from rmgpy.molecule import Group, Molecule
 
 ################################################################################
 
+
 class TestBaseDatabase(unittest.TestCase):
     """
     Contains unit tests for the base class of rmgpy.data.
@@ -58,7 +59,8 @@ class TestBaseDatabase(unittest.TestCase):
                 2    C  u0 {1,D}
                 3 *5 Cd u0 {1,S} {4,D}
                 4    C  u0 {3,D}
-                """)
+                """
+            )
         )
 
         entry2 = Entry(
@@ -68,7 +70,8 @@ class TestBaseDatabase(unittest.TestCase):
                 2 *5 C  u0 {1,D}
                 3    Cd u0 {1,S} {4,D}
                 4    C  u0 {3,D}
-                """)
+                """
+            )
         )
 
         entry3 = Entry(
@@ -78,19 +81,36 @@ class TestBaseDatabase(unittest.TestCase):
                 2    C  u0 {1,D}
                 3    Cd u0 {1,S} {4,D}
                 4    C  u0 {3,D}
-                """)
+                """
+            )
         )
         # The group should match to itself
-        self.assertTrue(self.database.match_node_to_structure(entry1, entry1.item, atoms=entry1.item.get_all_labeled_atoms()))
+        self.assertTrue(
+            self.database.match_node_to_structure(
+                entry1, entry1.item, atoms=entry1.item.get_all_labeled_atoms()
+            )
+        )
 
         # These groups should not match each other
-        self.assertFalse(self.database.match_node_to_structure(entry1, entry2.item, atoms=entry2.item.get_all_labeled_atoms()))
+        self.assertFalse(
+            self.database.match_node_to_structure(
+                entry1, entry2.item, atoms=entry2.item.get_all_labeled_atoms()
+            )
+        )
 
         # entry1 contains more labels than entry3, therefore cannot be matched by entry3
-        self.assertFalse(self.database.match_node_to_structure(entry3, entry1.item, atoms=entry1.item.get_all_labeled_atoms()))
+        self.assertFalse(
+            self.database.match_node_to_structure(
+                entry3, entry1.item, atoms=entry1.item.get_all_labeled_atoms()
+            )
+        )
 
         # entry3 contains fewer labels than entry1, therefore it can be matched
-        self.assertTrue(self.database.match_node_to_structure(entry1, entry3.item, atoms=entry3.item.get_all_labeled_atoms()))
+        self.assertTrue(
+            self.database.match_node_to_structure(
+                entry1, entry3.item, atoms=entry3.item.get_all_labeled_atoms()
+            )
+        )
 
     def test_match_node_to_node(self):
         """
@@ -100,21 +120,22 @@ class TestBaseDatabase(unittest.TestCase):
             item=Group().from_adjacency_list(
                 """
                 1 *1 R!H u1
-                """)
+                """
+            )
         )
 
         entry2 = Entry(
             item=Group().from_adjacency_list(
                 """
                 1 *1 Cb u1
-                """)
+                """
+            )
         )
         self.assertTrue(self.database.match_node_to_node(entry1, entry1))
         self.assertFalse(self.database.match_node_to_node(entry1, entry2))
 
 
 class TestForbiddenStructures(unittest.TestCase):
-
     def setUp(self):
         self.database = ForbiddenStructures()
 
@@ -125,17 +146,19 @@ class TestForbiddenStructures(unittest.TestCase):
 2 C u0 {1,D}
 """
         self.database.load_entry(
-            label='test',
+            label="test",
             group=test,
         )
 
-        molecule = Molecule().from_adjacency_list("""
+        molecule = Molecule().from_adjacency_list(
+            """
 multiplicity 3
 1 C u2 p0 c0 {2,D}
 2 C u0 p0 c0 {1,D} {3,S} {4,S}
 3 H u0 p0 c0 {2,S}
 4 H u0 p0 c0 {2,S}
-""")
+"""
+        )
 
         self.assertTrue(self.database.is_molecule_forbidden(molecule))
 
@@ -145,13 +168,15 @@ multiplicity 3
 1 C u4 p0 c0
 """
         self.database.load_entry(
-            label='test',
+            label="test",
             molecule=test,
         )
 
-        molecule = Molecule().from_adjacency_list("""
+        molecule = Molecule().from_adjacency_list(
+            """
 1 C u4 p0 c0
-""")
+"""
+        )
 
         self.assertTrue(self.database.is_molecule_forbidden(molecule))
 
@@ -174,11 +199,12 @@ multiplicity 3
 12 H u0 p0 c0 {6,S}
 """
         self.database.load_entry(
-            label='test',
+            label="test",
             species=test,
         )
 
-        molecule1 = Molecule().from_adjacency_list("""
+        molecule1 = Molecule().from_adjacency_list(
+            """
 1  C u0 p0 c0 {2,D} {6,S} {7,S}
 2  C u0 p0 c0 {1,D} {3,S} {8,S}
 3  C u0 p0 c0 {2,S} {4,D} {9,S}
@@ -191,8 +217,10 @@ multiplicity 3
 10 H u0 p0 c0 {4,S}
 11 H u0 p0 c0 {5,S}
 12 H u0 p0 c0 {6,S}
-""")
-        molecule2 = Molecule().from_adjacency_list("""
+"""
+        )
+        molecule2 = Molecule().from_adjacency_list(
+            """
 1  C u0 p0 c0 {2,B} {6,B} {7,S}
 2  C u0 p0 c0 {1,B} {3,B} {8,S}
 3  C u0 p0 c0 {2,B} {4,B} {9,S}
@@ -205,7 +233,8 @@ multiplicity 3
 10 H u0 p0 c0 {4,S}
 11 H u0 p0 c0 {5,S}
 12 H u0 p0 c0 {6,S}
-""")
+"""
+        )
 
         self.assertTrue(self.database.is_molecule_forbidden(molecule1))
         self.assertTrue(self.database.is_molecule_forbidden(molecule2))
@@ -213,5 +242,5 @@ multiplicity 3
 
 ################################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

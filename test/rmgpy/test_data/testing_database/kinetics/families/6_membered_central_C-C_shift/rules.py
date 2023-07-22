@@ -9,4 +9,3 @@ Taken from:
 Miller, J. A.; Klippenstein, S. J., The Recombination of Propargyl Radicals and Other Reactions on a C6H6 Potential.
 J. Phys. Chem. A 2003, 107, 7783-7799.
 """
-

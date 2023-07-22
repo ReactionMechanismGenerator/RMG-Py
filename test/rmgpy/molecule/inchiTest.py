@@ -31,26 +31,39 @@ import unittest
 
 from external.wip import work_in_progress
 from rmgpy.exceptions import InchiException
-from rmgpy.molecule.inchi import InChI, AugmentedInChI, remove_inchi_prefix, create_augmented_layers, \
-                                 compose_aug_inchi, decompose_aug_inchi, INCHI_PREFIX, P_LAYER_PREFIX, U_LAYER_PREFIX
-from rmgpy.molecule.inchi import _has_unexpected_lone_pairs, _parse_e_layer, _parse_h_layer, \
-                                 _parse_n_layer, _reset_lone_pairs
+from rmgpy.molecule.inchi import (
+    InChI,
+    AugmentedInChI,
+    remove_inchi_prefix,
+    create_augmented_layers,
+    compose_aug_inchi,
+    decompose_aug_inchi,
+    INCHI_PREFIX,
+    P_LAYER_PREFIX,
+    U_LAYER_PREFIX,
+)
+from rmgpy.molecule.inchi import (
+    _has_unexpected_lone_pairs,
+    _parse_e_layer,
+    _parse_h_layer,
+    _parse_n_layer,
+    _reset_lone_pairs,
+)
 from rmgpy.molecule.molecule import Atom, Molecule
 
 
 class InChITest(unittest.TestCase):
-
     def test_constructor(self):
-        inchi1 = InChI('InChI=1S/foo')
+        inchi1 = InChI("InChI=1S/foo")
         self.assertTrue(inchi1 is not None)
 
         with self.assertRaises(InchiException):
-            InChI('foo')
+            InChI("foo")
 
     def test_compare(self):
-        inchi1 = InChI('InChI=1S/foo')
-        inchi2 = InChI('InChI=1/foo')
-        inchi3 = InChI('InChI=1/bar')
+        inchi1 = InChI("InChI=1S/foo")
+        inchi2 = InChI("InChI=1/foo")
+        inchi3 = InChI("InChI=1/bar")
 
         self.assertTrue(inchi1 == inchi2)
         self.assertTrue(not inchi1 != inchi2)
@@ -60,26 +73,25 @@ class InChITest(unittest.TestCase):
 
 
 class AugmentedInChITest(unittest.TestCase):
-
     def test_constructor(self):
-        aug_inchi1 = AugmentedInChI('InChI=1S/foo')
+        aug_inchi1 = AugmentedInChI("InChI=1S/foo")
 
-        self.assertTrue(aug_inchi1 == 'foo', aug_inchi1)
+        self.assertTrue(aug_inchi1 == "foo", aug_inchi1)
         self.assertTrue(aug_inchi1.u_indices is None)
 
-        aug_inchi2 = AugmentedInChI('InChI=1S/foo')
+        aug_inchi2 = AugmentedInChI("InChI=1S/foo")
 
-        self.assertTrue(aug_inchi2 == 'foo', aug_inchi2)
+        self.assertTrue(aug_inchi2 == "foo", aug_inchi2)
         self.assertTrue(aug_inchi2.u_indices is None)
 
-        aug_inchi3 = AugmentedInChI('InChI=1S/foo/u1,3')
+        aug_inchi3 = AugmentedInChI("InChI=1S/foo/u1,3")
 
-        self.assertTrue(aug_inchi3 == 'foo/u1,3', aug_inchi3)
+        self.assertTrue(aug_inchi3 == "foo/u1,3", aug_inchi3)
         self.assertTrue(aug_inchi3.u_indices == [1, 3])
 
     def test_compare(self):
-        aug_inchi1 = AugmentedInChI('InChI=1S/foo')
-        aug_inchi2 = AugmentedInChI('InChI=1/foo')
+        aug_inchi1 = AugmentedInChI("InChI=1S/foo")
+        aug_inchi2 = AugmentedInChI("InChI=1/foo")
 
         self.assertTrue(aug_inchi1 == aug_inchi2)
         self.assertTrue(not aug_inchi1 != aug_inchi2)
@@ -88,7 +100,7 @@ class AugmentedInChITest(unittest.TestCase):
     def test_reduce(self):
         import pickle
 
-        aug_inchi = AugmentedInChI('InChI=1S/foo/u1,3')
+        aug_inchi = AugmentedInChI("InChI=1S/foo/u1,3")
         aug_inchi2 = pickle.loads(pickle.dumps(aug_inchi))
 
         self.assertTrue(aug_inchi == aug_inchi2)
@@ -96,29 +108,29 @@ class AugmentedInChITest(unittest.TestCase):
 
 
 class IgnorePrefixTest(unittest.TestCase):
-
     def test_ignore(self):
-        string = 'InChI=1S/foo'
-        self.assertTrue(remove_inchi_prefix(string) == 'foo')
+        string = "InChI=1S/foo"
+        self.assertTrue(remove_inchi_prefix(string) == "foo")
 
         with self.assertRaises(InchiException):
-            remove_inchi_prefix('foo')
+            remove_inchi_prefix("foo")
 
 
 class ComposeTest(unittest.TestCase):
-
     def test_compose_aug_inchi(self):
-        inchi = 'C2H5/c1-2/h1H2,2H3'
+        inchi = "C2H5/c1-2/h1H2,2H3"
         mult = 2
 
         aug_inchi = compose_aug_inchi(inchi, U_LAYER_PREFIX + str(mult))
-        self.assertTrue(aug_inchi == INCHI_PREFIX + '/' + inchi + U_LAYER_PREFIX + str(mult), aug_inchi)
+        self.assertTrue(
+            aug_inchi == INCHI_PREFIX + "/" + inchi + U_LAYER_PREFIX + str(mult),
+            aug_inchi,
+        )
 
 
 class Parse_H_LayerTest(unittest.TestCase):
-
     def test_oco(self):
-        smi = 'O=C-O'
+        smi = "O=C-O"
         inchi = Molecule().from_smiles(smi).to_inchi()
         mobile_hs = _parse_h_layer(inchi)
         expected = [[2, 3]]
@@ -155,36 +167,35 @@ class ParseNLayerTest(unittest.TestCase):
 
 
 class DecomposeTest(unittest.TestCase):
-
     def test_inchi(self):
-        string = 'InChI=1S/XXXX/cXXX/hXXX'
+        string = "InChI=1S/XXXX/cXXX/hXXX"
 
         _, u_indices, _ = decompose_aug_inchi(string)
         self.assertEquals([], u_indices)
 
     def test_inchi_u_layer(self):
-        string = 'InChI=1S/XXXX/cXXX/hXXX/u1,2'
+        string = "InChI=1S/XXXX/cXXX/hXXX/u1,2"
 
         _, u_indices, _ = decompose_aug_inchi(string)
         self.assertEquals([1, 2], u_indices)
 
     def test_inchi_p_layer(self):
-        string = 'InChI=1S/XXXX/cXXX/hXXX/lp1,2'
+        string = "InChI=1S/XXXX/cXXX/hXXX/lp1,2"
         _, _, p_indices = decompose_aug_inchi(string)
         self.assertEquals([1, 2], p_indices)
 
     def test_inchi_u_layer_p_layer(self):
-        string = 'InChI=1S/XXXX/cXXX/hXXX/u1,2/lp3,4'
+        string = "InChI=1S/XXXX/cXXX/hXXX/u1,2/lp3,4"
         _, u_indices, p_indices = decompose_aug_inchi(string)
         self.assertEquals([1, 2], u_indices)
         self.assertEquals([3, 4], p_indices)
 
     def test_inchi_p_layer_zero_lp(self):
         """
-        Test that the p-layer containing an element with zero lone 
+        Test that the p-layer containing an element with zero lone
         pairs can be read correctly.
         """
-        string = 'InChI=1S/XXXX/cXXX/hXXX/lp1(0)'
+        string = "InChI=1S/XXXX/cXXX/hXXX/lp1(0)"
         _, _, p_indices = decompose_aug_inchi(string)
         self.assertEquals([(1, 0)], p_indices)
 
@@ -236,29 +247,29 @@ class CreateULayerTest(unittest.TestCase):
 
 class ExpectedLonePairsTest(unittest.TestCase):
     def test_singlet_carbon(self):
-        mol = Molecule(atoms=[Atom(element='C', lone_pairs=1)])
+        mol = Molecule(atoms=[Atom(element="C", lone_pairs=1)])
         unexpected = _has_unexpected_lone_pairs(mol)
         self.assertTrue(unexpected)
 
     def test_normal_carbon(self):
-        mol = Molecule(atoms=[Atom(element='C', lone_pairs=0)])
+        mol = Molecule(atoms=[Atom(element="C", lone_pairs=0)])
         unexpected = _has_unexpected_lone_pairs(mol)
         self.assertFalse(unexpected)
 
     def test_normal_oxygen(self):
-        mol = Molecule(atoms=[Atom(element='O', lone_pairs=2)])
+        mol = Molecule(atoms=[Atom(element="O", lone_pairs=2)])
         unexpected = _has_unexpected_lone_pairs(mol)
         self.assertFalse(unexpected)
 
     def test_oxygen_3_lone_pairs(self):
-        mol = Molecule(atoms=[Atom(element='O', lone_pairs=3)])
+        mol = Molecule(atoms=[Atom(element="O", lone_pairs=3)])
         unexpected = _has_unexpected_lone_pairs(mol)
         self.assertTrue(unexpected)
 
 
 class CreateAugmentedLayersTest(unittest.TestCase):
     def test_methane(self):
-        smi = 'C'
+        smi = "C"
         mol = Molecule().from_smiles(smi)
         ulayer, player = create_augmented_layers(mol)
         self.assertTrue(not ulayer)
@@ -274,7 +285,7 @@ multiplicity 1
         mol = Molecule().from_adjacency_list(adjlist)
         ulayer, player = create_augmented_layers(mol)
         self.assertTrue(not ulayer)
-        self.assertEquals(P_LAYER_PREFIX + '1', player)
+        self.assertEquals(P_LAYER_PREFIX + "1", player)
 
     def test_triplet_methylene(self):
         adjlist = """
@@ -285,7 +296,7 @@ multiplicity 3
 """
         mol = Molecule().from_adjacency_list(adjlist)
         ulayer, player = create_augmented_layers(mol)
-        self.assertEquals(U_LAYER_PREFIX + '1,1', ulayer)
+        self.assertEquals(U_LAYER_PREFIX + "1,1", ulayer)
         self.assertTrue(not player)
 
     @work_in_progress
@@ -303,13 +314,12 @@ multiplicity 3
         mol = Molecule().from_adjacency_list(adjlist)
         ulayer, player = create_augmented_layers(mol)
         self.assertTrue(not ulayer)
-        self.assertTrue(player.contains(P_LAYER_PREFIX + '1(0)'))
+        self.assertTrue(player.contains(P_LAYER_PREFIX + "1(0)"))
 
 
 class ResetLonePairsTest(unittest.TestCase):
-
     def test_methane(self):
-        smi = 'C'
+        smi = "C"
         mol = Molecule().from_smiles(smi)
         p_indices = []
 
@@ -331,11 +341,11 @@ multiplicity 1
         _reset_lone_pairs(mol, p_indices)
 
         for at in mol.atoms:
-            if at.symbol == 'C':
+            if at.symbol == "C":
                 self.assertEquals(at.lone_pairs, 1)
             else:
                 self.assertEquals(at.lone_pairs, 0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

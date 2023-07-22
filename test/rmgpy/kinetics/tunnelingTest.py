@@ -40,6 +40,7 @@ from rmgpy.kinetics.tunneling import Wigner, Eckart
 
 ################################################################################
 
+
 class TestWigner(unittest.TestCase):
     """
     Contains unit tests of the :class:`Wigner` class.
@@ -76,8 +77,11 @@ class TestWigner(unittest.TestCase):
         with no loss of information.
         """
         import pickle
+
         tunneling = pickle.loads(pickle.dumps(self.tunneling, -1))
-        self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
+        self.assertAlmostEqual(
+            self.tunneling.frequency.value, tunneling.frequency.value, 2
+        )
         self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
 
     def test_repr(self):
@@ -86,14 +90,17 @@ class TestWigner(unittest.TestCase):
         repr() output with no loss of information.
         """
         namespace = {}
-        exec('tunneling = {0!r}'.format(self.tunneling), globals(), namespace)
-        self.assertIn('tunneling', namespace)
-        tunneling = namespace['tunneling']
-        self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
+        exec("tunneling = {0!r}".format(self.tunneling), globals(), namespace)
+        self.assertIn("tunneling", namespace)
+        tunneling = namespace["tunneling"]
+        self.assertAlmostEqual(
+            self.tunneling.frequency.value, tunneling.frequency.value, 2
+        )
         self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
 
 
 ################################################################################
+
 
 class TestEckart(unittest.TestCase):
     """
@@ -144,7 +151,7 @@ class TestEckart(unittest.TestCase):
         Test the Eckart.calculate_tunneling_factor() method.
         """
         Tlist = np.array([300, 500, 1000, 1500, 2000])
-        kexplist = np.array([1623051., 7.69349, 1.46551, 1.18111, 1.09858])
+        kexplist = np.array([1623051.0, 7.69349, 1.46551, 1.18111, 1.09858])
         for T, kexp in zip(Tlist, kexplist):
             kact = self.tunneling.calculate_tunneling_factor(T)
             self.assertAlmostEqual(kexp, kact, delta=1e-3 * kexp)
@@ -155,8 +162,11 @@ class TestEckart(unittest.TestCase):
         unpickled with no loss of information.
         """
         import pickle
+
         tunneling = pickle.loads(pickle.dumps(self.tunneling, -1))
-        self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
+        self.assertAlmostEqual(
+            self.tunneling.frequency.value, tunneling.frequency.value, 2
+        )
         self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
         self.assertAlmostEqual(self.tunneling.E0_reac.value, tunneling.E0_reac.value, 3)
         self.assertEqual(self.tunneling.E0_reac.units, tunneling.E0_reac.units)
@@ -171,10 +181,12 @@ class TestEckart(unittest.TestCase):
         from its repr() output with no loss of information.
         """
         namespace = {}
-        exec('tunneling = {0!r}'.format(self.tunneling), globals(), namespace)
-        self.assertIn('tunneling', namespace)
-        tunneling = namespace['tunneling']
-        self.assertAlmostEqual(self.tunneling.frequency.value, tunneling.frequency.value, 2)
+        exec("tunneling = {0!r}".format(self.tunneling), globals(), namespace)
+        self.assertIn("tunneling", namespace)
+        tunneling = namespace["tunneling"]
+        self.assertAlmostEqual(
+            self.tunneling.frequency.value, tunneling.frequency.value, 2
+        )
         self.assertEqual(self.tunneling.frequency.units, tunneling.frequency.units)
         self.assertAlmostEqual(self.tunneling.E0_reac.value, tunneling.E0_reac.value, 3)
         self.assertEqual(self.tunneling.E0_reac.units, tunneling.E0_reac.units)

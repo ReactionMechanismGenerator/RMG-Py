@@ -46,13 +46,14 @@ from rmgpy.species import Species, TransitionState
 from rmgpy.thermo import NASA, ThermoData
 
 from arkane import Arkane, input
-from arkane.common import (ArkaneSpecies,
-                           convert_imaginary_freq_to_negative_float,
-                           get_element_mass,
-                           get_center_of_mass,
-                           get_moment_of_inertia_tensor,
-                           get_principal_moments_of_inertia,
-                           )
+from arkane.common import (
+    ArkaneSpecies,
+    convert_imaginary_freq_to_negative_float,
+    get_element_mass,
+    get_center_of_mass,
+    get_moment_of_inertia_tensor,
+    get_principal_moments_of_inertia,
+)
 from arkane.input import job_list
 from arkane.modelchem import LevelOfTheory
 from arkane.statmech import InputError, StatMechJob
@@ -69,10 +70,31 @@ class CommonTest(unittest.TestCase):
         """
         test the check_conformer_energy function with an list of energies.
         """
-        v_list = [-272.2779012225, -272.2774933703, -272.2768397635, -272.2778432059, -272.278645477, -272.2789602654,
-                  -272.2788749196, -272.278496709, -272.2779350675, -272.2777008843, -272.2777167286, -272.2780937643,
-                  -272.2784838846, -272.2788050464, -272.2787865352, -272.2785091607, -272.2779977452, -272.2777957743,
-                  -272.2779134906, -272.2781827547, -272.278443339, -272.2788244214, -272.2787748749]
+        v_list = [
+            -272.2779012225,
+            -272.2774933703,
+            -272.2768397635,
+            -272.2778432059,
+            -272.278645477,
+            -272.2789602654,
+            -272.2788749196,
+            -272.278496709,
+            -272.2779350675,
+            -272.2777008843,
+            -272.2777167286,
+            -272.2780937643,
+            -272.2784838846,
+            -272.2788050464,
+            -272.2787865352,
+            -272.2785091607,
+            -272.2779977452,
+            -272.2777957743,
+            -272.2779134906,
+            -272.2781827547,
+            -272.278443339,
+            -272.2788244214,
+            -272.2787748749,
+        ]
         v_list = np.array(v_list, np.float64)
         v_diff = (v_list[0] - np.min(v_list)) * constants.E_h * constants.Na / 1000
         self.assertAlmostEqual(v_diff / 2.7805169838282797, 1, 5)
@@ -87,8 +109,11 @@ class TestArkaneJob(unittest.TestCase):
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                       'data', 'methoxy.py'))
+        job_list = arkane.load_input_file(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "data", "methoxy.py"
+            )
+        )
         pdepjob = job_list[-1]
         cls.kineticsjob = job_list[0]
         pdepjob.active_j_rotor = True
@@ -140,14 +165,14 @@ class TestArkaneJob(unittest.TestCase):
         """
         Test a path reaction label
         """
-        self.assertEqual(str(self.PathReaction2), 'CH2OH <=> methoxy')
+        self.assertEqual(str(self.PathReaction2), "CH2OH <=> methoxy")
 
     # test Arkane's interactions with the pdep module
     def test_temperatures_units(self):
         """
         Test the Temperature Units.
         """
-        self.assertEqual(str(self.TmaxUnits), 'K')
+        self.assertEqual(str(self.TmaxUnits), "K")
 
     def test_temperatures_value(self):
         """
@@ -183,7 +208,9 @@ class TestArkaneJob(unittest.TestCase):
         """
         Test the pressure list.
         """
-        self.assertTrue(np.array_equal(self.PlistValue, np.array([0.01, 0.1, 1, 3, 10, 100, 1000])))
+        self.assertTrue(
+            np.array_equal(self.PlistValue, np.array([0.01, 0.1, 1, 3, 10, 100, 1000]))
+        )
 
     def test_generate_temperature_list(self):
         """
@@ -201,7 +228,7 @@ class TestArkaneJob(unittest.TestCase):
         """
         Test the master equation solution method chosen.
         """
-        self.assertEqual(self.method, 'modified strong collision')
+        self.assertEqual(self.method, "modified strong collision")
 
     def test_rmg_mode(self):
         """
@@ -214,10 +241,16 @@ class TestArkaneJob(unittest.TestCase):
         """
         Test the calculation of the high-pressure limit rate coef for one of the kinetics jobs at Tmin and Tmax.
         """
-        self.assertEqual("%0.7f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(self.TminValue),
-                         str(46608.5904933))
-        self.assertEqual("%0.5f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(self.Tmaxvalue),
-                         str(498796.64535))
+        self.assertEqual(
+            "%0.7f"
+            % self.kineticsjob.reaction.calculate_tst_rate_coefficient(self.TminValue),
+            str(46608.5904933),
+        )
+        self.assertEqual(
+            "%0.5f"
+            % self.kineticsjob.reaction.calculate_tst_rate_coefficient(self.Tmaxvalue),
+            str(498796.64535),
+        )
 
     def test_tunneling(self):
         """
@@ -234,7 +267,9 @@ class TestArkaneInput(unittest.TestCase):
     @classmethod
     def setUp(cls):
         """Preparation for all unit tests in this class."""
-        cls.directory = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
+        cls.directory = os.path.join(
+            os.path.dirname(os.path.dirname(rmgpy.__file__)), "examples", "arkane"
+        )
         cls.level_of_theory = LevelOfTheory("cbs-qb3")
         cls.frequencyScaleFactor = 0.99
         cls.useHinderedRotors = False
@@ -242,7 +277,9 @@ class TestArkaneInput(unittest.TestCase):
 
     def test_species(self):
         """Test loading of species input file."""
-        spec = input.species('C2H4', os.path.join(self.directory, 'species', 'C2H4', 'ethene.py'))
+        spec = input.species(
+            "C2H4", os.path.join(self.directory, "species", "C2H4", "ethene.py")
+        )
         self.assertTrue(isinstance(spec, Species))
         self.assertEqual(len(spec.molecule), 0)
 
@@ -255,24 +292,26 @@ class TestArkaneInput(unittest.TestCase):
         job.includeHinderedRotors = self.useHinderedRotors
         job.applyBondEnergyCorrections = self.useBondCorrections
         job.load()
-        self.assertTrue(isinstance(job.species.props['element_counts'], dict))
-        self.assertEqual(job.species.props['element_counts']['C'], 2)
-        self.assertEqual(job.species.props['element_counts']['H'], 4)
+        self.assertTrue(isinstance(job.species.props["element_counts"], dict))
+        self.assertEqual(job.species.props["element_counts"]["C"], 2)
+        self.assertEqual(job.species.props["element_counts"]["H"], 4)
 
     def test_species_thermo(self):
         """Test thermo job execution for species from separate input file."""
-        input.thermo('C2H4', 'NASA')
+        input.thermo("C2H4", "NASA")
         job = job_list[-1]
-        filepath = os.path.join(self.directory, 'reactions', 'H+C2H4=C2H5')
+        filepath = os.path.join(self.directory, "reactions", "H+C2H4=C2H5")
         job.execute(output_directory=filepath)
-        self.assertTrue(os.path.isfile(os.path.join(filepath, 'output.py')))
-        self.assertTrue(os.path.isfile(os.path.join(filepath, 'chem.inp')))
-        os.remove(os.path.join(filepath, 'output.py'))
-        os.remove(os.path.join(filepath, 'chem.inp'))
+        self.assertTrue(os.path.isfile(os.path.join(filepath, "output.py")))
+        self.assertTrue(os.path.isfile(os.path.join(filepath, "chem.inp")))
+        os.remove(os.path.join(filepath, "output.py"))
+        os.remove(os.path.join(filepath, "chem.inp"))
 
     def test_transition_state(self):
         """Test loading of transition state input file."""
-        ts = input.transitionState('TS', os.path.join(self.directory, 'reactions', 'H+C2H4=C2H5', 'TS.py'))
+        ts = input.transitionState(
+            "TS", os.path.join(self.directory, "reactions", "H+C2H4=C2H5", "TS.py")
+        )
         self.assertTrue(isinstance(ts, TransitionState))
 
     def test_transition_state_statmech(self):
@@ -295,8 +334,11 @@ class TestStatmech(unittest.TestCase):
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        cls.job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                           'data', 'Benzyl', 'input.py'))
+        cls.job_list = arkane.load_input_file(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "data", "Benzyl", "input.py"
+            )
+        )
 
     def test_gaussian_log_file_error(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are the same"""
@@ -317,21 +359,31 @@ class TestArkaneSpecies(unittest.TestCase):
         A method that is run ONCE before all unit tests in this class.
         """
         cls.arkane = Arkane()
-        path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)),
-                            'examples', 'arkane', 'species')
-        cls.dump_path = os.path.join(path, 'C2H6')
-        cls.dump_input_path = os.path.join(cls.dump_path, 'input.py')
-        cls.dump_output_file = os.path.join(cls.dump_path, 'output.py')
-        cls.dump_yaml_file = os.path.join(cls.dump_path, 'species', 'C2H6.yml')
+        path = os.path.join(
+            os.path.dirname(os.path.dirname(rmgpy.__file__)),
+            "examples",
+            "arkane",
+            "species",
+        )
+        cls.dump_path = os.path.join(path, "C2H6")
+        cls.dump_input_path = os.path.join(cls.dump_path, "input.py")
+        cls.dump_output_file = os.path.join(cls.dump_path, "output.py")
+        cls.dump_yaml_file = os.path.join(cls.dump_path, "species", "C2H6.yml")
 
-        cls.load_path = os.path.join(path, 'C2H6_from_yaml')
-        cls.load_input_path = os.path.join(cls.load_path, 'input.py')
-        cls.load_output_file = os.path.join(cls.load_path, 'output.py')
+        cls.load_path = os.path.join(path, "C2H6_from_yaml")
+        cls.load_input_path = os.path.join(cls.load_path, "input.py")
+        cls.load_output_file = os.path.join(cls.load_path, "output.py")
 
-        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'arkane', 'data')
+        cls.data_path = os.path.join(
+            os.path.dirname(os.path.dirname(rmgpy.__file__)), "arkane", "data"
+        )
 
         if os.path.exists(cls.dump_yaml_file):
-            logging.debug('removing existing yaml file {0} before running tests'.format(cls.dump_yaml_file))
+            logging.debug(
+                "removing existing yaml file {0} before running tests".format(
+                    cls.dump_yaml_file
+                )
+            )
             os.remove(cls.dump_yaml_file)
 
     def test_dump_yaml(self):
@@ -355,23 +407,29 @@ class TestArkaneSpecies(unittest.TestCase):
         # Load in newly created YAML file
         arkane_spc_old = job_list[0].arkane_species
         arkane_spc = ArkaneSpecies.__new__(ArkaneSpecies)
-        arkane_spc.load_yaml(path=os.path.join(self.dump_path, 'species', arkane_spc_old.label + '.yml'))
+        arkane_spc.load_yaml(
+            path=os.path.join(self.dump_path, "species", arkane_spc_old.label + ".yml")
+        )
 
         self.assertIsInstance(arkane_spc, ArkaneSpecies)  # checks make_object
         self.assertIsInstance(arkane_spc.molecular_weight, ScalarQuantity)
         self.assertIsInstance(arkane_spc.thermo, NASA)
-        self.assertNotEqual(arkane_spc.author, '')
-        self.assertEqual(arkane_spc.inchi, 'InChI=1S/C2H6/c1-2/h1-2H3')
-        self.assertEqual(arkane_spc.inchi_key, 'OTMSDBZUPAUEDD-UHFFFAOYSA-N')
-        self.assertEqual(arkane_spc.smiles, 'CC')
-        self.assertTrue('8 H u0 p0 c0 {2,S}' in arkane_spc.adjacency_list)
-        self.assertEqual(arkane_spc.label, 'C2H6')
-        self.assertEqual(arkane_spc.frequency_scale_factor, 0.99 * 1.014)  # checks float conversion
+        self.assertNotEqual(arkane_spc.author, "")
+        self.assertEqual(arkane_spc.inchi, "InChI=1S/C2H6/c1-2/h1-2H3")
+        self.assertEqual(arkane_spc.inchi_key, "OTMSDBZUPAUEDD-UHFFFAOYSA-N")
+        self.assertEqual(arkane_spc.smiles, "CC")
+        self.assertTrue("8 H u0 p0 c0 {2,S}" in arkane_spc.adjacency_list)
+        self.assertEqual(arkane_spc.label, "C2H6")
+        self.assertEqual(
+            arkane_spc.frequency_scale_factor, 0.99 * 1.014
+        )  # checks float conversion
         self.assertFalse(arkane_spc.use_bond_corrections)
-        self.assertAlmostEqual(arkane_spc.conformer.modes[2].frequencies.value_si[0], 830.38202, 4)  # HarmonicOsc.
+        self.assertAlmostEqual(
+            arkane_spc.conformer.modes[2].frequencies.value_si[0], 830.38202, 4
+        )  # HarmonicOsc.
         self.assertIsInstance(arkane_spc.energy_transfer_model, SingleExponentialDown)
         self.assertFalse(arkane_spc.is_ts)
-        self.assertEqual(arkane_spc.level_of_theory, LevelOfTheory('cbs-qb3'))
+        self.assertEqual(arkane_spc.level_of_theory, LevelOfTheory("cbs-qb3"))
         self.assertIsInstance(arkane_spc.thermo_data, ThermoData)
         self.assertTrue(arkane_spc.use_hindered_rotors)
         self.assertIsInstance(arkane_spc.chemkin_thermo_string, str)
@@ -393,35 +451,43 @@ H      -1.80315400   -1.20387400   -0.22872900"""
         """
         # Load in YAML file
         arkane_spc = ArkaneSpecies.__new__(ArkaneSpecies)
-        arkane_spc.load_yaml(path=os.path.join(self.load_path, 'C2H6.yml'))
+        arkane_spc.load_yaml(path=os.path.join(self.load_path, "C2H6.yml"))
 
         self.assertIsInstance(arkane_spc, ArkaneSpecies)  # checks make_object
         self.assertIsInstance(arkane_spc.molecular_weight, ScalarQuantity)
         self.assertIsInstance(arkane_spc.thermo, NASA)
-        self.assertNotEqual(arkane_spc.author, '')
-        self.assertEqual(arkane_spc.inchi, 'InChI=1S/C2H6/c1-2/h1-2H3')
-        self.assertEqual(arkane_spc.inchi_key, 'OTMSDBZUPAUEDD-UHFFFAOYSA-N')
-        self.assertEqual(arkane_spc.smiles, 'CC')
-        self.assertTrue('8 H u0 p0 c0 {2,S}' in arkane_spc.adjacency_list)
-        self.assertEqual(arkane_spc.label, 'C2H6')
-        self.assertEqual(arkane_spc.frequency_scale_factor, 0.99)  # checks float conversion
+        self.assertNotEqual(arkane_spc.author, "")
+        self.assertEqual(arkane_spc.inchi, "InChI=1S/C2H6/c1-2/h1-2H3")
+        self.assertEqual(arkane_spc.inchi_key, "OTMSDBZUPAUEDD-UHFFFAOYSA-N")
+        self.assertEqual(arkane_spc.smiles, "CC")
+        self.assertTrue("8 H u0 p0 c0 {2,S}" in arkane_spc.adjacency_list)
+        self.assertEqual(arkane_spc.label, "C2H6")
+        self.assertEqual(
+            arkane_spc.frequency_scale_factor, 0.99
+        )  # checks float conversion
         self.assertFalse(arkane_spc.use_bond_corrections)
-        self.assertAlmostEqual(arkane_spc.conformer.modes[2].frequencies.value_si[0], 818.91718, 4)  # HarmonicOsc.
+        self.assertAlmostEqual(
+            arkane_spc.conformer.modes[2].frequencies.value_si[0], 818.91718, 4
+        )  # HarmonicOsc.
         self.assertIsInstance(arkane_spc.energy_transfer_model, SingleExponentialDown)
         self.assertFalse(arkane_spc.is_ts)
         self.assertTrue(arkane_spc.use_hindered_rotors)
-        self.assertTrue('C 7.54e-14 1.193e-13 5.52e-14' in arkane_spc.xyz)
+        self.assertTrue("C 7.54e-14 1.193e-13 5.52e-14" in arkane_spc.xyz)
         self.assertIsInstance(arkane_spc.chemkin_thermo_string, str)
 
     def test_loading_different_versions_of_yaml(self):
         """Test loading a YAML file generated by RMG v 2.4.1 and by a more recent version"""
         arkane_spc_v_241 = ArkaneSpecies.__new__(ArkaneSpecies)
-        arkane_spc_v_241.load_yaml(path=os.path.join(self.data_path, 'vinoxy_v_2.4.1.yml'))
+        arkane_spc_v_241.load_yaml(
+            path=os.path.join(self.data_path, "vinoxy_v_2.4.1.yml")
+        )
         self.assertIsInstance(arkane_spc_v_241, ArkaneSpecies)  # checks make_object
         self.assertEqual(arkane_spc_v_241.conformer.spin_multiplicity, 2)
 
         arkane_current = ArkaneSpecies.__new__(ArkaneSpecies)
-        arkane_current.load_yaml(path=os.path.join(self.data_path, 'vinoxy_current.yml'))
+        arkane_current.load_yaml(
+            path=os.path.join(self.data_path, "vinoxy_current.yml")
+        )
         self.assertIsInstance(arkane_current, ArkaneSpecies)  # checks make_object
         self.assertEqual(arkane_current.conformer.spin_multiplicity, 2)
 
@@ -430,20 +496,26 @@ H      -1.80315400   -1.20387400   -0.22872900"""
         """
         A method that is run ONCE after all unit tests in this class.
         """
-        path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)),
-                            'examples', 'arkane', 'species')
-        cls.dump_path = os.path.join(path, 'C2H6')
-        cls.load_path = os.path.join(path, 'C2H6_from_yaml')
-        cls.extensions_to_delete = ['pdf', 'txt', 'inp', 'csv']
-        cls.files_to_delete = ['arkane.log', 'output.py']
-        cls.files_to_keep = ['C2H6.yml']
+        path = os.path.join(
+            os.path.dirname(os.path.dirname(rmgpy.__file__)),
+            "examples",
+            "arkane",
+            "species",
+        )
+        cls.dump_path = os.path.join(path, "C2H6")
+        cls.load_path = os.path.join(path, "C2H6_from_yaml")
+        cls.extensions_to_delete = ["pdf", "txt", "inp", "csv"]
+        cls.files_to_delete = ["arkane.log", "output.py"]
+        cls.files_to_keep = ["C2H6.yml"]
         for path in [cls.dump_path, cls.load_path]:
             for name in os.listdir(path):
                 item_path = os.path.join(path, name)
                 if os.path.isfile(item_path):
-                    extension = name.split('.')[-1]
-                    if name in cls.files_to_delete or \
-                            (extension in cls.extensions_to_delete and name not in cls.files_to_keep):
+                    extension = name.split(".")[-1]
+                    if name in cls.files_to_delete or (
+                        extension in cls.extensions_to_delete
+                        and name not in cls.files_to_keep
+                    ):
                         os.remove(item_path)
                 else:
                     # This is a sub-directory. remove.
@@ -457,49 +529,74 @@ class TestMomentOfInertia(unittest.TestCase):
 
     def test_get_mass(self):
         """Test that the correct mass/number/isotope is returned from get_element_mass"""
-        self.assertEqual(get_element_mass(1), (1.00782503224, 1))  # test input by integer
-        self.assertEqual(get_element_mass('Si'), (27.97692653465, 14))  # test string input and most common isotope
-        self.assertEqual(get_element_mass('SI'), (27.97692653465, 14))  # test string in all caps
-        self.assertEqual(get_element_mass('C', 13), (13.00335483507, 6))  # test specific isotope
-        self.assertEqual(get_element_mass('Bk'), (247.0703073, 97))  # test a two-element array (no isotope data)
+        self.assertEqual(
+            get_element_mass(1), (1.00782503224, 1)
+        )  # test input by integer
+        self.assertEqual(
+            get_element_mass("Si"), (27.97692653465, 14)
+        )  # test string input and most common isotope
+        self.assertEqual(
+            get_element_mass("SI"), (27.97692653465, 14)
+        )  # test string in all caps
+        self.assertEqual(
+            get_element_mass("C", 13), (13.00335483507, 6)
+        )  # test specific isotope
+        self.assertEqual(
+            get_element_mass("Bk"), (247.0703073, 97)
+        )  # test a two-element array (no isotope data)
 
     def test_get_center_of_mass(self):
         """Test attaining the center of mass"""
-        symbols = ['C', 'H', 'H', 'H', 'H']
-        coords = np.array([[0.0000000, 0.0000000, 0.0000000],
-                           [0.6269510, 0.6269510, 0.6269510],
-                           [-0.6269510, -0.6269510, 0.6269510],
-                           [-0.6269510, 0.6269510, -0.6269510],
-                           [0.6269510, -0.6269510, -0.6269510]], np.float64)
+        symbols = ["C", "H", "H", "H", "H"]
+        coords = np.array(
+            [
+                [0.0000000, 0.0000000, 0.0000000],
+                [0.6269510, 0.6269510, 0.6269510],
+                [-0.6269510, -0.6269510, 0.6269510],
+                [-0.6269510, 0.6269510, -0.6269510],
+                [0.6269510, -0.6269510, -0.6269510],
+            ],
+            np.float64,
+        )
         center_of_mass = get_center_of_mass(coords=coords, symbols=symbols)
         for cm_coord in center_of_mass:
             self.assertEqual(cm_coord, 0.0)
 
-        symbols = ['O', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H']
-        coords = np.array([[1.28706525, 0.52121353, 0.04219198],
-                           [0.39745682, -0.35265044, -0.63649234],
-                           [0.36441173, -1.68197093, 0.08682400],
-                           [-0.59818222, 0.10068325, -0.65235399],
-                           [0.74799641, -0.48357798, -1.66461710],
-                           [0.03647269, -1.54932006, 1.12314420],
-                           [-0.31340646, -2.38081353, -0.41122551],
-                           [1.36475837, -2.12581592, 0.12433596],
-                           [2.16336803, 0.09985803, 0.03295192]], np.float64)
+        symbols = ["O", "C", "C", "H", "H", "H", "H", "H", "H"]
+        coords = np.array(
+            [
+                [1.28706525, 0.52121353, 0.04219198],
+                [0.39745682, -0.35265044, -0.63649234],
+                [0.36441173, -1.68197093, 0.08682400],
+                [-0.59818222, 0.10068325, -0.65235399],
+                [0.74799641, -0.48357798, -1.66461710],
+                [0.03647269, -1.54932006, 1.12314420],
+                [-0.31340646, -2.38081353, -0.41122551],
+                [1.36475837, -2.12581592, 0.12433596],
+                [2.16336803, 0.09985803, 0.03295192],
+            ],
+            np.float64,
+        )
         center_of_mass = get_center_of_mass(coords=coords, symbols=symbols)
         self.assertAlmostEqual(center_of_mass[0], 0.7201, 3)
         self.assertAlmostEqual(center_of_mass[1], -0.4880, 3)
         self.assertAlmostEqual(center_of_mass[2], -0.1603, 3)
 
         numbers = [6, 6, 8, 1, 1, 1, 1, 1, 1]
-        coords = np.array([[1.1714680, -0.4048940, 0.0000000],
-                           [0.0000000, 0.5602500, 0.0000000],
-                           [-1.1945070, -0.2236470, 0.0000000],
-                           [-1.9428910, 0.3834580, 0.0000000],
-                           [2.1179810, 0.1394450, 0.0000000],
-                           [1.1311780, -1.0413680, 0.8846660],
-                           [1.1311780, -1.0413680, -0.8846660],
-                           [0.0448990, 1.2084390, 0.8852880],
-                           [0.0448990, 1.2084390, -0.8852880]], np.float64)
+        coords = np.array(
+            [
+                [1.1714680, -0.4048940, 0.0000000],
+                [0.0000000, 0.5602500, 0.0000000],
+                [-1.1945070, -0.2236470, 0.0000000],
+                [-1.9428910, 0.3834580, 0.0000000],
+                [2.1179810, 0.1394450, 0.0000000],
+                [1.1311780, -1.0413680, 0.8846660],
+                [1.1311780, -1.0413680, -0.8846660],
+                [0.0448990, 1.2084390, 0.8852880],
+                [0.0448990, 1.2084390, -0.8852880],
+            ],
+            np.float64,
+        )
         center_of_mass = get_center_of_mass(coords=coords, numbers=numbers)
         self.assertAlmostEqual(center_of_mass[0], -0.0540, 3)
         self.assertAlmostEqual(center_of_mass[1], -0.0184, 3)
@@ -507,49 +604,74 @@ class TestMomentOfInertia(unittest.TestCase):
 
     def test_get_moment_of_inertia_tensor(self):
         """Test calculating the moment of inertia tensor"""
-        symbols = ['O', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H']
-        coords = np.array([[1.28706525, 0.52121353, 0.04219198],
-                           [0.39745682, -0.35265044, -0.63649234],
-                           [0.36441173, -1.68197093, 0.08682400],
-                           [-0.59818222, 0.10068325, -0.65235399],
-                           [0.74799641, -0.48357798, -1.66461710],
-                           [0.03647269, -1.54932006, 1.12314420],
-                           [-0.31340646, -2.38081353, -0.41122551],
-                           [1.36475837, -2.12581592, 0.12433596],
-                           [2.16336803, 0.09985803, 0.03295192]], np.float64)
+        symbols = ["O", "C", "C", "H", "H", "H", "H", "H", "H"]
+        coords = np.array(
+            [
+                [1.28706525, 0.52121353, 0.04219198],
+                [0.39745682, -0.35265044, -0.63649234],
+                [0.36441173, -1.68197093, 0.08682400],
+                [-0.59818222, 0.10068325, -0.65235399],
+                [0.74799641, -0.48357798, -1.66461710],
+                [0.03647269, -1.54932006, 1.12314420],
+                [-0.31340646, -2.38081353, -0.41122551],
+                [1.36475837, -2.12581592, 0.12433596],
+                [2.16336803, 0.09985803, 0.03295192],
+            ],
+            np.float64,
+        )
         tensor = get_moment_of_inertia_tensor(coords=coords, symbols=symbols)
-        expected_tensor = [[50.24197604, -15.43600683, -3.07977736],
-                           [-15.43600683, 22.20416597, 2.5935549],
-                           [-3.07977736, 2.5935549, 55.49144794]]
+        expected_tensor = [
+            [50.24197604, -15.43600683, -3.07977736],
+            [-15.43600683, 22.20416597, 2.5935549],
+            [-3.07977736, 2.5935549, 55.49144794],
+        ]
         np.testing.assert_almost_equal(tensor, expected_tensor)
 
     def test_get_principal_moments_of_inertia(self):
         """Test calculating the principal moments of inertia"""
         numbers = [6, 6, 8, 1, 1, 1, 1, 1, 1]
-        coords = np.array([[1.235366, -0.257231, -0.106315],
-                           [0.083698, 0.554942, 0.046628],
-                           [-1.210594, -0.239505, -0.021674],
-                           [0.132571, 1.119728, 0.987719],
-                           [0.127795, 1.278999, -0.769346],
-                           [-1.272620, -0.962700, 0.798216],
-                           [-2.074974, 0.426198, 0.055846],
-                           [-1.275744, -0.785745, -0.965493],
-                           [1.241416, -0.911257, 0.593856]], np.float64)
-        principal_moments_of_inertia = get_principal_moments_of_inertia(coords=coords, numbers=numbers)[0]
+        coords = np.array(
+            [
+                [1.235366, -0.257231, -0.106315],
+                [0.083698, 0.554942, 0.046628],
+                [-1.210594, -0.239505, -0.021674],
+                [0.132571, 1.119728, 0.987719],
+                [0.127795, 1.278999, -0.769346],
+                [-1.272620, -0.962700, 0.798216],
+                [-2.074974, 0.426198, 0.055846],
+                [-1.275744, -0.785745, -0.965493],
+                [1.241416, -0.911257, 0.593856],
+            ],
+            np.float64,
+        )
+        principal_moments_of_inertia = get_principal_moments_of_inertia(
+            coords=coords, numbers=numbers
+        )[0]
         expected_principal_moments_of_inertia = [60.98026894, 53.83156297, 14.48858465]
-        for moment, expected_moment in zip(principal_moments_of_inertia, expected_principal_moments_of_inertia):
+        for moment, expected_moment in zip(
+            principal_moments_of_inertia, expected_principal_moments_of_inertia
+        ):
             self.assertAlmostEqual(moment, expected_moment)
 
-        symbols = ['N', 'O', 'O']  # test a linear molecule
-        coords = np.array([[0.000000, 0.000000, 1.106190],
-                           [0.000000, 0.000000, -0.072434],
-                           [0.000000, 0.000000, -1.191782]], np.float64)
+        symbols = ["N", "O", "O"]  # test a linear molecule
+        coords = np.array(
+            [
+                [0.000000, 0.000000, 1.106190],
+                [0.000000, 0.000000, -0.072434],
+                [0.000000, 0.000000, -1.191782],
+            ],
+            np.float64,
+        )
         with self.assertRaises(InputError):
             get_principal_moments_of_inertia(coords=coords, numbers=numbers)
-        principal_moments_of_inertia, axes = get_principal_moments_of_inertia(coords=coords, symbols=symbols)
+        principal_moments_of_inertia, axes = get_principal_moments_of_inertia(
+            coords=coords, symbols=symbols
+        )
         expected_principal_moments_of_inertia = [39.4505153, 39.4505153, 0.0]
         expected_axes = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-        for moment, expected_moment in zip(principal_moments_of_inertia, expected_principal_moments_of_inertia):
+        for moment, expected_moment in zip(
+            principal_moments_of_inertia, expected_principal_moments_of_inertia
+        ):
             self.assertAlmostEqual(moment, expected_moment)
         for axis, expected_axis in zip(axes, expected_axes):
             for entry, expected_entry in zip(axis, expected_axis):
@@ -560,13 +682,14 @@ class TestMomentOfInertia(unittest.TestCase):
     def test_convert_imaginary_freq_to_negative_float(self):
         self.assertEqual(convert_imaginary_freq_to_negative_float(1), 1)
         self.assertEqual(convert_imaginary_freq_to_negative_float(-5.2), -5.2)
-        self.assertEqual(convert_imaginary_freq_to_negative_float('-5.2'), -5.2)
-        self.assertEqual(convert_imaginary_freq_to_negative_float('5.2'), 5.2)
-        self.assertEqual(convert_imaginary_freq_to_negative_float('5.2i'), -5.2)
-        self.assertEqual(convert_imaginary_freq_to_negative_float('635.8i'), -635.8)
+        self.assertEqual(convert_imaginary_freq_to_negative_float("-5.2"), -5.2)
+        self.assertEqual(convert_imaginary_freq_to_negative_float("5.2"), 5.2)
+        self.assertEqual(convert_imaginary_freq_to_negative_float("5.2i"), -5.2)
+        self.assertEqual(convert_imaginary_freq_to_negative_float("635.8i"), -635.8)
+
 
 ################################################################################
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

@@ -38,17 +38,17 @@ from rmgpy.chemkin import load_chemkin_file
 
 ###################################################
 
-class TestOutput(unittest.TestCase):
 
+class TestOutput(unittest.TestCase):
     def test_save_output_html(self):
         """
         This example is to test if an HTML file can be generated
         for the provided chemkin model.
         """
-        folder = os.path.join(os.path.dirname(__file__), 'test_data/saveOutputHTML/')
+        folder = os.path.join(os.path.dirname(__file__), "test_data/saveOutputHTML/")
 
-        chemkin_path = os.path.join(folder, 'eg6', 'chem_annotated.inp')
-        dictionary_path = os.path.join(folder, 'eg6', 'species_dictionary.txt')
+        chemkin_path = os.path.join(folder, "eg6", "chem_annotated.inp")
+        dictionary_path = os.path.join(folder, "eg6", "species_dictionary.txt")
 
         # load_chemkin_file
         species, reactions = load_chemkin_file(chemkin_path, dictionary_path)
@@ -57,9 +57,9 @@ class TestOutput(unittest.TestCase):
         core = ReactionModel(species, reactions)
         cerm = CoreEdgeReactionModel(core)
 
-        out = os.path.join(folder, 'output.html')
+        out = os.path.join(folder, "output.html")
         save_output_html(out, cerm)
 
         self.assertTrue(os.path.isfile(out))
         os.remove(out)
-        shutil.rmtree(os.path.join(folder, 'species'))
+        shutil.rmtree(os.path.join(folder, "species"))

@@ -2,77 +2,68 @@
 # encoding: utf-8
 
 name = "longDistanceInteraction_noncyclic"
-shortDesc = u""
-longDesc = u""" 
+shortDesc = ""
+longDesc = """ 
 
 """
 
 entry(
-	index = -1,
-	label = "R",
-	group = 
-"""
+    index=-1,
+    label="R",
+    group="""
 1 *1 R u0
 """,
-	solute = None,
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=None,
+    shortDesc="""""",
+    longDesc="""
 """,
 )
 
 entry(
-	index = 1,
-	label = "int14_gauche",
-	group = 
-"""
+    index=1,
+    label="int14_gauche",
+    group="""
 1 *1 [Cs,O2s,Cd,S2s] u0 {2,S}
 2 *2 Cs u0 {1,S}
 """,
-	solute = None,
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=None,
+    shortDesc="""""",
+    longDesc="""
 """,
 )
 
 entry(
-	index = 2,
-	label = "CsCs",
-	group = 
-"""
+    index=2,
+    label="CsCs",
+    group="""
 1 *1 Cs u0 {2,S}
 2 *2 Cs u0 {1,S}
 """,
-	solute = None,
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=None,
+    shortDesc="""""",
+    longDesc="""
 """,
 )
 
 entry(
-	index = 3,
-	label = "CsCs-P",
-	group = 
-"""
+    index=3,
+    label="CsCs-P",
+    group="""
 1 *1 Cs                         u0 {2,S} {3,S} {4,S} {5,S}
 2 *2 Cs                         u0 {1,S}
 3   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {1,S}
 4   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {1,S}
 5   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {1,S}
 """,
-
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 3049
 B: 2937
@@ -83,27 +74,24 @@ A: 3240
 )
 
 entry(
-	index = 4,
-	label = "CsCs-S",
-	group = 
-"""
+    index=4,
+    label="CsCs-S",
+    group="""
 1 *1 Cs                         u0 {2,S} {3,S} {4,S} {5,S}
 2 *2 Cs                         u0 {1,S}
 3   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {1,S}
 4   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {1,S}
 5   Cs u0 {1,S}
 """,
-
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 2073
 B: 2023
@@ -114,10 +102,9 @@ A: 2169
 )
 
 entry(
-	index = 5,
-	label = "CsCs-SS",
-	group = 
-"""
+    index=5,
+    label="CsCs-SS",
+    group="""
 1 *1 Cs                         u0 {2,S} {3,S} {4,S} {5,S}
 2 *2 Cs                         u0 {1,S} {6,S} {7,S} {8,S}
 3   Cs                         u0 {1,S}
@@ -127,17 +114,15 @@ entry(
 7   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {2,S}
 8   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {2,S}
 """,
-
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 1351
 B: 1338
@@ -148,10 +133,9 @@ A: 1410
 )
 
 entry(
-	index = 6,
-	label = "CsCs-ST",
-	group = 
-"""
+    index=6,
+    label="CsCs-ST",
+    group="""
 1 *1 Cs                         u0 {2,S} {3,S} {4,S} {5,S}
 2 *2 Cs                         u0 {1,S} {6,S} {7,S} {8,S}
 3   Cs                         u0 {1,S}
@@ -161,17 +145,15 @@ entry(
 7   Cs                         u0 {2,S}
 8   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {2,S}
 """,
-
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 262
 B: 260
@@ -182,10 +164,9 @@ A: 268
 )
 
 entry(
-	index = 7,
-	label = "CsCs-SQ",
-	group = 
-"""
+    index=7,
+    label="CsCs-SQ",
+    group="""
 1 *1 Cs                         u0 {2,S} {3,S} {4,S} {5,S}
 2 *2 Cs                         u0 {1,S} {6,S} {7,S} {8,S}
 3   Cs                         u0 {1,S}
@@ -195,17 +176,15 @@ entry(
 7   Cs                         u0 {2,S}
 8   Cs                         u0 {2,S}
 """,
-
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 51
 B: 51
@@ -216,27 +195,24 @@ A: 51
 )
 
 entry(
-	index = 8,
-	label = "CsCs-T",
-	group = 
-"""
+    index=8,
+    label="CsCs-T",
+    group="""
 1 *1 Cs                         u0 {2,S} {3,S} {4,S} {5,S}
 2 *2 Cs                         u0 {1,S}
 3   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {1,S}
 4   Cs u0 {1,S}
 5   Cs u0 {1,S}
 """,
-
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 526
 B: 514
@@ -247,10 +223,9 @@ A: 567
 )
 
 entry(
-	index = 9,
-	label = "CsCs-TT",
-	group = 
-"""
+    index=9,
+    label="CsCs-TT",
+    group="""
 1 *1 Cs                         u0 {2,S} {3,S} {4,S} {5,S}
 2 *2 Cs                         u0 {1,S} {6,S} {7,S} {8,S}
 3   Cs                         u0 {1,S}
@@ -260,17 +235,15 @@ entry(
 7   Cs                         u0 {2,S}
 8   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {2,S}
 """,
-
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 27
 B: 27
@@ -281,10 +254,9 @@ A: 27
 )
 
 entry(
-	index = 10,
-	label = "CsCs-T(TTP)",
-	group = 
-"""
+    index=10,
+    label="CsCs-T(TTP)",
+    group="""
 1 *1 Cs                         u0 {2,S} {3,S} {4,S} {5,S}
 2 *2 Cs                         u0 {1,S} {6,S} {7,S} {8,S}
 3   Cs                         u0 {1,S} {9,S} {10,S} {11,S}
@@ -300,17 +272,15 @@ entry(
 13   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {4,S}
 14   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {4,S}
 """,
-
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 4
 B: 4
@@ -321,10 +291,9 @@ A: 4
 )
 
 entry(
-	index = 11,
-	label = "CsCs-T(TTS)",
-	group = 
-"""
+    index=11,
+    label="CsCs-T(TTS)",
+    group="""
 1 *1 Cs                         u0 {2,S} {3,S} {4,S} {5,S}
 2 *2 Cs                         u0 {1,S} {6,S} {7,S} {8,S}
 3   Cs                         u0 {1,S} {9,S} {10,S} {11,S}
@@ -340,17 +309,15 @@ entry(
 13   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {4,S}
 14   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {4,S}
 """,
-
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 2
 B: 2
@@ -361,10 +328,9 @@ A: 2
 )
 
 entry(
-	index = 12,
-	label = "CsCs-TQ",
-	group = 
-"""
+    index=12,
+    label="CsCs-TQ",
+    group="""
 1 *1 Cs                         u0 {2,S} {3,S} {4,S} {5,S}
 2 *2 Cs                         u0 {1,S} {6,S} {7,S} {8,S}
 3   Cs                         u0 {1,S}
@@ -374,17 +340,15 @@ entry(
 7   Cs                         u0 {2,S}
 8   Cs                         u0 {2,S}
 """,
-
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 13
 B: 13
@@ -395,27 +359,24 @@ A: 13
 )
 
 entry(
-	index = 13,
-	label = "CsCs-Q",
-	group = 
-"""
+    index=13,
+    label="CsCs-Q",
+    group="""
 1 *1 Cs                         u0 {2,S} {3,S} {4,S} {5,S}
 2 *2 Cs                         u0 {1,S}
 3   Cs u0 {1,S}
 4   Cs u0 {1,S}
 5   Cs u0 {1,S}
 """,
-
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 75
 B: 75
@@ -426,10 +387,9 @@ A: 75
 )
 
 entry(
-	index = 14,
-	label = "CsCs-QQ",
-	group = 
-"""
+    index=14,
+    label="CsCs-QQ",
+    group="""
 1 *1 Cs                         u0 {2,S} {3,S} {4,S} {5,S}
 2 *2 Cs                         u0 {1,S} {6,S} {7,S} {8,S}
 3   Cs                         u0 {1,S}
@@ -439,17 +399,15 @@ entry(
 7   Cs                         u0 {2,S}
 8   Cs                         u0 {2,S}
 """,
-
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 2
 B: 2
@@ -460,39 +418,35 @@ A: 2
 )
 
 entry(
-	index = 15,
-	label = "OsCs",
-	group = 
-"""
+    index=15,
+    label="OsCs",
+    group="""
 1 *1 O2s u0 {2,S}
 2 *2 Cs u0 {1,S}
 """,
-	solute = None,
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=None,
+    shortDesc="""""",
+    longDesc="""
 """,
 )
 
 entry(
-	index = 16,
-	label = "OsCs-P",
-	group = 
-"""
+    index=16,
+    label="OsCs-P",
+    group="""
 1 *1 O2s                         u0 {2,S} {3,S}
 2 *2 Cs                         u0 {1,S}
 3   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {1,S}
 """,
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 1592
 B: 1556
@@ -503,24 +457,22 @@ A: 1622
 )
 
 entry(
-	index = 17,
-	label = "OsCs-S",
-	group = 
-"""
+    index=17,
+    label="OsCs-S",
+    group="""
 1 *1 O2s                         u0 {2,S} {3,S}
 2 *2 Cs                         u0 {1,S}
 3    Cs                         u0 {1,S}
 """,
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 10
 B: 10
@@ -531,10 +483,9 @@ A: 10
 )
 
 entry(
-	index = 18,
-	label = "OsCs-SP",
-	group = 
-"""
+    index=18,
+    label="OsCs-SP",
+    group="""
 1 *1 O2s                         u0 {2,S} {3,S}
 2 *2 Cs                         u0 {1,S} {4,S} {5,S} {6,S}
 3   Cs                         u0 {1,S}
@@ -542,16 +493,15 @@ entry(
 5   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {2,S}
 6   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {2,S}
 """,
-	solute = SoluteData(
-		S = 0.05053,
-		B = -0.03293,
-		E = 0.00000,
-		L = -0.20990,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.05053,
+        B=-0.03293,
+        E=0.00000,
+        L=-0.20990,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 184
 B: 169
@@ -562,10 +512,9 @@ A: 204
 )
 
 entry(
-	index = 19,
-	label = "OsCs-SS",
-	group = 
-"""
+    index=19,
+    label="OsCs-SS",
+    group="""
 1 *1 O2s                         u0 {2,S} {3,S}
 2 *2 Cs                         u0 {1,S} {4,S} {5,S} {6,S}
 3   Cs                         u0 {1,S}
@@ -573,16 +522,15 @@ entry(
 5   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {2,S}
 6   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {2,S}
 """,
-	solute = SoluteData(
-		S = 0.01821,
-		B = -0.05133,
-		E = 0.00000,
-		L = -0.26050,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.01821,
+        B=-0.05133,
+        E=0.00000,
+        L=-0.26050,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 231
 B: 212
@@ -593,10 +541,9 @@ A: 251
 )
 
 entry(
-	index = 20,
-	label = "OsCs-ST",
-	group = 
-"""
+    index=20,
+    label="OsCs-ST",
+    group="""
 1 *1 O2s                         u0 {2,S} {3,S}
 2 *2 Cs                         u0 {1,S} {4,S} {5,S} {6,S}
 3   Cs                         u0 {1,S}
@@ -604,16 +551,15 @@ entry(
 5   Cs                         u0 {2,S}
 6   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {2,S}
 """,
-	solute = SoluteData(
-		S = 0.03351,
-		B = 0.02734,
-		E = 0.00000,
-		L = -0.21073,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.03351,
+        B=0.02734,
+        E=0.00000,
+        L=-0.21073,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 34
 B: 23
@@ -624,10 +570,9 @@ A: 39
 )
 
 entry(
-	index = 21,
-	label = "OsCs-SQ",
-	group = 
-"""
+    index=21,
+    label="OsCs-SQ",
+    group="""
 1 *1 O2s                         u0 {2,S} {3,S}
 2 *2 Cs                         u0 {1,S} {4,S} {5,S} {6,S}
 3   Cs                         u0 {1,S}
@@ -635,16 +580,15 @@ entry(
 5   Cs                         u0 {2,S}
 6   Cs                         u0 {2,S}
 """,
-	solute = SoluteData(
-		S = 0.03210,
-		B = 0.04690,
-		E = 0.00000,
-		L = -0.09839,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.03210,
+        B=0.04690,
+        E=0.00000,
+        L=-0.09839,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 10
 B: 10
@@ -655,41 +599,37 @@ A: 16
 )
 
 entry(
-	index = 22,
-	label = "CdCs",
-	group = 
-"""
+    index=22,
+    label="CdCs",
+    group="""
 1 *1 Cd u0 {2,D} {3,S}
 2   Cd u0 {1,D}
 3 *2 Cs u0 {1,S}
 """,
-	solute = None,
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=None,
+    shortDesc="""""",
+    longDesc="""
 """,
 )
 
 entry(
-	index = 23,
-	label = "CdCs-P",
-	group = 
-"""
+    index=23,
+    label="CdCs-P",
+    group="""
 1 *1 Cd u0 {2,D} {3,S} {4,S}
 2   Cd u0 {1,D}
 3   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {1,S}
 4 *2 Cs u0 {1,S}
 """,
-	solute = SoluteData(
-		S = 0.03660,
-		B = 0.03194,
-		E = 0.00896,
-		L = 0.25534,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.03660,
+        B=0.03194,
+        E=0.00896,
+        L=0.25534,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 496
 B: 489
@@ -700,25 +640,23 @@ A: 513
 )
 
 entry(
-	index = 24,
-	label = "CdCs-S",
-	group = 
-"""
+    index=24,
+    label="CdCs-S",
+    group="""
 1 *1 Cd u0 {2,D} {3,S} {4,S}
 2   Cd u0 {1,D}
 3   Cs u0 {1,S}
 4 *2 Cs u0 {1,S}
 """,
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 0
 B: 0
@@ -729,10 +667,9 @@ A: 0
 )
 
 entry(
-	index = 25,
-	label = "CdCs-SP",
-	group = 
-"""
+    index=25,
+    label="CdCs-SP",
+    group="""
 1 *1 Cd u0 {2,D} {3,S} {4,S}
 2   Cd u0 {1,D}
 3   Cs u0 {1,S}
@@ -741,16 +678,15 @@ entry(
 6   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {4,S}
 7   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {4,S}
 """,
-	solute = SoluteData(
-		S = -0.06923,
-		B = 0.00629,
-		E = 0.03339,
-		L = 0.20427,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=-0.06923,
+        B=0.00629,
+        E=0.03339,
+        L=0.20427,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 151
 B: 145
@@ -761,10 +697,9 @@ A: 155
 )
 
 entry(
-	index = 26,
-	label = "CdCs-SS",
-	group = 
-"""
+    index=26,
+    label="CdCs-SS",
+    group="""
 1 *1 Cd u0 {2,D} {3,S} {4,S}
 2   Cd u0 {1,D}
 3   Cs u0 {1,S}
@@ -773,16 +708,15 @@ entry(
 6   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {4,S}
 7   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {4,S}
 """,
-	solute = SoluteData(
-		S = -0.02028,
-		B = 0.00012,
-		E = 0.00999,
-		L = 0.22238,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=-0.02028,
+        B=0.00012,
+        E=0.00999,
+        L=0.22238,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 46
 B: 46
@@ -793,10 +727,9 @@ A: 46
 )
 
 entry(
-	index = 27,
-	label = "CdCs-ST",
-	group = 
-"""
+    index=27,
+    label="CdCs-ST",
+    group="""
 1 *1 Cd u0 {2,D} {3,S} {4,S}
 2   Cd u0 {1,D}
 3   Cs u0 {1,S}
@@ -805,16 +738,15 @@ entry(
 6   Cs                         u0 {4,S}
 7   [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {4,S}
 """,
-	solute = SoluteData(
-		S = -0.02097,
-		B = -0.00294,
-		E = 0.01043,
-		L = 0.08786,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=-0.02097,
+        B=-0.00294,
+        E=0.01043,
+        L=0.08786,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 7
 B: 7
@@ -825,10 +757,9 @@ A: 7
 )
 
 entry(
-	index = 28,
-	label = "CdCs-SQ",
-	group = 
-"""
+    index=28,
+    label="CdCs-SQ",
+    group="""
 1 *1 Cd u0 {2,D} {3,S} {4,S}
 2   Cd u0 {1,D}
 3   Cs u0 {1,S}
@@ -837,16 +768,15 @@ entry(
 6   Cs                         u0 {4,S}
 7   Cs                         u0 {4,S}
 """,
-	solute = SoluteData(
-		S = -0.00597,
-		B = 0.00942,
-		E = 0.01083,
-		L = 0.05317,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=-0.00597,
+        B=0.00942,
+        E=0.01083,
+        L=0.05317,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 1
 B: 1
@@ -857,10 +787,9 @@ A: 1
 )
 
 entry(
-	index = 29,
-	label = "int15",
-	group = 
-"""
+    index=29,
+    label="int15",
+    group="""
 1 *1 Cs u0 {2,S} {4,S} {5,S}
 2    [Cs,O2s,S2s] u0 {1,S} {3,S}
 3 *2 Cs u0 {2,S} {6,S} {7,S} {8,S}
@@ -870,18 +799,16 @@ entry(
 7    Cs u0 {3,S}
 8    Cs u0 {3,S}
 """,
-	solute = None,
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=None,
+    shortDesc="""""",
+    longDesc="""
 """,
 )
 
 entry(
-	index = 30,
-	label = "CsCsCs",
-	group = 
-"""
+    index=30,
+    label="CsCsCs",
+    group="""
 1 *1 Cs u0 {2,S} {4,S} {5,S}
 2    Cs u0 {1,S} {3,S}
 3 *2 Cs u0 {2,S} {6,S} {7,S} {8,S}
@@ -891,18 +818,16 @@ entry(
 7    Cs u0 {3,S}
 8    Cs u0 {3,S}
 """,
-	solute = None,
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=None,
+    shortDesc="""""",
+    longDesc="""
 """,
 )
 
 entry(
-	index = 31,
-	label = "CsCsCs-TQ",
-	group = 
-"""
+    index=31,
+    label="CsCsCs-TQ",
+    group="""
 1 *1 Cs u0 {2,S} {4,S} {5,S} {9,S}
 2    Cs u0 {1,S} {3,S}
 3 *2 Cs u0 {2,S} {6,S} {7,S} {8,S}
@@ -913,16 +838,15 @@ entry(
 8    Cs u0 {3,S}
 9    [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {1,S}
 """,
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 17
 B: 17
@@ -933,10 +857,9 @@ A: 17
 )
 
 entry(
-	index = 32,
-	label = "CsCsCs-QQ",
-	group = 
-"""
+    index=32,
+    label="CsCsCs-QQ",
+    group="""
 1 *1 Cs u0 {2,S} {4,S} {5,S} {6,S}
 2    Cs u0 {1,S} {3,S}
 3 *2 Cs u0 {2,S} {7,S} {8,S} {9,S}
@@ -947,16 +870,15 @@ entry(
 8    Cs u0 {3,S}
 9    Cs u0 {3,S}
 """,
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 4
 B: 4
@@ -967,10 +889,9 @@ A: 4
 )
 
 entry(
-	index = 33,
-	label = "CsOsCs",
-	group = 
-"""
+    index=33,
+    label="CsOsCs",
+    group="""
 1 *1 Cs u0 {2,S} {4,S} {5,S}
 2    O2s u0 {1,S} {3,S}
 3 *2 Cs u0 {2,S} {6,S} {7,S} {8,S}
@@ -980,18 +901,16 @@ entry(
 7    Cs u0 {3,S}
 8    Cs u0 {3,S}
 """,
-	solute = None,
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=None,
+    shortDesc="""""",
+    longDesc="""
 """,
 )
 
 entry(
-	index = 34,
-	label = "CsOsCs-TQ",
-	group = 
-"""
+    index=34,
+    label="CsOsCs-TQ",
+    group="""
 1 *1 Cs u0 {2,S} {4,S} {5,S} {9,S}
 2    O2s u0 {1,S} {3,S}
 3 *2 Cs u0 {2,S} {6,S} {7,S} {8,S}
@@ -1002,16 +921,15 @@ entry(
 8    Cs u0 {3,S}
 9    [Cd,Cdd,Ct,Cb,Cbf,O2s,CO,H] u0 {1,S}
 """,
-	solute = SoluteData(
-		S = -0.00592,
-		B = -0.00434,
-		E = -0.04000,
-		L = -0.05596,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=-0.00592,
+        B=-0.00434,
+        E=-0.04000,
+        L=-0.05596,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 1
 B: 1
@@ -1022,10 +940,9 @@ A: 1
 )
 
 entry(
-	index = 35,
-	label = "CsOsCs-QQ",
-	group = 
-"""
+    index=35,
+    label="CsOsCs-QQ",
+    group="""
 1 *1 Cs u0 {2,S} {4,S} {5,S} {6,S}
 2    O2s u0 {1,S} {3,S}
 3 *2 Cs u0 {2,S} {7,S} {8,S} {9,S}
@@ -1036,16 +953,15 @@ entry(
 8    Cs u0 {3,S}
 9    Cs u0 {3,S}
 """,
-	solute = SoluteData(
-		S = 0.00000,
-		B = 0.00000,
-		E = 0.00000,
-		L = 0.00000,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00000,
+        B=0.00000,
+        E=0.00000,
+        L=0.00000,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 1
 B: 1
@@ -1056,10 +972,9 @@ A: 2
 )
 
 entry(
-	index = 36,
-	label = "CsSsCs",
-	group = 
-"""
+    index=36,
+    label="CsSsCs",
+    group="""
 1 *1 Cs u0 {2,S} {4,S} {5,S}
 2    S2s u0 {1,S} {3,S}
 3 *2 Cs u0 {2,S} {6,S} {7,S} {8,S}
@@ -1069,18 +984,16 @@ entry(
 7    Cs u0 {3,S}
 8    Cs u0 {3,S}
 """,
-	solute = None,
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=None,
+    shortDesc="""""",
+    longDesc="""
 """,
 )
 
 entry(
-	index = 37,
-	label = "CsSsCs-QQ",
-	group = 
-"""
+    index=37,
+    label="CsSsCs-QQ",
+    group="""
 1 *1 Cs u0 {2,S} {4,S} {5,S} {6,S}
 2    S2s u0 {1,S} {3,S}
 3 *2 Cs u0 {2,S} {7,S} {8,S} {9,S}
@@ -1091,16 +1004,15 @@ entry(
 8    Cs u0 {3,S}
 9    Cs u0 {3,S}
 """,
-	solute = SoluteData(
-		S = 0.01584,
-		B = 0.01615,
-		E = 0.00654,
-		L = -0.01076,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.01584,
+        B=0.01615,
+        E=0.00654,
+        L=-0.01076,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 1
 B: 1
@@ -1111,7 +1023,7 @@ A: 1
 )
 
 tree(
-"""
+    """
 L1: R
 	L2: int14_gauche
 		L3: CsCs

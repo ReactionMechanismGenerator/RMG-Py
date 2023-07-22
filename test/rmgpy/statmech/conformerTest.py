@@ -36,8 +36,14 @@ import unittest
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.statmech import Conformer, HarmonicOscillator, HinderedRotor, \
-    IdealGasTranslation, LinearRotor, NonlinearRotor
+from rmgpy.statmech import (
+    Conformer,
+    HarmonicOscillator,
+    HinderedRotor,
+    IdealGasTranslation,
+    LinearRotor,
+    NonlinearRotor,
+)
 
 ################################################################################
 
@@ -55,9 +61,28 @@ class TestConformer(unittest.TestCase):
             E0=(0.0, "kJ/mol"),
             modes=[
                 IdealGasTranslation(mass=(28.03, "amu")),
-                NonlinearRotor(inertia=([3.41526, 16.6498, 20.065], "amu*angstrom^2"), symmetry=4),
-                HarmonicOscillator(frequencies=([828.397, 970.652, 977.223, 1052.93, 1233.55, 1367.56, 1465.09,
-                                                 1672.25, 3098.46, 3111.7, 3165.79, 3193.54], "cm^-1")),
+                NonlinearRotor(
+                    inertia=([3.41526, 16.6498, 20.065], "amu*angstrom^2"), symmetry=4
+                ),
+                HarmonicOscillator(
+                    frequencies=(
+                        [
+                            828.397,
+                            970.652,
+                            977.223,
+                            1052.93,
+                            1233.55,
+                            1367.56,
+                            1465.09,
+                            1672.25,
+                            3098.46,
+                            3111.7,
+                            3165.79,
+                            3193.54,
+                        ],
+                        "cm^-1",
+                    )
+                ),
             ],
             spin_multiplicity=1,
             optical_isomers=1,
@@ -74,29 +99,61 @@ class TestConformer(unittest.TestCase):
         )
 
         # The following data is for ethane at the CBS-QB3 level
-        self.coordinates = np.array([
-            [0.0000,  0.0000,  0.0000],
-            [-0.0000, -0.0000,  1.0936],
-            [1.0430, -0.0000, -0.3288],
-            [-0.4484,  0.9417, -0.3288],
-            [-0.7609, -1.2051, -0.5580],
-            [-0.7609, -1.2051, -1.6516],
-            [-0.3125, -2.1468, -0.2292],
-            [-1.8039, -1.2051, -0.2293],
-        ])
+        self.coordinates = np.array(
+            [
+                [0.0000, 0.0000, 0.0000],
+                [-0.0000, -0.0000, 1.0936],
+                [1.0430, -0.0000, -0.3288],
+                [-0.4484, 0.9417, -0.3288],
+                [-0.7609, -1.2051, -0.5580],
+                [-0.7609, -1.2051, -1.6516],
+                [-0.3125, -2.1468, -0.2292],
+                [-1.8039, -1.2051, -0.2293],
+            ]
+        )
         self.number = np.array([6, 1, 1, 1, 6, 1, 1, 1])
-        self.mass = np.array([12, 1.007825, 1.007825, 1.007825, 12, 1.007825, 1.007825, 1.007825])
+        self.mass = np.array(
+            [12, 1.007825, 1.007825, 1.007825, 12, 1.007825, 1.007825, 1.007825]
+        )
         self.E0 = -93.5097
         self.conformer = Conformer(
             E0=(self.E0, "kJ/mol"),
             modes=[
                 IdealGasTranslation(mass=(30.0469, "amu")),
-                NonlinearRotor(inertia=([6.27071, 25.3832, 25.3833], "amu*angstrom^2"), symmetry=6),
-                HarmonicOscillator(frequencies=([818.917, 819.479, 987.099, 1206.76, 1207.05, 1396, 1411.35, 1489.73,
-                                                 1489.95, 1492.49, 1492.66, 2995.36, 2996.06, 3040.77, 3041, 3065.86,
-                                                 3066.02], "cm^-1")),
-                HinderedRotor(inertia=(1.56768, "amu*angstrom^2"), symmetry=3,
-                              barrier=(2.69401, "kcal/mol"), quantum=False, semiclassical=False),
+                NonlinearRotor(
+                    inertia=([6.27071, 25.3832, 25.3833], "amu*angstrom^2"), symmetry=6
+                ),
+                HarmonicOscillator(
+                    frequencies=(
+                        [
+                            818.917,
+                            819.479,
+                            987.099,
+                            1206.76,
+                            1207.05,
+                            1396,
+                            1411.35,
+                            1489.73,
+                            1489.95,
+                            1492.49,
+                            1492.66,
+                            2995.36,
+                            2996.06,
+                            3040.77,
+                            3041,
+                            3065.86,
+                            3066.02,
+                        ],
+                        "cm^-1",
+                    )
+                ),
+                HinderedRotor(
+                    inertia=(1.56768, "amu*angstrom^2"),
+                    symmetry=3,
+                    barrier=(2.69401, "kcal/mol"),
+                    quantum=False,
+                    semiclassical=False,
+                ),
             ],
             spin_multiplicity=1,
             optical_isomers=1,
@@ -110,7 +167,9 @@ class TestConformer(unittest.TestCase):
         Test the StatMech.get_partition_function() method for ethylene.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        q_exp_list = np.array([4.05311e+09, 4.19728e+10, 2.82309e+12, 7.51135e+13, 1.16538e+15])
+        q_exp_list = np.array(
+            [4.05311e09, 4.19728e10, 2.82309e12, 7.51135e13, 1.16538e15]
+        )
         for temperature, q_exp in zip(t_list, q_exp_list):
             q_act = self.ethylene.get_partition_function(temperature)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
@@ -120,7 +179,9 @@ class TestConformer(unittest.TestCase):
         Test the StatMech.get_heat_capacity() method for ethylene.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = np.array([5.11186, 7.40447, 11.1659, 13.1221, 14.1617]) * constants.R
+        cv_exp_list = (
+            np.array([5.11186, 7.40447, 11.1659, 13.1221, 14.1617]) * constants.R
+        )
         for temperature, cv_exp in zip(t_list, cv_exp_list):
             cv_act = self.ethylene.get_heat_capacity(temperature)
             self.assertAlmostEqual(cv_exp, cv_act, 3)
@@ -130,7 +191,11 @@ class TestConformer(unittest.TestCase):
         Test the StatMech.get_enthalpy() method for ethylene.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = np.array([4.23129, 5.04826, 7.27337, 8.93167, 10.1223]) * constants.R * t_list
+        h_exp_list = (
+            np.array([4.23129, 5.04826, 7.27337, 8.93167, 10.1223])
+            * constants.R
+            * t_list
+        )
         for temperature, h_exp in zip(t_list, h_exp_list):
             h_act = self.ethylene.get_enthalpy(temperature)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
@@ -140,7 +205,9 @@ class TestConformer(unittest.TestCase):
         Test the StatMech.get_entropy() method for ethylene.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = np.array([26.3540, 29.5085, 35.9422, 40.8817, 44.8142]) * constants.R
+        s_exp_list = (
+            np.array([26.3540, 29.5085, 35.9422, 40.8817, 44.8142]) * constants.R
+        )
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.ethylene.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, 3)
@@ -153,8 +220,10 @@ class TestConformer(unittest.TestCase):
         sum_states = self.ethylene.get_sum_of_states(e_list)
         dens_states = self.ethylene.get_density_of_states(e_list)
         for n in range(10, len(e_list)):
-            self.assertTrue(0.8 < np.sum(dens_states[0:n + 1]) / sum_states[n] < 1.25,
-                             '{0} != {1}'.format(np.sum(dens_states[0:n + 1]), sum_states[n]))
+            self.assertTrue(
+                0.8 < np.sum(dens_states[0 : n + 1]) / sum_states[n] < 1.25,
+                "{0} != {1}".format(np.sum(dens_states[0 : n + 1]), sum_states[n]),
+            )
 
     def test_get_density_of_states_ethylene(self):
         """
@@ -172,7 +241,9 @@ class TestConformer(unittest.TestCase):
         Test the StatMech.get_partition_function() method for oxygen.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        q_exp_list = np.array([1.55584e+09, 9.38339e+09, 1.16459e+11, 5.51016e+11, 1.72794e+12])
+        q_exp_list = np.array(
+            [1.55584e09, 9.38339e09, 1.16459e11, 5.51016e11, 1.72794e12]
+        )
         for temperature, q_exp in zip(t_list, q_exp_list):
             q_act = self.oxygen.get_partition_function(temperature)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
@@ -182,7 +253,9 @@ class TestConformer(unittest.TestCase):
         Test the StatMech.get_heat_capacity() method for oxygen.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        cv_exp_list = np.array([3.52538, 3.70877, 4.14751, 4.32063, 4.39392]) * constants.R
+        cv_exp_list = (
+            np.array([3.52538, 3.70877, 4.14751, 4.32063, 4.39392]) * constants.R
+        )
         for temperature, Cv_exp in zip(t_list, cv_exp_list):
             cv_act = self.oxygen.get_heat_capacity(temperature)
             self.assertAlmostEqual(Cv_exp, cv_act, 3)
@@ -192,7 +265,11 @@ class TestConformer(unittest.TestCase):
         Test the StatMech.get_enthalpy() method for oxygen.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = np.array([3.50326, 3.54432, 3.75062, 3.91623, 4.02765]) * constants.R * t_list
+        h_exp_list = (
+            np.array([3.50326, 3.54432, 3.75062, 3.91623, 4.02765])
+            * constants.R
+            * t_list
+        )
         for temperature, h_exp in zip(t_list, h_exp_list):
             h_act = self.oxygen.get_enthalpy(temperature)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
@@ -202,7 +279,9 @@ class TestConformer(unittest.TestCase):
         Test the StatMech.get_entropy() method for oxygen.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = np.array([24.6685, 26.5065, 29.2314, 30.9513, 32.2056]) * constants.R
+        s_exp_list = (
+            np.array([24.6685, 26.5065, 29.2314, 30.9513, 32.2056]) * constants.R
+        )
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.oxygen.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, 3)
@@ -215,8 +294,10 @@ class TestConformer(unittest.TestCase):
         sum_states = self.oxygen.get_sum_of_states(e_list)
         dens_states = self.oxygen.get_density_of_states(e_list)
         for n in range(10, len(e_list)):
-            self.assertTrue(0.8 < np.sum(dens_states[0:n + 1]) / sum_states[n] < 1.25,
-                             '{0} != {1}'.format(np.sum(dens_states[0:n + 1]), sum_states[n]))
+            self.assertTrue(
+                0.8 < np.sum(dens_states[0 : n + 1]) / sum_states[n] < 1.25,
+                "{0} != {1}".format(np.sum(dens_states[0 : n + 1]), sum_states[n]),
+            )
 
     def test_get_density_of_states_oxygen(self):
         """
@@ -233,8 +314,11 @@ class TestConformer(unittest.TestCase):
         """
         Test the Conformer.get_total_mass() method.
         """
-        self.assertAlmostEqual(self.conformer.get_total_mass() * constants.Na * 1000.,
-                               np.sum(self.mass), 6)
+        self.assertAlmostEqual(
+            self.conformer.get_total_mass() * constants.Na * 1000.0,
+            np.sum(self.mass),
+            6,
+        )
 
     def test_get_center_of_mass(self):
         """
@@ -265,20 +349,24 @@ class TestConformer(unittest.TestCase):
         Test the Conformer.get_principal_moments_of_inertia() method.
         """
         inertia, axes = self.conformer.get_principal_moments_of_inertia()
-        self.assertAlmostEqual(inertia[0] * constants.Na * 1e23,  6.27074, 4)
+        self.assertAlmostEqual(inertia[0] * constants.Na * 1e23, 6.27074, 4)
         self.assertAlmostEqual(inertia[1] * constants.Na * 1e23, 25.38321, 3)
         self.assertAlmostEqual(inertia[2] * constants.Na * 1e23, 25.38341, 3)
         # For some reason the axes seem to jump around (positioning and signs change)
         # but the absolute values should be the same as we expect
-        expected = sorted([0.497140,
-                           0.610114,
-                           0.616938,
-                           0.787360,
-                           0.018454,
-                           0.616218,
-                           0.364578,
-                           0.792099,
-                           0.489554])
+        expected = sorted(
+            [
+                0.497140,
+                0.610114,
+                0.616938,
+                0.787360,
+                0.018454,
+                0.616218,
+                0.364578,
+                0.792099,
+                0.489554,
+            ]
+        )
         result = sorted(abs(axes).flat)
         for i, j in zip(expected, result):
             self.assertAlmostEqual(i, j, 4)
@@ -288,7 +376,9 @@ class TestConformer(unittest.TestCase):
         """
         Test the Conformer.get_internal_reduced_moment_of_inertia() method.
         """
-        inertia = self.conformer.get_internal_reduced_moment_of_inertia(pivots=[1, 5], top1=[1, 2, 3, 4])
+        inertia = self.conformer.get_internal_reduced_moment_of_inertia(
+            pivots=[1, 5], top1=[1, 2, 3, 4]
+        )
         self.assertAlmostEqual(inertia * constants.Na * 1e23, 1.56768, 4)
 
     def test_get_number_degrees_of_freedom(self):

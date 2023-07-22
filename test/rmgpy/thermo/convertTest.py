@@ -63,33 +63,61 @@ class TestConverter(unittest.TestCase):
             S0=(-118.46 * constants.R, "J/(mol*K)"),
             Tmin=(10, "K"),
             Tmax=(3000, "K"),
-            comment='C2H6',
+            comment="C2H6",
         )
         self.nasa = NASA(
             polynomials=[
-                NASAPolynomial(coeffs=[4.03055, -0.00214171, 4.90611e-05, -5.99027e-08, 2.38945e-11, -11257.6, 3.5613],
-                               Tmin=(10, "K"), Tmax=(650.73, "K")),
-                NASAPolynomial(coeffs=[-0.307954, 0.0245269, -1.2413e-05, 3.07724e-09, -3.01467e-13, -10693, 22.628],
-                               Tmin=(650.73, "K"), Tmax=(3000, "K")),
+                NASAPolynomial(
+                    coeffs=[
+                        4.03055,
+                        -0.00214171,
+                        4.90611e-05,
+                        -5.99027e-08,
+                        2.38945e-11,
+                        -11257.6,
+                        3.5613,
+                    ],
+                    Tmin=(10, "K"),
+                    Tmax=(650.73, "K"),
+                ),
+                NASAPolynomial(
+                    coeffs=[
+                        -0.307954,
+                        0.0245269,
+                        -1.2413e-05,
+                        3.07724e-09,
+                        -3.01467e-13,
+                        -10693,
+                        22.628,
+                    ],
+                    Tmin=(650.73, "K"),
+                    Tmax=(3000, "K"),
+                ),
             ],
             Tmin=(10, "K"),
             Tmax=(3000, "K"),
-            E0=(-93.6077, 'kJ/mol'),
+            E0=(-93.6077, "kJ/mol"),
             Cp0=(4.0 * constants.R, "J/(mol*K)"),
             CpInf=(21.5 * constants.R, "J/(mol*K)"),
-            comment='C2H6',
+            comment="C2H6",
         )
         self.thermodata = ThermoData(
             Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
-            Cpdata=(np.array([6.38268, 7.80327, 9.22175, 10.5528, 12.8323, 14.6013, 17.40890]) * constants.R, "J/(mol*K)"),
+            Cpdata=(
+                np.array(
+                    [6.38268, 7.80327, 9.22175, 10.5528, 12.8323, 14.6013, 17.40890]
+                )
+                * constants.R,
+                "J/(mol*K)",
+            ),
             H298=(-81.7, "kJ/mol"),
             S298=(27.5727 * constants.R, "J/(mol*K)"),
             Cp0=(4.0 * constants.R, "J/(mol*K)"),
             CpInf=(21.5 * constants.R, "J/(mol*K)"),
             Tmin=(10, "K"),
             Tmax=(3000, "K"),
-            E0=(-93.6077, 'kJ/mol'),
-            comment='C2H6',
+            E0=(-93.6077, "kJ/mol"),
+            comment="C2H6",
         )
 
     def test_convert_wilhoit_to_nasa(self):
@@ -253,5 +281,5 @@ class TestConverter(unittest.TestCase):
 
 ################################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

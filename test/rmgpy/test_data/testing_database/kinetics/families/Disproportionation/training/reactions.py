@@ -8,21 +8,20 @@ Put kinetic parameters for reactions to use as a training set for fitting
 group additivity values in this file.
 """
 entry(
-    index = 0,
-    label = "C2H + CH3O <=> C2H2 + CH2O",
-    degeneracy = 1,
-    kinetics = Arrhenius(
-        A = (3.61e+13, 'cm^3/(mol*s)', '*|/', 5),
-        n = 0,
-        Ea = (0, 'kcal/mol'),
-        T0 = (1, 'K'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=0,
+    label="C2H + CH3O <=> C2H2 + CH2O",
+    degeneracy=1,
+    kinetics=Arrhenius(
+        A=(3.61e13, "cm^3/(mol*s)", "*|/", 5),
+        n=0,
+        Ea=(0, "kcal/mol"),
+        T0=(1, "K"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [90] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [90] Literature review.""",
+    longDesc="""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: C2H + CH2OH --> C2H2 + CH2O
 
@@ -36,4 +35,3 @@ to very exothermic rxn.  No data available at the time.
 MRH 30-Aug-2009
 """,
 )
-

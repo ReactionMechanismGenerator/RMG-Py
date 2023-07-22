@@ -59,11 +59,11 @@ class TestWilhoit(unittest.TestCase):
         self.a2 = 26.2524
         self.a3 = -12.6785
         self.B = 1068.68
-        self.H0 = -94088.  # -782.292 kJ/mol / constants.R
+        self.H0 = -94088.0  # -782.292 kJ/mol / constants.R
         self.S0 = -118.46  # -984.932 J/mol*K / constants.R
-        self.Tmin = 300.
-        self.Tmax = 3000.
-        self.comment = 'C2H6'
+        self.Tmin = 300.0
+        self.Tmax = 3000.0
+        self.comment = "C2H6"
         self.wilhoit = Wilhoit(
             Cp0=(self.Cp0 * constants.R, "J/(mol*K)"),
             CpInf=(self.CpInf * constants.R, "J/(mol*K)"),
@@ -84,6 +84,7 @@ class TestWilhoit(unittest.TestCase):
         Reset the database & liquid parameters for solution
         """
         import rmgpy.data.rmg
+
         rmgpy.data.rmg.database = None
 
     def test_cp0(self):
@@ -156,7 +157,9 @@ class TestWilhoit(unittest.TestCase):
         """
         Test that the Wilhoit E0 property is properly calculated from Enthalpy at 0.001 K
         """
-        self.assertAlmostEqual(self.wilhoit.E0.value_si, self.wilhoit.get_enthalpy(0.001), 1)
+        self.assertAlmostEqual(
+            self.wilhoit.E0.value_si, self.wilhoit.get_enthalpy(0.001), 1
+        )
 
     def test_comment(self):
         """
@@ -179,33 +182,88 @@ class TestWilhoit(unittest.TestCase):
         Test the Wilhoit.get_heat_capacity() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        cp_exp_list = np.array([5.12003, 7.80327, 10.5528, 12.8323, 14.6013,
-                                15.9511, 16.9842, 17.7837, 18.4114, 18.9117]) * constants.R
+        cp_exp_list = (
+            np.array(
+                [
+                    5.12003,
+                    7.80327,
+                    10.5528,
+                    12.8323,
+                    14.6013,
+                    15.9511,
+                    16.9842,
+                    17.7837,
+                    18.4114,
+                    18.9117,
+                ]
+            )
+            * constants.R
+        )
         for T, cp_exp in zip(Tlist, cp_exp_list):
             cp_act = self.wilhoit.get_heat_capacity(T)
-            self.assertAlmostEqual(cp_exp / cp_act, 1.0, 3, '{0} != {1} within 3 places'.format(cp_exp, cp_act))
+            self.assertAlmostEqual(
+                cp_exp / cp_act,
+                1.0,
+                3,
+                "{0} != {1} within 3 places".format(cp_exp, cp_act),
+            )
 
     def test_get_enthalpy(self):
         """
         Test the Wilhoit.get_enthalpy() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        h_exp_list = np.array([-51.9303, -22.7609, -12.1050, -6.14444, -2.16433,
-                               0.747500, 2.99646, 4.79698, 6.27618, 7.51564]) * constants.R * Tlist
+        h_exp_list = (
+            np.array(
+                [
+                    -51.9303,
+                    -22.7609,
+                    -12.1050,
+                    -6.14444,
+                    -2.16433,
+                    0.747500,
+                    2.99646,
+                    4.79698,
+                    6.27618,
+                    7.51564,
+                ]
+            )
+            * constants.R
+            * Tlist
+        )
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = self.wilhoit.get_enthalpy(T)
-            self.assertAlmostEqual(h_exp / h_act, 1.0, 3, '{0} != {1}'.format(h_exp, h_act))
+            self.assertAlmostEqual(
+                h_exp / h_act, 1.0, 3, "{0} != {1}".format(h_exp, h_act)
+            )
 
     def test_get_entropy(self):
         """
         Test the Wilhoit.get_entropy() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        s_exp_list = np.array([25.3095, 29.6445, 33.3398, 36.7006, 39.7629,
-                               42.5499, 45.0898, 47.4122, 49.5445, 51.5112]) * constants.R
+        s_exp_list = (
+            np.array(
+                [
+                    25.3095,
+                    29.6445,
+                    33.3398,
+                    36.7006,
+                    39.7629,
+                    42.5499,
+                    45.0898,
+                    47.4122,
+                    49.5445,
+                    51.5112,
+                ]
+            )
+            * constants.R
+        )
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = self.wilhoit.get_entropy(T)
-            self.assertAlmostEqual(s_exp / s_act, 1.0, 4, '{0} != {1}'.format(s_exp, s_act))
+            self.assertAlmostEqual(
+                s_exp / s_act, 1.0, 4, "{0} != {1}".format(s_exp, s_act)
+            )
 
     def test_get_free_energy(self):
         """
@@ -215,7 +273,9 @@ class TestWilhoit(unittest.TestCase):
         for T in Tlist:
             g_exp = self.wilhoit.get_enthalpy(T) - T * self.wilhoit.get_entropy(T)
             g_act = self.wilhoit.get_free_energy(T)
-            self.assertAlmostEqual(g_exp / g_act, 1.0, 4, '{0} != {1}'.format(g_exp, g_act))
+            self.assertAlmostEqual(
+                g_exp / g_act, 1.0, 4, "{0} != {1}".format(g_exp, g_act)
+            )
 
     def test_pickle(self):
         """
@@ -223,6 +283,7 @@ class TestWilhoit(unittest.TestCase):
         of information.
         """
         import pickle
+
         wilhoit = pickle.loads(pickle.dumps(self.wilhoit))
         self.assertAlmostEqual(self.wilhoit.Cp0.value, wilhoit.Cp0.value, 4)
         self.assertEqual(self.wilhoit.Cp0.units, wilhoit.Cp0.units)
@@ -252,9 +313,9 @@ class TestWilhoit(unittest.TestCase):
         with no loss of information.
         """
         namespace = {}
-        exec('wilhoit = {0!r}'.format(self.wilhoit), globals(), namespace)
-        self.assertIn('wilhoit', namespace)
-        wilhoit = namespace['wilhoit']
+        exec("wilhoit = {0!r}".format(self.wilhoit), globals(), namespace)
+        self.assertIn("wilhoit", namespace)
+        wilhoit = namespace["wilhoit"]
         self.assertAlmostEqual(self.wilhoit.Cp0.value, wilhoit.Cp0.value, 4)
         self.assertEqual(self.wilhoit.Cp0.units, wilhoit.Cp0.units)
         self.assertAlmostEqual(self.wilhoit.CpInf.value, wilhoit.CpInf.value, 3)
@@ -283,7 +344,7 @@ class TestWilhoit(unittest.TestCase):
         """
         h298 = self.wilhoit.get_enthalpy(298)
         s298 = self.wilhoit.get_entropy(298)
-        Tdata = np.array([300., 400., 500., 600., 800., 1000., 1500.])
+        Tdata = np.array([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0])
         cp_data = np.zeros_like(Tdata)
         for i in range(Tdata.shape[0]):
             cp_data[i] = self.wilhoit.get_heat_capacity(Tdata[i])
@@ -305,7 +366,7 @@ class TestWilhoit(unittest.TestCase):
             s_act = wilhoit.get_entropy(T)
             self.assertAlmostEqual(s_act, s_exp, 4)
 
-        # Check that the fit reproduces the input parameters 
+        # Check that the fit reproduces the input parameters
         # Since we're fitting to data generated from a Wilhoit (and since the
         # fitting algorithm is linear least-squares), we should get the same
         # Wilhoit parameters (with a small allowance for fitting error)
@@ -330,13 +391,18 @@ class TestWilhoit(unittest.TestCase):
 
         # Load databases
         database = RMGDatabase()
-        database.load_thermo(os.path.join(settings['database.directory'], 'thermo'), thermo_libraries=['Narayanaswamy'])
-        database.load_solvation(os.path.join(settings['database.directory'], 'solvation'))
+        database.load_thermo(
+            os.path.join(settings["database.directory"], "thermo"),
+            thermo_libraries=["Narayanaswamy"],
+        )
+        database.load_solvation(
+            os.path.join(settings["database.directory"], "solvation")
+        )
 
-        spc = Species().from_smiles('CC')
+        spc = Species().from_smiles("CC")
         spc.get_thermo_data()
 
-        T = 1350.  # not 298K!
+        T = 1350.0  # not 298K!
 
         # nasa to wilhoit
         nasa = spc.thermo
@@ -354,7 +420,7 @@ class TestWilhoit(unittest.TestCase):
         td = nasa.to_thermo_data()
         s_td = td.get_entropy(T)
 
-        wilhoit = td.to_wilhoit(B=1000.)
+        wilhoit = td.to_wilhoit(B=1000.0)
         s_wh = wilhoit.get_entropy(T)
 
         self.assertAlmostEqual(s_td, s_wh, -1)
@@ -372,21 +438,40 @@ class TestWilhoit(unittest.TestCase):
         Test that a Wilhoit object can be converted to a dictionary representation properly
         """
         wilhoit_dict = self.wilhoit.as_dict()
-        self.assertEqual(wilhoit_dict, {'comment': 'C2H6',
-                                        'B': {'units': 'K', 'class': 'ScalarQuantity', 'value': 1068.68},
-                                        'Tmin': {'units': 'K', 'class': 'ScalarQuantity', 'value': 300.0},
-                                        'H0': {'units': 'kJ/mol', 'class': 'ScalarQuantity', 'value': -782.292041536},
-                                        'Tmax': {'units': 'K', 'class': 'ScalarQuantity', 'value': 3000.0},
-                                        'S0': {'units': 'J/(mol*K)', 'class': 'ScalarQuantity', 'value': -984.93235312},
-                                        'a1': -16.3067,
-                                        'a0': 0.0977518,
-                                        'a3': -12.6785,
-                                        'a2': 26.2524,
-                                        'Cp0': {'units': 'J/(mol*K)', 'class': 'ScalarQuantity', 'value': 33.257888},
-                                        'CpInf': {'units': 'J/(mol*K)', 'class': 'ScalarQuantity',
-                                                  'value': 178.76114800000002},
-                                        'class': 'Wilhoit'}
-                         )
+        self.assertEqual(
+            wilhoit_dict,
+            {
+                "comment": "C2H6",
+                "B": {"units": "K", "class": "ScalarQuantity", "value": 1068.68},
+                "Tmin": {"units": "K", "class": "ScalarQuantity", "value": 300.0},
+                "H0": {
+                    "units": "kJ/mol",
+                    "class": "ScalarQuantity",
+                    "value": -782.292041536,
+                },
+                "Tmax": {"units": "K", "class": "ScalarQuantity", "value": 3000.0},
+                "S0": {
+                    "units": "J/(mol*K)",
+                    "class": "ScalarQuantity",
+                    "value": -984.93235312,
+                },
+                "a1": -16.3067,
+                "a0": 0.0977518,
+                "a3": -12.6785,
+                "a2": 26.2524,
+                "Cp0": {
+                    "units": "J/(mol*K)",
+                    "class": "ScalarQuantity",
+                    "value": 33.257888,
+                },
+                "CpInf": {
+                    "units": "J/(mol*K)",
+                    "class": "ScalarQuantity",
+                    "value": 178.76114800000002,
+                },
+                "class": "Wilhoit",
+            },
+        )
 
     def test_make_wilhoit(self):
         """
@@ -394,8 +479,7 @@ class TestWilhoit(unittest.TestCase):
         """
         wilhoit_dict = self.wilhoit.as_dict()
         new_wilhoit = Wilhoit.__new__(Wilhoit)
-        class_dictionary = {'ScalarQuantity': ScalarQuantity,
-                            'Wilhoit': Wilhoit}
+        class_dictionary = {"ScalarQuantity": ScalarQuantity, "Wilhoit": Wilhoit}
 
         new_wilhoit.make_object(wilhoit_dict, class_dictionary)
 
@@ -403,5 +487,5 @@ class TestWilhoit(unittest.TestCase):
 ################################################################################
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

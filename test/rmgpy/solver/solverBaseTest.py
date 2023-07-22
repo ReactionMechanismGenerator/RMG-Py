@@ -46,21 +46,26 @@ class ConcentrationPrinter(object):
 
 
 class ReactionSystemTest(unittest.TestCase):
-
     def setUp(self):
         self.listener = ConcentrationPrinter()
 
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'solver/files/listener/')
-        input_file = os.path.join(folder, 'input.py')
-        chemkin_file = os.path.join(folder, 'chemkin/chem.inp')
-        spc_dict = os.path.join(folder, 'chemkin/species_dictionary.txt')
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), "solver/files/listener/")
+        input_file = os.path.join(folder, "input.py")
+        chemkin_file = os.path.join(folder, "chemkin/chem.inp")
+        spc_dict = os.path.join(folder, "chemkin/species_dictionary.txt")
 
-        self.rmg = load_rmg_py_job(input_file, chemkin_file, spc_dict, generate_images=False, check_duplicates=False)
+        self.rmg = load_rmg_py_job(
+            input_file,
+            chemkin_file,
+            spc_dict,
+            generate_images=False,
+            check_duplicates=False,
+        )
 
     def test_surface_initialization(self):
         """
         test that initialize_surface is correctly removing species and reactions when
-        they are no longer consistent with the surface (due to other species/reactions moving to the 
+        they are no longer consistent with the surface (due to other species/reactions moving to the
         bulk core)
         """
         reaction_system = self.rmg.reaction_systems[0]
@@ -72,12 +77,19 @@ class ReactionSystemTest(unittest.TestCase):
         surface_species = [core_species[7], core_species[6]]
         surface_reactions = [core_reactions[0], core_reactions[2], core_reactions[3]]
 
-        reaction_system.initialize_model(core_species, core_reactions,
-                                         reaction_model.edge.species, reaction_model.edge.reactions, surface_species,
-                                         surface_reactions)
+        reaction_system.initialize_model(
+            core_species,
+            core_reactions,
+            reaction_model.edge.species,
+            reaction_model.edge.reactions,
+            surface_species,
+            surface_reactions,
+        )
 
         self.assertEquals(len(surface_species), 1)  # only H should be left
-        self.assertEquals(len(surface_reactions), 2)  # all the reactions with H should stay
+        self.assertEquals(
+            len(surface_reactions), 2
+        )  # all the reactions with H should stay
 
     def test_surface_layering_constraint(self):
         """
@@ -99,11 +111,21 @@ class ReactionSystemTest(unittest.TestCase):
         reaction_system.num_core_reactions = 1
         reaction_system.num_core_species = 7
 
-        reaction_system.initialize_model(core_species, core_reactions,
-                                         edge_species, edge_reactions, surface_species, surface_reactions)
+        reaction_system.initialize_model(
+            core_species,
+            core_reactions,
+            edge_species,
+            edge_reactions,
+            surface_species,
+            surface_reactions,
+        )
 
-        self.assertEquals(len(reaction_system.surface_species_indices), 1)  # surface_species_indices calculated correctly
-        self.assertEquals(reaction_system.surface_species_indices[0], 5)  # surface_species_indices calculated correctly
+        self.assertEquals(
+            len(reaction_system.surface_species_indices), 1
+        )  # surface_species_indices calculated correctly
+        self.assertEquals(
+            reaction_system.surface_species_indices[0], 5
+        )  # surface_species_indices calculated correctly
 
         inds = reaction_system.get_layering_indices()
 
@@ -127,17 +149,34 @@ class ReactionSystemTest(unittest.TestCase):
         edge_species = species[6:]
         edge_reactions = reactions[1:]
 
-        reaction_system.initialize_model(core_species, core_reactions,
-                                         edge_species, edge_reactions, surface_species, surface_reactions)
+        reaction_system.initialize_model(
+            core_species,
+            core_reactions,
+            edge_species,
+            edge_reactions,
+            surface_species,
+            surface_reactions,
+        )
 
         new_surface_reactions = edge_reactions
-        new_surface_reaction_inds = [edge_reactions.index(i) for i in new_surface_reactions]
+        new_surface_reaction_inds = [
+            edge_reactions.index(i) for i in new_surface_reactions
+        ]
 
         surface_species, surface_reactions = reaction_system.add_reactions_to_surface(
-            new_surface_reactions, new_surface_reaction_inds, surface_species, surface_reactions, edge_species)
+            new_surface_reactions,
+            new_surface_reaction_inds,
+            surface_species,
+            surface_reactions,
+            edge_species,
+        )
 
-        self.assertEqual(set(surface_species), set(edge_species))  # all edge species should now be in the surface
-        self.assertEqual(set(surface_reactions), set(edge_reactions))  # all edge reactions should now be in the surface
+        self.assertEqual(
+            set(surface_species), set(edge_species)
+        )  # all edge species should now be in the surface
+        self.assertEqual(
+            set(surface_reactions), set(edge_reactions)
+        )  # all edge reactions should now be in the surface
 
     def test_attach_detach(self):
         """
@@ -164,7 +203,9 @@ class ReactionSystemTest(unittest.TestCase):
 
         self.assertEqual(self.listener.data, [])
 
-        model_settings = ModelSettings(tol_move_to_core=1, tol_keep_in_edge=0, tol_interrupt_simulation=1)
+        model_settings = ModelSettings(
+            tol_move_to_core=1, tol_keep_in_edge=0, tol_interrupt_simulation=1
+        )
         simulator_settings = SimulatorSettings()
 
         # run simulation:
@@ -192,9 +233,13 @@ class ReactionSystemTest(unittest.TestCase):
         self.assertTrue(isinstance(rxn_sys, rmgpy.solver.simple.SimpleReactor))
         self.assertEqual(rxn_sys.T.value_si, rxn_sys1.T.value_si)
         self.assertEqual(rxn_sys.P.value_si, rxn_sys1.P.value_si)
-        self.assertEqual(rxn_sys.termination[0].conversion, rxn_sys1.termination[0].conversion)
-        self.assertEqual(rxn_sys.termination[1].time.value_si, rxn_sys1.termination[1].time.value_si)
+        self.assertEqual(
+            rxn_sys.termination[0].conversion, rxn_sys1.termination[0].conversion
+        )
+        self.assertEqual(
+            rxn_sys.termination[1].time.value_si, rxn_sys1.termination[1].time.value_si
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

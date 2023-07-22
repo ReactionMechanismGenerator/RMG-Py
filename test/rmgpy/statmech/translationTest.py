@@ -63,7 +63,9 @@ class TestIdealGasTranslation(unittest.TestCase):
         classical translator.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        q_exp_list = np.array([7.22597e+06, 2.59130e+07, 1.46586e+08, 4.03944e+08, 8.29217e+08])
+        q_exp_list = np.array(
+            [7.22597e06, 2.59130e07, 1.46586e08, 4.03944e08, 8.29217e08]
+        )
         for temperature, q_exp in zip(t_list, q_exp_list):
             q_act = self.mode.get_partition_function(temperature)
             self.assertAlmostEqual(q_exp, q_act, delta=1e-4 * q_exp)
@@ -96,7 +98,9 @@ class TestIdealGasTranslation(unittest.TestCase):
         translator.
         """
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = np.array([18.2932, 19.5703, 21.3031, 22.3168, 23.0360]) * constants.R
+        s_exp_list = (
+            np.array([18.2932, 19.5703, 21.3031, 22.3168, 23.0360]) * constants.R
+        )
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.mode.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
@@ -110,8 +114,10 @@ class TestIdealGasTranslation(unittest.TestCase):
         sum_states = self.mode.get_sum_of_states(e_list)
         dens_states = self.mode.get_density_of_states(e_list)
         for n in range(10, len(e_list)):
-            self.assertTrue(0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25,
-                             '{0} != {1}'.format(np.sum(dens_states[0:n]), sum_states[n]))
+            self.assertTrue(
+                0.8 < np.sum(dens_states[0:n]) / sum_states[n - 1] < 1.25,
+                "{0} != {1}".format(np.sum(dens_states[0:n]), sum_states[n]),
+            )
 
     def test_get_density_of_states_classical(self):
         """
@@ -131,9 +137,9 @@ class TestIdealGasTranslation(unittest.TestCase):
         repr() output with no loss of information.
         """
         namespace = {}
-        exec('mode = {0!r}'.format(self.mode), globals(), namespace)
-        self.assertIn('mode', namespace)
-        mode = namespace['mode']
+        exec("mode = {0!r}".format(self.mode), globals(), namespace)
+        self.assertIn("mode", namespace)
+        mode = namespace["mode"]
         self.assertAlmostEqual(self.mode.mass.value, mode.mass.value, 6)
         self.assertEqual(self.mode.mass.units, mode.mass.units)
         self.assertEqual(self.mode.quantum, mode.quantum)
@@ -144,6 +150,7 @@ class TestIdealGasTranslation(unittest.TestCase):
         with no loss of information.
         """
         import pickle
+
         mode = pickle.loads(pickle.dumps(self.mode, -1))
         self.assertAlmostEqual(self.mode.mass.value, mode.mass.value, 6)
         self.assertEqual(self.mode.mass.units, mode.mass.units)

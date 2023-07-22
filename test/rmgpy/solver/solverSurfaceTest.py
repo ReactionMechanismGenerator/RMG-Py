@@ -55,29 +55,44 @@ class SurfaceReactorCheck(unittest.TestCase):
         """
         h2 = Species(
             molecule=[Molecule().from_smiles("[H][H]")],
-            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
-                              Cpdata=([6.955, 6.955, 6.956, 6.961, 7.003, 7.103, 7.502], "cal/(mol*K)"),
-                              H298=(0, "kcal/mol"),
-                              S298=(31.129, "cal/(mol*K)")))
+            thermo=ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=(
+                    [6.955, 6.955, 6.956, 6.961, 7.003, 7.103, 7.502],
+                    "cal/(mol*K)",
+                ),
+                H298=(0, "kcal/mol"),
+                S298=(31.129, "cal/(mol*K)"),
+            ),
+        )
         x = Species(
             molecule=[Molecule().from_adjacency_list("1 X u0 p0")],
-            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
-                              Cpdata=([0., 0., 0., 0., 0., 0., 0.], "cal/(mol*K)"),
-                              H298=(0.0, "kcal/mol"),
-                              S298=(0.0, "cal/(mol*K)")))
+            thermo=ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "cal/(mol*K)"),
+                H298=(0.0, "kcal/mol"),
+                S298=(0.0, "cal/(mol*K)"),
+            ),
+        )
         hx = Species(
-            molecule=[Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")],
-            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
-                              Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
-                              H298=(-11.26, "kcal/mol"),
-                              S298=(0.44, "cal/(mol*K)")))
+            molecule=[
+                Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
+            ],
+            thermo=ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
+                H298=(-11.26, "kcal/mol"),
+                S298=(0.44, "cal/(mol*K)"),
+            ),
+        )
 
-        rxn1 = Reaction(reactants=[h2, x, x],
-                        products=[hx, hx],
-                        kinetics=SurfaceArrhenius(A=(9.05e18, 'cm^5/(mol^2*s)'),
-                                                  n=0.5,
-                                                  Ea=(5.0, 'kJ/mol'),
-                                                  T0=(1.0, 'K')))
+        rxn1 = Reaction(
+            reactants=[h2, x, x],
+            products=[hx, hx],
+            kinetics=SurfaceArrhenius(
+                A=(9.05e18, "cm^5/(mol^2*s)"), n=0.5, Ea=(5.0, "kJ/mol"), T0=(1.0, "K")
+            ),
+        )
 
         core_species = [h2, x, hx]
         edge_species = []
@@ -87,15 +102,19 @@ class SurfaceReactorCheck(unittest.TestCase):
         T = 600
         P_initial = 1.0e5
         rxn_system = SurfaceReactor(
-            T, P_initial,
+            T,
+            P_initial,
             n_sims=1,
             initial_gas_mole_fractions={h2: 1.0},
             initial_surface_coverages={x: 1.0},
-            surface_volume_ratio=(1e1, 'm^-1'),
-            surface_site_density=(2.72e-9, 'mol/cm^2'),
-            termination=[])
+            surface_volume_ratio=(1e1, "m^-1"),
+            surface_site_density=(2.72e-9, "mol/cm^2"),
+            termination=[],
+        )
 
-        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system.initialize_model(
+            core_species, core_reactions, edge_species, edge_reactions
+        )
 
         tlist = np.logspace(-13, -5, 81, dtype=np.float64)
 
@@ -118,16 +137,25 @@ class SurfaceReactorCheck(unittest.TestCase):
         y = np.array(y, np.float64)
         reaction_rates = np.array(reaction_rates, np.float64)
         species_rates = np.array(species_rates, np.float64)
-        total_sites = y[0,1]
+        total_sites = y[0, 1]
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            self.assertAlmostEqual(reaction_rates[i, 0], -1.0 * species_rates[i, 0],
-                                   delta=1e-6 * reaction_rates[i, 0])
-            self.assertAlmostEqual(reaction_rates[i, 0], -0.5 * species_rates[i, 1],
-                                   delta=1e-6 * reaction_rates[i, 0])
-            self.assertAlmostEqual(reaction_rates[i, 0], 0.5 * species_rates[i, 2],
-                                   delta=1e-6 * reaction_rates[i, 0])
+            self.assertAlmostEqual(
+                reaction_rates[i, 0],
+                -1.0 * species_rates[i, 0],
+                delta=1e-6 * reaction_rates[i, 0],
+            )
+            self.assertAlmostEqual(
+                reaction_rates[i, 0],
+                -0.5 * species_rates[i, 1],
+                delta=1e-6 * reaction_rates[i, 0],
+            )
+            self.assertAlmostEqual(
+                reaction_rates[i, 0],
+                0.5 * species_rates[i, 2],
+                delta=1e-6 * reaction_rates[i, 0],
+            )
 
         # Check that we've reached equilibrium
         self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
@@ -164,79 +192,154 @@ class SurfaceReactorCheck(unittest.TestCase):
             thermo=NASA(
                 polynomials=[
                     NASAPolynomial(
-                        coeffs=[3.91547, 0.00184155, 3.48741e-06, -3.32746e-09, 8.49953e-13, 16285.6, 0.351743],
-                        Tmin=(100, 'K'), Tmax=(1337.63, 'K')),
+                        coeffs=[
+                            3.91547,
+                            0.00184155,
+                            3.48741e-06,
+                            -3.32746e-09,
+                            8.49953e-13,
+                            16285.6,
+                            0.351743,
+                        ],
+                        Tmin=(100, "K"),
+                        Tmax=(1337.63, "K"),
+                    ),
                     NASAPolynomial(
-                        coeffs=[3.54146, 0.00476786, -1.82148e-06, 3.28876e-10, -2.22545e-14, 16224, 1.66032],
-                        Tmin=(1337.63, 'K'), Tmax=(5000, 'K'))],
-                Tmin=(100, 'K'), Tmax=(5000, 'K'), E0=(135.382, 'kJ/mol'),
-                comment="""Thermo library: primaryThermoLibrary + radical(CH3)"""
+                        coeffs=[
+                            3.54146,
+                            0.00476786,
+                            -1.82148e-06,
+                            3.28876e-10,
+                            -2.22545e-14,
+                            16224,
+                            1.66032,
+                        ],
+                        Tmin=(1337.63, "K"),
+                        Tmax=(5000, "K"),
+                    ),
+                ],
+                Tmin=(100, "K"),
+                Tmax=(5000, "K"),
+                E0=(135.382, "kJ/mol"),
+                comment="""Thermo library: primaryThermoLibrary + radical(CH3)""",
             ),
-            molecular_weight=(15.0345, 'amu'),
+            molecular_weight=(15.0345, "amu"),
         )
 
         x = Species(
             molecule=[Molecule().from_adjacency_list("1 X u0 p0")],
-            thermo=NASA(polynomials=[NASAPolynomial(coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(298, 'K'), Tmax=(1000, 'K')),
-                                     NASAPolynomial(coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(1000, 'K'), Tmax=(2000, 'K'))],
-                        Tmin=(298, 'K'), Tmax=(2000, 'K'), E0=(-6.19426, 'kJ/mol'),
-                        comment="""Thermo library: surfaceThermo""")
-        )
-
-        ch3x = Species(
-            molecule=[Molecule().from_adjacency_list("""1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
-2 H u0 p0 c0 {1,S}
-3 H u0 p0 c0 {1,S}
-4 H u0 p0 c0 {1,S}
-5 X u0 p0 c0 {1,S}""")],
             thermo=NASA(
                 polynomials=[
                     NASAPolynomial(
-                        coeffs=[-0.552219, 0.026442, -3.55617e-05, 2.60044e-08, -7.52707e-12, -4433.47, 0.692144],
-                        Tmin=(298, 'K'), Tmax=(1000, 'K')),
+                        coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(298, "K"), Tmax=(1000, "K")
+                    ),
                     NASAPolynomial(
-                        coeffs=[3.62557, 0.00739512, -2.43797e-06, 1.86159e-10, 3.6485e-14, -5187.22, -18.9668],
-                        Tmin=(1000, 'K'), Tmax=(2000, 'K'))],
-                Tmin=(298, 'K'), Tmax=(2000, 'K'), E0=(-39.1285, 'kJ/mol'),
-                comment="""Thermo library: surfaceThermoNi111""")
+                        coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(1000, "K"), Tmax=(2000, "K")
+                    ),
+                ],
+                Tmin=(298, "K"),
+                Tmax=(2000, "K"),
+                E0=(-6.19426, "kJ/mol"),
+                comment="""Thermo library: surfaceThermo""",
+            ),
         )
 
-        rxn1 = Reaction(reactants=[ch3, x],
-                        products=[ch3x],
-                        kinetics=StickingCoefficient(
-                            A=0.1, n=0, Ea=(0, 'kcal/mol'), T0=(1, 'K'), Tmin=(200, 'K'), Tmax=(3000, 'K'),
-                            comment="""Exact match found for rate rule (Adsorbate;VacantSite)"""
-                        )
-                        # kinetics=SurfaceArrhenius(A=(2.7e10, 'cm^3/(mol*s)'),
-                        #                           n=0.5,
-                        #                           Ea=(5.0, 'kJ/mol'),
-                        #                           T0=(1.0, 'K'))
-                        )
+        ch3x = Species(
+            molecule=[
+                Molecule().from_adjacency_list(
+                    """1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 X u0 p0 c0 {1,S}"""
+                )
+            ],
+            thermo=NASA(
+                polynomials=[
+                    NASAPolynomial(
+                        coeffs=[
+                            -0.552219,
+                            0.026442,
+                            -3.55617e-05,
+                            2.60044e-08,
+                            -7.52707e-12,
+                            -4433.47,
+                            0.692144,
+                        ],
+                        Tmin=(298, "K"),
+                        Tmax=(1000, "K"),
+                    ),
+                    NASAPolynomial(
+                        coeffs=[
+                            3.62557,
+                            0.00739512,
+                            -2.43797e-06,
+                            1.86159e-10,
+                            3.6485e-14,
+                            -5187.22,
+                            -18.9668,
+                        ],
+                        Tmin=(1000, "K"),
+                        Tmax=(2000, "K"),
+                    ),
+                ],
+                Tmin=(298, "K"),
+                Tmax=(2000, "K"),
+                E0=(-39.1285, "kJ/mol"),
+                comment="""Thermo library: surfaceThermoNi111""",
+            ),
+        )
+
+        rxn1 = Reaction(
+            reactants=[ch3, x],
+            products=[ch3x],
+            kinetics=StickingCoefficient(
+                A=0.1,
+                n=0,
+                Ea=(0, "kcal/mol"),
+                T0=(1, "K"),
+                Tmin=(200, "K"),
+                Tmax=(3000, "K"),
+                comment="""Exact match found for rate rule (Adsorbate;VacantSite)""",
+            )
+            # kinetics=SurfaceArrhenius(A=(2.7e10, 'cm^3/(mol*s)'),
+            #                           n=0.5,
+            #                           Ea=(5.0, 'kJ/mol'),
+            #                           T0=(1.0, 'K'))
+        )
         core_species = [ch3, x, ch3x]
         edge_species = []
         core_reactions = [rxn1]
         edge_reactions = []
 
-        T = 800.
+        T = 800.0
         P_initial = 1.0e5
         rxn_system = SurfaceReactor(
-            T, P_initial,
+            T,
+            P_initial,
             n_sims=1,
             initial_gas_mole_fractions={ch3: 1.0},
             initial_surface_coverages={x: 1.0},
-            surface_volume_ratio=(1., 'm^-1'),
-            surface_site_density=(2.72e-9, 'mol/cm^2'),
-            termination=[])
+            surface_volume_ratio=(1.0, "m^-1"),
+            surface_site_density=(2.72e-9, "mol/cm^2"),
+            termination=[],
+        )
         # in chemkin, the sites are mostly occupied in about 1e-8 seconds.
 
-        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system.initialize_model(
+            core_species, core_reactions, edge_species, edge_reactions
+        )
 
         tlist = np.logspace(-13, -5, 81, dtype=np.float64)
 
         print("Surface site density:", rxn_system.surface_site_density.value_si)
 
-        print("rxn1 rate coefficient",
-              rxn1.get_surface_rate_coefficient(rxn_system.T.value_si, rxn_system.surface_site_density.value_si))
+        print(
+            "rxn1 rate coefficient",
+            rxn1.get_surface_rate_coefficient(
+                rxn_system.T.value_si, rxn_system.surface_site_density.value_si
+            ),
+        )
 
         # Integrate to get the solution at each time point
         t = []
@@ -267,16 +370,30 @@ class SurfaceReactorCheck(unittest.TestCase):
         y = np.array(y, np.float64)
         reaction_rates = np.array(reaction_rates, np.float64)
         species_rates = np.array(species_rates, np.float64)
-        V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P_initial.value_si
+        V = (
+            constants.R
+            * rxn_system.T.value_si
+            * np.sum(y)
+            / rxn_system.P_initial.value_si
+        )
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            self.assertAlmostEqual(reaction_rates[i, 0], -species_rates[i, 0],
-                                   delta=1e-6 * reaction_rates[i, 0])
-            self.assertAlmostEqual(reaction_rates[i, 0], -species_rates[i, 1],
-                                   delta=1e-6 * reaction_rates[i, 0])
-            self.assertAlmostEqual(reaction_rates[i, 0], species_rates[i, 2],
-                                   delta=1e-6 * reaction_rates[i, 0])
+            self.assertAlmostEqual(
+                reaction_rates[i, 0],
+                -species_rates[i, 0],
+                delta=1e-6 * reaction_rates[i, 0],
+            )
+            self.assertAlmostEqual(
+                reaction_rates[i, 0],
+                -species_rates[i, 1],
+                delta=1e-6 * reaction_rates[i, 0],
+            )
+            self.assertAlmostEqual(
+                reaction_rates[i, 0],
+                species_rates[i, 2],
+                delta=1e-6 * reaction_rates[i, 0],
+            )
 
         # Check that we've reached equilibrium by the end
         self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
@@ -292,39 +409,60 @@ class SurfaceReactorCheck(unittest.TestCase):
         """
         h2 = Species(
             molecule=[Molecule().from_smiles("[H][H]")],
-            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
-                              Cpdata=([6.955, 6.955, 6.956, 6.961, 7.003, 7.103, 7.502], "cal/(mol*K)"),
-                              H298=(0, "kcal/mol"),
-                              S298=(31.129, "cal/(mol*K)")))
+            thermo=ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=(
+                    [6.955, 6.955, 6.956, 6.961, 7.003, 7.103, 7.502],
+                    "cal/(mol*K)",
+                ),
+                H298=(0, "kcal/mol"),
+                S298=(31.129, "cal/(mol*K)"),
+            ),
+        )
         x = Species(
             molecule=[Molecule().from_adjacency_list("1 X u0 p0")],
-            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
-                              Cpdata=([0., 0., 0., 0., 0., 0., 0.], "cal/(mol*K)"),
-                              H298=(0.0, "kcal/mol"),
-                              S298=(0.0, "cal/(mol*K)")))
+            thermo=ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "cal/(mol*K)"),
+                H298=(0.0, "kcal/mol"),
+                S298=(0.0, "cal/(mol*K)"),
+            ),
+        )
         hx = Species(
-            molecule=[Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")],
-            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
-                              Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
-                              H298=(-11.26, "kcal/mol"),
-                              S298=(0.44, "cal/(mol*K)")))
+            molecule=[
+                Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
+            ],
+            thermo=ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
+                H298=(-11.26, "kcal/mol"),
+                S298=(0.44, "cal/(mol*K)"),
+            ),
+        )
 
-        rxn1 = Reaction(reactants=[h2, x, x],
-                        products=[hx, hx],
-                        kinetics=SurfaceArrhenius(A=(9.05e18, 'cm^5/(mol^2*s)'),
-                                                  n=0.5,
-                                                  Ea=(5.0, 'kJ/mol'),
-                                                  T0=(1.0, 'K'),
-                                                  coverage_dependence={x: {'a': 0.0, 'm': -1.0, 'E': (0.0, 'J/mol')}}))
+        rxn1 = Reaction(
+            reactants=[h2, x, x],
+            products=[hx, hx],
+            kinetics=SurfaceArrhenius(
+                A=(9.05e18, "cm^5/(mol^2*s)"),
+                n=0.5,
+                Ea=(5.0, "kJ/mol"),
+                T0=(1.0, "K"),
+                coverage_dependence={x: {"a": 0.0, "m": -1.0, "E": (0.0, "J/mol")}},
+            ),
+        )
 
-        rxn2 = Reaction(reactants=[h2, x, x],
-                        products=[hx, hx],
-                        kinetics=SurfaceArrhenius(A=(9.05e-18, 'cm^5/(mol^2*s)'), # 1e36 times slower
-                                                  n=0.5,
-                                                  Ea=(5.0, 'kJ/mol'),
-                                                  T0=(1.0, 'K'),
-                                                  coverage_dependence={x: {'a': 0.0, 'm': -1.0, 'E': (10.0, 'J/mol')}}
-                        ))
+        rxn2 = Reaction(
+            reactants=[h2, x, x],
+            products=[hx, hx],
+            kinetics=SurfaceArrhenius(
+                A=(9.05e-18, "cm^5/(mol^2*s)"),  # 1e36 times slower
+                n=0.5,
+                Ea=(5.0, "kJ/mol"),
+                T0=(1.0, "K"),
+                coverage_dependence={x: {"a": 0.0, "m": -1.0, "E": (10.0, "J/mol")}},
+            ),
+        )
 
         core_species = [h2, x, hx]
         edge_species = []
@@ -340,26 +478,32 @@ class SurfaceReactorCheck(unittest.TestCase):
         T = 600
         P_initial = 1.0e5
         rxn_system = SurfaceReactor(
-            T, P_initial,
+            T,
+            P_initial,
             n_sims=1,
             initial_gas_mole_fractions={h2: 1.0},
             initial_surface_coverages={x: 1.0},
-            surface_volume_ratio=(1e1, 'm^-1'),
-            surface_site_density=(2.72e-9, 'mol/cm^2'),
+            surface_volume_ratio=(1e1, "m^-1"),
+            surface_site_density=(2.72e-9, "mol/cm^2"),
             coverage_dependence=True,
-            termination=[])
+            termination=[],
+        )
 
-        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system.initialize_model(
+            core_species, core_reactions, edge_species, edge_reactions
+        )
 
         tlist = np.logspace(-13, -5, 81, dtype=np.float64)
 
-        self.assertIsInstance(rxn1.kinetics.coverage_dependence, dict)  # check to make sure coverage_dependence is still the correct type
+        self.assertIsInstance(
+            rxn1.kinetics.coverage_dependence, dict
+        )  # check to make sure coverage_dependence is still the correct type
         for species, parameters in rxn1.kinetics.coverage_dependence.items():
             self.assertIsInstance(species, Species)  # species should be a Species
             self.assertIsInstance(parameters, dict)
-            self.assertIsNotNone(parameters['a'])
-            self.assertIsNotNone(parameters['m'])
-            self.assertIsNotNone(parameters['E'])
+            self.assertIsNotNone(parameters["a"])
+            self.assertIsNotNone(parameters["m"])
+            self.assertIsNotNone(parameters["E"])
 
         # Integrate to get the solution at each time point
         t = []
@@ -383,16 +527,25 @@ class SurfaceReactorCheck(unittest.TestCase):
         y = np.array(y, np.float64)
         reaction_rates = np.array(reaction_rates, np.float64)
         species_rates = np.array(species_rates, np.float64)
-        total_sites = y[0,1]
+        total_sites = y[0, 1]
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            self.assertAlmostEqual(reaction_rates[i, 0], -1.0 * species_rates[i, 0],
-                                   delta=1e-6 * reaction_rates[i, 0])
-            self.assertAlmostEqual(reaction_rates[i, 0], -0.5 * species_rates[i, 1],
-                                   delta=1e-6 * reaction_rates[i, 0])
-            self.assertAlmostEqual(reaction_rates[i, 0], 0.5 * species_rates[i, 2],
-                                   delta=1e-6 * reaction_rates[i, 0])
+            self.assertAlmostEqual(
+                reaction_rates[i, 0],
+                -1.0 * species_rates[i, 0],
+                delta=1e-6 * reaction_rates[i, 0],
+            )
+            self.assertAlmostEqual(
+                reaction_rates[i, 0],
+                -0.5 * species_rates[i, 1],
+                delta=1e-6 * reaction_rates[i, 0],
+            )
+            self.assertAlmostEqual(
+                reaction_rates[i, 0],
+                0.5 * species_rates[i, 2],
+                delta=1e-6 * reaction_rates[i, 0],
+            )
 
         # Check that we've reached equilibrium
         self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
@@ -412,85 +565,162 @@ class SurfaceReactorCheck(unittest.TestCase):
             thermo=NASA(
                 polynomials=[
                     NASAPolynomial(
-                        coeffs=[3.91547, 0.00184155, 3.48741e-06, -3.32746e-09, 8.49953e-13, 16285.6, 0.351743],
-                        Tmin=(100, 'K'), Tmax=(1337.63, 'K')),
+                        coeffs=[
+                            3.91547,
+                            0.00184155,
+                            3.48741e-06,
+                            -3.32746e-09,
+                            8.49953e-13,
+                            16285.6,
+                            0.351743,
+                        ],
+                        Tmin=(100, "K"),
+                        Tmax=(1337.63, "K"),
+                    ),
                     NASAPolynomial(
-                        coeffs=[3.54146, 0.00476786, -1.82148e-06, 3.28876e-10, -2.22545e-14, 16224, 1.66032],
-                        Tmin=(1337.63, 'K'), Tmax=(5000, 'K'))],
-                Tmin=(100, 'K'), Tmax=(5000, 'K'), E0=(135.382, 'kJ/mol'),
-                comment="""Thermo library: primaryThermoLibrary + radical(CH3)"""
+                        coeffs=[
+                            3.54146,
+                            0.00476786,
+                            -1.82148e-06,
+                            3.28876e-10,
+                            -2.22545e-14,
+                            16224,
+                            1.66032,
+                        ],
+                        Tmin=(1337.63, "K"),
+                        Tmax=(5000, "K"),
+                    ),
+                ],
+                Tmin=(100, "K"),
+                Tmax=(5000, "K"),
+                E0=(135.382, "kJ/mol"),
+                comment="""Thermo library: primaryThermoLibrary + radical(CH3)""",
             ),
-            molecular_weight=(15.0345, 'amu'),
+            molecular_weight=(15.0345, "amu"),
         )
 
         x = Species(
             molecule=[Molecule().from_adjacency_list("1 X u0 p0")],
-            thermo=NASA(polynomials=[NASAPolynomial(coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(298, 'K'), Tmax=(1000, 'K')),
-                                     NASAPolynomial(coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(1000, 'K'), Tmax=(2000, 'K'))],
-                        Tmin=(298, 'K'), Tmax=(2000, 'K'), E0=(-6.19426, 'kJ/mol'),
-                        comment="""Thermo library: surfaceThermo""")
-        )
-
-        ch3x = Species(
-            molecule=[Molecule().from_adjacency_list("""1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
-2 H u0 p0 c0 {1,S}
-3 H u0 p0 c0 {1,S}
-4 H u0 p0 c0 {1,S}
-5 X u0 p0 c0 {1,S}""")],
             thermo=NASA(
                 polynomials=[
                     NASAPolynomial(
-                        coeffs=[-0.552219, 0.026442, -3.55617e-05, 2.60044e-08, -7.52707e-12, -4433.47, 0.692144],
-                        Tmin=(298, 'K'), Tmax=(1000, 'K')),
+                        coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(298, "K"), Tmax=(1000, "K")
+                    ),
                     NASAPolynomial(
-                        coeffs=[3.62557, 0.00739512, -2.43797e-06, 1.86159e-10, 3.6485e-14, -5187.22, -18.9668],
-                        Tmin=(1000, 'K'), Tmax=(2000, 'K'))],
-                Tmin=(298, 'K'), Tmax=(2000, 'K'), E0=(-39.1285, 'kJ/mol'),
-                comment="""Thermo library: surfaceThermoNi111""")
+                        coeffs=[0, 0, 0, 0, 0, 0, 0], Tmin=(1000, "K"), Tmax=(2000, "K")
+                    ),
+                ],
+                Tmin=(298, "K"),
+                Tmax=(2000, "K"),
+                E0=(-6.19426, "kJ/mol"),
+                comment="""Thermo library: surfaceThermo""",
+            ),
         )
 
-        rxn1 = Reaction(reactants=[ch3, x],
-                        products=[ch3x],
-                        kinetics=StickingCoefficient(
-                            A=0.1, n=0, Ea=(0, 'kcal/mol'), T0=(1, 'K'), Tmin=(200, 'K'), Tmax=(3000, 'K'),
-                            coverage_dependence={x: {'a': 0.0, 'm': -1.0, 'E': (0.0, 'J/mol')}},
-                            comment="""Exact match found for rate rule (Adsorbate;VacantSite)"""
-                        )
-                        )
+        ch3x = Species(
+            molecule=[
+                Molecule().from_adjacency_list(
+                    """1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 X u0 p0 c0 {1,S}"""
+                )
+            ],
+            thermo=NASA(
+                polynomials=[
+                    NASAPolynomial(
+                        coeffs=[
+                            -0.552219,
+                            0.026442,
+                            -3.55617e-05,
+                            2.60044e-08,
+                            -7.52707e-12,
+                            -4433.47,
+                            0.692144,
+                        ],
+                        Tmin=(298, "K"),
+                        Tmax=(1000, "K"),
+                    ),
+                    NASAPolynomial(
+                        coeffs=[
+                            3.62557,
+                            0.00739512,
+                            -2.43797e-06,
+                            1.86159e-10,
+                            3.6485e-14,
+                            -5187.22,
+                            -18.9668,
+                        ],
+                        Tmin=(1000, "K"),
+                        Tmax=(2000, "K"),
+                    ),
+                ],
+                Tmin=(298, "K"),
+                Tmax=(2000, "K"),
+                E0=(-39.1285, "kJ/mol"),
+                comment="""Thermo library: surfaceThermoNi111""",
+            ),
+        )
+
+        rxn1 = Reaction(
+            reactants=[ch3, x],
+            products=[ch3x],
+            kinetics=StickingCoefficient(
+                A=0.1,
+                n=0,
+                Ea=(0, "kcal/mol"),
+                T0=(1, "K"),
+                Tmin=(200, "K"),
+                Tmax=(3000, "K"),
+                coverage_dependence={x: {"a": 0.0, "m": -1.0, "E": (0.0, "J/mol")}},
+                comment="""Exact match found for rate rule (Adsorbate;VacantSite)""",
+            ),
+        )
         core_species = [ch3, x, ch3x]
         edge_species = []
         core_reactions = [rxn1]
         edge_reactions = []
 
-        T = 800.
+        T = 800.0
         P_initial = 1.0e5
         rxn_system = SurfaceReactor(
-            T, P_initial,
+            T,
+            P_initial,
             n_sims=1,
             initial_gas_mole_fractions={ch3: 1.0},
             initial_surface_coverages={x: 1.0},
-            surface_volume_ratio=(1., 'm^-1'),
-            surface_site_density=(2.72e-9, 'mol/cm^2'),
+            surface_volume_ratio=(1.0, "m^-1"),
+            surface_site_density=(2.72e-9, "mol/cm^2"),
             coverage_dependence=True,
-            termination=[])
+            termination=[],
+        )
         # in chemkin, the sites are mostly occupied in about 1e-8 seconds.
 
-        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system.initialize_model(
+            core_species, core_reactions, edge_species, edge_reactions
+        )
 
         tlist = np.logspace(-13, -5, 81, dtype=np.float64)
 
         print("Surface site density:", rxn_system.surface_site_density.value_si)
 
-        print("rxn1 rate coefficient",
-              rxn1.get_surface_rate_coefficient(rxn_system.T.value_si, rxn_system.surface_site_density.value_si))
+        print(
+            "rxn1 rate coefficient",
+            rxn1.get_surface_rate_coefficient(
+                rxn_system.T.value_si, rxn_system.surface_site_density.value_si
+            ),
+        )
 
-        self.assertIsInstance(rxn1.kinetics.coverage_dependence, dict)  # check to make sure coverage_dependence is still the correct type
+        self.assertIsInstance(
+            rxn1.kinetics.coverage_dependence, dict
+        )  # check to make sure coverage_dependence is still the correct type
         for species, parameters in rxn1.kinetics.coverage_dependence.items():
             self.assertIsInstance(species, Species)  # species should be a Species
             self.assertIsInstance(parameters, dict)
-            self.assertIsNotNone(parameters['a'])
-            self.assertIsNotNone(parameters['m'])
-            self.assertIsNotNone(parameters['E'])
+            self.assertIsNotNone(parameters["a"])
+            self.assertIsNotNone(parameters["m"])
+            self.assertIsNotNone(parameters["E"])
 
         # Integrate to get the solution at each time point
         t = []
@@ -524,31 +754,49 @@ class SurfaceReactorCheck(unittest.TestCase):
         y = np.array(y, np.float64)
         reaction_rates = np.array(reaction_rates, np.float64)
         species_rates = np.array(species_rates, np.float64)
-        V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P_initial.value_si
+        V = (
+            constants.R
+            * rxn_system.T.value_si
+            * np.sum(y)
+            / rxn_system.P_initial.value_si
+        )
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            self.assertAlmostEqual(reaction_rates[i, 0], -species_rates[i, 0],
-                                   delta=1e-6 * reaction_rates[i, 0])
-            self.assertAlmostEqual(reaction_rates[i, 0], -species_rates[i, 1],
-                                   delta=1e-6 * reaction_rates[i, 0])
-            self.assertAlmostEqual(reaction_rates[i, 0], species_rates[i, 2],
-                                   delta=1e-6 * reaction_rates[i, 0])
+            self.assertAlmostEqual(
+                reaction_rates[i, 0],
+                -species_rates[i, 0],
+                delta=1e-6 * reaction_rates[i, 0],
+            )
+            self.assertAlmostEqual(
+                reaction_rates[i, 0],
+                -species_rates[i, 1],
+                delta=1e-6 * reaction_rates[i, 0],
+            )
+            self.assertAlmostEqual(
+                reaction_rates[i, 0],
+                species_rates[i, 2],
+                delta=1e-6 * reaction_rates[i, 0],
+            )
 
         # Check that we've reached equilibrium by the end
         self.assertAlmostEqual(reaction_rates[-1, 0], 0.0, delta=1e-2)
 
         # Run model with Covdep off so we can test that it is actually being implemented
         rxn_system = SurfaceReactor(
-            T, P_initial,
+            T,
+            P_initial,
             n_sims=1,
             initial_gas_mole_fractions={ch3: 1.0},
             initial_surface_coverages={x: 1.0},
-            surface_volume_ratio=(1., 'm^-1'),
-            surface_site_density=(2.72e-9, 'mol/cm^2'),
-            termination=[])
+            surface_volume_ratio=(1.0, "m^-1"),
+            surface_site_density=(2.72e-9, "mol/cm^2"),
+            termination=[],
+        )
 
-        rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+        rxn_system.initialize_model(
+            core_species, core_reactions, edge_species, edge_reactions
+        )
 
         tlist = np.logspace(-13, -5, 81, dtype=np.float64)
 
@@ -581,5 +829,5 @@ class SurfaceReactorCheck(unittest.TestCase):
         self.assertAlmostEqual(species_rates_off[-1, 0], 0.0, delta=1e-2)
 
         # Check that coverages are different
-        self.assertFalse(np.allclose(y,y_off))
+        self.assertFalse(np.allclose(y, y_off))
         self.assertFalse(np.allclose(species_rates, species_rates_off))

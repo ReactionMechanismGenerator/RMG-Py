@@ -11,15 +11,15 @@ and immediately used in input files without any additional changes.
 """
 
 default = {
-    'Disproportionation',
-    'H_Abstraction',
-    'R_Addition_MultipleBond',
-    'R_Recombination',
+    "Disproportionation",
+    "H_Abstraction",
+    "R_Addition_MultipleBond",
+    "R_Recombination",
 }
 
 pah = {
-    '1,2_shiftC',
-    '6_membered_central_C-C_shift',
-    'Intra_R_Add_Exo_scission',
-    'Intra_ene_reaction',
+    "1,2_shiftC",
+    "6_membered_central_C-C_shift",
+    "Intra_R_Add_Exo_scission",
+    "Intra_ene_reaction",
 }

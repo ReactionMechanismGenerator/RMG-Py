@@ -16,44 +16,47 @@ will be given by k * (mol/m2) * (mol/m2)
 so k should be in (m2/mol/s)
 """
 
-template(reactants=["Combined", "VacantSite"], products=["Adsorbate1", "Adsorbate2"], ownReverse=False)
+template(
+    reactants=["Combined", "VacantSite"],
+    products=["Adsorbate1", "Adsorbate2"],
+    ownReverse=False,
+)
 
 reverse = "Surface_Association_vdW"
 
-recipe(actions=[
-    ['CHANGE_BOND', '*1', 1, '*3'],
-    ['FORM_BOND', '*2', 1, '*4'],
-    ['BREAK_BOND', '*1', 1, '*2'],
-])
+recipe(
+    actions=[
+        ["CHANGE_BOND", "*1", 1, "*3"],
+        ["FORM_BOND", "*2", 1, "*4"],
+        ["BREAK_BOND", "*1", 1, "*2"],
+    ]
+)
 
 entry(
-    index = 1,
-    label = "Combined",
-    group = 
-"""
+    index=1,
+    label="Combined",
+    group="""
 1 *1 R  u0 {2,S} 
 2 *2 R  u0 {1,S}
 3 *3 X  u0 
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 2,
+    index=2,
     label="VacantSite",
-    group = 
-"""
+    group="""
 1 *4 Xv u0
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 
 tree(
-"""
+    """
 L1: Combined
 
 L1: VacantSite
 """
 )
-

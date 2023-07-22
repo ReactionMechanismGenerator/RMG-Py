@@ -42,11 +42,15 @@ from rmgpy.species import Species
 
 ###################################################
 
-TESTFAMILIES = ['H_Abstraction', 'R_Recombination', 'Disproportionation', 'R_Addition_MultipleBond']
+TESTFAMILIES = [
+    "H_Abstraction",
+    "R_Recombination",
+    "Disproportionation",
+    "R_Addition_MultipleBond",
+]
 
 
 class TestReact(unittest.TestCase):
-
     def setUp(self):
         """
         A method that is run before each unit test in this class.
@@ -56,15 +60,18 @@ class TestReact(unittest.TestCase):
 
         # load kinetic database and forbidden structures
         self.rmg.database = RMGDatabase()
-        path = os.path.join(settings['database.directory'])
+        path = os.path.join(settings["database.directory"])
 
         # forbidden structure loading
-        self.rmg.database.load_forbidden_structures(os.path.join(path, 'forbiddenStructures.py'))
+        self.rmg.database.load_forbidden_structures(
+            os.path.join(path, "forbiddenStructures.py")
+        )
         # kinetics family loading
-        self.rmg.database.load_kinetics(os.path.join(path, 'kinetics'),
-                                        kinetics_families=TESTFAMILIES,
-                                        reaction_libraries=[]
-                                        )
+        self.rmg.database.load_kinetics(
+            os.path.join(path, "kinetics"),
+            kinetics_families=TESTFAMILIES,
+            reaction_libraries=[],
+        )
 
     def test_react(self):
         """
@@ -72,31 +79,36 @@ class TestReact(unittest.TestCase):
         """
         procnum = 1
 
-        spc_a = Species().from_smiles('[OH]')
-        spcs = [Species().from_smiles('CC'), Species().from_smiles('[CH3]')]
-        spc_tuples = [((spc_a, spc), ['H_Abstraction']) for spc in spcs]
+        spc_a = Species().from_smiles("[OH]")
+        spcs = [Species().from_smiles("CC"), Species().from_smiles("[CH3]")]
+        spc_tuples = [((spc_a, spc), ["H_Abstraction"]) for spc in spcs]
 
         reaction_list = list(itertools.chain.from_iterable(react(spc_tuples, procnum)))
         self.assertIsNotNone(reaction_list)
         self.assertEqual(len(reaction_list), 3)
-        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
+        self.assertTrue(
+            all([isinstance(rxn, TemplateReaction) for rxn in reaction_list])
+        )
 
     def test_react_parallel(self):
         """
         Test that the ``react`` function works in parallel using Python multiprocessing
         """
         import rmgpy.rmg.main
+
         rmgpy.rmg.main.maxproc = 2
         procnum = 2
 
-        spc_a = Species().from_smiles('[OH]')
-        spcs = [Species().from_smiles('CC'), Species().from_smiles('[CH3]')]
-        spc_tuples = [((spc_a, spc), ['H_Abstraction']) for spc in spcs]
+        spc_a = Species().from_smiles("[OH]")
+        spcs = [Species().from_smiles("CC"), Species().from_smiles("[CH3]")]
+        spc_tuples = [((spc_a, spc), ["H_Abstraction"]) for spc in spcs]
 
         reaction_list = list(itertools.chain.from_iterable(react(spc_tuples, procnum)))
         self.assertIsNotNone(reaction_list)
         self.assertEqual(len(reaction_list), 3)
-        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
+        self.assertTrue(
+            all([isinstance(rxn, TemplateReaction) for rxn in reaction_list])
+        )
 
         # Reset module level maxproc back to default
         rmgpy.rmg.main.maxproc = 1
@@ -108,46 +120,55 @@ class TestReact(unittest.TestCase):
         procnum = 1
 
         spcs = [
-            Species().from_smiles('C=C'),
-            Species().from_smiles('[CH3]'),
-            Species().from_smiles('[OH]'),
-            Species().from_smiles('CCCCCCCCCCC')
+            Species().from_smiles("C=C"),
+            Species().from_smiles("[CH3]"),
+            Species().from_smiles("[OH]"),
+            Species().from_smiles("CCCCCCCCCCC"),
         ]
 
         n = len(spcs)
-        reaction_list, spc_tuples = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
+        reaction_list, spc_tuples = react_all(
+            spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum
+        )
         self.assertIsNotNone(reaction_list)
         self.assertEqual(len(reaction_list), 34)
         self.assertEqual(len(spc_tuples), 34)
 
         flat_rxn_list = list(itertools.chain.from_iterable(reaction_list))
         self.assertEqual(len(flat_rxn_list), 44)
-        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in flat_rxn_list]))
+        self.assertTrue(
+            all([isinstance(rxn, TemplateReaction) for rxn in flat_rxn_list])
+        )
 
     def test_react_all_parallel(self):
         """
         Test that the ``react_all`` function works in parallel using Python multiprocessing
         """
         import rmgpy.rmg.main
+
         rmgpy.rmg.main.maxproc = 2
         procnum = 2
 
         spcs = [
-            Species().from_smiles('C=C'),
-            Species().from_smiles('[CH3]'),
-            Species().from_smiles('[OH]'),
-            Species().from_smiles('CCCCCCCCCCC')
+            Species().from_smiles("C=C"),
+            Species().from_smiles("[CH3]"),
+            Species().from_smiles("[OH]"),
+            Species().from_smiles("CCCCCCCCCCC"),
         ]
 
         n = len(spcs)
-        reaction_list, spc_tuples = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
+        reaction_list, spc_tuples = react_all(
+            spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum
+        )
         self.assertIsNotNone(reaction_list)
         self.assertEqual(len(reaction_list), 94)
         self.assertEqual(len(spc_tuples), 94)
 
         flat_rxn_list = list(itertools.chain.from_iterable(reaction_list))
         self.assertEqual(len(flat_rxn_list), 44)
-        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in flat_rxn_list]))
+        self.assertTrue(
+            all([isinstance(rxn, TemplateReaction) for rxn in flat_rxn_list])
+        )
 
         # Reset module level maxproc back to default
         rmgpy.rmg.main.maxproc = 1
@@ -157,8 +178,9 @@ class TestReact(unittest.TestCase):
         Reset the loaded database
         """
         import rmgpy.data.rmg
+
         rmgpy.data.rmg.database = None
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

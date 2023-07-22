@@ -2,28 +2,26 @@
 # encoding: utf-8
 
 name = "polycyclic"
-shortDesc = u""
-longDesc = u""" 
+shortDesc = ""
+longDesc = """ 
 
 """
 
 entry(
-	index = 1,
-	label = "PolycyclicRing",
-	group = 
-"""
+    index=1,
+    label="PolycyclicRing",
+    group="""
 1 * R u0
 """,
-	solute = SoluteData(
-		S = 0.00086,
-		B = 0.04137,
-		E = -0.08617,
-		L = 0.16153,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=0.00086,
+        B=0.04137,
+        E=-0.08617,
+        L=0.16153,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 17
 B: 17
@@ -34,21 +32,19 @@ A: 17
 )
 
 entry(
-	index = 2,
-	label = "polycyclic_7fused",
-	group =  "OR{Strychnine_general}",
-	solute = None,
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    index=2,
+    label="polycyclic_7fused",
+    group="OR{Strychnine_general}",
+    solute=None,
+    shortDesc="""""",
+    longDesc="""
 """,
 )
 
 entry(
-	index = 3,
-	label = "Strychnine_general",
-	group = 
-"""
+    index=3,
+    label="Strychnine_general",
+    group="""
 1  * R!H u0 {9,[S,D,B]} {16,[S,D,B]}
 2  R!H u0 {7,[S,D,B]} {13,[S,D,B]} {15,[S,D,B]}
 3  R!H u0 {6,[S,D,B]} {14,[S,D,B]} {19,[S,D,B]}
@@ -74,18 +70,16 @@ entry(
 23 R!H u0 {21,[S,D,B]} {24,[S,D,B]}
 24 R!H u0 {22,[S,D,B]} {23,[S,D,B]}
 """,
-	solute = u'Strychnine',
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute="Strychnine",
+    shortDesc="""""",
+    longDesc="""
 """,
 )
 
 entry(
-	index = 4,
-	label = "Strychnine",
-	group = 
-"""
+    index=4,
+    label="Strychnine",
+    group="""
 1  * O u0 {9,S} {16,S}
 2  N u0 {7,S} {13,S} {15,S}
 3  N u0 {6,S} {14,S} {19,S}
@@ -111,16 +105,15 @@ entry(
 23 C u0 {21,B} {24,B}
 24 C u0 {22,B} {23,B}
 """,
-	solute = SoluteData(
-		S = -0.03901,
-		B = 0.04494,
-		E = 0.24179,
-		L = 0.19867,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=-0.03901,
+        B=0.04494,
+        E=0.24179,
+        L=0.19867,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 2
 B: 2
@@ -131,10 +124,9 @@ A: 2
 )
 
 entry(
-	index = 138,
-	label = "s1_3_6",
-	group = 
-"""
+    index=138,
+    label="s1_3_6",
+    group="""
 1   R!H u0 {2,[S,D,T,B]} {3,[S,D,T,B]} {4,[S,D,T,B]} {5,[S,D,T,B]}
 2   R!H u0 {1,[S,D,T,B]} {3,[S,D,T,B]}
 3   R!H u0 {1,[S,D,T,B]} {2,[S,D,T,B]}
@@ -144,18 +136,16 @@ entry(
 7   R!H u0 {5,[S,D,T,B]} {8,[S,D,T,B]}
 8 * R!H u0 {6,[S,D,T,B]} {7,[S,D,T,B]}
 """,
-	solute = u's1_3_6_ane',
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute="s1_3_6_ane",
+    shortDesc="""""",
+    longDesc="""
 """,
 )
 
 entry(
-	index = 139,
-	label = "s1_3_6_ane",
-	group = 
-"""
+    index=139,
+    label="s1_3_6_ane",
+    group="""
 1   R!H u0 {2,S} {3,S} {4,S} {5,S}
 2   R!H u0 {1,S} {3,S}
 3   R!H u0 {1,S} {2,S}
@@ -165,16 +155,15 @@ entry(
 7   R!H u0 {5,S} {8,S}
 8 * R!H u0 {6,S} {7,S}
 """,
-	solute = SoluteData(
-		S = -0.00921,
-		B = 0.02340,
-		E = -0.03777,
-		L = -0.03540,
-		A = 0.00000,
-	),
-	shortDesc = u"""""",
-	longDesc = 
-u"""
+    solute=SoluteData(
+        S=-0.00921,
+        B=0.02340,
+        E=-0.03777,
+        L=-0.03540,
+        A=0.00000,
+    ),
+    shortDesc="""""",
+    longDesc="""
 Number of data used to fit each solute parameter:
 S: 1
 B: 1
@@ -185,7 +174,7 @@ A: 1
 )
 
 tree(
-"""
+    """
 L1: PolycyclicRing
 	L2: polycyclic_7fused
 		L3: Strychnine_general

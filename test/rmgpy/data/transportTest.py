@@ -41,6 +41,7 @@ from rmgpy.transport import TransportData
 
 ################################################################################
 
+
 class TestCriticalPointGroupContribution(unittest.TestCase):
     """
     Contains unit test of the :class: 'criticalPointGroupContribution' class
@@ -51,7 +52,7 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
         A function run before each unit test in this class.
         """
         self.Tc = 0.0141
-        self.Pc = -.0012
+        self.Pc = -0.0012
         self.Vc = 65
         self.Tb = 23.58
         self.structureIndex = 1
@@ -92,33 +93,66 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
         """
         Test that the CriticalPointGroupContribution structureIndex property was properly set.
         """
-        self.assertAlmostEqual(self.criticalPointContribution.structureIndex, self.structureIndex, 6)
+        self.assertAlmostEqual(
+            self.criticalPointContribution.structureIndex, self.structureIndex, 6
+        )
 
     def test_pickle(self):
         """
         Test that a CriticalPointGroupContribution object can be pickled and unpickled with no loss of information.
         """
         import pickle
-        criticalPointContribution = pickle.loads(pickle.dumps(self.criticalPointContribution, -1))
-        self.assertAlmostEqual(self.criticalPointContribution.Tc, criticalPointContribution.Tc, 4)
-        self.assertAlmostEqual(self.criticalPointContribution.Pc, criticalPointContribution.Pc, 4)
-        self.assertAlmostEqual(self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4)
-        self.assertAlmostEqual(self.criticalPointContribution.Tb, criticalPointContribution.Tb, 4)
-        self.assertAlmostEqual(self.criticalPointContribution.structureIndex, criticalPointContribution.structureIndex, 4)
+
+        criticalPointContribution = pickle.loads(
+            pickle.dumps(self.criticalPointContribution, -1)
+        )
+        self.assertAlmostEqual(
+            self.criticalPointContribution.Tc, criticalPointContribution.Tc, 4
+        )
+        self.assertAlmostEqual(
+            self.criticalPointContribution.Pc, criticalPointContribution.Pc, 4
+        )
+        self.assertAlmostEqual(
+            self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4
+        )
+        self.assertAlmostEqual(
+            self.criticalPointContribution.Tb, criticalPointContribution.Tb, 4
+        )
+        self.assertAlmostEqual(
+            self.criticalPointContribution.structureIndex,
+            criticalPointContribution.structureIndex,
+            4,
+        )
 
     def test_repr(self):
         """
         Test that a CriticalPointGroupContribution object can be reconstructed from its repr() output with no loss of information
         """
         namespace = {}
-        exec('criticalPointContribution = {0!r}'.format(self.criticalPointContribution), globals(), namespace)
-        self.assertIn('criticalPointContribution', namespace)
-        criticalPointContribution = namespace['criticalPointContribution']
-        self.assertAlmostEqual(self.criticalPointContribution.Tc, criticalPointContribution.Tc, 4)
-        self.assertAlmostEqual(self.criticalPointContribution.Pc, criticalPointContribution.Pc, 4)
-        self.assertAlmostEqual(self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4)
-        self.assertAlmostEqual(self.criticalPointContribution.Tb, criticalPointContribution.Tb, 4)
-        self.assertAlmostEqual(self.criticalPointContribution.structureIndex, criticalPointContribution.structureIndex, 4)
+        exec(
+            "criticalPointContribution = {0!r}".format(self.criticalPointContribution),
+            globals(),
+            namespace,
+        )
+        self.assertIn("criticalPointContribution", namespace)
+        criticalPointContribution = namespace["criticalPointContribution"]
+        self.assertAlmostEqual(
+            self.criticalPointContribution.Tc, criticalPointContribution.Tc, 4
+        )
+        self.assertAlmostEqual(
+            self.criticalPointContribution.Pc, criticalPointContribution.Pc, 4
+        )
+        self.assertAlmostEqual(
+            self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4
+        )
+        self.assertAlmostEqual(
+            self.criticalPointContribution.Tb, criticalPointContribution.Tb, 4
+        )
+        self.assertAlmostEqual(
+            self.criticalPointContribution.structureIndex,
+            criticalPointContribution.structureIndex,
+            4,
+        )
 
 
 class TestTransportDatabase(unittest.TestCase):
@@ -130,40 +164,62 @@ class TestTransportDatabase(unittest.TestCase):
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
         cls.database = TransportDatabase()
-        cls.database.load(os.path.join(settings['database.directory'], 'transport'),
-                          ['GRI-Mech', 'PrimaryTransportLibrary'])
+        cls.database.load(
+            os.path.join(settings["database.directory"], "transport"),
+            ["GRI-Mech", "PrimaryTransportLibrary"],
+        )
 
         cls.speciesList = [
-            Species().from_smiles('C'),
-            Species().from_smiles('CCCC'),
-            Species().from_smiles('O'),
-            Species().from_smiles('[CH3]'),
-            Species().from_smiles('[OH]'),
-            Species().from_smiles('c1ccccc1'),
+            Species().from_smiles("C"),
+            Species().from_smiles("CCCC"),
+            Species().from_smiles("O"),
+            Species().from_smiles("[CH3]"),
+            Species().from_smiles("[OH]"),
+            Species().from_smiles("c1ccccc1"),
         ]
 
     def test_joback(self):
         """Test transport property estimation via Joback groups."""
         self.testCases = [
-            ['acetone', 'CC(=O)C', Length(5.36421, 'angstroms'), Energy(3.20446, 'kJ/mol'), "Epsilon & sigma estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)"],
-            ['cyclopenta-1,2-diene', 'C1=C=CCC1', None, None, None],  # not sure what to expect, we just want to make sure it doesn't crash
-            ['benzene', 'c1ccccc1', None, None, None],
-            ['N-methylmethanamine', 'CNC', None, None, None],
-            ['imidazole', 'c1ncc[nH]1', None, None, None],
+            [
+                "acetone",
+                "CC(=O)C",
+                Length(5.36421, "angstroms"),
+                Energy(3.20446, "kJ/mol"),
+                "Epsilon & sigma estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)",
+            ],
+            [
+                "cyclopenta-1,2-diene",
+                "C1=C=CCC1",
+                None,
+                None,
+                None,
+            ],  # not sure what to expect, we just want to make sure it doesn't crash
+            ["benzene", "c1ccccc1", None, None, None],
+            ["N-methylmethanamine", "CNC", None, None, None],
+            ["imidazole", "c1ncc[nH]1", None, None, None],
         ]
 
         # values calculate from joback's estimations
         for name, smiles, sigma, epsilon, comment in self.testCases:
             species = Species().from_smiles(smiles)
-            transport_data, blank, blank2 = self.database.get_transport_properties_via_group_estimates(species)
+            (
+                transport_data,
+                blank,
+                blank2,
+            ) = self.database.get_transport_properties_via_group_estimates(species)
             # check Joback worked.
             # If we don't know what to expect, don't check (just make sure we didn't crash)
             if comment:
                 self.assertTrue(transport_data.comment == comment)
             if sigma:
-                self.assertAlmostEqual(transport_data.sigma.value_si * 1e10, sigma.value_si * 1e10, 4)
+                self.assertAlmostEqual(
+                    transport_data.sigma.value_si * 1e10, sigma.value_si * 1e10, 4
+                )
             if epsilon:
-                self.assertAlmostEqual(transport_data.epsilon.value_si, epsilon.value_si, 1)
+                self.assertAlmostEqual(
+                    transport_data.epsilon.value_si, epsilon.value_si, 1
+                )
 
     @work_in_progress
     def test_joback_on_benzene_bonds(self):
@@ -174,7 +230,8 @@ class TestTransportDatabase(unittest.TestCase):
             If this test fails as WIP, then the method ``get_transport_properties_via_group_estimates`` needs to be
             updated so that aromatic molecules are not kekulized. See RMG-Py PR#1936
         """
-        molecule = Molecule().from_adjacency_list("""
+        molecule = Molecule().from_adjacency_list(
+            """
                                                   1  C u0 p0 {2,B} {6,B} {7,S}
                                                   2  C u0 p0 {1,B} {3,B} {8,S}
                                                   3  C u0 p0 {2,B} {4,B} {9,S}
@@ -187,33 +244,48 @@ class TestTransportDatabase(unittest.TestCase):
                                                   10 H u0 p0 {4,S}
                                                   11 H u0 p0 {5,S}
                                                   12 H u0 p0 {6,S}
-                                                  """)
-        
-        critical_point = self.database.estimate_critical_properties_via_group_additivity(molecule)
+                                                  """
+        )
+
+        critical_point = (
+            self.database.estimate_critical_properties_via_group_additivity(molecule)
+        )
         self.assertIsNotNone(critical_point)
 
     def test_Tb_correction_for_halogens(self):
         """
-        Test that the halogen `Tb` correction is applied to the critical point estimated from 
+        Test that the halogen `Tb` correction is applied to the critical point estimated from
         group additivity
         """
-        partial_F_mol1 = Molecule(smiles='CCF') # partially fluorinated without other halogens
-        partial_F_mol2 = Molecule(smiles='ClCCF') # partially fluorinated with other halogens
-        per_F_mol = Molecule(smiles='FC(F)(F)C(F)(F)F') # perfluorinated
-        partial_hal_mol = Molecule(smiles='BrCCCl') # partially halogenated without fluorine
-        per_hal_mol1 = Molecule(smiles='BrC(F)(Cl)C(Br)(F)Cl') # perhalogenated with fluorine
-        per_hal_mol2 = Molecule(smiles='BrC(Cl)(Cl)C(Cl)(Br)Cl') # perhalogenated without fluorine
+        partial_F_mol1 = Molecule(
+            smiles="CCF"
+        )  # partially fluorinated without other halogens
+        partial_F_mol2 = Molecule(
+            smiles="ClCCF"
+        )  # partially fluorinated with other halogens
+        per_F_mol = Molecule(smiles="FC(F)(F)C(F)(F)F")  # perfluorinated
+        partial_hal_mol = Molecule(
+            smiles="BrCCCl"
+        )  # partially halogenated without fluorine
+        per_hal_mol1 = Molecule(
+            smiles="BrC(F)(Cl)C(Br)(F)Cl"
+        )  # perhalogenated with fluorine
+        per_hal_mol2 = Molecule(
+            smiles="BrC(Cl)(Cl)C(Cl)(Br)Cl"
+        )  # perhalogenated without fluorine
 
-        for mol,comment in [
-            (partial_F_mol1,'with partial fluorination Tb correction (-25 K)'),
-            (partial_F_mol2,'with partial fluorination Tb correction (-25 K)'),
-            (per_F_mol,'with perfluorinated Tb correction (-45.57 K)'),
-            (partial_hal_mol,'with partial halogenation Tb correction (+11.43 K)'),
-            (per_hal_mol1,'with perhalogenated Tb correction (-53.55 K)'),
-            (per_hal_mol2,'with perhalogenated Tb correction (-53.55 K)')
+        for mol, comment in [
+            (partial_F_mol1, "with partial fluorination Tb correction (-25 K)"),
+            (partial_F_mol2, "with partial fluorination Tb correction (-25 K)"),
+            (per_F_mol, "with perfluorinated Tb correction (-45.57 K)"),
+            (partial_hal_mol, "with partial halogenation Tb correction (+11.43 K)"),
+            (per_hal_mol1, "with perhalogenated Tb correction (-53.55 K)"),
+            (per_hal_mol2, "with perhalogenated Tb correction (-53.55 K)"),
         ]:
-            critical_point = self.database.estimate_critical_properties_via_group_additivity(mol)
-            self.assertEqual(critical_point.comment,comment)
+            critical_point = (
+                self.database.estimate_critical_properties_via_group_additivity(mol)
+            )
+            self.assertEqual(critical_point.comment, comment)
 
     def test_get_transport_properties(self):
         """Test that we can retrieve best transport properties for a species."""
@@ -239,5 +311,5 @@ class TestTransportDatabase(unittest.TestCase):
 
 ################################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

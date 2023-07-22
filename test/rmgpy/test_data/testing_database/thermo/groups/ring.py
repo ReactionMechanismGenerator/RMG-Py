@@ -6,6 +6,3 @@ shortDesc = ""
 longDesc = """
 
 """
-
-
-

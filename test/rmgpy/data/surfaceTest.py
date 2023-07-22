@@ -38,17 +38,18 @@ from rmgpy.quantity import Energy, SurfaceConcentration
 
 ###################################################
 
-class TestMetalDatabase(TestCase):
 
+class TestMetalDatabase(TestCase):
     def setUp(self):
         self.database = MetalDatabase()
-        self.database.load(os.path.join(settings['database.directory'], 'surface'))
+        self.database.load(os.path.join(settings["database.directory"], "surface"))
 
     def tearDown(self):
         """
         Reset the database & parameters
         """
         import rmgpy.data.rmg
+
         rmgpy.data.rmg.database = None
 
     def test_load_metal_library(self):
@@ -58,22 +59,28 @@ class TestMetalDatabase(TestCase):
             index=1,
             label="Pt111",
             binding_energies={
-                'H': Energy(-2.75367887E+00, 'eV/molecule'),
-                'C': Energy(-7.02515507E+00, 'eV/molecule'),
-                'N': Energy(-4.63224568E+00, 'eV/molecule'),
-                'O': Energy(-3.81153179E+00, 'eV/molecule'),
+                "H": Energy(-2.75367887e00, "eV/molecule"),
+                "C": Energy(-7.02515507e00, "eV/molecule"),
+                "N": Energy(-4.63224568e00, "eV/molecule"),
+                "O": Energy(-3.81153179e00, "eV/molecule"),
             },
-            surface_site_density=SurfaceConcentration(2.483E-09, 'mol/cm^2'),
+            surface_site_density=SurfaceConcentration(2.483e-09, "mol/cm^2"),
             facet="111",
             metal="Pt",
-            short_desc=u"fcc",
-            long_desc=u"""
+            short_desc="fcc",
+            long_desc="""
         Calculated by Katrin Blondal and Bjarne Kreitz at Brown University
             """,
         )
 
-        self.assertEqual(repr(self.database.get_binding_energies(test_entry.label)), repr(test_entry.binding_energies))
-        self.assertEqual(repr(self.database.get_surface_site_density(test_entry.label)), repr(test_entry.surface_site_density))
+        self.assertEqual(
+            repr(self.database.get_binding_energies(test_entry.label)),
+            repr(test_entry.binding_energies),
+        )
+        self.assertEqual(
+            repr(self.database.get_surface_site_density(test_entry.label)),
+            repr(test_entry.surface_site_density),
+        )
 
     def test_write_entry_to_database(self):
         """Test we can write an entry to the database"""
@@ -82,39 +89,49 @@ class TestMetalDatabase(TestCase):
             index=100,
             label="Me111",
             binding_energies={
-                'H': Energy(0., 'eV/molecule'),
-                'C': Energy(0., 'eV/molecule'),
-                'N': Energy(0., 'eV/molecule'),
-                'O': Energy(0., 'eV/molecule'),
+                "H": Energy(0.0, "eV/molecule"),
+                "C": Energy(0.0, "eV/molecule"),
+                "N": Energy(0.0, "eV/molecule"),
+                "O": Energy(0.0, "eV/molecule"),
             },
-            surface_site_density=SurfaceConcentration(0., 'mol/cm^2'),
+            surface_site_density=SurfaceConcentration(0.0, "mol/cm^2"),
             facet="111",
             metal="Me",
-            short_desc=u"fcc",
-            long_desc=u"""
+            short_desc="fcc",
+            long_desc="""
         Test
             """,
         )
 
-        MetalLib = self.database.libraries['surface']
+        MetalLib = self.database.libraries["surface"]
         self.database.add_entry(test_entry)
 
         # test to see if the entry was added
-        self.assertEqual(repr(self.database.get_binding_energies(test_entry.label)), repr(test_entry.binding_energies))
-        self.assertEqual(repr(self.database.get_surface_site_density(test_entry.label)), repr(test_entry.surface_site_density))
+        self.assertEqual(
+            repr(self.database.get_binding_energies(test_entry.label)),
+            repr(test_entry.binding_energies),
+        )
+        self.assertEqual(
+            repr(self.database.get_surface_site_density(test_entry.label)),
+            repr(test_entry.surface_site_density),
+        )
 
         # write the new entry
-        self.database.save(os.path.join(settings['database.directory'], 'surface'))
+        self.database.save(os.path.join(settings["database.directory"], "surface"))
         # MetalLib.save_entry(os.path.join(settings['database.directory'], 'surface/libraries/metal.py'), test_entry)
 
         # test to see if entry was written
-        with open(os.path.join(settings['database.directory'], 'surface/libraries/metal.py'), "r") as f:
+        with open(
+            os.path.join(settings["database.directory"], "surface/libraries/metal.py"),
+            "r",
+        ) as f:
             if "Me111" in f.read():
                 self.database.remove_entry(test_entry)
-                self.database.save(os.path.join(settings['database.directory'], 'surface'))
+                self.database.save(
+                    os.path.join(settings["database.directory"], "surface")
+                )
             else:
                 raise DatabaseError("Unable to write entry to database.")
-
 
     def test_load_from_label(self):
         """Test we can obtain metal parameters from a string"""
@@ -133,9 +150,10 @@ class TestMetalDatabase(TestCase):
         self.assertGreaterEqual(len(self.database.get_all_entries_on_metal("Ni")), 2)
         self.assertGreaterEqual(len(self.database.get_all_entries_on_metal("Co")), 2)
 
+
 #####################################################
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     suite = TestLoader().loadTestsFromTestCase(TestMetalDatabase)
     TextTestRunner(verbosity=2).run(suite)
