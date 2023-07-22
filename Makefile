@@ -58,16 +58,16 @@ decython:
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test-all:
-	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
+	pytest
 
 test test-unittests:
-	nosetests --nocapture --nologcapture --all-modules -A 'not functional' --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
+	pytest -m "not functional not database"
 
 test-functional:
-	nosetests --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy arkane
+	pytest -m "functional"
 
 test-database:
-	nosetests --nocapture --nologcapture --verbose --detailed-errors testing/databaseTest.py
+	pytest -m "database"
 
 eg0: all
 	mkdir -p testing/eg0
