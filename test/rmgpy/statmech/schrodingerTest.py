@@ -133,10 +133,3 @@ class TestSchrodinger(unittest.TestCase):
                 temperature, self.energy, self.degeneracy, self.n0
             )
             self.assertAlmostEqual(q_exp / q_act, 1.0, 2)
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

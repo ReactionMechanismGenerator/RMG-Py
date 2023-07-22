@@ -690,10 +690,3 @@ class Psi4LogTest(unittest.TestCase):
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft_ts.out"))
         conformer, unscaled_frequencies = log.load_conformer()
         self.assertEqual(conformer.spin_multiplicity, 1)
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

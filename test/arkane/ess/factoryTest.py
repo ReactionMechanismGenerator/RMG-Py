@@ -114,10 +114,3 @@ class TestThermo(unittest.TestCase):
 
         with self.assertRaises(InputError):
             ess_factory(non_ess_log_path)
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

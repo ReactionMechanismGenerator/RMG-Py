@@ -148,10 +148,3 @@ class TestArkaneExamples(unittest.TestCase):
                 files_to_delete=cls.files_to_delete,
                 file_extensions_to_delete=cls.extensions_to_delete,
             )
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

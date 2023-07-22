@@ -1165,7 +1165,3 @@ class TestEnlarge(unittest.TestCase):
         import shutil
 
         shutil.rmtree(cls.dirname)
-
-
-if __name__ == "__main__":
-    unittest.main()

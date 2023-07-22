@@ -482,10 +482,3 @@ class TestWilhoit(unittest.TestCase):
         class_dictionary = {"ScalarQuantity": ScalarQuantity, "Wilhoit": Wilhoit}
 
         new_wilhoit.make_object(wilhoit_dict, class_dictionary)
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

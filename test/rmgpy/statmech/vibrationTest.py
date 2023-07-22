@@ -258,10 +258,3 @@ class TestHarmonicOscillator(unittest.TestCase):
             self.assertAlmostEqual(freq0, freq, 6)
         self.assertEqual(self.mode.frequencies.units, mode.frequencies.units)
         self.assertEqual(self.mode.quantum, mode.quantum)
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

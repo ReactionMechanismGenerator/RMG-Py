@@ -630,10 +630,3 @@ rotors = [HinderedRotor(scanLog=ScanLog('{scan}'), pivots=[1, 2], top=[1, 3], sy
                 )
             )
             os.remove(h2o2_path)
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

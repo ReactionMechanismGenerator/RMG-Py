@@ -182,10 +182,3 @@ class OrcaTest(unittest.TestCase):
         log = OrcaLog(os.path.join(self.data_path, "Orca_TS_test.log"))
         conformer, unscaled_frequencies = log.load_conformer()
         self.assertEqual(conformer.spin_multiplicity, 1)
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

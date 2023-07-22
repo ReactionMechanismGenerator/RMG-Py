@@ -99,10 +99,3 @@ class ArkaneKineticsTest(unittest.TestCase):
                 inverse_tlist[-1] - inverse_tlist[-2],
             ),
         )
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

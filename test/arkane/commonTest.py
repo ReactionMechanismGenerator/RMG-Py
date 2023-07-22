@@ -686,10 +686,3 @@ class TestMomentOfInertia(unittest.TestCase):
         self.assertEqual(convert_imaginary_freq_to_negative_float("5.2"), 5.2)
         self.assertEqual(convert_imaginary_freq_to_negative_float("5.2i"), -5.2)
         self.assertEqual(convert_imaginary_freq_to_negative_float("635.8i"), -635.8)
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

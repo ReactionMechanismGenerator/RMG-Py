@@ -548,10 +548,3 @@ class TestHinderedRotor(unittest.TestCase):
         self.assertEqual(self.mode.barrier.units, mode.barrier.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
         self.assertEqual(self.mode.quantum, mode.quantum)
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

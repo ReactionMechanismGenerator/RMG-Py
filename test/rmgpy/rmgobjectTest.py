@@ -522,10 +522,3 @@ class TestExpandAndMakeFromDictionaries(unittest.TestCase):
         self.assertIsInstance(key, Data)
         self.assertEqual(key, Data("test"))
         self.assertEqual(val, "test")
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

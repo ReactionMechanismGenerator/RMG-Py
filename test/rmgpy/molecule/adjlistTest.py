@@ -962,7 +962,3 @@ class TestConsistencyChecker(unittest.TestCase):
             self.fail(
                 "InvalidAdjacencyListError thrown unexpectedly for singlet [N]=C=[N]!"
             )
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=3))

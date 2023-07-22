@@ -1319,10 +1319,3 @@ class TestQuantityDictionaryConversion(unittest.TestCase):
         self.assertEqual(minimal_array.as_dict(), self.minimal_array.as_dict())
         self.assertEqual(known_array.as_dict(), self.known_array.as_dict())
         self.assertEqual(uncertain_array.as_dict(), self.uncertain_array.as_dict())
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

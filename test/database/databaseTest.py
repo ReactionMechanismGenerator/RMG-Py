@@ -2568,7 +2568,3 @@ Origin Group AdjList:
 
         if boo:
             raise ValueError("Error Occurred")
-
-
-if __name__ == "__main__":
-    nose.run(argv=[__file__, "-v", "--nologcapture"], defaultTest=__name__)

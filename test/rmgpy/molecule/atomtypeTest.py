@@ -1046,10 +1046,3 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atom_type(self.mol77, 1), "H")
         self.assertEqual(self.atom_type(self.mol77, 3), "Xv")
         self.assertEqual(self.atom_type(self.mol78, 0), "Xv")
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

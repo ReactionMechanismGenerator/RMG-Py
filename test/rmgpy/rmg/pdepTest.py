@@ -374,7 +374,3 @@ class TestPdep(unittest.TestCase):
     def test_flux_filter(self):
         prods = self.pdepnetwork.get_rate_filtered_products(1000.0, 100000.0, 1.0)
         self.assertEquals(len(prods), 0)
-
-
-if __name__ == "__main__":
-    unittest.main()

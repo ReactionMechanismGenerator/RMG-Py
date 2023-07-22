@@ -114,7 +114,3 @@ class TestAE(unittest.TestCase):
 
         os.close(tmp_datafile_fd)
         os.remove(tmp_datafile_path)
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

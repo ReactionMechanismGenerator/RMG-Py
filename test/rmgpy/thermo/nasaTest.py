@@ -473,10 +473,3 @@ class TestNASA(unittest.TestCase):
         }
 
         new_nasa.make_object(nasa_dict, class_dictionary)
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

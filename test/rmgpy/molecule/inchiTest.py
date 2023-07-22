@@ -345,7 +345,3 @@ multiplicity 1
                 self.assertEquals(at.lone_pairs, 1)
             else:
                 self.assertEquals(at.lone_pairs, 0)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -65,10 +65,3 @@ class ArkaneTestThermo(unittest.TestCase):
         """Test Getting an element count dictionary from the species.conformer attribute"""
         element_count = self.thermo_job.element_count_from_conformer()
         self.assertEqual(element_count, {"H": 4, "C": 2})
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
