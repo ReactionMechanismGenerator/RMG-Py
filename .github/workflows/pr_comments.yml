@@ -26,7 +26,7 @@ jobs:
           IGNORE_RUNS_OLDER_THAN: 30
           # How far back to look for updated pull requests, in minutes.
           # Should be bigger than IGNORE_RUNS_OLDER_THAN by the maximum time a pull request jobs may take
-          IGNORE_PRS_OLDER_THAN: 80
+          IGNORE_PRS_OLDER_THAN: 400  # longest actions runner allowed time + some queue time
         run: |
           #
           # Strategy:
