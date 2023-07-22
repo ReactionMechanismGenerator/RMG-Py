@@ -45,7 +45,7 @@ import pytest
 
 class TestRMGWorkFlow:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         A method that is run before all unit tests in this class.
         """
@@ -70,7 +70,7 @@ class TestRMGWorkFlow:
         cls.rmg.database.forbidden_structures = ForbiddenStructures()
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """
         Reset the loaded database
         """

@@ -131,7 +131,7 @@ class TestTransportDatabase:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         cls.database = TransportDatabase()
         cls.database.load(

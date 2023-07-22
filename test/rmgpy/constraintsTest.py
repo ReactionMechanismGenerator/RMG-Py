@@ -47,7 +47,7 @@ class TestFailsSpeciesConstraints:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         A function run ONCE before all unit tests in this class.
         """
@@ -68,7 +68,7 @@ class TestFailsSpeciesConstraints:
         )
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """
         A function run ONCE after all unit tests in this class.
         """

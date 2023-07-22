@@ -48,7 +48,7 @@ class TestArkaneExamples:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         cls.base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), "examples", "arkane")
         cls.test_base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), "testing", "arkane")
@@ -100,7 +100,7 @@ class TestArkaneExamples:
         assert n_output == n_expected
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """A function that is run ONCE after all unit tests in this class."""
         cls.extensions_to_delete = ["pdf", "csv", "txt", "inp"]
         cls.files_to_delete = ["arkane.log", "output.py", "supporting_information.csv"]

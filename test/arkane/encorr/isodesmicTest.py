@@ -54,7 +54,7 @@ class TestErrorCancelingReactionAndSpecies:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         A method called before each unit test in this class.
         """
@@ -119,7 +119,7 @@ class TestSpeciesConstraints:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         A method called before each unit test in this class.
         """
@@ -254,7 +254,7 @@ class TestErrorCancelingScheme:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         try:
             import pyomo as pyo
         except ImportError:

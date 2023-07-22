@@ -49,7 +49,7 @@ from rmgpy.kinetics import Arrhenius
 
 class TestFamily:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         A function run ONCE before all unit tests in this class.
         """
@@ -731,7 +731,7 @@ multiplicity 2
 
 class TestTreeGeneration:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function run ONCE before all unit tests in this class."""
         # Set up a dummy database
         cls.database = RMGDatabase()
@@ -770,7 +770,7 @@ class TestTreeGeneration:
         )
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """A function run ONCE after all unit tests in this class."""
         import rmgpy.data.rmg
 
@@ -895,7 +895,7 @@ class TestTreeGeneration:
 
 class TestGenerateReactions:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function run ONCE before all unit tests in this class."""
         # Set up a dummy database
         cls.database = RMGDatabase()
@@ -922,7 +922,7 @@ class TestGenerateReactions:
         cls.database.load_forbidden_structures()
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """A function run ONCE after all unit tests in this class."""
         import rmgpy.data.rmg
 

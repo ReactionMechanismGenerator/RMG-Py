@@ -59,7 +59,7 @@ class TestDatabase:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         Load the database before running the tests.
         """

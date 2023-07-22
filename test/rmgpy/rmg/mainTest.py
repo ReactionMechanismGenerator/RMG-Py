@@ -49,7 +49,7 @@ originalPath = get_path()
 @pytest.mark.functional
 class TestMain:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         cls.testDir = os.path.join(originalPath, "rmg", "test_data", "mainTest")
         cls.outputDir = "output"
@@ -68,7 +68,7 @@ class TestMain:
         cls.rmg.execute()
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """A function that is run ONCE after all unit tests in this class."""
         # Reset module level database
         import rmgpy.data.rmg
@@ -189,7 +189,7 @@ class TestMain:
 @pytest.mark.functional
 class TestRestartWithFilters:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         cls.testDir = os.path.join(originalPath, "rmg", "test_data", "restartTest")
         cls.outputDir = os.path.join(cls.testDir, "output_w_filters")
@@ -212,7 +212,7 @@ class TestRestartWithFilters:
             assert "MODEL GENERATION COMPLETED" in f.read()
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """A function that is run ONCE after all unit tests in this class."""
         # Reset module level database
         import rmgpy.data.rmg
@@ -226,7 +226,7 @@ class TestRestartWithFilters:
 @pytest.mark.functional
 class TestRestartNoFilters:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         cls.testDir = os.path.join(originalPath, "rmg", "test_data", "restartTest")
         cls.outputDir = os.path.join(cls.testDir, "output_no_filters")
@@ -249,7 +249,7 @@ class TestRestartNoFilters:
             assert "MODEL GENERATION COMPLETED" in f.read()
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """A function that is run ONCE after all unit tests in this class."""
         # Reset module level database
         import rmgpy.data.rmg
@@ -263,7 +263,7 @@ class TestRestartNoFilters:
 @pytest.mark.functional
 class TestMainFunctions:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         cls.testDir = os.path.join(originalPath, "rmg", "test_data", "mainTest")
         cls.outputDir = os.path.join(cls.testDir, "output")
@@ -301,7 +301,7 @@ class TestMainFunctions:
         assert num_iter_actual == num_iter_expected
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """A function that is run ONCE after all unit tests in this class."""
         # Reset module level database
         import rmgpy.data.rmg
@@ -314,7 +314,7 @@ class TestMainFunctions:
 
 class TestProfiling:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         # Making the profile graph requires a display. See if one is available first
         cls.display_found = False
@@ -347,7 +347,7 @@ class TestProfiling:
             )
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """A function that is run ONCE after all unit tests in this class."""
 
         if cls.display_found:  # Remove output PDF

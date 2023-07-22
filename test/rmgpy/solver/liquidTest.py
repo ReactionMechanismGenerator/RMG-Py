@@ -45,7 +45,7 @@ from rmgpy.thermo import ThermoData
 
 class LiquidReactorCheck:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         Here we choose a kinetic model consisting of the hydrogen abstraction
         reaction CH4 + C2H5 <=> CH3 + C2H6.
@@ -611,7 +611,7 @@ class LiquidReactorCheck:
             ), "Core species rate has to be equal to 0 for species hold constant. " "Here it is equal to {0}".format(rxn_system.core_species_rates[0])
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """
         Reset the database & liquid parameters for solution
         """

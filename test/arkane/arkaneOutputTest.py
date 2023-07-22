@@ -75,7 +75,7 @@ class OutputTest:
         assert "        Cp0 = (33.2579, 'J/(mol*K)'),\n" in lines
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """A function that is run ONCE after all unit tests in this class."""
         benzyl_path = os.path.join(
             os.path.dirname(os.path.dirname(rmgpy.__file__)),
@@ -105,7 +105,7 @@ class OutputUnitTest:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         A method that is run before all unit tests in this class.
         """

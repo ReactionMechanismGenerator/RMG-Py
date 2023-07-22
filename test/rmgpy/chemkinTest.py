@@ -834,7 +834,7 @@ C 1 H 3 N 1 O 2 S 1 X 1
 
 class TestReadReactionComments:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         r = Species().from_smiles("[CH3]")
         r.label = "[CH3]"
         p = Species().from_smiles("CC")

@@ -39,7 +39,7 @@ from rmgpy.tools.uncertainty import Uncertainty
 
 class TestUncertainty:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """This method is run once before all tests in this class."""
         test_dir = rmgpy.settings["test_data.directory"]
 
@@ -79,7 +79,7 @@ class TestUncertainty:
                 family.fill_rules_by_averaging_up(verbose=True)
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """This method is run once after all tests in this class."""
         # Reset module level database
         import rmgpy.data.rmg

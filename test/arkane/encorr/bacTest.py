@@ -58,7 +58,7 @@ class TestBAC:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         cls.lot_get = LevelOfTheory(method="CCSD(T)-F12", basis="cc-pVTZ-F12", software="Molpro")
         cls.lot_get_composite = CompositeLevelOfTheory(
             freq=LevelOfTheory(method="wb97xd3", basis="def2tzvp", software="qchem"),

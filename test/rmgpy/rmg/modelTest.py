@@ -52,7 +52,7 @@ class TestSpecies:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         A method that is run before each unit test in this class.
         """
@@ -100,7 +100,7 @@ class TestCoreEdgeReactionModel:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         A method that is run before each unit test in this class.
         """
@@ -991,7 +991,7 @@ class TestCoreEdgeReactionModel:
         assert rxn == rxn_f
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """
         Reset the loaded database
         """
@@ -1007,7 +1007,7 @@ class TestEnlarge:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         A method that is run ONCE before all unit tests in this class.
         """
@@ -1104,7 +1104,7 @@ class TestEnlarge:
         assert list(self.rmg.reaction_model.network_dict.keys())[0][0].label == "C2H4"
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """
         A method that is run ONCE after all unit tests in this class.
 

@@ -129,7 +129,7 @@ class TestBACDatapoint:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         cls.spc = list(DATABASE.reference_sets.values())[0][0]
 
     def setUp(self):
@@ -299,7 +299,7 @@ class TestBACDataset:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         cls.species = list(DATABASE.reference_sets.values())[0][:5]
 
     def setUp(self):

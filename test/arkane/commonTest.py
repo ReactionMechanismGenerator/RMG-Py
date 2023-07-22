@@ -329,7 +329,7 @@ class TestArkaneSpecies:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         A method that is run ONCE before all unit tests in this class.
         """
@@ -447,7 +447,7 @@ H      -1.80315400   -1.20387400   -0.22872900"""
         assert arkane_current.conformer.spin_multiplicity == 2
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """
         A method that is run ONCE after all unit tests in this class.
         """
