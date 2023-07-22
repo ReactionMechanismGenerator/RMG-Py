@@ -9,7 +9,6 @@ on:
   workflow_run:
     workflows:
       - Continuous Integration
-      - Testing
     types:
       - completed
 
