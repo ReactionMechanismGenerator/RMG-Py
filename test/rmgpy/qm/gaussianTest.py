@@ -55,7 +55,7 @@ class TestGaussianMolPM3:
         NO_GAUSSIAN,
         reason="Gaussian not found. Try resetting your environment variables if you want to use it.",
     )
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -119,7 +119,7 @@ class TestGaussianMolPM6:
         NO_GAUSSIAN,
         reason="Gaussian not found. Try resetting your environment variables if you want to use it.",
     )
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

@@ -44,7 +44,7 @@ class TestConverter:
     Contains unit tests of the thermodynamics model conversion functions.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

@@ -46,7 +46,7 @@ class ConcentrationPrinter(object):
 
 
 class ReactionSystemTest:
-    def setUp(self):
+    def setup_class(self):
         self.listener = ConcentrationPrinter()
 
         folder = os.path.join(os.path.dirname(rmgpy.__file__), "solver/files/listener/")

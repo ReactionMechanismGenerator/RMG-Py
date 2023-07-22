@@ -134,12 +134,12 @@ class GenerateReactionsTest:
         shutil.rmtree(os.path.join(folder, "pdep"))
         os.remove(os.path.join(folder, "restart_from_seed.py"))
 
-    def setUp(self):
+    def setup_class(self):
         import rmgpy.data.rmg
 
         rmgpy.data.rmg.database = None
 
-    def tearDown(self):
+    def teardown_class(self):
         """
         Reset the loaded database
         """

@@ -37,7 +37,7 @@ class TestBaseDatabase:
     Contains unit tests for the base class of rmgpy.data.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -116,7 +116,7 @@ class TestBaseDatabase:
 
 
 class TestForbiddenStructures:
-    def setUp(self):
+    def setup_class(self):
         self.database = ForbiddenStructures()
 
     def test_forbidden_group(self):

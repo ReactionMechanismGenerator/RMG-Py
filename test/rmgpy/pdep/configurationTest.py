@@ -50,7 +50,7 @@ class TestConfiguration:
     Contains unit tests of the :class:`Network` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

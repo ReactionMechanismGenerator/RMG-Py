@@ -42,7 +42,7 @@ class TestWigner:
     Contains unit tests of the :class:`Wigner` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -96,7 +96,7 @@ class TestEckart:
     Contains unit tests of the :class:`Eckart` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

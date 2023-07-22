@@ -43,7 +43,7 @@ class TestIdealGasTranslation:
     Contains unit tests of the IdealGasTranslation class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

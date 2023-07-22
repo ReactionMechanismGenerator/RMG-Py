@@ -48,7 +48,7 @@ class TestLinearRotor:
     Contains unit tests of the LinearRotor class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -274,7 +274,7 @@ class TestNonlinearRotor:
     Contains unit tests of the NonlinearRotor class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -415,7 +415,7 @@ class TestKRotor:
     Contains unit tests of the KRotor class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -640,7 +640,7 @@ class TestSphericalTopRotor:
     Contains unit tests of the SphericalTopRotor class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

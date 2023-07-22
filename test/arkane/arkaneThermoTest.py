@@ -46,7 +46,7 @@ class ArkaneTestThermo:
     """
 
     @classmethod
-    def setUp(cls):
+    def setup_class(cls):
         """A method that is run before each unit test in this class"""
         spc = Species().from_smiles("CCO")
         log = GaussianLog(os.path.join(os.path.dirname(__file__), "data", "gaussian", "ethylene.log"))

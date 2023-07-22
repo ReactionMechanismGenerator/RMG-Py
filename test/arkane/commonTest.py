@@ -105,7 +105,7 @@ class TestArkaneJob:
     """
 
     @classmethod
-    def setUp(cls):
+    def setup_class(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
         job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "methoxy.py"))
@@ -250,7 +250,7 @@ class TestArkaneInput:
     """
 
     @classmethod
-    def setUp(cls):
+    def setup_class(cls):
         """Preparation for all unit tests in this class."""
         cls.directory = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), "examples", "arkane")
         cls.level_of_theory = LevelOfTheory("cbs-qb3")
@@ -310,7 +310,7 @@ class TestStatmech:
     """
 
     @classmethod
-    def setUp(cls):
+    def setup_class(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
         cls.job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "Benzyl", "input.py"))

@@ -313,7 +313,7 @@ class TestExpandAndMakeFromDictionaries:
     Contains unit tests for the expand_to_dict and recursive_make_object function utilized by RMGObjects
     """
 
-    def setUp(self):
+    def setup_class(self):
         self.np_array = np.array([[1, 2], [3, 4]])
         self.np_dict = {"class": "np_array", "object": [[1, 2], [3, 4]]}
 

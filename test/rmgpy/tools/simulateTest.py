@@ -38,7 +38,7 @@ from rmgpy.tools.simulate import run_simulation
 
 
 class SimulateTest:
-    def setUp(self):
+    def setup_class(self):
         """This method is run once before each unit test"""
         # Disable logging
         logging.disable(logging.WARNING)
@@ -98,7 +98,7 @@ class SimulateTest:
         shutil.rmtree(os.path.join(folder, "solver"))
         os.remove(os.path.join(folder, "simulate.log"))
 
-    def tearDown(self):
+    def teardown_class(self):
         import rmgpy.data.rmg
 
         rmgpy.data.rmg.database = None

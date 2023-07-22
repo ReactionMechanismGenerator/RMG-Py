@@ -50,7 +50,7 @@ class TestDiffusionLimited:
     Contains unit tests of the DiffusionLimited class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -363,7 +363,7 @@ class TestDiffusionLimited:
             self.tri_bi_reaction: self.tri_bi_reaction.kinetics.get_rate_coefficient(self.T, P=100e5),
         }
 
-    def tearDown(self):
+    def teardown_class(self):
         diffusion_limiter.disable()
 
     def test_get_effective_rate_unimolecular(self):

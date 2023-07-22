@@ -45,7 +45,7 @@ class TestExecutionStatsWriter:
     Contains unit tests of the ExecutionStatsWriter.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         Set up an RMG object
         """
@@ -73,5 +73,5 @@ class TestExecutionStatsWriter:
 
         assert os.path.isfile(statsfile)
 
-    def tearDown(self):
+    def teardown_class(self):
         shutil.rmtree(self.rmg.output_directory)

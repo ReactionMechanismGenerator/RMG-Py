@@ -132,7 +132,7 @@ class TestBACDatapoint:
     def setup_class(cls):
         cls.spc = list(DATABASE.reference_sets.values())[0][0]
 
-    def setUp(self):
+    def setup_class(self):
         self.datapoint = BACDatapoint(self.spc, level_of_theory=LEVEL_OF_THEORY)
 
     def test_assert_level_of_theory(self):
@@ -302,7 +302,7 @@ class TestBACDataset:
     def setup_class(cls):
         cls.species = list(DATABASE.reference_sets.values())[0][:5]
 
-    def setUp(self):
+    def setup_class(self):
         self.dataset = BACDataset([BACDatapoint(spc, level_of_theory=LEVEL_OF_THEORY) for spc in self.species])
 
     def test_append(self):

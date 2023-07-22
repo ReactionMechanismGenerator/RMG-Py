@@ -45,7 +45,7 @@ class TestKineticsModel:
     Contains unit tests of the KineticsModel class
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

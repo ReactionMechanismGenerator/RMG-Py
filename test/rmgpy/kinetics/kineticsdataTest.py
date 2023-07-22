@@ -43,7 +43,7 @@ class TestKineticsData:
     Contains unit tests of the :class:`KineticsData` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -193,7 +193,7 @@ class TestPDepKineticsData:
     Contains unit tests of the :class:`PDepKineticsData` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

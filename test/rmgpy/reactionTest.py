@@ -154,7 +154,7 @@ class TestReactionIsomorphism:
 class TestSurfaceReaction:
     """Test surface reactions"""
 
-    def setUp(self):
+    def setup_class(self):
         m_h2 = Molecule().from_smiles("[H][H]")
         m_x = Molecule().from_adjacency_list("1 X u0 p0")
         m_hx = Molecule().from_smiles("[H][*]")
@@ -414,7 +414,7 @@ class TestReaction:
     Contains unit tests of the Reaction class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A method that is called prior to each unit test in this class.
         """
@@ -1712,7 +1712,7 @@ class TestReactionToCantera:
     Contains unit tests of the Reaction class associated with forming Cantera objects.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A method that is called prior to each unit test in this class.
         """

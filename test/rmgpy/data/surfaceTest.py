@@ -38,11 +38,11 @@ import pytest
 
 
 class TestMetalDatabase:
-    def setUp(self):
+    def setup_class(self):
         self.database = MetalDatabase()
         self.database.load(os.path.join(settings["database.directory"], "surface"))
 
-    def tearDown(self):
+    def teardown_class(self):
         """
         Reset the database & parameters
         """

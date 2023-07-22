@@ -57,7 +57,7 @@ class TestArrhenius:
     Contains unit tests of the :class:`Arrhenius` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -289,7 +289,7 @@ class TestArrheniusEP:
     Contains unit tests of the :class:`ArrheniusEP` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -445,7 +445,7 @@ class TestArrheniusBM:
     Contains unit tests of the :class:`ArrheniusBM` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -633,7 +633,7 @@ class TestPDepArrhenius:
     Contains unit tests of the :class:`PDepArrhenius` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -897,7 +897,7 @@ class TestMultiArrhenius:
     Contains unit tests of the :class:`MultiArrhenius` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -1092,7 +1092,7 @@ class TestMultiPDepArrhenius:
     Contains unit tests of the :class:`MultiPDepArrhenius` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

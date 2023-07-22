@@ -80,7 +80,7 @@ class RMGToCanteraTest:
     Contains unit tests for the conversion of RMG species and reaction objects to Cantera objects.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
