@@ -76,9 +76,6 @@ bin/symmetry
 ipython/*
 !ipython/*.ipynb
 
-# Q2DTor
-external/Q2DTor
-
 # egg files (pip install -e)
 RMG_Py.egg-info/*
 
