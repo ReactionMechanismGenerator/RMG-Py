@@ -59,7 +59,7 @@ class TestReferenceSpecies:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         cls.methane = Species(smiles="C")
         cls.ethane = Species(smiles="CC")
         cls.propane = Species(smiles="CCC")
@@ -156,7 +156,7 @@ class TestReferenceDatabase:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         cls.database = ReferenceDatabase()
         cls.database.load()
 

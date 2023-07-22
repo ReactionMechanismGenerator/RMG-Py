@@ -50,7 +50,7 @@ class TestCorr:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         cls.freq_lot = LevelOfTheory(method="wb97X-D3", basis="def2-TZVP", software="Q-Chem")
         cls.energy_lot = LevelOfTheory(method="CCSD(T)-F12", basis="cc-pVDZ-F12", software="MOLPRO")
         cls.composite_lot = CompositeLevelOfTheory(freq=cls.freq_lot, energy=cls.energy_lot)

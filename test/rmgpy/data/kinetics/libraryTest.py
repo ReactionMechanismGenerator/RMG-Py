@@ -43,7 +43,7 @@ from rmgpy.kinetics.model import PDepKineticsModel
 
 class TestLibrary:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         A function run ONCE before all unit tests in this class.
         """

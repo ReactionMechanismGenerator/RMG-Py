@@ -43,7 +43,7 @@ class TestBAC:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         cls.smi = "[CH3:1][O:2][C:3](=[C:4]1[CH:5]2[O:6][CH:7]3[N:8]1[CH:9]=[CH:10][CH:11]23)" "[S:12](=[O:13])(=[O:14])[Cl:15]"
         cls.mol = _smi_to_mol(cls.smi)
         cls.idx_map = {atom.GetIdx(): atom.GetAtomMapNum() for atom in cls.mol.GetAtoms()}

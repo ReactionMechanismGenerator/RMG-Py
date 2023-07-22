@@ -49,7 +49,7 @@ class TeraChemLogTest:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """
         A method that is run before all unit tests in this class.
         """

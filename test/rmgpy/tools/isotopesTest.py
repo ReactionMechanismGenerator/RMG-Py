@@ -87,7 +87,7 @@ def tearDownModule():
 
 class IsotopesTest:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         global database
         cls.database = database
         cls.family = database.kinetics.families["H_Abstraction"]

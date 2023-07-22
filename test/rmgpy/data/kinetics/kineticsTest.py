@@ -154,7 +154,7 @@ class TestKineticsDatabase:
 
 class TestReactionDegeneracy:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         global database
         cls.database = database
@@ -652,7 +652,7 @@ class TestReactionDegeneracy:
 
 class TestKineticsCommentsParsing:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         global database
         cls.database = database
@@ -757,7 +757,7 @@ class TestKineticsCommentsParsing:
 
 class TestKinetics:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
 
         global database

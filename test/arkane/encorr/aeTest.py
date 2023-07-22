@@ -47,7 +47,7 @@ class TestAE:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         cls.species_energies = {lbl: i + 1 for i, lbl in enumerate(SPECIES_LABELS)}
         cls.ae = AE(cls.species_energies)
 

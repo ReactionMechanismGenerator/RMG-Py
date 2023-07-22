@@ -47,7 +47,7 @@ class TestExplorerJob:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
 
@@ -69,7 +69,7 @@ class TestExplorerJob:
                 cls.pdep_job = cls.job_list[-2]
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """A function that is run ONCE after all unit tests in this class."""
         # Reset module level database
         import rmgpy.data.rmg

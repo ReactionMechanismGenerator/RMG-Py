@@ -109,7 +109,7 @@ class TestThermoDatabase:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         global database
         cls.database = database.thermo
@@ -1213,7 +1213,7 @@ class TestThermoAccuracy:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         global database
         cls.database = database.thermo
@@ -1477,7 +1477,7 @@ class TestThermoAccuracyAromatics:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         global database
         cls.database = database.thermo
@@ -1571,7 +1571,7 @@ class TestCyclicThermo:
     """
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         global database
         cls.database = database.thermo

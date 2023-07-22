@@ -48,12 +48,12 @@ import pytest
 
 class TestSoluteDatabase:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         cls.database = SolvationDatabase()
         cls.database.load(os.path.join(settings["database.directory"], "solvation"))
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """
         Reset the database & liquid parameters for solution
         """
