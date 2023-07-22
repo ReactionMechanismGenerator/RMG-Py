@@ -54,23 +54,25 @@ class TestThermoData(unittest.TestCase):
         self.H298 = -32.9725
         self.S298 = 27.5727
         self.Tdata = np.array([300, 400, 500, 600, 800, 1000, 1500])
-        self.Cpdata = np.array([6.3827, 7.80327, 9.22175, 10.5528, 12.8323, 14.6013, 17.4089])
+        self.Cpdata = np.array(
+            [6.3827, 7.80327, 9.22175, 10.5528, 12.8323, 14.6013, 17.4089]
+        )
         self.Cp0 = 4.0
         self.CpInf = 21.5
-        self.Tmin = 100.
-        self.Tmax = 3000.
-        self.E0 = -782292.
-        self.comment = 'C2H6'
+        self.Tmin = 100.0
+        self.Tmax = 3000.0
+        self.E0 = -782292.0
+        self.comment = "C2H6"
         self.thermodata = ThermoData(
             Tdata=(self.Tdata, "K"),
             Cpdata=(self.Cpdata * constants.R, "J/(mol*K)"),
-            H298=(self.H298 * 0.001 * constants.R * 298., "kJ/mol"),
+            H298=(self.H298 * 0.001 * constants.R * 298.0, "kJ/mol"),
             S298=(self.S298 * constants.R, "J/(mol*K)"),
             Cp0=(self.Cp0 * constants.R, "J/(mol*K)"),
             CpInf=(self.CpInf * constants.R, "J/(mol*K)"),
             Tmin=(self.Tmin, "K"),
             Tmax=(self.Tmax, "K"),
-            E0=(self.E0, 'J/mol'),
+            E0=(self.E0, "J/mol"),
             comment=self.comment,
         )
 
@@ -94,13 +96,17 @@ class TestThermoData(unittest.TestCase):
         """
         Test that the ThermoData H298 property was properly set.
         """
-        self.assertAlmostEqual(self.thermodata.H298.value_si / constants.R / 298., self.H298, 4)
+        self.assertAlmostEqual(
+            self.thermodata.H298.value_si / constants.R / 298.0, self.H298, 4
+        )
 
     def test_s298(self):
         """
         Test that the ThermoData S298 property was properly set.
         """
-        self.assertAlmostEqual(self.thermodata.S298.value_si / constants.R, self.S298, 4)
+        self.assertAlmostEqual(
+            self.thermodata.S298.value_si / constants.R, self.S298, 4
+        )
 
     def test_cp0(self):
         """
@@ -112,7 +118,9 @@ class TestThermoData(unittest.TestCase):
         """
         Test that the ThermoData CpInf property was properly set.
         """
-        self.assertAlmostEqual(self.thermodata.CpInf.value_si / constants.R, self.CpInf, 4)
+        self.assertAlmostEqual(
+            self.thermodata.CpInf.value_si / constants.R, self.CpInf, 4
+        )
 
     def test_temperature_min(self):
         """
@@ -153,8 +161,23 @@ class TestThermoData(unittest.TestCase):
         Test the ThermoData.get_heat_capacity() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        cp_exp_list = np.array([4.96208, 7.80327, 10.5528, 12.8323, 14.6013,
-                                15.7243, 16.8473, 17.9704, 19.0934, 20.2165]) * constants.R
+        cp_exp_list = (
+            np.array(
+                [
+                    4.96208,
+                    7.80327,
+                    10.5528,
+                    12.8323,
+                    14.6013,
+                    15.7243,
+                    16.8473,
+                    17.9704,
+                    19.0934,
+                    20.2165,
+                ]
+            )
+            * constants.R
+        )
         for T, cp_exp in zip(Tlist, cp_exp_list):
             cp_act = self.thermodata.get_heat_capacity(T)
             self.assertAlmostEqual(cp_exp, cp_act, 2)
@@ -164,8 +187,24 @@ class TestThermoData(unittest.TestCase):
         Test the ThermoData.get_enthalpy() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        h_exp_list = np.array([-51.9015, -22.7594, -12.1063, -6.15660, -2.18192,
-                               0.708869, 2.93415, 4.74350, 6.27555, 7.61349]) * constants.R * Tlist
+        h_exp_list = (
+            np.array(
+                [
+                    -51.9015,
+                    -22.7594,
+                    -12.1063,
+                    -6.15660,
+                    -2.18192,
+                    0.708869,
+                    2.93415,
+                    4.74350,
+                    6.27555,
+                    7.61349,
+                ]
+            )
+            * constants.R
+            * Tlist
+        )
         for T, h_exp in zip(Tlist, h_exp_list):
             h_act = self.thermodata.get_enthalpy(T)
             self.assertAlmostEqual(h_exp, h_act, delta=1e0)
@@ -175,8 +214,23 @@ class TestThermoData(unittest.TestCase):
         Test the ThermoData.get_entropy() method.
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        s_exp_list = np.array([25.3347, 29.6460, 33.3386, 36.6867, 39.7402,
-                               42.5016, 45.0098, 47.3328, 49.5142, 51.5841]) * constants.R
+        s_exp_list = (
+            np.array(
+                [
+                    25.3347,
+                    29.6460,
+                    33.3386,
+                    36.6867,
+                    39.7402,
+                    42.5016,
+                    45.0098,
+                    47.3328,
+                    49.5142,
+                    51.5841,
+                ]
+            )
+            * constants.R
+        )
         for T, s_exp in zip(Tlist, s_exp_list):
             s_act = self.thermodata.get_entropy(T)
             self.assertAlmostEqual(s_exp, s_act, 3)
@@ -197,12 +251,17 @@ class TestThermoData(unittest.TestCase):
         unpickled with no loss of information.
         """
         import pickle
+
         thermodata = pickle.loads(pickle.dumps(self.thermodata))
-        self.assertEqual(self.thermodata.Tdata.value.shape, thermodata.Tdata.value.shape)
+        self.assertEqual(
+            self.thermodata.Tdata.value.shape, thermodata.Tdata.value.shape
+        )
         for T, T0 in zip(self.thermodata.Tdata.value, thermodata.Tdata.value):
             self.assertAlmostEqual(T, T0, 4)
         self.assertEqual(self.thermodata.Tdata.units, thermodata.Tdata.units)
-        self.assertEqual(self.thermodata.Cpdata.value.shape, thermodata.Cpdata.value.shape)
+        self.assertEqual(
+            self.thermodata.Cpdata.value.shape, thermodata.Cpdata.value.shape
+        )
         for Cp, Cp0 in zip(self.thermodata.Cpdata.value, thermodata.Cpdata.value):
             self.assertAlmostEqual(Cp, Cp0, 3)
         self.assertEqual(self.thermodata.Cpdata.units, thermodata.Cpdata.units)
@@ -229,14 +288,18 @@ class TestThermoData(unittest.TestCase):
         repr() output with no loss of information.
         """
         namespace = {}
-        exec('thermodata = {0!r}'.format(self.thermodata), globals(), namespace)
-        self.assertIn('thermodata', namespace)
-        thermodata = namespace['thermodata']
-        self.assertEqual(self.thermodata.Tdata.value.shape, thermodata.Tdata.value.shape)
+        exec("thermodata = {0!r}".format(self.thermodata), globals(), namespace)
+        self.assertIn("thermodata", namespace)
+        thermodata = namespace["thermodata"]
+        self.assertEqual(
+            self.thermodata.Tdata.value.shape, thermodata.Tdata.value.shape
+        )
         for T, T0 in zip(self.thermodata.Tdata.value, thermodata.Tdata.value):
             self.assertAlmostEqual(T, T0, 4)
         self.assertEqual(self.thermodata.Tdata.units, thermodata.Tdata.units)
-        self.assertEqual(self.thermodata.Cpdata.value.shape, thermodata.Cpdata.value.shape)
+        self.assertEqual(
+            self.thermodata.Cpdata.value.shape, thermodata.Cpdata.value.shape
+        )
         for Cp, Cp0 in zip(self.thermodata.Cpdata.value, thermodata.Cpdata.value):
             self.assertAlmostEqual(Cp, Cp0, 3)
         self.assertEqual(self.thermodata.Cpdata.units, thermodata.Cpdata.units)

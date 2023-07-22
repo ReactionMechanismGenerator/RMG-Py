@@ -7,17 +7,16 @@ longDesc = """
 
 """
 entry(
-    index = 1,
-    label = "Cd_R;CsJ",
-    kinetics = ArrheniusEP(
-        A = (20900, 'cm^3/(mol*s)'),
-        n = 2.41,
-        alpha = 0,
-        E0 = (5.63, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (1500, 'K'),
+    index=1,
+    label="Cd_R;CsJ",
+    kinetics=ArrheniusEP(
+        A=(20900, "cm^3/(mol*s)"),
+        n=2.41,
+        alpha=0,
+        E0=(5.63, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(1500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Original label: Cds-HH_Cds-HH;CsJ-HHH""",
+    rank=4,
+    shortDesc="""Original label: Cds-HH_Cds-HH;CsJ-HHH""",
 )
-

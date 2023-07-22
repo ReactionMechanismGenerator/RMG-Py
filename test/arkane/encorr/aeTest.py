@@ -47,7 +47,7 @@ class TestAE(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.species_energies = {lbl: i+1 for i, lbl in enumerate(SPECIES_LABELS)}
+        cls.species_energies = {lbl: i + 1 for i, lbl in enumerate(SPECIES_LABELS)}
         cls.ae = AE(cls.species_energies)
 
     def test_load_refdata(self):
@@ -83,20 +83,22 @@ class TestAE(unittest.TestCase):
         # Check that error is raised when no energies are available
         self.ae.atom_energies = None
         with self.assertRaises(ValueError) as e:
-            self.ae.write_to_database('test')
-        self.assertIn('No atom energies', str(e.exception))
+            self.ae.write_to_database("test")
+        self.assertIn("No atom energies", str(e.exception))
 
         # Check that error is raised if energies already exist
-        self.ae.atom_energies = {'H': 1.0, 'C': 2.0}
-        tmp_datafile_fd, tmp_datafile_path = tempfile.mkstemp(suffix='.py')
+        self.ae.atom_energies = {"H": 1.0, "C": 2.0}
+        tmp_datafile_fd, tmp_datafile_path = tempfile.mkstemp(suffix=".py")
 
-        lot = LevelOfTheory(method='wb97m-v', basis='def2-tzvpd', software='Q-Chem')
+        lot = LevelOfTheory(method="wb97m-v", basis="def2-tzvpd", software="Q-Chem")
         with self.assertRaises(ValueError) as e:
             self.ae.write_to_database(lot, alternate_path=tmp_datafile_path)
-        self.assertIn('overwrite', str(e.exception))
+        self.assertIn("overwrite", str(e.exception))
 
         # Dynamically set data file as module
-        spec = importlib.util.spec_from_file_location(os.path.basename(tmp_datafile_path), tmp_datafile_path)
+        spec = importlib.util.spec_from_file_location(
+            os.path.basename(tmp_datafile_path), tmp_datafile_path
+        )
         module = importlib.util.module_from_spec(spec)
 
         # Check that existing energies can be overwritten
@@ -105,7 +107,7 @@ class TestAE(unittest.TestCase):
         self.assertEqual(self.ae.atom_energies, module.atom_energies[repr(lot)])
 
         # Check that new energies can be written
-        lot = LevelOfTheory('test')
+        lot = LevelOfTheory("test")
         self.ae.write_to_database(lot, alternate_path=tmp_datafile_path)
         spec.loader.exec_module(module)  # Reload data module
         self.assertEqual(self.ae.atom_energies, module.atom_energies[repr(lot)])
@@ -114,5 +116,5 @@ class TestAE(unittest.TestCase):
         os.remove(tmp_datafile_path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

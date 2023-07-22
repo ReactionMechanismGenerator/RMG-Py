@@ -43,6 +43,7 @@ from rmgpy.species import Species
 
 ################################################################################
 
+
 class TestThirdBody(unittest.TestCase):
     """
     Contains unit tests of the ThirdBody class.
@@ -53,16 +54,24 @@ class TestThirdBody(unittest.TestCase):
         A function run before each unit test in this class.
         """
         self.arrheniusLow = Arrhenius(
-            A=(2.62e+33, "cm^6/(mol^2*s)"),
+            A=(2.62e33, "cm^6/(mol^2*s)"),
             n=-4.76,
             Ea=(10.21, "kJ/mol"),
             T0=(1, "K"),
         )
-        self.efficiencies = {"C": 3, "C(=O)=O": 2, "CC": 3, "O": 6, "[Ar]": 0.7, "[C]=O": 1.5, "[H][H]": 2}
-        self.Tmin = 300.
-        self.Tmax = 2000.
+        self.efficiencies = {
+            "C": 3,
+            "C(=O)=O": 2,
+            "CC": 3,
+            "O": 6,
+            "[Ar]": 0.7,
+            "[C]=O": 1.5,
+            "[H][H]": 2,
+        }
+        self.Tmin = 300.0
+        self.Tmax = 2000.0
         self.Pmin = 0.01
-        self.Pmax = 100.
+        self.Pmax = 100.0
         self.comment = """H + CH3 -> CH4"""
         self.thirdBody = ThirdBody(
             arrheniusLow=self.arrheniusLow,
@@ -122,8 +131,10 @@ class TestThirdBody(unittest.TestCase):
         """
         P = 1.0
         # Test that each pure bath gas gives the correct effective pressure
-        # Create list of species objects 
-        species = [Species(molecule=[mol]) for mol in self.thirdBody.efficiencies.keys()]
+        # Create list of species objects
+        species = [
+            Species(molecule=[mol]) for mol in self.thirdBody.efficiencies.keys()
+        ]
         for mol, eff in self.thirdBody.efficiencies.items():
             for spec in species:
                 if spec.is_isomorphic(mol):
@@ -183,14 +194,21 @@ class TestThirdBody(unittest.TestCase):
         Test the get_effective_collider_efficiencies() method
         """
         # Create list of molecules
-        molecules = [Molecule(smiles=smiles) for smiles in ["C", "C(=O)=O", "CC", "O", "[Ar]", "[C]=O", "[H][H]"]]
-        method_efficiencies = self.thirdBody.get_effective_collider_efficiencies(molecules)
+        molecules = [
+            Molecule(smiles=smiles)
+            for smiles in ["C", "C(=O)=O", "CC", "O", "[Ar]", "[C]=O", "[H][H]"]
+        ]
+        method_efficiencies = self.thirdBody.get_effective_collider_efficiencies(
+            molecules
+        )
         efficiencies = np.array([3, 2, 3, 6, 0.7, 1.5, 2])
         np.testing.assert_array_almost_equal(efficiencies, method_efficiencies)
 
         # Use a smaller list of molecules
         molecules = [Molecule(smiles=smiles) for smiles in ["C", "CC", "[Ar]"]]
-        method_efficiencies = self.thirdBody.get_effective_collider_efficiencies(molecules)
+        method_efficiencies = self.thirdBody.get_effective_collider_efficiencies(
+            molecules
+        )
         efficiencies = np.array([3, 3, 0.7])
         np.testing.assert_array_almost_equal(efficiencies, method_efficiencies)
 
@@ -200,12 +218,14 @@ class TestThirdBody(unittest.TestCase):
         """
         Tlist = np.array([300, 500, 1000, 1500])
         Plist = np.array([1e4, 1e5, 1e6])
-        Kexp = np.array([
-            [2.83508e+08, 2.83508e+09, 2.83508e+10],
-            [7.68759e+07, 7.68759e+08, 7.68759e+09],
-            [4.84353e+06, 4.84353e+07, 4.84353e+08],
-            [7.05740e+05, 7.05740e+06, 7.05740e+07],
-        ])
+        Kexp = np.array(
+            [
+                [2.83508e08, 2.83508e09, 2.83508e10],
+                [7.68759e07, 7.68759e08, 7.68759e09],
+                [4.84353e06, 4.84353e07, 4.84353e08],
+                [7.05740e05, 7.05740e06, 7.05740e07],
+            ]
+        )
         for t in range(Tlist.shape[0]):
             for p in range(Plist.shape[0]):
                 Kact = self.thirdBody.get_rate_coefficient(Tlist[t], Plist[p])
@@ -217,15 +237,34 @@ class TestThirdBody(unittest.TestCase):
         unpickled with no loss of information.
         """
         import pickle
+
         thirdBody = pickle.loads(pickle.dumps(self.thirdBody, -1))
-        self.assertAlmostEqual(self.thirdBody.arrheniusLow.A.value, thirdBody.arrheniusLow.A.value, delta=1e0)
-        self.assertEqual(self.thirdBody.arrheniusLow.A.units, thirdBody.arrheniusLow.A.units)
-        self.assertAlmostEqual(self.thirdBody.arrheniusLow.n.value, thirdBody.arrheniusLow.n.value, 4)
-        self.assertEqual(self.thirdBody.arrheniusLow.n.units, thirdBody.arrheniusLow.n.units, 4)
-        self.assertAlmostEqual(self.thirdBody.arrheniusLow.Ea.value, thirdBody.arrheniusLow.Ea.value, 4)
-        self.assertEqual(self.thirdBody.arrheniusLow.Ea.units, thirdBody.arrheniusLow.Ea.units)
-        self.assertAlmostEqual(self.thirdBody.arrheniusLow.T0.value, thirdBody.arrheniusLow.T0.value, 4)
-        self.assertEqual(self.thirdBody.arrheniusLow.T0.units, thirdBody.arrheniusLow.T0.units)
+        self.assertAlmostEqual(
+            self.thirdBody.arrheniusLow.A.value,
+            thirdBody.arrheniusLow.A.value,
+            delta=1e0,
+        )
+        self.assertEqual(
+            self.thirdBody.arrheniusLow.A.units, thirdBody.arrheniusLow.A.units
+        )
+        self.assertAlmostEqual(
+            self.thirdBody.arrheniusLow.n.value, thirdBody.arrheniusLow.n.value, 4
+        )
+        self.assertEqual(
+            self.thirdBody.arrheniusLow.n.units, thirdBody.arrheniusLow.n.units, 4
+        )
+        self.assertAlmostEqual(
+            self.thirdBody.arrheniusLow.Ea.value, thirdBody.arrheniusLow.Ea.value, 4
+        )
+        self.assertEqual(
+            self.thirdBody.arrheniusLow.Ea.units, thirdBody.arrheniusLow.Ea.units
+        )
+        self.assertAlmostEqual(
+            self.thirdBody.arrheniusLow.T0.value, thirdBody.arrheniusLow.T0.value, 4
+        )
+        self.assertEqual(
+            self.thirdBody.arrheniusLow.T0.units, thirdBody.arrheniusLow.T0.units
+        )
         self.assertAlmostEqual(self.thirdBody.Tmin.value, thirdBody.Tmin.value, 4)
         self.assertEqual(self.thirdBody.Tmin.units, thirdBody.Tmin.units)
         self.assertAlmostEqual(self.thirdBody.Tmax.value, thirdBody.Tmax.value, 4)
@@ -249,17 +288,35 @@ class TestThirdBody(unittest.TestCase):
         from its repr() output with no loss of information.
         """
         namespace = {}
-        exec('thirdBody = {0!r}'.format(self.thirdBody), globals(), namespace)
-        self.assertIn('thirdBody', namespace)
-        thirdBody = namespace['thirdBody']
-        self.assertAlmostEqual(self.thirdBody.arrheniusLow.A.value, thirdBody.arrheniusLow.A.value, delta=1e0)
-        self.assertEqual(self.thirdBody.arrheniusLow.A.units, thirdBody.arrheniusLow.A.units)
-        self.assertAlmostEqual(self.thirdBody.arrheniusLow.n.value, thirdBody.arrheniusLow.n.value, 4)
-        self.assertEqual(self.thirdBody.arrheniusLow.n.units, thirdBody.arrheniusLow.n.units, 4)
-        self.assertAlmostEqual(self.thirdBody.arrheniusLow.Ea.value, thirdBody.arrheniusLow.Ea.value, 4)
-        self.assertEqual(self.thirdBody.arrheniusLow.Ea.units, thirdBody.arrheniusLow.Ea.units)
-        self.assertAlmostEqual(self.thirdBody.arrheniusLow.T0.value, thirdBody.arrheniusLow.T0.value, 4)
-        self.assertEqual(self.thirdBody.arrheniusLow.T0.units, thirdBody.arrheniusLow.T0.units)
+        exec("thirdBody = {0!r}".format(self.thirdBody), globals(), namespace)
+        self.assertIn("thirdBody", namespace)
+        thirdBody = namespace["thirdBody"]
+        self.assertAlmostEqual(
+            self.thirdBody.arrheniusLow.A.value,
+            thirdBody.arrheniusLow.A.value,
+            delta=1e0,
+        )
+        self.assertEqual(
+            self.thirdBody.arrheniusLow.A.units, thirdBody.arrheniusLow.A.units
+        )
+        self.assertAlmostEqual(
+            self.thirdBody.arrheniusLow.n.value, thirdBody.arrheniusLow.n.value, 4
+        )
+        self.assertEqual(
+            self.thirdBody.arrheniusLow.n.units, thirdBody.arrheniusLow.n.units, 4
+        )
+        self.assertAlmostEqual(
+            self.thirdBody.arrheniusLow.Ea.value, thirdBody.arrheniusLow.Ea.value, 4
+        )
+        self.assertEqual(
+            self.thirdBody.arrheniusLow.Ea.units, thirdBody.arrheniusLow.Ea.units
+        )
+        self.assertAlmostEqual(
+            self.thirdBody.arrheniusLow.T0.value, thirdBody.arrheniusLow.T0.value, 4
+        )
+        self.assertEqual(
+            self.thirdBody.arrheniusLow.T0.units, thirdBody.arrheniusLow.T0.units
+        )
         self.assertAlmostEqual(self.thirdBody.Tmin.value, thirdBody.Tmin.value, 4)
         self.assertEqual(self.thirdBody.Tmin.units, thirdBody.Tmin.units)
         self.assertAlmostEqual(self.thirdBody.Tmax.value, thirdBody.Tmax.value, 4)
@@ -281,7 +338,9 @@ class TestThirdBody(unittest.TestCase):
         """
         Test the ThirdBody.change_rate() method.
         """
-        Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        Tlist = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]
+        )
         k0list = np.array([self.thirdBody.get_rate_coefficient(T, 1e5) for T in Tlist])
         self.thirdBody.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
@@ -290,6 +349,7 @@ class TestThirdBody(unittest.TestCase):
 
 
 ################################################################################
+
 
 class TestLindemann(unittest.TestCase):
     """
@@ -301,22 +361,30 @@ class TestLindemann(unittest.TestCase):
         A function run before each unit test in this class.
         """
         self.arrheniusHigh = Arrhenius(
-            A=(1.39e+16, "cm^3/(mol*s)"),
+            A=(1.39e16, "cm^3/(mol*s)"),
             n=-0.534,
             Ea=(2.243, "kJ/mol"),
             T0=(1, "K"),
         )
         self.arrheniusLow = Arrhenius(
-            A=(2.62e+33, "cm^6/(mol^2*s)"),
+            A=(2.62e33, "cm^6/(mol^2*s)"),
             n=-4.76,
             Ea=(10.21, "kJ/mol"),
             T0=(1, "K"),
         )
-        self.efficiencies = {"C": 3, "C(=O)=O": 2, "CC": 3, "O": 6, "[Ar]": 0.7, "[C]=O": 1.5, "[H][H]": 2}
-        self.Tmin = 300.
-        self.Tmax = 2000.
+        self.efficiencies = {
+            "C": 3,
+            "C(=O)=O": 2,
+            "CC": 3,
+            "O": 6,
+            "[Ar]": 0.7,
+            "[C]=O": 1.5,
+            "[H][H]": 2,
+        }
+        self.Tmin = 300.0
+        self.Tmax = 2000.0
         self.Pmin = 0.01
-        self.Pmax = 100.
+        self.Pmax = 100.0
         self.comment = """H + CH3 -> CH4"""
         self.lindemann = Lindemann(
             arrheniusHigh=self.arrheniusHigh,
@@ -383,12 +451,14 @@ class TestLindemann(unittest.TestCase):
         """
         Tlist = np.array([300, 500, 1000, 1500])
         Plist = np.array([1e4, 1e5, 1e6])
-        Kexp = np.array([
-            [1.38023e+08, 2.45661e+08, 2.66439e+08],
-            [6.09146e+07, 2.12349e+08, 2.82604e+08],
-            [4.75671e+06, 4.09594e+07, 1.71441e+08],
-            [7.03616e+05, 6.85062e+06, 5.42111e+07],
-        ])
+        Kexp = np.array(
+            [
+                [1.38023e08, 2.45661e08, 2.66439e08],
+                [6.09146e07, 2.12349e08, 2.82604e08],
+                [4.75671e06, 4.09594e07, 1.71441e08],
+                [7.03616e05, 6.85062e06, 5.42111e07],
+            ]
+        )
         for t in range(Tlist.shape[0]):
             for p in range(Plist.shape[0]):
                 Kact = self.lindemann.get_rate_coefficient(Tlist[t], Plist[p])
@@ -400,23 +470,60 @@ class TestLindemann(unittest.TestCase):
         of information.
         """
         import pickle
+
         lindemann = pickle.loads(pickle.dumps(self.lindemann, -1))
-        self.assertAlmostEqual(self.lindemann.arrheniusHigh.A.value, lindemann.arrheniusHigh.A.value, delta=1e0)
-        self.assertEqual(self.lindemann.arrheniusHigh.A.units, lindemann.arrheniusHigh.A.units)
-        self.assertAlmostEqual(self.lindemann.arrheniusHigh.n.value, lindemann.arrheniusHigh.n.value, 4)
-        self.assertEqual(self.lindemann.arrheniusHigh.n.units, lindemann.arrheniusHigh.n.units, 4)
-        self.assertAlmostEqual(self.lindemann.arrheniusHigh.Ea.value, lindemann.arrheniusHigh.Ea.value, 4)
-        self.assertEqual(self.lindemann.arrheniusHigh.Ea.units, lindemann.arrheniusHigh.Ea.units)
-        self.assertAlmostEqual(self.lindemann.arrheniusHigh.T0.value, lindemann.arrheniusHigh.T0.value, 4)
-        self.assertEqual(self.lindemann.arrheniusHigh.T0.units, lindemann.arrheniusHigh.T0.units)
-        self.assertAlmostEqual(self.lindemann.arrheniusLow.A.value, lindemann.arrheniusLow.A.value, delta=1e0)
-        self.assertEqual(self.lindemann.arrheniusLow.A.units, lindemann.arrheniusLow.A.units)
-        self.assertAlmostEqual(self.lindemann.arrheniusLow.n.value, lindemann.arrheniusLow.n.value, 4)
-        self.assertEqual(self.lindemann.arrheniusLow.n.units, lindemann.arrheniusLow.n.units, 4)
-        self.assertAlmostEqual(self.lindemann.arrheniusLow.Ea.value, lindemann.arrheniusLow.Ea.value, 4)
-        self.assertEqual(self.lindemann.arrheniusLow.Ea.units, lindemann.arrheniusLow.Ea.units)
-        self.assertAlmostEqual(self.lindemann.arrheniusLow.T0.value, lindemann.arrheniusLow.T0.value, 4)
-        self.assertEqual(self.lindemann.arrheniusLow.T0.units, lindemann.arrheniusLow.T0.units)
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusHigh.A.value,
+            lindemann.arrheniusHigh.A.value,
+            delta=1e0,
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusHigh.A.units, lindemann.arrheniusHigh.A.units
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusHigh.n.value, lindemann.arrheniusHigh.n.value, 4
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusHigh.n.units, lindemann.arrheniusHigh.n.units, 4
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusHigh.Ea.value, lindemann.arrheniusHigh.Ea.value, 4
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusHigh.Ea.units, lindemann.arrheniusHigh.Ea.units
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusHigh.T0.value, lindemann.arrheniusHigh.T0.value, 4
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusHigh.T0.units, lindemann.arrheniusHigh.T0.units
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusLow.A.value,
+            lindemann.arrheniusLow.A.value,
+            delta=1e0,
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusLow.A.units, lindemann.arrheniusLow.A.units
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusLow.n.value, lindemann.arrheniusLow.n.value, 4
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusLow.n.units, lindemann.arrheniusLow.n.units, 4
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusLow.Ea.value, lindemann.arrheniusLow.Ea.value, 4
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusLow.Ea.units, lindemann.arrheniusLow.Ea.units
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusLow.T0.value, lindemann.arrheniusLow.T0.value, 4
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusLow.T0.units, lindemann.arrheniusLow.T0.units
+        )
         self.assertAlmostEqual(self.lindemann.Tmin.value, lindemann.Tmin.value, 4)
         self.assertEqual(self.lindemann.Tmin.units, lindemann.Tmin.units)
         self.assertAlmostEqual(self.lindemann.Tmax.value, lindemann.Tmax.value, 4)
@@ -440,25 +547,61 @@ class TestLindemann(unittest.TestCase):
         output with no loss of information.
         """
         namespace = {}
-        exec('lindemann = {0!r}'.format(self.lindemann), globals(), namespace)
-        self.assertIn('lindemann', namespace)
-        lindemann = namespace['lindemann']
-        self.assertAlmostEqual(self.lindemann.arrheniusHigh.A.value, lindemann.arrheniusHigh.A.value, delta=1e0)
-        self.assertEqual(self.lindemann.arrheniusHigh.A.units, lindemann.arrheniusHigh.A.units)
-        self.assertAlmostEqual(self.lindemann.arrheniusHigh.n.value, lindemann.arrheniusHigh.n.value, 4)
-        self.assertEqual(self.lindemann.arrheniusHigh.n.units, lindemann.arrheniusHigh.n.units, 4)
-        self.assertAlmostEqual(self.lindemann.arrheniusHigh.Ea.value, lindemann.arrheniusHigh.Ea.value, 4)
-        self.assertEqual(self.lindemann.arrheniusHigh.Ea.units, lindemann.arrheniusHigh.Ea.units)
-        self.assertAlmostEqual(self.lindemann.arrheniusHigh.T0.value, lindemann.arrheniusHigh.T0.value, 4)
-        self.assertEqual(self.lindemann.arrheniusHigh.T0.units, lindemann.arrheniusHigh.T0.units)
-        self.assertAlmostEqual(self.lindemann.arrheniusLow.A.value, lindemann.arrheniusLow.A.value, delta=1e0)
-        self.assertEqual(self.lindemann.arrheniusLow.A.units, lindemann.arrheniusLow.A.units)
-        self.assertAlmostEqual(self.lindemann.arrheniusLow.n.value, lindemann.arrheniusLow.n.value, 4)
-        self.assertEqual(self.lindemann.arrheniusLow.n.units, lindemann.arrheniusLow.n.units, 4)
-        self.assertAlmostEqual(self.lindemann.arrheniusLow.Ea.value, lindemann.arrheniusLow.Ea.value, 4)
-        self.assertEqual(self.lindemann.arrheniusLow.Ea.units, lindemann.arrheniusLow.Ea.units)
-        self.assertAlmostEqual(self.lindemann.arrheniusLow.T0.value, lindemann.arrheniusLow.T0.value, 4)
-        self.assertEqual(self.lindemann.arrheniusLow.T0.units, lindemann.arrheniusLow.T0.units)
+        exec("lindemann = {0!r}".format(self.lindemann), globals(), namespace)
+        self.assertIn("lindemann", namespace)
+        lindemann = namespace["lindemann"]
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusHigh.A.value,
+            lindemann.arrheniusHigh.A.value,
+            delta=1e0,
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusHigh.A.units, lindemann.arrheniusHigh.A.units
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusHigh.n.value, lindemann.arrheniusHigh.n.value, 4
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusHigh.n.units, lindemann.arrheniusHigh.n.units, 4
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusHigh.Ea.value, lindemann.arrheniusHigh.Ea.value, 4
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusHigh.Ea.units, lindemann.arrheniusHigh.Ea.units
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusHigh.T0.value, lindemann.arrheniusHigh.T0.value, 4
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusHigh.T0.units, lindemann.arrheniusHigh.T0.units
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusLow.A.value,
+            lindemann.arrheniusLow.A.value,
+            delta=1e0,
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusLow.A.units, lindemann.arrheniusLow.A.units
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusLow.n.value, lindemann.arrheniusLow.n.value, 4
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusLow.n.units, lindemann.arrheniusLow.n.units, 4
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusLow.Ea.value, lindemann.arrheniusLow.Ea.value, 4
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusLow.Ea.units, lindemann.arrheniusLow.Ea.units
+        )
+        self.assertAlmostEqual(
+            self.lindemann.arrheniusLow.T0.value, lindemann.arrheniusLow.T0.value, 4
+        )
+        self.assertEqual(
+            self.lindemann.arrheniusLow.T0.units, lindemann.arrheniusLow.T0.units
+        )
         self.assertAlmostEqual(self.lindemann.Tmin.value, lindemann.Tmin.value, 4)
         self.assertEqual(self.lindemann.Tmin.units, lindemann.Tmin.units)
         self.assertAlmostEqual(self.lindemann.Tmax.value, lindemann.Tmax.value, 4)
@@ -480,7 +623,9 @@ class TestLindemann(unittest.TestCase):
         """
         Test the Lindemann.change_rate() method.
         """
-        Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        Tlist = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]
+        )
         k0list = np.array([self.lindemann.get_rate_coefficient(T, 1e5) for T in Tlist])
         self.lindemann.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
@@ -489,6 +634,7 @@ class TestLindemann(unittest.TestCase):
 
 
 ################################################################################
+
 
 class TestTroe(unittest.TestCase):
     """
@@ -500,13 +646,13 @@ class TestTroe(unittest.TestCase):
         A function run before each unit test in this class.
         """
         self.arrheniusHigh = Arrhenius(
-            A=(1.39e+16, "cm^3/(mol*s)"),
+            A=(1.39e16, "cm^3/(mol*s)"),
             n=-0.534,
             Ea=(2.243, "kJ/mol"),
             T0=(1, "K"),
         )
         self.arrheniusLow = Arrhenius(
-            A=(2.62e+33, "cm^6/(mol^2*s)"),
+            A=(2.62e33, "cm^6/(mol^2*s)"),
             n=-4.76,
             Ea=(10.21, "kJ/mol"),
             T0=(1, "K"),
@@ -515,11 +661,19 @@ class TestTroe(unittest.TestCase):
         self.T3 = 74
         self.T1 = 2941
         self.T2 = 6964
-        self.efficiencies = {"C": 3, "C(=O)=O": 2, "CC": 3, "O": 6, "[Ar]": 0.7, "[C]=O": 1.5, "[H][H]": 2}
-        self.Tmin = 300.
-        self.Tmax = 2000.
+        self.efficiencies = {
+            "C": 3,
+            "C(=O)=O": 2,
+            "CC": 3,
+            "O": 6,
+            "[Ar]": 0.7,
+            "[C]=O": 1.5,
+            "[H][H]": 2,
+        }
+        self.Tmin = 300.0
+        self.Tmax = 2000.0
         self.Pmin = 0.01
-        self.Pmax = 100.
+        self.Pmax = 100.0
         self.comment = """H + CH3 -> CH4"""
         self.troe = Troe(
             arrheniusHigh=self.arrheniusHigh,
@@ -614,12 +768,14 @@ class TestTroe(unittest.TestCase):
         """
         Tlist = np.array([300, 500, 1000, 1500])
         Plist = np.array([1e4, 1e5, 1e6])
-        Kexp = np.array([
-            [1.00648177e+08, 2.01999460e+08, 2.53938097e+08],
-            [4.71247326e+07, 1.41526885e+08, 2.45386923e+08],
-            [3.94987723e+06, 2.87338709e+07, 9.57539092e+07],
-            [5.88566395e+05, 5.10614193e+06, 3.10462030e+07],
-        ])
+        Kexp = np.array(
+            [
+                [1.00648177e08, 2.01999460e08, 2.53938097e08],
+                [4.71247326e07, 1.41526885e08, 2.45386923e08],
+                [3.94987723e06, 2.87338709e07, 9.57539092e07],
+                [5.88566395e05, 5.10614193e06, 3.10462030e07],
+            ]
+        )
         for t in range(Tlist.shape[0]):
             for p in range(Plist.shape[0]):
                 Kact = self.troe.get_rate_coefficient(Tlist[t], Plist[p])
@@ -631,22 +787,39 @@ class TestTroe(unittest.TestCase):
         information.
         """
         import pickle
+
         troe = pickle.loads(pickle.dumps(self.troe, -1))
-        self.assertAlmostEqual(self.troe.arrheniusHigh.A.value, troe.arrheniusHigh.A.value, delta=1e0)
+        self.assertAlmostEqual(
+            self.troe.arrheniusHigh.A.value, troe.arrheniusHigh.A.value, delta=1e0
+        )
         self.assertEqual(self.troe.arrheniusHigh.A.units, troe.arrheniusHigh.A.units)
-        self.assertAlmostEqual(self.troe.arrheniusHigh.n.value, troe.arrheniusHigh.n.value, 4)
+        self.assertAlmostEqual(
+            self.troe.arrheniusHigh.n.value, troe.arrheniusHigh.n.value, 4
+        )
         self.assertEqual(self.troe.arrheniusHigh.n.units, troe.arrheniusHigh.n.units, 4)
-        self.assertAlmostEqual(self.troe.arrheniusHigh.Ea.value, troe.arrheniusHigh.Ea.value, 4)
+        self.assertAlmostEqual(
+            self.troe.arrheniusHigh.Ea.value, troe.arrheniusHigh.Ea.value, 4
+        )
         self.assertEqual(self.troe.arrheniusHigh.Ea.units, troe.arrheniusHigh.Ea.units)
-        self.assertAlmostEqual(self.troe.arrheniusHigh.T0.value, troe.arrheniusHigh.T0.value, 4)
+        self.assertAlmostEqual(
+            self.troe.arrheniusHigh.T0.value, troe.arrheniusHigh.T0.value, 4
+        )
         self.assertEqual(self.troe.arrheniusHigh.T0.units, troe.arrheniusHigh.T0.units)
-        self.assertAlmostEqual(self.troe.arrheniusLow.A.value, troe.arrheniusLow.A.value, delta=1e0)
+        self.assertAlmostEqual(
+            self.troe.arrheniusLow.A.value, troe.arrheniusLow.A.value, delta=1e0
+        )
         self.assertEqual(self.troe.arrheniusLow.A.units, troe.arrheniusLow.A.units)
-        self.assertAlmostEqual(self.troe.arrheniusLow.n.value, troe.arrheniusLow.n.value, 4)
+        self.assertAlmostEqual(
+            self.troe.arrheniusLow.n.value, troe.arrheniusLow.n.value, 4
+        )
         self.assertEqual(self.troe.arrheniusLow.n.units, troe.arrheniusLow.n.units, 4)
-        self.assertAlmostEqual(self.troe.arrheniusLow.Ea.value, troe.arrheniusLow.Ea.value, 4)
+        self.assertAlmostEqual(
+            self.troe.arrheniusLow.Ea.value, troe.arrheniusLow.Ea.value, 4
+        )
         self.assertEqual(self.troe.arrheniusLow.Ea.units, troe.arrheniusLow.Ea.units)
-        self.assertAlmostEqual(self.troe.arrheniusLow.T0.value, troe.arrheniusLow.T0.value, 4)
+        self.assertAlmostEqual(
+            self.troe.arrheniusLow.T0.value, troe.arrheniusLow.T0.value, 4
+        )
         self.assertEqual(self.troe.arrheniusLow.T0.units, troe.arrheniusLow.T0.units)
         self.assertAlmostEqual(self.troe.alpha, troe.alpha, 6)
         self.assertAlmostEqual(self.troe.T3.value, troe.T3.value, 6)
@@ -678,24 +851,40 @@ class TestTroe(unittest.TestCase):
         with no loss of information.
         """
         namespace = {}
-        exec('troe = {0!r}'.format(self.troe), globals(), namespace)
-        self.assertIn('troe', namespace)
-        troe = namespace['troe']
-        self.assertAlmostEqual(self.troe.arrheniusHigh.A.value, troe.arrheniusHigh.A.value, delta=1e0)
+        exec("troe = {0!r}".format(self.troe), globals(), namespace)
+        self.assertIn("troe", namespace)
+        troe = namespace["troe"]
+        self.assertAlmostEqual(
+            self.troe.arrheniusHigh.A.value, troe.arrheniusHigh.A.value, delta=1e0
+        )
         self.assertEqual(self.troe.arrheniusHigh.A.units, troe.arrheniusHigh.A.units)
-        self.assertAlmostEqual(self.troe.arrheniusHigh.n.value, troe.arrheniusHigh.n.value, 4)
+        self.assertAlmostEqual(
+            self.troe.arrheniusHigh.n.value, troe.arrheniusHigh.n.value, 4
+        )
         self.assertEqual(self.troe.arrheniusHigh.n.units, troe.arrheniusHigh.n.units, 4)
-        self.assertAlmostEqual(self.troe.arrheniusHigh.Ea.value, troe.arrheniusHigh.Ea.value, 4)
+        self.assertAlmostEqual(
+            self.troe.arrheniusHigh.Ea.value, troe.arrheniusHigh.Ea.value, 4
+        )
         self.assertEqual(self.troe.arrheniusHigh.Ea.units, troe.arrheniusHigh.Ea.units)
-        self.assertAlmostEqual(self.troe.arrheniusHigh.T0.value, troe.arrheniusHigh.T0.value, 4)
+        self.assertAlmostEqual(
+            self.troe.arrheniusHigh.T0.value, troe.arrheniusHigh.T0.value, 4
+        )
         self.assertEqual(self.troe.arrheniusHigh.T0.units, troe.arrheniusHigh.T0.units)
-        self.assertAlmostEqual(self.troe.arrheniusLow.A.value, troe.arrheniusLow.A.value, delta=1e0)
+        self.assertAlmostEqual(
+            self.troe.arrheniusLow.A.value, troe.arrheniusLow.A.value, delta=1e0
+        )
         self.assertEqual(self.troe.arrheniusLow.A.units, troe.arrheniusLow.A.units)
-        self.assertAlmostEqual(self.troe.arrheniusLow.n.value, troe.arrheniusLow.n.value, 4)
+        self.assertAlmostEqual(
+            self.troe.arrheniusLow.n.value, troe.arrheniusLow.n.value, 4
+        )
         self.assertEqual(self.troe.arrheniusLow.n.units, troe.arrheniusLow.n.units, 4)
-        self.assertAlmostEqual(self.troe.arrheniusLow.Ea.value, troe.arrheniusLow.Ea.value, 4)
+        self.assertAlmostEqual(
+            self.troe.arrheniusLow.Ea.value, troe.arrheniusLow.Ea.value, 4
+        )
         self.assertEqual(self.troe.arrheniusLow.Ea.units, troe.arrheniusLow.Ea.units)
-        self.assertAlmostEqual(self.troe.arrheniusLow.T0.value, troe.arrheniusLow.T0.value, 4)
+        self.assertAlmostEqual(
+            self.troe.arrheniusLow.T0.value, troe.arrheniusLow.T0.value, 4
+        )
         self.assertEqual(self.troe.arrheniusLow.T0.units, troe.arrheniusLow.T0.units)
         self.assertAlmostEqual(self.troe.alpha, troe.alpha, 6)
         self.assertAlmostEqual(self.troe.T3.value, troe.T3.value, 6)
@@ -725,7 +914,9 @@ class TestTroe(unittest.TestCase):
         """
         Test the Troe.change_rate() method.
         """
-        Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        Tlist = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]
+        )
         k0list = np.array([self.troe.get_rate_coefficient(T, 1e5) for T in Tlist])
         self.troe.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
@@ -735,5 +926,5 @@ class TestTroe(unittest.TestCase):
 
 ################################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

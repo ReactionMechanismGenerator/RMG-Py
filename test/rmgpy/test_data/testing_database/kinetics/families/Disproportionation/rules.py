@@ -7,35 +7,34 @@ longDesc = """
 
 """
 entry(
-    index = 485,
-    label = "Y_rad_birad_trirad_quadrad;XH_Rrad_birad",
-    kinetics = ArrheniusEP(
-        A = (3e+11, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (1500, 'K'),
+    index=485,
+    label="Y_rad_birad_trirad_quadrad;XH_Rrad_birad",
+    kinetics=ArrheniusEP(
+        A=(3e11, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(1500, "K"),
     ),
-    rank = 0,
-    shortDesc = """Default""",
+    rank=0,
+    shortDesc="""Default""",
 )
 
 entry(
-    index = 487,
-    label = "O2b;Cmethyl_Csrad",
-    kinetics = ArrheniusEP(
-        A = (7.23e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (15.99, 'kcal/mol'),
-        Tmin = (700, 'K'),
-        Tmax = (2500, 'K'),
+    index=487,
+    label="O2b;Cmethyl_Csrad",
+    kinetics=ArrheniusEP(
+        A=(7.23e12, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(15.99, "kcal/mol"),
+        Tmin=(700, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """[AJ] Miyoshi 2011 (Table 4, Node 'sp') dx.doi.org/10.1021/jp112152n""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""[AJ] Miyoshi 2011 (Table 4, Node 'sp') dx.doi.org/10.1021/jp112152n""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review: i-C3H7 + O2 = HO2 + C3H6
 
@@ -56,20 +55,19 @@ JDM 31-Mar-2010
 )
 
 entry(
-    index = 488,
-    label = "CH2_triplet;Cmethyl_Csrad",
-    kinetics = ArrheniusEP(
-        A = (3.01e+13, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=488,
+    label="CH2_triplet;Cmethyl_Csrad",
+    kinetics=ArrheniusEP(
+        A=(3.01e13, "cm^3/(mol*s)", "*|/", 2),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH2(triplet) + i-C3H7 --> C3H6 + CH3
 
@@ -84,20 +82,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 489,
-    label = "H_rad;Cmethyl_Csrad",
-    kinetics = ArrheniusEP(
-        A = (3.61e+12, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=489,
+    label="H_rad;Cmethyl_Csrad",
+    kinetics=ArrheniusEP(
+        A=(3.61e12, "cm^3/(mol*s)", "*|/", 2),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  H + i-C3H7 --> C3H6 + H2
 
@@ -111,20 +108,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 490,
-    label = "H_rad;Cmethyl_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.81e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=490,
+    label="H_rad;Cmethyl_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.81e12, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [89] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [89] Literature review.""",
+    longDesc="""
 [89] Tsang, W.; Hampson, R.F.; Journal of Physical and Chemical Reference Data (1986) 15(3), 1087-1279.
 Literature review.  H + C2H5 --> C2H4 + H2
 
@@ -138,20 +134,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 491,
-    label = "C_methyl;Cmethyl_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.19e+14, 'cm^3/(mol*s)', '*|/', 1.1),
-        n = -0.68,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=491,
+    label="C_methyl;Cmethyl_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.19e14, "cm^3/(mol*s)", "*|/", 1.1),
+        n=-0.68,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH3 + i-C3H7 --> C3H6 + CH4
 
@@ -181,20 +176,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 492,
-    label = "C_rad/H2/Cs;Cmethyl_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.3e+13, 'cm^3/(mol*s)', '*|/', 1.1),
-        n = -0.35,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=492,
+    label="C_rad/H2/Cs;Cmethyl_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.3e13, "cm^3/(mol*s)", "*|/", 1.1),
+        n=-0.35,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H5 + i-C3H7 --> C3H6 + C2H6
 
@@ -210,20 +204,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 493,
-    label = "C_rad/H2/Cd;Cmethyl_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.29e+13, 'cm^3/(mol*s)', '*|/', 3),
-        n = -0.35,
-        alpha = 0,
-        E0 = (-0.13, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=493,
+    label="C_rad/H2/Cd;Cmethyl_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.29e13, "cm^3/(mol*s)", "*|/", 3),
+        n=-0.35,
+        alpha=0,
+        E0=(-0.13, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [93] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [93] Literature review.""",
+    longDesc="""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C3H5 + iC3H7 --> C3H6 + C3H6
 
@@ -240,20 +233,19 @@ MRH 31-Aug-2009
 )
 
 entry(
-    index = 494,
-    label = "C_rad/H2/O;Cmethyl_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.89e+12, 'cm^3/(mol*s)', '*|/', 5),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=494,
+    label="C_rad/H2/O;Cmethyl_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.89e12, "cm^3/(mol*s)", "*|/", 5),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH2OH + i-C3H7 --> C3H6 + CH3OH
 
@@ -267,20 +259,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 495,
-    label = "C_rad/H/NonDeC;Cmethyl_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.11e+14, 'cm^3/(mol*s)', '*|/', 2),
-        n = -0.7,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=495,
+    label="C_rad/H/NonDeC;Cmethyl_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.11e14, "cm^3/(mol*s)", "*|/", 2),
+        n=-0.7,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  i-C3H7 + i-C3H7 --> C3H6 + C3H8
 
@@ -295,20 +286,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 496,
-    label = "C_rad/Cs3;Cmethyl_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.86e+15, 'cm^3/(mol*s)', '*|/', 1.7),
-        n = -1.1,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=496,
+    label="C_rad/Cs3;Cmethyl_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.86e15, "cm^3/(mol*s)", "*|/", 1.7),
+        n=-1.1,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [92] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [92] Literature review.""",
+    longDesc="""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: t-C4H9 + i-C3H7 --> C3H6 + i-C4H10
 
@@ -324,20 +314,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 497,
-    label = "Cd_pri_rad;Cmethyl_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.52e+14, 'cm^3/(mol*s)', '*|/', 1.5),
-        n = -0.7,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=497,
+    label="Cd_pri_rad;Cmethyl_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.52e14, "cm^3/(mol*s)", "*|/", 1.5),
+        n=-0.7,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H3 + i-C3H7 --> C3H6 + C2H4
 
@@ -353,20 +342,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 498,
-    label = "Ct_rad/Ct;Cmethyl_Csrad",
-    kinetics = ArrheniusEP(
-        A = (3.61e+12, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=498,
+    label="Ct_rad/Ct;Cmethyl_Csrad",
+    kinetics=ArrheniusEP(
+        A=(3.61e12, "cm^3/(mol*s)", "*|/", 2),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H + i-C3H7 --> C3H6 + C2H2
 
@@ -380,20 +368,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 499,
-    label = "O_pri_rad;Cmethyl_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.41e+13, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=499,
+    label="O_pri_rad;Cmethyl_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.41e13, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  OH + i-C3H7 --> C3H6 + H2O
 
@@ -407,20 +394,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 500,
-    label = "H_rad;Cmethyl_Orad",
-    kinetics = ArrheniusEP(
-        A = (1.81e+13, 'cm^3/(mol*s)', '*|/', 3.16),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (1000, 'K'),
+    index=500,
+    label="H_rad;Cmethyl_Orad",
+    kinetics=ArrheniusEP(
+        A=(1.81e13, "cm^3/(mol*s)", "*|/", 3.16),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(1000, "K"),
     ),
-    rank = 4,
-    shortDesc = """Baulch et al [95] literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Baulch et al [95] literature review.""",
+    longDesc="""
 [95] Baulch, D.L.; Cobos, C.J.; Cox, R.A.; Esser, C.; Frank, P.; Just, T.; Kerr, J.A.; Pilling, M.J.; Troe, J.; Walker, R.W.; Warnatz, J.; Journal of Physical and Chemical Reference Data (1992), 21(3), 411-734.
 pg.523: Discussion of evaluated data
 
@@ -433,20 +419,19 @@ MRH 31-Aug-2009
 )
 
 entry(
-    index = 501,
-    label = "O2b;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (4.5825e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (14.85, 'kcal/mol'),
-        Tmin = (500, 'K'),
-        Tmax = (900, 'K'),
+    index=501,
+    label="O2b;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(4.5825e12, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(14.85, "kcal/mol"),
+        Tmin=(500, "K"),
+        Tmax=(900, "K"),
     ),
-    rank = 4,
-    shortDesc = """[AJ] Miyoshi 2011 (Table 4, Node 'ss') dx.doi.org/10.1021/jp112152n""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""[AJ] Miyoshi 2011 (Table 4, Node 'ss') dx.doi.org/10.1021/jp112152n""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review: n-C3H7 + O2 = HO2 + C3H6
 
@@ -466,20 +451,19 @@ JDM 31-Mar-2010
 )
 
 entry(
-    index = 502,
-    label = "CH2_triplet;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.81e+12, 'cm^3/(mol*s)', '*|/', 5),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=502,
+    label="CH2_triplet;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.81e12, "cm^3/(mol*s)", "*|/", 5),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH2_triplet + n-C3H7 --> C3H6 + CH3
 
@@ -495,35 +479,34 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 502,
-    label = "S_rad/OneDe;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (0.719, 'cm^3/(mol*s)'),
-        n = 3.13,
-        alpha = 0,
-        E0 = (-3.65, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2000, 'K'),
+    index=502,
+    label="S_rad/OneDe;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(0.719, "cm^3/(mol*s)"),
+        n=3.13,
+        alpha=0,
+        E0=(-3.65, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2000, "K"),
     ),
-    rank = 3,
-    shortDesc = """CAC calc CBS-QB3, 1dhr""",
+    rank=3,
+    shortDesc="""CAC calc CBS-QB3, 1dhr""",
 )
 
 entry(
-    index = 503,
-    label = "H_rad;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.81e+12, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=503,
+    label="H_rad;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.81e12, "cm^3/(mol*s)", "*|/", 2),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  H + n-C3H7 --> C3H6 + H2
 
@@ -537,20 +520,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 504,
-    label = "C_rad/H/OneDeC;C/H2/Nd_Srad",
-    kinetics = ArrheniusEP(
-        A = (7.63e+11, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (-0.55, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (1500, 'K'),
+    index=504,
+    label="C_rad/H/OneDeC;C/H2/Nd_Srad",
+    kinetics=ArrheniusEP(
+        A=(7.63e11, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(-0.55, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(1500, "K"),
     ),
-    rank = 5,
-    shortDesc = """Rough estimate based on 1/10 of #3026 in R_Recombination""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""Rough estimate based on 1/10 of #3026 in R_Recombination""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH3 + n-C3H7 --> C3H6 + CH4
 
@@ -568,20 +550,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 504,
-    label = "C_methyl;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.15e+13, 'cm^3/(mol*s)', '*|/', 1.7),
-        n = -0.32,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=504,
+    label="C_methyl;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.15e13, "cm^3/(mol*s)", "*|/", 1.7),
+        n=-0.32,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH3 + n-C3H7 --> C3H6 + CH4
 
@@ -599,20 +580,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 505,
-    label = "C_rad/H2/Cs;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.45e+12, 'cm^3/(mol*s)', '*|/', 1.4),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=505,
+    label="C_rad/H2/Cs;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.45e12, "cm^3/(mol*s)", "*|/", 1.4),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H5 + n-C3H7 --> C3H6 + C2H6
 
@@ -630,20 +610,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 505,
-    label = "C_rad/H/TwoDe;C/H2/Nd_Srad",
-    kinetics = ArrheniusEP(
-        A = (1.94e+12, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (0.36, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (1500, 'K'),
+    index=505,
+    label="C_rad/H/TwoDe;C/H2/Nd_Srad",
+    kinetics=ArrheniusEP(
+        A=(1.94e12, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(0.36, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(1500, "K"),
     ),
-    rank = 5,
-    shortDesc = """Rough estimate based on 1/10 of #3027 in R_Recombination""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""Rough estimate based on 1/10 of #3027 in R_Recombination""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H5 + n-C3H7 --> C3H6 + C2H6
 
@@ -661,20 +640,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 506,
-    label = "C_rad/H2/Cd;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.45e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (-0.13, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=506,
+    label="C_rad/H2/Cd;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.45e12, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(-0.13, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [93] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [93] Literature review.""",
+    longDesc="""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C3H5 + nC3H7 --> C3H6 + C3H6
 
@@ -691,35 +669,34 @@ MRH 31-Aug-2009
 )
 
 entry(
-    index = 506,
-    label = "S_rad/OneDe;C/H/NdNd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (7.63e+11, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (-0.55, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (1500, 'K'),
+    index=506,
+    label="S_rad/OneDe;C/H/NdNd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(7.63e11, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(-0.55, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(1500, "K"),
     ),
-    rank = 5,
-    shortDesc = """VERY Rough estimate based on 1/10 of #3026 in R_Recombination""",
+    rank=5,
+    shortDesc="""VERY Rough estimate based on 1/10 of #3026 in R_Recombination""",
 )
 
 entry(
-    index = 507,
-    label = "C_rad/H2/O;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (4.82e+11, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=507,
+    label="C_rad/H2/O;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(4.82e11, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH2OH + n-C3H7 --> C3H6 + CH3OH
 
@@ -734,20 +711,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 507,
-    label = "S_rad/NonDeC;C/H/NdNd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (7.63e+11, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (-0.55, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (1500, 'K'),
+    index=507,
+    label="S_rad/NonDeC;C/H/NdNd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(7.63e11, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(-0.55, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(1500, "K"),
     ),
-    rank = 5,
-    shortDesc = """Rough estimate based on 1/10 of #3026 in R_Recombination""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""Rough estimate based on 1/10 of #3026 in R_Recombination""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  CH2OH + n-C3H7 --> C3H6 + CH3OH
 
@@ -762,20 +738,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 508,
-    label = "C_rad/H/NonDeC;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (5.13e+13, 'cm^3/(mol*s)', '*|/', 2),
-        n = -0.35,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=508,
+    label="C_rad/H/NonDeC;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(5.13e13, "cm^3/(mol*s)", "*|/", 2),
+        n=-0.35,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  i-C3H7 + n-C3H7 --> C3H6 + C3H8
 
@@ -792,20 +767,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 509,
-    label = "C_rad/Cs3;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.16e+14, 'cm^3/(mol*s)', '*|/', 2),
-        n = -0.75,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=509,
+    label="C_rad/Cs3;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.16e14, "cm^3/(mol*s)", "*|/", 2),
+        n=-0.75,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [92] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [92] Literature review.""",
+    longDesc="""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: t-C4H9 + n-C3H7 --> C3H6 + i-C4H10
 
@@ -822,20 +796,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 510,
-    label = "Cd_pri_rad;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.21e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=510,
+    label="Cd_pri_rad;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.21e12, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H3 + n-C3H7 --> C3H6 + C2H4
 
@@ -849,35 +822,34 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 510,
-    label = "S_rad/NonDeS;C/H2/Nd_Csrad/H/Cd",
-    kinetics = ArrheniusEP(
-        A = (6.44e+08, 'cm^3/(mol*s)'),
-        n = 1.19,
-        alpha = 0,
-        E0 = (0.51, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (1500, 'K'),
+    index=510,
+    label="S_rad/NonDeS;C/H2/Nd_Csrad/H/Cd",
+    kinetics=ArrheniusEP(
+        A=(6.44e08, "cm^3/(mol*s)"),
+        n=1.19,
+        alpha=0,
+        E0=(0.51, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(1500, "K"),
     ),
-    rank = 5,
-    shortDesc = """Very rough based on R_Recomb #491""",
+    rank=5,
+    shortDesc="""Very rough based on R_Recomb #491""",
 )
 
 entry(
-    index = 511,
-    label = "Ct_rad/Ct;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (6.03e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=511,
+    label="Ct_rad/Ct;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(6.03e12, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  C2H + n-C3H7 --> C3H6 + C2H2
 
@@ -892,35 +864,34 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 511,
-    label = "S_rad/NonDeS;S_Csrad",
-    kinetics = ArrheniusEP(
-        A = (6.44e+08, 'cm^3/(mol*s)'),
-        n = 1.19,
-        alpha = 0,
-        E0 = (0.51, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (1500, 'K'),
+    index=511,
+    label="S_rad/NonDeS;S_Csrad",
+    kinetics=ArrheniusEP(
+        A=(6.44e08, "cm^3/(mol*s)"),
+        n=1.19,
+        alpha=0,
+        E0=(0.51, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(1500, "K"),
     ),
-    rank = 5,
-    shortDesc = """Very rough based on R_Recomb #491""",
+    rank=5,
+    shortDesc="""Very rough based on R_Recomb #491""",
 )
 
 entry(
-    index = 512,
-    label = "O_pri_rad;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.41e+13, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=512,
+    label="O_pri_rad;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.41e13, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review.  OH + n-C3H7 --> C3H6 + H2O
 
@@ -934,20 +905,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 513,
-    label = "O2b;C/H/NdNd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.2044e+10, 'cm^3/(mol*s)', '*|/', 5),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (600, 'K'),
-        Tmax = (1000, 'K'),
+    index=513,
+    label="O2b;C/H/NdNd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.2044e10, "cm^3/(mol*s)", "*|/", 5),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(600, "K"),
+        Tmax=(1000, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [92] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [92] Literature review.""",
+    longDesc="""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: O2 + iC4H9 --> iC4H8 + HO2
 
@@ -965,20 +935,19 @@ JDM 31-Mar-2010
 )
 
 entry(
-    index = 514,
-    label = "Ct_rad/Ct;C/H/NdNd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (6.03e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=514,
+    label="Ct_rad/Ct;C/H/NdNd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(6.03e12, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [92] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [92] Literature review.""",
+    longDesc="""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: C2H + i-C4H9 --> i-C4H8 + C2H2
 
@@ -994,20 +963,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 515,
-    label = "H_rad;C/H/NdNd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (9.04e+11, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=515,
+    label="H_rad;C/H/NdNd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(9.04e11, "cm^3/(mol*s)", "*|/", 2),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [92] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [92] Literature review.""",
+    longDesc="""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: H + i-C4H9 --> i-C4H8 + H2
 
@@ -1024,20 +992,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 516,
-    label = "C_methyl;C/H/NdNd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (6.02e+12, 'cm^3/(mol*s)', '*|/', 2),
-        n = -0.32,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=516,
+    label="C_methyl;C/H/NdNd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(6.02e12, "cm^3/(mol*s)", "*|/", 2),
+        n=-0.32,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [92] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [92] Literature review.""",
+    longDesc="""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: CH3 + i-C4H9 --> i-C4H8 + CH4
 
@@ -1052,20 +1019,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 517,
-    label = "C_rad/H2/Cs;C/H/NdNd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (8.43e+11, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=517,
+    label="C_rad/H2/Cs;C/H/NdNd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(8.43e11, "cm^3/(mol*s)", "*|/", 2),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [92] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [92] Literature review.""",
+    longDesc="""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: C2H5 + i-C4H9 --> i-C4H8 + C2H6
 
@@ -1082,20 +1048,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 518,
-    label = "C_rad/H2/O;C/H/NdNd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.41e+11, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=518,
+    label="C_rad/H2/O;C/H/NdNd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.41e11, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [92] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [92] Literature review.""",
+    longDesc="""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: CH2OH + i-C4H9 --> i-C4H8 + CH3OH
 
@@ -1115,20 +1080,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 519,
-    label = "C_rad/H2/Cd;C/H/NdNd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (7.83e+11, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (-0.13, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=519,
+    label="C_rad/H2/Cd;C/H/NdNd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(7.83e11, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(-0.13, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [93] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [93] Literature review.""",
+    longDesc="""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C3H5 + iC4H9 --> iC4H8 + C3H6
 
@@ -1144,20 +1108,19 @@ MRH 31-Aug-2009
 )
 
 entry(
-    index = 520,
-    label = "C_rad/H/NonDeC;C/H/NdNd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.56e+13, 'cm^3/(mol*s)', '*|/', 2),
-        n = -0.35,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=520,
+    label="C_rad/H/NonDeC;C/H/NdNd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.56e13, "cm^3/(mol*s)", "*|/", 2),
+        n=-0.35,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [92] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [92] Literature review.""",
+    longDesc="""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: i-C3H7 + i-C4H9 --> i-C4H8 + C3H8
 
@@ -1176,20 +1139,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 521,
-    label = "C_rad/Cs3;C/H/NdNd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.08e+14, 'cm^3/(mol*s)', '*|/', 2),
-        n = -0.75,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=521,
+    label="C_rad/Cs3;C/H/NdNd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.08e14, "cm^3/(mol*s)", "*|/", 2),
+        n=-0.75,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [92] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [92] Literature review.""",
+    longDesc="""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: t-C4H9 + i-C4H9 --> i-C4H8 + i-C4H10
 
@@ -1209,20 +1171,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 522,
-    label = "Cd_pri_rad;C/H/NdNd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (8.43e+11, 'cm^3/(mol*s)', '*|/', 4),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=522,
+    label="Cd_pri_rad;C/H/NdNd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(8.43e11, "cm^3/(mol*s)", "*|/", 4),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [92] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [92] Literature review.""",
+    longDesc="""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: C2H3 + i-C4H9 --> i-C4H8 + C2H4
 
@@ -1236,20 +1197,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 523,
-    label = "O_pri_rad;C/H/NdNd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.21e+13, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=523,
+    label="O_pri_rad;C/H/NdNd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.21e13, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [92] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [92] Literature review.""",
+    longDesc="""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: OH + i-C4H9 --> i-C4H8 + H2O
 
@@ -1264,20 +1224,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 524,
-    label = "O2b;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (6.022e+11, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (13.55, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=524,
+    label="O2b;Cdpri_Csrad",
+    kinetics=ArrheniusEP(
+        A=(6.022e11, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(13.55, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [93] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [93] Literature review.""",
+    longDesc="""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: O2 + C3H5 --> H2C=C=CH2 + HO2
 
@@ -1301,20 +1260,19 @@ JDM 31-Mar-2010
 )
 
 entry(
-    index = 526,
-    label = "C_methyl;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (3.01e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=526,
+    label="C_methyl;Cdpri_Csrad",
+    kinetics=ArrheniusEP(
+        A=(3.01e12, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 5,
-    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc="""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: CH3 + C3H5 --> H2C=C=CH2 + CH4
 
@@ -1337,20 +1295,19 @@ MRH 31-Aug-2009
 )
 
 entry(
-    index = 527,
-    label = "C_rad/H2/Cs;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (9.64e+11, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=527,
+    label="C_rad/H2/Cs;Cdpri_Csrad",
+    kinetics=ArrheniusEP(
+        A=(9.64e11, "cm^3/(mol*s)", "*|/", 2),
+        n=0,
+        alpha=0,
+        E0=(6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 5,
-    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc="""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C2H5 + C3H5 --> H2C=C=CH2 + C2H6
 
@@ -1366,20 +1323,19 @@ MRH 31-Aug-2009
 )
 
 entry(
-    index = 528,
-    label = "C_rad/H2/Cd;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (8.43e+10, 'cm^3/(mol*s)', '*|/', 2.5),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=528,
+    label="C_rad/H2/Cd;Cdpri_Csrad",
+    kinetics=ArrheniusEP(
+        A=(8.43e10, "cm^3/(mol*s)", "*|/", 2.5),
+        n=0,
+        alpha=0,
+        E0=(6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 5,
-    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc="""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C3H5 + C3H5 --> H2C=C=CH2 + C3H6
 
@@ -1395,20 +1351,19 @@ MRH 31-Aug-2009
 )
 
 entry(
-    index = 529,
-    label = "C_rad/H/NonDeC;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (4.58e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=529,
+    label="C_rad/H/NonDeC;Cdpri_Csrad",
+    kinetics=ArrheniusEP(
+        A=(4.58e12, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 5,
-    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc="""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: iC3H7 + C3H5 --> H2C=C=CH2 + C3H8
 
@@ -1425,20 +1380,19 @@ MRH 31-Aug-2009
 )
 
 entry(
-    index = 530,
-    label = "C_rad/Cs3;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.89e+13, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=530,
+    label="C_rad/Cs3;Cdpri_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.89e13, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 5,
-    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc="""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: tC4H9 + C3H5 --> H2C=C=CH2 + iC4H10
 
@@ -1455,20 +1409,19 @@ MRH 31-Aug-2009
 )
 
 entry(
-    index = 531,
-    label = "Cd_pri_rad;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.41e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=531,
+    label="Cd_pri_rad;Cdpri_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.41e12, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 5,
-    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc="""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C2H3 + C3H5 --> H2C=C=CH2 + C2H4
 
@@ -1482,20 +1435,19 @@ MRH 31-Aug-2009
 )
 
 entry(
-    index = 532,
-    label = "O_pri_rad;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (6.03e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=532,
+    label="O_pri_rad;Cdpri_Csrad",
+    kinetics=ArrheniusEP(
+        A=(6.03e12, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 5,
-    shortDesc = """SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc="""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: OH + C3H5 --> H2C=C=CH2 + H2O
 
@@ -1509,19 +1461,18 @@ MRH 31-Aug-2009
 )
 
 entry(
-    index = 533,
-    label = "O2b;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (5.7209e+12, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (298, 'K'),
+    index=533,
+    label="O2b;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(5.7209e12, "cm^3/(mol*s)", "*|/", 2),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(298, "K"),
     ),
-    rank = 4,
-    shortDesc = """Atkinson et al [98] literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Atkinson et al [98] literature review.""",
+    longDesc="""
 [98] Atkinson, R.; Baulch, D.L.; Cox, R.A.; Crowley, J.N.; Hampson, R.F., Jr.; Kerr, J.A.; Rossi, M.J.; Troe, J. "Summary of Evaluated Kinetic and Photochemical Data for Atmospheric Chemistry,", 2001.
 Literature review: CH3CHOH + O2 --> CH3CHO + HO2
 
@@ -1536,19 +1487,18 @@ JDM 31-Mar-2010
 )
 
 entry(
-    index = 534,
-    label = "O2b;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.92067e+12, 'cm^3/(mol*s)', '*|/', 1.3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (298, 'K'),
+    index=534,
+    label="O2b;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.92067e12, "cm^3/(mol*s)", "*|/", 1.3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(298, "K"),
     ),
-    rank = 4,
-    shortDesc = """Atkinson et al [98] literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Atkinson et al [98] literature review.""",
+    longDesc="""
 [98] Atkinson, R.; Baulch, D.L.; Cox, R.A.; Crowley, J.N.; Hampson, R.F., Jr.; Kerr, J.A.; Rossi, M.J.; Troe, J. "Summary of Evaluated Kinetic and Photochemical Data for Atmospheric Chemistry,", 2001.
 Literature review: CH2OH + O2 --> CH2O + HO2
 
@@ -1563,20 +1513,19 @@ JDM 31-Mar-2010
 )
 
 entry(
-    index = 535,
-    label = "O2b;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.74001e+12, 'cm^3/(mol*s)', '*|/', 1.3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol', '+|-', 0.4),
-        Tmin = (200, 'K'),
-        Tmax = (300, 'K'),
+    index=535,
+    label="O2b;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.74001e12, "cm^3/(mol*s)", "*|/", 1.3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol", "+|-", 0.4),
+        Tmin=(200, "K"),
+        Tmax=(300, "K"),
     ),
-    rank = 4,
-    shortDesc = """DeMore et al [183] literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""DeMore et al [183] literature review.""",
+    longDesc="""
 [183] DeMore, W.B.; Sander, S.P.; Golden, D.M.; Hampson, R.F.; Kurylo, M.J.; Howard, C.J.; Ravishankara, A.R.; Kolb, C.E.; Molina, M.J.; JPL Publication 97-4
 Literature review: CH2OH + O2 --> CH2O + HO2
 
@@ -1592,19 +1541,18 @@ JDM 31-Mar-2010
 )
 
 entry(
-    index = 536,
-    label = "O_atom_triplet;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (9.04e+13, 'cm^3/(mol*s)', '+|-', 3.01e+13),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (298, 'K'),
+    index=536,
+    label="O_atom_triplet;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(9.04e13, "cm^3/(mol*s)", "+|-", 3.01e13),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(298, "K"),
     ),
-    rank = 3,
-    shortDesc = """Grotheer et al [189].""",
-    longDesc = 
-"""
+    rank=3,
+    shortDesc="""Grotheer et al [189].""",
+    longDesc="""
 [189] Grotheer, H.; Riekert, G.; Walter, D.; Just, T. Symp. Int. Combust. Proc. 1989, 22, 963.
 Absolute value measured directly. Excitation: discharge, analysis: mass spectroscopy. Original uncertainty 3.0E+13
 
@@ -1621,20 +1569,19 @@ MRH 1-Sept-2009
 )
 
 entry(
-    index = 537,
-    label = "CH2_triplet;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.21e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=537,
+    label="CH2_triplet;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.21e12, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [90] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [90] Literature review.""",
+    longDesc="""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: CH2 + CH2OH --> CH3 + CH2O
 
@@ -1649,19 +1596,18 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 538,
-    label = "H_rad;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2e+13, 'cm^3/(mol*s)', '+|-', 1e+13),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (295, 'K'),
+    index=538,
+    label="H_rad;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2e13, "cm^3/(mol*s)", "+|-", 1e13),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(295, "K"),
     ),
-    rank = 4,
-    shortDesc = """Edelbuttel-Einhaus et al [190].""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Edelbuttel-Einhaus et al [190].""",
+    longDesc="""
 [190] Edelbuttel-Einhaus, J.; Hoyermann, K.; Rohde, G.; Seeba, J. Symp. Int. Combust. Proc. 1992, 22, 661.
 Data derived from fitting to a complex mechanism. Excitation: discharge, analysis: mass spectroscopy. Original uncertainty 1.0E+13
 
@@ -1681,20 +1627,19 @@ MRH 1-Sept-2009
 )
 
 entry(
-    index = 539,
-    label = "H_rad;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (6.03e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=539,
+    label="H_rad;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(6.03e12, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [90] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [90] Literature review.""",
+    longDesc="""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: H + CH2OH --> H2 + CH2O
 
@@ -1710,19 +1655,18 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 540,
-    label = "C_methyl;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (8.49e+13, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (298, 'K'),
+    index=540,
+    label="C_methyl;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(8.49e13, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(298, "K"),
     ),
-    rank = 3,
-    shortDesc = """Pagsberg et al [191].""",
-    longDesc = 
-"""
+    rank=3,
+    shortDesc="""Pagsberg et al [191].""",
+    longDesc="""
 [191] Pagsberg, P.; Munk, J.; Sillesen, A.; Anastasi, C. Chem. Phys. Lett. 1988, 146, 375.
 Absolute value measured directly. Excitatio: electron beam, analysis: Vis-UV absorption.
 
@@ -1743,20 +1687,19 @@ MRH 1-Sept-2009
 )
 
 entry(
-    index = 541,
-    label = "C_methyl;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.41e+12, 'cm^3/(mol*s)', '*|/', 5),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=541,
+    label="C_methyl;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.41e12, "cm^3/(mol*s)", "*|/", 5),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [90] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [90] Literature review.""",
+    longDesc="""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: CH3 + CH2OH --> CH4 + CH2O
 
@@ -1772,20 +1715,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 542,
-    label = "C_rad/H2/Cs;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.41e+12, 'cm^3/(mol*s)', '*|/', 5),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=542,
+    label="C_rad/H2/Cs;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.41e12, "cm^3/(mol*s)", "*|/", 5),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [90] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [90] Literature review.""",
+    longDesc="""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: C2H5 + CH2OH --> C2H6 + CH2O
 
@@ -1801,20 +1743,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 543,
-    label = "C_rad/H2/Cd;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.81e+13, 'cm^3/(mol*s)', '*|/', 2.5),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=543,
+    label="C_rad/H2/Cd;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.81e13, "cm^3/(mol*s)", "*|/", 2.5),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [93] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [93] Literature review.""",
+    longDesc="""
 [93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
 Literature review: C3H5 + CH2OH --> CH2O + C3H6
 
@@ -1830,20 +1771,19 @@ MRH 31-Aug-2009
 )
 
 entry(
-    index = 544,
-    label = "C_rad/H2/O;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (4.82e+12, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=544,
+    label="C_rad/H2/O;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(4.82e12, "cm^3/(mol*s)", "*|/", 2),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [90] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [90] Literature review.""",
+    longDesc="""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: CH2OH + CH2OH --> CH3OH + CH2O
 
@@ -1866,20 +1806,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 545,
-    label = "C_rad/H/NonDeC;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.35e+12, 'cm^3/(mol*s)', '*|/', 5),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=545,
+    label="C_rad/H/NonDeC;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.35e12, "cm^3/(mol*s)", "*|/", 5),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [91] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [91] Literature review.""",
+    longDesc="""
 [91] Tsang, W.; Journal of Physical and Chemical Reference Data (1988), 17(2), 887-951.
 Literature review: CH2OH + i-C3H7 = C3H8 + CH2O
 
@@ -1893,20 +1832,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 546,
-    label = "C_rad/Cs3;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (3.47e+14, 'cm^3/(mol*s)', '*|/', 3),
-        n = -0.75,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=546,
+    label="C_rad/Cs3;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(3.47e14, "cm^3/(mol*s)", "*|/", 3),
+        n=-0.75,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [92] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [92] Literature review.""",
+    longDesc="""
 [92] Tsang, W.; Journal of Physical and Chemical Reference Data (1990), 19(1), 1-68.
 Literature review: t-C4H9 + CH2OH = CH2O + i-C4H10
 
@@ -1925,20 +1863,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 547,
-    label = "Cd_pri_rad;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (3.01e+13, 'cm^3/(mol*s)', '*|/', 2.5),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=547,
+    label="Cd_pri_rad;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(3.01e13, "cm^3/(mol*s)", "*|/", 2.5),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [90] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [90] Literature review.""",
+    longDesc="""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: CH2OH + C2H3 --> C2H4 + CH2O
 
@@ -1954,20 +1891,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 549,
-    label = "CO_pri_rad;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.81e+14, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=549,
+    label="CO_pri_rad;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.81e14, "cm^3/(mol*s)", "*|/", 3),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [90] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [90] Literature review.""",
+    longDesc="""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: HCO + CH2OH --> CH2O + CH2O
 
@@ -1983,20 +1919,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 550,
-    label = "O_pri_rad;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.41e+13, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=550,
+    label="O_pri_rad;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.41e13, "cm^3/(mol*s)", "*|/", 2),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [90] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [90] Literature review.""",
+    longDesc="""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: OH + CH2OH --> H2O + CH2O
 
@@ -2012,20 +1947,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 551,
-    label = "O_rad/NonDeC;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.41e+13, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=551,
+    label="O_rad/NonDeC;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(2.41e13, "cm^3/(mol*s)", "*|/", 2),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [90] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [90] Literature review.""",
+    longDesc="""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: CH3O + CH2OH --> CH3OH + CH2O
 
@@ -2041,20 +1975,19 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 552,
-    label = "O_rad/NonDeO;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1.21e+13, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=552,
+    label="O_rad/NonDeO;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1.21e13, "cm^3/(mol*s)", "*|/", 2),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tsang [90] Literature review.""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""Tsang [90] Literature review.""",
+    longDesc="""
 [90] Tsang, W.; Journal of Physical and Chemical Reference Data (1987), 16(3), 471-508.
 Literature review: HO2 + CH2OH --> CH3OH + H2O2
 
@@ -2070,69 +2003,67 @@ MRH 30-Aug-2009
 )
 
 entry(
-    index = 553,
-    label = "S_rad/NonDeC;Cmethyl_Srad",
-    kinetics = ArrheniusEP(
-        A = (9.79e+11, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (298, 'K'),
+    index=553,
+    label="S_rad/NonDeC;Cmethyl_Srad",
+    kinetics=ArrheniusEP(
+        A=(9.79e11, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(298, "K"),
     ),
-    rank = 4,
-    shortDesc = """Tycholiz et al [A].""",
+    rank=4,
+    shortDesc="""Tycholiz et al [A].""",
 )
 
 entry(
-    index = 554,
-    label = "C_rad/H/CsS;C/H2/Nd_Csrad",
-    kinetics = ArrheniusEP(
-        A = (3.37e-06, 'cm^3/(mol*s)'),
-        n = 4.35,
-        alpha = 0,
-        E0 = (1.14, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (1500, 'K'),
+    index=554,
+    label="C_rad/H/CsS;C/H2/Nd_Csrad",
+    kinetics=ArrheniusEP(
+        A=(3.37e-06, "cm^3/(mol*s)"),
+        n=4.35,
+        alpha=0,
+        E0=(1.14, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(1500, "K"),
     ),
-    rank = 3,
-    shortDesc = """CAC calc CBS-QB3 1dhr""",
+    rank=3,
+    shortDesc="""CAC calc CBS-QB3 1dhr""",
 )
 
 entry(
-    index = 555,
-    label = "O2b;O_Csrad",
-    kinetics = ArrheniusEP(
-        A = (3.7e+16, 'cm^3/(mol*s)'),
-        n = -1.63,
-        alpha = 0,
-        E0 = (3.4, 'kcal/mol'),
-        Tmin = (250, 'K'),
-        Tmax = (1000, 'K'),
+    index=555,
+    label="O2b;O_Csrad",
+    kinetics=ArrheniusEP(
+        A=(3.7e16, "cm^3/(mol*s)"),
+        n=-1.63,
+        alpha=0,
+        E0=(3.4, "kcal/mol"),
+        Tmin=(250, "K"),
+        Tmax=(1000, "K"),
     ),
-    rank = 4,
-    shortDesc = """S.S. Merchant estimate""",
-    longDesc = 
-"""
+    rank=4,
+    shortDesc="""S.S. Merchant estimate""",
+    longDesc="""
 Estimate on basis of C3H7 + O2 rate from NIST kinetic datbase, Measurements, Theory, and Modeling of OH Formation in Ethyl + O2 and Propyl + O2 Reactions
 ref: DOI: 10.1021/jp0221946
 """,
 )
 
 entry(
-    index = 555,
-    label = "O2b;Cd_Cdrad",
-    kinetics = ArrheniusEP(
-        A = (1.3e+15, 'cm^3/(mol*s)', '*|/', 5),
-        n = -1.26,
-        alpha = 0,
-        E0 = (3.31, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2000, 'K'),
+    index=555,
+    label="O2b;Cd_Cdrad",
+    kinetics=ArrheniusEP(
+        A=(1.3e15, "cm^3/(mol*s)", "*|/", 5),
+        n=-1.26,
+        alpha=0,
+        E0=(3.31, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2000, "K"),
     ),
-    rank = 5,
-    shortDesc = """S.S. Merchant estimate""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""S.S. Merchant estimate""",
+    longDesc="""
 This rate rule is a estimate taken from NIST, ref: Aromatic and Polycyclic Aromatic
 Hydrocarbon Formation in a Laminar Premixed n-butane Flame
 Derived from fitting to a complex mechanism for C2H3 + O2 = C2H2 + HO2
@@ -2140,1186 +2071,1130 @@ Derived from fitting to a complex mechanism for C2H3 + O2 = C2H2 + HO2
 )
 
 entry(
-    index = 555,
-    label = "O2b;Cmethyl_Csrad/H/Cd",
-    kinetics = ArrheniusEP(
-        A = (7.23e+12, 'cm^3/(mol*s)', '*|/', 10),
-        n = 0,
-        alpha = 0,
-        E0 = (22, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2000, 'K'),
+    index=555,
+    label="O2b;Cmethyl_Csrad/H/Cd",
+    kinetics=ArrheniusEP(
+        A=(7.23e12, "cm^3/(mol*s)", "*|/", 10),
+        n=0,
+        alpha=0,
+        E0=(22, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2000, "K"),
     ),
-    rank = 5,
-    shortDesc = """S.S. Merchant estimate""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""S.S. Merchant estimate""",
+    longDesc="""
 SSM estimate based on Miyoshi rate rule for secondary carbon in dx.doi.org/10.1021/jp112152n, 
 modified to account for allylic stability (+7 kcal)
 """,
 )
 
 entry(
-    index = 556,
-    label = "O2b;XH_Rrad_birad",
-    kinetics = ArrheniusEP(
-        A = (5e+10, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (1500, 'K'),
+    index=556,
+    label="O2b;XH_Rrad_birad",
+    kinetics=ArrheniusEP(
+        A=(5e10, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(1500, "K"),
     ),
-    rank = 5,
-    shortDesc = """A.G. Vandeputte estimated value""",
+    rank=5,
+    shortDesc="""A.G. Vandeputte estimated value""",
 )
 
 entry(
-    index = 556,
-    label = "Y_rad_birad_trirad_quadrad;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1e+09, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=556,
+    label="Y_rad_birad_trirad_quadrad;Cdpri_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1e09, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Estimated value, AG Vandeputte""",
+    rank=4,
+    shortDesc="""Estimated value, AG Vandeputte""",
 )
 
 entry(
-    index = 557,
-    label = "O2b;C/H2/De_Csrad",
-    kinetics = ArrheniusEP(
-        A = (1e+10, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=557,
+    label="O2b;C/H2/De_Csrad",
+    kinetics=ArrheniusEP(
+        A=(1e10, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Estimated value, AG Vandeputte""",
+    rank=4,
+    shortDesc="""Estimated value, AG Vandeputte""",
 )
 
 entry(
-    index = 558,
-    label = "O2b;C/H2/Nd_Rrad",
-    kinetics = ArrheniusEP(
-        A = (1e+10, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=558,
+    label="O2b;C/H2/Nd_Rrad",
+    kinetics=ArrheniusEP(
+        A=(1e10, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Estimated value, AG Vandeputte""",
+    rank=4,
+    shortDesc="""Estimated value, AG Vandeputte""",
 )
 
 entry(
-    index = 559,
-    label = "O2b;C/H2/De_Rrad",
-    kinetics = ArrheniusEP(
-        A = (1e+10, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=559,
+    label="O2b;C/H2/De_Rrad",
+    kinetics=ArrheniusEP(
+        A=(1e10, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Estimated value, AG Vandeputte""",
+    rank=4,
+    shortDesc="""Estimated value, AG Vandeputte""",
 )
 
 entry(
-    index = 560,
-    label = "O2b;C/H/NdNd_Rrad",
-    kinetics = ArrheniusEP(
-        A = (1e+10, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=560,
+    label="O2b;C/H/NdNd_Rrad",
+    kinetics=ArrheniusEP(
+        A=(1e10, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Estimated value, AG Vandeputte""",
+    rank=4,
+    shortDesc="""Estimated value, AG Vandeputte""",
 )
 
 entry(
-    index = 561,
-    label = "O2b;C/H/NdDe_Rrad",
-    kinetics = ArrheniusEP(
-        A = (1e+10, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=561,
+    label="O2b;C/H/NdDe_Rrad",
+    kinetics=ArrheniusEP(
+        A=(1e10, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Estimated value, AG Vandeputte""",
+    rank=4,
+    shortDesc="""Estimated value, AG Vandeputte""",
 )
 
 entry(
-    index = 562,
-    label = "O2b;C/H/DeDe_Rrad",
-    kinetics = ArrheniusEP(
-        A = (1e+10, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=562,
+    label="O2b;C/H/DeDe_Rrad",
+    kinetics=ArrheniusEP(
+        A=(1e10, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 4,
-    shortDesc = """Estimated value, AG Vandeputte""",
+    rank=4,
+    shortDesc="""Estimated value, AG Vandeputte""",
 )
 
 entry(
-    index = 600,
-    label = "NH2_rad;O_Orad",
-    kinetics = ArrheniusEP(
-        A = (920000, 'cm^3/(mol*s)'),
-        n = 1.94,
-        alpha = 0,
-        E0 = (-1.15, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=600,
+    label="NH2_rad;O_Orad",
+    kinetics=ArrheniusEP(
+        A=(920000, "cm^3/(mol*s)"),
+        n=1.94,
+        alpha=0,
+        E0=(-1.15, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NH2 + HO2 = NH3 + O2 (B&D #14d) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 601,
-    label = "O2b;N3d/H_d_Nrad",
-    kinetics = ArrheniusEP(
-        A = (1.2e+12, 'cm^3/(mol*s)'),
-        n = -0.34,
-        alpha = 0,
-        E0 = (0.15, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=601,
+    label="O2b;N3d/H_d_Nrad",
+    kinetics=ArrheniusEP(
+        A=(1.2e12, "cm^3/(mol*s)"),
+        n=-0.34,
+        alpha=0,
+        E0=(0.15, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NNH + O2 = N2 + HO2 (B&D #28b1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 602,
-    label = "H_rad;N3d/H_d_Nrad",
-    kinetics = ArrheniusEP(
-        A = (2.4e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.89, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=602,
+    label="H_rad;N3d/H_d_Nrad",
+    kinetics=ArrheniusEP(
+        A=(2.4e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.89, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NNH + H = N2 + H2 (B&D #28c) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 603,
-    label = "O_pri_rad;N3d/H_d_Nrad",
-    kinetics = ArrheniusEP(
-        A = (1.2e+06, 'cm^3/(mol*s)'),
-        n = 2,
-        alpha = 0,
-        E0 = (-1.19, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=603,
+    label="O_pri_rad;N3d/H_d_Nrad",
+    kinetics=ArrheniusEP(
+        A=(1.2e06, "cm^3/(mol*s)"),
+        n=2,
+        alpha=0,
+        E0=(-1.19, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NNH + OH = N2 + H2O (B&D #28d2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 604,
-    label = "O_atom_triplet;N3d/H_d_Nrad",
-    kinetics = ArrheniusEP(
-        A = (1.7e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.89, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=604,
+    label="O_atom_triplet;N3d/H_d_Nrad",
+    kinetics=ArrheniusEP(
+        A=(1.7e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.89, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NNH + O = N2 + OH (B&D #28e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 605,
-    label = "NH2_rad;N3d/H_d_Nrad",
-    kinetics = ArrheniusEP(
-        A = (920000, 'cm^3/(mol*s)'),
-        n = 1.94,
-        alpha = 0,
-        E0 = (-1.15, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=605,
+    label="NH2_rad;N3d/H_d_Nrad",
+    kinetics=ArrheniusEP(
+        A=(920000, "cm^3/(mol*s)"),
+        n=1.94,
+        alpha=0,
+        E0=(-1.15, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NNH + NH2 = N2 + NH3 (B&D #28f) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 606,
-    label = "O_rad/NonDeO;N3d/H_d_Nrad",
-    kinetics = ArrheniusEP(
-        A = (14000, 'cm^3/(mol*s)'),
-        n = 2.69,
-        alpha = 0,
-        E0 = (-1.6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=606,
+    label="O_rad/NonDeO;N3d/H_d_Nrad",
+    kinetics=ArrheniusEP(
+        A=(14000, "cm^3/(mol*s)"),
+        n=2.69,
+        alpha=0,
+        E0=(-1.6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NNH + HO2 = N2 + H2O2 (B&D #28g1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 607,
-    label = "N3d_rad/O;N3d/H_d_Nrad",
-    kinetics = ArrheniusEP(
-        A = (1.2e+06, 'cm^3/(mol*s)'),
-        n = 2,
-        alpha = 0,
-        E0 = (-1.19, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=607,
+    label="N3d_rad/O;N3d/H_d_Nrad",
+    kinetics=ArrheniusEP(
+        A=(1.2e06, "cm^3/(mol*s)"),
+        n=2,
+        alpha=0,
+        E0=(-1.19, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NNH + NO = N2 + HNO (B&D #28h) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 608,
-    label = "H_rad;N3s/H2_s_Nbirad",
-    kinetics = ArrheniusEP(
-        A = (4.8e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.89, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=608,
+    label="H_rad;N3s/H2_s_Nbirad",
+    kinetics=ArrheniusEP(
+        A=(4.8e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.89, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: H2NN + H = NNH + H2 (B&D #30c2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 609,
-    label = "O_atom_triplet;N3s/H2_s_Nbirad",
-    kinetics = ArrheniusEP(
-        A = (3.3e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.89, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=609,
+    label="O_atom_triplet;N3s/H2_s_Nbirad",
+    kinetics=ArrheniusEP(
+        A=(3.3e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.89, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: H2NN + O = NNH + OH (B&D #30d2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 610,
-    label = "O_pri_rad;N3s/H2_s_Nbirad",
-    kinetics = ArrheniusEP(
-        A = (2.4e+06, 'cm^3/(mol*s)'),
-        n = 2,
-        alpha = 0,
-        E0 = (-1.19, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=610,
+    label="O_pri_rad;N3s/H2_s_Nbirad",
+    kinetics=ArrheniusEP(
+        A=(2.4e06, "cm^3/(mol*s)"),
+        n=2,
+        alpha=0,
+        E0=(-1.19, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: H2NN + OH = NNH + H2O (B&D #30e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 611,
-    label = "C_methyl;N3s/H2_s_Nbirad",
-    kinetics = ArrheniusEP(
-        A = (1.6e+06, 'cm^3/(mol*s)'),
-        n = 1.87,
-        alpha = 0,
-        E0 = (0.13, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=611,
+    label="C_methyl;N3s/H2_s_Nbirad",
+    kinetics=ArrheniusEP(
+        A=(1.6e06, "cm^3/(mol*s)"),
+        n=1.87,
+        alpha=0,
+        E0=(0.13, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: H2NN + CH3 = NNH + CH4 (B&D #30f3) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 612,
-    label = "NH2_rad;N3s/H2_s_Nbirad",
-    kinetics = ArrheniusEP(
-        A = (1.8e+06, 'cm^3/(mol*s)'),
-        n = 1.94,
-        alpha = 0,
-        E0 = (-1.15, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=612,
+    label="NH2_rad;N3s/H2_s_Nbirad",
+    kinetics=ArrheniusEP(
+        A=(1.8e06, "cm^3/(mol*s)"),
+        n=1.94,
+        alpha=0,
+        E0=(-1.15, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: H2NN + NH2 = NNH + NH3 (B&D #30g2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 613,
-    label = "O_rad/NonDeO;N3s/H2_s_Nbirad",
-    kinetics = ArrheniusEP(
-        A = (29000, 'cm^3/(mol*s)'),
-        n = 2.69,
-        alpha = 0,
-        E0 = (-1.6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=613,
+    label="O_rad/NonDeO;N3s/H2_s_Nbirad",
+    kinetics=ArrheniusEP(
+        A=(29000, "cm^3/(mol*s)"),
+        n=2.69,
+        alpha=0,
+        E0=(-1.6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: H2NN + HO2 = NNH + H2O2 (B&D #30h2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 614,
-    label = "H_rad;N3s/H2_s_Nrad",
-    kinetics = ArrheniusEP(
-        A = (2.4e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=614,
+    label="H_rad;N3s/H2_s_Nrad",
+    kinetics=ArrheniusEP(
+        A=(2.4e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: N2H3 + H = N2H2 + H2 (B&D #31b) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 615,
-    label = "O_atom_triplet;N3s/H2_s_Nrad",
-    kinetics = ArrheniusEP(
-        A = (1.7e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.65, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=615,
+    label="O_atom_triplet;N3s/H2_s_Nrad",
+    kinetics=ArrheniusEP(
+        A=(1.7e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.65, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: N2H3 + O = N2H2 + OH (B&D #31c3) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 616,
-    label = "O_pri_rad;N3s/H2_s_Nrad",
-    kinetics = ArrheniusEP(
-        A = (1.2e+06, 'cm^3/(mol*s)'),
-        n = 2,
-        alpha = 0,
-        E0 = (-1.19, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=616,
+    label="O_pri_rad;N3s/H2_s_Nrad",
+    kinetics=ArrheniusEP(
+        A=(1.2e06, "cm^3/(mol*s)"),
+        n=2,
+        alpha=0,
+        E0=(-1.19, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: N2H3 + OH = N2H2 + H2O (B&D #31d1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 617,
-    label = "C_methyl;N3s/H2_s_Nrad",
-    kinetics = ArrheniusEP(
-        A = (820000, 'cm^3/(mol*s)'),
-        n = 1.87,
-        alpha = 0,
-        E0 = (1.82, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=617,
+    label="C_methyl;N3s/H2_s_Nrad",
+    kinetics=ArrheniusEP(
+        A=(820000, "cm^3/(mol*s)"),
+        n=1.87,
+        alpha=0,
+        E0=(1.82, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: N2H3 + CH3 = N2H2 + CH4 (B&D #31e1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 618,
-    label = "NH2_rad;N3s/H2_s_Nrad",
-    kinetics = ArrheniusEP(
-        A = (920000, 'cm^3/(mol*s)'),
-        n = 1.94,
-        alpha = 0,
-        E0 = (-1.15, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=618,
+    label="NH2_rad;N3s/H2_s_Nrad",
+    kinetics=ArrheniusEP(
+        A=(920000, "cm^3/(mol*s)"),
+        n=1.94,
+        alpha=0,
+        E0=(-1.15, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: N2H3 + NH2 = N2H2 + NH3 (B&D #31f1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 619,
-    label = "O_rad/NonDeO;N3s/H2_s_Nrad",
-    kinetics = ArrheniusEP(
-        A = (29000, 'cm^3/(mol*s)'),
-        n = 2.69,
-        alpha = 0,
-        E0 = (-1.6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=619,
+    label="O_rad/NonDeO;N3s/H2_s_Nrad",
+    kinetics=ArrheniusEP(
+        A=(29000, "cm^3/(mol*s)"),
+        n=2.69,
+        alpha=0,
+        E0=(-1.6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: N2H3 + HO2 = N2H2 + H2O2 (B&D #31g2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 620,
-    label = "N3s_rad/H/NonDeN;O_Orad",
-    kinetics = ArrheniusEP(
-        A = (920000, 'cm^3/(mol*s)'),
-        n = 1.94,
-        alpha = 0,
-        E0 = (2.13, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=620,
+    label="N3s_rad/H/NonDeN;O_Orad",
+    kinetics=ArrheniusEP(
+        A=(920000, "cm^3/(mol*s)"),
+        n=1.94,
+        alpha=0,
+        E0=(2.13, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: N2H3 + HO2 = N2H4 + O2 (B&D #31g3) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 621,
-    label = "H_rad;N3s/H2_s_Orad",
-    kinetics = ArrheniusEP(
-        A = (4.8e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (1.56, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=621,
+    label="H_rad;N3s/H2_s_Orad",
+    kinetics=ArrheniusEP(
+        A=(4.8e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(1.56, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NH2O + H = HNO + H2 (B&D #37c2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 622,
-    label = "O_atom_triplet;N3s/H2_s_Orad",
-    kinetics = ArrheniusEP(
-        A = (3.3e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (0.49, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=622,
+    label="O_atom_triplet;N3s/H2_s_Orad",
+    kinetics=ArrheniusEP(
+        A=(3.3e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(0.49, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NH2O + O = HNO + OH (B&D #37d) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 623,
-    label = "O_pri_rad;N3s/H2_s_Orad",
-    kinetics = ArrheniusEP(
-        A = (2.4e+06, 'cm^3/(mol*s)'),
-        n = 2,
-        alpha = 0,
-        E0 = (-1.19, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=623,
+    label="O_pri_rad;N3s/H2_s_Orad",
+    kinetics=ArrheniusEP(
+        A=(2.4e06, "cm^3/(mol*s)"),
+        n=2,
+        alpha=0,
+        E0=(-1.19, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NH2O + OH = HNO + H2O (B&D #37e) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 624,
-    label = "C_methyl;N3s/H2_s_Orad",
-    kinetics = ArrheniusEP(
-        A = (1.6e+06, 'cm^3/(mol*s)'),
-        n = 1.87,
-        alpha = 0,
-        E0 = (2.96, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=624,
+    label="C_methyl;N3s/H2_s_Orad",
+    kinetics=ArrheniusEP(
+        A=(1.6e06, "cm^3/(mol*s)"),
+        n=1.87,
+        alpha=0,
+        E0=(2.96, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NH2O + CH3 = CH4 + HNO (B&D #37f2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 625,
-    label = "NH2_rad;N3s/H2_s_Orad",
-    kinetics = ArrheniusEP(
-        A = (1.8e+06, 'cm^3/(mol*s)'),
-        n = 1.94,
-        alpha = 0,
-        E0 = (-1.15, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=625,
+    label="NH2_rad;N3s/H2_s_Orad",
+    kinetics=ArrheniusEP(
+        A=(1.8e06, "cm^3/(mol*s)"),
+        n=1.94,
+        alpha=0,
+        E0=(-1.15, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NH2O + NH2 = HNO + NH3 (B&D #37g) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 626,
-    label = "O_rad/NonDeO;N3s/H2_s_Orad",
-    kinetics = ArrheniusEP(
-        A = (29000, 'cm^3/(mol*s)'),
-        n = 2.69,
-        alpha = 0,
-        E0 = (-1.6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=626,
+    label="O_rad/NonDeO;N3s/H2_s_Orad",
+    kinetics=ArrheniusEP(
+        A=(29000, "cm^3/(mol*s)"),
+        n=2.69,
+        alpha=0,
+        E0=(-1.6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NH2O + HO2 = HNO + H2O2 (B&D #37h1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 627,
-    label = "O_rad/NonDeN;O_Orad",
-    kinetics = ArrheniusEP(
-        A = (29000, 'cm^3/(mol*s)'),
-        n = 2.69,
-        alpha = 0,
-        E0 = (-1.6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=627,
+    label="O_rad/NonDeN;O_Orad",
+    kinetics=ArrheniusEP(
+        A=(29000, "cm^3/(mol*s)"),
+        n=2.69,
+        alpha=0,
+        E0=(-1.6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: NH2O + HO2 = NH2OH + O2 (B&D #37h2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 628,
-    label = "H_rad;O_Nrad",
-    kinetics = ArrheniusEP(
-        A = (4.8e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (0.38, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=628,
+    label="H_rad;O_Nrad",
+    kinetics=ArrheniusEP(
+        A=(4.8e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(0.38, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: HNOH + H = HNO + H2 (B&D #38b2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 629,
-    label = "O_atom_triplet;O_Nrad",
-    kinetics = ArrheniusEP(
-        A = (3.3e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.36, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=629,
+    label="O_atom_triplet;O_Nrad",
+    kinetics=ArrheniusEP(
+        A=(3.3e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.36, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: HNOH + O = HNO + OH (B&D #38c2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 630,
-    label = "O_pri_rad;O_Nrad",
-    kinetics = ArrheniusEP(
-        A = (2.4e+06, 'cm^3/(mol*s)'),
-        n = 2,
-        alpha = 0,
-        E0 = (-1.19, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=630,
+    label="O_pri_rad;O_Nrad",
+    kinetics=ArrheniusEP(
+        A=(2.4e06, "cm^3/(mol*s)"),
+        n=2,
+        alpha=0,
+        E0=(-1.19, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: HNOH + OH = HNO + H2O (B&D #38d) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 631,
-    label = "C_methyl;O_Nrad",
-    kinetics = ArrheniusEP(
-        A = (1.6e+06, 'cm^3/(mol*s)'),
-        n = 1.87,
-        alpha = 0,
-        E0 = (2.1, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=631,
+    label="C_methyl;O_Nrad",
+    kinetics=ArrheniusEP(
+        A=(1.6e06, "cm^3/(mol*s)"),
+        n=1.87,
+        alpha=0,
+        E0=(2.1, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: HNOH + CH3 = CH4 + HNO (B&D #38e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 632,
-    label = "NH2_rad;O_Nrad",
-    kinetics = ArrheniusEP(
-        A = (1.8e+06, 'cm^3/(mol*s)'),
-        n = 1.94,
-        alpha = 0,
-        E0 = (-1.15, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=632,
+    label="NH2_rad;O_Nrad",
+    kinetics=ArrheniusEP(
+        A=(1.8e06, "cm^3/(mol*s)"),
+        n=1.94,
+        alpha=0,
+        E0=(-1.15, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: HNOH + NH2 = HNO + NH3 (B&D #38f3)  in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 633,
-    label = "O_rad/NonDeO;O_Nrad",
-    kinetics = ArrheniusEP(
-        A = (29400, 'cm^3/(mol*s)'),
-        n = 2.69,
-        alpha = 0,
-        E0 = (-1.6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=633,
+    label="O_rad/NonDeO;O_Nrad",
+    kinetics=ArrheniusEP(
+        A=(29400, "cm^3/(mol*s)"),
+        n=2.69,
+        alpha=0,
+        E0=(-1.6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: HNOH + HO2 = HNO + H2O2 (B&D #38g2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 634,
-    label = "N3s_rad/H/NonDeO;O_Orad",
-    kinetics = ArrheniusEP(
-        A = (29000, 'cm^3/(mol*s)'),
-        n = 2.69,
-        alpha = 0,
-        E0 = (-1.6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=634,
+    label="N3s_rad/H/NonDeO;O_Orad",
+    kinetics=ArrheniusEP(
+        A=(29000, "cm^3/(mol*s)"),
+        n=2.69,
+        alpha=0,
+        E0=(-1.6, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: HNOH + HO2 = NH2OH + O2 (B&D #38g3) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 635,
-    label = "O_rad/NonDeO;Cds/H2_d_N3rad",
-    kinetics = ArrheniusEP(
-        A = (14000, 'cm^3/(mol*s)'),
-        n = 2.69,
-        alpha = 0,
-        E0 = (-1.61, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=635,
+    label="O_rad/NonDeO;Cds/H2_d_N3rad",
+    kinetics=ArrheniusEP(
+        A=(14000, "cm^3/(mol*s)"),
+        n=2.69,
+        alpha=0,
+        E0=(-1.61, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: H2CN + HO2 = HCN + H2O2 (B&D #45b1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 636,
-    label = "N3d_rad/C;O_Orad",
-    kinetics = ArrheniusEP(
-        A = (14000, 'cm^3/(mol*s)'),
-        n = 2.69,
-        alpha = 0,
-        E0 = (-1.61, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=636,
+    label="N3d_rad/C;O_Orad",
+    kinetics=ArrheniusEP(
+        A=(14000, "cm^3/(mol*s)"),
+        n=2.69,
+        alpha=0,
+        E0=(-1.61, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: H2CN + HO2 = H2CNH + O2 (B&D #45b2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 637,
-    label = "C_methyl;Cds/H2_d_N3rad",
-    kinetics = ArrheniusEP(
-        A = (810000, 'cm^3/(mol*s)'),
-        n = 1.87,
-        alpha = 0,
-        E0 = (-1.11, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=637,
+    label="C_methyl;Cds/H2_d_N3rad",
+    kinetics=ArrheniusEP(
+        A=(810000, "cm^3/(mol*s)"),
+        n=1.87,
+        alpha=0,
+        E0=(-1.11, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: H2CN + CH3 = HCN + CH4 (B&D #45d) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 638,
-    label = "O_pri_rad;Cds/H2_d_N3rad",
-    kinetics = ArrheniusEP(
-        A = (1.2e+06, 'cm^3/(mol*s)'),
-        n = 2,
-        alpha = 0,
-        E0 = (-1.19, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=638,
+    label="O_pri_rad;Cds/H2_d_N3rad",
+    kinetics=ArrheniusEP(
+        A=(1.2e06, "cm^3/(mol*s)"),
+        n=2,
+        alpha=0,
+        E0=(-1.19, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: H2CN + OH = HCN + H2O (B&D #45e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 639,
-    label = "H_rad;Cds/H2_d_N3rad",
-    kinetics = ArrheniusEP(
-        A = (2.4e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.89, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=639,
+    label="H_rad;Cds/H2_d_N3rad",
+    kinetics=ArrheniusEP(
+        A=(2.4e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.89, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: H2CN + H = HCN + H2 (B&D #45g) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 640,
-    label = "NH2_rad;Cds/H2_d_N3rad",
-    kinetics = ArrheniusEP(
-        A = (920000, 'cm^3/(mol*s)'),
-        n = 1.94,
-        alpha = 0,
-        E0 = (-1.15, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=640,
+    label="NH2_rad;Cds/H2_d_N3rad",
+    kinetics=ArrheniusEP(
+        A=(920000, "cm^3/(mol*s)"),
+        n=1.94,
+        alpha=0,
+        E0=(-1.15, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: H2CN + NH2 = HCN + NH3 (B&D #45h) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 641,
-    label = "O_atom_triplet;Cds/H2_d_N3rad",
-    kinetics = ArrheniusEP(
-        A = (1.7e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.89, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=641,
+    label="O_atom_triplet;Cds/H2_d_N3rad",
+    kinetics=ArrheniusEP(
+        A=(1.7e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.89, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: H2CN + O = HCN + OH (B&D #45i1) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 642,
-    label = "H_rad;N3d/H_d_Crad",
-    kinetics = ArrheniusEP(
-        A = (2.4e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.89, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=642,
+    label="H_rad;N3d/H_d_Crad",
+    kinetics=ArrheniusEP(
+        A=(2.4e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.89, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: HCNH + H = HCN + H2 (B&D #46a2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 643,
-    label = "O_atom_triplet;N3d/H_d_Crad",
-    kinetics = ArrheniusEP(
-        A = (1.7e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.89, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=643,
+    label="O_atom_triplet;N3d/H_d_Crad",
+    kinetics=ArrheniusEP(
+        A=(1.7e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.89, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: HCNH + O = HCN + OH (B&D #46b2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 644,
-    label = "O_pri_rad;N3d/H_d_Crad",
-    kinetics = ArrheniusEP(
-        A = (1.2e+06, 'cm^3/(mol*s)'),
-        n = 2,
-        alpha = 0,
-        E0 = (-1.19, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=644,
+    label="O_pri_rad;N3d/H_d_Crad",
+    kinetics=ArrheniusEP(
+        A=(1.2e06, "cm^3/(mol*s)"),
+        n=2,
+        alpha=0,
+        E0=(-1.19, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: HCNH + OH = HCN + H2O (B&D #46c) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 645,
-    label = "C_methyl;N3d/H_d_Crad",
-    kinetics = ArrheniusEP(
-        A = (820000, 'cm^3/(mol*s)'),
-        n = 1.87,
-        alpha = 0,
-        E0 = (-1.11, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=645,
+    label="C_methyl;N3d/H_d_Crad",
+    kinetics=ArrheniusEP(
+        A=(820000, "cm^3/(mol*s)"),
+        n=1.87,
+        alpha=0,
+        E0=(-1.11, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: HCNH + CH3 = HCN + CH4 (B&D #46d) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 646,
-    label = "H_rad;Cmethyl_Nrad",
-    kinetics = ArrheniusEP(
-        A = (7.2e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.89, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=646,
+    label="H_rad;Cmethyl_Nrad",
+    kinetics=ArrheniusEP(
+        A=(7.2e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.89, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: CH3NH + H = H2CNH + H2 (B&D #49b) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 647,
-    label = "O_atom_triplet;Cmethyl_Nrad",
-    kinetics = ArrheniusEP(
-        A = (5e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.89, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=647,
+    label="O_atom_triplet;Cmethyl_Nrad",
+    kinetics=ArrheniusEP(
+        A=(5e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.89, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: CH3NH + O = H2CNH + OH (B&D #49c) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 648,
-    label = "O_pri_rad;Cmethyl_Nrad",
-    kinetics = ArrheniusEP(
-        A = (3.6e+06, 'cm^3/(mol*s)'),
-        n = 2,
-        alpha = 0,
-        E0 = (-1.19, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=648,
+    label="O_pri_rad;Cmethyl_Nrad",
+    kinetics=ArrheniusEP(
+        A=(3.6e06, "cm^3/(mol*s)"),
+        n=2,
+        alpha=0,
+        E0=(-1.19, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: CH3NH + OH = H2CNH + H2O (B&D #49d) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 649,
-    label = "C_methyl;Cmethyl_Nrad",
-    kinetics = ArrheniusEP(
-        A = (2.4e+06, 'cm^3/(mol*s)'),
-        n = 1.87,
-        alpha = 0,
-        E0 = (-1.11, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=649,
+    label="C_methyl;Cmethyl_Nrad",
+    kinetics=ArrheniusEP(
+        A=(2.4e06, "cm^3/(mol*s)"),
+        n=1.87,
+        alpha=0,
+        E0=(-1.11, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: CH3NH + CH3 = H2CNH + CH4 (B&D #49e) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 650,
-    label = "H_rad;N3s/H2_s_Cssrad",
-    kinetics = ArrheniusEP(
-        A = (4e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.89, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=650,
+    label="H_rad;N3s/H2_s_Cssrad",
+    kinetics=ArrheniusEP(
+        A=(4e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.89, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: CH2NH2 + H = H2CNH + H2 (B&D #50b) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 651,
-    label = "O_atom_triplet;N3s/H2_s_Cssrad",
-    kinetics = ArrheniusEP(
-        A = (3.3e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.89, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=651,
+    label="O_atom_triplet;N3s/H2_s_Cssrad",
+    kinetics=ArrheniusEP(
+        A=(3.3e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.89, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: CH2NH2 + O = H2CNH + OH (B&D #50c2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 652,
-    label = "O_pri_rad;N3s/H2_s_Cssrad",
-    kinetics = ArrheniusEP(
-        A = (2.4e+06, 'cm^3/(mol*s)'),
-        n = 2,
-        alpha = 0,
-        E0 = (-1.19, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=652,
+    label="O_pri_rad;N3s/H2_s_Cssrad",
+    kinetics=ArrheniusEP(
+        A=(2.4e06, "cm^3/(mol*s)"),
+        n=2,
+        alpha=0,
+        E0=(-1.19, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: CH2NH2 + OH = H2CNH + H2O (B&D #50d2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 653,
-    label = "C_methyl;N3s/H2_s_Cssrad",
-    kinetics = ArrheniusEP(
-        A = (1.6e+06, 'cm^3/(mol*s)'),
-        n = 1.87,
-        alpha = 0,
-        E0 = (-0.63, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=653,
+    label="C_methyl;N3s/H2_s_Cssrad",
+    kinetics=ArrheniusEP(
+        A=(1.6e06, "cm^3/(mol*s)"),
+        n=1.87,
+        alpha=0,
+        E0=(-0.63, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc = 
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: CH2NH2 + CH3 = H2CNH + CH4 (B&D #50e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 654,
-    label = "H_rad;Cds/H2_d_N5dcrad/O",
-    kinetics = ArrheniusEP(
-        A = (4.8e+08, 'cm^3/(mol*s)'),
-        n = 1.5,
-        alpha = 0,
-        E0 = (-0.89, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=654,
+    label="H_rad;Cds/H2_d_N5dcrad/O",
+    kinetics=ArrheniusEP(
+        A=(4.8e08, "cm^3/(mol*s)"),
+        n=1.5,
+        alpha=0,
+        E0=(-0.89, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc =
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: CH2NO + H = HCNO + H2
 The reacting structures are CH2=[N.+][O-] + R = [CH]#[N+][O-] + RH
 (D&B #57c2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
@@ -3327,83 +3202,78 @@ The reacting structures are CH2=[N.+][O-] + R = [CH]#[N+][O-] + RH
 )
 
 entry(
-    index = 655,
-    label = "O_pri_rad;Cds/H2_d_N5dcrad/O",
-    kinetics = ArrheniusEP(
-        A = (2.4e+06, 'cm^3/(mol*s)'),
-        n = 2,
-        alpha = 0,
-        E0 = (-1.19, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=655,
+    label="O_pri_rad;Cds/H2_d_N5dcrad/O",
+    kinetics=ArrheniusEP(
+        A=(2.4e06, "cm^3/(mol*s)"),
+        n=2,
+        alpha=0,
+        E0=(-1.19, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc =
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: CH2NO + OH = HCNO + H2O
 (D&B #57e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 656,
-    label = "C_methyl;Cds/H2_d_N5dcrad/O",
-    kinetics = ArrheniusEP(
-        A = (1.6e+06, 'cm^3/(mol*s)'),
-        n = 1.87,
-        alpha = 0,
-        E0 = (-1.11, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=656,
+    label="C_methyl;Cds/H2_d_N5dcrad/O",
+    kinetics=ArrheniusEP(
+        A=(1.6e06, "cm^3/(mol*s)"),
+        n=1.87,
+        alpha=0,
+        E0=(-1.11, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc =
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: CH2NO + CH3 = HCNO + CH4
 (D&B #57f2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 657,
-    label = "NH2_rad;Cds/H2_d_N5dcrad/O",
-    kinetics = ArrheniusEP(
-        A = (1.8e+06, 'cm^3/(mol*s)'),
-        n = 1.94,
-        alpha = 0,
-        E0 = (-1.15, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=657,
+    label="NH2_rad;Cds/H2_d_N5dcrad/O",
+    kinetics=ArrheniusEP(
+        A=(1.8e06, "cm^3/(mol*s)"),
+        n=1.94,
+        alpha=0,
+        E0=(-1.15, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 1,
-    shortDesc = """Added by Beat Buesser""",
-    longDesc =
-"""
+    rank=1,
+    shortDesc="""Added by Beat Buesser""",
+    longDesc="""
 Added by Beat Buesser, value for reaction: CH2NO + NH2 = HCNO + NH3
 (D&B #57g2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
-    index = 658,
-    label = "C_rad/H/TwoDe;Cmethyl_Csrad/H/Cd",
-    kinetics = ArrheniusEP(
-        A = (5e+10, 'cm^3/(mol*s)'),
-        n = 0,
-        alpha = 0,
-        E0 = (0, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
+    index=658,
+    label="C_rad/H/TwoDe;Cmethyl_Csrad/H/Cd",
+    kinetics=ArrheniusEP(
+        A=(5e10, "cm^3/(mol*s)"),
+        n=0,
+        alpha=0,
+        E0=(0, "kcal/mol"),
+        Tmin=(300, "K"),
+        Tmax=(2500, "K"),
     ),
-    rank = 5,
-    shortDesc = """Estimated by S.S. Merchant""",
-    longDesc = 
-"""
+    rank=5,
+    shortDesc="""Estimated by S.S. Merchant""",
+    longDesc="""
 Estimating rate coefficient for cyclopentadienyl radical + butadieneyl radical
 NIST estimate for allyl + iso-butyl is 8E+11 at 1000 K, however in our system the butadieneyl radical is also resonance stabilized
 and it will be harder to break the bond to give butadiene + cyclopentadiene. Currently estimate it to be a factor of 5 slower.
 """,
 )
-

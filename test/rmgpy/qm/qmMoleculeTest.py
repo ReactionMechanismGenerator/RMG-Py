@@ -36,7 +36,8 @@ from rmgpy.molecule import Molecule
 from rmgpy.qm.main import QMSettings
 from rmgpy.qm.molecule import Geometry
 
-scratch_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'scratch')
+scratch_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "scratch")
+
 
 class TestQMMolecule(unittest.TestCase):
     """
@@ -47,15 +48,28 @@ class TestQMMolecule(unittest.TestCase):
         """
         Test that rd_embed() works for various commmon molecules.
         """
-        for smi in ['O', 'C', '[CH2]', '[CH3]',
-                    '[OH]', 'O=C=O', '[CH3+]', '[OH-]',
-                    'N', 'N#N', '[NH2]', 'CO[O]',]:
+        for smi in [
+            "O",
+            "C",
+            "[CH2]",
+            "[CH3]",
+            "[OH]",
+            "O=C=O",
+            "[CH3+]",
+            "[OH-]",
+            "N",
+            "N#N",
+            "[NH2]",
+            "CO[O]",
+        ]:
             mol = Molecule().from_smiles(smi)
-            geom = Geometry(settings=QMSettings(
-                                scratchDirectory=scratch_dir,
-                            ),
-                            unique_id='0',
-                            molecule=mol)
+            geom = Geometry(
+                settings=QMSettings(
+                    scratchDirectory=scratch_dir,
+                ),
+                unique_id="0",
+                molecule=mol,
+            )
             rdmol, _ = geom.rd_build()
             rdmol, _ = geom.rd_embed(rdmol, num_conf_attempts=20)
             self.assertEqual(rdmol.GetNumConformers(), 20)
@@ -65,22 +79,26 @@ class TestQMMolecule(unittest.TestCase):
         """
         Test that rd_embed() works for species that ETKDG fails to embed conformers for.
         """
-        for smi in ['[N:1](=[C-:2][C@@:3]1([H:8])[O:4][C@@:5]2([H:9])[C:6]([H:10])([H:11])[C+:7]12)[H:12]',
-                    '[N+:1]1#[C:2][C@@:3]2([H:8])[O:4][C-:5]([H:9])[C:6]([H:10])([H:11])[C@@:7]12[H:12]',]:
+        for smi in [
+            "[N:1](=[C-:2][C@@:3]1([H:8])[O:4][C@@:5]2([H:9])[C:6]([H:10])([H:11])[C+:7]12)[H:12]",
+            "[N+:1]1#[C:2][C@@:3]2([H:8])[O:4][C-:5]([H:9])[C:6]([H:10])([H:11])[C@@:7]12[H:12]",
+        ]:
             # RMG has difficulty converting these charged species into RDKit Mol.
             # Directly, generating rdmol using RDKit here.
             # So far, this shouldn't be a concern since RMG doesn't work for charged species
             # And these species are only to test the `rd_embed`` method
-            geom = Geometry(settings=QMSettings(
-                                scratchDirectory=scratch_dir,
-                            ),
-                            unique_id='0',
-                            molecule=None)
+            geom = Geometry(
+                settings=QMSettings(
+                    scratchDirectory=scratch_dir,
+                ),
+                unique_id="0",
+                molecule=None,
+            )
             rdmol = Chem.rdmolops.AddHs(Chem.MolFromSmiles(smi))
             rdmol, _ = geom.rd_embed(rdmol, num_conf_attempts=20)
             self.assertEqual(rdmol.GetNumConformers(), 20)
         shutil.rmtree(scratch_dir)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

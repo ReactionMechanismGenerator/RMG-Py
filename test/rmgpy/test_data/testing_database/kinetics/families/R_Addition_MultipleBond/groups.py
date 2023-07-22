@@ -11,443 +11,410 @@ template(reactants=["R_R", "YJ"], products=["RJ_R_Y"], ownReverse=False)
 
 reverse = "Beta_Scission"
 
-recipe(actions=[
-    ['CHANGE_BOND', '*1', -1, '*2'],
-    ['FORM_BOND', '*1', 1, '*3'],
-    ['GAIN_RADICAL', '*2', '1'],
-    ['LOSE_RADICAL', '*3', '1'],
-])
+recipe(
+    actions=[
+        ["CHANGE_BOND", "*1", -1, "*2"],
+        ["FORM_BOND", "*1", 1, "*3"],
+        ["GAIN_RADICAL", "*2", "1"],
+        ["LOSE_RADICAL", "*3", "1"],
+    ]
+)
 
 entry(
-    index = 0,
-    label = "R_R",
-    group =
-"""
+    index=0,
+    label="R_R",
+    group="""
 1 *1 R!H u0 {2,[D,T,B]}
 2 *2 R!H u0 {1,[D,T,B]}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 1,
-    label = "YJ",
-    group = "OR{HJ, Y_1centerquadrad, Y_1centertrirad, Y_1centerbirad, CJ, OJ, SJ, NJ}",
-    kinetics = None,
+    index=1,
+    label="YJ",
+    group="OR{HJ, Y_1centerquadrad, Y_1centertrirad, Y_1centerbirad, CJ, OJ, SJ, NJ}",
+    kinetics=None,
 )
 
 entry(
-    index = 2,
-    label = "Cb_Cb",
-    group =
-"""
+    index=2,
+    label="Cb_Cb",
+    group="""
 1 *1 [Cb,Cbf] u0 {2,B}
 2 *2 [Cb,Cbf] u0 {1,B}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 3,
-    label = "Cd_R",
-    group = 
-"""
+    index=3,
+    label="Cd_R",
+    group="""
 1 *1 C   u0 {2,D}
 2 *2 R!H u0 {1,D}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 4,
-    label = "Ck_O",
-    group = 
-"""
+    index=4,
+    label="Ck_O",
+    group="""
 1 *1 Cdd u0 {2,D} {3,D}
 2 *2 O2d  u0 {1,D}
 3    C   u0 {1,D}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 5,
-    label = "Ck_Ca",
-    group = 
-"""
+    index=5,
+    label="Ck_Ca",
+    group="""
 1 *1 Cdd u0 {2,D} {3,D}
 2 *2 Cdd u0 {1,D} {4,D}
 3    O2d  u0 {1,D}
 4    C   u0 {2,D}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 6,
-    label = "Ct_R",
-    group = 
-"""
+    index=6,
+    label="Ct_R",
+    group="""
 1 *1 Ct  u0 {2,T}
 2 *2 R!H u0 {1,T}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 7,
-    label = "Od_R",
-    group = 
-"""
+    index=7,
+    label="Od_R",
+    group="""
 1 *1 O2d  u0 {2,D}
 2 *2 R!H u0 {1,D}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 8,
-    label = "Nd_R",
-    group = "OR{N1dc_R, N3d_R}",
-    kinetics = None,
+    index=8,
+    label="Nd_R",
+    group="OR{N1dc_R, N3d_R}",
+    kinetics=None,
 )
 
 entry(
-    index = 9,
-    label = "N1dc_R",
-    group = 
-"""
+    index=9,
+    label="N1dc_R",
+    group="""
 1 *1 N1dc u0 p2 {2,D}
 2 *2 R!H u0 {1,D}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 10,
-    label = "N3d_R",
-    group = 
-"""
+    index=10,
+    label="N3d_R",
+    group="""
 1 *1 N3d u0 {2,D}
 2 *2 R!H u0 {1,D}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 11,
-    label = "Nt_R",
-    group = "OR{N3t_R, N5t_R}",
-    kinetics = None,
+    index=11,
+    label="Nt_R",
+    group="OR{N3t_R, N5t_R}",
+    kinetics=None,
 )
 
 entry(
-    index = 12,
-    label = "N3t_R",
-    group = 
-"""
+    index=12,
+    label="N3t_R",
+    group="""
 1 *1 N3t u0 {2,T}
 2 *2 R!H u0 {1,T}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 13,
-    label = "N5t_R",
-    group = 
-"""
+    index=13,
+    label="N5t_R",
+    group="""
 1 *1 N5tc u0 {2,T}
 2 *2 R!H u0 {1,T}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 14,
-    label = "Sd_R",
-    group = 
-"""
+    index=14,
+    label="Sd_R",
+    group="""
 1 *1 S2d  u0 {2,D}
 2 *2 R!H  u0 {1,D}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 15,
-    label = "HJ",
-    group = 
-"""
+    index=15,
+    label="HJ",
+    group="""
 1 *3 H u1
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 16,
-    label = "Y_1centerquadrad",
-    group = "OR{C_quintet, C_triplet}",
-    kinetics = None,
+    index=16,
+    label="Y_1centerquadrad",
+    group="OR{C_quintet, C_triplet}",
+    kinetics=None,
 )
 
 entry(
-    index = 17,
-    label = "C_quintet",
-    group = 
-"""
+    index=17,
+    label="C_quintet",
+    group="""
 1 *3 C u4 p0
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 18,
-    label = "C_triplet",
-    group = 
-"""
+    index=18,
+    label="C_triplet",
+    group="""
 1 *3 C u2 p1
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 19,
-    label = "Y_1centertrirad",
-    group = "OR{N_atom_quartet, N_atom_doublet, CH_quartet, CH_doublet}",
-    kinetics = None,
+    index=19,
+    label="Y_1centertrirad",
+    group="OR{N_atom_quartet, N_atom_doublet, CH_quartet, CH_doublet}",
+    kinetics=None,
 )
 
 entry(
-    index = 20,
-    label = "N_atom_quartet",
-    group = 
-"""
+    index=20,
+    label="N_atom_quartet",
+    group="""
 1 *3 N u3 p1
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 21,
-    label = "N_atom_doublet",
-    group = 
-"""
+    index=21,
+    label="N_atom_doublet",
+    group="""
 1 *3 N u1 p2
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 22,
-    label = "CH_quartet",
-    group = 
-"""
+    index=22,
+    label="CH_quartet",
+    group="""
 1 *3 Cs u3 p0 {2,S}
 2    H  u0 {1,S}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 23,
-    label = "CH_doublet",
-    group = 
-"""
+    index=23,
+    label="CH_doublet",
+    group="""
 1 *3 C u1 p1 {2,S}
 2    H u0 {1,S}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 24,
-    label = "Y_1centerbirad",
-    group = 
-"""
+    index=24,
+    label="Y_1centerbirad",
+    group="""
 1 *3 R!H u2
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 25,
-    label = "CJ",
-    group = 
-"""
+    index=25,
+    label="CJ",
+    group="""
 1 *3 C u1 p0
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 26,
-    label = "CbJ",
-    group = 
-"""
+    index=26,
+    label="CbJ",
+    group="""
 1 *3 Cb u1 p0
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 27,
-    label = "CtJ",
-    group = 
-"""
+    index=27,
+    label="CtJ",
+    group="""
 1 *3 Ct  u1 p0 {2,T}
 2    R!H u0 {1,T}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 28,
-    label = "C2b",
-    group = 
-"""
+    index=28,
+    label="C2b",
+    group="""
 1 *3 C u1 p0 {2,T}
 2    C u1 {1,T}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 29,
-    label = "C=SJ",
-    group = 
-"""
+    index=29,
+    label="C=SJ",
+    group="""
 1 *3 CS u1 p0 {2,S}
 2    R  u0 {1,S}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 30,
-    label = "CO_rad",
-    group = 
-"""
+    index=30,
+    label="CO_rad",
+    group="""
 1 *3 C u1 p0 {2,D} {3,S}
 2    O u0 {1,D}
 3    R u0 {1,S}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 31,
-    label = "CsJ",
-    group = 
-"""
+    index=31,
+    label="CsJ",
+    group="""
 1 *3 C u1 p0 {2,S} {3,S} {4,S}
 2    R u0 {1,S}
 3    R u0 {1,S}
 4    R u0 {1,S}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 32,
-    label = "OJ",
-    group = "OR{OJ_pri, OJ_sec, O2b}",
-    kinetics = None,
+    index=32,
+    label="OJ",
+    group="OR{OJ_pri, OJ_sec, O2b}",
+    kinetics=None,
 )
 
 entry(
-    index = 33,
-    label = "OJ_pri",
-    group = 
-"""
+    index=33,
+    label="OJ_pri",
+    group="""
 1 *3 O u1 {2,S}
 2    H u0 {1,S}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 34,
-    label = "OJ_sec",
-    group = 
-"""
+    index=34,
+    label="OJ_sec",
+    group="""
 1 *3 O   u1 {2,S}
 2    R!H u0 {1,S}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 35,
-    label = "O2b",
-    group = 
-"""
+    index=35,
+    label="O2b",
+    group="""
 1 *3 O u1 {2,S}
 2    O u1 {1,S}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 36,
-    label = "SJ",
-    group = 
-"""
+    index=36,
+    label="SJ",
+    group="""
 1 *3 S u1
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 37,
-    label = "SsJ",
-    group = 
-"""
+    index=37,
+    label="SsJ",
+    group="""
 1 *3 S2s u1 {2,S}
 2    R   u0 {1,S}
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 38,
-    label = "NJ",
-    group = "OR{N3J}",
-    kinetics = None,
+    index=38,
+    label="NJ",
+    group="OR{N3J}",
+    kinetics=None,
 )
 
 entry(
-    index = 39,
-    label = "N3J",
-    group = 
-"""
+    index=39,
+    label="N3J",
+    group="""
 1 *3 [N3s,N3d] u1
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 40,
-    label = "N3sJ",
-    group = 
-"""
+    index=40,
+    label="N3sJ",
+    group="""
 1 *3 N3s u1
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 entry(
-    index = 41,
-    label = "N3dJ",
-    group = 
-"""
+    index=41,
+    label="N3dJ",
+    group="""
 1 *3 N3d u1
 """,
-    kinetics = None,
+    kinetics=None,
 )
 
 tree(
-"""
+    """
 L1: R_R
     L2: Cb_Cb
     L2: Cd_R
@@ -494,16 +461,13 @@ L1: YJ
 )
 
 forbidden(
-    label = "O2d",
-    group = 
-"""
+    label="O2d",
+    group="""
 1 *1 O u0 {2,D}
 2 *2 O u0 {1,D}
 """,
-    shortDesc = """""",
-    longDesc = 
-"""
+    shortDesc="""""",
+    longDesc="""
 
 """,
 )
-

@@ -37,18 +37,18 @@ import rmgpy
 from rmgpy.tools.regression import read_input_file, run
 
 
-@attr('functional')
+@attr("functional")
 class regressionTest(unittest.TestCase):
-
     def test(self):
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/regression')
-        benchmark = os.path.join(folder, 'benchmark')
-        tested = os.path.join(folder, 'tested')
-        input_file = os.path.join(folder, 'input.py')
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), "tools/data/regression")
+        benchmark = os.path.join(folder, "benchmark")
+        tested = os.path.join(folder, "tested")
+        input_file = os.path.join(folder, "input.py")
 
         args = read_input_file(input_file)
         run(benchmark, tested, *args)
 
     def tearDown(self):
         import rmgpy.data.rmg
+
         rmgpy.data.rmg.database = None

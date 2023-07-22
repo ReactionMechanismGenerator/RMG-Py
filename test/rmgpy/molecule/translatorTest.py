@@ -38,31 +38,38 @@ from unittest.mock import patch
 
 from rmgpy.molecule.adjlist import ConsistencyChecker
 from rmgpy.molecule.atomtype import ATOMTYPES
-from rmgpy.molecule.inchi import compose_aug_inchi, P_LAYER_PREFIX, P_LAYER_SEPARATOR, U_LAYER_PREFIX, U_LAYER_SEPARATOR
+from rmgpy.molecule.inchi import (
+    compose_aug_inchi,
+    P_LAYER_PREFIX,
+    P_LAYER_SEPARATOR,
+    U_LAYER_PREFIX,
+    U_LAYER_SEPARATOR,
+)
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.translator import *
 from rmgpy.species import Species
 
 
 class TranslatorTest(unittest.TestCase):
-
     def test_empty_molecule(self):
         """Test that we can safely return a blank identifier for an empty molecule."""
         mol = Molecule()
 
-        self.assertEqual(mol.to_smiles(), '')
-        self.assertEqual(mol.to_inchi(), '')
+        self.assertEqual(mol.to_smiles(), "")
+        self.assertEqual(mol.to_inchi(), "")
 
-    @patch('rmgpy.molecule.translator.logging')
+    @patch("rmgpy.molecule.translator.logging")
     def test_failure_message(self, mock_logging):
         """Test that we log the molecule adjlist upon failure."""
-        mol = Molecule(smiles='[CH2-][N+]#N')
+        mol = Molecule(smiles="[CH2-][N+]#N")
 
-        with self.assertRaisesRegex(ValueError, 'Unable to generate identifier type'):
-            to_inchi(mol, backend='rdkit')
+        with self.assertRaisesRegex(ValueError, "Unable to generate identifier type"):
+            to_inchi(mol, backend="rdkit")
 
         mock_logging.error.assert_called_with(
-            "Unable to generate identifier for this molecule:\n{0}".format(mol.to_adjacency_list())
+            "Unable to generate identifier for this molecule:\n{0}".format(
+                mol.to_adjacency_list()
+            )
         )
 
 
@@ -91,7 +98,7 @@ class InChIGenerationTest(unittest.TestCase):
 5 C 1 {4,S} {1,S}
         """
 
-        aug_inchi = 'InChI=1S/C5H5/c1-2-4-5-3-1/h1-5H/u1'
+        aug_inchi = "InChI=1S/C5H5/c1-2-4-5-3-1/h1-5H/u1"
         self.compare(adjlist, aug_inchi)
 
     def test_c7h8(self):
@@ -116,7 +123,7 @@ class InChIGenerationTest(unittest.TestCase):
 15 H u0 p0 c0 {5,S}
         """
 
-        aug_inchi = 'InChI=1S/C7H8/c1-7-5-3-2-4-6-7/h2-6H,1H3/u2,3'
+        aug_inchi = "InChI=1S/C7H8/c1-7-5-3-2-4-6-7/h2-6H,1H3/u2,3"
         self.compare(adjlist, aug_inchi)
 
     def test_c8h8(self):
@@ -141,7 +148,7 @@ class InChIGenerationTest(unittest.TestCase):
 16 H u0 p0 c0 {8,S}
         """
 
-        aug_inchi = 'InChI=1S/C8H8/c1-2-4-6-8-7-5-3-1/h1-8H/u1,2'
+        aug_inchi = "InChI=1S/C8H8/c1-2-4-6-8-7-5-3-1/h1-8H/u1,2"
         self.compare(adjlist, aug_inchi)
 
     def test_benzyne(self):
@@ -157,7 +164,7 @@ class InChIGenerationTest(unittest.TestCase):
 9  H u0 p0 c0 {5,S}
 10 H u0 p0 c0 {6,S}
         """
-        aug_inchi = 'InChI=1S/C6H4/c1-2-4-6-5-3-1/h1-4H'
+        aug_inchi = "InChI=1S/C6H4/c1-2-4-6-5-3-1/h1-4H"
         self.compare(adjlist, aug_inchi)
 
     def test_h(self):
@@ -165,7 +172,7 @@ class InChIGenerationTest(unittest.TestCase):
 multiplicity 2
 1 H u1 p0 c0
 """
-        aug_inchi = 'InChI=1S/H/u1'
+        aug_inchi = "InChI=1S/H/u1"
         self.compare(adjlist, aug_inchi)
 
     def test_c6h8(self):
@@ -182,7 +189,7 @@ multiplicity 2
 6 C 0 {4,D}
         """
 
-        aug_inchi = 'InChI=1S/C6H8/c1-5(2)6(3)4/h1-4H2/u1,3'
+        aug_inchi = "InChI=1S/C6H8/c1-5(2)6(3)4/h1-4H2/u1,3"
         self.compare(adjlist, aug_inchi)
 
     def test_c6h10_tetrarad(self):
@@ -205,7 +212,7 @@ multiplicity 2
 16 H u0 p0 c0 {6,S}
         """
 
-        aug_inchi = 'InChI=1S/C6H10/c1-3-5-6-4-2/h3-4H,1-2,5-6H2/u1,2,3,4'
+        aug_inchi = "InChI=1S/C6H10/c1-3-5-6-4-2/h3-4H,1-2,5-6H2/u1,2,3,4"
         self.compare(adjlist, aug_inchi)
 
     def test_buta13diyl_triplet(self):
@@ -226,7 +233,7 @@ multiplicity 2
 10 H u0 p0 c0 {4,S}
 """
 
-        aug_inchi = 'InChI=1S/C4H6/c1-3-4-2/h3-4H,1-2H2/u1,2'
+        aug_inchi = "InChI=1S/C4H6/c1-3-4-2/h3-4H,1-2H2/u1,2"
         self.compare(adjlist, aug_inchi)
 
     def test_ch2o2(self):
@@ -236,7 +243,7 @@ multiplicity 2
 3 O 1 {1,S}
 """
 
-        aug_inchi = 'InChI=1/CH2O2/c2-1-3/h1H,(H,2,3)/u1,2'
+        aug_inchi = "InChI=1/CH2O2/c2-1-3/h1H,(H,2,3)/u1,2"
         self.compare(adjlist, aug_inchi)
 
     def test_c7h10(self):
@@ -251,7 +258,7 @@ multiplicity 2
 7 C 1 {5,S}
 """
 
-        aug_inchi = 'InChI=1S/C7H10/c1-6(2)5-7(3)4/h1-5H2/u1,2,3,6'
+        aug_inchi = "InChI=1S/C7H10/c1-6(2)5-7(3)4/h1-5H2/u1,2,3,6"
         self.compare(adjlist, aug_inchi)
 
     def test_c5h6o(self):
@@ -264,7 +271,7 @@ multiplicity 2
 6 C 0 {5,D}
 """
 
-        aug_inchi = 'InChI=1S/C5H6O/c1-3-5(6)4-2/h3-4H,1-2H2/u1,3'
+        aug_inchi = "InChI=1S/C5H6O/c1-3-5(6)4-2/h3-4H,1-2H2/u1,3"
         self.compare(adjlist, aug_inchi)
 
     def test_c7h9(self):
@@ -278,7 +285,7 @@ multiplicity 2
 7 C 1 {4,S} {5,S} {6,S}
 """
 
-        aug_inchi = 'InChI=1S/C7H9/c1-4-7(5-2)6-3/h4-6H,1-3H2/u1,2,4'
+        aug_inchi = "InChI=1S/C7H9/c1-4-7(5-2)6-3/h4-6H,1-3H2/u1,2,4"
         self.compare(adjlist, aug_inchi)
 
     def test_c11h16(self):
@@ -296,7 +303,7 @@ multiplicity 2
 11 C 0 {7,S} {8,S} {9,S} {10,S}
 """
 
-        aug_inchi = 'InChI=1S/C11H16/c1-5-9-11(7-3,8-4)10-6-2/h5-8H,1-4,9-10H2/u1,3,5,7'
+        aug_inchi = "InChI=1S/C11H16/c1-5-9-11(7-3,8-4)10-6-2/h5-8H,1-4,9-10H2/u1,3,5,7"
         self.compare(adjlist, aug_inchi)
 
     def test_singlet_vs_triplet(self):
@@ -360,12 +367,13 @@ multiplicity 2
         14 H u0 p0 c0 {5,S}
         15 H u0 p0 c0 {5,S}
         """
-        aug_inchi = 'C5H10/c1-3-5-4-2/h3-4H2,1-2H3/lp5'
+        aug_inchi = "C5H10/c1-3-5-4-2/h3-4H2,1-2H3/lp5"
         self.compare(adjlist, aug_inchi)
 
     def test_aromatic_resonance_structures(self):
         """Test that different resonance structures give identical InChIs."""
-        mol = Molecule().from_adjacency_list("""
+        mol = Molecule().from_adjacency_list(
+            """
 multiplicity 2
 1  C u0 p0 c0 {2,D} {14,S} {18,S}
 2  C u0 p0 c0 {1,D} {3,S} {19,S}
@@ -393,65 +401,72 @@ multiplicity 2
 24 H u0 p0 c0 {10,S}
 25 H u0 p0 c0 {11,S}
 26 H u0 p0 c0 {12,S}
-""")
+"""
+        )
         res = mol.generate_resonance_structures()
 
         inchi_list = [struct.to_inchi() for struct in res]
 
-        expected_inchi = 'InChI=1S/C15H11/c1-11-5-4-8-15-13(11)10-9-12-6-2-3-7-14(12)15/h2-10H,1H2'
+        expected_inchi = (
+            "InChI=1S/C15H11/c1-11-5-4-8-15-13(11)10-9-12-6-2-3-7-14(12)15/h2-10H,1H2"
+        )
 
         for inchi in inchi_list:
             self.assertEqual(inchi, expected_inchi)
 
     def test_disconnected_molecule(self):
         """Test that we can generate an InChI for a disconnected molecule."""
-        mol = Molecule().from_smiles('CCCCO.C=O')
+        mol = Molecule().from_smiles("CCCCO.C=O")
 
-        inchi = 'InChI=1S/C4H10O.CH2O/c1-2-3-4-5;1-2/h5H,2-4H2,1H3;1H2'
+        inchi = "InChI=1S/C4H10O.CH2O/c1-2-3-4-5;1-2/h5H,2-4H2,1H3;1H2"
 
         self.assertEqual(mol.to_inchi(), inchi)
 
     def test_isotopic_molecule_1(self):
         """Test that we can generate an InChI for an isotopic molecule."""
-        mol = Molecule().from_smiles('[13CH4]')
+        mol = Molecule().from_smiles("[13CH4]")
 
-        inchi = 'InChI=1S/CH4/h1H4/i1+1'
+        inchi = "InChI=1S/CH4/h1H4/i1+1"
 
         self.assertEqual(mol.to_inchi(), inchi)
 
     def test_isotopic_molecule_2(self):
         """Test that we can generate an InChI for an isotopic molecule."""
-        mol = Molecule().from_smiles('[13CH3]C')
+        mol = Molecule().from_smiles("[13CH3]C")
 
-        inchi = 'InChI=1S/C2H6/c1-2/h1-2H3/i1+1'
+        inchi = "InChI=1S/C2H6/c1-2/h1-2H3/i1+1"
 
         self.assertEqual(mol.to_inchi(), inchi)
 
     def test_surface_molecule_rdkit(self):
         """Test InChI generation for a surface molecule using RDKit"""
-        mol = Molecule().from_adjacency_list("""
+        mol = Molecule().from_adjacency_list(
+            """
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
 4 H u0 p0 c0 {1,S}
 5 X u0 p0 c0 {1,S}
-""")
-        inchi = 'InChI=1S/CH3.Pt/h1H3;'
+"""
+        )
+        inchi = "InChI=1S/CH3.Pt/h1H3;"
 
-        self.assertEqual(to_inchi(mol, backend='rdkit'), inchi)
+        self.assertEqual(to_inchi(mol, backend="rdkit"), inchi)
 
     def test_surface_molecule_ob(self):
         """Test InChI generation for a surface molecule using OpenBabel"""
-        mol = Molecule().from_adjacency_list("""
+        mol = Molecule().from_adjacency_list(
+            """
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
 4 H u0 p0 c0 {1,S}
 5 X u0 p0 c0 {1,S}
-""")
-        inchi = 'InChI=1S/CH3.Pt/h1H3;'
+"""
+        )
+        inchi = "InChI=1S/CH3.Pt/h1H3;"
 
-        self.assertEqual(to_inchi(mol, backend='openbabel'), inchi)
+        self.assertEqual(to_inchi(mol, backend="openbabel"), inchi)
 
 
 class SMILESGenerationTest(unittest.TestCase):
@@ -490,35 +505,35 @@ class SMILESGenerationTest(unittest.TestCase):
         "Test the SMILES generation for various molecules and radicals"
 
         # Test N2
-        adjlist = '''
+        adjlist = """
         1 N u0 p1 c0 {2,T}
         2 N u0 p1 c0 {1,T}
-        '''
-        smiles = 'N#N'
+        """
+        smiles = "N#N"
         self.compare(adjlist, smiles)
 
         # Test CH4
-        adjlist = '''
+        adjlist = """
         1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
         2 H u0 p0 c0 {1,S}
         3 H u0 p0 c0 {1,S}
         4 H u0 p0 c0 {1,S}
         5 H u0 p0 c0 {1,S}
-        '''
-        smiles = 'C'
+        """
+        smiles = "C"
         self.compare(adjlist, smiles)
 
         # Test H2O
-        adjlist = '''
+        adjlist = """
         1 O u0 p2 c0 {2,S} {3,S}
         2 H u0 p0 c0 {1,S}
         3 H u0 p0 c0 {1,S}
-        '''
-        smiles = 'O'
+        """
+        smiles = "O"
         self.compare(adjlist, smiles)
 
         # Test C2H6
-        adjlist = '''
+        adjlist = """
         1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
         2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
         3 H u0 p0 c0 {1,S}
@@ -527,30 +542,30 @@ class SMILESGenerationTest(unittest.TestCase):
         6 H u0 p0 c0 {2,S}
         7 H u0 p0 c0 {2,S}
         8 H u0 p0 c0 {2,S}
-        '''
-        smiles = 'CC'
+        """
+        smiles = "CC"
         self.compare(adjlist, smiles)
 
         # Test H2
-        adjlist = '''
+        adjlist = """
         1 H u0 p0 c0 {2,S}
         2 H u0 p0 c0 {1,S}
-        '''
-        smiles = '[H][H]'
+        """
+        smiles = "[H][H]"
         self.compare(adjlist, smiles)
 
         # Test H2O2
-        adjlist = '''
+        adjlist = """
         1 O u0 p2 c0 {2,S} {3,S}
         2 O u0 p2 c0 {1,S} {4,S}
         3 H u0 p0 c0 {1,S}
         4 H u0 p0 c0 {2,S}
-        '''
-        smiles = 'OO'
+        """
+        smiles = "OO"
         self.compare(adjlist, smiles)
 
         # Test C3H8
-        adjlist = '''
+        adjlist = """
         1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
         2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
         3  C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
@@ -562,95 +577,95 @@ class SMILESGenerationTest(unittest.TestCase):
         9  H u0 p0 c0 {3,S}
         10 H u0 p0 c0 {3,S}
         11 H u0 p0 c0 {3,S}
-        '''
-        smiles = 'CCC'
+        """
+        smiles = "CCC"
         self.compare(adjlist, smiles)
 
         # Test Ar
-        adjlist = '''
+        adjlist = """
         1 Ar u0 p4 c0
-        '''
-        smiles = '[Ar]'
+        """
+        smiles = "[Ar]"
         self.compare(adjlist, smiles)
 
         # Test He
-        adjlist = '''
+        adjlist = """
         1 He u0 p1 c0
-        '''
-        smiles = '[He]'
+        """
+        smiles = "[He]"
         self.compare(adjlist, smiles)
 
         # Test CH4O
-        adjlist = '''
+        adjlist = """
         1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
         2 O u0 p2 c0 {1,S} {6,S}
         3 H u0 p0 c0 {1,S}
         4 H u0 p0 c0 {1,S}
         5 H u0 p0 c0 {1,S}
         6 H u0 p0 c0 {2,S}
-        '''
-        smiles = 'CO'
+        """
+        smiles = "CO"
         self.compare(adjlist, smiles)
 
         # Test CO2
-        adjlist = '''
+        adjlist = """
         1 O u0 p2 c0 {2,D}
         2 C u0 p0 c0 {1,D} {3,D}
         3 O u0 p2 c0 {2,D}
-        '''
-        smiles = 'O=C=O'
+        """
+        smiles = "O=C=O"
         self.compare(adjlist, smiles)
 
         # Test CO
-        adjlist = '''
+        adjlist = """
         1 C u0 p1 c-1 {2,T}
         2 O u0 p1 c+1 {1,T}
-        '''
-        smiles = '[C-]#[O+]'
+        """
+        smiles = "[C-]#[O+]"
         self.compare(adjlist, smiles)
 
         # Test C2H4
-        adjlist = '''
+        adjlist = """
         1 C u0 p0 c0 {2,D} {3,S} {4,S}
         2 C u0 p0 c0 {1,D} {5,S} {6,S}
         3 H u0 p0 c0 {1,S}
         4 H u0 p0 c0 {1,S}
         5 H u0 p0 c0 {2,S}
         6 H u0 p0 c0 {2,S}
-        '''
-        smiles = 'C=C'
+        """
+        smiles = "C=C"
         self.compare(adjlist, smiles)
 
         # Test O2
-        adjlist = '''
+        adjlist = """
         1 O u0 p2 c0 {2,D}
         2 O u0 p2 c0 {1,D}
-        '''
-        smiles = 'O=O'
+        """
+        smiles = "O=O"
         self.compare(adjlist, smiles)
 
         # Test CH3
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 C u1 p0 c0 {2,S} {3,S} {4,S}
         2 H u0 p0 c0 {1,S}
         3 H u0 p0 c0 {1,S}
         4 H u0 p0 c0 {1,S}
-        '''
-        smiles = '[CH3]'
+        """
+        smiles = "[CH3]"
         self.compare(adjlist, smiles)
 
         # Test HO
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 O u1 p2 c0 {2,S}
         2 H u0 p0 c0 {1,S}
-        '''
-        smiles = '[OH]'
+        """
+        smiles = "[OH]"
         self.compare(adjlist, smiles)
 
         # Test C2H5
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 C u0 p0 c0 {2,S} {5,S} {6,S} {7,S}
         2 C u1 p0 c0 {1,S} {3,S} {4,S}
@@ -659,92 +674,93 @@ class SMILESGenerationTest(unittest.TestCase):
         5 H u0 p0 c0 {1,S}
         6 H u0 p0 c0 {1,S}
         7 H u0 p0 c0 {1,S}
-        '''
-        smiles = 'C[CH2]'
+        """
+        smiles = "C[CH2]"
         self.compare(adjlist, smiles)
 
         # Test O
-        adjlist = '''
+        adjlist = """
         multiplicity 3
         1 O u2 p2 c0
-        '''
-        smiles = '[O]'
+        """
+        smiles = "[O]"
         self.compare(adjlist, smiles)
 
         # Test HO2
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 O u1 p2 c0 {2,S}
         2 O u0 p2 c0 {1,S} {3,S}
         3 H u0 p0 c0 {2,S}
-        '''
-        smiles = '[O]O'
+        """
+        smiles = "[O]O"
         self.compare(adjlist, smiles)
 
         # Test CH
-        adjlist = '''
+        adjlist = """
         multiplicity 4
         1 C u3 p0 c0 {2,S}
         2 H u0 p0 c0 {1,S}
-        '''
-        smiles = '[CH]'
+        """
+        smiles = "[CH]"
         self.compare(adjlist, smiles)
 
         # Test H
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 H u1 p0 c0
-        '''
-        smiles = '[H]'
+        """
+        smiles = "[H]"
         self.compare(adjlist, smiles)
 
         # Test C
-        adjlist = '''
+        adjlist = """
         multiplicity 5
         1 C u4 p0 c0
-        '''
-        smiles = '[C]'
+        """
+        smiles = "[C]"
         self.compare(adjlist, smiles)
 
         # Test O2
-        adjlist = '''
+        adjlist = """
         multiplicity 3
         1 O u1 p2 c0 {2,S}
         2 O u1 p2 c0 {1,S}
-        '''
-        smiles = '[O][O]'
+        """
+        smiles = "[O][O]"
         self.compare(adjlist, smiles)
 
         # Test CF
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 C u1 p1 c0 {2,S}
         2 F u0 p3 c0 {1,S}
-        '''
-        smiles = '[C]F'
+        """
+        smiles = "[C]F"
         self.compare(adjlist, smiles)
 
         # Test CCl
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 C u1 p1 c0 {2,S}
         2 Cl u0 p3 c0 {1,S}
-        '''
-        smiles = '[C]Cl'
+        """
+        smiles = "[C]Cl"
         self.compare(adjlist, smiles)
 
         # Test CBr
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 C u1 p1 c0 {2,S}
         2 Br u0 p3 c0 {1,S}
-        '''
-        smiles = '[C]Br'
+        """
+        smiles = "[C]Br"
         self.compare(adjlist, smiles)
 
     def test_aromatics(self):
         """Test that different aromatics representations returns different SMILES."""
-        mol1 = Molecule().from_adjacency_list("""
+        mol1 = Molecule().from_adjacency_list(
+            """
 1  O u0 p2 c0 {6,S} {9,S}
 2  C u0 p0 c0 {3,D} {5,S} {11,S}
 3  C u0 p0 c0 {2,D} {4,S} {12,S}
@@ -761,8 +777,10 @@ class SMILESGenerationTest(unittest.TestCase):
 14 H u0 p0 c0 {8,S}
 15 H u0 p0 c0 {8,S}
 16 H u0 p0 c0 {8,S}
-""")
-        mol2 = Molecule().from_adjacency_list("""
+"""
+        )
+        mol2 = Molecule().from_adjacency_list(
+            """
 1  O u0 p2 c0 {6,S} {9,S}
 2  C u0 p0 c0 {3,S} {5,D} {11,S}
 3  C u0 p0 c0 {2,S} {4,D} {12,S}
@@ -779,8 +797,10 @@ class SMILESGenerationTest(unittest.TestCase):
 14 H u0 p0 c0 {8,S}
 15 H u0 p0 c0 {8,S}
 16 H u0 p0 c0 {8,S}
-""")
-        mol3 = Molecule().from_adjacency_list("""
+"""
+        )
+        mol3 = Molecule().from_adjacency_list(
+            """
 1  O u0 p2 c0 {6,S} {9,S}
 2  C u0 p0 c0 {3,B} {5,B} {11,S}
 3  C u0 p0 c0 {2,B} {4,B} {12,S}
@@ -797,7 +817,8 @@ class SMILESGenerationTest(unittest.TestCase):
 14 H u0 p0 c0 {8,S}
 15 H u0 p0 c0 {8,S}
 16 H u0 p0 c0 {8,S}
-""")
+"""
+        )
 
         smiles1 = mol1.to_smiles()
         smiles2 = mol2.to_smiles()
@@ -809,41 +830,48 @@ class SMILESGenerationTest(unittest.TestCase):
 
     def test_surface_molecule_rdkit(self):
         """Test InChI generation for a surface molecule using RDKit"""
-        mol = Molecule().from_adjacency_list("""
+        mol = Molecule().from_adjacency_list(
+            """
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
 4 H u0 p0 c0 {1,S}
 5 X u0 p0 c0 {1,S}
-""")
-        smiles = 'C[Pt]'
+"""
+        )
+        smiles = "C[Pt]"
 
-        self.assertEqual(to_smiles(mol, backend='rdkit'), smiles)
+        self.assertEqual(to_smiles(mol, backend="rdkit"), smiles)
 
     def test_surface_molecule_ob(self):
         """Test InChI generation for a surface molecule using OpenBabel"""
-        mol = Molecule().from_adjacency_list("""
+        mol = Molecule().from_adjacency_list(
+            """
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
 4 H u0 p0 c0 {1,S}
 5 X u0 p0 c0 {1,S}
-""")
-        smiles = 'C[Pt]'
+"""
+        )
+        smiles = "C[Pt]"
 
-        self.assertEqual(to_smiles(mol, backend='openbabel'), smiles)
+        self.assertEqual(to_smiles(mol, backend="openbabel"), smiles)
 
 
 class ParsingTest(unittest.TestCase):
     def setUp(self):
-        self.methane = Molecule().from_adjacency_list("""
+        self.methane = Molecule().from_adjacency_list(
+            """
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
 3 H u0 p0 c0 {1,S}
 4 H u0 p0 c0 {1,S}
 5 H u0 p0 c0 {1,S}
-""")
-        self.methylamine = Molecule().from_adjacency_list("""
+"""
+        )
+        self.methylamine = Molecule().from_adjacency_list(
+            """
 1 N u0 p1 c0 {2,S} {3,S} {4,S}
 2 C u0 p0 c0 {1,S} {5,S} {6,S} {7,S}
 3 H u0 p0 c0 {1,S}
@@ -851,17 +879,18 @@ class ParsingTest(unittest.TestCase):
 5 H u0 p0 c0 {2,S}
 6 H u0 p0 c0 {2,S}
 7 H u0 p0 c0 {2,S}
-""")
+"""
+        )
 
     def test_from_augmented_inchi(self):
-        aug_inchi = 'InChI=1S/CH4/h1H4'
+        aug_inchi = "InChI=1S/CH4/h1H4"
         mol = from_augmented_inchi(Molecule(), aug_inchi)
-        self.assertTrue(not mol.inchi == '')
+        self.assertTrue(not mol.inchi == "")
         self.assertTrue(mol.is_isomorphic(self.methane))
 
-        aug_inchi = 'InChI=1/CH4/h1H4'
+        aug_inchi = "InChI=1/CH4/h1H4"
         mol = from_augmented_inchi(Molecule(), aug_inchi)
-        self.assertTrue(not mol.inchi == '')
+        self.assertTrue(not mol.inchi == "")
         self.assertTrue(mol.is_isomorphic(self.methane))
 
     def compare(self, adjlist, smiles):
@@ -872,49 +901,53 @@ class ParsingTest(unittest.TestCase):
         """
         mol1 = Molecule().from_adjacency_list(adjlist)
         mol2 = Molecule(smiles=smiles)
-        self.assertTrue(mol1.is_isomorphic(mol2),
-                        "Parsing SMILES={!r} gave unexpected molecule\n{}".format(smiles, mol2.to_adjacency_list()))
+        self.assertTrue(
+            mol1.is_isomorphic(mol2),
+            "Parsing SMILES={!r} gave unexpected molecule\n{}".format(
+                smiles, mol2.to_adjacency_list()
+            ),
+        )
 
     def test_from_smiles(self):
-        smiles = 'C'
+        smiles = "C"
         mol = from_smiles(Molecule(), smiles)
         self.assertTrue(mol.is_isomorphic(self.methane))
 
         # Test that atomtypes that rely on lone pairs for identity are typed correctly
-        smiles = 'CN'
+        smiles = "CN"
         mol = from_smiles(Molecule(), smiles)
-        self.assertEquals(mol.atoms[1].atomtype, ATOMTYPES['N3s'])
+        self.assertEquals(mol.atoms[1].atomtype, ATOMTYPES["N3s"])
 
         # Test N2
-        adjlist = '''
+        adjlist = """
         1 N u0 p1 c0 {2,T}
         2 N u0 p1 c0 {1,T}
-        '''
-        smiles = 'N#N'
+        """
+        smiles = "N#N"
         self.compare(adjlist, smiles)
 
         # Test CH4
-        adjlist = '''
+        adjlist = """
         1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
         2 H u0 p0 c0 {1,S}
         3 H u0 p0 c0 {1,S}
         4 H u0 p0 c0 {1,S}
         5 H u0 p0 c0 {1,S}
-        '''
-        smiles = 'C'
+        """
+        smiles = "C"
         self.compare(adjlist, smiles)
 
         # Test H2O
-        adjlist = '''
+        adjlist = """
         1 O u0 p2 c0 {2,S} {3,S}
         2 H u0 p0 c0 {1,S}
         3 H u0 p0 c0 {1,S}
-        '''
-        smiles = 'O'
+        """
+        smiles = "O"
         self.compare(adjlist, smiles)
 
         # Test C2H6
-        adjlist = '''
+        adjlist = """
         1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
         2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
         3 H u0 p0 c0 {1,S}
@@ -923,30 +956,30 @@ class ParsingTest(unittest.TestCase):
         6 H u0 p0 c0 {2,S}
         7 H u0 p0 c0 {2,S}
         8 H u0 p0 c0 {2,S}
-        '''
-        smiles = 'CC'
+        """
+        smiles = "CC"
         self.compare(adjlist, smiles)
 
         # Test H2
-        adjlist = '''
+        adjlist = """
         1 H u0 p0 c0 {2,S}
         2 H u0 p0 c0 {1,S}
-        '''
-        smiles = '[H][H]'
+        """
+        smiles = "[H][H]"
         self.compare(adjlist, smiles)
 
         # Test H2O2
-        adjlist = '''
+        adjlist = """
         1 O u0 p2 c0 {2,S} {3,S}
         2 O u0 p2 c0 {1,S} {4,S}
         3 H u0 p0 c0 {1,S}
         4 H u0 p0 c0 {2,S}
-        '''
-        smiles = 'OO'
+        """
+        smiles = "OO"
         self.compare(adjlist, smiles)
 
         # Test C3H8
-        adjlist = '''
+        adjlist = """
         1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
         2  C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
         3  C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
@@ -958,95 +991,95 @@ class ParsingTest(unittest.TestCase):
         9  H u0 p0 c0 {3,S}
         10 H u0 p0 c0 {3,S}
         11 H u0 p0 c0 {3,S}
-        '''
-        smiles = 'CCC'
+        """
+        smiles = "CCC"
         self.compare(adjlist, smiles)
 
         # Test Ar
-        adjlist = '''
+        adjlist = """
         1 Ar u0 p4 c0
-        '''
-        smiles = '[Ar]'
+        """
+        smiles = "[Ar]"
         self.compare(adjlist, smiles)
 
         # Test He
-        adjlist = '''
+        adjlist = """
         1 He u0 p1 c0
-        '''
-        smiles = '[He]'
+        """
+        smiles = "[He]"
         self.compare(adjlist, smiles)
 
         # Test CH4O
-        adjlist = '''
+        adjlist = """
         1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
         2 O u0 p2 c0 {1,S} {6,S}
         3 H u0 p0 c0 {1,S}
         4 H u0 p0 c0 {1,S}
         5 H u0 p0 c0 {1,S}
         6 H u0 p0 c0 {2,S}
-        '''
-        smiles = 'CO'
+        """
+        smiles = "CO"
         self.compare(adjlist, smiles)
 
         # Test CO2
-        adjlist = '''
+        adjlist = """
         1 O u0 p2 c0 {2,D}
         2 C u0 p0 c0 {1,D} {3,D}
         3 O u0 p2 c0 {2,D}
-        '''
-        smiles = 'O=C=O'
+        """
+        smiles = "O=C=O"
         self.compare(adjlist, smiles)
 
         # Test CO
-        adjlist = '''
+        adjlist = """
         1 C u0 p1 c-1 {2,T}
         2 O u0 p1 c+1 {1,T}
-        '''
-        smiles = '[C-]#[O+]'
+        """
+        smiles = "[C-]#[O+]"
         self.compare(adjlist, smiles)
 
         # Test C2H4
-        adjlist = '''
+        adjlist = """
         1 C u0 p0 c0 {2,D} {3,S} {4,S}
         2 C u0 p0 c0 {1,D} {5,S} {6,S}
         3 H u0 p0 c0 {1,S}
         4 H u0 p0 c0 {1,S}
         5 H u0 p0 c0 {2,S}
         6 H u0 p0 c0 {2,S}
-        '''
-        smiles = 'C=C'
+        """
+        smiles = "C=C"
         self.compare(adjlist, smiles)
 
         # Test O2
-        adjlist = '''
+        adjlist = """
         1 O u0 p2 c0 {2,D}
         2 O u0 p2 c0 {1,D}
-        '''
-        smiles = 'O=O'
+        """
+        smiles = "O=O"
         self.compare(adjlist, smiles)
 
         # Test CH3
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 C u1 p0 c0 {2,S} {3,S} {4,S}
         2 H u0 p0 c0 {1,S}
         3 H u0 p0 c0 {1,S}
         4 H u0 p0 c0 {1,S}
-        '''
-        smiles = '[CH3]'
+        """
+        smiles = "[CH3]"
         self.compare(adjlist, smiles)
 
         # Test HO
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 O u1 p2 c0 {2,S}
         2 H u0 p0 c0 {1,S}
-        '''
-        smiles = '[OH]'
+        """
+        smiles = "[OH]"
         self.compare(adjlist, smiles)
 
         # Test C2H5
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 C u0 p0 c0 {2,S} {5,S} {6,S} {7,S}
         2 C u1 p0 c0 {1,S} {3,S} {4,S}
@@ -1055,26 +1088,26 @@ class ParsingTest(unittest.TestCase):
         5 H u0 p0 c0 {1,S}
         6 H u0 p0 c0 {1,S}
         7 H u0 p0 c0 {1,S}
-        '''
-        smiles = 'C[CH2]'
+        """
+        smiles = "C[CH2]"
         self.compare(adjlist, smiles)
 
         # Test O
-        adjlist = '''
+        adjlist = """
         multiplicity 3
         1 O u2 p2 c0
-        '''
-        smiles = '[O]'
+        """
+        smiles = "[O]"
         self.compare(adjlist, smiles)
 
         # Test HO2
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 O u1 p2 c0 {2,S}
         2 O u0 p2 c0 {1,S} {3,S}
         3 H u0 p0 c0 {2,S}
-        '''
-        smiles = '[O]O'
+        """
+        smiles = "[O]O"
         self.compare(adjlist, smiles)
 
         # Test CH, methylidyne.
@@ -1086,73 +1119,81 @@ class ParsingTest(unittest.TestCase):
         # of methylidyne exists as a mixture of electronic states even at
         # room temperature, giving rise to complex reactions.
         #
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 C u1 p1 c0 {2,S}
         2 H u0 p0 c0 {1,S}
-        '''
-        smiles = '[CH]'
+        """
+        smiles = "[CH]"
         self.compare(adjlist, smiles)
 
         # Test H
-        adjlist = '''
+        adjlist = """
         multiplicity 2
         1 H u1 p0 c0
-        '''
-        smiles = '[H]'
+        """
+        smiles = "[H]"
         self.compare(adjlist, smiles)
 
         # Test atomic C, which is triplet in ground state
-        adjlist = '''
+        adjlist = """
         multiplicity 3
         1 C u2 p1 c0
-        '''
-        smiles = '[C]'
+        """
+        smiles = "[C]"
         self.compare(adjlist, smiles)
 
         # Test O2
-        adjlist = '''
+        adjlist = """
         multiplicity 3
         1 O u1 p2 c0 {2,S}
         2 O u1 p2 c0 {1,S}
-        '''
-        smiles = '[O][O]'
+        """
+        smiles = "[O][O]"
         self.compare(adjlist, smiles)
 
     def test_from_inchi(self):
-        inchi = 'InChI=1S/CH4/h1H4'
+        inchi = "InChI=1S/CH4/h1H4"
         mol = from_inchi(Molecule(), inchi)
         self.assertTrue(mol.is_isomorphic(self.methane))
         # Test that atomtypes that rely on lone pairs for identity are typed correctly
         inchi = "InChI=1S/CH5N/c1-2/h2H2,1H3"
         mol = from_inchi(Molecule(), inchi)
-        self.assertEquals(mol.atoms[1].atomtype, ATOMTYPES['N3s'])
+        self.assertEquals(mol.atoms[1].atomtype, ATOMTYPES["N3s"])
 
     # current implementation of SMARTS is broken
     def test_from_smarts(self):
-        smarts = '[CH4]'
+        smarts = "[CH4]"
         mol = from_smarts(Molecule(), smarts)
         self.assertTrue(mol.is_isomorphic(self.methane))
 
     def test_incorrect_identifier_type(self):
         """Test that the appropriate error is raised for identifier/type mismatch."""
         with self.assertRaises(ValueError) as cm:
-            Molecule().from_smiles('InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H')
+            Molecule().from_smiles("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H")
 
-        self.assertTrue('Improper identifier type' in str(cm.exception))
+        self.assertTrue("Improper identifier type" in str(cm.exception))
 
     def test_read_inchikey_error(self):
         """Test that the correct error is raised when reading an InChIKey"""
         with self.assertRaises(ValueError) as cm:
-            Molecule().from_inchi('InChIKey=UHOVQNZJYSORNB-UHFFFAOYSA-N')
+            Molecule().from_inchi("InChIKey=UHOVQNZJYSORNB-UHFFFAOYSA-N")
 
-        self.assertTrue('InChIKey is a write-only format' in str(cm.exception))
+        self.assertTrue("InChIKey is a write-only format" in str(cm.exception))
 
 
 class InChIParsingTest(unittest.TestCase):
     def compare(self, inchi, u_indices=None, p_indices=None):
-        u_layer = U_LAYER_PREFIX + U_LAYER_SEPARATOR.join(map(str, u_indices)) if u_indices else None
-        p_layer = P_LAYER_PREFIX + P_LAYER_SEPARATOR.join(map(str, p_indices)) if p_indices else None
+        u_layer = (
+            U_LAYER_PREFIX + U_LAYER_SEPARATOR.join(map(str, u_indices))
+            if u_indices
+            else None
+        )
+        p_layer = (
+            P_LAYER_PREFIX + P_LAYER_SEPARATOR.join(map(str, p_indices))
+            if p_indices
+            else None
+        )
 
         aug_inchi = compose_aug_inchi(inchi, u_layer, p_layer)
 
@@ -1173,96 +1214,96 @@ class InChIParsingTest(unittest.TestCase):
         return mol
 
     def test_ethane_parsing(self):
-        inchi = 'C2H6/c1-2/h1-2H3'
+        inchi = "C2H6/c1-2/h1-2H3"
         self.compare(inchi)
 
     def test_ethyl_parsing(self):
-        inchi = 'C2H5/c1-2/h1H2,2H3'
+        inchi = "C2H5/c1-2/h1H2,2H3"
         u_indices = [1]
         self.compare(inchi, u_indices)
 
     def test_ch3_parsing(self):
-        inchi = 'CH3/h1H3'
+        inchi = "CH3/h1H3"
         u_indices = [1]
         self.compare(inchi, u_indices)
 
     def test_h2_parsing(self):
-        inchi = 'H2/h1H'
+        inchi = "H2/h1H"
         self.compare(inchi)
 
     def test_c2h4_biradical_parsing(self):
-        inchi = 'C2H4/c1-2/h1-2H2'
+        inchi = "C2H4/c1-2/h1-2H2"
         u_indices = [1, 2]
         self.compare(inchi, u_indices)
 
     def test_c2h3_triradical_parsing(self):
-        inchi = 'C2H3/c1-2/h1H,2H2'
+        inchi = "C2H3/c1-2/h1H,2H2"
         u_indices = [1, 1, 2]
         self.compare(inchi, u_indices)
 
     def test_c3h6_biradical_parsing(self):
-        inchi = 'C3H6/c1-3-2/h1-3H2'
+        inchi = "C3H6/c1-3-2/h1-3H2"
         u_indices = [1, 2]
         self.compare(inchi, u_indices)
 
     def test_c2h3o3(self):
-        inchi = 'C2H3O3/c1-2(3)5-4/h4H,1H2'
+        inchi = "C2H3O3/c1-2(3)5-4/h4H,1H2"
         u_indices = [1]
         self.compare(inchi, u_indices)
 
     def test_c2h2(self):
-        inchi = 'C2H2/c1-2/h1-2H'
+        inchi = "C2H2/c1-2/h1-2H"
         u_indices = [1, 2]
         self.compare(inchi, u_indices)
 
     def test_o2(self):
-        inchi = 'O2/c1-2'
+        inchi = "O2/c1-2"
         u_indices = [1, 2]
         self.compare(inchi, u_indices)
 
     def test_tri_radical_zwitter_mult4(self):
-        inchi = 'C6H11/c1-3-5-6-4-2/h5H,1-4,6H2'
+        inchi = "C6H11/c1-3-5-6-4-2/h5H,1-4,6H2"
         u_indices = [1, 2, 5]
         self.compare(inchi, u_indices)
 
     def test_tri_radical_double_bond_mult4(self):
-        inchi = 'C4H7/c1-3-4-2/h3H,1-2,4H2'
+        inchi = "C4H7/c1-3-4-2/h3H,1-2,4H2"
         u_indices = [1, 2, 3]
         self.compare(inchi, u_indices)
 
     def test_tri_radical2_double_bond_mult4(self):
-        inchi = 'C6H9/c1-4-6(3)5-2/h1,4-6H,2H2,3H3'
+        inchi = "C6H9/c1-4-6(3)5-2/h1,4-6H,2H2,3H3"
         u_indices = [1, 2, 5]
         self.compare(inchi, u_indices)
 
     def test_quadri_radical_double_bond_zwitter_mult5(self):
-        inchi = 'C8H14/c1-4-6-7-8(3)5-2/h5-6,8H,1-2,4,7H2,3H3'
+        inchi = "C8H14/c1-4-6-7-8(3)5-2/h5-6,8H,1-2,4,7H2,3H3"
         u_indices = [1, 2, 5, 6]
         self.compare(inchi, u_indices)
 
     def test_quadri2_double_bond_mult5(self):
-        inchi = 'C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3'
+        inchi = "C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3"
         u_indices = [1, 2, 5, 6]
         self.compare(inchi, u_indices)
 
     def test_c5h6o(self):
-        inchi = 'C5H6O/c6-5-3-1-2-4-5/h1-3,5H,4H2'
+        inchi = "C5H6O/c6-5-3-1-2-4-5/h1-3,5H,4H2"
         u_indices = [2, 6]
         self.compare(inchi, u_indices)
 
     def test_c5h6o2(self):
-        inchi = 'C5H6O/c1-5-3-2-4-6-5/h2-5H,1H2'
+        inchi = "C5H6O/c1-5-3-2-4-6-5/h2-5H,1H2"
         u_indices = [1, 3]
         self.compare(inchi, u_indices)
 
     def test_c5h6o3(self):
-        inchi = 'C5H6O/c1-5-3-2-4-6-5/h2-5H,1H2'
+        inchi = "C5H6O/c1-5-3-2-4-6-5/h2-5H,1H2"
         u_indices = [1, 2, 3, 4]
         self.compare(inchi, u_indices)
 
     @work_in_progress
     def test_co(self):
-        inchi = 'CO/c1-2'
+        inchi = "CO/c1-2"
         p_indices = [1, 2]
         mol = self.compare(inchi, [], p_indices)
 
@@ -1272,19 +1313,19 @@ class InChIParsingTest(unittest.TestCase):
         self.assertEqual(mol.atoms[1].charge, 1)
 
     def test_triplet_methylene(self):
-        inchi = 'CH2/h1H2'
+        inchi = "CH2/h1H2"
 
         u_indices = [1, 1]
         self.compare(inchi, u_indices)
 
     def test_singlet_methylene(self):
-        inchi = 'CH2/h1H2'
+        inchi = "CH2/h1H2"
 
         p_indices = [1]
         self.compare(inchi, u_indices=[], p_indices=p_indices)
 
     def test_c4h6o(self):
-        inchi = 'C4H6O/c1-2-3-4-5/h2H,3H2,1H3'
+        inchi = "C4H6O/c1-2-3-4-5/h2H,3H2,1H3"
         u_indices = [2, 4]
         mol = self.compare(inchi, u_indices)
         for at in mol.atoms:
@@ -1292,17 +1333,16 @@ class InChIParsingTest(unittest.TestCase):
                 self.assertTrue(at.lone_pairs == 2)
 
     def test_c6h6(self):
-        inchi = 'C6H6/c1-3-5-6-4-2/h1,6H,2,5H2'
+        inchi = "C6H6/c1-3-5-6-4-2/h1,6H,2,5H2"
         u_indices = [1, 3]
         self.compare(inchi, u_indices)
 
     def test_c4h6o2(self):
-        inchi = 'C4H6O/c1-2-3-4-5/h2,4H,1,3H2'
+        inchi = "C4H6O/c1-2-3-4-5/h2,4H,1,3H2"
         u_indices = [4, 5]
         self.compare(inchi, u_indices)
 
     def test_co_triplet(self):
-
         adjlist = """
         multiplicity 3
         1 C u2 p0 c0 {2,D}
@@ -1312,10 +1352,14 @@ class InChIParsingTest(unittest.TestCase):
         spc = Species(molecule=[Molecule().from_adjacency_list(adjlist)])
         aug_inchi = spc.get_augmented_inchi()
 
-        self.assertEqual(Species(molecule=[Molecule().from_augmented_inchi(aug_inchi)]).is_isomorphic(spc), True)
+        self.assertEqual(
+            Species(
+                molecule=[Molecule().from_augmented_inchi(aug_inchi)]
+            ).is_isomorphic(spc),
+            True,
+        )
 
     def test_ccco_triplet(self):
-
         adjlist = """
         multiplicity 3
 1 C u0 p0 c0 {2,D} {5,S} {6,S}
@@ -1333,35 +1377,40 @@ class InChIParsingTest(unittest.TestCase):
         spc.generate_resonance_structures()
         aug_inchi = spc.get_augmented_inchi()
 
-        self.assertEqual(Species(molecule=[Molecule().from_augmented_inchi(aug_inchi)]).is_isomorphic(spc), True)
+        self.assertEqual(
+            Species(
+                molecule=[Molecule().from_augmented_inchi(aug_inchi)]
+            ).is_isomorphic(spc),
+            True,
+        )
 
     def test_c3h4(self):
-        inchi = 'C3H4/c1-3-2/h1,3H,2H2'
+        inchi = "C3H4/c1-3-2/h1,3H,2H2"
         u_indices = [1, 1]
         self.compare(inchi, u_indices)
 
     def test_c6h8o2(self):
-        inchi = 'C6H8O2/c1-3-5(7)6(8)4-2/h3-6H,1-2H2'
+        inchi = "C6H8O2/c1-3-5(7)6(8)4-2/h3-6H,1-2H2"
         u_indices = [7, 8]
         self.compare(inchi, u_indices)
 
     def test_c3h3o3(self):
-        inchi = 'C3H3O3/c1-2-5-3-6-4/h1-3H'
+        inchi = "C3H3O3/c1-2-5-3-6-4/h1-3H"
         u_indices = [1, 3, 4]
         self.compare(inchi, u_indices)
 
     def test_ch2o2(self):
-        inchi = 'CH2O2/c2-1-3/h1H,(H,2,3)'
+        inchi = "CH2O2/c2-1-3/h1H,(H,2,3)"
         u_indices = [1, 2]
         self.compare(inchi, u_indices)
 
     def test_c2h2o3(self):
-        inchi = 'C2H2O3/c1-5-2(3)4/h1H2'
+        inchi = "C2H2O3/c1-5-2(3)4/h1H2"
         u_indices = [1, 3]
         self.compare(inchi, u_indices)
 
     def test_c3h4o4(self):
-        inchi = 'C3H4O4/c4-3(5)1-2-7-6/h1-3,6H'
+        inchi = "C3H4O4/c4-3(5)1-2-7-6/h1-3,6H"
         u_indices = [4, 5]
         self.compare(inchi, u_indices)
 
@@ -1376,44 +1425,43 @@ class InChIParsingTest(unittest.TestCase):
         which at least doesn't make OpenBabel complain. However, both have a net charge
         and cause RMG to crash. I'm not sure what the molecule was ever supposed to represent.
         """
-        inchi = 'InChI=1S/C6H6O4/c1-2-4-9-6(7)3-5-10-8/h2-3H,1,5H2'
+        inchi = "InChI=1S/C6H6O4/c1-2-4-9-6(7)3-5-10-8/h2-3H,1,5H2"
         u_indices = [1, 3, 4, 8]
         self.compare(inchi, u_indices)
 
     def test_c3h2o3(self):
-
-        inchi = 'InChI=1S/C3H2O3/c1-2-3(4)6-5/h1H2'
+        inchi = "InChI=1S/C3H2O3/c1-2-3(4)6-5/h1H2"
         u_indices = [2, 5]
 
         self.compare(inchi, u_indices)
 
     def test_c6h6o6(self):
-        inchi = 'C6H6O6/c7-6(2-5-12-9)10-3-1-4-11-8/h1,7H,4-5H2'
+        inchi = "C6H6O6/c7-6(2-5-12-9)10-3-1-4-11-8/h1,7H,4-5H2"
         u_indices = [2, 3, 8, 9]
         self.compare(inchi, u_indices)
 
     def test_c3h2(self):
-        inchi = 'C3H2/c1-3-2/h1-2H'
+        inchi = "C3H2/c1-3-2/h1-2H"
         u_indices = [1, 1]
         self.compare(inchi, u_indices)
 
     def test_c3h4(self):
-        inchi = 'InChI=1S/C3H4/c1-3-2/h1,3H,2H2'
+        inchi = "InChI=1S/C3H4/c1-3-2/h1,3H,2H2"
         u_indices = [1, 1]
         self.compare(inchi, u_indices)
 
     def test_c6h8(self):
-        inchi = 'InChI=1S/C6H8/c1-3-5-6-4-2/h1,4H,2,5-6H2'
+        inchi = "InChI=1S/C6H8/c1-3-5-6-4-2/h1,4H,2,5-6H2"
         u_indices = [1, 1, 3, 3]
         self.compare(inchi, u_indices)
 
     def test_c6h10(self):
-        inchi = 'InChI=1S/C6H10/c1-3-5-6-4-2/h3-4H,1-2,5-6H2'
+        inchi = "InChI=1S/C6H10/c1-3-5-6-4-2/h3-4H,1-2,5-6H2"
         u_indices = [1, 3]
         self.compare(inchi, u_indices)
 
     def test_ammonia(self):
-        inchi = 'InChI=1S/H3N/h1H3'
+        inchi = "InChI=1S/H3N/h1H3"
         self.compare(inchi)
 
     @work_in_progress
@@ -1421,19 +1469,19 @@ class InChIParsingTest(unittest.TestCase):
         """
         has same inchi as ammonia but gets a proton layer: /p+1
         """
-        inchi = 'InChI=1S/H3N/h1H3/p+1'
+        inchi = "InChI=1S/H3N/h1H3/p+1"
         self.compare(inchi)
 
     def test_h2s(self):
-        inchi = 'InChI=1S/H2S/h1H2'
+        inchi = "InChI=1S/H2S/h1H2"
         self.compare(inchi)
 
     def test_pyridine(self):
-        inchi = 'InChI=1S/C5H5N/c1-2-4-6-5-3-1/h1-5H'
+        inchi = "InChI=1S/C5H5N/c1-2-4-6-5-3-1/h1-5H"
         self.compare(inchi)
 
     def test_pyrimidine(self):
-        inchi = 'InChI=1S/C4H4N2/c1-2-5-4-6-3-1/h1-4H'
+        inchi = "InChI=1S/C4H4N2/c1-2-5-4-6-3-1/h1-4H"
         self.compare(inchi)
 
     @work_in_progress
@@ -1444,25 +1492,25 @@ class InChIParsingTest(unittest.TestCase):
         - Nitrogen 1 positively charged
 
         """
-        inchi = 'InChI=1S/HNO3/c2-1(3)4/h(H,2,3,4)'
+        inchi = "InChI=1S/HNO3/c2-1(3)4/h(H,2,3,4)"
         p_indices = [-1, 3, 3, 3]  # ???
         self.compare(inchi, [], p_indices)
 
     def test_no(self):
-        inchi = 'InChI=1S/NO/c1-2'
+        inchi = "InChI=1S/NO/c1-2"
         u_indices = [1]
         self.compare(inchi, u_indices)
 
     def test_isotopic_molecule_1(self):
         """Test that we can parse an InChI for an isotopic molecule."""
-        mol = Molecule().from_inchi('InChI=1S/CH4/h1H4/i1+1')
+        mol = Molecule().from_inchi("InChI=1S/CH4/h1H4/i1+1")
 
         self.assertTrue(len(mol.atoms), 4)
         self.assertEqual([atom.element.isotope for atom in mol.atoms].count(13), 1)
 
     def test_isotopic_molecule_2(self):
         """Test that we can parse an InChI for an isotopic molecule."""
-        mol = Molecule().from_inchi('InChI=1S/C2H6/c1-2/h1-2H3/i1+1')
+        mol = Molecule().from_inchi("InChI=1S/C2H6/c1-2/h1-2H3/i1+1")
 
         self.assertTrue(len(mol.atoms), 6)
         self.assertEqual([atom.element.isotope for atom in mol.atoms].count(13), 1)

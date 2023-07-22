@@ -7,54 +7,49 @@ longDesc = """
 
 """
 entry(
-    index = 0,
-    label = "R",
-    group = 
-"""
+    index=0,
+    label="R",
+    group="""
 1 * R u0
 """,
-    thermo = ThermoData(
-        Tdata = ([300,400,500,600,800,1000,1500],'K'),
-        Cpdata = ([0,0,0,0,0,0,0],'cal/(mol*K)'),
-        H298 = (0,'kcal/mol'),
-        S298 = (0,'cal/(mol*K)'),
+    thermo=ThermoData(
+        Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+        Cpdata=([0, 0, 0, 0, 0, 0, 0], "cal/(mol*K)"),
+        H298=(0, "kcal/mol"),
+        S298=(0, "cal/(mol*K)"),
     ),
-    shortDesc = """dummy root""",
-    longDesc = 
-"""
+    shortDesc="""dummy root""",
+    longDesc="""
 
 """,
 )
 
 entry(
-    index = 10,
-    label = "ketene",
-    group = 
-"""
+    index=10,
+    label="ketene",
+    group="""
 1 * C u0 {2,D} {3,S} {4,S}
 2   C u0 {1,D} {5,D}
 3   R u0 {1,S}
 4   R u0 {1,S}
 5   O u0 {2,D}
 """,
-    thermo = ThermoData(
-        Tdata = ([300,400,500,600,800,1000,1500],'K'),
-        Cpdata = ([0,0,0,0,0,0,0],'cal/(mol*K)'),
-        H298 = (0,'kcal/mol'),
-        S298 = (0,'cal/(mol*K)'),
+    thermo=ThermoData(
+        Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+        Cpdata=([0, 0, 0, 0, 0, 0, 0], "cal/(mol*K)"),
+        H298=(0, "kcal/mol"),
+        S298=(0, "cal/(mol*K)"),
     ),
-    shortDesc = """All the corrections from this family are from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
-    longDesc = 
-"""
+    shortDesc="""All the corrections from this family are from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
+    longDesc="""
 
 """,
 )
 
 entry(
-    index = 13,
-    label = "ketene_2C-C",
-    group = 
-"""
+    index=13,
+    label="ketene_2C-C",
+    group="""
 1 * C       u0 {2,D} {3,S} {4,S}
 2   C       u0 {1,D} {5,D}
 3   [Cs,Cd] u0 {1,S} {6,S}
@@ -63,24 +58,22 @@ entry(
 6   C       u0 {3,S}
 7   C       u0 {4,S}
 """,
-    thermo = ThermoData(
-        Tdata = ([300,400,500,600,800,1000,1500],'K'),
-        Cpdata = ([0,0,0,0,0,0,0],'cal/(mol*K)'),
-        H298 = (-1.6,'kcal/mol'),
-        S298 = (0,'cal/(mol*K)'),
+    thermo=ThermoData(
+        Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+        Cpdata=([0, 0, 0, 0, 0, 0, 0], "cal/(mol*K)"),
+        H298=(-1.6, "kcal/mol"),
+        S298=(0, "cal/(mol*K)"),
     ),
-    shortDesc = """This is correction NN2 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
-    longDesc = 
-"""
+    shortDesc="""This is correction NN2 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
+    longDesc="""
 
 """,
 )
 
 entry(
-    index = 11,
-    label = "ketene_1C-C_1C-H",
-    group = 
-"""
+    index=11,
+    label="ketene_1C-C_1C-H",
+    group="""
 1 * C       u0 {2,D} {3,S} {4,S}
 2   C       u0 {1,D} {5,D}
 3   [Cs,Cd] u0 {1,S} {6,S}
@@ -91,24 +84,22 @@ entry(
 8   H       u0 {4,S}
 9   H       u0 {4,S}
 """,
-    thermo = ThermoData(
-        Tdata = ([300,400,500,600,800,1000,1500],'K'),
-        Cpdata = ([0,0,0,0,0,0,0],'cal/(mol*K)'),
-        H298 = (-0.5,'kcal/mol'),
-        S298 = (0,'cal/(mol*K)'),
+    thermo=ThermoData(
+        Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+        Cpdata=([0, 0, 0, 0, 0, 0, 0], "cal/(mol*K)"),
+        H298=(-0.5, "kcal/mol"),
+        S298=(0, "cal/(mol*K)"),
     ),
-    shortDesc = """This is correction NN1 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
-    longDesc = 
-"""
+    shortDesc="""This is correction NN1 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
+    longDesc="""
 
 """,
 )
 
 entry(
-    index = 14,
-    label = "biketene",
-    group = 
-"""
+    index=14,
+    label="biketene",
+    group="""
 1    C   u0 {2,S} {3,S} {4,S} {5,S}
 2    C   u0 {1,S} {6,D}
 3  * C   u0 {1,S} {7,D} {10,S}
@@ -120,24 +111,22 @@ entry(
 9    O   u0 {7,D}
 10   R   u0 {3,S}
 """,
-    thermo = ThermoData(
-        Tdata = ([300,400,500,600,800,1000,1500],'K'),
-        Cpdata = ([0,0,0,0,0,0,0],'cal/(mol*K)'),
-        H298 = (-0.9,'kcal/mol'),
-        S298 = (0,'cal/(mol*K)'),
+    thermo=ThermoData(
+        Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+        Cpdata=([0, 0, 0, 0, 0, 0, 0], "cal/(mol*K)"),
+        H298=(-0.9, "kcal/mol"),
+        S298=(0, "cal/(mol*K)"),
     ),
-    shortDesc = """This is correction NN3 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
-    longDesc = 
-"""
+    shortDesc="""This is correction NN3 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
+    longDesc="""
 
 """,
 )
 
 entry(
-    index = 12,
-    label = "ketene_2C-H",
-    group = 
-"""
+    index=12,
+    label="ketene_2C-H",
+    group="""
 1  * C u0 {2,D} {3,S} {4,S}
 2    C u0 {1,D} {5,D}
 3    C u0 {1,S} {6,S} {7,S} {8,S}
@@ -150,21 +139,20 @@ entry(
 10   H u0 {4,S}
 11   H u0 {4,S}
 """,
-    thermo = ThermoData(
-        Tdata = ([300,400,500,600,800,1000,1500],'K'),
-        Cpdata = ([0,0,0,0,0,0,0],'cal/(mol*K)'),
-        H298 = (0,'kcal/mol'),
-        S298 = (0,'cal/(mol*K)'),
+    thermo=ThermoData(
+        Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+        Cpdata=([0, 0, 0, 0, 0, 0, 0], "cal/(mol*K)"),
+        H298=(0, "kcal/mol"),
+        S298=(0, "cal/(mol*K)"),
     ),
-    shortDesc = """This is correction NN0 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
-    longDesc = 
-"""
+    shortDesc="""This is correction NN0 from Sumathi & Green, J. Phys. Chem. A, 2002, 106, 7937-7949""",
+    longDesc="""
 
 """,
 )
 
 tree(
-"""
+    """
 L1: R
     L2: ketene
         L3: ketene_2C-C
@@ -173,4 +161,3 @@ L1: R
         L3: ketene_2C-H
 """
 )
-

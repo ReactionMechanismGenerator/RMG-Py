@@ -17,5 +17,3 @@ For aromatic radical: [2] Ince et al., AIChE 2016, DOI 10.1002/aic.15588
 
 Jan-23-2017 PZ
 """
-
-

@@ -42,6 +42,7 @@ from rmgpy.stats import ExecutionStatsWriter
 
 ################################################################################
 
+
 class TestExecutionStatsWriter(unittest.TestCase):
     """
     Contains unit tests of the ExecutionStatsWriter.
@@ -52,7 +53,7 @@ class TestExecutionStatsWriter(unittest.TestCase):
         Set up an RMG object
         """
 
-        folder = os.path.join(os.getcwd(), 'rmgpy/output')
+        folder = os.path.join(os.getcwd(), "rmgpy/output")
         if not os.path.isdir(folder):
             os.mkdir(folder)
 
@@ -71,7 +72,7 @@ class TestExecutionStatsWriter(unittest.TestCase):
         writer = ExecutionStatsWriter(folder)
         writer.update(self.rmg)
 
-        statsfile = os.path.join(folder, 'statistics.xls')
+        statsfile = os.path.join(folder, "statistics.xls")
 
         self.assertTrue(os.path.isfile(statsfile))
 

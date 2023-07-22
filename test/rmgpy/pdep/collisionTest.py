@@ -45,7 +45,7 @@ class TestSingleExponentialDown(unittest.TestCase):
 
     def setUp(self):
         self.alpha0 = 0.5
-        self.T0 = 300.
+        self.T0 = 300.0
         self.n = 0.85
         self.singleExponentialDown = SingleExponentialDown(
             alpha0=(self.alpha0, "kJ/mol"),
@@ -57,7 +57,9 @@ class TestSingleExponentialDown(unittest.TestCase):
         """
         Test the SingleExponentialDown.sigma attribute.
         """
-        self.assertAlmostEqual(self.singleExponentialDown.alpha0.value_si * 0.001, self.alpha0, 4)
+        self.assertAlmostEqual(
+            self.singleExponentialDown.alpha0.value_si * 0.001, self.alpha0, 4
+        )
 
     def test_temperature_0(self):
         """
@@ -76,7 +78,7 @@ class TestSingleExponentialDown(unittest.TestCase):
         Test the SingleExponentialDown.get_alpha() method.
         """
         for T in [300, 400, 500, 600, 800, 1000, 1500, 2000]:
-            dEdown0 = 1000. * self.alpha0 * (T / self.T0) ** self.n
+            dEdown0 = 1000.0 * self.alpha0 * (T / self.T0) ** self.n
             dEdown = self.singleExponentialDown.get_alpha(T)
             self.assertAlmostEqual(dEdown0, dEdown, 6)
 
@@ -86,24 +88,51 @@ class TestSingleExponentialDown(unittest.TestCase):
         and unpickled with no loss of information.
         """
         import pickle
-        singleExponentialDown = pickle.loads(pickle.dumps(self.singleExponentialDown, -1))
-        self.assertAlmostEqual(self.singleExponentialDown.alpha0.value, singleExponentialDown.alpha0.value, 6)
-        self.assertEqual(self.singleExponentialDown.alpha0.units, singleExponentialDown.alpha0.units)
-        self.assertAlmostEqual(self.singleExponentialDown.T0.value, singleExponentialDown.T0.value, 6)
-        self.assertEqual(self.singleExponentialDown.T0.units, singleExponentialDown.T0.units)
+
+        singleExponentialDown = pickle.loads(
+            pickle.dumps(self.singleExponentialDown, -1)
+        )
+        self.assertAlmostEqual(
+            self.singleExponentialDown.alpha0.value,
+            singleExponentialDown.alpha0.value,
+            6,
+        )
+        self.assertEqual(
+            self.singleExponentialDown.alpha0.units, singleExponentialDown.alpha0.units
+        )
+        self.assertAlmostEqual(
+            self.singleExponentialDown.T0.value, singleExponentialDown.T0.value, 6
+        )
+        self.assertEqual(
+            self.singleExponentialDown.T0.units, singleExponentialDown.T0.units
+        )
         self.assertAlmostEqual(self.singleExponentialDown.n, singleExponentialDown.n, 4)
 
     def test_repr(self):
         """
-        Test that a SingleExponentialDown object can be successfully 
+        Test that a SingleExponentialDown object can be successfully
         reconstructed from its repr() with no loss of information.
         """
         namespace = {}
-        exec('singleExponentialDown = {0!r}'.format(self.singleExponentialDown), globals(), namespace)
-        self.assertIn('singleExponentialDown', namespace)
-        singleExponentialDown = namespace['singleExponentialDown']
-        self.assertAlmostEqual(self.singleExponentialDown.alpha0.value, singleExponentialDown.alpha0.value, 6)
-        self.assertEqual(self.singleExponentialDown.alpha0.units, singleExponentialDown.alpha0.units)
-        self.assertAlmostEqual(self.singleExponentialDown.T0.value, singleExponentialDown.T0.value, 6)
-        self.assertEqual(self.singleExponentialDown.T0.units, singleExponentialDown.T0.units)
+        exec(
+            "singleExponentialDown = {0!r}".format(self.singleExponentialDown),
+            globals(),
+            namespace,
+        )
+        self.assertIn("singleExponentialDown", namespace)
+        singleExponentialDown = namespace["singleExponentialDown"]
+        self.assertAlmostEqual(
+            self.singleExponentialDown.alpha0.value,
+            singleExponentialDown.alpha0.value,
+            6,
+        )
+        self.assertEqual(
+            self.singleExponentialDown.alpha0.units, singleExponentialDown.alpha0.units
+        )
+        self.assertAlmostEqual(
+            self.singleExponentialDown.T0.value, singleExponentialDown.T0.value, 6
+        )
+        self.assertEqual(
+            self.singleExponentialDown.T0.units, singleExponentialDown.T0.units
+        )
         self.assertAlmostEqual(self.singleExponentialDown.n, singleExponentialDown.n, 4)

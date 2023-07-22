@@ -35,10 +35,11 @@ import unittest
 
 import numpy as np
 
-from arkane.encorr.corr import (assign_frequency_scale_factor,
-                                get_atom_correction,
-                                get_bac,
-                                )
+from arkane.encorr.corr import (
+    assign_frequency_scale_factor,
+    get_atom_correction,
+    get_bac,
+)
 from arkane.exceptions import AtomEnergyCorrectionError
 from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory
 
@@ -50,25 +51,31 @@ class TestCorr(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.freq_lot = LevelOfTheory(method='wb97X-D3', basis='def2-TZVP', software='Q-Chem')
-        cls.energy_lot = LevelOfTheory(method='CCSD(T)-F12', basis='cc-pVDZ-F12', software='MOLPRO')
-        cls.composite_lot = CompositeLevelOfTheory(freq=cls.freq_lot, energy=cls.energy_lot)
-        cls.lot_nonexisting = LevelOfTheory('notamethod')
+        cls.freq_lot = LevelOfTheory(
+            method="wb97X-D3", basis="def2-TZVP", software="Q-Chem"
+        )
+        cls.energy_lot = LevelOfTheory(
+            method="CCSD(T)-F12", basis="cc-pVDZ-F12", software="MOLPRO"
+        )
+        cls.composite_lot = CompositeLevelOfTheory(
+            freq=cls.freq_lot, energy=cls.energy_lot
+        )
+        cls.lot_nonexisting = LevelOfTheory("notamethod")
 
     def test_get_atom_correction(self):
         """
         Test that AECs can be assigned.
         It's possible these values are refit in the future so a loose tolerance
-        is used to just test that the values can be queried. 
+        is used to just test that the values can be queried.
         """
-        atoms = {'H': 1}
+        atoms = {"H": 1}
         aec = get_atom_correction(level_of_theory=self.freq_lot, atoms=atoms)
         # test value is obtained by (atom_hf['H'] - atom_thermal['H']) * 4184 - H atom_energy * 4.35974394e-18 * rmgpy.constants.Na
         test_value = 1524327
         self.assertAlmostEqual(aec, test_value, places=None, delta=1000)
 
         with self.assertRaises(AtomEnergyCorrectionError):
-            aec = get_atom_correction(level_of_theory=self.freq_lot, atoms={'X': 1})
+            aec = get_atom_correction(level_of_theory=self.freq_lot, atoms={"X": 1})
 
     def test_get_bac(self):
         """
@@ -76,28 +83,37 @@ class TestCorr(unittest.TestCase):
         It's possible these values are refit in the future so a loose tolerance
         is used to just test that the values can be queried.
         """
-        bonds = {'H-H': 1}
+        bonds = {"H-H": 1}
         # https://github.com/ReactionMechanismGenerator/RMG-database/blob/main/input/reference_sets/main/Dihydrogen.yml#L153
-        CCCBDB_coords = np.array([[0, 0, 0],
-                                  [0, 0, 0.7414],
-                                  ])
+        CCCBDB_coords = np.array(
+            [
+                [0, 0, 0],
+                [0, 0, 0.7414],
+            ]
+        )
         nums = (1, 1)
 
         # test Petersson BACs
-        bac_type = 'p'
-        bac = get_bac(level_of_theory=self.freq_lot, bonds=bonds,
-                      coords=CCCBDB_coords, nums=nums,
-                      bac_type=bac_type,
+        bac_type = "p"
+        bac = get_bac(
+            level_of_theory=self.freq_lot,
+            bonds=bonds,
+            coords=CCCBDB_coords,
+            nums=nums,
+            bac_type=bac_type,
         )
-         # test value is obtained by BAC(self.freq_lot, bac_type=bac_type).get_correction(bonds=bonds, coords=CCCBDB_coords, nums=nums).value_si
+        # test value is obtained by BAC(self.freq_lot, bac_type=bac_type).get_correction(bonds=bonds, coords=CCCBDB_coords, nums=nums).value_si
         test_value = 700
         self.assertAlmostEqual(bac, test_value, places=None, delta=100)
 
         # test Melius BACs
-        bac_type = 'm'
-        bac = get_bac(level_of_theory=self.freq_lot, bonds=bonds,
-                      coords=CCCBDB_coords, nums=nums,
-                      bac_type=bac_type,
+        bac_type = "m"
+        bac = get_bac(
+            level_of_theory=self.freq_lot,
+            bonds=bonds,
+            coords=CCCBDB_coords,
+            nums=nums,
+            bac_type=bac_type,
         )
         # test value is obtained by BAC(self.freq_lot, bac_type=bac_type).get_correction(bonds=bonds, coords=CCCBDB_coords, nums=nums).value_si
         test_value = 949
@@ -122,8 +138,8 @@ class TestCorr(unittest.TestCase):
         self.assertAlmostEqual(freq_scale_factor, 0.997, places=1)
 
         freq_scale_factor = assign_frequency_scale_factor(self.composite_lot)
-        self.assertAlmostEqual(freq_scale_factor, 0.984, places=1)        
+        self.assertAlmostEqual(freq_scale_factor, 0.984, places=1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

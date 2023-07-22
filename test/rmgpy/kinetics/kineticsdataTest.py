@@ -41,6 +41,7 @@ from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
 
 ################################################################################
 
+
 class TestKineticsData(unittest.TestCase):
     """
     Contains unit tests of the :class:`KineticsData` class.
@@ -50,13 +51,27 @@ class TestKineticsData(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float64)
+        self.Tdata = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float64
+        )
         self.kdata = np.array(
-            [4.73e-19, 3.93e-17, 6.51e-16, 4.60e-15, 2.03e-14, 6.28e-14, 1.58e-13, 3.31e-13, 3.72e-12, 1.49e-11],
-            np.float64)
-        self.Tmin = 300.
-        self.Tmax = 3000.
-        self.comment = 'H + CH4 <=> H2 + CH3 (RPMD)'
+            [
+                4.73e-19,
+                3.93e-17,
+                6.51e-16,
+                4.60e-15,
+                2.03e-14,
+                6.28e-14,
+                1.58e-13,
+                3.31e-13,
+                3.72e-12,
+                1.49e-11,
+            ],
+            np.float64,
+        )
+        self.Tmin = 300.0
+        self.Tmax = 3000.0
+        self.comment = "H + CH4 <=> H2 + CH3 (RPMD)"
         self.kinetics = KineticsData(
             Tdata=(self.Tdata, "K"),
             kdata=(self.kdata, "cm^3/(molecule*s)"),
@@ -105,7 +120,9 @@ class TestKineticsData(unittest.TestCase):
         Test the KineticsData.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
+        validdata = np.array(
+            [False, True, True, True, True, True, True, True, True, True], np.bool
+        )
         for T, valid in zip(Tdata, validdata):
             valid0 = self.kinetics.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
@@ -116,8 +133,19 @@ class TestKineticsData(unittest.TestCase):
         """
         Tlist = np.array([300, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         kexplist = np.array(
-            [2.84847e-01, 2.36670e+01, 2.77019e+03, 3.78191e+04, 1.99333e+05, 5.24644e+05, 1.38086e+06, 2.95680e+06,
-             5.15086e+06, 8.97299e+06])
+            [
+                2.84847e-01,
+                2.36670e01,
+                2.77019e03,
+                3.78191e04,
+                1.99333e05,
+                5.24644e05,
+                1.38086e06,
+                2.95680e06,
+                5.15086e06,
+                8.97299e06,
+            ]
+        )
         for T, kexp in zip(Tlist, kexplist):
             kact = self.kinetics.get_rate_coefficient(T)
             self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
@@ -128,6 +156,7 @@ class TestKineticsData(unittest.TestCase):
         loss of information.
         """
         import pickle
+
         kinetics = pickle.loads(pickle.dumps(self.kinetics, -1))
         self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):
@@ -149,9 +178,9 @@ class TestKineticsData(unittest.TestCase):
         output with no loss of information.
         """
         namespace = {}
-        exec('kinetics = {0!r}'.format(self.kinetics), globals(), namespace)
-        self.assertIn('kinetics', namespace)
-        kinetics = namespace['kinetics']
+        exec("kinetics = {0!r}".format(self.kinetics), globals(), namespace)
+        self.assertIn("kinetics", namespace)
+        kinetics = namespace["kinetics"]
         self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):
             self.assertAlmostEqual(T, T0, 4)
@@ -169,6 +198,7 @@ class TestKineticsData(unittest.TestCase):
 
 ################################################################################
 
+
 class TestPDepKineticsData(unittest.TestCase):
     """
     Contains unit tests of the :class:`PDepKineticsData` class.
@@ -178,18 +208,56 @@ class TestPDepKineticsData(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float64)
+        self.Tdata = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float64
+        )
         self.Pdata = np.array([1e-1, 1e0, 1e1], np.float64)
-        self.kdata = np.array([
-            [4.73e-21, 3.93e-19, 6.51e-18, 4.60e-17, 2.03e-16, 6.28e-16, 1.58e-15, 3.31e-15, 3.72e-14, 1.49e-13],
-            [4.73e-20, 3.93e-18, 6.51e-17, 4.60e-16, 2.03e-15, 6.28e-15, 1.58e-14, 3.31e-14, 3.72e-13, 1.49e-12],
-            [4.73e-19, 3.93e-17, 6.51e-16, 4.60e-15, 2.03e-14, 6.28e-14, 1.58e-13, 3.31e-13, 3.72e-12, 1.49e-11],
-        ], np.float64).T
-        self.Tmin = 300.
-        self.Tmax = 3000.
+        self.kdata = np.array(
+            [
+                [
+                    4.73e-21,
+                    3.93e-19,
+                    6.51e-18,
+                    4.60e-17,
+                    2.03e-16,
+                    6.28e-16,
+                    1.58e-15,
+                    3.31e-15,
+                    3.72e-14,
+                    1.49e-13,
+                ],
+                [
+                    4.73e-20,
+                    3.93e-18,
+                    6.51e-17,
+                    4.60e-16,
+                    2.03e-15,
+                    6.28e-15,
+                    1.58e-14,
+                    3.31e-14,
+                    3.72e-13,
+                    1.49e-12,
+                ],
+                [
+                    4.73e-19,
+                    3.93e-17,
+                    6.51e-16,
+                    4.60e-15,
+                    2.03e-14,
+                    6.28e-14,
+                    1.58e-13,
+                    3.31e-13,
+                    3.72e-12,
+                    1.49e-11,
+                ],
+            ],
+            np.float64,
+        ).T
+        self.Tmin = 300.0
+        self.Tmax = 3000.0
         self.Pmin = 1e-1
         self.Pmax = 1e1
-        self.comment = ''
+        self.comment = ""
         self.kinetics = PDepKineticsData(
             Tdata=(self.Tdata, "K"),
             Pdata=(self.Pdata, "bar"),
@@ -263,7 +331,9 @@ class TestPDepKineticsData(unittest.TestCase):
         Test the PDepKineticsData.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
+        validdata = np.array(
+            [False, True, True, True, True, True, True, True, True, True], np.bool
+        )
         for T, valid in zip(Tdata, validdata):
             valid0 = self.kinetics.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
@@ -284,14 +354,46 @@ class TestPDepKineticsData(unittest.TestCase):
         """
         Tlist = np.array([300, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         Plist = np.array([1e4, 1e5, 1e6])
-        kexplist = np.array([
-            [2.84847e-03, 2.36670e-01, 2.77019e+01, 3.78191e+02, 1.99333e+03, 5.24644e+03, 1.38086e+04, 2.95680e+04,
-             5.15086e+04, 8.97299e+04],
-            [2.84847e-02, 2.36670e+00, 2.77019e+02, 3.78191e+03, 1.99333e+04, 5.24644e+04, 1.38086e+05, 2.95680e+05,
-             5.15086e+05, 8.97299e+05],
-            [2.84847e-01, 2.36670e+01, 2.77019e+03, 3.78191e+04, 1.99333e+05, 5.24644e+05, 1.38086e+06, 2.95680e+06,
-             5.15086e+06, 8.97299e+06],
-        ]).T
+        kexplist = np.array(
+            [
+                [
+                    2.84847e-03,
+                    2.36670e-01,
+                    2.77019e01,
+                    3.78191e02,
+                    1.99333e03,
+                    5.24644e03,
+                    1.38086e04,
+                    2.95680e04,
+                    5.15086e04,
+                    8.97299e04,
+                ],
+                [
+                    2.84847e-02,
+                    2.36670e00,
+                    2.77019e02,
+                    3.78191e03,
+                    1.99333e04,
+                    5.24644e04,
+                    1.38086e05,
+                    2.95680e05,
+                    5.15086e05,
+                    8.97299e05,
+                ],
+                [
+                    2.84847e-01,
+                    2.36670e01,
+                    2.77019e03,
+                    3.78191e04,
+                    1.99333e05,
+                    5.24644e05,
+                    1.38086e06,
+                    2.95680e06,
+                    5.15086e06,
+                    8.97299e06,
+                ],
+            ]
+        ).T
         for i in range(Tlist.shape[0]):
             for j in range(Plist.shape[0]):
                 kexp = kexplist[i, j]
@@ -304,6 +406,7 @@ class TestPDepKineticsData(unittest.TestCase):
         loss of information.
         """
         import pickle
+
         kinetics = pickle.loads(pickle.dumps(self.kinetics, -1))
         self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):
@@ -332,9 +435,9 @@ class TestPDepKineticsData(unittest.TestCase):
         output with no loss of information.
         """
         namespace = {}
-        exec('kinetics = {0!r}'.format(self.kinetics), globals(), namespace)
-        self.assertIn('kinetics', namespace)
-        kinetics = namespace['kinetics']
+        exec("kinetics = {0!r}".format(self.kinetics), globals(), namespace)
+        self.assertIn("kinetics", namespace)
+        kinetics = namespace["kinetics"]
         self.assertEqual(self.kinetics.Tdata.value.shape, kinetics.Tdata.value.shape)
         for T, T0 in zip(self.kinetics.Tdata.value, kinetics.Tdata.value):
             self.assertAlmostEqual(T, T0, 4)

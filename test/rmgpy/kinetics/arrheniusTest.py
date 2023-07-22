@@ -37,7 +37,14 @@ import unittest
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, ArrheniusBM, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
+from rmgpy.kinetics.arrhenius import (
+    Arrhenius,
+    ArrheniusEP,
+    ArrheniusBM,
+    PDepArrhenius,
+    MultiArrhenius,
+    MultiPDepArrhenius,
+)
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
@@ -45,6 +52,7 @@ from rmgpy.thermo import NASA, NASAPolynomial
 
 
 ################################################################################
+
 
 class TestArrhenius(unittest.TestCase):
     """
@@ -58,10 +66,10 @@ class TestArrhenius(unittest.TestCase):
         self.A = 1.0e12
         self.n = 0.5
         self.Ea = 41.84
-        self.T0 = 1.
-        self.Tmin = 300.
-        self.Tmax = 3000.
-        self.comment = 'C2H6'
+        self.T0 = 1.0
+        self.Tmin = 300.0
+        self.Tmax = 3000.0
+        self.comment = "C2H6"
         self.arrhenius = Arrhenius(
             A=(self.A, "cm^3/(mol*s)"),
             n=self.n,
@@ -119,7 +127,9 @@ class TestArrhenius(unittest.TestCase):
         Test the Arrhenius.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
+        validdata = np.array(
+            [False, True, True, True, True, True, True, True, True, True], np.bool
+        )
         for T, valid in zip(Tdata, validdata):
             valid0 = self.arrhenius.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
@@ -130,7 +140,19 @@ class TestArrhenius(unittest.TestCase):
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         kexplist = np.array(
-            [1.6721e-4, 6.8770e1, 5.5803e3, 5.2448e4, 2.0632e5, 5.2285e5, 1.0281e6, 1.7225e6, 2.5912e6, 3.6123e6])
+            [
+                1.6721e-4,
+                6.8770e1,
+                5.5803e3,
+                5.2448e4,
+                2.0632e5,
+                5.2285e5,
+                1.0281e6,
+                1.7225e6,
+                2.5912e6,
+                3.6123e6,
+            ]
+        )
         for T, kexp in zip(Tlist, kexplist):
             kact = self.arrhenius.get_rate_coefficient(T)
             self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
@@ -139,7 +161,9 @@ class TestArrhenius(unittest.TestCase):
         """
         Test the Arrhenius.change_t0() method.
         """
-        Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        Tlist = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]
+        )
         k0list = np.array([self.arrhenius.get_rate_coefficient(T) for T in Tlist])
         self.arrhenius.change_t0(300)
         self.assertEqual(self.arrhenius.T0.value_si, 300)
@@ -151,13 +175,17 @@ class TestArrhenius(unittest.TestCase):
         """
         Test the Arrhenius.fit_to_data() method.
         """
-        Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        Tdata = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]
+        )
         kdata = np.array([self.arrhenius.get_rate_coefficient(T) for T in Tdata])
         arrhenius = Arrhenius().fit_to_data(Tdata, kdata, kunits="m^3/(mol*s)")
         self.assertEqual(float(self.arrhenius.T0.value_si), 1)
         for T, k in zip(Tdata, kdata):
             self.assertAlmostEqual(k, arrhenius.get_rate_coefficient(T), delta=1e-6 * k)
-        self.assertAlmostEqual(arrhenius.A.value_si, self.arrhenius.A.value_si, delta=1e0)
+        self.assertAlmostEqual(
+            arrhenius.A.value_si, self.arrhenius.A.value_si, delta=1e0
+        )
         self.assertAlmostEqual(arrhenius.n.value_si, self.arrhenius.n.value_si, 1, 4)
         self.assertAlmostEqual(arrhenius.Ea.value_si, self.arrhenius.Ea.value_si, 2)
         self.assertAlmostEqual(arrhenius.T0.value_si, self.arrhenius.T0.value_si, 4)
@@ -166,13 +194,19 @@ class TestArrhenius(unittest.TestCase):
         """
         Test the Arrhenius.fit_to_data() method on negative rates
         """
-        Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        Tdata = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]
+        )
         kdata = np.array([-1 * self.arrhenius.get_rate_coefficient(T) for T in Tdata])
         arrhenius = Arrhenius().fit_to_data(Tdata, kdata, kunits="m^3/(mol*s)")
         self.assertEqual(float(self.arrhenius.T0.value_si), 1)
         for T, k in zip(Tdata, kdata):
-            self.assertAlmostEqual(k, arrhenius.get_rate_coefficient(T), delta=1e-6 * abs(k))
-        self.assertAlmostEqual(arrhenius.A.value_si, -1 * self.arrhenius.A.value_si, delta=1e0)
+            self.assertAlmostEqual(
+                k, arrhenius.get_rate_coefficient(T), delta=1e-6 * abs(k)
+            )
+        self.assertAlmostEqual(
+            arrhenius.A.value_si, -1 * self.arrhenius.A.value_si, delta=1e0
+        )
         self.assertAlmostEqual(arrhenius.n.value_si, self.arrhenius.n.value_si, 1, 4)
         self.assertAlmostEqual(arrhenius.Ea.value_si, self.arrhenius.Ea.value_si, 2)
         self.assertAlmostEqual(arrhenius.T0.value_si, self.arrhenius.T0.value_si, 4)
@@ -183,6 +217,7 @@ class TestArrhenius(unittest.TestCase):
         of information.
         """
         import pickle
+
         arrhenius = pickle.loads(pickle.dumps(self.arrhenius, -1))
         self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
         self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
@@ -203,9 +238,9 @@ class TestArrhenius(unittest.TestCase):
         output with no loss of information.
         """
         namespace = {}
-        exec('arrhenius = {0!r}'.format(self.arrhenius), globals(), namespace)
-        self.assertIn('arrhenius', namespace)
-        arrhenius = namespace['arrhenius']
+        exec("arrhenius = {0!r}".format(self.arrhenius), globals(), namespace)
+        self.assertIn("arrhenius", namespace)
+        arrhenius = namespace["arrhenius"]
         self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
         self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
         self.assertAlmostEqual(self.arrhenius.n.value, arrhenius.n.value, 4)
@@ -223,7 +258,9 @@ class TestArrhenius(unittest.TestCase):
         """
         Test the Arrhenius.change_rate() method.
         """
-        Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        Tlist = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]
+        )
         k0list = np.array([self.arrhenius.get_rate_coefficient(T) for T in Tlist])
         self.arrhenius.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
@@ -232,7 +269,7 @@ class TestArrhenius(unittest.TestCase):
 
     def test_to_cantera_kinetics(self):
         """
-        Test that the Arrhenius cantera object can be set properly within 
+        Test that the Arrhenius cantera object can be set properly within
         a cantera Reaction object
         """
         ctArrhenius = self.arrhenius.to_cantera_kinetics()
@@ -246,7 +283,9 @@ class TestArrhenius(unittest.TestCase):
         """
         arr_rate = self.arrhenius.get_rate_coefficient(500)
         arr_ep = self.arrhenius.to_arrhenius_ep()
-        arr_ep_rate = arr_ep.get_rate_coefficient(500, 10)  # the second number should not matter
+        arr_ep_rate = arr_ep.get_rate_coefficient(
+            500, 10
+        )  # the second number should not matter
         self.assertAlmostEqual(arr_rate, arr_ep_rate)
 
     def test_to_arrhenius_ep_with_alpha_and_hrxn(self):
@@ -256,7 +295,7 @@ class TestArrhenius(unittest.TestCase):
         hrxn = 5
         arr_rate = self.arrhenius.get_rate_coefficient(500)
         arr_ep = self.arrhenius.to_arrhenius_ep(alpha=1, dHrxn=hrxn)
-        self.assertAlmostEqual(1., arr_ep.alpha.value_si)
+        self.assertAlmostEqual(1.0, arr_ep.alpha.value_si)
         arr_ep_rate = arr_ep.get_rate_coefficient(500, hrxn)
         self.assertAlmostEqual(arr_rate, arr_ep_rate)
 
@@ -266,6 +305,7 @@ class TestArrhenius(unittest.TestCase):
 
 
 ################################################################################
+
 
 class TestArrheniusEP(unittest.TestCase):
     """
@@ -280,9 +320,9 @@ class TestArrheniusEP(unittest.TestCase):
         self.n = 0.5
         self.alpha = 0.5
         self.E0 = 41.84
-        self.Tmin = 300.
-        self.Tmax = 3000.
-        self.comment = 'C2H6'
+        self.Tmin = 300.0
+        self.Tmax = 3000.0
+        self.comment = "C2H6"
         self.arrhenius = ArrheniusEP(
             A=(self.A, "cm^3/(mol*s)"),
             n=self.n,
@@ -340,7 +380,9 @@ class TestArrheniusEP(unittest.TestCase):
         Test the ArrheniusEP.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
+        validdata = np.array(
+            [False, True, True, True, True, True, True, True, True, True], np.bool
+        )
         for T, valid in zip(Tdata, validdata):
             valid0 = self.arrhenius.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
@@ -351,9 +393,23 @@ class TestArrheniusEP(unittest.TestCase):
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         kexplist = np.array(
-            [1.6721e-4, 6.8770e1, 5.5803e3, 5.2448e4, 2.0632e5, 5.2285e5, 1.0281e6, 1.7225e6, 2.5912e6, 3.6123e6])
+            [
+                1.6721e-4,
+                6.8770e1,
+                5.5803e3,
+                5.2448e4,
+                2.0632e5,
+                5.2285e5,
+                1.0281e6,
+                1.7225e6,
+                2.5912e6,
+                3.6123e6,
+            ]
+        )
         for T, kexp in zip(Tlist, kexplist):
-            kact = self.arrhenius.get_rate_coefficient(T, )
+            kact = self.arrhenius.get_rate_coefficient(
+                T,
+            )
             self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
 
     def test_pickle(self):
@@ -362,6 +418,7 @@ class TestArrheniusEP(unittest.TestCase):
         of information.
         """
         import pickle
+
         arrhenius = pickle.loads(pickle.dumps(self.arrhenius, -1))
         self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
         self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
@@ -381,9 +438,9 @@ class TestArrheniusEP(unittest.TestCase):
         output with no loss of information.
         """
         namespace = {}
-        exec('arrhenius = {0!r}'.format(self.arrhenius), globals(), namespace)
-        self.assertIn('arrhenius', namespace)
-        arrhenius = namespace['arrhenius']
+        exec("arrhenius = {0!r}".format(self.arrhenius), globals(), namespace)
+        self.assertIn("arrhenius", namespace)
+        arrhenius = namespace["arrhenius"]
         self.assertAlmostEqual(self.arrhenius.A.value, arrhenius.A.value, delta=1e0)
         self.assertEqual(self.arrhenius.A.units, arrhenius.A.units)
         self.assertAlmostEqual(self.arrhenius.n.value, arrhenius.n.value, 4)
@@ -400,7 +457,9 @@ class TestArrheniusEP(unittest.TestCase):
         """
         Test the ArrheniusEP.change_rate() method.
         """
-        Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        Tlist = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]
+        )
         k0list = np.array([self.arrhenius.get_rate_coefficient(T) for T in Tlist])
         self.arrhenius.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
@@ -409,6 +468,7 @@ class TestArrheniusEP(unittest.TestCase):
 
 
 ################################################################################
+
 
 class TestArrheniusBM(unittest.TestCase):
     """
@@ -419,46 +479,107 @@ class TestArrheniusBM(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.A = 8.00037e+12
+        self.A = 8.00037e12
         self.n = 0.391734
         self.w0 = 798000
         self.E0 = 115905
-        self.Tmin = 300.
-        self.Tmax = 2000.
-        self.comment = 'rxn001084'
+        self.Tmin = 300.0
+        self.Tmax = 2000.0
+        self.comment = "rxn001084"
         self.arrhenius_bm = ArrheniusBM(
             A=(self.A, "s^-1"),
             n=self.n,
-            w0=(self.w0, 'J/mol'),
+            w0=(self.w0, "J/mol"),
             E0=(self.E0, "J/mol"),
             Tmin=(self.Tmin, "K"),
             Tmax=(self.Tmax, "K"),
             comment=self.comment,
         )
 
-        self.rsmi = 'NC(=NC=O)O'
-        self.psmi = 'O=CNC(=O)N'
-        self.arrhenius = Arrhenius(A=(8.00037e+12,'s^-1'), 
-                                   n=0.391734,
-                                   Ea=(94.5149,'kJ/mol'),
-                                   T0=(1,'K'),
-                                   Tmin=(300,'K'),
-                                   Tmax=(2000,'K'),
-                                   comment="""Fitted to 50 data points; dA = *|/ 1.18377, dn = +|- 0.0223855, dEa = +|- 0.115431 kJ/mol"""
-                                   )
+        self.rsmi = "NC(=NC=O)O"
+        self.psmi = "O=CNC(=O)N"
+        self.arrhenius = Arrhenius(
+            A=(8.00037e12, "s^-1"),
+            n=0.391734,
+            Ea=(94.5149, "kJ/mol"),
+            T0=(1, "K"),
+            Tmin=(300, "K"),
+            Tmax=(2000, "K"),
+            comment="""Fitted to 50 data points; dA = *|/ 1.18377, dn = +|- 0.0223855, dEa = +|- 0.115431 kJ/mol""",
+        )
 
-        self.r_thermo = NASA(polynomials=[
-            NASAPolynomial(coeffs=[3.90453,0.0068491,0.000125755,-2.92973e-07,2.12971e-10,-45444.2,10.0669], Tmin=(10,'K'), Tmax=(433.425,'K')), 
-            NASAPolynomial(coeffs=[2.09778,0.0367646,-2.36023e-05,7.24527e-09,-8.51275e-13,-45412,15.8381], Tmin=(433.425,'K'), Tmax=(3000,'K'))], 
-            Tmin=(10,'K'), Tmax=(3000,'K'), E0=(-377.851,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(232.805,'J/(mol*K)'), 
-            comment="""Thermo library: Spiekermann_refining_elementary_reactions"""
-            )
-        self.p_thermo = NASA(polynomials=[
-            NASAPolynomial(coeffs=[3.88423,0.00825528,0.000133399,-3.31802e-07,2.52823e-10,-51045.1,10.3937], Tmin=(10,'K'), Tmax=(428.701,'K')), 
-            NASAPolynomial(coeffs=[2.89294,0.0351772,-2.26349e-05,7.00331e-09,-8.2982e-13,-51122.5,12.4424], Tmin=(428.701,'K'), Tmax=(3000,'K'))], 
-            Tmin=(10,'K'), Tmax=(3000,'K'), E0=(-424.419,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(232.805,'J/(mol*K)'), 
-            comment="""Thermo library: Spiekermann_refining_elementary_reactions"""
-            )
+        self.r_thermo = NASA(
+            polynomials=[
+                NASAPolynomial(
+                    coeffs=[
+                        3.90453,
+                        0.0068491,
+                        0.000125755,
+                        -2.92973e-07,
+                        2.12971e-10,
+                        -45444.2,
+                        10.0669,
+                    ],
+                    Tmin=(10, "K"),
+                    Tmax=(433.425, "K"),
+                ),
+                NASAPolynomial(
+                    coeffs=[
+                        2.09778,
+                        0.0367646,
+                        -2.36023e-05,
+                        7.24527e-09,
+                        -8.51275e-13,
+                        -45412,
+                        15.8381,
+                    ],
+                    Tmin=(433.425, "K"),
+                    Tmax=(3000, "K"),
+                ),
+            ],
+            Tmin=(10, "K"),
+            Tmax=(3000, "K"),
+            E0=(-377.851, "kJ/mol"),
+            Cp0=(33.2579, "J/(mol*K)"),
+            CpInf=(232.805, "J/(mol*K)"),
+            comment="""Thermo library: Spiekermann_refining_elementary_reactions""",
+        )
+        self.p_thermo = NASA(
+            polynomials=[
+                NASAPolynomial(
+                    coeffs=[
+                        3.88423,
+                        0.00825528,
+                        0.000133399,
+                        -3.31802e-07,
+                        2.52823e-10,
+                        -51045.1,
+                        10.3937,
+                    ],
+                    Tmin=(10, "K"),
+                    Tmax=(428.701, "K"),
+                ),
+                NASAPolynomial(
+                    coeffs=[
+                        2.89294,
+                        0.0351772,
+                        -2.26349e-05,
+                        7.00331e-09,
+                        -8.2982e-13,
+                        -51122.5,
+                        12.4424,
+                    ],
+                    Tmin=(428.701, "K"),
+                    Tmax=(3000, "K"),
+                ),
+            ],
+            Tmin=(10, "K"),
+            Tmax=(3000, "K"),
+            E0=(-424.419, "kJ/mol"),
+            Cp0=(33.2579, "J/(mol*K)"),
+            CpInf=(232.805, "J/(mol*K)"),
+            comment="""Thermo library: Spiekermann_refining_elementary_reactions""",
+        )
 
     def test_a_factor(self):
         """
@@ -501,7 +622,9 @@ class TestArrheniusBM(unittest.TestCase):
         Test the ArrheniusBM.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
+        validdata = np.array(
+            [False, True, True, True, True, True, True, True, True, True], np.bool
+        )
         for T, valid in zip(Tdata, validdata):
             valid0 = self.arrhenius_bm.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
@@ -512,15 +635,27 @@ class TestArrheniusBM(unittest.TestCase):
         """
         reactant = Molecule(smiles=self.rsmi)
         product = Molecule(smiles=self.psmi)
-        reaction = Reaction(reactants=[Species(molecule=[reactant], thermo=self.r_thermo,)],
-                            products=[Species(molecule=[product], thermo=self.p_thermo)],
-                            kinetics=self.arrhenius,
-                            )
-        
+        reaction = Reaction(
+            reactants=[
+                Species(
+                    molecule=[reactant],
+                    thermo=self.r_thermo,
+                )
+            ],
+            products=[Species(molecule=[product], thermo=self.p_thermo)],
+            kinetics=self.arrhenius,
+        )
+
         arrhenius_bm = ArrheniusBM().fit_to_reactions([reaction], w0=self.w0)
-        self.assertAlmostEqual(arrhenius_bm.A.value_si, self.arrhenius_bm.A.value_si, delta=1.5e1)
-        self.assertAlmostEqual(arrhenius_bm.n.value_si, self.arrhenius_bm.n.value_si, 1, 4)
-        self.assertAlmostEqual(arrhenius_bm.E0.value_si, self.arrhenius_bm.E0.value_si, 1)
+        self.assertAlmostEqual(
+            arrhenius_bm.A.value_si, self.arrhenius_bm.A.value_si, delta=1.5e1
+        )
+        self.assertAlmostEqual(
+            arrhenius_bm.n.value_si, self.arrhenius_bm.n.value_si, 1, 4
+        )
+        self.assertAlmostEqual(
+            arrhenius_bm.E0.value_si, self.arrhenius_bm.E0.value_si, 1
+        )
 
     def test_get_activation_energy(self):
         """
@@ -532,6 +667,7 @@ class TestArrheniusBM(unittest.TestCase):
 
 
 ################################################################################
+
 
 class TestPDepArrhenius(unittest.TestCase):
     """
@@ -583,7 +719,9 @@ class TestPDepArrhenius(unittest.TestCase):
         """
         self.assertEqual(len(self.kinetics.pressures.value_si), 2)
         for i in range(2):
-            self.assertAlmostEqual(self.kinetics.pressures.value_si[i] * 1e-5, self.pressures[i], 4)
+            self.assertAlmostEqual(
+                self.kinetics.pressures.value_si[i] * 1e-5, self.pressures[i], 4
+            )
 
     def test_arrhenius(self):
         """
@@ -591,18 +729,42 @@ class TestPDepArrhenius(unittest.TestCase):
         """
         self.assertEqual(len(self.kinetics.arrhenius), 2)
         for i in range(2):
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].A.value, self.arrhenius[i].A.value, delta=1e0)
-            self.assertEqual(self.kinetics.arrhenius[i].A.units, self.arrhenius[i].A.units)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].n.value, self.arrhenius[i].n.value, 4)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].Ea.value, self.arrhenius[i].Ea.value, 4)
-            self.assertEqual(self.kinetics.arrhenius[i].Ea.units, self.arrhenius[i].Ea.units)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].T0.value, self.arrhenius[i].T0.value, 4)
-            self.assertEqual(self.kinetics.arrhenius[i].T0.units, self.arrhenius[i].T0.units)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].Tmin.value, self.arrhenius[i].Tmin.value, 4)
-            self.assertEqual(self.kinetics.arrhenius[i].Tmin.units, self.arrhenius[i].Tmin.units)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].Tmax.value, self.arrhenius[i].Tmax.value, 4)
-            self.assertEqual(self.kinetics.arrhenius[i].Tmax.units, self.arrhenius[i].Tmax.units)
-            self.assertEqual(self.kinetics.arrhenius[i].comment, self.arrhenius[i].comment)
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].A.value, self.arrhenius[i].A.value, delta=1e0
+            )
+            self.assertEqual(
+                self.kinetics.arrhenius[i].A.units, self.arrhenius[i].A.units
+            )
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].n.value, self.arrhenius[i].n.value, 4
+            )
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].Ea.value, self.arrhenius[i].Ea.value, 4
+            )
+            self.assertEqual(
+                self.kinetics.arrhenius[i].Ea.units, self.arrhenius[i].Ea.units
+            )
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].T0.value, self.arrhenius[i].T0.value, 4
+            )
+            self.assertEqual(
+                self.kinetics.arrhenius[i].T0.units, self.arrhenius[i].T0.units
+            )
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].Tmin.value, self.arrhenius[i].Tmin.value, 4
+            )
+            self.assertEqual(
+                self.kinetics.arrhenius[i].Tmin.units, self.arrhenius[i].Tmin.units
+            )
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].Tmax.value, self.arrhenius[i].Tmax.value, 4
+            )
+            self.assertEqual(
+                self.kinetics.arrhenius[i].Tmax.units, self.arrhenius[i].Tmax.units
+            )
+            self.assertEqual(
+                self.kinetics.arrhenius[i].comment, self.arrhenius[i].comment
+            )
 
     def test_temperature_min(self):
         """
@@ -645,26 +807,74 @@ class TestPDepArrhenius(unittest.TestCase):
         Test the PDepArrhenius.get_rate_coefficient() method.
         """
         P = 1e4
-        for T in [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]:
+        for T in [
+            300,
+            400,
+            500,
+            600,
+            700,
+            800,
+            900,
+            1000,
+            1100,
+            1200,
+            1300,
+            1400,
+            1500,
+        ]:
             k0 = self.kinetics.get_rate_coefficient(T, P)
             k1 = self.arrhenius0.get_rate_coefficient(T)
             self.assertAlmostEqual(k0, k1, delta=1e-6 * k1)
         P = 1e6
-        for T in [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]:
+        for T in [
+            300,
+            400,
+            500,
+            600,
+            700,
+            800,
+            900,
+            1000,
+            1100,
+            1200,
+            1300,
+            1400,
+            1500,
+        ]:
             k0 = self.kinetics.get_rate_coefficient(T, P)
             k1 = self.arrhenius1.get_rate_coefficient(T)
             self.assertAlmostEqual(k0, k1, delta=1e-6 * k1)
         P = 1e5
-        for T in [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]:
+        for T in [
+            300,
+            400,
+            500,
+            600,
+            700,
+            800,
+            900,
+            1000,
+            1100,
+            1200,
+            1300,
+            1400,
+            1500,
+        ]:
             k0 = self.kinetics.get_rate_coefficient(T, P)
-            k1 = math.sqrt(self.arrhenius0.get_rate_coefficient(T) * self.arrhenius1.get_rate_coefficient(T))
+            k1 = math.sqrt(
+                self.arrhenius0.get_rate_coefficient(T)
+                * self.arrhenius1.get_rate_coefficient(T)
+            )
             self.assertAlmostEqual(k0, k1, delta=1e-6 * k1)
 
     def test_fit_to_data(self):
         """
         Test the PDepArrhenius.fit_to_data() method.
         """
-        Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500], np.float)
+        Tdata = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500],
+            np.float,
+        )
         Pdata = np.array([1e4, 3e4, 1e5, 3e5, 1e6], np.float)
         kdata = np.zeros([len(Tdata), len(Pdata)], np.float)
         for t in range(len(Tdata)):
@@ -673,8 +883,11 @@ class TestPDepArrhenius(unittest.TestCase):
         kinetics = PDepArrhenius().fit_to_data(Tdata, Pdata, kdata, kunits="s^-1")
         for t in range(len(Tdata)):
             for p in range(len(Pdata)):
-                self.assertAlmostEqual(kinetics.get_rate_coefficient(Tdata[t], Pdata[p]), kdata[t, p],
-                                       delta=1e-6 * kdata[t, p])
+                self.assertAlmostEqual(
+                    kinetics.get_rate_coefficient(Tdata[t], Pdata[p]),
+                    kdata[t, p],
+                    delta=1e-6 * kdata[t, p],
+                )
 
     def test_pickle(self):
         """
@@ -682,6 +895,7 @@ class TestPDepArrhenius(unittest.TestCase):
         unpickled with no loss of information.
         """
         import pickle
+
         kinetics = pickle.loads(pickle.dumps(self.kinetics, -1))
         Narrh = 2
         self.assertEqual(len(self.kinetics.pressures.value), Narrh)
@@ -689,14 +903,32 @@ class TestPDepArrhenius(unittest.TestCase):
         self.assertEqual(len(self.kinetics.arrhenius), Narrh)
         self.assertEqual(len(kinetics.arrhenius), Narrh)
         for i in range(Narrh):
-            self.assertAlmostEqual(self.kinetics.pressures.value[i], kinetics.pressures.value[i], 4)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].A.value, kinetics.arrhenius[i].A.value, delta=1e0)
-            self.assertEqual(self.kinetics.arrhenius[i].A.units, kinetics.arrhenius[i].A.units)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].n.value, kinetics.arrhenius[i].n.value)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].T0.value, kinetics.arrhenius[i].T0.value, 4)
-            self.assertEqual(self.kinetics.arrhenius[i].T0.units, kinetics.arrhenius[i].T0.units)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].Ea.value, kinetics.arrhenius[i].Ea.value, 4)
-            self.assertEqual(self.kinetics.arrhenius[i].Ea.units, kinetics.arrhenius[i].Ea.units)
+            self.assertAlmostEqual(
+                self.kinetics.pressures.value[i], kinetics.pressures.value[i], 4
+            )
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].A.value,
+                kinetics.arrhenius[i].A.value,
+                delta=1e0,
+            )
+            self.assertEqual(
+                self.kinetics.arrhenius[i].A.units, kinetics.arrhenius[i].A.units
+            )
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].n.value, kinetics.arrhenius[i].n.value
+            )
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].T0.value, kinetics.arrhenius[i].T0.value, 4
+            )
+            self.assertEqual(
+                self.kinetics.arrhenius[i].T0.units, kinetics.arrhenius[i].T0.units
+            )
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].Ea.value, kinetics.arrhenius[i].Ea.value, 4
+            )
+            self.assertEqual(
+                self.kinetics.arrhenius[i].Ea.units, kinetics.arrhenius[i].Ea.units
+            )
         self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
         self.assertAlmostEqual(self.kinetics.Tmax.value, kinetics.Tmax.value, 4)
@@ -713,23 +945,41 @@ class TestPDepArrhenius(unittest.TestCase):
         from its repr() output with no loss of information.
         """
         namespace = {}
-        exec('kinetics = {0!r}'.format(self.kinetics), globals(), namespace)
-        self.assertIn('kinetics', namespace)
-        kinetics = namespace['kinetics']
+        exec("kinetics = {0!r}".format(self.kinetics), globals(), namespace)
+        self.assertIn("kinetics", namespace)
+        kinetics = namespace["kinetics"]
         Narrh = 2
         self.assertEqual(len(self.kinetics.pressures.value), Narrh)
         self.assertEqual(len(kinetics.pressures.value), Narrh)
         self.assertEqual(len(self.kinetics.arrhenius), Narrh)
         self.assertEqual(len(kinetics.arrhenius), Narrh)
         for i in range(Narrh):
-            self.assertAlmostEqual(self.kinetics.pressures.value[i], kinetics.pressures.value[i], 4)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].A.value, kinetics.arrhenius[i].A.value, delta=1e0)
-            self.assertEqual(self.kinetics.arrhenius[i].A.units, kinetics.arrhenius[i].A.units)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].n.value, kinetics.arrhenius[i].n.value)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].T0.value, kinetics.arrhenius[i].T0.value, 4)
-            self.assertEqual(self.kinetics.arrhenius[i].T0.units, kinetics.arrhenius[i].T0.units)
-            self.assertAlmostEqual(self.kinetics.arrhenius[i].Ea.value, kinetics.arrhenius[i].Ea.value, 4)
-            self.assertEqual(self.kinetics.arrhenius[i].Ea.units, kinetics.arrhenius[i].Ea.units)
+            self.assertAlmostEqual(
+                self.kinetics.pressures.value[i], kinetics.pressures.value[i], 4
+            )
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].A.value,
+                kinetics.arrhenius[i].A.value,
+                delta=1e0,
+            )
+            self.assertEqual(
+                self.kinetics.arrhenius[i].A.units, kinetics.arrhenius[i].A.units
+            )
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].n.value, kinetics.arrhenius[i].n.value
+            )
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].T0.value, kinetics.arrhenius[i].T0.value, 4
+            )
+            self.assertEqual(
+                self.kinetics.arrhenius[i].T0.units, kinetics.arrhenius[i].T0.units
+            )
+            self.assertAlmostEqual(
+                self.kinetics.arrhenius[i].Ea.value, kinetics.arrhenius[i].Ea.value, 4
+            )
+            self.assertEqual(
+                self.kinetics.arrhenius[i].Ea.units, kinetics.arrhenius[i].Ea.units
+            )
         self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
         self.assertAlmostEqual(self.kinetics.Tmax.value, kinetics.Tmax.value, 4)
@@ -744,7 +994,9 @@ class TestPDepArrhenius(unittest.TestCase):
         """
         Test the PDepArrhenius.change_rate() method.
         """
-        Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        Tlist = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]
+        )
         k0list = np.array([self.kinetics.get_rate_coefficient(T, 1e5) for T in Tlist])
         self.kinetics.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
@@ -753,6 +1005,7 @@ class TestPDepArrhenius(unittest.TestCase):
 
 
 ################################################################################
+
 
 class TestMultiArrhenius(unittest.TestCase):
     """
@@ -763,9 +1016,9 @@ class TestMultiArrhenius(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.Tmin = 350.
-        self.Tmax = 1500.
-        self.comment = 'Comment'
+        self.Tmin = 350.0
+        self.Tmax = 1500.0
+        self.comment = "Comment"
         self.arrhenius = [
             Arrhenius(
                 A=(9.3e-14, "cm^3/(molecule*s)"),
@@ -828,7 +1081,9 @@ class TestMultiArrhenius(unittest.TestCase):
         Test the MultiArrhenius.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array([False, True, True, True, True, True, True, False, False, False], np.bool)
+        validdata = np.array(
+            [False, True, True, True, True, True, True, False, False, False], np.bool
+        )
         for T, valid in zip(Tdata, validdata):
             valid0 = self.kinetics.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
@@ -839,8 +1094,19 @@ class TestMultiArrhenius(unittest.TestCase):
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         kexplist = np.array(
-            [2.85400e-06, 4.00384e-01, 2.73563e+01, 8.50699e+02, 1.20181e+04, 7.56312e+04, 2.84724e+05, 7.71702e+05,
-             1.67743e+06, 3.12290e+06])
+            [
+                2.85400e-06,
+                4.00384e-01,
+                2.73563e01,
+                8.50699e02,
+                1.20181e04,
+                7.56312e04,
+                2.84724e05,
+                7.71702e05,
+                1.67743e06,
+                3.12290e06,
+            ]
+        )
         for T, kexp in zip(Tlist, kexplist):
             kact = self.kinetics.get_rate_coefficient(T)
             self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
@@ -851,6 +1117,7 @@ class TestMultiArrhenius(unittest.TestCase):
         of information.
         """
         import pickle
+
         kinetics = pickle.loads(pickle.dumps(self.kinetics, -1))
         self.assertEqual(len(self.kinetics.arrhenius), len(kinetics.arrhenius))
         for arrh0, arrh in zip(self.kinetics.arrhenius, kinetics.arrhenius):
@@ -873,9 +1140,9 @@ class TestMultiArrhenius(unittest.TestCase):
         output with no loss of information.
         """
         namespace = {}
-        exec('kinetics = {0!r}'.format(self.kinetics), globals(), namespace)
-        self.assertIn('kinetics', namespace)
-        kinetics = namespace['kinetics']
+        exec("kinetics = {0!r}".format(self.kinetics), globals(), namespace)
+        self.assertIn("kinetics", namespace)
+        kinetics = namespace["kinetics"]
         self.assertEqual(len(self.kinetics.arrhenius), len(kinetics.arrhenius))
         for arrh0, arrh in zip(self.kinetics.arrhenius, kinetics.arrhenius):
             self.assertAlmostEqual(arrh0.A.value, arrh.A.value, delta=1e-18)
@@ -912,7 +1179,9 @@ class TestMultiArrhenius(unittest.TestCase):
         self.assertAlmostEqual(fitted.Tmin.value_si, 800.0)
         self.assertAlmostEqual(fitted.Tmax.value_si, 1200.0)
         for T in [800, 1000, 1200]:
-            self.assertAlmostEqual(fitted.get_rate_coefficient(T) / answer.get_rate_coefficient(T), 1.0)
+            self.assertAlmostEqual(
+                fitted.get_rate_coefficient(T) / answer.get_rate_coefficient(T), 1.0
+            )
 
     def test_to_arrhenius_multiple(self):
         """
@@ -923,13 +1192,19 @@ class TestMultiArrhenius(unittest.TestCase):
         self.assertAlmostEqual(fitted.Tmin.value_si, 800.0)
         self.assertAlmostEqual(fitted.Tmax.value_si, 1200.0)
         for T in [800, 1000, 1200]:
-            self.assertAlmostEqual(fitted.get_rate_coefficient(T) / answer.get_rate_coefficient(T), 1.0, delta=0.05)
+            self.assertAlmostEqual(
+                fitted.get_rate_coefficient(T) / answer.get_rate_coefficient(T),
+                1.0,
+                delta=0.05,
+            )
 
     def test_change_rate(self):
         """
         Test the MultiArrhenius.change_rate() method.
         """
-        Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        Tlist = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]
+        )
         k0list = np.array([self.kinetics.get_rate_coefficient(T) for T in Tlist])
         self.kinetics.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
@@ -938,6 +1213,7 @@ class TestMultiArrhenius(unittest.TestCase):
 
 
 ################################################################################
+
 
 class TestMultiPDepArrhenius(unittest.TestCase):
     """
@@ -948,12 +1224,12 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        self.Tmin = 350.
-        self.Tmax = 1500.
+        self.Tmin = 350.0
+        self.Tmax = 1500.0
         self.Pmin = 1e-1
         self.Pmax = 1e1
         self.pressures = np.array([1e-1, 1e1])
-        self.comment = 'CH3 + C2H6 <=> CH4 + C2H5 (Baulch 2005)'
+        self.comment = "CH3 + C2H6 <=> CH4 + C2H5 (Baulch 2005)"
         self.arrhenius = [
             PDepArrhenius(
                 pressures=(self.pressures, "bar"),
@@ -1062,7 +1338,9 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         Test the MultiPDepArrhenius.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array([False, True, True, True, True, True, True, False, False, False], np.bool)
+        validdata = np.array(
+            [False, True, True, True, True, True, True, False, False, False], np.bool
+        )
         for T, valid in zip(Tdata, validdata):
             valid0 = self.kinetics.is_temperature_valid(T)
             self.assertEqual(valid0, valid)
@@ -1083,14 +1361,46 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         """
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         Plist = np.array([1e4, 1e5, 1e6])
-        kexplist = np.array([
-            [2.85400e-08, 4.00384e-03, 2.73563e-01, 8.50699e+00, 1.20181e+02, 7.56312e+02, 2.84724e+03, 7.71702e+03,
-             1.67743e+04, 3.12290e+04],
-            [2.85400e-07, 4.00384e-02, 2.73563e+00, 8.50699e+01, 1.20181e+03, 7.56312e+03, 2.84724e+04, 7.71702e+04,
-             1.67743e+05, 3.12290e+05],
-            [2.85400e-06, 4.00384e-01, 2.73563e+01, 8.50699e+02, 1.20181e+04, 7.56312e+04, 2.84724e+05, 7.71702e+05,
-             1.67743e+06, 3.12290e+06],
-        ]).T
+        kexplist = np.array(
+            [
+                [
+                    2.85400e-08,
+                    4.00384e-03,
+                    2.73563e-01,
+                    8.50699e00,
+                    1.20181e02,
+                    7.56312e02,
+                    2.84724e03,
+                    7.71702e03,
+                    1.67743e04,
+                    3.12290e04,
+                ],
+                [
+                    2.85400e-07,
+                    4.00384e-02,
+                    2.73563e00,
+                    8.50699e01,
+                    1.20181e03,
+                    7.56312e03,
+                    2.84724e04,
+                    7.71702e04,
+                    1.67743e05,
+                    3.12290e05,
+                ],
+                [
+                    2.85400e-06,
+                    4.00384e-01,
+                    2.73563e01,
+                    8.50699e02,
+                    1.20181e04,
+                    7.56312e04,
+                    2.84724e05,
+                    7.71702e05,
+                    1.67743e06,
+                    3.12290e06,
+                ],
+            ]
+        ).T
         for i in range(Tlist.shape[0]):
             for j in range(Plist.shape[0]):
                 kexp = kexplist[i, j]
@@ -1104,18 +1414,52 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         # modify the MultiPDepArrhenius object with an additional entry
         pressures = np.array([1e-1, 1e-1, 1e1])
         self.kinetics.arrhenius[0].pressures = (pressures, "bar")
-        self.kinetics.arrhenius[0].arrhenius.insert(0, self.kinetics.arrhenius[0].arrhenius[0])
+        self.kinetics.arrhenius[0].arrhenius.insert(
+            0, self.kinetics.arrhenius[0].arrhenius[0]
+        )
 
         Tlist = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
         Plist = np.array([1e4, 1e5, 1e6])
-        kexplist = np.array([
-            [2.85400e-08, 4.00384e-03, 2.73563e-01, 8.50699e+00, 1.20181e+02, 7.56312e+02, 2.84724e+03, 7.71702e+03,
-             1.67743e+04, 3.12290e+04],
-            [2.85400e-07, 4.00384e-02, 2.73563e+00, 8.50699e+01, 1.20181e+03, 7.56312e+03, 2.84724e+04, 7.71702e+04,
-             1.67743e+05, 3.12290e+05],
-            [2.85400e-06, 4.00384e-01, 2.73563e+01, 8.50699e+02, 1.20181e+04, 7.56312e+04, 2.84724e+05, 7.71702e+05,
-             1.67743e+06, 3.12290e+06],
-        ]).T
+        kexplist = np.array(
+            [
+                [
+                    2.85400e-08,
+                    4.00384e-03,
+                    2.73563e-01,
+                    8.50699e00,
+                    1.20181e02,
+                    7.56312e02,
+                    2.84724e03,
+                    7.71702e03,
+                    1.67743e04,
+                    3.12290e04,
+                ],
+                [
+                    2.85400e-07,
+                    4.00384e-02,
+                    2.73563e00,
+                    8.50699e01,
+                    1.20181e03,
+                    7.56312e03,
+                    2.84724e04,
+                    7.71702e04,
+                    1.67743e05,
+                    3.12290e05,
+                ],
+                [
+                    2.85400e-06,
+                    4.00384e-01,
+                    2.73563e01,
+                    8.50699e02,
+                    1.20181e04,
+                    7.56312e04,
+                    2.84724e05,
+                    7.71702e05,
+                    1.67743e06,
+                    3.12290e06,
+                ],
+            ]
+        ).T
         for i in range(Tlist.shape[0]):
             for j in range(Plist.shape[0]):
                 kexp = kexplist[i, j]
@@ -1128,6 +1472,7 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         no loss of information.
         """
         import pickle
+
         kinetics = pickle.loads(pickle.dumps(self.kinetics, -1))
         self.assertEqual(len(self.kinetics.arrhenius), len(kinetics.arrhenius))
         self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
@@ -1142,9 +1487,9 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         repr() output with no loss of information.
         """
         namespace = {}
-        exec('kinetics = {0!r}'.format(self.kinetics), globals(), namespace)
-        self.assertIn('kinetics', namespace)
-        kinetics = namespace['kinetics']
+        exec("kinetics = {0!r}".format(self.kinetics), globals(), namespace)
+        self.assertIn("kinetics", namespace)
+        kinetics = namespace["kinetics"]
         self.assertEqual(len(self.kinetics.arrhenius), len(kinetics.arrhenius))
         self.assertAlmostEqual(self.kinetics.Tmin.value, kinetics.Tmin.value, 4)
         self.assertEqual(self.kinetics.Tmin.units, kinetics.Tmin.units)
@@ -1156,7 +1501,9 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         """
         Test the PDepMultiArrhenius.change_rate() method.
         """
-        Tlist = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        Tlist = np.array(
+            [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500]
+        )
         k0list = np.array([self.kinetics.get_rate_coefficient(T, 1e5) for T in Tlist])
         self.kinetics.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
@@ -1173,25 +1520,274 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         from rmgpy.molecule import Molecule
         from rmgpy.data.kinetics import LibraryReaction
         from rmgpy.thermo import NASA, NASAPolynomial
-        test_reaction = LibraryReaction(reactants=[Species(label="C2H3", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.12502,0.00235137,2.36803e-05,-3.35092e-08,1.39444e-11,34524.3,8.81538], Tmin=(200,"K"), Tmax=(1000,"K")), NASAPolynomial(coeffs=[4.37211,0.00746869,-2.64716e-06,4.22753e-10,-2.44958e-14,33805.2,0.428772], Tmin=(1000,"K"), Tmax=(6000,"K"))], Tmin=(200,"K"), Tmax=(6000,"K"), E0=(285.696,"kJ/mol"), Cp0=(33.2579,"J/mol/K"), CpInf=(108.088,"J/mol/K"), comment="""ATcT3E\nC2H3 <g> ATcT ver. 1.122, DHf298 = 296.91 ± 0.33 kJ/mol - fit JAN17"""), molecule=[Molecule(smiles="[CH]=C")], molecular_weight=(27.0452,"amu")), 
-                                                  Species(label="CH2O", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[4.77187,-0.00976266,3.70122e-05,-3.76922e-08,1.31327e-11,-14379.8,0.696586], Tmin=(200,"K"), Tmax=(1000,"K")), NASAPolynomial(coeffs=[2.91333,0.0067004,-2.55521e-06,4.27795e-10,-2.44073e-14,-14462.2,7.43823], Tmin=(1000,"K"), Tmax=(6000,"K"))], Tmin=(200,"K"), Tmax=(6000,"K"), E0=(-119.527,"kJ/mol"), Cp0=(33.2579,"J/mol/K"), CpInf=(83.1447,"J/mol/K"), comment="""ATcT3E\nH2CO <g> ATcT ver. 1.122, DHf298 = -109.188 ± 0.099 kJ/mol - fit JAN17"""), molecule=[Molecule(smiles="C=O")], molecular_weight=(30.026,"amu"))], 
-                                        products=[Species(label="C2H4", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.65151,-0.00535067,5.16486e-05,-6.36869e-08,2.50743e-11,5114.51,5.38561], Tmin=(200,"K"), Tmax=(1000,"K")), NASAPolynomial(coeffs=[4.14446,0.0102648,-3.61247e-06,5.74009e-10,-3.39296e-14,4190.59,-1.14778], Tmin=(1000,"K"), Tmax=(6000,"K"))], Tmin=(200,"K"), Tmax=(6000,"K"), E0=(42.06,"kJ/mol"), Cp0=(33.2579,"J/mol/K"), CpInf=(133.032,"J/mol/K"), comment="""ATcT3E\nC2H4 <g> ATcT ver. 1.122, DHf298 = 52.45 ± 0.13 kJ/mol - fit JAN17"""), molecule=[Molecule(smiles="C=C")], molecular_weight=(28.0532,"amu")), 
-                                                  Species(label="HCO", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.97075,-0.00149122,9.54042e-06,-8.8272e-09,2.67645e-12,3842.03,4.4466], Tmin=(200,"K"), Tmax=(1000,"K")), NASAPolynomial(coeffs=[3.85781,0.00264114,-7.44177e-07,1.23313e-10,-8.88959e-15,3616.43,3.92451], Tmin=(1000,"K"), Tmax=(6000,"K"))], Tmin=(200,"K"), Tmax=(6000,"K"), E0=(32.0237,"kJ/mol"), Cp0=(33.2579,"J/mol/K"), CpInf=(58.2013,"J/mol/K"), comment="""HCO <g> ATcT ver. 1.122, DHf298 = 41.803 ± 0.099 kJ/mol - fit JAN17"""), molecule=[Molecule(smiles="[CH]=O")], molecular_weight=(29.018,"amu"))], 
-                                        kinetics=MultiPDepArrhenius(arrhenius=[PDepArrhenius(pressures=([0.001,0.01,0.1,1,10,100,1000],"atm"), 
-                                                                                             arrhenius=[Arrhenius(A=(1.1e+07,"cm^3/(mol*s)"), n=1.09, Ea=(1807,"cal/mol"), T0=(1,"K")), 
-                                                                                                        Arrhenius(A=(2.5e+07,"cm^3/(mol*s)"), n=0.993, Ea=(1995,"cal/mol"), T0=(1,"K")), 
-                                                                                                        Arrhenius(A=(2.5e+08,"cm^3/(mol*s)"), n=0.704, Ea=(2596,"cal/mol"), T0=(1,"K")), 
-                                                                                                        Arrhenius(A=(1.4e+10,"cm^3/(mol*s)"), n=0.209, Ea=(3934,"cal/mol"), T0=(1,"K")), 
-                                                                                                        Arrhenius(A=(3.5e+13,"cm^3/(mol*s)"), n=-0.726, Ea=(6944,"cal/mol"), T0=(1,"K")), 
-                                                                                                        Arrhenius(A=(3.3e+14,"cm^3/(mol*s)"), n=-0.866, Ea=(10966,"cal/mol"), T0=(1,"K")), 
-                                                                                                        Arrhenius(A=(17,"cm^3/(mol*s)"), n=3.17, Ea=(9400,"cal/mol"), T0=(1,"K"))]), 
-                                                                               PDepArrhenius(pressures=([0.001,0.01,0.1,1,10,100,1000],"atm"), 
-                                                                                             arrhenius=[Arrhenius(A=(-2.3e+16,"cm^3/(mol*s)"), n=-1.269, Ea=(20617,"cal/mol"), T0=(1,"K")), 
-                                                                                                        Arrhenius(A=(-5.2e+16,"cm^3/(mol*s)"), n=-1.366, Ea=(20805,"cal/mol"), T0=(1,"K")), 
-                                                                                                        Arrhenius(A=(-1.5e+18,"cm^3/(mol*s)"), n=-1.769, Ea=(22524,"cal/mol"), T0=(1,"K")), 
-                                                                                                        Arrhenius(A=(-8.5e+19,"cm^3/(mol*s)"), n=-2.264, Ea=(23862,"cal/mol"), T0=(1,"K")), 
-                                                                                                        Arrhenius(A=(-4.4e+23,"cm^3/(mol*s)"), n=-3.278, Ea=(27795,"cal/mol"), T0=(1,"K")), 
-                                                                                                        Arrhenius(A=(-4.2e+24,"cm^3/(mol*s)"), n=-3.418, Ea=(31817,"cal/mol"), T0=(1,"K")), 
-                                                                                                        Arrhenius(A=(-2.1e+11,"cm^3/(mol*s)"), n=0.618, Ea=(30251,"cal/mol"), T0=(1,"K"))])
-                                                                                                    ]), duplicate=True)
+
+        test_reaction = LibraryReaction(
+            reactants=[
+                Species(
+                    label="C2H3",
+                    thermo=NASA(
+                        polynomials=[
+                            NASAPolynomial(
+                                coeffs=[
+                                    3.12502,
+                                    0.00235137,
+                                    2.36803e-05,
+                                    -3.35092e-08,
+                                    1.39444e-11,
+                                    34524.3,
+                                    8.81538,
+                                ],
+                                Tmin=(200, "K"),
+                                Tmax=(1000, "K"),
+                            ),
+                            NASAPolynomial(
+                                coeffs=[
+                                    4.37211,
+                                    0.00746869,
+                                    -2.64716e-06,
+                                    4.22753e-10,
+                                    -2.44958e-14,
+                                    33805.2,
+                                    0.428772,
+                                ],
+                                Tmin=(1000, "K"),
+                                Tmax=(6000, "K"),
+                            ),
+                        ],
+                        Tmin=(200, "K"),
+                        Tmax=(6000, "K"),
+                        E0=(285.696, "kJ/mol"),
+                        Cp0=(33.2579, "J/mol/K"),
+                        CpInf=(108.088, "J/mol/K"),
+                        comment="""ATcT3E\nC2H3 <g> ATcT ver. 1.122, DHf298 = 296.91 ± 0.33 kJ/mol - fit JAN17""",
+                    ),
+                    molecule=[Molecule(smiles="[CH]=C")],
+                    molecular_weight=(27.0452, "amu"),
+                ),
+                Species(
+                    label="CH2O",
+                    thermo=NASA(
+                        polynomials=[
+                            NASAPolynomial(
+                                coeffs=[
+                                    4.77187,
+                                    -0.00976266,
+                                    3.70122e-05,
+                                    -3.76922e-08,
+                                    1.31327e-11,
+                                    -14379.8,
+                                    0.696586,
+                                ],
+                                Tmin=(200, "K"),
+                                Tmax=(1000, "K"),
+                            ),
+                            NASAPolynomial(
+                                coeffs=[
+                                    2.91333,
+                                    0.0067004,
+                                    -2.55521e-06,
+                                    4.27795e-10,
+                                    -2.44073e-14,
+                                    -14462.2,
+                                    7.43823,
+                                ],
+                                Tmin=(1000, "K"),
+                                Tmax=(6000, "K"),
+                            ),
+                        ],
+                        Tmin=(200, "K"),
+                        Tmax=(6000, "K"),
+                        E0=(-119.527, "kJ/mol"),
+                        Cp0=(33.2579, "J/mol/K"),
+                        CpInf=(83.1447, "J/mol/K"),
+                        comment="""ATcT3E\nH2CO <g> ATcT ver. 1.122, DHf298 = -109.188 ± 0.099 kJ/mol - fit JAN17""",
+                    ),
+                    molecule=[Molecule(smiles="C=O")],
+                    molecular_weight=(30.026, "amu"),
+                ),
+            ],
+            products=[
+                Species(
+                    label="C2H4",
+                    thermo=NASA(
+                        polynomials=[
+                            NASAPolynomial(
+                                coeffs=[
+                                    3.65151,
+                                    -0.00535067,
+                                    5.16486e-05,
+                                    -6.36869e-08,
+                                    2.50743e-11,
+                                    5114.51,
+                                    5.38561,
+                                ],
+                                Tmin=(200, "K"),
+                                Tmax=(1000, "K"),
+                            ),
+                            NASAPolynomial(
+                                coeffs=[
+                                    4.14446,
+                                    0.0102648,
+                                    -3.61247e-06,
+                                    5.74009e-10,
+                                    -3.39296e-14,
+                                    4190.59,
+                                    -1.14778,
+                                ],
+                                Tmin=(1000, "K"),
+                                Tmax=(6000, "K"),
+                            ),
+                        ],
+                        Tmin=(200, "K"),
+                        Tmax=(6000, "K"),
+                        E0=(42.06, "kJ/mol"),
+                        Cp0=(33.2579, "J/mol/K"),
+                        CpInf=(133.032, "J/mol/K"),
+                        comment="""ATcT3E\nC2H4 <g> ATcT ver. 1.122, DHf298 = 52.45 ± 0.13 kJ/mol - fit JAN17""",
+                    ),
+                    molecule=[Molecule(smiles="C=C")],
+                    molecular_weight=(28.0532, "amu"),
+                ),
+                Species(
+                    label="HCO",
+                    thermo=NASA(
+                        polynomials=[
+                            NASAPolynomial(
+                                coeffs=[
+                                    3.97075,
+                                    -0.00149122,
+                                    9.54042e-06,
+                                    -8.8272e-09,
+                                    2.67645e-12,
+                                    3842.03,
+                                    4.4466,
+                                ],
+                                Tmin=(200, "K"),
+                                Tmax=(1000, "K"),
+                            ),
+                            NASAPolynomial(
+                                coeffs=[
+                                    3.85781,
+                                    0.00264114,
+                                    -7.44177e-07,
+                                    1.23313e-10,
+                                    -8.88959e-15,
+                                    3616.43,
+                                    3.92451,
+                                ],
+                                Tmin=(1000, "K"),
+                                Tmax=(6000, "K"),
+                            ),
+                        ],
+                        Tmin=(200, "K"),
+                        Tmax=(6000, "K"),
+                        E0=(32.0237, "kJ/mol"),
+                        Cp0=(33.2579, "J/mol/K"),
+                        CpInf=(58.2013, "J/mol/K"),
+                        comment="""HCO <g> ATcT ver. 1.122, DHf298 = 41.803 ± 0.099 kJ/mol - fit JAN17""",
+                    ),
+                    molecule=[Molecule(smiles="[CH]=O")],
+                    molecular_weight=(29.018, "amu"),
+                ),
+            ],
+            kinetics=MultiPDepArrhenius(
+                arrhenius=[
+                    PDepArrhenius(
+                        pressures=([0.001, 0.01, 0.1, 1, 10, 100, 1000], "atm"),
+                        arrhenius=[
+                            Arrhenius(
+                                A=(1.1e07, "cm^3/(mol*s)"),
+                                n=1.09,
+                                Ea=(1807, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                            Arrhenius(
+                                A=(2.5e07, "cm^3/(mol*s)"),
+                                n=0.993,
+                                Ea=(1995, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                            Arrhenius(
+                                A=(2.5e08, "cm^3/(mol*s)"),
+                                n=0.704,
+                                Ea=(2596, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                            Arrhenius(
+                                A=(1.4e10, "cm^3/(mol*s)"),
+                                n=0.209,
+                                Ea=(3934, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                            Arrhenius(
+                                A=(3.5e13, "cm^3/(mol*s)"),
+                                n=-0.726,
+                                Ea=(6944, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                            Arrhenius(
+                                A=(3.3e14, "cm^3/(mol*s)"),
+                                n=-0.866,
+                                Ea=(10966, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                            Arrhenius(
+                                A=(17, "cm^3/(mol*s)"),
+                                n=3.17,
+                                Ea=(9400, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                        ],
+                    ),
+                    PDepArrhenius(
+                        pressures=([0.001, 0.01, 0.1, 1, 10, 100, 1000], "atm"),
+                        arrhenius=[
+                            Arrhenius(
+                                A=(-2.3e16, "cm^3/(mol*s)"),
+                                n=-1.269,
+                                Ea=(20617, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                            Arrhenius(
+                                A=(-5.2e16, "cm^3/(mol*s)"),
+                                n=-1.366,
+                                Ea=(20805, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                            Arrhenius(
+                                A=(-1.5e18, "cm^3/(mol*s)"),
+                                n=-1.769,
+                                Ea=(22524, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                            Arrhenius(
+                                A=(-8.5e19, "cm^3/(mol*s)"),
+                                n=-2.264,
+                                Ea=(23862, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                            Arrhenius(
+                                A=(-4.4e23, "cm^3/(mol*s)"),
+                                n=-3.278,
+                                Ea=(27795, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                            Arrhenius(
+                                A=(-4.2e24, "cm^3/(mol*s)"),
+                                n=-3.418,
+                                Ea=(31817, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                            Arrhenius(
+                                A=(-2.1e11, "cm^3/(mol*s)"),
+                                n=0.618,
+                                Ea=(30251, "cal/mol"),
+                                T0=(1, "K"),
+                            ),
+                        ],
+                    ),
+                ]
+            ),
+            duplicate=True,
+        )
         test_reaction.generate_reverse_rate_coefficient()

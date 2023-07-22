@@ -85,7 +85,7 @@ class TestGraph(unittest.TestCase):
         edge = Edge(vertex1, vertex2)
         try:
             self.graph.add_edge(edge)
-            self.fail('Added edge between vertices not in graph to graph.')
+            self.fail("Added edge between vertices not in graph to graph.")
         except ValueError:
             pass
         self.graph.add_vertex(vertex1)
@@ -106,7 +106,9 @@ class TestGraph(unittest.TestCase):
         vertex2 = self.graph.vertices[4]
         try:
             self.graph.get_edge(vertex1, vertex2)
-            self.fail('Returned an edge between vertices that should not be connected in graph.')
+            self.fail(
+                "Returned an edge between vertices that should not be connected in graph."
+            )
         except ValueError:
             pass
         vertex1 = self.graph.vertices[2]
@@ -266,7 +268,9 @@ class TestGraph(unittest.TestCase):
 
         self.assertTrue(len(graphs) == 2)
         self.assertTrue(len(graphs[0].vertices) == 4 or len(graphs[0].vertices) == 2)
-        self.assertTrue(len(graphs[0].vertices) + len(graphs[1].vertices) == len(graph.vertices))
+        self.assertTrue(
+            len(graphs[0].vertices) + len(graphs[1].vertices) == len(graph.vertices)
+        )
 
     def test_merge(self):
         """
@@ -301,7 +305,9 @@ class TestGraph(unittest.TestCase):
 
         graph = graph1.merge(graph2)
 
-        self.assertTrue(len(graph1.vertices) + len(graph2.vertices) == len(graph.vertices))
+        self.assertTrue(
+            len(graph1.vertices) + len(graph2.vertices) == len(graph.vertices)
+        )
         for vertex1 in vertices1:
             self.assertTrue(vertex1 in graph.vertices)
             for vertex2 in vertex1.edges:
@@ -367,17 +373,17 @@ class TestGraph(unittest.TestCase):
     def test_vertex_connectivity_values(self):
         """
         Tests the vertex connectivity values as introduced by Morgan (1965).
-        
+
         First CV1 is the number of neighbours
         CV2 is the sum of neighbouring CV1 values
         CV3 is the sum of neighbouring CV2 values
-        
+
         Graph:     Expected (and tested) values:
-        
+
         0-1-2-3-4            1-3-2-2-1   3-4-5-3-2    4-11-7-7-3
         |                    |           |             |
         5                    1           3             4
-        
+
         """
         vertices = [Vertex() for _ in range(6)]
         edges = [
@@ -398,13 +404,31 @@ class TestGraph(unittest.TestCase):
 
         for i, cv_ in enumerate([1, 3, 2, 2, 1, 1]):
             cv = vertices[i].connectivity1
-            self.assertEqual(cv, cv_, "On vertex {0:d} got connectivity[0]={1:d} but expected {2:d}".format(i, cv, cv_))
+            self.assertEqual(
+                cv,
+                cv_,
+                "On vertex {0:d} got connectivity[0]={1:d} but expected {2:d}".format(
+                    i, cv, cv_
+                ),
+            )
         for i, cv_ in enumerate([3, 4, 5, 3, 2, 3]):
             cv = vertices[i].connectivity2
-            self.assertEqual(cv, cv_, "On vertex {0:d} got connectivity[0]={1:d} but expected {2:d}".format(i, cv, cv_))
+            self.assertEqual(
+                cv,
+                cv_,
+                "On vertex {0:d} got connectivity[0]={1:d} but expected {2:d}".format(
+                    i, cv, cv_
+                ),
+            )
         for i, cv_ in enumerate([4, 11, 7, 7, 3, 4]):
             cv = vertices[i].connectivity3
-            self.assertEqual(cv, cv_, "On vertex {0:d} got connectivity[0]={1:d} but expected {2:d}".format(i, cv, cv_))
+            self.assertEqual(
+                cv,
+                cv_,
+                "On vertex {0:d} got connectivity[0]={1:d} but expected {2:d}".format(
+                    i, cv, cv_
+                ),
+            )
 
     def test_isomorphism(self):
         """
@@ -449,8 +473,8 @@ class TestGraph(unittest.TestCase):
     def test_isomorphism_disconnected(self):
         """
         Check the graph isomorphism for broken graphs.
-        
-        This tries to match graphs with a missing bond, 
+
+        This tries to match graphs with a missing bond,
         eg. [ 0-1-2-3-4  5 ] should match [ 0-1-2-3-4  5 ]
         """
 
@@ -554,6 +578,7 @@ class TestGraph(unittest.TestCase):
         graph0.update_connectivity_values()
 
         import pickle
+
         graph = pickle.loads(pickle.dumps(graph0))
 
         self.assertEqual(len(graph0.vertices), len(graph.vertices))
@@ -599,7 +624,10 @@ class TestGraph(unittest.TestCase):
         self.graph.add_edge(edge)  # To create a cycle
         for vertex1 in self.graph.vertices:
             for vertex2, edge in vertex1.edges.items():
-                if self.graph.vertices.index(vertex1) < 4 and self.graph.vertices.index(vertex2) < 4:
+                if (
+                    self.graph.vertices.index(vertex1) < 4
+                    and self.graph.vertices.index(vertex2) < 4
+                ):
                     self.assertTrue(self.graph.is_edge_in_cycle(edge))
                 else:
                     self.assertFalse(self.graph.is_edge_in_cycle(edge))
@@ -617,7 +645,7 @@ class TestGraph(unittest.TestCase):
         edge2 = Edge(self.graph.vertices[0], self.graph.vertices[5])
         self.graph.add_edge(edge2)  # Create another cycle to generate two fused cycles
         self.assertEqual(len(self.graph.get_all_polycyclic_vertices()), 2)
-        # Add new vertices and edges to generate a spirocyclic cycle      
+        # Add new vertices and edges to generate a spirocyclic cycle
         vertices = [Vertex() for _ in range(2)]
         for vertex in vertices:
             self.graph.add_vertex(vertex)
@@ -652,7 +680,9 @@ class TestGraph(unittest.TestCase):
         edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
         self.graph.add_edge(edge)  # To create a cycle of length 4
         edge = Edge(self.graph.vertices[0], self.graph.vertices[5])
-        self.graph.add_edge(edge)  # To create a cycle of length 6 and another cycle of length 4
+        self.graph.add_edge(
+            edge
+        )  # To create a cycle of length 6 and another cycle of length 4
         cycle_list = self.graph.get_all_cycles_of_size(4)
         self.assertEqual(len(cycle_list), 2)
         self.assertEqual(len(cycle_list[0]), 4)
@@ -667,7 +697,9 @@ class TestGraph(unittest.TestCase):
         edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
         self.graph.add_edge(edge)  # To create a cycle of length 4
         edge = Edge(self.graph.vertices[0], self.graph.vertices[5])
-        self.graph.add_edge(edge)  # To create a cycle of length 6 and another cycle of length 4
+        self.graph.add_edge(
+            edge
+        )  # To create a cycle of length 6 and another cycle of length 4
         cycle_list = self.graph.get_all_simple_cycles_of_size(4)
         self.assertEqual(len(cycle_list), 2)
         self.assertEqual(len(cycle_list[0]), 4)
@@ -785,7 +817,7 @@ class TestGraph(unittest.TestCase):
             (23, 3),
             (23, 24),
             (24, 25),
-            (25, 1)
+            (25, 1),
         ]
         edges = []
         for bond in bonds:
@@ -801,15 +833,18 @@ class TestGraph(unittest.TestCase):
         sssr = graph.get_smallest_set_of_smallest_rings()
         self.assertEqual(len(sssr), 6)
         polycyclic_vertices = set(graph.get_all_polycyclic_vertices())
-        expected_polycyclic_vertices = set([vertices[index] for index in [3, 23, 4, 22, 12]])
+        expected_polycyclic_vertices = set(
+            [vertices[index] for index in [3, 23, 4, 22, 12]]
+        )
 
         self.assertEqual(polycyclic_vertices, expected_polycyclic_vertices)
 
         continuous_rings = graph.get_polycycles()
-        expected_continuous_rings = [[vertices[index] for index in [1, 2, 3, 4, 5, 6, 22, 23, 24, 25]],
-                                     # [vertices[index] for index in [7,8,9,21,20]], # This is a nonpolycyclic ring
-                                     [vertices[index] for index in [10, 11, 12, 13, 14, 16]],
-                                     ]
+        expected_continuous_rings = [
+            [vertices[index] for index in [1, 2, 3, 4, 5, 6, 22, 23, 24, 25]],
+            # [vertices[index] for index in [7,8,9,21,20]], # This is a nonpolycyclic ring
+            [vertices[index] for index in [10, 11, 12, 13, 14, 16]],
+        ]
 
         # Convert to sets for comparison purposes
         continuous_rings = [set(ring) for ring in continuous_rings]
@@ -836,8 +871,22 @@ class TestGraph(unittest.TestCase):
         spiro = make_graph([(0, 1), (0, 2), (1, 2), (2, 3), (2, 4), (3, 4)])
         fused = make_graph([(0, 1), (0, 2), (1, 2), (1, 3), (2, 3)])
         bridged = make_graph([(0, 1), (0, 2), (1, 3), (1, 4), (2, 3), (2, 5), (4, 5)])
-        cube = make_graph([(0, 1), (0, 2), (0, 4), (1, 3), (1, 5), (2, 3),
-                           (2, 6), (3, 7), (4, 5), (4, 6), (5, 7), (6, 7)])
+        cube = make_graph(
+            [
+                (0, 1),
+                (0, 2),
+                (0, 4),
+                (1, 3),
+                (1, 5),
+                (2, 3),
+                (2, 6),
+                (3, 7),
+                (4, 5),
+                (4, 6),
+                (5, 7),
+                (6, 7),
+            ]
+        )
 
         self.assertEqual(linear.get_max_cycle_overlap(), 0)
         self.assertEqual(mono.get_max_cycle_overlap(), 0)
@@ -882,7 +931,7 @@ class TestGraph(unittest.TestCase):
             (23, 3),
             (23, 24),
             (24, 25),
-            (25, 1)
+            (25, 1),
         ]
         edges = []
         for bond in bonds:
@@ -920,10 +969,18 @@ class TestGraph(unittest.TestCase):
         ordered = self.graph.sort_cyclic_vertices(original)
 
         # Check that we didn't lose any vertices
-        self.assertEqual(len(self.graph.vertices), len(ordered), 'Sorting changed the number of vertices.')
+        self.assertEqual(
+            len(self.graph.vertices),
+            len(ordered),
+            "Sorting changed the number of vertices.",
+        )
 
         # Check that the order is different
-        self.assertNotEqual(self.graph.vertices, ordered, 'Sorting did not change the order of vertices.')
+        self.assertNotEqual(
+            self.graph.vertices,
+            ordered,
+            "Sorting did not change the order of vertices.",
+        )
 
         # Check that subsequent vertices are connected
         for i in range(5):
@@ -936,24 +993,24 @@ class TestGraph(unittest.TestCase):
 
         original = list(self.graph.vertices)
 
-        with self.assertRaisesRegexp(RuntimeError, 'do not comprise a single cycle'):
+        with self.assertRaisesRegexp(RuntimeError, "do not comprise a single cycle"):
             self.graph.sort_cyclic_vertices(original)
 
     def test_sort_cyclic_vertices_noncyclic(self):
         """Test that sort_cyclic_vertices raises an error for a noncyclic input."""
         original = list(self.graph.vertices)
-        with self.assertRaisesRegexp(RuntimeError, 'do not comprise a single cycle'):
+        with self.assertRaisesRegexp(RuntimeError, "do not comprise a single cycle"):
             self.graph.sort_cyclic_vertices(original)
 
     def test_sort_cyclic_vertices_unconnected(self):
         """Test that sort_cyclic_vertices raises an error for an unconnected input."""
         self.graph.add_vertex(Vertex())
         original = list(self.graph.vertices)
-        with self.assertRaisesRegexp(RuntimeError, 'not all vertices are connected'):
+        with self.assertRaisesRegexp(RuntimeError, "not all vertices are connected"):
             self.graph.sort_cyclic_vertices(original)
 
 
 ################################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

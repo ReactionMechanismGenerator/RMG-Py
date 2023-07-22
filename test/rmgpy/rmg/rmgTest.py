@@ -44,8 +44,8 @@ from rmgpy.util import parse_command_line_arguments
 
 ###################################################
 
-class TestRMGWorkFlow(unittest.TestCase):
 
+class TestRMGWorkFlow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """
@@ -57,12 +57,14 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         # load kinetic database and forbidden structures
         cls.rmg.database = RMGDatabase()
-        path = os.path.join(settings['test_data.directory'], 'testing_database')
+        path = os.path.join(settings["test_data.directory"], "testing_database")
 
         # kinetics family Disproportionation loading
-        cls.rmg.database.load_kinetics(os.path.join(path, 'kinetics'),
-                                       kinetics_families=['H_Abstraction', 'R_Addition_MultipleBond'],
-                                       reaction_libraries=[])
+        cls.rmg.database.load_kinetics(
+            os.path.join(path, "kinetics"),
+            kinetics_families=["H_Abstraction", "R_Addition_MultipleBond"],
+            reaction_libraries=[],
+        )
 
         # load empty forbidden structures
         for family in cls.rmg.database.kinetics.families.values():
@@ -75,22 +77,23 @@ class TestRMGWorkFlow(unittest.TestCase):
         Reset the loaded database
         """
         import rmgpy.data.rmg
+
         rmgpy.data.rmg.database = None
 
     @work_in_progress
     def test_deterministic_reaction_template_matching(self):
         """
-        Test RMG work flow can match reaction template for kinetics estimation 
-        deterministically. 
+        Test RMG work flow can match reaction template for kinetics estimation
+        deterministically.
 
-        In this test, a change of molecules order in a reacting species should 
+        In this test, a change of molecules order in a reacting species should
         not change the reaction template matched.
 
         However, this is inherently impossible with the existing reaction
         generation algorithm. Currently, the first reaction will be the one
         that is kept if the reactions are identical. If different templates
         are a result of different transition states, all are kept.
-        
+
         {O=C-[C]=C, [O]-C=C=C} -> H + C=C=C=O
         """
 
@@ -99,7 +102,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         spc.generate_resonance_structures()
         new_reactions = react_species((spc,))
 
-        # try to pick out the target reaction 
+        # try to pick out the target reaction
         mol_H = Molecule().from_smiles("[H]")
         mol_C3H2O = Molecule().from_smiles("C=C=C=O")
 
@@ -113,8 +116,10 @@ class TestRMGWorkFlow(unittest.TestCase):
         new_reactions_reverse = []
         new_reactions_reverse.extend(react_species((spc,)))
 
-        # try to pick out the target reaction 
-        target_rxns_reverse = find_target_rxns_containing(mol_H, mol_C3H2O, new_reactions_reverse)
+        # try to pick out the target reaction
+        target_rxns_reverse = find_target_rxns_containing(
+            mol_H, mol_C3H2O, new_reactions_reverse
+        )
         self.assertEqual(len(target_rxns_reverse), 2)
 
         # whatever order of molecules in spc, the reaction template matched should be same
@@ -130,7 +135,7 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         rmg_test = RMG()
         rmg_test.reaction_model = CoreEdgeReactionModel()
-        DPP = Species().from_smiles('C1=CC=C(C=C1)CCCC1C=CC=CC=1')
+        DPP = Species().from_smiles("C1=CC=C(C=C1)CCCC1C=CC=CC=1")
         DPP.generate_resonance_structures()
         formula = DPP.molecule[0].get_formula()
         if formula in rmg_test.reaction_model.species_dict:
@@ -139,7 +144,7 @@ class TestRMGWorkFlow(unittest.TestCase):
             rmg_test.reaction_model.species_dict[formula] = [DPP]
 
         mol_test = Molecule().from_adjacency_list(
-"""
+            """
 1     C u0 p0 c0 {2,S} {3,S} {16,S} {17,S}
 2     C u0 p0 c0 {1,S} {4,S} {18,S} {19,S}
 3     C u0 p0 c0 {1,S} {5,S} {20,S} {21,S}
@@ -171,7 +176,8 @@ class TestRMGWorkFlow(unittest.TestCase):
 29    H u0 p0 c0 {13,S}
 30    H u0 p0 c0 {14,S}
 31    H u0 p0 c0 {15,S}
-""")
+"""
+        )
         spec = rmg_test.reaction_model.check_for_existing_species(mol_test)
         self.assertIsNotNone(spec)
 
@@ -201,19 +207,19 @@ class TestRMGScript(unittest.TestCase):
         """
 
         # Acquire default arguments
-        args = parse_command_line_arguments(['input.py'])
+        args = parse_command_line_arguments(["input.py"])
 
         # Test default values
-        self.assertEqual(args.walltime, '00:00:00:00')
-        self.assertEqual(args.output_directory, os.path.abspath(os.path.dirname('./')))
+        self.assertEqual(args.walltime, "00:00:00:00")
+        self.assertEqual(args.output_directory, os.path.abspath(os.path.dirname("./")))
         self.assertEqual(args.debug, False)
-        self.assertEqual(args.file, 'input.py')
+        self.assertEqual(args.file, "input.py")
         self.assertEqual(args.maxiter, None)
         self.assertEqual(args.kineticsdatastore, False)
         self.assertEqual(args.postprocess, False)
         self.assertEqual(args.profile, False)
         self.assertEqual(args.quiet, False)
-        self.assertEqual(args.restart, '')
+        self.assertEqual(args.restart, "")
         self.assertEqual(args.verbose, False)
 
     def test_parse_command_line_non_defaults(self):
@@ -222,16 +228,30 @@ class TestRMGScript(unittest.TestCase):
         """
 
         # Acquire arguments
-        args = parse_command_line_arguments(['other_name.py', '-d', '-o', '/test/output/dir/', '-r', 'test/seed/', '-P',
-                                             '-t', '01:20:33:45', '-k', '-i', '100'])
+        args = parse_command_line_arguments(
+            [
+                "other_name.py",
+                "-d",
+                "-o",
+                "/test/output/dir/",
+                "-r",
+                "test/seed/",
+                "-P",
+                "-t",
+                "01:20:33:45",
+                "-k",
+                "-i",
+                "100",
+            ]
+        )
 
         # Test expected values
-        self.assertEqual(args.walltime, '01:20:33:45')
-        self.assertEqual(args.output_directory, '/test/output/dir/')
+        self.assertEqual(args.walltime, "01:20:33:45")
+        self.assertEqual(args.output_directory, "/test/output/dir/")
         self.assertEqual(args.debug, True)
-        self.assertEqual(args.file, 'other_name.py')
+        self.assertEqual(args.file, "other_name.py")
         self.assertEqual(args.maxiter, 100)
         self.assertEqual(args.kineticsdatastore, True)
         self.assertEqual(args.postprocess, True)
         self.assertEqual(args.profile, True)
-        self.assertEqual(args.restart, 'test/seed/')
+        self.assertEqual(args.restart, "test/seed/")

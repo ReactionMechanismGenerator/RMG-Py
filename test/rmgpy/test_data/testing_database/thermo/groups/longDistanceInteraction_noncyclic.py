@@ -27,5 +27,3 @@ Watch out:  if the groups on the two labeled atoms are identical, it's value sho
 
 Sep-30-2016 PZ
 """
-
-

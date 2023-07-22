@@ -36,7 +36,12 @@ import unittest
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.statmech.rotation import KRotor, LinearRotor, NonlinearRotor, SphericalTopRotor
+from rmgpy.statmech.rotation import (
+    KRotor,
+    LinearRotor,
+    NonlinearRotor,
+    SphericalTopRotor,
+)
 
 ################################################################################
 
@@ -82,7 +87,9 @@ class TestLinearRotor(unittest.TestCase):
         """
         Test the LinearRotor.get_level_energy() method.
         """
-        rotational_constant = self.mode.rotationalConstant.value_si * constants.h * constants.c * 100.
+        rotational_constant = (
+            self.mode.rotationalConstant.value_si * constants.h * constants.c * 100.0
+        )
         rotational_constant *= constants.Na
         for j in range(0, 100):
             e_exp = rotational_constant * j * (j + 1)
@@ -164,8 +171,11 @@ class TestLinearRotor(unittest.TestCase):
         """
         self.mode.quantum = True
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = np.array(
-            [0.997705, 0.998624, 0.999312, 0.999541, 0.999656]) * constants.R * t_list
+        h_exp_list = (
+            np.array([0.997705, 0.998624, 0.999312, 0.999541, 0.999656])
+            * constants.R
+            * t_list
+        )
         for temperature, h_exp in zip(t_list, h_exp_list):
             h_act = self.mode.get_enthalpy(temperature)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
@@ -176,7 +186,9 @@ class TestLinearRotor(unittest.TestCase):
         """
         self.mode.quantum = False
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = np.array([5.28592, 5.79674, 6.48989, 6.89535, 7.18304]) * constants.R
+        s_exp_list = (
+            np.array([5.28592, 5.79674, 6.48989, 6.89535, 7.18304]) * constants.R
+        )
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.mode.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
@@ -187,7 +199,9 @@ class TestLinearRotor(unittest.TestCase):
         """
         self.mode.quantum = True
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = np.array([5.28592, 5.79674, 6.48989, 6.89535, 7.18304]) * constants.R
+        s_exp_list = (
+            np.array([5.28592, 5.79674, 6.48989, 6.89535, 7.18304]) * constants.R
+        )
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.mode.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
@@ -208,11 +222,13 @@ class TestLinearRotor(unittest.TestCase):
         Test the LinearRotor.get_sum_of_states() method using a quantum rotor.
         """
         self.mode.quantum = True
-        e_list = np.arange(0, 4000. * 11.96, 2.0 * 11.96)
+        e_list = np.arange(0, 4000.0 * 11.96, 2.0 * 11.96)
         dens_states = self.mode.get_density_of_states(e_list)
         sum_states = self.mode.get_sum_of_states(e_list)
         for n in range(1, len(e_list)):
-            self.assertAlmostEqual(np.sum(dens_states[0:n + 1]) / sum_states[n], 1.0, 3)
+            self.assertAlmostEqual(
+                np.sum(dens_states[0 : n + 1]) / sum_states[n], 1.0, 3
+            )
 
     def test_get_dsensity_of_states_classical(self):
         """
@@ -220,7 +236,7 @@ class TestLinearRotor(unittest.TestCase):
         """
         self.mode.quantum = False
         t_list = np.array([300, 400, 500])
-        e_list = np.arange(0, 4000. * 11.96, 1.0 * 11.96)
+        e_list = np.arange(0, 4000.0 * 11.96, 1.0 * 11.96)
         for temperature in t_list:
             dens_states = self.mode.get_density_of_states(e_list)
             q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
@@ -233,7 +249,7 @@ class TestLinearRotor(unittest.TestCase):
         """
         self.mode.quantum = True
         t_list = np.array([300, 400, 500])
-        e_list = np.arange(0, 4000. * 11.96, 2.0 * 11.96)
+        e_list = np.arange(0, 4000.0 * 11.96, 2.0 * 11.96)
         for temperature in t_list:
             dens_states = self.mode.get_density_of_states(e_list)
             q_act = np.sum(dens_states * np.exp(-e_list / constants.R / temperature))
@@ -246,9 +262,9 @@ class TestLinearRotor(unittest.TestCase):
         output with no loss of information.
         """
         namespace = {}
-        exec('mode = {0!r}'.format(self.mode), globals(), namespace)
-        self.assertIn('mode', namespace)
-        mode = namespace['mode']
+        exec("mode = {0!r}".format(self.mode), globals(), namespace)
+        self.assertIn("mode", namespace)
+        mode = namespace["mode"]
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
@@ -260,11 +276,13 @@ class TestLinearRotor(unittest.TestCase):
         loss of information.
         """
         import pickle
+
         mode = pickle.loads(pickle.dumps(self.mode, -1))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
         self.assertEqual(self.mode.quantum, mode.quantum)
+
 
 ################################################################################
 
@@ -349,7 +367,9 @@ class TestNonlinearRotor(unittest.TestCase):
         """
         self.mode.quantum = False
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = np.array([7.97876, 8.74500, 9.78472, 10.3929, 10.8244]) * constants.R
+        s_exp_list = (
+            np.array([7.97876, 8.74500, 9.78472, 10.3929, 10.8244]) * constants.R
+        )
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.mode.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
@@ -363,8 +383,10 @@ class TestNonlinearRotor(unittest.TestCase):
         sum_states = self.mode.get_sum_of_states(e_list)
         dens_states = self.mode.get_density_of_states(e_list)
         for n in range(10, len(e_list)):
-            self.assertTrue(0.8 < np.sum(dens_states[0:n]) / sum_states[n] < 1.25,
-                             '{0} != {1}'.format(np.sum(dens_states[0:n]), sum_states[n]))
+            self.assertTrue(
+                0.8 < np.sum(dens_states[0:n]) / sum_states[n] < 1.25,
+                "{0} != {1}".format(np.sum(dens_states[0:n]), sum_states[n]),
+            )
 
     def test_get_sensity_of_states_classical(self):
         """
@@ -385,9 +407,9 @@ class TestNonlinearRotor(unittest.TestCase):
         repr() output with no loss of information.
         """
         namespace = {}
-        exec('mode = {0!r}'.format(self.mode), globals(), namespace)
-        self.assertIn('mode', namespace)
-        mode = namespace['mode']
+        exec("mode = {0!r}".format(self.mode), globals(), namespace)
+        self.assertIn("mode", namespace)
+        mode = namespace["mode"]
         self.assertEqual(self.mode.inertia.value.shape, mode.inertia.value.shape)
         for inertia_0, inertia in zip(self.mode.inertia.value, mode.inertia.value):
             self.assertAlmostEqual(inertia_0, inertia, 6)
@@ -401,6 +423,7 @@ class TestNonlinearRotor(unittest.TestCase):
         no loss of information.
         """
         import pickle
+
         mode = pickle.loads(pickle.dumps(self.mode, -1))
         self.assertEqual(self.mode.inertia.value.shape, mode.inertia.value.shape)
         for inertia_0, inertia in zip(self.mode.inertia.value, mode.inertia.value):
@@ -408,6 +431,7 @@ class TestNonlinearRotor(unittest.TestCase):
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
         self.assertEqual(self.mode.quantum, mode.quantum)
+
 
 ################################################################################
 
@@ -453,7 +477,9 @@ class TestKRotor(unittest.TestCase):
         """
         Test the KRotor.get_level_energy() method.
         """
-        rotational_constant = self.mode.rotationalConstant.value_si * constants.h * constants.c * 100.
+        rotational_constant = (
+            self.mode.rotationalConstant.value_si * constants.h * constants.c * 100.0
+        )
         rotational_constant *= constants.Na
         for j in range(0, 100):
             e_exp = float(rotational_constant * j * j)
@@ -470,7 +496,7 @@ class TestKRotor(unittest.TestCase):
         for j in range(0, 100):
             g_exp = 1 if j == 0 else 2
             g_act = self.mode.get_level_degeneracy(j)
-            self.assertEqual(g_exp, g_act, '{0} != {1}'.format(g_act, g_exp))
+            self.assertEqual(g_exp, g_act, "{0} != {1}".format(g_act, g_exp))
 
     def test_get_partition_function_classical(self):
         """
@@ -546,7 +572,9 @@ class TestKRotor(unittest.TestCase):
         """
         self.mode.quantum = False
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = np.array([2.86874, 3.12415, 3.47072, 3.67346, 3.81730]) * constants.R
+        s_exp_list = (
+            np.array([2.86874, 3.12415, 3.47072, 3.67346, 3.81730]) * constants.R
+        )
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.mode.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
@@ -557,7 +585,9 @@ class TestKRotor(unittest.TestCase):
         """
         self.mode.quantum = True
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = np.array([2.86874, 3.12415, 3.47072, 3.67346, 3.81730]) * constants.R
+        s_exp_list = (
+            np.array([2.86874, 3.12415, 3.47072, 3.67346, 3.81730]) * constants.R
+        )
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.mode.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
@@ -571,8 +601,10 @@ class TestKRotor(unittest.TestCase):
         sum_states = self.mode.get_sum_of_states(e_list)
         dens_states = self.mode.get_density_of_states(e_list)
         for n in range(10, len(e_list)):
-            self.assertTrue(0.75 < np.sum(dens_states[0:n + 1]) / sum_states[n] < 1.3333,
-                            '{0} != {1}'.format(np.sum(dens_states[0:n + 1]), sum_states[n]))
+            self.assertTrue(
+                0.75 < np.sum(dens_states[0 : n + 1]) / sum_states[n] < 1.3333,
+                "{0} != {1}".format(np.sum(dens_states[0 : n + 1]), sum_states[n]),
+            )
 
     def test_get_sum_of_states_quantum(self):
         """
@@ -583,8 +615,10 @@ class TestKRotor(unittest.TestCase):
         sum_states = self.mode.get_sum_of_states(e_list)
         dens_states = self.mode.get_density_of_states(e_list)
         for n in range(10, len(e_list)):
-            self.assertTrue(0.8 < np.sum(dens_states[0:n + 1]) / sum_states[n] < 1.25,
-                            '{0} != {1}'.format(np.sum(dens_states[0:n + 1]), sum_states[n]))
+            self.assertTrue(
+                0.8 < np.sum(dens_states[0 : n + 1]) / sum_states[n] < 1.25,
+                "{0} != {1}".format(np.sum(dens_states[0 : n + 1]), sum_states[n]),
+            )
 
     def test_get_density_of_states_classical(self):
         """
@@ -617,9 +651,9 @@ class TestKRotor(unittest.TestCase):
         with no loss of information.
         """
         namespace = {}
-        exec('mode = {0!r}'.format(self.mode), globals(), namespace)
-        self.assertIn('mode', namespace)
-        mode = namespace['mode']
+        exec("mode = {0!r}".format(self.mode), globals(), namespace)
+        self.assertIn("mode", namespace)
+        mode = namespace["mode"]
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
@@ -631,11 +665,13 @@ class TestKRotor(unittest.TestCase):
         of information.
         """
         import pickle
+
         mode = pickle.loads(pickle.dumps(self.mode, -1))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
         self.assertEqual(self.mode.quantum, mode.quantum)
+
 
 ################################################################################
 
@@ -681,7 +717,9 @@ class TestSphericalTopRotor(unittest.TestCase):
         """
         Test the SphericalTopRotor.get_level_energy() method.
         """
-        rotational_constant = self.mode.rotationalConstant.value_si * constants.h * constants.c * 100.
+        rotational_constant = (
+            self.mode.rotationalConstant.value_si * constants.h * constants.c * 100.0
+        )
         rotational_constant *= constants.Na
         for j in range(0, 100):
             e_exp = rotational_constant * j * (j + 1)
@@ -696,7 +734,7 @@ class TestSphericalTopRotor(unittest.TestCase):
         Test the SphericalTopRotor.get_level_degeneracy() method.
         """
         for j in range(0, 100):
-            g_exp = (2 * j + 1)**2
+            g_exp = (2 * j + 1) ** 2
             g_act = self.mode.get_level_degeneracy(j)
             self.assertEqual(g_exp, g_act)
 
@@ -763,7 +801,11 @@ class TestSphericalTopRotor(unittest.TestCase):
         """
         self.mode.quantum = True
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        h_exp_list = np.array([1.49828, 1.49897, 1.49948, 1.49966, 1.49974]) * constants.R * t_list
+        h_exp_list = (
+            np.array([1.49828, 1.49897, 1.49948, 1.49966, 1.49974])
+            * constants.R
+            * t_list
+        )
         for temperature, h_exp in zip(t_list, h_exp_list):
             h_act = self.mode.get_enthalpy(temperature)
             self.assertAlmostEqual(h_exp, h_act, delta=1e-4 * h_exp)
@@ -774,7 +816,9 @@ class TestSphericalTopRotor(unittest.TestCase):
         """
         self.mode.quantum = False
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = np.array([8.84778, 9.61402, 10.6537, 11.2619, 11.6935]) * constants.R
+        s_exp_list = (
+            np.array([8.84778, 9.61402, 10.6537, 11.2619, 11.6935]) * constants.R
+        )
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.mode.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
@@ -785,7 +829,9 @@ class TestSphericalTopRotor(unittest.TestCase):
         """
         self.mode.quantum = True
         t_list = np.array([300, 500, 1000, 1500, 2000])
-        s_exp_list = np.array([8.84778, 9.61402, 10.6537, 11.2619, 11.6935]) * constants.R
+        s_exp_list = (
+            np.array([8.84778, 9.61402, 10.6537, 11.2619, 11.6935]) * constants.R
+        )
         for temperature, s_exp in zip(t_list, s_exp_list):
             s_act = self.mode.get_entropy(temperature)
             self.assertAlmostEqual(s_exp, s_act, delta=1e-4 * s_exp)
@@ -799,7 +845,9 @@ class TestSphericalTopRotor(unittest.TestCase):
         dens_states = self.mode.get_density_of_states(e_list)
         sum_states = self.mode.get_sum_of_states(e_list)
         for n in range(20, len(e_list)):
-            self.assertAlmostEqual(np.sum(dens_states[0:n + 1]) / sum_states[n], 1.0, 1)
+            self.assertAlmostEqual(
+                np.sum(dens_states[0 : n + 1]) / sum_states[n], 1.0, 1
+            )
 
     def test_get_sum_of_states_quantum(self):
         """
@@ -810,7 +858,9 @@ class TestSphericalTopRotor(unittest.TestCase):
         dens_states = self.mode.get_density_of_states(e_list)
         sum_states = self.mode.get_sum_of_states(e_list)
         for n in range(1, len(e_list)):
-            self.assertAlmostEqual(np.sum(dens_states[0:n + 1]) / sum_states[n], 1.0, 3)
+            self.assertAlmostEqual(
+                np.sum(dens_states[0 : n + 1]) / sum_states[n], 1.0, 3
+            )
 
     def test_get_density_of_states_classical(self):
         """
@@ -845,9 +895,9 @@ class TestSphericalTopRotor(unittest.TestCase):
         repr() output with no loss of information.
         """
         namespace = {}
-        exec('mode = {0!r}'.format(self.mode), globals(), namespace)
-        self.assertIn('mode', namespace)
-        mode = namespace['mode']
+        exec("mode = {0!r}".format(self.mode), globals(), namespace)
+        self.assertIn("mode", namespace)
+        mode = namespace["mode"]
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)
         self.assertEqual(self.mode.symmetry, mode.symmetry)
@@ -859,6 +909,7 @@ class TestSphericalTopRotor(unittest.TestCase):
         with no loss of information.
         """
         import pickle
+
         mode = pickle.loads(pickle.dumps(self.mode, -1))
         self.assertAlmostEqual(self.mode.inertia.value, mode.inertia.value, 6)
         self.assertEqual(self.mode.inertia.units, mode.inertia.units)

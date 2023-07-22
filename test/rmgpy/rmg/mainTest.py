@@ -49,23 +49,28 @@ from rmgpy.rmg.model import CoreEdgeReactionModel
 originalPath = get_path()
 
 
-@attr('functional')
+@attr("functional")
 class TestMain(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
-        cls.testDir = os.path.join(originalPath, 'rmg', 'test_data', 'mainTest')
-        cls.outputDir = 'output'
-        cls.databaseDirectory = settings['database.directory']
+        cls.testDir = os.path.join(originalPath, "rmg", "test_data", "mainTest")
+        cls.outputDir = "output"
+        cls.databaseDirectory = settings["database.directory"]
 
-        cls.seedKinetics = os.path.join(cls.databaseDirectory, 'kinetics', 'libraries', 'testSeed')
-        cls.seedKineticsEdge = os.path.join(cls.databaseDirectory, 'kinetics', 'libraries', 'testSeed_edge')
+        cls.seedKinetics = os.path.join(
+            cls.databaseDirectory, "kinetics", "libraries", "testSeed"
+        )
+        cls.seedKineticsEdge = os.path.join(
+            cls.databaseDirectory, "kinetics", "libraries", "testSeed_edge"
+        )
 
         os.mkdir(os.path.join(cls.testDir, cls.outputDir))
 
-        cls.rmg = RMG(input_file=os.path.join(cls.testDir, 'input.py'),
-                      output_directory=os.path.join(cls.testDir, cls.outputDir))
+        cls.rmg = RMG(
+            input_file=os.path.join(cls.testDir, "input.py"),
+            output_directory=os.path.join(cls.testDir, cls.outputDir),
+        )
 
         cls.rmg.execute()
 
@@ -74,6 +79,7 @@ class TestMain(unittest.TestCase):
         """A function that is run ONCE after all unit tests in this class."""
         # Reset module level database
         import rmgpy.data.rmg
+
         rmgpy.data.rmg.database = None
 
         # Remove output directory
@@ -97,23 +103,35 @@ class TestMain(unittest.TestCase):
 
     def test_rmg_seed_mechanism_creation(self):
         """Test that the expected seed mechanisms are created in output directory."""
-        seed_dir = os.path.join(self.testDir, self.outputDir, 'seed')
+        seed_dir = os.path.join(self.testDir, self.outputDir, "seed")
         self.assertTrue(os.path.exists)
 
-        self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed')))  # kinetics library folder made
+        self.assertTrue(
+            os.path.exists(os.path.join(seed_dir, "seed"))
+        )  # kinetics library folder made
 
-        self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed', 'dictionary.txt')))  # dictionary file made
-        self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed', 'reactions.py')))  # reactions file made
+        self.assertTrue(
+            os.path.exists(os.path.join(seed_dir, "seed", "dictionary.txt"))
+        )  # dictionary file made
+        self.assertTrue(
+            os.path.exists(os.path.join(seed_dir, "seed", "reactions.py"))
+        )  # reactions file made
 
     def test_rmg_seed_edge_mechanism_creation(self):
         """Test that the expected seed mechanisms are created in output directory."""
-        seed_dir = os.path.join(self.testDir, self.outputDir, 'seed')
+        seed_dir = os.path.join(self.testDir, self.outputDir, "seed")
         self.assertTrue(os.path.exists)
 
-        self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed_edge')))  # kinetics library folder made
+        self.assertTrue(
+            os.path.exists(os.path.join(seed_dir, "seed_edge"))
+        )  # kinetics library folder made
 
-        self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed_edge', 'dictionary.txt')))  # dictionary file made
-        self.assertTrue(os.path.exists(os.path.join(seed_dir, 'seed_edge', 'reactions.py')))  # reactions file made
+        self.assertTrue(
+            os.path.exists(os.path.join(seed_dir, "seed_edge", "dictionary.txt"))
+        )  # dictionary file made
+        self.assertTrue(
+            os.path.exists(os.path.join(seed_dir, "seed_edge", "reactions.py"))
+        )  # reactions file made
 
     def test_rmg_seed_library_creation(self):
         """Test that seed mechanisms are created in the correct database locations."""
@@ -132,30 +150,38 @@ class TestMain(unittest.TestCase):
         self.rmg.database.load(
             path=self.databaseDirectory,
             thermo_libraries=[],
-            reaction_libraries=['testSeed', 'testSeed_edge'],
-            seed_mechanisms=['testSeed', 'testSeed_edge'],
-            kinetics_families='default',
+            reaction_libraries=["testSeed", "testSeed_edge"],
+            seed_mechanisms=["testSeed", "testSeed_edge"],
+            kinetics_families="default",
             kinetics_depositories=[],
-            depository=False
+            depository=False,
         )
 
         self.rmg.reaction_model = CoreEdgeReactionModel()
-        self.rmg.reaction_model.add_reaction_library_to_edge('testSeed')  # try adding seed as library
+        self.rmg.reaction_model.add_reaction_library_to_edge(
+            "testSeed"
+        )  # try adding seed as library
         self.assertTrue(len(self.rmg.reaction_model.edge.species) > 0)
         self.assertTrue(len(self.rmg.reaction_model.edge.reactions) > 0)
 
         self.rmg.reaction_model = CoreEdgeReactionModel()
-        self.rmg.reaction_model.add_seed_mechanism_to_core('testSeed')  # try adding seed as seed mech
+        self.rmg.reaction_model.add_seed_mechanism_to_core(
+            "testSeed"
+        )  # try adding seed as seed mech
         self.assertTrue(len(self.rmg.reaction_model.core.species) > 0)
         self.assertTrue(len(self.rmg.reaction_model.core.reactions) > 0)
 
         self.rmg.reaction_model = CoreEdgeReactionModel()
-        self.rmg.reaction_model.add_reaction_library_to_edge('testSeed_edge')  # try adding seed as library
+        self.rmg.reaction_model.add_reaction_library_to_edge(
+            "testSeed_edge"
+        )  # try adding seed as library
         self.assertTrue(len(self.rmg.reaction_model.edge.species) > 0)
         self.assertTrue(len(self.rmg.reaction_model.edge.reactions) > 0)
 
         self.rmg.reaction_model = CoreEdgeReactionModel()
-        self.rmg.reaction_model.add_seed_mechanism_to_core('testSeed_edge')  # try adding seed as seed mech
+        self.rmg.reaction_model.add_seed_mechanism_to_core(
+            "testSeed_edge"
+        )  # try adding seed as seed mech
         self.assertTrue(len(self.rmg.reaction_model.core.species) > 0)
         self.assertTrue(len(self.rmg.reaction_model.core.reactions) > 0)
 
@@ -167,7 +193,7 @@ class TestMain(unittest.TestCase):
             Rmem = RMG_Memory(rxnsys, None)
             Rmem.generate_cond()
             Rmem.get_cond()
-            Rmem.add_t_conv_N(1.0, .2, 2)
+            Rmem.add_t_conv_N(1.0, 0.2, 2)
             Rmem.generate_cond()
             Rmem.get_cond()
 
@@ -177,102 +203,107 @@ class TestMain(unittest.TestCase):
         """
         import cantera as ct
 
-        outName = os.path.join(self.rmg.output_directory, 'cantera')
+        outName = os.path.join(self.rmg.output_directory, "cantera")
         files = os.listdir(outName)
         for f in files:
-            if '.yaml' in f:
+            if ".yaml" in f:
                 try:
                     ct.Solution(os.path.join(outName, f))
                 except:
-                    self.fail('The output Cantera file is not loadable in Cantera.')
+                    self.fail("The output Cantera file is not loadable in Cantera.")
 
 
-@attr('functional')
+@attr("functional")
 class TestRestartWithFilters(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
-        cls.testDir = os.path.join(originalPath, 'rmg', 'test_data', 'restartTest')
-        cls.outputDir = os.path.join(cls.testDir, 'output_w_filters')
-        cls.databaseDirectory = settings['database.directory']
+        cls.testDir = os.path.join(originalPath, "rmg", "test_data", "restartTest")
+        cls.outputDir = os.path.join(cls.testDir, "output_w_filters")
+        cls.databaseDirectory = settings["database.directory"]
 
         os.mkdir(cls.outputDir)
-        initialize_log(logging.INFO, os.path.join(cls.outputDir, 'RMG.log'))
+        initialize_log(logging.INFO, os.path.join(cls.outputDir, "RMG.log"))
 
-        cls.rmg = RMG(input_file=os.path.join(cls.testDir, 'restart_w_filters.py'),
-                      output_directory=os.path.join(cls.outputDir))
+        cls.rmg = RMG(
+            input_file=os.path.join(cls.testDir, "restart_w_filters.py"),
+            output_directory=os.path.join(cls.outputDir),
+        )
 
     def test_restart_with_filters(self):
         """
         Test that the RMG restart job with filters included completed without problems
         """
         self.rmg.execute()
-        with open(os.path.join(self.outputDir, 'RMG.log'), 'r') as f:
-            self.assertIn('MODEL GENERATION COMPLETED', f.read())
+        with open(os.path.join(self.outputDir, "RMG.log"), "r") as f:
+            self.assertIn("MODEL GENERATION COMPLETED", f.read())
 
     @classmethod
     def tearDownClass(cls):
         """A function that is run ONCE after all unit tests in this class."""
         # Reset module level database
         import rmgpy.data.rmg
+
         rmgpy.data.rmg.database = None
 
         # Remove output directory
         shutil.rmtree(cls.outputDir)
 
 
-@attr('functional')
+@attr("functional")
 class TestRestartNoFilters(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
-        cls.testDir = os.path.join(originalPath, 'rmg', 'test_data', 'restartTest')
-        cls.outputDir = os.path.join(cls.testDir, 'output_no_filters')
-        cls.databaseDirectory = settings['database.directory']
+        cls.testDir = os.path.join(originalPath, "rmg", "test_data", "restartTest")
+        cls.outputDir = os.path.join(cls.testDir, "output_no_filters")
+        cls.databaseDirectory = settings["database.directory"]
 
         os.mkdir(cls.outputDir)
-        initialize_log(logging.INFO, os.path.join(cls.outputDir, 'RMG.log'))
+        initialize_log(logging.INFO, os.path.join(cls.outputDir, "RMG.log"))
 
-        cls.rmg = RMG(input_file=os.path.join(cls.testDir, 'restart_no_filters.py'),
-                      output_directory=os.path.join(cls.outputDir))
+        cls.rmg = RMG(
+            input_file=os.path.join(cls.testDir, "restart_no_filters.py"),
+            output_directory=os.path.join(cls.outputDir),
+        )
 
     def test_restart_no_filters(self):
         """
         Test that the RMG restart job with no filters included completed without problems
         """
         self.rmg.execute()
-        with open(os.path.join(self.outputDir, 'RMG.log'), 'r') as f:
-            self.assertIn('MODEL GENERATION COMPLETED', f.read())
+        with open(os.path.join(self.outputDir, "RMG.log"), "r") as f:
+            self.assertIn("MODEL GENERATION COMPLETED", f.read())
 
     @classmethod
     def tearDownClass(cls):
         """A function that is run ONCE after all unit tests in this class."""
         # Reset module level database
         import rmgpy.data.rmg
+
         rmgpy.data.rmg.database = None
 
         # Remove output directory
         shutil.rmtree(cls.outputDir)
 
 
-@attr('functional')
+@attr("functional")
 class TestMainFunctions(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
-        cls.testDir = os.path.join(originalPath, 'rmg', 'test_data', 'mainTest')
-        cls.outputDir = os.path.join(cls.testDir, 'output')
-        cls.databaseDirectory = settings['database.directory']
+        cls.testDir = os.path.join(originalPath, "rmg", "test_data", "mainTest")
+        cls.outputDir = os.path.join(cls.testDir, "output")
+        cls.databaseDirectory = settings["database.directory"]
 
         os.mkdir(os.path.join(cls.testDir, cls.outputDir))
 
         cls.max_iter = 10
 
-        cls.rmg = RMG(input_file=os.path.join(cls.testDir, 'superminimal_input.py'),
-                      output_directory=cls.outputDir)
+        cls.rmg = RMG(
+            input_file=os.path.join(cls.testDir, "superminimal_input.py"),
+            output_directory=cls.outputDir,
+        )
 
         cls.rmg.execute(max_iterations=cls.max_iter)
 
@@ -280,16 +311,18 @@ class TestMainFunctions(unittest.TestCase):
         """
         Test that saveSeedModulus argument from superminimal_input.py saved the correct number of seeds
         """
-        path = os.path.join(self.outputDir, 'previous_seeds')
-        num_dir_actual = sum(os.path.isdir(os.path.join(path, i)) for i in os.listdir(path))
-        num_dir_expected = self.max_iter//2 + 1   # +1 is for saving iteration 0
+        path = os.path.join(self.outputDir, "previous_seeds")
+        num_dir_actual = sum(
+            os.path.isdir(os.path.join(path, i)) for i in os.listdir(path)
+        )
+        num_dir_expected = self.max_iter // 2 + 1  # +1 is for saving iteration 0
         self.assertEqual(num_dir_actual, num_dir_expected)
 
     def test_max_iter(self):
         """
         Test the command line argument of -i
         """
-        df = pd.read_excel(os.path.join(self.outputDir, 'statistics.xls'))
+        df = pd.read_excel(os.path.join(self.outputDir, "statistics.xls"))
         num_rows = df.shape[0]
 
         num_iter_actual = num_rows
@@ -301,6 +334,7 @@ class TestMainFunctions(unittest.TestCase):
         """A function that is run ONCE after all unit tests in this class."""
         # Reset module level database
         import rmgpy.data.rmg
+
         rmgpy.data.rmg.database = None
 
         # Remove output directory
@@ -308,7 +342,6 @@ class TestMainFunctions(unittest.TestCase):
 
 
 class TestProfiling(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         """A function that is run ONCE before all unit tests in this class."""
@@ -316,30 +349,32 @@ class TestProfiling(unittest.TestCase):
         cls.display_found = False
 
         try:
-            cls.display_found = bool(os.environ['DISPLAY'])
+            cls.display_found = bool(os.environ["DISPLAY"])
         except KeyError:  # This means that no display was found
             pass
-        cls.test_dir = os.path.join(originalPath, 'rmg', 'test_data', 'mainTest')
+        cls.test_dir = os.path.join(originalPath, "rmg", "test_data", "mainTest")
 
-    @patch('rmgpy.rmg.main.logging')
+    @patch("rmgpy.rmg.main.logging")
     def test_make_profile_graph(self, mock_logging):
         """
         Test that `make_profile_graph` function behaves properly given the current display state
         """
-        profile_file = os.path.join(self.test_dir, 'RMG.profile')
+        profile_file = os.path.join(self.test_dir, "RMG.profile")
         make_profile_graph(profile_file)
         if self.display_found:  # Check that the profile graph was made
-            self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'RMG.profile.dot.pdf')))
+            self.assertTrue(
+                os.path.exists(os.path.join(self.test_dir, "RMG.profile.dot.pdf"))
+            )
         else:  # We can't test making a profile graph on this system, but at least test that this was recognized
             mock_logging.warning.assert_called_with(
-                'Could not find a display, which is required in order to generate '
-                'the profile graph. This '
-                'is likely due to this job being run on a remote server without performing X11 forwarding '
-                'or running the job through a job manager like SLURM.\n\n The graph can be generated later '
-                'by running with the postprocessing flag `rmg.py -P input.py` from any directory/computer '
-                'where both the input file and RMG.profile file are located and a display is available.\n\n'
-                'Note that if the postprocessing flag is specified, this will force the graph generation '
-                'regardless of if a display was found, which could cause this program to crash or freeze.'
+                "Could not find a display, which is required in order to generate "
+                "the profile graph. This "
+                "is likely due to this job being run on a remote server without performing X11 forwarding "
+                "or running the job through a job manager like SLURM.\n\n The graph can be generated later "
+                "by running with the postprocessing flag `rmg.py -P input.py` from any directory/computer "
+                "where both the input file and RMG.profile file are located and a display is available.\n\n"
+                "Note that if the postprocessing flag is specified, this will force the graph generation "
+                "regardless of if a display was found, which could cause this program to crash or freeze."
             )
 
     @classmethod
@@ -347,15 +382,15 @@ class TestProfiling(unittest.TestCase):
         """A function that is run ONCE after all unit tests in this class."""
 
         if cls.display_found:  # Remove output PDF
-            os.remove(os.path.join(cls.test_dir, 'RMG.profile.dot.pdf'))
-            os.remove(os.path.join(cls.test_dir, 'RMG.profile.dot'))
-            os.remove(os.path.join(cls.test_dir, 'RMG.profile.dot.ps2'))
+            os.remove(os.path.join(cls.test_dir, "RMG.profile.dot.pdf"))
+            os.remove(os.path.join(cls.test_dir, "RMG.profile.dot"))
+            os.remove(os.path.join(cls.test_dir, "RMG.profile.dot.ps2"))
 
 
 class TestCanteraOutput(unittest.TestCase):
-
     def setUp(self):
-        self.chemkin_files = {"""ELEMENTS
+        self.chemkin_files = {
+            """ELEMENTS
 	H
 	D /2.014/
 	T /3.016/
@@ -395,7 +430,7 @@ CH3(4)+CH3(4)=ethane(1)                             8.260e+17 -1.400    1.000
 
 END
 """: True,
-"""ELEMENTS
+            """ELEMENTS
 	CI /13.003/
 	O
 	OI /18.000/
@@ -431,7 +466,7 @@ CH3(4)+CH3(4)=ethane(1)                             8.260e+17 -1.400    1.000
 
 END
 """: False,
-"""ELEMENTS
+            """ELEMENTS
 	H
 	D /2.014/
 	T /3.016/
@@ -466,15 +501,15 @@ END
 """: False,
         }
         self.rmg = RMG()
-        self.dir_name = 'temp_dir_for_testing'
+        self.dir_name = "temp_dir_for_testing"
         self.rmg.output_directory = os.path.join(originalPath, self.dir_name)
 
-        self.tran_dat = '''
+        self.tran_dat = """
 ! Species         Shape    LJ-depth  LJ-diam   DiplMom   Polzblty  RotRelaxNum Data     
 ! Name            Index    epsilon/k_B sigma     mu        alpha     Zrot      Source   
 ethane(1)           2     252.301     4.302     0.000     0.000     1.500    ! GRI-Mech
 CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! GRI-Mech
-        '''
+        """
 
     def tearDown(self):
         os.chdir(originalPath)
@@ -485,7 +520,7 @@ CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! G
         except OSError:
             pass
         # go back to the main RMG-Py directory
-        os.chdir('..')
+        os.chdir("..")
 
     def test_chemkin_to_cantera_conversion(self):
         """
@@ -499,19 +534,23 @@ CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! G
             os.mkdir(self.dir_name)
             os.chdir(self.dir_name)
 
-            f = open('chem001.inp', 'w')
+            f = open("chem001.inp", "w")
             f.write(ck_input)
             f.close()
 
-            f = open('tran.dat', 'w')
+            f = open("tran.dat", "w")
             f.write(self.tran_dat)
             f.close()
 
             if works:
-                self.rmg.generate_cantera_files(os.path.join(os.getcwd(), 'chem001.inp'))
+                self.rmg.generate_cantera_files(
+                    os.path.join(os.getcwd(), "chem001.inp")
+                )
             else:
                 with self.assertRaises(InputError):
-                    self.rmg.generate_cantera_files(os.path.join(os.getcwd(), 'chem001.inp'))
+                    self.rmg.generate_cantera_files(
+                        os.path.join(os.getcwd(), "chem001.inp")
+                    )
 
             # clean up
             os.chdir(originalPath)

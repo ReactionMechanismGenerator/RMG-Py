@@ -7,15 +7,14 @@ longDesc = """
 """
 
 entry(
-    index = 1,
-    label = "O2(S) => O2(T)",
-    degeneracy = 1,
-    reversible = False,
-    kinetics = Arrhenius(A=(4.5E+10, 's^-1'), n=0, Ea=(397, 'cal/mol')),
-    rank = 1,
-    shortDesc = """""",
-    longDesc =
-"""
+    index=1,
+    label="O2(S) => O2(T)",
+    degeneracy=1,
+    reversible=False,
+    kinetics=Arrhenius(A=(4.5e10, "s^-1"), n=0, Ea=(397, "cal/mol")),
+    rank=1,
+    shortDesc="""""",
+    longDesc="""
 taken from:
 R. Atkinson, D.L. Baulch, R.A. Cox, R.F. Hampson, J.A. Kerr, J. Troe,
 Evaluated Kinetic and Photochemical Data for Atmospheric Chemistry: Supplement IV.
