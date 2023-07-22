@@ -40,21 +40,21 @@ from rmgpy.qm.main import QMCalculator
 
 import pytest
 
-executable_path = Gaussian.executable_path
-NO_GAUSSIAN = not os.path.exists(executable_path)
+EXECUTABLE_PATH = Gaussian.executable_path
+NO_GAUSSIAN = not os.path.exists(EXECUTABLE_PATH)
 
 mol1 = Molecule().from_smiles("C1=CC=C2C=CC=CC2=C1")
 
 
+@pytest.mark.skipif(
+    NO_GAUSSIAN,
+    reason="Gaussian not found. Try resetting your environment variables if you want to use it.",
+)
 class TestGaussianMolPM3:
     """
     Contains unit tests for the Geometry class.
     """
 
-    @pytest.mark.skipif(
-        NO_GAUSSIAN,
-        reason="Gaussian not found. Try resetting your environment variables if you want to use it.",
-    )
     def setup_class(self):
         """
         A function run before each unit test in this class.
@@ -110,15 +110,15 @@ class TestGaussianMolPM3:
             assert round(abs(result.molecularMass.value - 128.0626), 3) == 0
 
 
+@pytest.mark.skipif(
+    NO_GAUSSIAN,
+    reason="Gaussian not found. Try resetting your environment variables if you want to use it.",
+)
 class TestGaussianMolPM6:
     """
     Contains unit tests for the Geometry class.
     """
 
-    @pytest.mark.skipif(
-        NO_GAUSSIAN,
-        reason="Gaussian not found. Try resetting your environment variables if you want to use it.",
-    )
     def setup_class(self):
         """
         A function run before each unit test in this class.
@@ -137,7 +137,7 @@ class TestGaussianMolPM6:
 
         self.qmmol1 = GaussianMolPM6(mol1, qm.settings)
 
-    @pytest.mark.skipif("g03" in executable_path, reason="This test was shown not to work on g03.")
+    @pytest.mark.skipif("g03" in EXECUTABLE_PATH, reason="This test was shown not to work on g03.")
     def test_generate_thermo_data(self):
         """
         Test that generate_thermo_data() works correctly for gaussian PM6.
@@ -158,7 +158,7 @@ class TestGaussianMolPM6:
         if result.molecularMass.units == "amu":
             assert round(abs(result.molecularMass.value - 128.0626), 3) == 0
 
-    @pytest.mark.skipif("g03" in executable_path, reason="This test was shown not to work on g03.")
+    @pytest.mark.skipif("g03" in EXECUTABLE_PATH, reason="This test was shown not to work on g03.")
     def test_load_thermo_data(self):
         """
         Test that generate_thermo_data() can load thermo from the previous gaussian PM6 run.
