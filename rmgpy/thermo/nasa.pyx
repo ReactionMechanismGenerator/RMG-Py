@@ -360,7 +360,7 @@ cdef class NASA(HeatCapacityModel):
         limits at zero and infinite temperature.
         """
         cdef double Tmin, Tmax, dT, H298, S298, Cp0, CpInf
-        cdef np.ndarray[np.float64_t, ndim=1] Tdata, Cpdata
+        cdef np.ndarray[float_t, ndim=1] Tdata, Cpdata
         cdef int i
         
         from rmgpy.thermo.wilhoit import Wilhoit
@@ -406,7 +406,7 @@ cdef class NASA(HeatCapacityModel):
         
         from cantera import NasaPoly2
 
-        cdef np.ndarray[np.float64_t, ndim=1] coeffs
+        cdef np.ndarray[float_t, ndim=1] coeffs
         
         polys = self.polynomials
         assert len(polys) == 2, "Cantera NasaPoly2 objects only accept 2 polynomials"

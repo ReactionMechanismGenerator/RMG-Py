@@ -39,7 +39,7 @@ import numpy as np
 import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
-from arkane.common import  get_element_mass, get_principal_moments_of_inertia, convert_imaginary_freq_to_negative_float
+from arkane.common import get_element_mass, get_principal_moments_of_inertia, convert_imaginary_freq_to_negative_float
 from arkane.exceptions import LogError
 from arkane.ess.adapter import ESSAdapter
 from arkane.ess.factory import register_ess_adapter
@@ -65,32 +65,31 @@ class Psi4Log(ESSAdapter):
         error = None
         terminated = False
         for line in reversed(log):
-            if 'Psi4 exiting successfully' in line:
+            if "Psi4 exiting successfully" in line:
                 terminated = True
-            elif 'PSIO Error' in line:
-                error = 'I/O error'
-            elif 'Fatal Error' in line:
-                error = 'Fatal Error'
-            elif 'RuntimeError' in line:
-                error = 'runtime'
+            elif "PSIO Error" in line:
+                error = "I/O error"
+            elif "Fatal Error" in line:
+                error = "Fatal Error"
+            elif "RuntimeError" in line:
+                error = "runtime"
             if error is not None:
-                raise LogError(f'There was an error ({error}) with the Psi4 output file {self.path} '
-                               f'due to line:\n{line}')
+                raise LogError(f"There was an error ({error}) with the Psi4 output file {self.path} " f"due to line:\n{line}")
         if not terminated:
-            raise LogError(f'Psi4 run in output file {self.path} did not successfully converged.')
+            raise LogError(f"Psi4 run in output file {self.path} did not successfully converged.")
 
     def get_number_of_atoms(self):
         """
         Return the number of atoms in the molecular configuration used in the Psi4 output file.
         """
         n_atoms = 0
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             line = f.readline()
-            while line != '' and n_atoms == 0:
-                if 'Center              X                  Y                   Z               Mass ' in line:
+            while line != "" and n_atoms == 0:
+                if "Center              X                  Y                   Z               Mass " in line:
                     _ = f.readline()
                     line = f.readline()
-                    while line != '\n':
+                    while line != "\n":
                         n_atoms += 1
                         line = f.readline()
                     break
@@ -109,23 +108,24 @@ class Psi4Log(ESSAdapter):
         force = None
         n_atoms = self.get_number_of_atoms()
         n_rows = n_atoms * 3
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             line = f.readline()
-            while line != '':
-                if 'Force constants in mass-weighted Cartesian coordinates' in line:
+            while line != "":
+                if "Force constants in mass-weighted Cartesian coordinates" in line:
                     f.readline()
                     f_array = list()
-                    while line != '\n':
+                    while line != "\n":
                         line = f.readline()
                         # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
-                        f_array.extend([float(f) * 4.35974417e-18 / 5.291772108e-11 ** 2 for f in
-                                        line.replace('[', '').replace(']', '').split()])
+                        f_array.extend([float(f) * 4.35974417e-18 / 5.291772108e-11**2 for f in line.replace("[", "").replace("]", "").split()])
                     force = np.array(f_array).reshape(n_rows, n_rows)
                 line = f.readline()
         if force is None:
-            logging.warning(f'Could not find a force constant matrix in the Psi4 log file {self.path}\n'
-                            f'To make sure Psi4 prints out the force constant matrix,'
-                            f'make sure to set the verbose print level in Psi4 ("set_print") to at least 3.')
+            logging.warning(
+                f"Could not find a force constant matrix in the Psi4 log file {self.path}\n"
+                f"To make sure Psi4 prints out the force constant matrix,"
+                f'make sure to set the verbose print level in Psi4 ("set_print") to at least 3.'
+            )
         return force
 
     def load_geometry(self):
@@ -143,9 +143,9 @@ class Psi4Log(ESSAdapter):
         geometry_flag = False
         for i in reversed(range(len(log))):
             line = log[i]
-            if 'Center              X                  Y                   Z               Mass' in line:
-                for line in log[(i + 2):]:
-                    if line != '\n':
+            if "Center              X                  Y                   Z               Mass" in line:
+                for line in log[(i + 2) :]:
+                    if line != "\n":
                         data = line.split()
                         atoms.append(data[0])
                         coord.append([float(c) for c in data[1:-1]])
@@ -159,15 +159,15 @@ class Psi4Log(ESSAdapter):
             mass_, num_ = get_element_mass(atom)
             mass.append(mass_)
             number.append(num_)
-        coord = np.array(coord, np.float64)
+        coord = np.array(coord, float)
         number = np.array(number, np.int)
-        mass = np.array(mass, np.float64)
+        mass = np.array(mass, float)
         if any(len(param) == 0 for param in [number, coord, mass]):
-            raise LogError(f'Unable to read atoms from Psi4 geometry output file {self.path}.')
+            raise LogError(f"Unable to read atoms from Psi4 geometry output file {self.path}.")
 
         return coord, number, mass
 
-    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
+    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=""):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a Psi4 "Freq" quantum chemistry calculation. As
@@ -185,26 +185,23 @@ class Psi4Log(ESSAdapter):
             if symmetry is None:
                 symmetry = _symmetry
 
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             line = f.readline()
-            while line != '':
-                if spin_multiplicity == 0 and 'Multiplicity =' in line:
+            while line != "":
+                if spin_multiplicity == 0 and "Multiplicity =" in line:
                     spin_multiplicity = int(float(line.split()[2]))
-                    logging.debug(f'Conformer {label} is assigned a spin multiplicity of {spin_multiplicity}')
+                    logging.debug(f"Conformer {label} is assigned a spin multiplicity of {spin_multiplicity}")
 
-                if 'Harmonic Vibrational Analysis' in line:
+                if "Harmonic Vibrational Analysis" in line:
                     frequencies = []
-                    while 'Thermochemistry Components' not in line:
-                        if 'Freq [cm^-1]' in line:
+                    while "Thermochemistry Components" not in line:
+                        if "Freq [cm^-1]" in line:
                             if len(line.split()) == 5:
-                                frequencies.extend([float(convert_imaginary_freq_to_negative_float(d))
-                                                    for d in line.split()[-3:]])
+                                frequencies.extend([float(convert_imaginary_freq_to_negative_float(d)) for d in line.split()[-3:]])
                             elif len(line.split()) == 4:
-                                frequencies.extend([float(convert_imaginary_freq_to_negative_float(d))
-                                                    for d in line.split()[-2:]])
+                                frequencies.extend([float(convert_imaginary_freq_to_negative_float(d)) for d in line.split()[-2:]])
                             elif len(line.split()) == 3:
-                                frequencies.extend([float(convert_imaginary_freq_to_negative_float(d))
-                                                    for d in line.split()[-1:]])
+                                frequencies.extend([float(convert_imaginary_freq_to_negative_float(d)) for d in line.split()[-1:]])
                         line = f.readline()
 
                     frequencies = [f for f in frequencies if f > 0.0]
@@ -230,13 +227,12 @@ class Psi4Log(ESSAdapter):
         # Take only the last modes found (in the event of multiple jobs).
         modes = [mmass[-1], rot[-1], freq[-1]]
 
-        return Conformer(E0=(e0 * 0.001, "kJ/mol"),
-                         modes=modes,
-                         spin_multiplicity=spin_multiplicity,
-                         optical_isomers=optical_isomers),\
-            unscaled_frequencies
+        return (
+            Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spin_multiplicity, optical_isomers=optical_isomers),
+            unscaled_frequencies,
+        )
 
-    def load_energy(self, zpe_scale_factor=1.):
+    def load_energy(self, zpe_scale_factor=1.0):
         """
         Load the energy in J/mol from a Psi4 log file. Only the smallest energy
         in the file is returned. The zero-point energy is *not* included in
@@ -246,12 +242,12 @@ class Psi4Log(ESSAdapter):
         the smallest values is the correct value.
         """
         a = list()
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             for line in f:
-                if 'Total Energy =' in line:
+                if "Total Energy =" in line:
                     a.append(float(line.split()[3]) * constants.E_h * constants.Na)
         if not len(a):
-            raise LogError(f'Unable to find energy in Psi4 output file {self.path}.')
+            raise LogError(f"Unable to find energy in Psi4 output file {self.path}.")
         e_elect = min(a)
         return e_elect
 
@@ -260,13 +256,13 @@ class Psi4Log(ESSAdapter):
         Load the unscaled zero-point energy in J/mol from a Psi4 output file.
         """
         zpe = []
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             for line in f.readlines():
-                if 'Correction ZPE' in line:
+                if "Correction ZPE" in line:
                     zpe.append(float(line.split()[2]) * 4184)  # Convert kcal/mol to J/mol.
-                    logging.debug(f'ZPE is {zpe}')
+                    logging.debug(f"ZPE is {zpe}")
         if not len(zpe):
-            raise LogError(f'Unable to find zero-point energy in Psi4 output file {self.path}.')
+            raise LogError(f"Unable to find zero-point energy in Psi4 output file {self.path}.")
         return zpe[-1]
 
     def load_negative_frequency(self):
@@ -275,49 +271,46 @@ class Psi4Log(ESSAdapter):
         Since there can be many imaginary frequencies, only the first one is returned.
         """
         negative_frequencies, frequency = None, None
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             line = f.readline()
-            while line != '':
-                if 'Harmonic Vibrational Analysis' in line:
+            while line != "":
+                if "Harmonic Vibrational Analysis" in line:
                     frequencies = []
-                    while 'Thermochemistry Components' not in line:
-                        if 'Freq [cm^-1]' in line:
+                    while "Thermochemistry Components" not in line:
+                        if "Freq [cm^-1]" in line:
                             if len(line.split()) == 5:
-                                frequencies.extend([float(convert_imaginary_freq_to_negative_float(d))
-                                                    for d in line.split()[-3:]])
+                                frequencies.extend([float(convert_imaginary_freq_to_negative_float(d)) for d in line.split()[-3:]])
                             elif len(line.split()) == 4:
-                                frequencies.extend([float(convert_imaginary_freq_to_negative_float(d))
-                                                    for d in line.split()[-2:]])
+                                frequencies.extend([float(convert_imaginary_freq_to_negative_float(d)) for d in line.split()[-2:]])
                             elif len(line.split()) == 3:
-                                frequencies.extend([float(convert_imaginary_freq_to_negative_float(d))
-                                                    for d in line.split()[-1:]])
+                                frequencies.extend([float(convert_imaginary_freq_to_negative_float(d)) for d in line.split()[-1:]])
                         line = f.readline()
 
                     negative_frequencies = [f for f in frequencies if f < 0.0]
                 line = f.readline()
         if negative_frequencies is None:
-            raise LogError('Unable to find imaginary frequency in Psi4 output file {0}.'.format(self.path))
+            raise LogError("Unable to find imaginary frequency in Psi4 output file {0}.".format(self.path))
         elif len(negative_frequencies) == 1:
             return negative_frequencies[0]
         else:
-            logging.info('More than one imaginary frequency in Psi4 output file {0}.'.format(self.path))
+            logging.info("More than one imaginary frequency in Psi4 output file {0}.".format(self.path))
             return negative_frequencies[0]
 
     def load_scan_energies(self):
         """Not implemented for Psi4"""
-        raise NotImplementedError('The load_scan_energies method is not implemented for Psi4.')
+        raise NotImplementedError("The load_scan_energies method is not implemented for Psi4.")
 
     def load_scan_pivot_atoms(self):
         """Not implemented for Psi4"""
-        raise NotImplementedError('The load_scan_pivot_atoms method is not implemented for Psi4.')
+        raise NotImplementedError("The load_scan_pivot_atoms method is not implemented for Psi4.")
 
     def load_scan_frozen_atoms(self):
         """Not implemented for Psi4"""
-        raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for Psi4.')
+        raise NotImplementedError("The load_scan_frozen_atoms method is not implemented for Psi4.")
 
     def get_T1_diagnostic(self):
         """Not implemented for Psi4"""
-        raise NotImplementedError('The get_T1_diagnostic method is not implemented for Psi4.')
+        raise NotImplementedError("The get_T1_diagnostic method is not implemented for Psi4.")
 
 
 register_ess_adapter("Psi4Log", Psi4Log)

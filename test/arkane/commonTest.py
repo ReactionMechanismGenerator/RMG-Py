@@ -94,7 +94,7 @@ class CommonTest:
             -272.2788244214,
             -272.2787748749,
         ]
-        v_list = np.array(v_list, np.float64)
+        v_list = np.array(v_list, float)
         v_diff = (v_list[0] - np.min(v_list)) * constants.E_h * constants.Na / 1000
         assert round(abs(v_diff / 2.7805169838282797 - 1), 5) == 0
 
@@ -108,7 +108,7 @@ class TestArkaneJob:
     def setup_class(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "methoxy.py"))
+        job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "arkane", "data", "methoxy.py"))
         pdepjob = job_list[-1]
         cls.kineticsjob = job_list[0]
         pdepjob.active_j_rotor = True
@@ -313,7 +313,9 @@ class TestStatmech:
     def setup_class(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        cls.job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "Benzyl", "input.py"))
+        cls.job_list = arkane.load_input_file(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "arkane", "data", "Benzyl", "input.py")
+        )
 
     def test_gaussian_log_file_error(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are the same"""
@@ -498,7 +500,7 @@ class TestMomentOfInertia:
                 [-0.6269510, 0.6269510, -0.6269510],
                 [0.6269510, -0.6269510, -0.6269510],
             ],
-            np.float64,
+            float,
         )
         center_of_mass = get_center_of_mass(coords=coords, symbols=symbols)
         for cm_coord in center_of_mass:
@@ -517,7 +519,7 @@ class TestMomentOfInertia:
                 [1.36475837, -2.12581592, 0.12433596],
                 [2.16336803, 0.09985803, 0.03295192],
             ],
-            np.float64,
+            float,
         )
         center_of_mass = get_center_of_mass(coords=coords, symbols=symbols)
         assert round(abs(center_of_mass[0] - 0.7201), 3) == 0
@@ -537,7 +539,7 @@ class TestMomentOfInertia:
                 [0.0448990, 1.2084390, 0.8852880],
                 [0.0448990, 1.2084390, -0.8852880],
             ],
-            np.float64,
+            float,
         )
         center_of_mass = get_center_of_mass(coords=coords, numbers=numbers)
         assert round(abs(center_of_mass[0] - -0.0540), 3) == 0
@@ -559,7 +561,7 @@ class TestMomentOfInertia:
                 [1.36475837, -2.12581592, 0.12433596],
                 [2.16336803, 0.09985803, 0.03295192],
             ],
-            np.float64,
+            float,
         )
         tensor = get_moment_of_inertia_tensor(coords=coords, symbols=symbols)
         expected_tensor = [
@@ -584,7 +586,7 @@ class TestMomentOfInertia:
                 [-1.275744, -0.785745, -0.965493],
                 [1.241416, -0.911257, 0.593856],
             ],
-            np.float64,
+            float,
         )
         principal_moments_of_inertia = get_principal_moments_of_inertia(coords=coords, numbers=numbers)[0]
         expected_principal_moments_of_inertia = [60.98026894, 53.83156297, 14.48858465]
@@ -598,7 +600,7 @@ class TestMomentOfInertia:
                 [0.000000, 0.000000, -0.072434],
                 [0.000000, 0.000000, -1.191782],
             ],
-            np.float64,
+            float,
         )
         with pytest.raises(InputError):
             get_principal_moments_of_inertia(coords=coords, numbers=numbers)

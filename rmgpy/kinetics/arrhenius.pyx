@@ -166,12 +166,12 @@ cdef class Arrhenius(KineticsModel):
         if len(Tlist) < 3 + three_params:
             raise KineticsError('Not enough degrees of freedom to fit this Arrhenius expression')
         if three_params:
-            A = np.zeros((len(Tlist), 3), np.float64)
+            A = np.zeros((len(Tlist), 3), float)
             A[:, 0] = np.ones_like(Tlist)
             A[:, 1] = np.log(Tlist / T0)
             A[:, 2] = -1.0 / constants.R / Tlist
         else:
-            A = np.zeros((len(Tlist), 2), np.float64)
+            A = np.zeros((len(Tlist), 2), float)
             A[:, 0] = np.ones_like(Tlist)
             A[:, 1] = -1.0 / constants.R / Tlist
         b = np.log(klist)
@@ -779,7 +779,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
         Returns the pressures and Arrhenius expressions for the pressures that
         most closely bound the specified pressure `P` in Pa.
         """
-        cdef np.ndarray[np.float64_t, ndim=1] pressures
+        cdef np.ndarray[float_t, ndim=1] pressures
         cdef int i, ilow, ihigh
 
         pressures = self._pressures.value_si
@@ -971,7 +971,7 @@ cdef class MultiArrhenius(KineticsModel):
         if Tmax == -1: Tmax = self.Tmax.value_si
         kunits = str(quantity.pq.Quantity(1.0, self.arrhenius[0].A.units).simplified).split()[-1]  # is this the best way to get the units returned by k??
         Tlist = np.logspace(log10(Tmin), log10(Tmax), num=25)
-        klist = np.array(list(map(self.get_rate_coefficient, Tlist)), np.float64)
+        klist = np.array(list(map(self.get_rate_coefficient, Tlist)), float)
         arrh = Arrhenius().fit_to_data(Tlist, klist, kunits)
         arrh.comment = "Fitted to Multiple Arrhenius kinetics over range {Tmin}-{Tmax} K. {comment}".format(
             Tmin=Tmin, Tmax=Tmax, comment=self.comment)

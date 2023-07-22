@@ -575,7 +575,7 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
             tokens2 = tokens[1].split()
             chebyshev.degreeT = int(float(tokens2[0].strip()))
             chebyshev.degreeP = int(float(tokens2[1].strip()))
-            chebyshev.coeffs = np.zeros((chebyshev.degreeT, chebyshev.degreeP), np.float64)
+            chebyshev.coeffs = np.zeros((chebyshev.degreeT, chebyshev.degreeP), float)
             # There may be some coefficients on this first line
             kinetics['chebyshev coefficients'].extend(
                 [float(t.strip()) for t in tokens2[2:]])

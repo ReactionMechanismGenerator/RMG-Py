@@ -51,7 +51,9 @@ class TestExplorerJob:
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
 
-        cls.job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "methoxy_explore.py"))
+        cls.job_list = arkane.load_input_file(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "arkane", "data", "methoxy_explore.py")
+        )
         for job in cls.job_list:
             if not isinstance(job, ExplorerJob):
                 job.execute(output_file=None, plot=None)

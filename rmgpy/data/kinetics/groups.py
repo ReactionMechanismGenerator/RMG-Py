@@ -48,54 +48,53 @@ from rmgpy.molecule import Molecule
 from rmgpy.molecule.fragment import Fragment
 
 # Prior to np 1.14, `np.linalg.lstsq` does not accept None as a value
-RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
+RCOND = -1 if int(np.__version__.split(".")[1]) < 14 else None
 
 
 ################################################################################
 
+
 class KineticsGroups(Database):
     """
-    A class for working with an RMG kinetics family group additivity values. 
+    A class for working with an RMG kinetics family group additivity values.
     """
 
-    def __init__(self,
-                 entries=None,
-                 top=None,
-                 label='',
-                 name='',
-                 short_desc='',
-                 long_desc='',
-                 forwardTemplate=None,
-                 forwardRecipe=None,
-                 reverseTemplate=None,
-                 reverseRecipe=None,
-                 forbidden=None
-                 ):
+    def __init__(
+        self,
+        entries=None,
+        top=None,
+        label="",
+        name="",
+        short_desc="",
+        long_desc="",
+        forwardTemplate=None,
+        forwardRecipe=None,
+        reverseTemplate=None,
+        reverseRecipe=None,
+        forbidden=None,
+    ):
         Database.__init__(self, entries, top, label, name, short_desc, long_desc)
         self.reactant_num = 0
 
     def __repr__(self):
         return '<KineticsGroups "{0}">'.format(self.label)
 
-    def load_entry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='',
-                   nodalDistance=None):
+    def load_entry(self, index, label, group, kinetics, reference=None, referenceType="", shortDesc="", longDesc="", nodalDistance=None):
         """
         Method for parsing entries in database files.
         Note that these argument names are retained for backward compatibility.
 
         nodal_distance is the distance between a given entry and its parent specified by a float
         """
-        if (group[0:3].upper() == 'OR{' or
-                group[0:4].upper() == 'AND{' or
-                group[0:7].upper() == 'NOT OR{' or
-                group[0:8].upper() == 'NOT AND{'):
+        if group[0:3].upper() == "OR{" or group[0:4].upper() == "AND{" or group[0:7].upper() == "NOT OR{" or group[0:8].upper() == "NOT AND{":
             item = make_logic_node(group)
         else:
             item = Group().from_adjacency_list(group)
 
         if label in self.entries:
-            raise DatabaseError("Duplicate group name {label} found in kinetics groups for {family} "
-                                "family.".format(label=label, family=self.label))
+            raise DatabaseError(
+                "Duplicate group name {label} found in kinetics groups for {family} " "family.".format(label=label, family=self.label)
+            )
         self.entries[label] = Entry(
             index=index,
             label=label,
@@ -105,7 +104,7 @@ class KineticsGroups(Database):
             reference_type=referenceType,
             short_desc=shortDesc,
             long_desc=longDesc.strip(),
-            nodal_distance=nodalDistance
+            nodal_distance=nodalDistance,
         )
 
     def get_reaction_template(self, reaction):
@@ -127,14 +126,13 @@ class KineticsGroups(Database):
                 # duplicate node found at top of tree
                 # eg. R_recombination: ['Y_rad', 'Y_rad']
                 if len(forward_template) != 2:
-                    raise DatabaseError('Can currently only do symmetric trees with nothing else in them')
+                    raise DatabaseError("Can currently only do symmetric trees with nothing else in them")
                 symmetric_tree = True
         forward_template = temporary
 
         # Descend reactant trees as far as possible
         template = []
-        if (len(forward_template) == 1 and len(reaction.reactants) > len(forward_template) and
-                self.label.lower().split('/')[0]):
+        if len(forward_template) == 1 and len(reaction.reactants) > len(forward_template) and self.label.lower().split("/")[0]:
             entry = forward_template[0]
             group = entry.item
 
@@ -143,7 +141,7 @@ class KineticsGroups(Database):
                 if isinstance(react, Species):
                     react = react.molecule[0]
                 if r:
-                    if isinstance(r, Molecule) and isinstance(react,Fragment):
+                    if isinstance(r, Molecule) and isinstance(react, Fragment):
                         r = react.merge(r)
                     else:
                         r = r.merge(react)
@@ -193,9 +191,8 @@ class KineticsGroups(Database):
         # template is a list of the actual matched nodes
         # forward_template is a list of the top level nodes that should be matched
         if len(template) != len(forward_template):
-            msg = 'Unable to find matching template for reaction {0} in reaction family {1}.'.format(str(reaction),
-                                                                                                     str(self))
-            msg += 'Trying to match {0} but matched {1}'.format(str(forward_template), str(template))
+            msg = "Unable to find matching template for reaction {0} in reaction family {1}.".format(str(reaction), str(self))
+            msg += "Trying to match {0} but matched {1}".format(str(forward_template), str(template))
             raise UndeterminableKineticsError(reaction, message=msg)
 
         return template
@@ -204,11 +201,10 @@ class KineticsGroups(Database):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using group additivity.
-        
+
         Returns just the kinetics.
         """
-        warnings.warn("Group additivity is no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
+        warnings.warn("Group additivity is no longer supported and may be" " removed in version 2.3.", DeprecationWarning)
         # Start with the generic kinetics of the top-level nodes
         # Make a copy so we don't modify the original
         kinetics = deepcopy(reference_kinetics)
@@ -223,10 +219,10 @@ class KineticsGroups(Database):
                 entry = entry.parent
             if entry.data is not None and entry not in self.top:
                 kinetics = self._multiply_kinetics_data(kinetics, entry.data)
-                comment_line += "{0} ({1})".format(entry.label, entry.long_desc.split('\n')[0])
+                comment_line += "{0} ({1})".format(entry.label, entry.long_desc.split("\n")[0])
             elif entry in self.top:
                 comment_line += "{0} (Top node)".format(entry.label)
-            kinetics.comment += comment_line + '\n'
+            kinetics.comment += comment_line + "\n"
 
         # Also include reaction-path degeneracy
 
@@ -239,15 +235,15 @@ class KineticsGroups(Database):
     def _multiply_kinetics_data(self, kinetics1, kinetics2):
         """
         Multiply two kinetics objects `kinetics1` and `kinetics2` of the same
-        class together, returning their product as a new kinetics object of 
+        class together, returning their product as a new kinetics object of
         that class. Currently this only works for :class:`KineticsData`, :class:`ArrheniusEP` or
         :class:`Arrhenius` objects.
         """
         if isinstance(kinetics1, KineticsData) and isinstance(kinetics2, KineticsData):
-            if (len(kinetics1.Tdata.value_si) != len(kinetics2.Tdata.value_si) or
-                    any([T1 != T2 for T1, T2 in zip(kinetics1.Tdata.value_si, kinetics2.Tdata.value_si)])):
-                raise KineticsError('Cannot add these KineticsData objects due to '
-                                    'their having different temperature points.')
+            if len(kinetics1.Tdata.value_si) != len(kinetics2.Tdata.value_si) or any(
+                [T1 != T2 for T1, T2 in zip(kinetics1.Tdata.value_si, kinetics2.Tdata.value_si)]
+            ):
+                raise KineticsError("Cannot add these KineticsData objects due to " "their having different temperature points.")
             kinetics = KineticsData(
                 Tdata=(kinetics1.Tdata.value, kinetics2.Tdata.units),
                 kdata=(kinetics1.kdata.value * kinetics2.kdata.value, kinetics1.kdata.units),
@@ -259,7 +255,7 @@ class KineticsGroups(Database):
             kinetics = Arrhenius(
                 A=(kinetics1.A.value * kinetics2.A.value, kinetics1.A.units),
                 n=(kinetics1.n.value + kinetics2.n.value, kinetics1.n.units),
-                Ea=(kinetics1.Ea.value_si + kinetics2.Ea.value_si, 'J/mol'),
+                Ea=(kinetics1.Ea.value_si + kinetics2.Ea.value_si, "J/mol"),
                 T0=(kinetics1.T0.value, kinetics1.T0.units),
             )
         elif isinstance(kinetics1, ArrheniusEP) and isinstance(kinetics2, ArrheniusEP):
@@ -268,31 +264,30 @@ class KineticsGroups(Database):
                 A=(kinetics1.A.value * kinetics2.A.value, kinetics1.A.units),
                 n=(kinetics1.n.value + kinetics2.n.value, kinetics1.n.units),
                 alpha=kinetics1.alpha + kinetics2.alpha,
-                E0=(kinetics1.E0.value_si + kinetics2.E0.value_si, 'J/mol'),
+                E0=(kinetics1.E0.value_si + kinetics2.E0.value_si, "J/mol"),
             )
         elif isinstance(kinetics1, Arrhenius) and isinstance(kinetics2, ArrheniusEP):
             assert kinetics1.A.units == kinetics2.A.units
-            assert kinetics1.T0.units == 'K'
+            assert kinetics1.T0.units == "K"
             assert kinetics1.T0.value == 1.0
             kinetics = ArrheniusEP(
                 A=(kinetics1.A.value * kinetics2.A.value, kinetics1.A.units),
                 n=(kinetics1.n.value + kinetics2.n.value, kinetics1.n.units),
                 alpha=kinetics2.alpha,
-                E0=(kinetics1.Ea.value_si + kinetics2.E0.value_si, 'J/mol'),
+                E0=(kinetics1.Ea.value_si + kinetics2.E0.value_si, "J/mol"),
             )
         elif isinstance(kinetics1, ArrheniusEP) and isinstance(kinetics2, Arrhenius):
             assert kinetics1.A.units == kinetics2.A.units
-            assert 'K' == kinetics2.T0.units
+            assert "K" == kinetics2.T0.units
             assert 1.0 == kinetics2.T0.value
             kinetics = ArrheniusEP(
                 A=(kinetics1.A.value * kinetics2.A.value, kinetics1.A.units),
                 n=(kinetics1.n.value + kinetics2.n.value, kinetics1.n.units),
                 alpha=kinetics1.alpha,
-                E0=(kinetics1.E0.value_si + kinetics2.Ea.value_si, 'J/mol'),
+                E0=(kinetics1.E0.value_si + kinetics2.Ea.value_si, "J/mol"),
             )
         else:
-            raise KineticsError('Unable to multiply kinetics types "{0}" and '
-                                '"{1}".'.format(kinetics1.__class__, kinetics2.__class__))
+            raise KineticsError('Unable to multiply kinetics types "{0}" and ' '"{1}".'.format(kinetics1.__class__, kinetics2.__class__))
 
         if kinetics1.Tmin is not None and kinetics2.Tmin is not None:
             kinetics.Tmin = kinetics1.Tmin if kinetics1.Tmin.value_si > kinetics2.Tmin.value_si else kinetics2.Tmin
@@ -322,15 +317,15 @@ class KineticsGroups(Database):
         elif kinetics1.Pmax is None and kinetics2.Pmax is not None:
             kinetics.Pmax = kinetics2.Pmax
 
-        if kinetics1.comment == '':
+        if kinetics1.comment == "":
             kinetics.comment = kinetics2.comment
-        elif kinetics2.comment == '':
+        elif kinetics2.comment == "":
             kinetics.comment = kinetics1.comment
         else:
-            kinetics.comment = kinetics1.comment + ' + ' + kinetics2.comment
+            kinetics.comment = kinetics1.comment + " + " + kinetics2.comment
         return kinetics
 
-    def generate_group_additivity_values(self, training_set, kunits, method='Arrhenius'):
+    def generate_group_additivity_values(self, training_set, kunits, method="Arrhenius"):
         """
         Generate the group additivity values using the given `training_set`,
         a list of 2-tuples of the form ``(template, kinetics)``. You must also
@@ -339,8 +334,7 @@ class KineticsGroups(Database):
         changed significantly since the last time they were fitted, or ``False``
         otherwise.
         """
-        warnings.warn("Group additivity is no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
+        warnings.warn("Group additivity is no longer supported and may be" " removed in version 2.3.", DeprecationWarning)
         # keep track of previous values so we can detect if they change
         old_entries = dict()
         for label, entry in self.entries.items():
@@ -362,7 +356,7 @@ class KineticsGroups(Database):
         group_list = list(set(group_list))
         group_list.sort(key=lambda x: x.index)
 
-        if method == 'KineticsData':
+        if method == "KineticsData":
             # Fit a discrete set of k(T) data points by training against k(T) data
 
             Tdata = np.array([300, 400, 500, 600, 800, 1000, 1500, 2000])
@@ -384,14 +378,12 @@ class KineticsGroups(Database):
 
             kdata = []
             for template, kinetics in training_set:
-
                 if isinstance(kinetics, (Arrhenius, KineticsData)):
                     kd = [kinetics.get_rate_coefficient(T) for T in Tdata]
                 elif isinstance(kinetics, ArrheniusEP):
                     kd = [kinetics.get_rate_coefficient(T, 0) for T in Tdata]
                 else:
-                    raise TypeError('Unexpected kinetics model of type {0} for template '
-                                    '{1}.'.format(kinetics.__class__, template))
+                    raise TypeError("Unexpected kinetics model of type {0} for template " "{1}.".format(kinetics.__class__, template))
                 kdata.append(kd)
 
                 # Create every combination of each group and its ancestors with each other
@@ -413,8 +405,7 @@ class KineticsGroups(Database):
                         group_comments[group].add("{0!s}".format(template))
 
             if len(A) == 0:
-                logging.warning('Unable to fit kinetics groups for family "{0}"; '
-                                'no valid data found.'.format(self.label))
+                logging.warning('Unable to fit kinetics groups for family "{0}"; ' "no valid data found.".format(self.label))
                 return
             A = np.array(A)
             b = np.array(b)
@@ -423,9 +414,8 @@ class KineticsGroups(Database):
             x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
 
             for t, T in enumerate(Tdata):
-
                 # Determine error in each group (on log scale)
-                stdev = np.zeros(len(group_list) + 1, np.float64)
+                stdev = np.zeros(len(group_list) + 1, float)
                 count = np.zeros(len(group_list) + 1, np.int)
 
                 for index in range(len(training_set)):
@@ -445,6 +435,7 @@ class KineticsGroups(Database):
                     count[-1] += 1
                 stdev = np.sqrt(stdev / (count - 1))
                 import scipy.stats
+
                 ci = scipy.stats.t.ppf(0.975, count - 1) * stdev
 
                 # Update dictionaries of fitted group values and uncertainties
@@ -469,33 +460,31 @@ class KineticsGroups(Database):
                     entry.data = KineticsData(Tdata=(Tdata, "K"), kdata=(group_values[entry], kunits))
                     if not any(np.isnan(np.array(group_uncertainties[entry]))):
                         entry.data.kdata.uncertainties = np.array(group_uncertainties[entry])
-                        entry.data.kdata.uncertainty_type = '*|/'
+                        entry.data.kdata.uncertainty_type = "*|/"
                     entry.short_desc = "Group additive kinetics."
                     entry.long_desc = "Fitted to {0} rates.\n".format(group_counts[entry])
                     entry.long_desc += "\n".join(group_comments[entry])
                 else:
                     entry.data = None
 
-        elif method == 'Arrhenius':
+        elif method == "Arrhenius":
             # Fit Arrhenius parameters (A, n, Ea) by training against k(T) data
 
             Tdata = np.array([300, 400, 500, 600, 800, 1000, 1500, 2000])
             logTdata = np.log(Tdata)
-            Tinvdata = 1000. / (constants.R * Tdata)
+            Tinvdata = 1000.0 / (constants.R * Tdata)
 
             A = []
             b = []
 
             kdata = []
             for template, kinetics in training_set:
-
                 if isinstance(kinetics, (Arrhenius, KineticsData)):
                     kd = [kinetics.get_rate_coefficient(T) for T in Tdata]
                 elif isinstance(kinetics, ArrheniusEP):
                     kd = [kinetics.get_rate_coefficient(T, 0) for T in Tdata]
                 else:
-                    raise TypeError('Unexpected kinetics model of type {0} for template '
-                                    '{1}.'.format(kinetics.__class__, template))
+                    raise TypeError("Unexpected kinetics model of type {0} for template " "{1}.".format(kinetics.__class__, template))
                 kdata.append(kd)
 
                 # Create every combination of each group and its ancestors with each other
@@ -523,8 +512,7 @@ class KineticsGroups(Database):
                         b.append(brow)
 
             if len(A) == 0:
-                logging.warning('Unable to fit kinetics groups for family "{0}"; '
-                                'no valid data found.'.format(self.label))
+                logging.warning('Unable to fit kinetics groups for family "{0}"; ' "no valid data found.".format(self.label))
                 return
             A = np.array(A)
             b = np.array(b)
@@ -547,14 +535,13 @@ class KineticsGroups(Database):
                     T0=(1, "K"),
                 )
 
-        elif method == 'Arrhenius2':
+        elif method == "Arrhenius2":
             # Fit Arrhenius parameters (A, n, Ea) by training against (A, n, Ea) values
 
             A = []
             b = []
 
             for template, kinetics in training_set:
-
                 # Create every combination of each group and its ancestors with each other
                 combinations = []
                 for group in template:
@@ -564,8 +551,7 @@ class KineticsGroups(Database):
                 combinations = get_all_combinations(combinations)
 
                 # Add a row to the matrix for each parameter
-                if (isinstance(kinetics, Arrhenius) or
-                        (isinstance(kinetics, ArrheniusEP) and kinetics.alpha.value_si == 0)):
+                if isinstance(kinetics, Arrhenius) or (isinstance(kinetics, ArrheniusEP) and kinetics.alpha.value_si == 0):
                     for groups in combinations:
                         Arow = []
                         for group in group_list:
@@ -575,13 +561,12 @@ class KineticsGroups(Database):
                                 Arow.append(0)
                         Arow.append(1)
                         Ea = kinetics.E0.value_si if isinstance(kinetics, ArrheniusEP) else kinetics.Ea.value_si
-                        brow = [math.log(kinetics.A.value_si), kinetics.n.value_si, Ea / 1000.]
+                        brow = [math.log(kinetics.A.value_si), kinetics.n.value_si, Ea / 1000.0]
                         A.append(Arow)
                         b.append(brow)
 
             if len(A) == 0:
-                logging.warning('Unable to fit kinetics groups for family "{0}"; '
-                                'no valid data found.'.format(self.label))
+                logging.warning('Unable to fit kinetics groups for family "{0}"; ' "no valid data found.".format(self.label))
                 return
             A = np.array(A)
             b = np.array(b)
@@ -607,18 +592,22 @@ class KineticsGroups(Database):
         changed = False
         for label, entry in self.entries.items():
             if entry.data is not None and label in old_entries:
-                if (isinstance(entry.data, KineticsData) and
-                        isinstance(old_entries[label], KineticsData) and
-                        len(entry.data.kdata.value_si) == len(old_entries[label].kdata.value_si) and
-                        all(abs(entry.data.kdata.value_si / old_entries[label].kdata.value_si - 1) < 0.01)):
+                if (
+                    isinstance(entry.data, KineticsData)
+                    and isinstance(old_entries[label], KineticsData)
+                    and len(entry.data.kdata.value_si) == len(old_entries[label].kdata.value_si)
+                    and all(abs(entry.data.kdata.value_si / old_entries[label].kdata.value_si - 1) < 0.01)
+                ):
                     # New group values within 1% of old
                     pass
-                elif (isinstance(entry.data, Arrhenius) and
-                        isinstance(old_entries[label], Arrhenius) and
-                        abs(entry.data.A.value_si / old_entries[label].A.value_si - 1) < 0.01 and
-                        abs(entry.data.n.value_si / old_entries[label].n.value_si - 1) < 0.01 and
-                        abs(entry.data.Ea.value_si / old_entries[label].Ea.value_si - 1) < 0.01 and
-                        abs(entry.data.T0.value_si / old_entries[label].T0.value_si - 1) < 0.01):
+                elif (
+                    isinstance(entry.data, Arrhenius)
+                    and isinstance(old_entries[label], Arrhenius)
+                    and abs(entry.data.A.value_si / old_entries[label].A.value_si - 1) < 0.01
+                    and abs(entry.data.n.value_si / old_entries[label].n.value_si - 1) < 0.01
+                    and abs(entry.data.Ea.value_si / old_entries[label].Ea.value_si - 1) < 0.01
+                    and abs(entry.data.T0.value_si / old_entries[label].T0.value_si - 1) < 0.01
+                ):
                     # New group values within 1% of old
                     pass
                 else:

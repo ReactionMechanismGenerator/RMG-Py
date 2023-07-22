@@ -41,14 +41,15 @@ from rmgpy.molecule.draw import MoleculeDrawer, create_new_surface
 
 ################################################################################
 
+
 class NetworkDrawer(object):
     """
     This class provides functionality for drawing the potential energy surface
     for a pressure-dependent reaction network using the Cairo 2D graphics
     engine. The most common use case is simply::
-    
+
         NetworkDrawer().draw(network, file_format='png', path='network.png')
-    
+
     where ``network`` is the :class:`Network` object to draw. You can also
     pass a dict of options to the constructor to affect how the network is
     drawn.
@@ -56,16 +57,16 @@ class NetworkDrawer(object):
 
     def __init__(self, options=None):
         self.options = {
-            'structures': True,
-            'fontFamily': 'sans',
-            'fontSizeNormal': 12,
-            'Eunits': 'kJ/mol',
-            'padding': 16,
-            'wellWidth': 64,
-            'wellSpacing': 64,
-            'Eslope': 1.5,
-            'TSwidth': 16,
-            'E0offset': 0.0,
+            "structures": True,
+            "fontFamily": "sans",
+            "fontSizeNormal": 12,
+            "Eunits": "kJ/mol",
+            "padding": 16,
+            "wellWidth": 64,
+            "wellSpacing": 64,
+            "Eslope": 1.5,
+            "TSwidth": 16,
+            "E0offset": 0.0,
         }
         if options:
             self.options.update(options)
@@ -130,9 +131,9 @@ class NetworkDrawer(object):
         """
 
         # Initialize with the current user option value
-        use_structures = self.options['structures']
+        use_structures = self.options["structures"]
 
-        # But don't use structures if one or more species in the configuration 
+        # But don't use structures if one or more species in the configuration
         # do not have structure data
         for spec in configuration.species:
             if spec.molecule is None or len(spec.molecule) == 0:
@@ -141,10 +142,8 @@ class NetworkDrawer(object):
 
         return use_structures
 
-    def _get_text_size(self, text, padding=2, file_format='pdf'):
-        """
-        
-        """
+    def _get_text_size(self, text, padding=2, file_format="pdf"):
+        """ """
         try:
             import cairocffi as cairo
         except ImportError:
@@ -153,7 +152,7 @@ class NetworkDrawer(object):
         # Use dummy surface to determine text extents
         surface = create_new_surface(file_format)
         cr = cairo.Context(surface)
-        cr.set_font_size(self.options['fontSizeNormal'])
+        cr.set_font_size(self.options["fontSizeNormal"])
         extents = cr.text_extents(text)
 
         width = extents[2] + 2 * padding
@@ -162,11 +161,9 @@ class NetworkDrawer(object):
         return [0, 0, width, height]
 
     def _draw_text(self, text, cr, x0, y0, padding=2):
-        """
-        
-        """
+        """ """
         cr.save()
-        cr.set_font_size(self.options['fontSizeNormal'])
+        cr.set_font_size(self.options["fontSizeNormal"])
         extents = cr.text_extents(text)
         cr.move_to(x0 - extents[0] - padding, y0 - extents[1] + padding)
         cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
@@ -178,10 +175,8 @@ class NetworkDrawer(object):
 
         return [0, 0, width, height]
 
-    def _get_label_size(self, configuration, file_format='pdf'):
-        """
-        
-        """
+    def _get_label_size(self, configuration, file_format="pdf"):
+        """ """
         width = 0
         height = 0
         bounding_rects = []
@@ -193,7 +188,7 @@ class NetworkDrawer(object):
             for spec in configuration.species:
                 bounding_rects.append(self._get_text_size(spec.label, file_format=file_format))
 
-        plus_rect = self._get_text_size('+', file_format=file_format)
+        plus_rect = self._get_text_size("+", file_format=file_format)
 
         for rect in bounding_rects:
             if width < rect[2]:
@@ -203,8 +198,7 @@ class NetworkDrawer(object):
 
         return [0, 0, width, height]
 
-    def _draw_label(self, configuration, cr, x0, y0, file_format='pdf'):
-
+    def _draw_label(self, configuration, cr, x0, y0, file_format="pdf"):
         bounding_rect = self._get_label_size(configuration, file_format=file_format)
         padding = 2
 
@@ -212,9 +206,9 @@ class NetworkDrawer(object):
         y = y0
         for i, spec in enumerate(configuration.species):
             if i > 0:
-                rect = self._get_text_size('+', padding=padding, file_format=file_format)
+                rect = self._get_text_size("+", padding=padding, file_format=file_format)
                 x = x0 - 0.5 * (rect[2] - bounding_rect[2]) + 2 * padding
-                self._draw_text('+', cr, x, y)
+                self._draw_text("+", cr, x, y)
                 y += rect[3]
 
             if use_structures:
@@ -247,7 +241,7 @@ class NetworkDrawer(object):
             try:
                 import cairo
             except ImportError:
-                logging.warning('Cairo not found; potential energy surface will not be drawn.')
+                logging.warning("Cairo not found; potential energy surface will not be drawn.")
                 return
 
         self.network = network
@@ -273,28 +267,29 @@ class NetworkDrawer(object):
         e0_max *= 0.001
 
         # Drawing parameters
-        padding = self.options['padding']
-        well_width = self.options['wellWidth']
-        well_spacing = self.options['wellSpacing']
-        e_slope = self.options['Eslope']
-        ts_width = self.options['TSwidth']
+        padding = self.options["padding"]
+        well_width = self.options["wellWidth"]
+        well_spacing = self.options["wellSpacing"]
+        e_slope = self.options["Eslope"]
+        ts_width = self.options["TSwidth"]
 
-        e0_offset = self.options['E0offset'] * 0.001
+        e0_offset = self.options["E0offset"] * 0.001
 
         # Choose multiplier to convert energies to desired units (on figure only)
-        e_units = self.options['Eunits']
+        e_units = self.options["Eunits"]
         try:
-            e_mult = {'J/mol': 1.0,
-                      'kJ/mol': 0.001,
-                      'cal/mol': 1.0 / 4.184,
-                      'kcal/mol': 1.0 / 4184.,
-                      'cm^-1': 1.0 / 11.962,
-                      }[e_units]
+            e_mult = {
+                "J/mol": 1.0,
+                "kJ/mol": 0.001,
+                "cal/mol": 1.0 / 4.184,
+                "kcal/mol": 1.0 / 4184.0,
+                "cm^-1": 1.0 / 11.962,
+            }[e_units]
         except KeyError:
             raise Exception('Invalid value "{0}" for Eunits parameter.'.format(e_units))
 
         # Determine height required for drawing
-        e_height = self._get_text_size('0.0', file_format=file_format)[3] + 6
+        e_height = self._get_text_size("0.0", file_format=file_format)[3] + 6
         y_e0 = (e0_max - 0.0) * e_slope + padding + e_height
         height = (e0_max - e0_min) * e_slope + 2 * padding + e_height + 6
         for i in range(len(wells)):
@@ -303,7 +298,7 @@ class NetworkDrawer(object):
                 break
 
         # Determine naive position of each well (one per column)
-        coordinates = np.zeros((len(wells), 2), np.float64)
+        coordinates = np.zeros((len(wells), 2), float)
         x = padding
         for i in range(len(wells)):
             well = wells[i]
@@ -394,12 +389,12 @@ class NetworkDrawer(object):
 
         # Some global settings
         cr.select_font_face("sans")
-        cr.set_font_size(self.options['fontSizeNormal'])
+        cr.set_font_size(self.options["fontSizeNormal"])
 
         # Fill the background with white
         cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
         cr.paint()
-        self._draw_text('E0 ({0})'.format(e_units), cr, 15, 10, padding=2)  # write units
+        self._draw_text("E0 ({0})".format(e_units), cr, 15, 10, padding=2)  # write units
 
         # # DEBUG: Draw well bounding rectangles
         # cr.save()
@@ -447,8 +442,8 @@ class NetworkDrawer(object):
                 else:
                     x0 = 0.5 * (x1 + x2)
                 y0 = y_e0 - (e0_ts + e0_offset) * e_slope
-                width1 = (x0 - x1)
-                width2 = (x2 - x0)
+                width1 = x0 - x1
+                width2 = x2 - x0
                 # Draw horizontal line for TS
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
                 cr.set_line_width(2.0)
@@ -456,7 +451,7 @@ class NetworkDrawer(object):
                 cr.line_to(x0 + ts_width / 2.0, y0)
                 cr.stroke()
                 # Add background and text for energy
-                E0 = "{0:.1f}".format(e0_ts * 1000. * e_mult)
+                E0 = "{0:.1f}".format(e0_ts * 1000.0 * e_mult)
                 extents = cr.text_extents(E0)
                 x = x0 - extents[2] / 2.0
                 y = y0 - 6.0
@@ -475,7 +470,7 @@ class NetworkDrawer(object):
                 cr.curve_to(x0 + width2 / 8.0 + ts_width / 2.0, y0, x2 - width2 / 8.0, y2, x2, y2)
                 cr.stroke()
             else:
-                width = (x2 - x1)
+                width = x2 - x1
                 # Draw Bezier curve connecting reactants and products through TS
                 cr.set_source_rgba(0.0, 0.0, 0.0, 0.5)
                 cr.set_line_width(1.0)
@@ -494,7 +489,7 @@ class NetworkDrawer(object):
             cr.stroke()
             # Add background and text for energy
             E0 = well.E0 * 0.001 - e0_offset
-            E0 = "{0:.1f}".format(E0 * 1000. * e_mult)
+            E0 = "{0:.1f}".format(E0 * 1000.0 * e_mult)
             extents = cr.text_extents(E0)
             x = x0 - extents[2] / 2.0
             y = y0 - 6.0
@@ -513,7 +508,7 @@ class NetworkDrawer(object):
             self._draw_label(well, cr, x, y, file_format=file_format)
 
         # Finish Cairo drawing
-        if file_format == 'png':
+        if file_format == "png":
             surface.write_to_png(path)
         else:
             surface.finish()

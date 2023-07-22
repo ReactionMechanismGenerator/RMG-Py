@@ -946,7 +946,7 @@ class StatMechJob(object):
         Plot the potential for the rotor, along with its cosine and Fourier
         series potential fits, and save it in the `hindered_rotor_plots` attribute.
         """
-        phi = np.arange(0, 6.3, 0.02, np.float64)
+        phi = np.arange(0, 6.3, 0.02, float)
         Vlist_cosine = np.zeros_like(phi)
         Vlist_fourier = np.zeros_like(phi)
         for i in range(phi.shape[0]):
@@ -1072,7 +1072,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
     if linear:
         external = 5
 
-    d = np.zeros((n_atoms * 3, external), np.float64)
+    d = np.zeros((n_atoms * 3, external), float)
 
     # Transform the coordinates to the principal axes
     p = np.dot(coordinates, inertia_xyz)
@@ -1098,9 +1098,9 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
 
     # Make sure projection matrix is orthonormal
 
-    inertia = np.identity(n_atoms * 3, np.float64)
+    inertia = np.identity(n_atoms * 3, float)
 
-    p = np.zeros((n_atoms * 3, 3 * n_atoms + external), np.float64)
+    p = np.zeros((n_atoms * 3, 3 * n_atoms + external), float)
 
     p[:, 0:external] = d[:, 0:external]
     p[:, external : external + 3 * n_atoms] = inertia[:, 0 : 3 * n_atoms]
@@ -1133,7 +1133,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             i += 1
 
     # T is the transformation vector from cartesian to internal coordinates
-    T = np.zeros((n_atoms * 3, 3 * n_atoms - external), np.float64)
+    T = np.zeros((n_atoms * 3, 3 * n_atoms - external), float)
 
     T[:, 0 : 3 * n_atoms - external] = p[:, external : 3 * n_atoms]
 
@@ -1159,7 +1159,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             logging.debug(np.sqrt(eig[i]) / (2 * math.pi * constants.c * 100))
 
     # Now we can start thinking about projecting out the internal rotations
-    d_int = np.zeros((3 * n_atoms, n_rotors), np.float64)
+    d_int = np.zeros((3 * n_atoms, n_rotors), float)
 
     counter = 0
     for i, rotor in enumerate(rotors):
@@ -1210,7 +1210,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
 
     # Normal modes in mass weighted cartesian coordinates
     vmw = np.dot(T, v)
-    eigm = np.zeros((3 * n_atoms - external, 3 * n_atoms - external), np.float64)
+    eigm = np.zeros((3 * n_atoms - external, 3 * n_atoms - external), float)
 
     for i in range(3 * n_atoms - external):
         eigm[i, i] = eig[i]
@@ -1253,7 +1253,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
     # Do the projection
     d_int_proj = np.dot(vmw.T, d_int)
     proj = np.dot(d_int, d_int.T)
-    inertia = np.identity(n_atoms * 3, np.float64)
+    inertia = np.identity(n_atoms * 3, float)
     proj = inertia - proj
     fm = np.dot(proj, np.dot(fm, proj))
     # Get eigenvalues of mass-weighted force constant matrix

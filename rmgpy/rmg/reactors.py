@@ -394,7 +394,7 @@ class Reactor:
         for pruning of ranged reactors it is important to avoid doing this
         every initialization
         """
-        self.max_edge_species_rate_ratios = np.zeros((len(self.prunable_species)), np.float64)
+        self.max_edge_species_rate_ratios = np.zeros((len(self.prunable_species)), float)
 
     def simulate(self, model_settings, simulator_settings, conditions):
         """

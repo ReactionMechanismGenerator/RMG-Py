@@ -173,12 +173,12 @@ cdef class StickingCoefficient(KineticsModel):
         if len(Tlist) < 3 + three_params:
             raise KineticsError('Not enough degrees of freedom to fit this Arrhenius expression')
         if three_params:
-            A = np.zeros((len(Tlist), 3), np.float64)
+            A = np.zeros((len(Tlist), 3), float)
             A[:, 0] = np.ones_like(Tlist)
             A[:, 1] = np.log(Tlist / T0)
             A[:, 2] = -1.0 / constants.R / Tlist
         else:
-            A = np.zeros((len(Tlist), 2), np.float64)
+            A = np.zeros((len(Tlist), 2), float)
             A[:, 0] = np.ones_like(Tlist)
             A[:, 1] = -1.0 / constants.R / Tlist
         b = np.log(klist)

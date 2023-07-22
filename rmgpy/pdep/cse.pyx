@@ -50,10 +50,10 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
     """A method for applying the Chemically Significant Eigenvalues approach for solving the master equation."""
     cdef np.ndarray[np.int_t, ndim=1] j_list
     cdef np.ndarray[np.int_t, ndim=3] indices
-    cdef np.ndarray[np.float64_t, ndim=1] e_list, s_mat, s_mat_inv, omega0, omega, eq_ratios
-    cdef np.ndarray[np.float64_t, ndim=2] me_mat, k, eigen_vectors0, eigen_vectors, z_mat, z_mat_inv, y, x
-    cdef np.ndarray[np.float64_t, ndim=3] dens_states
-    cdef np.ndarray[np.float64_t, ndim=4] g_nj, pa
+    cdef np.ndarray[float_t, ndim=1] e_list, s_mat, s_mat_inv, omega0, omega, eq_ratios
+    cdef np.ndarray[float_t, ndim=2] me_mat, k, eigen_vectors0, eigen_vectors, z_mat, z_mat_inv, y, x
+    cdef np.ndarray[float_t, ndim=3] dens_states
+    cdef np.ndarray[float_t, ndim=4] g_nj, pa
     cdef list lumping, unlumping
     cdef double temperature, pressure, ym_b
     cdef int n_isom, n_reac, n_prod, n_grains, n_j, n_chem, n_cse, n_rows
@@ -85,7 +85,7 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
     me_mat[:, n_rows-n_reac:] *= ym_b
 
     # Generate symmetrization matrix and its inverse
-    s_mat = np.zeros(n_rows, np.float64)
+    s_mat = np.zeros(n_rows, float)
     s_mat_inv = np.zeros_like(s_mat)
     for i in range(n_isom):
         for r in range(n_grains):
@@ -136,8 +136,8 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
         if abs(omega0[ind[-n_chem - 1]] / omega0[ind[-1 - i]]) > 3.0:
             n_cse += 1
 
-    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float64)
-    pa = np.zeros((n_isom, n_isom + n_reac, n_grains, n_j), np.float64)
+    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), float)
+    pa = np.zeros((n_isom, n_isom + n_reac, n_grains, n_j), float)
 
     # Check that we have the correct number of distinct eigenvalues and that
     # there is a zero eigenvalue if there should be (i.e. no product channels)
@@ -172,9 +172,9 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
     # This method is more numerically robust
     # It also doesn't require finagling with various initial conditions
     # Source: Robertson, Pilling, Jitariu, and Hillier, Phys. Chem. Chem. Phys 9, p. 4085-4097 (2007).
-    z_mat = np.zeros((n_cse, n_cse), np.float64)
-    z_mat_inv = np.zeros((n_cse, n_cse), np.float64)
-    y = np.zeros((n_prod, n_cse), np.float64)
+    z_mat = np.zeros((n_cse, n_cse), float)
+    z_mat_inv = np.zeros((n_cse, n_cse), float)
+    y = np.zeros((n_prod, n_cse), float)
     for j in range(n_cse):
         for i in range(n_isom):
             if i in lumping:
@@ -264,7 +264,7 @@ def get_rate_coefficients_CSE_Advanced(network, T, P, neglect_high_energy_collis
     n_rows = me_mat.shape[0]
 
     # Generate symmetrization matrix and its inverse
-    s_mat = np.zeros(n_rows, np.float64)
+    s_mat = np.zeros(n_rows, float)
     s_mat_inv = np.zeros_like(s_mat)
     for i in range(n_isom):
         for r in range(n_grains):
@@ -304,7 +304,7 @@ def get_rate_coefficients_CSE_Advanced(network, T, P, neglect_high_energy_collis
     if eigratio < 3.0:
         logging.warning("eigratio of {} was less than 3.0".format(eigratio))
 
-    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float64)
+    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), float)
 
     # Extract the chemically-significant eigenvalues and eigenvectors
     omega = np.real(omega0.take(ind[:]))

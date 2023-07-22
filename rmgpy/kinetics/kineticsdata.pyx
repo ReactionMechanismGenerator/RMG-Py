@@ -98,7 +98,7 @@ cdef class KineticsData(KineticsModel):
         Return the rate coefficient in the appropriate combination of m^3, 
         mol, and s at temperature `T` in K. 
         """
-        cdef np.ndarray[np.float64_t, ndim=1] Tdata, kdata
+        cdef np.ndarray[float_t, ndim=1] Tdata, kdata
         cdef double Tlow, Thigh, klow, khigh
         cdef double k
         cdef int i, N
@@ -211,8 +211,8 @@ cdef class PDepKineticsData(PDepKineticsModel):
         Return the rate coefficient in the appropriate combination of m^3, 
         mol, and s at temperature `T` in K and pressure `P` in Pa. 
         """
-        cdef np.ndarray[np.float64_t, ndim=1] Tdata, Pdata
-        cdef np.ndarray[np.float64_t, ndim=2] kdata
+        cdef np.ndarray[float_t, ndim=1] Tdata, Pdata
+        cdef np.ndarray[float_t, ndim=2] kdata
         cdef double Tlow, Thigh, Plow, Phigh, klow, khigh
         cdef double k
         cdef int i, j, M, N

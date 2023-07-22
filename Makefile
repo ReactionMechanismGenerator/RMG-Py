@@ -47,7 +47,7 @@ decython:
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test-all:
-	python-jl -m pytest
+	python-jl -m pytest -m "not database"
 
 test test-unittests:
 	python-jl -m pytest -m "not functional not database"

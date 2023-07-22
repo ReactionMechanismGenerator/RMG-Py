@@ -58,25 +58,24 @@ class OrcaLog(ESSAdapter):
         Checks for common errors in an Orca log file.
         If any are found, this method will raise an error and crash.
         """
-        with open(os.path.join(self.path), 'r') as f:
+        with open(os.path.join(self.path), "r") as f:
             lines = f.readlines()
             error = None
             for line in reversed(lines):
                 # check for common error messages
-                if 'ORCA finished by error termination in SCF' in line:
-                    error = 'SCF'
+                if "ORCA finished by error termination in SCF" in line:
+                    error = "SCF"
                     break
-                elif 'ORCA finished by error termination in MDCI' in line:
-                    error = 'MDCI'
+                elif "ORCA finished by error termination in MDCI" in line:
+                    error = "MDCI"
                     break
-                elif 'Error : multiplicity' in line:
-                    error = f'The multiplicity and charge combination for species {species_label} are wrong.'
+                elif "Error : multiplicity" in line:
+                    error = f"The multiplicity and charge combination for species {species_label} are wrong."
                     break
-                elif 'ORCA TERMINATED NORMALLY' in line:
+                elif "ORCA TERMINATED NORMALLY" in line:
                     break
             if error:
-                raise LogError(f'There was an error ({error}) with Orca output file {self.path} '
-                               f'due to line:\n{line}')
+                raise LogError(f"There was an error ({error}) with Orca output file {self.path} " f"due to line:\n{line}")
 
     def get_number_of_atoms(self):
         """
@@ -85,15 +84,15 @@ class OrcaLog(ESSAdapter):
         """
         natoms = 0
 
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             line = f.readline()
-            while line != '' and natoms == 0:
+            while line != "" and natoms == 0:
                 # Automatically determine the number of atoms
-                if 'CARTESIAN COORDINATES (ANGSTROEM)' in line and natoms == 0:
+                if "CARTESIAN COORDINATES (ANGSTROEM)" in line and natoms == 0:
                     for i in range(2):
                         line = f.readline()
 
-                    while '---------------------------------' not in line:
+                    while "---------------------------------" not in line:
                         natoms += 1
                         line = f.readline()
                         if not line.strip():
@@ -110,9 +109,9 @@ class OrcaLog(ESSAdapter):
         If no force constant matrix can be found, ``None`` is returned.
         """
         hess_files = list()
-        for (_, _, files) in os.walk(os.path.dirname(self.path)):
+        for _, _, files in os.walk(os.path.dirname(self.path)):
             for file_ in files:
-                if file_.endswith('.hess'):
+                if file_.endswith(".hess"):
                     hess_files.append(file_)
             break
         if len(hess_files) == 1:
@@ -123,18 +122,20 @@ class OrcaLog(ESSAdapter):
                 if hess_file == expected_hess_name:
                     break
             else:
-                raise LogError(f'Could not identify the intended .hess file in {os.path.dirname(self.path)}.\n'
-                               f'Expected to find {expected_hess_name} in that folder.')
+                raise LogError(
+                    f"Could not identify the intended .hess file in {os.path.dirname(self.path)}.\n"
+                    f"Expected to find {expected_hess_name} in that folder."
+                )
 
         force = None
         n_atoms = self.get_number_of_atoms()
         n_rows = n_atoms * 3
-        with open(hess_file, 'r') as f:
+        with open(hess_file, "r") as f:
             line = f.readline()
-            while line != '':
-                if '$hessian' in line:
+            while line != "":
+                if "$hessian" in line:
                     line = f.readline()
-                    force = np.zeros((n_rows, n_rows), np.float64)
+                    force = np.zeros((n_rows, n_rows), float)
                     for i in range(int(math.ceil(n_rows / 5.0))):
                         line = f.readline()
                         for j in range(n_rows):
@@ -142,7 +143,7 @@ class OrcaLog(ESSAdapter):
                             for k in range(len(data)):
                                 force[j, i * 5 + k] = float(data[k])
                     # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
-                    force *= 4.35974417e-18 / 5.291772108e-11 ** 2
+                    force *= 4.35974417e-18 / 5.291772108e-11**2
                 line = f.readline()
         return force
 
@@ -162,11 +163,11 @@ class OrcaLog(ESSAdapter):
         geometry_flag = False
         for i in reversed(range(len(log))):
             line = log[i]
-            if 'CARTESIAN COORDINATES (ANGSTROEM)' in line:
-                for line in log[(i + 2):]:
+            if "CARTESIAN COORDINATES (ANGSTROEM)" in line:
+                for line in log[(i + 2) :]:
                     if not line.strip():
                         break
-                    if '---------------------------------' not in line:
+                    if "---------------------------------" not in line:
                         data = line.split()
                         atoms.append(data[0])
                         coords.append([float(c) for c in data[1:]])
@@ -180,15 +181,15 @@ class OrcaLog(ESSAdapter):
             mass1, num1 = get_element_mass(atom1)
             mass.append(mass1)
             numbers.append(num1)
-        coord = np.array(coords, np.float64)
+        coord = np.array(coords, float)
         number = np.array(numbers, np.int)
-        mass = np.array(mass, np.float64)
+        mass = np.array(mass, float)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
-            raise LogError(f'Unable to read atoms from orca geometry output file {self.path}.')
+            raise LogError(f"Unable to read atoms from orca geometry output file {self.path}.")
 
         return coord, number, mass
 
-    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
+    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=""):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of an Orca "Freq" quantum chemistry calculation. As
@@ -209,17 +210,17 @@ class OrcaLog(ESSAdapter):
         with open(self.path) as f:
             log = f.readlines()
         for i, line in enumerate(log):
-            if spin_multiplicity == 0 and ' Multiplicity           Mult' in line:
+            if spin_multiplicity == 0 and " Multiplicity           Mult" in line:
                 spin_multiplicity = int(float(line.split()[3]))
 
-            if ' Mode    freq' in line:
+            if " Mode    freq" in line:
                 frequencies = list()
-                for line_ in log[(i + 2):]:
+                for line_ in log[(i + 2) :]:
                     if not line_.strip():
                         break
                     frequencies.extend([float(line_.split()[1])])
                 else:
-                    raise Exception(f'Frequencies not found in {self.path}')
+                    raise Exception(f"Frequencies not found in {self.path}")
                 frequencies = [f for f in frequencies if f > 0.0]
                 unscaled_frequencies = frequencies
                 vibration = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
@@ -243,25 +244,24 @@ class OrcaLog(ESSAdapter):
         # Take only the last modes found (in the event of multiple jobs).
         modes = [mmass[-1], rot[-1], freq[-1]]
 
-        return Conformer(E0=(e0 * 0.001, "kJ/mol"),
-                         modes=modes,
-                         spin_multiplicity=spin_multiplicity,
-                         optical_isomers=optical_isomers),\
-            unscaled_frequencies
+        return (
+            Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spin_multiplicity, optical_isomers=optical_isomers),
+            unscaled_frequencies,
+        )
 
-    def load_energy(self, zpe_scale_factor=1.):
+    def load_energy(self, zpe_scale_factor=1.0):
         """
         Load the energy in J/ml from an Orca log file. Only the last energy
         in the file is returned. The zero-point energy is *not* included in
         the returned value.
         """
         e_elect = None
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             for line in f:
-                if 'FINAL SINGLE POINT ENERGY' in line:  # for all methods in Orca
+                if "FINAL SINGLE POINT ENERGY" in line:  # for all methods in Orca
                     e_elect = float(line.split()[-1])
         if e_elect is None:
-            raise LogError('Unable to find energy in Orca output file.')
+            raise LogError("Unable to find energy in Orca output file.")
         return e_elect * constants.E_h * constants.Na
 
     def load_zero_point_energy(self):
@@ -269,12 +269,12 @@ class OrcaLog(ESSAdapter):
         Load the unscaled zero-point energy in J/mol from a Orca output file.
         """
         zpe = None
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             for line in f:
-                if 'Zero point energy' in line:
+                if "Zero point energy" in line:
                     zpe = float(line.split()[-4]) * constants.E_h * constants.Na
         if zpe is None:
-            raise LogError('Unable to find zero-point energy in Orca output file.')
+            raise LogError("Unable to find zero-point energy in Orca output file.")
         return zpe
 
     def load_negative_frequency(self):
@@ -286,16 +286,16 @@ class OrcaLog(ESSAdapter):
         with open(self.path) as f:
             log = f.readlines()
         for line in log:
-            if '***imaginary mode***' in line:
+            if "***imaginary mode***" in line:
                 frequencies.append(float(line.split()[1]))
 
         if len(frequencies) == 1:
             return frequencies[0]
         elif len(frequencies) > 1:
-            logging.info('More than one imaginary frequency in Orca output file {0}.'.format(self.path))
+            logging.info("More than one imaginary frequency in Orca output file {0}.".format(self.path))
             return frequencies[0]
         else:
-            raise LogError(f'Unable to find imaginary frequency in Orca output file {self.path}')
+            raise LogError(f"Unable to find imaginary frequency in Orca output file {self.path}")
 
     def get_T1_diagnostic(self):
         """
@@ -306,21 +306,21 @@ class OrcaLog(ESSAdapter):
         with open(self.path) as f:
             log = f.readlines()
         for line in reversed(log):
-            if 'T1 diagnostic ' in line:
+            if "T1 diagnostic " in line:
                 items = line.split()
                 return float(items[-1])
 
     def load_scan_energies(self):
         """not implemented in Orca"""
-        raise NotImplementedError('The load_scan_energies method is not implemented for Orca.')
+        raise NotImplementedError("The load_scan_energies method is not implemented for Orca.")
 
     def load_scan_pivot_atoms(self):
         """Not implemented for Orca"""
-        raise NotImplementedError('The load_scan_pivot_atoms method is not implemented for Orca.')
+        raise NotImplementedError("The load_scan_pivot_atoms method is not implemented for Orca.")
 
     def load_scan_frozen_atoms(self):
         """Not implemented for Orca"""
-        raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for Orca.')
+        raise NotImplementedError("The load_scan_frozen_atoms method is not implemented for Orca.")
 
 
 register_ess_adapter("OrcaLog", OrcaLog)

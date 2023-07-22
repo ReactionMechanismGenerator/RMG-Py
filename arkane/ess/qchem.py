@@ -62,16 +62,17 @@ class QChemLog(ESSAdapter):
         Checks for common errors in a QChem log file.
         If any are found, this method will raise an error and crash.
         """
-        with open(os.path.join(self.path), 'r') as f:
+        with open(os.path.join(self.path), "r") as f:
             lines = f.readlines()
             error, warning_line, warning, warn_message = None, None, None, None
             for line in reversed(lines):
                 # check for common error messages
-                if 'SCF failed' in line:
-                    error = 'SCF failed'
+                if "SCF failed" in line:
+                    error = "SCF failed"
                     break
-                elif 'error' in line and 'DIIS' not in line and 'gprntSymmMtrx' not in line \
-                        and 'Relative error' not in line and 'zonesort' not in line:
+                elif (
+                    "error" in line and "DIIS" not in line and "gprntSymmMtrx" not in line and "Relative error" not in line and "zonesort" not in line
+                ):
                     # these are **normal** lines that we should not capture:
                     # "SCF converges when DIIS error is below 1.0E-08", or
                     # "Cycle       Energy         DIIS Error" or
@@ -85,15 +86,15 @@ class QChemLog(ESSAdapter):
                     # The end result is that your code may have run less optimally.
                     # Other than that, the message is usually harmless.
                     # https://docs.nersc.gov/jobs/errors/
-                    error = 'SCF failed'
+                    error = "SCF failed"
                     break
-                elif 'Invalid charge/multiplicity combination' in line:
-                    error = 'Invalid charge/multiplicity combination'
+                elif "Invalid charge/multiplicity combination" in line:
+                    error = "Invalid charge/multiplicity combination"
                     break
-                elif 'MAXIMUM OPTIMIZATION CYCLES REACHED' in line:
-                    error = 'Maximum optimization cycles reached.'
+                elif "MAXIMUM OPTIMIZATION CYCLES REACHED" in line:
+                    error = "Maximum optimization cycles reached."
                     break
-                elif 'Relative error' in line:
+                elif "Relative error" in line:
                     warn_message = """ 
                     Per the QChem version 5 documentation: https://manual.q-chem.com/pdf/qchem_manual_5.0.pdf
                     A warning message is printed whenever the relative error in the numerical electron count
@@ -101,15 +102,12 @@ class QChemLog(ESSAdapter):
                     appears on the first SCF cycle, it is probably not serious, because the initial-guess density
                     matrix is sometimes not idempotent.
                     """
-                    warning = 'Relative error'
+                    warning = "Relative error"
                     warning_line = line
             if error:
-                raise LogError(f'There was an error ({error}) with QChem output file {self.path} '
-                               f'due to line:\n{line}')
+                raise LogError(f"There was an error ({error}) with QChem output file {self.path} " f"due to line:\n{line}")
             if warning:
-                logging.warning(f'{warning} with QChem output file {self.path} due to line:\n'
-                                f'{warning_line}\n'
-                                f'{warn_message}')
+                logging.warning(f"{warning} with QChem output file {self.path} due to line:\n" f"{warning_line}\n" f"{warn_message}")
 
     def get_number_of_atoms(self):
         """
@@ -118,14 +116,14 @@ class QChemLog(ESSAdapter):
         """
         n_atoms = 0
 
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             line = f.readline()
-            while line != '' and n_atoms == 0:
+            while line != "" and n_atoms == 0:
                 # Automatically determine the number of atoms
-                if 'Standard Nuclear Orientation' in line and n_atoms == 0:
+                if "Standard Nuclear Orientation" in line and n_atoms == 0:
                     for i in range(3):
                         line = f.readline()
-                    while '----------------------------------------------------' not in line:
+                    while "----------------------------------------------------" not in line:
                         n_atoms += 1
                         line = f.readline()
                 line = f.readline()
@@ -144,12 +142,12 @@ class QChemLog(ESSAdapter):
 
         n_atoms = self.get_number_of_atoms()
         n_rows = n_atoms * 3
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             line = f.readline()
-            while line != '':
+            while line != "":
                 # Read force constant matrix
-                if 'Final Hessian.' in line or 'Hessian of the SCF Energy' in line:
-                    force = np.zeros((n_rows, n_rows), np.float64)
+                if "Final Hessian." in line or "Hessian of the SCF Energy" in line:
+                    force = np.zeros((n_rows, n_rows), float)
                     for i in range(int(math.ceil(n_rows / 6.0))):
                         # Header row
                         line = f.readline()
@@ -160,13 +158,12 @@ class QChemLog(ESSAdapter):
                                 force[j, i * 6 + k] = float(data[k + 1])
                                 # F[i*5+k,j] = F[j,i*5+k]
                     # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
-                    force *= 4.35974417e-18 / 5.291772108e-11 ** 2
+                    force *= 4.35974417e-18 / 5.291772108e-11**2
                 line = f.readline()
 
         return force
 
     def load_geometry(self):
-
         """
         Return the optimum geometry of the molecular configuration from the
         QChem log file. If multiple such geometries are identified, only the
@@ -182,9 +179,9 @@ class QChemLog(ESSAdapter):
         geometry_flag = False
         for i in reversed(range(len(log))):
             line = log[i]
-            if 'Standard Nuclear Orientation' in line:
-                for line in log[(i + 3):]:
-                    if '------------' not in line:
+            if "Standard Nuclear Orientation" in line:
+                for line in log[(i + 3) :]:
+                    if "------------" not in line:
                         data = line.split()
                         atom.append(data[1])
                         coord.append([float(c) for c in data[2:]])
@@ -199,15 +196,15 @@ class QChemLog(ESSAdapter):
             mass1, num1 = get_element_mass(atom1)
             mass.append(mass1)
             number.append(num1)
-        coord = np.array(coord, np.float64)
+        coord = np.array(coord, float)
         number = np.array(number, np.int)
-        mass = np.array(mass, np.float64)
+        mass = np.array(mass, float)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
-            raise LogError('Unable to read atoms from QChem geometry output file {0}.'.format(self.path))
+            raise LogError("Unable to read atoms from QChem geometry output file {0}.".format(self.path))
 
         return coord, number, mass
 
-    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
+    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=""):
         """
         Load the molecular degree of freedom data from an output file created as the result of a
         QChem "Freq" calculation. As QChem's guess of the external symmetry number is not always correct,
@@ -227,31 +224,29 @@ class QChemLog(ESSAdapter):
                 optical_isomers = _optical_isomers
             if symmetry is None:
                 symmetry = _symmetry
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             line = f.readline()
-            while line != '':
+            while line != "":
                 # Read spin multiplicity if not explicitly given
-                if '$molecule' in line and spin_multiplicity == 0:
+                if "$molecule" in line and spin_multiplicity == 0:
                     line = f.readline()
                     if len(line.split()) == 2:
                         spin_multiplicity = int(float(line.split()[1]))
-                        logging.debug(
-                            'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spin_multiplicity))
+                        logging.debug("Conformer {0} is assigned a spin multiplicity of {1}".format(label, spin_multiplicity))
                 # The rest of the data we want is in the Thermochemistry section of the output
-                elif 'VIBRATIONAL ANALYSIS' in line:
+                elif "VIBRATIONAL ANALYSIS" in line:
                     modes = []
                     line = f.readline()
-                    while line != '':
-
+                    while line != "":
                         # This marks the end of the thermochemistry section
-                        if 'Thank you very much for using Q-Chem.' in line:
+                        if "Thank you very much for using Q-Chem." in line:
                             break
 
                         # Read vibrational modes
-                        elif 'VIBRATIONAL FREQUENCIES (CM**-1)' in line:
+                        elif "VIBRATIONAL FREQUENCIES (CM**-1)" in line:
                             frequencies = []
-                            while 'STANDARD THERMODYNAMIC QUANTITIES AT' not in line:
-                                if ' Frequency:' in line:
+                            while "STANDARD THERMODYNAMIC QUANTITIES AT" not in line:
+                                if " Frequency:" in line:
                                     if len(line.split()) == 4:
                                         frequencies.extend([float(d) for d in line.split()[-3:]])
                                     elif len(line.split()) == 3:
@@ -269,14 +264,14 @@ class QChemLog(ESSAdapter):
                             # modes.append(vibration)
                             freq.append(vibration)
                         # Read molecular mass for external translational modes
-                        elif 'Molecular Mass:' in line:
+                        elif "Molecular Mass:" in line:
                             mass = float(line.split()[2])
                             translation = IdealGasTranslation(mass=(mass, "amu"))
                             # modes.append(translation)
                             mmass.append(translation)
 
                         # Read moments of inertia for external rotational modes, given in atomic units
-                        elif 'Eigenvalues --' in line:
+                        elif "Eigenvalues --" in line:
                             inertia = [float(d) for d in line.split()[-3:]]
 
                         # Read the next line in the file
@@ -289,7 +284,7 @@ class QChemLog(ESSAdapter):
                     if inertia[0] == 0.0:
                         # If the first eigenvalue is 0, the rotor is linear
                         inertia.remove(0.0)
-                        logging.debug('inertia is {}'.format(str(inertia)))
+                        logging.debug("inertia is {}".format(str(inertia)))
                         for i in range(2):
                             inertia[i] *= (constants.a0 / 1e-10) ** 2
                         inertia = np.sqrt(inertia[0] * inertia[1])
@@ -305,10 +300,12 @@ class QChemLog(ESSAdapter):
                     inertia = []
         # Take only the last modes found (in the event of multiple jobs)
         modes = mmass[-1:] + rot[-1:] + freq[-1:]
-        return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spin_multiplicity,
-                         optical_isomers=optical_isomers), unscaled_frequencies
+        return (
+            Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spin_multiplicity=spin_multiplicity, optical_isomers=optical_isomers),
+            unscaled_frequencies,
+        )
 
-    def load_energy(self, zpe_scale_factor=1.):
+    def load_energy(self, zpe_scale_factor=1.0):
         """
         Load the energy in J/mol from a QChem log file. Prioritize the energy from a converged
         geometry optimization. If the file does not contain an optimization job or if the optimization
@@ -316,16 +313,16 @@ class QChemLog(ESSAdapter):
         The zero-point energy is *not* included in the returned value.
         """
         e_elect = None
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             preferred_source = alternative_source = None
             for line in f:
-                if 'Final energy is' in line:
+                if "Final energy is" in line:
                     preferred_source = float(line.split()[-1]) * constants.E_h * constants.Na
-                if 'Total energy in the final basis set' in line:
+                if "Total energy in the final basis set" in line:
                     alternative_source = float(line.split()[-1]) * constants.E_h * constants.Na
                 e_elect = preferred_source or alternative_source
         if e_elect is None:
-            raise LogError('Unable to find energy in QChem output file {0}.'.format(self.path))
+            raise LogError("Unable to find energy in QChem output file {0}.".format(self.path))
         return e_elect
 
     def load_zero_point_energy(self):
@@ -333,15 +330,15 @@ class QChemLog(ESSAdapter):
         Load the unscaled zero-point energy in J/mol from a QChem output file.
         """
         zpe = None
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             for line in f:
-                if 'Zero point vibrational energy' in line:
+                if "Zero point vibrational energy" in line:
                     zpe = float(line.split()[4]) * 4184  # QChem's ZPE is in kcal/mol, convert to J/mol
-                    logging.debug('ZPE is {}'.format(str(zpe)))
+                    logging.debug("ZPE is {}".format(str(zpe)))
         if zpe is not None:
             return zpe
         else:
-            raise LogError('Unable to find zero-point energy in QChem output file {0}.'.format(self.path))
+            raise LogError("Unable to find zero-point energy in QChem output file {0}.".format(self.path))
 
     def load_scan_energies(self):
         """
@@ -351,20 +348,20 @@ class QChemLog(ESSAdapter):
         v_list = []
         angle = []
         read = False
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             for line in f:
-                if '-----------------' in line:
+                if "-----------------" in line:
                     read = False
                 if read:
                     values = [float(item) for item in line.split()]
                     angle.append(values[0])
                     v_list.append(values[1])
-                if 'Summary of potential scan:' in line:
-                    logging.info('found a successfully completed QChem Job')
+                if "Summary of potential scan:" in line:
+                    logging.info("found a successfully completed QChem Job")
                     read = True
-        logging.info('   Assuming {0} is the output from a QChem PES scan...'.format(os.path.basename(self.path)))
+        logging.info("   Assuming {0} is the output from a QChem PES scan...".format(os.path.basename(self.path)))
 
-        v_list = np.array(v_list, np.float64)
+        v_list = np.array(v_list, float)
         # check to see if the scanlog indicates that one of your reacting species may not be the lowest energy conformer
         check_conformer_energy(v_list, self.path)
 
@@ -372,7 +369,7 @@ class QChemLog(ESSAdapter):
         # Also convert units from Hartree/particle to J/mol
         v_list -= np.min(v_list)
         v_list *= constants.E_h * constants.Na
-        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), np.float64)
+        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), float)
         return v_list, angle
 
     def load_negative_frequency(self):
@@ -382,35 +379,35 @@ class QChemLog(ESSAdapter):
         """
         read_freqs = False
         num_freq_blocks = 0
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             for line in f:
                 # only read the first row from a frequency block
-                if read_freqs and ' Frequency:' in line:
+                if read_freqs and " Frequency:" in line:
                     freqs = np.array([float(freq) for freq in line.split()[1:4]])
                     num_freq_blocks += 1
                     read_freqs = False
 
-                if 'VIBRATIONAL ANALYSIS' in line:
+                if "VIBRATIONAL ANALYSIS" in line:
                     read_freqs = True
 
-        logging.info(f'Identified {num_freq_blocks} frequency block(s)...')
-        logging.info('Only examining frequencies from the last block...')
+        logging.info(f"Identified {num_freq_blocks} frequency block(s)...")
+        logging.info("Only examining frequencies from the last block...")
         neg_idx = np.where(freqs < 0)[0]
         if len(neg_idx) == 1:
             return freqs[neg_idx[0]]
         elif len(neg_idx) > 1:
-            logging.info('More than one imaginary frequency in QChem output file {0}.'.format(self.path))
+            logging.info("More than one imaginary frequency in QChem output file {0}.".format(self.path))
             return freqs[neg_idx[0]]
         else:
-            raise LogError('Unable to find imaginary frequency in QChem output file {0}.'.format(self.path))
+            raise LogError("Unable to find imaginary frequency in QChem output file {0}.".format(self.path))
 
     def load_scan_pivot_atoms(self):
         """Not implemented for QChem"""
-        raise NotImplementedError('The load_scan_pivot_atoms method is not implemented for QChem Logs')
+        raise NotImplementedError("The load_scan_pivot_atoms method is not implemented for QChem Logs")
 
     def load_scan_frozen_atoms(self):
         """Not implemented for QChem"""
-        raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for QChem Logs')
+        raise NotImplementedError("The load_scan_frozen_atoms method is not implemented for QChem Logs")
 
 
 register_ess_adapter("QChemLog", QChemLog)

@@ -52,7 +52,7 @@ from rmgpy.tools.loader import load_rmg_job
 # flux diagrams.
 
 # Options controlling the individual flux diagram renderings:
-program = 'dot'  # The program to use to lay out the nodes and edges
+program = "dot"  # The program to use to lay out the nodes and edges
 max_node_count = 50  # The maximum number of nodes to show in the diagram
 max_edge_count = 50  # The maximum number of edges to show in the diagram
 concentration_tol = 1e-6  # The lowest fractional concentration to show (values below this will appear as zero)
@@ -65,7 +65,7 @@ central_reaction_count = None  # The maximum number of reactions to draw from ea
 
 # Options controlling the ODE simulations:
 initial_time = 1e-12  # The time at which to initiate the simulation, in seconds
-time_step = 10 ** 0.1  # The multiplicative factor to use between consecutive time points
+time_step = 10**0.1  # The multiplicative factor to use between consecutive time points
 abs_tol = 1e-16  # The absolute tolerance to use in the ODE simluations
 rel_tol = 1e-8  # The relative tolerance to use in the ODE simulations
 
@@ -77,8 +77,18 @@ final_padding = 5  # The number of seconds to display the final fluxes at the en
 
 ################################################################################
 
-def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates, output_directory,
-                          central_species_list=None, superimpose=False, species_directory=None, settings=None):
+
+def generate_flux_diagram(
+    reaction_model,
+    times,
+    concentrations,
+    reaction_rates,
+    output_directory,
+    central_species_list=None,
+    superimpose=False,
+    species_directory=None,
+    settings=None,
+):
     """
     For a given `reaction_model` and simulation results stored as arrays of
     `times`, species `concentrations`, and `reaction_rates`, generate a series
@@ -89,14 +99,14 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
     global max_node_count, max_edge_count, concentration_tol, species_rate_tol, max_node_pen_width, max_edge_pen_width, radius, central_reaction_count
     # Allow user defined settings for flux diagram generation if given
     if settings:
-        max_node_count = settings.get('max_node_count', max_node_count)
-        max_edge_count = settings.get('max_edge_count', max_edge_count)
-        concentration_tol = settings.get('concentration_tol', concentration_tol)
-        species_rate_tol = settings.get('species_rate_tol', species_rate_tol)
-        max_node_pen_width = settings.get('max_node_pen_width', max_node_pen_width)
-        max_edge_pen_width = settings.get('max_edge_pen_width', max_edge_pen_width)
-        radius = settings.get('radius', radius)
-        central_reaction_count = settings.get('central_reaction_count', central_reaction_count)
+        max_node_count = settings.get("max_node_count", max_node_count)
+        max_edge_count = settings.get("max_edge_count", max_edge_count)
+        concentration_tol = settings.get("concentration_tol", concentration_tol)
+        species_rate_tol = settings.get("species_rate_tol", species_rate_tol)
+        max_node_pen_width = settings.get("max_node_pen_width", max_node_pen_width)
+        max_edge_pen_width = settings.get("max_edge_pen_width", max_edge_pen_width)
+        radius = settings.get("radius", radius)
+        central_reaction_count = settings.get("central_reaction_count", central_reaction_count)
 
     # Get the species and reactions corresponding to the provided concentrations and reaction rates
     species_list = reaction_model.core.species[:]
@@ -115,10 +125,11 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
                 raise Exception("Central species '{}' could not be found in species list.".format(centralSpecies))
 
     # Compute the rates between each pair of species (big matrix warning!)
-    species_rates = np.zeros((len(times), num_species, num_species), np.float64)
+    species_rates = np.zeros((len(times), num_species, num_species), float)
     for index, reaction in enumerate(reaction_list):
         rate = reaction_rates[:, index]
-        if not reaction.pairs: reaction.generate_pairs()
+        if not reaction.pairs:
+            reaction.generate_pairs()
         for reactant, product in reaction.pairs:
             reactant_index = species_list.index(reactant)
             product_index = species_list.index(product)
@@ -143,15 +154,17 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
     if not superimpose and central_species_list is not None:
         for central_species_index in central_species_indices:
             nodes.append(central_species_index)
-            add_adjacent_nodes(central_species_index,
-                               nodes,
-                               edges,
-                               species_list,
-                               reaction_list,
-                               max_reaction_rates,
-                               max_species_rates,
-                               reactionCount=central_reaction_count,
-                               rad=radius)
+            add_adjacent_nodes(
+                central_species_index,
+                nodes,
+                edges,
+                species_list,
+                reaction_list,
+                max_reaction_rates,
+                max_species_rates,
+                reactionCount=central_reaction_count,
+                rad=radius,
+            )
     else:
         for i in range(num_species * num_species):
             product_index, reactant_index = divmod(species_index[-i - 1], num_species)
@@ -161,8 +174,10 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
                 continue
             if max_species_rates[reactant_index, product_index] == 0:
                 break
-            if reactant_index not in nodes and len(nodes) < max_node_count: nodes.append(reactant_index)
-            if product_index not in nodes and len(nodes) < max_node_count: nodes.append(product_index)
+            if reactant_index not in nodes and len(nodes) < max_node_count:
+                nodes.append(reactant_index)
+            if product_index not in nodes and len(nodes) < max_node_count:
+                nodes.append(product_index)
             if [reactant_index, product_index] not in edges and [product_index, reactant_index] not in edges:
                 edges.append([reactant_index, product_index])
             if len(nodes) > max_node_count:
@@ -176,24 +191,26 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
                 if central_species_index not in nodes:  # Only add central species if it doesn't already exist
                     nodes.append(central_species_index)
                     # Recursively add nodes until they connect with main graph
-                    add_adjacent_nodes(central_species_index,
-                                       nodes,
-                                       edges,
-                                       species_list,
-                                       reaction_list,
-                                       max_reaction_rates,
-                                       max_species_rates,
-                                       reactionCount=central_reaction_count,
-                                       rad=-1,  # "-1" signifies that we add nodes until they connect to the main graph
-                                       mainNodes=nodes_copy)
+                    add_adjacent_nodes(
+                        central_species_index,
+                        nodes,
+                        edges,
+                        species_list,
+                        reaction_list,
+                        max_reaction_rates,
+                        max_species_rates,
+                        reactionCount=central_reaction_count,
+                        rad=-1,  # "-1" signifies that we add nodes until they connect to the main graph
+                        mainNodes=nodes_copy,
+                    )
 
     # Create the master graph
     # First we're going to generate the coordinates for all of the nodes; for
-    # this we use the thickest pen widths for all nodes and edges 
-    graph = pydot.Dot('flux_diagram', graph_type='digraph', overlap="false")
-    graph.set_rankdir('LR')
-    graph.set_fontname('sans')
-    graph.set_fontsize('10')
+    # this we use the thickest pen widths for all nodes and edges
+    graph = pydot.Dot("flux_diagram", graph_type="digraph", overlap="false")
+    graph.set_rankdir("LR")
+    graph.set_fontname("sans")
+    graph.set_fontsize("10")
 
     # Add a node for each species
     for index in nodes:
@@ -202,8 +219,8 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
         node.set_penwidth(max_node_pen_width)
         graph.add_node(node)
         # Try to use an image instead of the label
-        species_index = str(species) + '.png'
-        image_path = ''
+        species_index = str(species) + ".png"
+        image_path = ""
         if not species_directory or not os.path.exists(species_directory):
             continue
         for root, dirs, files in os.walk(species_directory):
@@ -224,7 +241,7 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
             graph.add_edge(edge)
 
     # Generate the coordinates for all of the nodes using the specified program
-    graph = pydot.graph_from_dot_data(graph.create_dot(prog=program).decode('utf-8'))[0]
+    graph = pydot.graph_from_dot_data(graph.create_dot(prog=program).decode("utf-8"))[0]
 
     # Now iterate over the time points, setting the pen widths appropriately
     # This should preserve the coordinates of the nodes from frame to frame
@@ -234,10 +251,10 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
         slope = -max_node_pen_width / math.log10(concentration_tol)
         for index in nodes:
             species = species_list[index]
-            if re.search(r'^[a-zA-Z0-9_]*$', str(species)) is not None:
+            if re.search(r"^[a-zA-Z0-9_]*$", str(species)) is not None:
                 species_string = str(species)
             else:
-                # species name contains special characters                
+                # species name contains special characters
                 species_string = '"{0}"'.format(str(species))
 
             node = graph.get_node(species_string)[0]
@@ -255,12 +272,12 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
                 reactant = species_list[reactant_index]
                 product = species_list[product_index]
 
-                if re.search(r'^[a-zA-Z0-9_]*$', str(reactant)) is not None:
+                if re.search(r"^[a-zA-Z0-9_]*$", str(reactant)) is not None:
                     reactant_string = str(reactant)
                 else:
                     reactant_string = '"{0}"'.format(str(reactant))
 
-                if re.search(r'^[a-zA-Z0-9_]*$', str(product)) is not None:
+                if re.search(r"^[a-zA-Z0-9_]*$", str(product)) is not None:
                     product_string = str(product)
                 else:
                     product_string = '"{0}"'.format(str(product))
@@ -282,9 +299,9 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
                 edge.set_penwidth(penwidth)
         # Save the graph at this time to a dot file and a PNG image
         if times[t] == 0:
-            label = 't = 0 s'
+            label = "t = 0 s"
         else:
-            label = 't = 10^{0:.1f} s'.format(math.log10(times[t]))
+            label = "t = 10^{0:.1f} s".format(math.log10(times[t]))
         graph.set_label(label)
         if t == 0:
             repeat = video_fps * initial_padding
@@ -293,28 +310,37 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
         else:
             repeat = 1
         for r in range(repeat):
-            graph.write_dot(os.path.join(output_directory, 'flux_diagram_{0:04d}.dot'.format(frame_number)))
-            graph.write_png(os.path.join(output_directory, 'flux_diagram_{0:04d}.png'.format(frame_number)))
+            graph.write_dot(os.path.join(output_directory, "flux_diagram_{0:04d}.dot".format(frame_number)))
+            graph.write_png(os.path.join(output_directory, "flux_diagram_{0:04d}.png".format(frame_number)))
             frame_number += 1
 
     # Use ffmpeg to stitch the PNG images together into a movie
     import subprocess
 
-    command = ['ffmpeg',
-               '-framerate', '{0:d}'.format(video_fps),  # Duration of each image
-               '-i', 'flux_diagram_%04d.png',  # Input file format
-               '-c:v', 'mpeg4',  # Encoder
-               '-r', '30',  # Video framerate
-               '-pix_fmt', 'yuv420p',  # Pixel format
-               'flux_diagram.avi']  # Output filename
+    command = [
+        "ffmpeg",
+        "-framerate",
+        "{0:d}".format(video_fps),  # Duration of each image
+        "-i",
+        "flux_diagram_%04d.png",  # Input file format
+        "-c:v",
+        "mpeg4",  # Encoder
+        "-r",
+        "30",  # Video framerate
+        "-pix_fmt",
+        "yuv420p",  # Pixel format
+        "flux_diagram.avi",
+    ]  # Output filename
 
     subprocess.check_call(command, cwd=output_directory)
 
 
 ################################################################################
 
-def add_adjacent_nodes(targetNodeIndex, nodes, edges, species_list, reaction_list, maxReactionRates, maxSpeciesRates,
-                       reactionCount=None, rad=0, mainNodes=None):
+
+def add_adjacent_nodes(
+    targetNodeIndex, nodes, edges, species_list, reaction_list, maxReactionRates, maxSpeciesRates, reactionCount=None, rad=0, mainNodes=None
+):
     """
     Add adjacent nodes in flux diagram up to a certain radius or
     until they connect with the main graph. Radius should be set to a
@@ -338,8 +364,7 @@ def add_adjacent_nodes(targetNodeIndex, nodes, edges, species_list, reaction_lis
         if reactionCount is None:
             target_reaction_list = [reaction_list[index] for index in target_reactions_indices]
         else:
-            target_reaction_list = [reaction_list[index] for i, index in enumerate(target_reactions_indices)
-                                  if i < reactionCount]
+            target_reaction_list = [reaction_list[index] for i, index in enumerate(target_reactions_indices) if i < reactionCount]
 
         for reaction in target_reaction_list:
             for reactant, product in reaction.pairs:
@@ -348,36 +373,41 @@ def add_adjacent_nodes(targetNodeIndex, nodes, edges, species_list, reaction_lis
                 if reactant_index == targetNodeIndex:
                     if product_index not in nodes:
                         nodes.append(product_index)
-                        add_adjacent_nodes(product_index,
-                                           nodes,
-                                           edges,
-                                           species_list,
-                                           reaction_list,
-                                           maxReactionRates,
-                                           maxSpeciesRates,
-                                           reactionCount=reactionCount,
-                                           rad=rad - 1,
-                                           mainNodes=mainNodes)
+                        add_adjacent_nodes(
+                            product_index,
+                            nodes,
+                            edges,
+                            species_list,
+                            reaction_list,
+                            maxReactionRates,
+                            maxSpeciesRates,
+                            reactionCount=reactionCount,
+                            rad=rad - 1,
+                            mainNodes=mainNodes,
+                        )
                     if [reactant_index, product_index] not in edges and [product_index, reactant_index] not in edges:
                         edges.append([reactant_index, product_index])
                 if product_index == targetNodeIndex:
                     if reactant_index not in nodes:
                         nodes.append(reactant_index)
-                        add_adjacent_nodes(reactant_index,
-                                           nodes,
-                                           edges,
-                                           species_list,
-                                           reaction_list,
-                                           maxReactionRates,
-                                           maxSpeciesRates,
-                                           reactionCount=reactionCount,
-                                           rad=rad - 1,
-                                           mainNodes=mainNodes)
+                        add_adjacent_nodes(
+                            reactant_index,
+                            nodes,
+                            edges,
+                            species_list,
+                            reaction_list,
+                            maxReactionRates,
+                            maxSpeciesRates,
+                            reactionCount=reactionCount,
+                            rad=rad - 1,
+                            mainNodes=mainNodes,
+                        )
                     if [reactant_index, product_index] not in edges and [product_index, reactant_index] not in edges:
                         edges.append([reactant_index, product_index])
 
 
 ################################################################################
+
 
 def simulate(reaction_model, reaction_system, settings=None):
     """
@@ -387,7 +417,7 @@ def simulate(reaction_model, reaction_system, settings=None):
     global time_step
     # Allow user defined settings for flux diagram generation if given
     if settings:
-        time_step = settings.get('time_step', time_step)
+        time_step = settings.get("time_step", time_step)
 
     core_species = reaction_model.core.species
     core_reactions = reaction_model.core.reactions
@@ -405,10 +435,17 @@ def simulate(reaction_model, reaction_system, settings=None):
         if reaction_system.const_spc_names is not None:
             reaction_system.get_const_spc_indices(core_species)
 
-    reaction_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions,
-                                   atol=simulator_settings.atol, rtol=simulator_settings.rtol,
-                                   sens_atol=simulator_settings.sens_atol, sens_rtol=simulator_settings.sens_rtol,
-                                   conditions=None)
+    reaction_system.initialize_model(
+        core_species,
+        core_reactions,
+        edge_species,
+        edge_reactions,
+        atol=simulator_settings.atol,
+        rtol=simulator_settings.rtol,
+        sens_atol=simulator_settings.sens_atol,
+        sens_rtol=simulator_settings.sens_rtol,
+        conditions=None,
+    )
 
     # Copy the initial conditions to use in evaluating conversions
     y0 = reaction_system.y.copy()
@@ -456,6 +493,7 @@ def simulate(reaction_model, reaction_system, settings=None):
 
 ################################################################################
 
+
 def load_chemkin_output(output_file, reaction_model):
     """
     Load the species concentrations from a Chemkin Output file in a simulation
@@ -471,38 +509,36 @@ def load_chemkin_output(output_file, reaction_model):
     core_species_concentrations = []
     core_reaction_rates = []
 
-    with open(output_file, 'r') as f:
-
+    with open(output_file, "r") as f:
         line = f.readline()
-        while line != '' and 'SPECIFIED END' not in line:
+        while line != "" and "SPECIFIED END" not in line:
             line.strip()
             tokens = line.split()
-            if ' TIME ' in line:
+            if " TIME " in line:
                 # Time is in seconds
                 time.append(float(tokens[-2]))
-            elif ' PRESSURE ' in line:
-                # Pressure from Chemkin is in atm    
-                P = Quantity(float(tokens[-2]), 'atm')
-            elif ' TEMPERATURE ' in line:
+            elif " PRESSURE " in line:
+                # Pressure from Chemkin is in atm
+                P = Quantity(float(tokens[-2]), "atm")
+            elif " TEMPERATURE " in line:
                 # Temperature from Chemkin in in K
-                T = Quantity(float(tokens[-2]), 'K')
-            elif ' MOLE FRACTIONS ' in line:
+                T = Quantity(float(tokens[-2]), "K")
+            elif " MOLE FRACTIONS " in line:
                 # Species always come in the same order as listed in chem.inp
                 molefractions = []
                 line = f.readline()  # This one reads the blank line which follows
                 line = f.readline()
-                while line.strip() != '':
+                while line.strip() != "":
                     tokens = line.split()
                     for value in tokens[2::3]:
-
-                        # Make all concentrations positive 
-                        if value.find('-') == 0:
-                            value = value.replace('-', '', 1)
+                        # Make all concentrations positive
+                        if value.find("-") == 0:
+                            value = value.replace("-", "", 1)
                         # Sometimes chemkin removes the `E` in scientific notation due to lack of space,
-                        # rendering invalid float values.  If this is the case, add it in.      
-                        if value.find('-') != -1:
-                            if value.find('E') == -1:
-                                value = value.replace('-', 'E-')
+                        # rendering invalid float values.  If this is the case, add it in.
+                        if value.find("-") != -1:
+                            if value.find("E") == -1:
+                                value = value.replace("-", "E-")
 
                         molefractions.append(float(value))
 
@@ -531,56 +567,70 @@ def load_chemkin_output(output_file, reaction_model):
 
 ################################################################################
 
-def create_flux_diagram(input_file, chemkin_file, species_dict, save_path=None, species_path=None, java=False,
-                        settings=None, chemkin_output='', central_species_list=None, superimpose=False,
-                        save_states=False, read_states=False, diffusion_limited=True, check_duplicates=True):
+
+def create_flux_diagram(
+    input_file,
+    chemkin_file,
+    species_dict,
+    save_path=None,
+    species_path=None,
+    java=False,
+    settings=None,
+    chemkin_output="",
+    central_species_list=None,
+    superimpose=False,
+    save_states=False,
+    read_states=False,
+    diffusion_limited=True,
+    check_duplicates=True,
+):
     """
     Generates the flux diagram based on a condition 'input_file', chemkin.inp chemkin_file,
     a species_dict txt file, plus an optional chemkin_output file.
     """
 
     if java == True:
-        warnings.warn("RMG-Java loading is no longer supported and may be" \
-                      "removed in version 2.3.", DeprecationWarning)
+        warnings.warn("RMG-Java loading is no longer supported and may be" "removed in version 2.3.", DeprecationWarning)
     if species_path is None:
-        species_path = os.path.join(os.path.dirname(input_file), 'species')
+        species_path = os.path.join(os.path.dirname(input_file), "species")
         generate_images = True
     else:
         generate_images = False
 
-    print('Loading RMG job...')
-    rmg = load_rmg_job(input_file, chemkin_file, species_dict,
-                       generate_images=generate_images, use_java=java, check_duplicates=check_duplicates)
+    print("Loading RMG job...")
+    rmg = load_rmg_job(input_file, chemkin_file, species_dict, generate_images=generate_images, use_java=java, check_duplicates=check_duplicates)
 
     if save_path is None:
-        save_path = os.path.join(rmg.output_directory, 'flux')
+        save_path = os.path.join(rmg.output_directory, "flux")
 
     # if you have a chemkin output, then you only have one reaction_system
     if chemkin_output:
-        out_dir = os.path.join(save_path, '1')
+        out_dir = os.path.join(save_path, "1")
         try:
             os.makedirs(out_dir)
         except OSError:
             pass
 
-        print('Extracting species concentrations and calculating reaction rates from chemkin output...')
+        print("Extracting species concentrations and calculating reaction rates from chemkin output...")
         time, core_species_concentrations, core_reaction_rates = load_chemkin_output(chemkin_output, rmg.reaction_model)
 
-        print('Generating flux diagram for chemkin output...')
-        generate_flux_diagram(rmg.reaction_model,
-                              time,
-                              core_species_concentrations,
-                              core_reaction_rates,
-                              out_dir,
-                              central_species_list=central_species_list,
-                              superimpose=superimpose,
-                              species_directory=species_path,
-                              settings=settings)
+        print("Generating flux diagram for chemkin output...")
+        generate_flux_diagram(
+            rmg.reaction_model,
+            time,
+            core_species_concentrations,
+            core_reaction_rates,
+            out_dir,
+            central_species_list=central_species_list,
+            superimpose=superimpose,
+            species_directory=species_path,
+            settings=settings,
+        )
 
     else:
         # Generate a flux diagram video for each reaction system
         for index, reaction_system in enumerate(rmg.reaction_systems):
-            out_dir = os.path.join(save_path, '{0:d}'.format(index + 1))
+            out_dir = os.path.join(save_path, "{0:d}".format(index + 1))
             try:
                 os.makedirs(out_dir)
             except OSError:
@@ -590,15 +640,15 @@ def create_flux_diagram(input_file, chemkin_file, species_dict, save_path=None, 
             # If there is no termination time, then add one to prevent jobs from
             # running forever
             if not any([isinstance(term, TerminationTime) for term in reaction_system.termination]):
-                reaction_system.termination.append(TerminationTime((1e10, 's')))
+                reaction_system.termination.append(TerminationTime((1e10, "s")))
 
-            states_file = os.path.join(out_dir, 'states.npz')
+            states_file = os.path.join(out_dir, "states.npz")
             if read_states:
-                print('Reading simulation states from file...')
+                print("Reading simulation states from file...")
                 states = np.load(states_file)
-                time = states['time']
-                core_species_concentrations = states['core_species_concentrations']
-                core_reaction_rates = states['core_reaction_rates']
+                time = states["time"]
+                core_species_concentrations = states["core_species_concentrations"]
+                core_reaction_rates = states["core_reaction_rates"]
             else:
                 # Enable diffusion-limited rates
                 if diffusion_limited and isinstance(reaction_system, LiquidReactor):
@@ -606,23 +656,23 @@ def create_flux_diagram(input_file, chemkin_file, species_dict, save_path=None, 
                     solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
                     diffusion_limiter.enable(solvent_data, rmg.database.solvation)
 
-                print('Conducting simulation of reaction system {0:d}...'.format(index + 1))
-                time, core_species_concentrations, core_reaction_rates = simulate(rmg.reaction_model, reaction_system,
-                                                                                  settings)
+                print("Conducting simulation of reaction system {0:d}...".format(index + 1))
+                time, core_species_concentrations, core_reaction_rates = simulate(rmg.reaction_model, reaction_system, settings)
 
                 if save_states:
-                    np.savez_compressed(states_file,
-                                        time=time,
-                                        core_species_concentrations=core_species_concentrations,
-                                        core_reaction_rates=core_reaction_rates)
+                    np.savez_compressed(
+                        states_file, time=time, core_species_concentrations=core_species_concentrations, core_reaction_rates=core_reaction_rates
+                    )
 
-            print('Generating flux diagram for reaction system {0:d}...'.format(index + 1))
-            generate_flux_diagram(rmg.reaction_model,
-                                  time,
-                                  core_species_concentrations,
-                                  core_reaction_rates,
-                                  out_dir,
-                                  central_species_list=central_species_list,
-                                  superimpose=superimpose,
-                                  species_directory=species_path,
-                                  settings=settings)
+            print("Generating flux diagram for reaction system {0:d}...".format(index + 1))
+            generate_flux_diagram(
+                rmg.reaction_model,
+                time,
+                core_species_concentrations,
+                core_reaction_rates,
+                out_dir,
+                central_species_list=central_species_list,
+                superimpose=superimpose,
+                species_directory=species_path,
+                settings=settings,
+            )

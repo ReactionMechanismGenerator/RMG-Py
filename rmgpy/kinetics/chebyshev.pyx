@@ -157,7 +157,7 @@ cdef class Chebyshev(PDepKineticsModel):
         mol, and s at temperature `T` in K and pressure `P` in Pa by 
         evaluating the Chebyshev expression.
         """
-        cdef np.ndarray[np.float64_t, ndim=2] coeffs
+        cdef np.ndarray[float_t, ndim=2] coeffs
         cdef double Tred, Pred, k
         cdef int i, j, t, p
 
@@ -212,8 +212,8 @@ cdef class Chebyshev(PDepKineticsModel):
         K = quantity.RateCoefficient(K, kunits).value_si
 
         # Create matrix and vector for coefficient fit (linear least-squares)
-        A = np.zeros((nT * nP, degreeT * degreeP), np.float64)
-        b = np.zeros((nT * nP), np.float64)
+        A = np.zeros((nT * nP, degreeT * degreeP), float)
+        b = np.zeros((nT * nP), float)
         for t1, T in enumerate(Tred):
             for p1, P in enumerate(Pred):
                 for t2 in range(degreeT):
@@ -225,7 +225,7 @@ cdef class Chebyshev(PDepKineticsModel):
         x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
 
         # Extract coefficients
-        coeffs = np.zeros((degreeT, degreeP), np.float64)
+        coeffs = np.zeros((degreeT, degreeP), float)
         for t2 in range(degreeT):
             for p2 in range(degreeP):
                 coeffs[t2, p2] = x[p2 * degreeT + t2]

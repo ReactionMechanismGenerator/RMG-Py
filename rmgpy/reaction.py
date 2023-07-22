@@ -51,9 +51,21 @@ import numpy as np
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import ReactionError, KineticsError
-from rmgpy.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, \
-    PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, get_rate_coefficient_units_from_reaction_order, \
-    SurfaceArrheniusBEP, StickingCoefficientBEP
+from rmgpy.kinetics import (
+    KineticsData,
+    ArrheniusBM,
+    ArrheniusEP,
+    ThirdBody,
+    Lindemann,
+    Troe,
+    Chebyshev,
+    PDepArrhenius,
+    MultiArrhenius,
+    MultiPDepArrhenius,
+    get_rate_coefficient_units_from_reaction_order,
+    SurfaceArrheniusBEP,
+    StickingCoefficientBEP,
+)
 from rmgpy.kinetics.arrhenius import Arrhenius  # Separate because we cimport from rmgpy.kinetics.arrhenius
 from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient  # Separate because we cimport from rmgpy.kinetics.surface
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
@@ -68,7 +80,7 @@ from rmgpy.species import Species
 class Reaction:
     """
     A chemical reaction. The attributes are:
-    
+
     =================== =========================== ============================
     Attribute           Type                        Description
     =================== =========================== ============================
@@ -92,29 +104,30 @@ class Reaction:
     `is_forward`        ``bool``                    Indicates if the reaction was generated in the forward (true) or reverse (false)
     `rank`              ``int``                     Integer indicating the accuracy of the kinetics for this reaction
     =================== =========================== ============================
-    
+
     """
 
-    def __init__(self,
-                 index=-1,
-                 label='',
-                 reactants=None,
-                 products=None,
-                 specific_collider=None,
-                 kinetics=None,
-                 network_kinetics=None,
-                 reversible=True,
-                 transition_state=None,
-                 duplicate=False,
-                 degeneracy=1,
-                 pairs=None,
-                 allow_pdep_route=False,
-                 elementary_high_p=False,
-                 allow_max_rate_violation=False,
-                 rank=None,
-                 comment='',
-                 is_forward=None,
-                 ):
+    def __init__(
+        self,
+        index=-1,
+        label="",
+        reactants=None,
+        products=None,
+        specific_collider=None,
+        kinetics=None,
+        network_kinetics=None,
+        reversible=True,
+        transition_state=None,
+        duplicate=False,
+        degeneracy=1,
+        pairs=None,
+        allow_pdep_route=False,
+        elementary_high_p=False,
+        allow_max_rate_violation=False,
+        rank=None,
+        comment="",
+        is_forward=None,
+    ):
         self.index = index
         self.label = label
         self.reactants = reactants
@@ -140,24 +153,40 @@ class Reaction:
         Return a string representation that can be used to reconstruct the
         object.
         """
-        string = 'Reaction('
-        if self.index != -1: string += 'index={0:d}, '.format(self.index)
-        if self.label != '': string += 'label={0!r}, '.format(self.label)
-        if self.reactants is not None: string += 'reactants={0!r}, '.format(self.reactants)
-        if self.products is not None: string += 'products={0!r}, '.format(self.products)
-        if self.specific_collider is not None: string += 'specific_collider={0!r}, '.format(self.specific_collider)
-        if self.kinetics is not None: string += 'kinetics={0!r}, '.format(self.kinetics)
-        if self.network_kinetics is not None: string += 'network_kinetics={0!r}, '.format(self.network_kinetics)
-        if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
-        if self.transition_state is not None: string += 'transition_state={0!r}, '.format(self.transition_state)
-        if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
-        if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
-        if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
-        if self.allow_pdep_route: string += 'allow_pdep_route={0}, '.format(self.allow_pdep_route)
-        if self.elementary_high_p: string += 'elementary_high_p={0}, '.format(self.elementary_high_p)
-        if self.comment != '': string += 'comment={0!r}, '.format(self.comment)
-        if self.rank is not None: string += 'rank={0!r},'.format(self.rank)
-        string = string[:-2] + ')'
+        string = "Reaction("
+        if self.index != -1:
+            string += "index={0:d}, ".format(self.index)
+        if self.label != "":
+            string += "label={0!r}, ".format(self.label)
+        if self.reactants is not None:
+            string += "reactants={0!r}, ".format(self.reactants)
+        if self.products is not None:
+            string += "products={0!r}, ".format(self.products)
+        if self.specific_collider is not None:
+            string += "specific_collider={0!r}, ".format(self.specific_collider)
+        if self.kinetics is not None:
+            string += "kinetics={0!r}, ".format(self.kinetics)
+        if self.network_kinetics is not None:
+            string += "network_kinetics={0!r}, ".format(self.network_kinetics)
+        if not self.reversible:
+            string += "reversible={0}, ".format(self.reversible)
+        if self.transition_state is not None:
+            string += "transition_state={0!r}, ".format(self.transition_state)
+        if self.duplicate:
+            string += "duplicate={0}, ".format(self.duplicate)
+        if self.degeneracy != 1:
+            string += "degeneracy={0:.1f}, ".format(self.degeneracy)
+        if self.pairs is not None:
+            string += "pairs={0}, ".format(self.pairs)
+        if self.allow_pdep_route:
+            string += "allow_pdep_route={0}, ".format(self.allow_pdep_route)
+        if self.elementary_high_p:
+            string += "elementary_high_p={0}, ".format(self.elementary_high_p)
+        if self.comment != "":
+            string += "comment={0!r}, ".format(self.comment)
+        if self.rank is not None:
+            string += "rank={0!r},".format(self.rank)
+        string = string[:-2] + ")"
         return string
 
     def __str__(self):
@@ -169,13 +198,13 @@ class Reaction:
 
     def to_labeled_str(self, use_index=False):
         """
-        the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than 
+        the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than
         the labels plus the index in parentheses
         """
-        arrow = ' <=> ' if self.reversible else ' => '
-        reactants = ' + '.join([str(s) if use_index else s.label for s in self.reactants])
-        products = ' + '.join([str(s) if use_index else s.label for s in self.products])
-        collider = ' (+{0!s})'.format(self.specific_collider) if self.specific_collider else ''
+        arrow = " <=> " if self.reversible else " => "
+        reactants = " + ".join([str(s) if use_index else s.label for s in self.reactants])
+        products = " + ".join([str(s) if use_index else s.label for s in self.products])
+        collider = " (+{0!s})".format(self.specific_collider) if self.specific_collider else ""
 
         return reactants + collider + arrow + products + collider
 
@@ -183,23 +212,27 @@ class Reaction:
         """
         A helper function used when pickling an object.
         """
-        return (Reaction, (self.index,
-                           self.label,
-                           self.reactants,
-                           self.products,
-                           self.specific_collider,
-                           self.kinetics,
-                           self.network_kinetics,
-                           self.reversible,
-                           self.transition_state,
-                           self.duplicate,
-                           self.degeneracy,
-                           self.pairs,
-                           self.allow_pdep_route,
-                           self.elementary_high_p,
-                           self.rank,
-                           self.comment
-                           ))
+        return (
+            Reaction,
+            (
+                self.index,
+                self.label,
+                self.reactants,
+                self.products,
+                self.specific_collider,
+                self.kinetics,
+                self.network_kinetics,
+                self.reversible,
+                self.transition_state,
+                self.duplicate,
+                self.degeneracy,
+                self.pairs,
+                self.allow_pdep_route,
+                self.elementary_high_p,
+                self.rank,
+                self.comment,
+            ),
+        )
 
     @property
     def degeneracy(self):
@@ -221,12 +254,13 @@ class Reaction:
             else:
                 degeneracy_ratio = (new * 1.0) / self._degeneracy
             # fix kinetics comment with new degeneracy
-            if 'Multiplied by reaction path degeneracy {}'.format(self._degeneracy) in self.kinetics.comment:
+            if "Multiplied by reaction path degeneracy {}".format(self._degeneracy) in self.kinetics.comment:
                 self.kinetics.comment = self.kinetics.comment.replace(
-                    'Multiplied by reaction path degeneracy {}'.format(self._degeneracy),
-                    'Multiplied by reaction path degeneracy {}'.format(float(new)))
+                    "Multiplied by reaction path degeneracy {}".format(self._degeneracy),
+                    "Multiplied by reaction path degeneracy {}".format(float(new)),
+                )
             elif self.kinetics.comment:
-                self.kinetics.comment += 'Multiplied by reaction path degeneracy {}'.format(float(new))
+                self.kinetics.comment += "Multiplied by reaction path degeneracy {}".format(float(new))
             self.kinetics.change_rate(degeneracy_ratio)
         # set new degeneracy
         self._degeneracy = new
@@ -234,12 +268,13 @@ class Reaction:
     def to_chemkin(self, species_list=None, kinetics=True):
         """
         Return the chemkin-formatted string for this reaction.
-        
+
         If `kinetics` is set to True, the chemkin format kinetics will also
         be returned (requires the `species_list` to figure out third body colliders.)
         Otherwise, only the reaction string will be returned.
         """
         import rmgpy.chemkin
+
         if kinetics:
             return rmgpy.chemkin.write_kinetics_entry(self, species_list)
         else:
@@ -291,15 +326,13 @@ class Reaction:
                 ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
             elif isinstance(self.kinetics, MultiArrhenius):
                 # Return a list of elementary reactions which are duplicates
-                ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
-                               for arr in self.kinetics.arrhenius]
+                ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate()) for arr in self.kinetics.arrhenius]
 
             elif isinstance(self.kinetics, PDepArrhenius):
                 ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
 
             elif isinstance(self.kinetics, MultiPDepArrhenius):
-                ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
-                               for arr in self.kinetics.arrhenius]
+                ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate()) for arr in self.kinetics.arrhenius]
 
             elif isinstance(self.kinetics, Chebyshev):
                 ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ChebyshevRate())
@@ -318,14 +351,10 @@ class Reaction:
                 T1 = self.kinetics.T1.value_si
 
                 if self.kinetics.T2 is None:
-                    rate = ct.TroeRate(
-                        high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1]
-                    )
+                    rate = ct.TroeRate(high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1])
                 else:
                     T2 = self.kinetics.T2.value_si
-                    rate = ct.TroeRate(
-                        high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1, T2]
-                    )
+                    rate = ct.TroeRate(high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1, T2])
 
                 if ct_collider is not None:
                     ct_reaction = ct.FalloffReaction(
@@ -335,9 +364,7 @@ class Reaction:
                         rate=rate,
                     )
                 else:
-                    ct_reaction = ct.FalloffReaction(
-                        reactants=ct_reactants, products=ct_products, rate=rate
-                    )
+                    ct_reaction = ct.FalloffReaction(reactants=ct_reactants, products=ct_products, rate=rate)
 
             elif isinstance(self.kinetics, Lindemann):
                 high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
@@ -352,20 +379,18 @@ class Reaction:
                         rate=rate,
                     )
                 else:
-                    ct_reaction = ct.FalloffReaction(
-                        reactants=ct_reactants, products=ct_products, rate=rate
-                    )
+                    ct_reaction = ct.FalloffReaction(reactants=ct_reactants, products=ct_products, rate=rate)
 
             else:
-                raise NotImplementedError('Unable to set cantera kinetics for {0}'.format(self.kinetics))
+                raise NotImplementedError("Unable to set cantera kinetics for {0}".format(self.kinetics))
 
             # Set reversibility, duplicate, and ID attributes
             if isinstance(ct_reaction, list):
                 for rxn in ct_reaction:
                     rxn.reversible = self.reversible
-                    # Set the duplicate flag to true since this reaction comes from multiarrhenius or multipdeparrhenius 
+                    # Set the duplicate flag to true since this reaction comes from multiarrhenius or multipdeparrhenius
                     rxn.duplicate = True
-                    # Set the ID flag to the original rmg index 
+                    # Set the ID flag to the original rmg index
                     rxn.ID = str(self.index)
             else:
                 ct_reaction.reversible = self.reversible
@@ -377,7 +402,7 @@ class Reaction:
             return ct_reaction
 
         else:
-            raise Exception('Cantera reaction cannot be created because there was no kinetics.')
+            raise Exception("Cantera reaction cannot be created because there was no kinetics.")
 
     def get_url(self):
         """
@@ -387,7 +412,7 @@ class Reaction:
 
         base_url = "https://rmg.mit.edu/database/kinetics/reaction/"
 
-        rxn_string = ''
+        rxn_string = ""
         for i, species in enumerate(self.reactants):
             adjlist = species.molecule[0].to_adjacency_list(remove_h=False)
             rxn_string += "reactant{0}={1}__".format(i + 1, adjlist)
@@ -396,7 +421,7 @@ class Reaction:
             rxn_string += "product{0}={1}__".format(i + 1, adjlist)
 
         url = base_url + quote(rxn_string)
-        return url.strip('_')
+        return url.strip("_")
 
     def is_isomerization(self):
         """
@@ -445,10 +470,9 @@ class Reaction:
         and `products`, which are both lists of :class:`Species` objects, or
         ``False`` if not.
         """
-        return ((all([spec in self.reactants for spec in reactants]) and
-                 all([spec in self.products for spec in products])) or
-                (all([spec in self.products for spec in reactants]) and
-                 all([spec in self.reactants for spec in products])))
+        return (all([spec in self.reactants for spec in reactants]) and all([spec in self.products for spec in products])) or (
+            all([spec in self.products for spec in reactants]) and all([spec in self.reactants for spec in products])
+        )
 
     def matches_species(self, reactants, products=None):
         """
@@ -473,8 +497,17 @@ class Reaction:
         else:
             return False
 
-    def is_isomorphic(self, other, either_direction=True, check_identical=False, check_only_label=False,
-                      check_template_rxn_products=False, generate_initial_map=False, strict=True, save_order=False):
+    def is_isomorphic(
+        self,
+        other,
+        either_direction=True,
+        check_identical=False,
+        check_only_label=False,
+        check_template_rxn_products=False,
+        generate_initial_map=False,
+        strict=True,
+        save_order=False,
+    ):
         """
         Return ``True`` if this reaction is the same as the `other` reaction,
         or ``False`` if they are different. The comparison involves comparing
@@ -497,33 +530,42 @@ class Reaction:
                 species1 = self.products if self.is_forward else self.reactants
                 species2 = other.products if other.is_forward else other.reactants
             except AttributeError:
-                raise TypeError('Only use check_template_rxn_products flag for TemplateReactions.')
+                raise TypeError("Only use check_template_rxn_products flag for TemplateReactions.")
 
-            return same_species_lists(species1, species2,
-                                      check_identical=check_identical,
-                                      only_check_label=check_only_label,
-                                      generate_initial_map=generate_initial_map,
-                                      strict=strict,
-                                      save_order=save_order)
+            return same_species_lists(
+                species1,
+                species2,
+                check_identical=check_identical,
+                only_check_label=check_only_label,
+                generate_initial_map=generate_initial_map,
+                strict=strict,
+                save_order=save_order,
+            )
 
         # Compare reactants to reactants
-        forward_reactants_match = same_species_lists(self.reactants, other.reactants,
-                                                     check_identical=check_identical,
-                                                     only_check_label=check_only_label,
-                                                     generate_initial_map=generate_initial_map,
-                                                     strict=strict,
-                                                     save_order=save_order)
+        forward_reactants_match = same_species_lists(
+            self.reactants,
+            other.reactants,
+            check_identical=check_identical,
+            only_check_label=check_only_label,
+            generate_initial_map=generate_initial_map,
+            strict=strict,
+            save_order=save_order,
+        )
 
         # Compare products to products
-        forward_products_match = same_species_lists(self.products, other.products,
-                                                    check_identical=check_identical,
-                                                    only_check_label=check_only_label,
-                                                    generate_initial_map=generate_initial_map,
-                                                    strict=strict,
-                                                    save_order=save_order)
+        forward_products_match = same_species_lists(
+            self.products,
+            other.products,
+            check_identical=check_identical,
+            only_check_label=check_only_label,
+            generate_initial_map=generate_initial_map,
+            strict=strict,
+            save_order=save_order,
+        )
 
         # Compare specific_collider to specific_collider
-        collider_match = (self.specific_collider == other.specific_collider)
+        collider_match = self.specific_collider == other.specific_collider
 
         # Return now, if we can
         if forward_reactants_match and forward_products_match and collider_match:
@@ -532,20 +574,26 @@ class Reaction:
             return False
 
         # Compare reactants to products
-        reverse_reactants_match = same_species_lists(self.reactants, other.products,
-                                                     check_identical=check_identical,
-                                                     only_check_label=check_only_label,
-                                                     generate_initial_map=generate_initial_map,
-                                                     strict=strict,
-                                                     save_order=save_order)
+        reverse_reactants_match = same_species_lists(
+            self.reactants,
+            other.products,
+            check_identical=check_identical,
+            only_check_label=check_only_label,
+            generate_initial_map=generate_initial_map,
+            strict=strict,
+            save_order=save_order,
+        )
 
         # Compare products to reactants
-        reverse_products_match = same_species_lists(self.products, other.reactants,
-                                                    check_identical=check_identical,
-                                                    only_check_label=check_only_label,
-                                                    generate_initial_map=generate_initial_map,
-                                                    strict=strict,
-                                                    save_order=save_order)
+        reverse_products_match = same_species_lists(
+            self.products,
+            other.reactants,
+            check_identical=check_identical,
+            only_check_label=check_only_label,
+            generate_initial_map=generate_initial_map,
+            strict=strict,
+            save_order=save_order,
+        )
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return reverse_reactants_match and reverse_products_match and collider_match
@@ -597,7 +645,7 @@ class Reaction:
                 raise
         return dGrxn
 
-    def get_equilibrium_constant(self, T, type='Kc', surface_site_density=2.5e-05):
+    def get_equilibrium_constant(self, T, type="Kc", surface_site_density=2.5e-05):
         """
         Return the equilibrium constant for the reaction at the specified
         temperature `T` in K and reference `surface_site_density`
@@ -621,9 +669,11 @@ class Reaction:
             number_of_gas_reactants = len([spcs for spcs in self.reactants if not spcs.contains_surface_site()])
             number_of_gas_products = len([spcs for spcs in self.products if not spcs.contains_surface_site()])
         except IndexError:
-            logging.warning("Species do not have an rmgpy.molecule.Molecule "
-                            "Cannot determine phases of species. We will assume "
-                            "ideal gas mixture when calculating Kc and Kp.")
+            logging.warning(
+                "Species do not have an rmgpy.molecule.Molecule "
+                "Cannot determine phases of species. We will assume "
+                "ideal gas mixture when calculating Kc and Kp."
+            )
             number_of_gas_reactants = len(self.reactants)
             number_of_gas_products = len(self.products)
 
@@ -633,24 +683,23 @@ class Reaction:
         number_of_surface_products = len(self.products) - number_of_gas_products
 
         # Determine the change in the number of mols of gas and surface species in the reaction
-        dN_surf = number_of_surface_products - number_of_surface_reactants # change in mols of surface spcs
-        dN_gas = number_of_gas_products - number_of_gas_reactants # change in mols of gas spcs
+        dN_surf = number_of_surface_products - number_of_surface_reactants  # change in mols of surface spcs
+        dN_gas = number_of_gas_products - number_of_gas_reactants  # change in mols of gas spcs
 
-        if type == 'Kc':
+        if type == "Kc":
             # Convert from Ka to Kc; C0 is the reference concentration
             if dN_gas:
                 C0 = P0 / constants.R / T
-                K *= C0 ** dN_gas
+                K *= C0**dN_gas
             if dN_surf:
-                K *= surface_site_density ** dN_surf
-        elif type == 'Kp':
+                K *= surface_site_density**dN_surf
+        elif type == "Kp":
             # Convert from Ka to Kp; P0 is the reference pressure
-            K *= P0 ** dN_gas
-        elif type != 'Ka' and type != '':
-            raise ReactionError('Invalid type "{0}" passed to Reaction.get_equilibrium_constant(); '
-                                'should be "Ka", "Kc", or "Kp".'.format(type))
+            K *= P0**dN_gas
+        elif type != "Ka" and type != "":
+            raise ReactionError('Invalid type "{0}" passed to Reaction.get_equilibrium_constant(); ' 'should be "Ka", "Kc", or "Kp".'.format(type))
         if K == 0:
-            raise ReactionError('Got equilibrium constant of 0')
+            raise ReactionError("Got equilibrium constant of 0")
         return K
 
     def get_enthalpies_of_reaction(self, Tlist):
@@ -658,23 +707,23 @@ class Reaction:
         Return the enthalpies of reaction in J/mol evaluated at temperatures
         `Tlist` in K.
         """
-        return np.array([self.get_enthalpy_of_reaction(T) for T in Tlist], np.float64)
+        return np.array([self.get_enthalpy_of_reaction(T) for T in Tlist], float)
 
     def get_entropies_of_reaction(self, Tlist):
         """
         Return the entropies of reaction in J/mol*K evaluated at temperatures
         `Tlist` in K.
         """
-        return np.array([self.get_entropy_of_reaction(T) for T in Tlist], np.float64)
+        return np.array([self.get_entropy_of_reaction(T) for T in Tlist], float)
 
     def get_free_energies_of_reaction(self, Tlist):
         """
         Return the Gibbs free energies of reaction in J/mol evaluated at
         temperatures `Tlist` in K.
         """
-        return np.array([self.get_free_energy_of_reaction(T) for T in Tlist], np.float64)
+        return np.array([self.get_free_energy_of_reaction(T) for T in Tlist], float)
 
-    def get_equilibrium_constants(self, Tlist, type='Kc'):
+    def get_equilibrium_constants(self, Tlist, type="Kc"):
         """
         Return the equilibrium constants for the reaction at the specified
         temperatures `Tlist` in K. The `type` parameter lets you specify the
@@ -682,7 +731,7 @@ class Reaction:
         ``Kc`` for concentrations (default), or ``Kp`` for pressures. Note that
         this function currently assumes an ideal gas mixture.
         """
-        return np.array([self.get_equilibrium_constant(T, type) for T in Tlist], np.float64)
+        return np.array([self.get_equilibrium_constant(T, type) for T in Tlist], float)
 
     def get_stoichiometric_coefficient(self, spec):
         """
@@ -694,9 +743,11 @@ class Reaction:
         cython.declare(stoich=cython.int, reactant=Species, product=Species)
         stoich = 0
         for reactant in self.reactants:
-            if reactant is spec: stoich -= 1
+            if reactant is spec:
+                stoich -= 1
         for product in self.products:
-            if product is spec: stoich += 1
+            if product is spec:
+                stoich += 1
         return stoich
 
     def get_rate_coefficient(self, T, P=0, surface_site_density=0):
@@ -704,7 +755,7 @@ class Reaction:
         Return the overall rate coefficient for the forward reaction at
         temperature `T` in K and pressure `P` in Pa, including any reaction
         path degeneracies.
-        
+
         If diffusion_limiter is enabled, the reaction is in the liquid phase and we use
         a diffusion limitation to correct the rate. If not, then use the intrinsic rate
         coefficient.
@@ -714,8 +765,10 @@ class Reaction:
         """
         if isinstance(self.kinetics, StickingCoefficient):
             if surface_site_density <= 0:
-                raise ValueError("Please provide a postive surface site density in mol/m^2 " 
-                                f"for calculating the rate coefficient of {StickingCoefficient.__name__} kinetics")
+                raise ValueError(
+                    "Please provide a postive surface site density in mol/m^2 "
+                    f"for calculating the rate coefficient of {StickingCoefficient.__name__} kinetics"
+                )
             else:
                 return self.get_surface_rate_coefficient(T, surface_site_density)
         elif diffusion_limiter.enabled:
@@ -734,8 +787,10 @@ class Reaction:
         temperature `T` in K with surface site density `surface_site_density` in mol/m2.
         Value is returned in combination of [m,mol,s]
         """
-        cython.declare(rateCoefficient=cython.double,
-                       molecularWeight_kg=cython.double, )
+        cython.declare(
+            rateCoefficient=cython.double,
+            molecularWeight_kg=cython.double,
+        )
 
         if diffusion_limiter.enabled:
             raise NotImplementedError()
@@ -752,8 +807,7 @@ class Reaction:
                     if adsorbate is None:
                         adsorbate = r
                     else:
-                        logging.error("Error in kinetics for reaction {0!s}: "
-                                      "more than one adsorbate detected".format(self))
+                        logging.error("Error in kinetics for reaction {0!s}: " "more than one adsorbate detected".format(self))
                         raise ReactionError("More than one adsorbate detected")
 
             if adsorbate is None or adsorbate.contains_surface_site():
@@ -791,15 +845,14 @@ class Reaction:
         self.kinetics.A = self.kinetics.A * diffusion_factor
         # Add a comment to self.kinetics.comment
         self.kinetics.comment.append(
-            ("Pre-exponential factor A has been decreased by the "
-             "diffusion factor {0.2g} evaluated at {1} K.").format(
-                diffusion_factor, T))
+            ("Pre-exponential factor A has been decreased by the " "diffusion factor {0.2g} evaluated at {1} K.").format(diffusion_factor, T)
+        )
 
     def fix_barrier_height(self, force_positive=False):
         """
         Turns the kinetics into Arrhenius (if they were ArrheniusEP)
         and ensures the activation energy is at least the endothermicity
-        for endothermic reactions, and is not negative only as a result 
+        for endothermic reactions, and is not negative only as a result
         of using Evans Polanyi with an exothermic reaction.
         If `force_positive` is True, then all reactions
         are forced to have a non-negative barrier.
@@ -810,45 +863,60 @@ class Reaction:
             raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
 
         H298 = self.get_enthalpy_of_reaction(298)
-        H0 = sum([spec.get_thermo_data().E0.value_si if spec.get_thermo_data().E0 is not None else spec.get_thermo_data().to_wilhoit().E0.value_si for spec in self.products]) \
-             - sum([spec.get_thermo_data().E0.value_si if spec.get_thermo_data().E0 is not None else spec.get_thermo_data().to_wilhoit().E0.value_si  for spec in self.reactants])
+        H0 = sum(
+            [
+                spec.get_thermo_data().E0.value_si if spec.get_thermo_data().E0 is not None else spec.get_thermo_data().to_wilhoit().E0.value_si
+                for spec in self.products
+            ]
+        ) - sum(
+            [
+                spec.get_thermo_data().E0.value_si if spec.get_thermo_data().E0 is not None else spec.get_thermo_data().to_wilhoit().E0.value_si
+                for spec in self.reactants
+            ]
+        )
         if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusBM)):
             Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
             self.kinetics = self.kinetics.to_arrhenius(H298)
             if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
                 # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
                 Ea = min(0.0, Ea)  # (the lowest we want it to be)
-                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(
-                    self.kinetics.Ea.value_si / 1000., Ea / 1000.)
-                logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(
-                    self, self.kinetics.Ea.value_si / 1000., Ea / 1000.))
+                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(self.kinetics.Ea.value_si / 1000.0, Ea / 1000.0)
+                logging.info(
+                    "For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(self, self.kinetics.Ea.value_si / 1000.0, Ea / 1000.0)
+                )
                 self.kinetics.Ea.value_si = Ea
         if isinstance(self.kinetics, (Arrhenius, StickingCoefficient)):  # SurfaceArrhenius is a subclass of Arrhenius
             Ea = self.kinetics.Ea.value_si
             if H0 >= 0 and Ea < H0:
                 self.kinetics.Ea.value_si = H0
-                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of " \
-                                         "reaction.".format( Ea / 1000., H0 / 1000.)
-                logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match "
-                             "endothermicity of reaction.".format( Ea / 1000., H0 / 1000., self))
+                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of " "reaction.".format(
+                    Ea / 1000.0, H0 / 1000.0
+                )
+                logging.info(
+                    "For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match "
+                    "endothermicity of reaction.".format(Ea / 1000.0, H0 / 1000.0, self)
+                )
         if force_positive and isinstance(self.kinetics, (Arrhenius, StickingCoefficient)) and self.kinetics.Ea.value_si < 0:
-            self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si / 1000.)
-            logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(
-                self.kinetics.Ea.value_si / 1000., self))
+            self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si / 1000.0)
+            logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si / 1000.0, self))
             self.kinetics.Ea.value_si = 0
         if self.kinetics.is_pressure_dependent() and self.network_kinetics is not None:
             Ea = self.network_kinetics.Ea.value_si
             if H0 >= 0 and Ea < H0:
                 self.network_kinetics.Ea.value_si = H0
-                self.network_kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of" \
-                                                 " reaction.".format(Ea / 1000., H0 / 1000.)
-                logging.info("For reaction {2!s}, Ea of the high pressure limit kinetics raised from {0:.1f} to {1:.1f}"
-                             " kJ/mol to match endothermicity of reaction.".format(Ea / 1000., H0 / 1000., self))
+                self.network_kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of" " reaction.".format(
+                    Ea / 1000.0, H0 / 1000.0
+                )
+                logging.info(
+                    "For reaction {2!s}, Ea of the high pressure limit kinetics raised from {0:.1f} to {1:.1f}"
+                    " kJ/mol to match endothermicity of reaction.".format(Ea / 1000.0, H0 / 1000.0, self)
+                )
             if force_positive and isinstance(self.kinetics, Arrhenius) and self.kinetics.Ea.value_si < 0:
-                self.network_kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(
-                    self.kinetics.Ea.value_si / 1000.)
-                logging.info("For reaction {1!s} Ea of the high pressure limit kinetics raised from {0:.1f} to 0"
-                             " kJ/mol.".format(self.kinetics.Ea.value_si / 1000., self))
+                self.network_kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si / 1000.0)
+                logging.info(
+                    "For reaction {1!s} Ea of the high pressure limit kinetics raised from {0:.1f} to 0"
+                    " kJ/mol.".format(self.kinetics.Ea.value_si / 1000.0, self)
+                )
                 self.kinetics.Ea.value_si = 0
 
     def reverse_arrhenius_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
@@ -882,8 +950,8 @@ class Reaction:
         cython.declare(kf=SurfaceArrhenius, kr=SurfaceArrhenius)
         cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int)
         kf = k_forward
-        if not isinstance(kf, SurfaceArrhenius): # Only reverse SurfaceArrhenius rates
-            raise TypeError(f'Expected a SurfaceArrhenius object for k_forward but received {kf}')
+        if not isinstance(kf, SurfaceArrhenius):  # Only reverse SurfaceArrhenius rates
+            raise TypeError(f"Expected a SurfaceArrhenius object for k_forward but received {kf}")
         if Tmin is not None and Tmax is not None:
             Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
         else:
@@ -905,8 +973,8 @@ class Reaction:
         """
         cython.declare(kf=StickingCoefficient, kr=SurfaceArrhenius)
         cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int)
-        if not isinstance(k_forward, StickingCoefficient): # Only reverse StickingCoefficient rates
-            raise TypeError(f'Expected a StickingCoefficient object for k_forward but received {k_forward}')
+        if not isinstance(k_forward, StickingCoefficient):  # Only reverse StickingCoefficient rates
+            raise TypeError(f"Expected a StickingCoefficient object for k_forward but received {k_forward}")
         kf = k_forward
         if Tmin is not None and Tmax is not None:
             Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
@@ -915,25 +983,32 @@ class Reaction:
         # Determine the values of the reverse rate coefficient k_r(T) at each temperature
         klist = np.zeros_like(Tlist)
         for i in range(len(Tlist)):
-            klist[i] = \
-                self.get_surface_rate_coefficient(Tlist[i], surface_site_density=surface_site_density) / \
-                self.get_equilibrium_constant(Tlist[i], surface_site_density=surface_site_density)
+            klist[i] = self.get_surface_rate_coefficient(Tlist[i], surface_site_density=surface_site_density) / self.get_equilibrium_constant(
+                Tlist[i], surface_site_density=surface_site_density
+            )
         kr = SurfaceArrhenius()
         kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
         return kr
 
     def generate_reverse_rate_coefficient(self, network_kinetics=False, Tmin=None, Tmax=None, surface_site_density=0):
         """
-        Generate and return a rate coefficient model for the reverse reaction. 
+        Generate and return a rate coefficient model for the reverse reaction.
         Currently this only works if the `kinetics` attribute is one of several
         (but not necessarily all) kinetics types.
 
         If the reaction kinetics model is Sticking Coefficient, please provide a nonzero
         surface site density in `mol/m^2` which is required to evaluate the rate coefficient.
         """
-        cython.declare(Tlist=np.ndarray, Plist=np.ndarray, K=np.ndarray,
-                       rxn=Reaction, klist=np.ndarray, i=cython.size_t,
-                       Tindex=cython.size_t, Pindex=cython.size_t)
+        cython.declare(
+            Tlist=np.ndarray,
+            Plist=np.ndarray,
+            K=np.ndarray,
+            rxn=Reaction,
+            klist=np.ndarray,
+            i=cython.size_t,
+            Tindex=cython.size_t,
+            Pindex=cython.size_t,
+        )
 
         supported_types = (
             KineticsData.__name__,
@@ -954,23 +1029,19 @@ class Reaction:
             surf_prods = [spcs for spcs in self.products if spcs.contains_surface_site()]
         except IndexError:
             surf_prods = []
-            logging.warning(f"Species do not have an rmgpy.molecule.Molecule "  
-                            "Cannot determine phases of species. We will assume gas"
-                            )
+            logging.warning(f"Species do not have an rmgpy.molecule.Molecule " "Cannot determine phases of species. We will assume gas")
         n_surf = len(surf_prods)
         n_gas = len(self.products) - len(surf_prods)
         kunits = get_rate_coefficient_units_from_reaction_order(n_gas, n_surf)
 
         kf = self.kinetics
         if isinstance(kf, KineticsData):
-
             Tlist = kf.Tdata.value_si
             klist = np.zeros_like(Tlist)
             for i in range(len(Tlist)):
                 klist[i] = kf.get_rate_coefficient(Tlist[i]) / self.get_equilibrium_constant(Tlist[i])
 
-            kr = KineticsData(Tdata=(Tlist, "K"), kdata=(klist, kunits), Tmin=(np.min(Tlist), "K"),
-                              Tmax=(np.max(Tlist), "K"))
+            kr = KineticsData(Tdata=(Tlist, "K"), kdata=(klist, kunits), Tmin=(np.min(Tlist), "K"), Tmax=(np.max(Tlist), "K"))
             return kr
 
         elif isinstance(kf, Arrhenius):
@@ -981,8 +1052,10 @@ class Reaction:
 
         elif isinstance(kf, StickingCoefficient):
             if surface_site_density <= 0:
-                raise ValueError("Please provide a postive surface site density in mol/m^2 " 
-                                f"for calculating the rate coefficient of {StickingCoefficient.__name__} kinetics")
+                raise ValueError(
+                    "Please provide a postive surface site density in mol/m^2 "
+                    f"for calculating the rate coefficient of {StickingCoefficient.__name__} kinetics"
+                )
             else:
                 return self.reverse_sticking_coeff_rate(kf, kunits, surface_site_density, Tmin, Tmax)
 
@@ -993,13 +1066,12 @@ class Reaction:
         elif isinstance(kf, Chebyshev):
             Tlist = 1.0 / np.linspace(1.0 / kf.Tmax.value, 1.0 / kf.Tmin.value, 50)
             Plist = np.linspace(kf.Pmin.value, kf.Pmax.value, 20)
-            K = np.zeros((len(Tlist), len(Plist)), np.float64)
+            K = np.zeros((len(Tlist), len(Plist)), float)
             for Tindex, T in enumerate(Tlist):
                 for Pindex, P in enumerate(Plist):
                     K[Tindex, Pindex] = kf.get_rate_coefficient(T, P) / self.get_equilibrium_constant(T)
             kr = Chebyshev()
-            kr.fit_to_data(Tlist, Plist, K, kunits, kf.degreeT, kf.degreeP, kf.Tmin.value, kf.Tmax.value, kf.Pmin.value,
-                         kf.Pmax.value)
+            kr.fit_to_data(Tlist, Plist, K, kunits, kf.degreeT, kf.degreeP, kf.Tmin.value, kf.Tmax.value, kf.Pmin.value, kf.Pmax.value)
             return kr
 
         elif isinstance(kf, PDepArrhenius):
@@ -1053,11 +1125,10 @@ class Reaction:
             kr = Troe(krHigh, krLow, *parameters[2:])
             return kr
         else:
-            raise ReactionError("Unexpected kinetics type {0}; "
-                                "should be one of {1}".format(self.kinetics.__class__, supported_types))
+            raise ReactionError("Unexpected kinetics type {0}; " "should be one of {1}".format(self.kinetics.__class__, supported_types))
 
     def calculate_tst_rate_coefficients(self, Tlist):
-        return np.array([self.calculate_tst_rate_coefficient(T) for T in Tlist], np.float64)
+        return np.array([self.calculate_tst_rate_coefficient(T) for T in Tlist], float)
 
     def calculate_tst_rate_coefficient(self, T):
         """
@@ -1079,11 +1150,11 @@ class Reaction:
         Qreac = 1.0
         E0 = 0.0
         for spec in self.reactants:
-            logging.debug('    Calculating Partition function for ' + spec.label)
-            Qreac *= spec.get_partition_function(T) / (constants.R * T / 101325.)
+            logging.debug("    Calculating Partition function for " + spec.label)
+            Qreac *= spec.get_partition_function(T) / (constants.R * T / 101325.0)
             E0 -= spec.conformer.E0.value_si
-        logging.debug('    Calculating Partition function for ' + self.transition_state.label)
-        Qts = self.transition_state.get_partition_function(T) / (constants.R * T / 101325.)
+        logging.debug("    Calculating Partition function for " + self.transition_state.label)
+        Qts = self.transition_state.get_partition_function(T) / (constants.R * T / 101325.0)
         E0 += self.transition_state.conformer.E0.value_si
         k = (constants.kB * T / constants.h * Qts / Qreac) * math.exp(-E0 / constants.R / T)
 
@@ -1110,14 +1181,14 @@ class Reaction:
         reactant density of states is required; if the reaction is reversible, then
         both are required. This function will try to use the best method that it
         can based on the input data available:
-        
+
         * If detailed information has been provided for the transition state (i.e.
           the molecular degrees of freedom), then RRKM theory will be used.
-        
+
         * If the above is not possible but high-pressure limit kinetics
-          :math:`k_\\infty(T)` have been provided, then the inverse Laplace 
+          :math:`k_\\infty(T)` have been provided, then the inverse Laplace
           transform method will be used.
-    
+
         The density of states for the product `prod_dens_states` and the temperature
         of interest `T` in K can also be provided. For isomerization and association
         reactions `prod_dens_states` is required; for dissociation reactions it is
@@ -1183,7 +1254,7 @@ class Reaction:
         Generate the reactant-product pairs to use for this reaction when
         performing flux analysis. The exact procedure for doing so depends on
         the reaction type:
-        
+
         =================== =============== ========================================
         Reaction type       Template        Resulting pairs
         =================== =============== ========================================
@@ -1192,8 +1263,8 @@ class Reaction:
         Association         A + B -> C      (A,C), (B,C)
         Bimolecular         A + B -> C + D  (A,C), (B,D) *or* (A,D), (B,C)
         =================== =============== ========================================
-        
-        There are a number of ways of determining the correct pairing for 
+
+        There are a number of ways of determining the correct pairing for
         bimolecular reactions. Here we try a simple similarity analysis by comparing
         the number of heavy atoms. This should work most of the time, but a more
         rigorous algorithm may be needed for some cases.
@@ -1213,11 +1284,12 @@ class Reaction:
             def get_sorting_key(spc):
                 # List of elements to sort by, order is intentional
                 numbers = [6, 8, 7, 14, 16, 15, 17, 53, 9, 35]  # C, O, N, Si, S, P, Cl, I, F, Br
-                ele_count = dict([(n,0) for n in numbers])
+                ele_count = dict([(n, 0) for n in numbers])
                 for atom in spc.molecule[0].atoms:
                     if isinstance(atom, Atom) and atom.element.number in numbers:
                         ele_count[atom.element.number] += 1
                 return tuple(ele_count[n] for n in numbers)
+
             # Sort the reactants and products by element counts
             reactants.sort(key=get_sorting_key)
             products.sort(key=get_sorting_key)
@@ -1239,6 +1311,7 @@ class Reaction:
         vector formats.
         """
         from rmgpy.molecule.draw import ReactionDrawer
+
         img_format = os.path.splitext(path)[1].lower()[1:]
         ReactionDrawer().draw(self, img_format, path)
 
@@ -1247,18 +1320,19 @@ class Reaction:
         Return a png picture of the reaction, useful for ipython-qtconsole.
         """
         from rmgpy.molecule.draw import ReactionDrawer
-        temp_file_name = 'temp_reaction.png'
-        ReactionDrawer().draw(self, 'png', temp_file_name)
-        png = open(temp_file_name, 'rb').read()
+
+        temp_file_name = "temp_reaction.png"
+        ReactionDrawer().draw(self, "png", temp_file_name)
+        png = open(temp_file_name, "rb").read()
         os.unlink(temp_file_name)
         return png
 
     # Build the transition state geometry
     def generate_3d_ts(self, reactants, products):
         """
-        Generate the 3D structure of the transition state. Called from 
+        Generate the 3D structure of the transition state. Called from
         model.generate_kinetics().
-        
+
         self.reactants is a list of reactants
         self.products is a list of products
         """
@@ -1360,6 +1434,7 @@ class Reaction:
         If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
         """
         from rmgpy.data.kinetics.common import ensure_species
+
         # if already species' objects, return none
         if isinstance(self.reactants[0], Species):
             return None
@@ -1430,14 +1505,14 @@ class Reaction:
             for i, k in enumerate(kf_list):
                 if k > collision_limit_f[i]:
                     ratio = k / collision_limit_f[i]
-                    condition = '{0} K, {1:.1f} bar'.format(conditions[i][0], conditions[i][1] / 1e5)
-                    violator_list.append([self, 'forward', ratio, condition])
+                    condition = "{0} K, {1:.1f} bar".format(conditions[i][0], conditions[i][1] / 1e5)
+                    violator_list.append([self, "forward", ratio, condition])
         if len(self.products) >= 2:
             for i, k in enumerate(kr_list):
                 if k > collision_limit_r[i]:
                     ratio = k / collision_limit_r[i]
-                    condition = '{0} K, {1:.1f} bar'.format(conditions[i][0], conditions[i][1] / 1e5)
-                    violator_list.append([self, 'reverse', ratio, condition])
+                    condition = "{0} K, {1:.1f} bar".format(conditions[i][0], conditions[i][1] / 1e5)
+                    violator_list.append([self, "reverse", ratio, condition])
         return violator_list
 
     def calculate_coll_limit(self, temp, reverse=False):
@@ -1448,10 +1523,8 @@ class Reaction:
         reduced_mass = self.get_reduced_mass(reverse)
         sigma, epsilon = self.get_mean_sigma_and_epsilon(reverse)
         Tr = temp * constants.kB * constants.Na / epsilon
-        reduced_coll_integral = 1.16145 * Tr ** (-0.14874) + 0.52487 * math.exp(-0.7732 * Tr) + 2.16178 * math.exp(
-            -2.437887 * Tr)
-        k_coll = (math.sqrt(8 * math.pi * constants.kB * temp * constants.Na / reduced_mass) * sigma ** 2
-                  * reduced_coll_integral * constants.Na)
+        reduced_coll_integral = 1.16145 * Tr ** (-0.14874) + 0.52487 * math.exp(-0.7732 * Tr) + 2.16178 * math.exp(-2.437887 * Tr)
+        k_coll = math.sqrt(8 * math.pi * constants.kB * temp * constants.Na / reduced_mass) * sigma**2 * reduced_coll_integral * constants.Na
         return k_coll
 
     def get_reduced_mass(self, reverse=False):
@@ -1500,8 +1573,7 @@ class Reaction:
         raise NotImplementedError("generate_high_p_limit_kinetics is not implemented for all Reaction subclasses.")
 
 
-def same_species_lists(list1, list2, check_identical=False, only_check_label=False, generate_initial_map=False,
-                       strict=True, save_order=False):
+def same_species_lists(list1, list2, check_identical=False, only_check_label=False, generate_initial_map=False, strict=True, save_order=False):
     """
     This method compares whether two lists of species or molecules are the same,
     given the comparison options provided. It is used for the `is_same` method
@@ -1520,15 +1592,21 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
         ``True`` if the lists are the same and ``False`` otherwise
     """
 
-    def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label,
-             _generate_initial_map=generate_initial_map, _strict=strict, _save_order=save_order):
+    def same(
+        object1,
+        object2,
+        _check_identical=check_identical,
+        _only_check_label=only_check_label,
+        _generate_initial_map=generate_initial_map,
+        _strict=strict,
+        _save_order=save_order,
+    ):
         if _only_check_label:
             return str(object1) == str(object2)
         elif _check_identical:
             return object1.is_identical(object2, strict=_strict)
         else:
-            return object1.is_isomorphic(object2, generate_initial_map=_generate_initial_map,
-                                         strict=_strict, save_order=_save_order)
+            return object1.is_isomorphic(object2, generate_initial_map=_generate_initial_map, strict=_strict, save_order=_save_order)
 
     if len(list1) == len(list2) == 1:
         if same(list1[0], list2[0]):

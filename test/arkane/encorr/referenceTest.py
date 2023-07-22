@@ -49,7 +49,7 @@ import pytest
 
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(os.path.dirname(FILE_DIR), "data")
+DATA_DIR = os.path.join(os.path.dirname(FILE_DIR), "..", "..", "arkane", "data")
 SPECIES_DIR = os.path.join(DATA_DIR, "species")
 
 

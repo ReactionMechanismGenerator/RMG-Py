@@ -52,56 +52,62 @@ from rmgpy.statmech import Conformer
 
 ################################################################################
 
-class PDepReaction(rmgpy.reaction.Reaction):
 
-    def __init__(self,
-                 index=-1,
-                 label='',
-                 reactants=None,
-                 products=None,
-                 specific_collider=None,
-                 network=None,
-                 kinetics=None,
-                 network_kinetics=None,
-                 reversible=True,
-                 transition_state=None,
-                 duplicate=False,
-                 degeneracy=1,
-                 pairs=None
-                 ):
-        rmgpy.reaction.Reaction.__init__(self,
-                                         index=index,
-                                         label=label,
-                                         reactants=reactants,
-                                         products=products,
-                                         specific_collider=specific_collider,
-                                         kinetics=kinetics,
-                                         network_kinetics=network_kinetics,
-                                         reversible=reversible,
-                                         transition_state=transition_state,
-                                         duplicate=duplicate,
-                                         degeneracy=degeneracy,
-                                         pairs=pairs
-                                         )
+class PDepReaction(rmgpy.reaction.Reaction):
+    def __init__(
+        self,
+        index=-1,
+        label="",
+        reactants=None,
+        products=None,
+        specific_collider=None,
+        network=None,
+        kinetics=None,
+        network_kinetics=None,
+        reversible=True,
+        transition_state=None,
+        duplicate=False,
+        degeneracy=1,
+        pairs=None,
+    ):
+        rmgpy.reaction.Reaction.__init__(
+            self,
+            index=index,
+            label=label,
+            reactants=reactants,
+            products=products,
+            specific_collider=specific_collider,
+            kinetics=kinetics,
+            network_kinetics=network_kinetics,
+            reversible=reversible,
+            transition_state=transition_state,
+            duplicate=duplicate,
+            degeneracy=degeneracy,
+            pairs=pairs,
+        )
         self.network = network
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (PDepReaction, (self.index,
-                               self.label,
-                               self.reactants,
-                               self.products,
-                               self.specific_collider,
-                               self.network,
-                               self.kinetics,
-                               self.reversible,
-                               self.transition_state,
-                               self.duplicate,
-                               self.degeneracy,
-                               self.pairs
-                               ))
+        return (
+            PDepReaction,
+            (
+                self.index,
+                self.label,
+                self.reactants,
+                self.products,
+                self.specific_collider,
+                self.network,
+                self.kinetics,
+                self.reversible,
+                self.transition_state,
+                self.duplicate,
+                self.degeneracy,
+                self.pairs,
+            ),
+        )
 
     def get_source(self):
         """
@@ -111,6 +117,7 @@ class PDepReaction(rmgpy.reaction.Reaction):
 
 
 ################################################################################
+
 
 class PDepNetwork(rmgpy.pdep.network.Network):
     """
@@ -192,8 +199,10 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 if rxn.reverse.kinetics is not None:
                     rxn = rxn.reverse
                 else:
-                    raise PressureDependenceError('Path reaction {0} with no high-pressure-limit kinetics encountered '
-                                                  'in PDepNetwork #{1:d} while evaluating leak flux.'.format(rxn, self.index))
+                    raise PressureDependenceError(
+                        "Path reaction {0} with no high-pressure-limit kinetics encountered "
+                        "in PDepNetwork #{1:d} while evaluating leak flux.".format(rxn, self.index)
+                    )
             if rxn.products is self.source:
                 k = rxn.get_rate_coefficient(T, P) / rxn.get_equilibrium_constant(T)
             else:
@@ -234,7 +243,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         # Make sure we've identified a species
         if max_species is None:
-            raise NetworkError('No unimolecular isomers left to explore!')
+            raise NetworkError("No unimolecular isomers left to explore!")
         # Return the species
         return max_species
 
@@ -272,8 +281,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         """
 
         if isomer in self.explored:
-            logging.warning('Already explored isomer {0} in pressure-dependent network #{1:d}'.format(isomer,
-                                                                                                      self.index))
+            logging.warning("Already explored isomer {0} in pressure-dependent network #{1:d}".format(isomer, self.index))
             return []
 
         assert isomer not in self.source, "Attempted to explore isomer {0}, but that is the source configuration for this network.".format(isomer)
@@ -282,9 +290,9 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             if product.species == [isomer]:
                 break
         else:
-            raise Exception('Attempted to explore isomer {0}, but that species not found in product channels.'.format(isomer))
+            raise Exception("Attempted to explore isomer {0}, but that species not found in product channels.".format(isomer))
 
-        logging.info('Exploring isomer {0} in pressure-dependent network #{1:d}'.format(isomer, self.index))
+        logging.info("Exploring isomer {0} in pressure-dependent network #{1:d}".format(isomer, self.index))
 
         for mol in isomer.molecule:
             mol.update()
@@ -344,7 +352,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                             E0source = conf.E0
                             break
         else:
-            raise ValueError('No isomer, product or reactant channel is isomorphic to the source')
+            raise ValueError("No isomer, product or reactant channel is isomorphic to the source")
 
         filtered_rxns = []
         for rxn in self.path_reactions:
@@ -454,13 +462,13 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 if any(c <= 0.0):
                     c, rnorm = opt.nnls(A, b)
 
-                c = c.astype(np.float64)
+                c = c.astype(float)
             except:  # fall back to raw flux analysis rather than solve steady state problem
                 return None
-        
+
         if np.isnan(c).any():
             return None
-        
+
         return c
 
     def remove_disconnected_reactions(self):
@@ -483,25 +491,25 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
             incomplete = s != len(kept_reactions)
 
-        logging.info('Removing disconnected items')
+        logging.info("Removing disconnected items")
         for rxn in self.path_reactions:
             if rxn not in kept_reactions:
-                logging.info('Removing rxn: {}'.format(rxn))
+                logging.info("Removing rxn: {}".format(rxn))
                 self.path_reactions.remove(rxn)
 
         nrxns = []
         for nrxn in self.net_reactions:
             if nrxn.products not in kept_products or nrxn.reactants not in kept_products:
-                logging.info('Removing net rxn: {}'.format(nrxn))
+                logging.info("Removing net rxn: {}".format(nrxn))
             else:
-                logging.info('Keeping net rxn: {}'.format(nrxn))
+                logging.info("Keeping net rxn: {}".format(nrxn))
                 nrxns.append(nrxn)
         self.net_reactions = nrxns
 
         prods = []
         for prod in self.products:
             if prod.species not in kept_products:
-                logging.info('Removing product: {}'.format(prod))
+                logging.info("Removing product: {}".format(prod))
             else:
                 logging.info("Keeping product: {}".format(prod))
                 prods.append(prod)
@@ -511,7 +519,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         rcts = []
         for rct in self.reactants:
             if rct.species not in kept_products:
-                logging.info('Removing product: {}'.format(rct))
+                logging.info("Removing product: {}".format(rct))
             else:
                 logging.info("Keeping product: {}".format(rct))
                 rcts.append(rct)
@@ -520,7 +528,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         isos = []
         for iso in self.isomers:
             if iso.species not in kept_products:
-                logging.info('Removing isomer: {}'.format(iso))
+                logging.info("Removing isomer: {}".format(iso))
             else:
                 logging.info("Keeping isomer: {}".format(iso))
                 isos.append(iso)
@@ -572,24 +580,22 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         self.invalidate()
 
-        assert self.path_reactions != [], 'Reduction process removed all reactions, cannot update network with no reactions'
+        assert self.path_reactions != [], "Reduction process removed all reactions, cannot update network with no reactions"
 
         reaction_model.update_unimolecular_reaction_networks()
 
         if reaction_model.pressure_dependence.output_file:
-            path0 = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep')
-            path = os.path.join(reaction_model.pressure_dependence.output_file, 'pdep','final')
+            path0 = os.path.join(reaction_model.pressure_dependence.output_file, "pdep")
+            path = os.path.join(reaction_model.pressure_dependence.output_file, "pdep", "final")
             if not os.path.exists(path):
                 os.mkdir(path)
             for name in os.listdir(path0):
-                if name.endswith('.py') and '_' in name:
-                    s1,s2 = name.split('_')
+                if name.endswith(".py") and "_" in name:
+                    s1, s2 = name.split("_")
                     index = int(s1[7:])
-                    N_isomers = int(s2.split('.')[0]) 
+                    N_isomers = int(s2.split(".")[0])
                     if index == self.index and N_isomers == len(self.isomers):
-                        shutil.copy(os.path.join(path0, name),
-                                  os.path.join(path, 'network{}_reduced.py'.format(networks.index(self))))
-
+                        shutil.copy(os.path.join(path0, name), os.path.join(path, "network{}_reduced.py".format(networks.index(self))))
 
     def merge(self, other):
         """
@@ -630,7 +636,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             for rxn in self.path_reactions:
                 if reaction.reactants == rxn.reactants and reaction.products == rxn.products:
                     # NB the isEquivalent() method that used to be on the previous line also checked reverse direction.
-                    # I am not sure which is appropriate 
+                    # I am not sure which is appropriate
                     found = True
                     break
             if not found:
@@ -644,7 +650,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             for rxn in self.net_reactions:
                 if reaction.reactants == rxn.reactants and reaction.products == rxn.products:
                     # NB the isEquivalent() method that used to be on the previous line also checked reverse direction.
-                    # I am not sure which is appropriate 
+                    # I am not sure which is appropriate
                     found = True
                     break
             if not found:
@@ -656,9 +662,9 @@ class PDepNetwork(rmgpy.pdep.network.Network):
     def update_configurations(self, reaction_model):
         """
         Sort the reactants and products of each of the network's path reactions
-        into isomers, reactant channels, and product channels. You must pass 
+        into isomers, reactant channels, and product channels. You must pass
         the current `reaction_model` because some decisions on sorting are made
-        based on which species are in the model core. 
+        based on which species are in the model core.
         """
         reactants = []
         products = []
@@ -669,7 +675,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # The source configuration is an isomer (if unimolecular) or a reactant channel (if bimolecular)
         if len(self.source) == 1:
             # The source is a unimolecular isomer
-            if self.source[0] not in isomers: isomers.insert(0, self.source[0])
+            if self.source[0] not in isomers:
+                isomers.insert(0, self.source[0])
         else:
             # The source is a bimolecular reactant channel
             self.source.sort()
@@ -771,11 +778,13 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Make sure we have high-P kinetics for all path reactions
         for rxn in self.path_reactions:
             if rxn.kinetics is None and rxn.reverse.kinetics is None:
-                raise PressureDependenceError('Path reaction {0} with no high-pressure-limit kinetics encountered in '
-                                              'PDepNetwork #{1:d}.'.format(rxn, self.index))
+                raise PressureDependenceError(
+                    "Path reaction {0} with no high-pressure-limit kinetics encountered in " "PDepNetwork #{1:d}.".format(rxn, self.index)
+                )
             elif rxn.kinetics is not None and rxn.kinetics.is_pressure_dependent() and rxn.network_kinetics is None:
-                raise PressureDependenceError('Pressure-dependent kinetics encountered for path reaction {0} in '
-                                              'PDepNetwork #{1:d}.'.format(rxn, self.index))
+                raise PressureDependenceError(
+                    "Pressure-dependent kinetics encountered for path reaction {0} in " "PDepNetwork #{1:d}.".format(rxn, self.index)
+                )
 
         # Do nothing if the network is already valid
         if self.valid:
@@ -833,22 +842,21 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has no kinetics!'.format(rxn, self.index))
             elif isinstance(rxn.kinetics, KineticsData):
                 if len(rxn.reactants) == 1:
-                    kunits = 's^-1'
+                    kunits = "s^-1"
                 elif len(rxn.reactants) == 2:
-                    kunits = 'm^3/(mol*s)'
+                    kunits = "m^3/(mol*s)"
                 elif len(rxn.reactants) == 3:
-                    kunits = 'm^6/(mol^2*s)'
+                    kunits = "m^6/(mol^2*s)"
                 else:
-                    kunits = ''
-                rxn.kinetics = Arrhenius().fit_to_data(Tlist=rxn.kinetics.Tdata.value_si,
-                                                       klist=rxn.kinetics.kdata.value_si, kunits=kunits)
+                    kunits = ""
+                rxn.kinetics = Arrhenius().fit_to_data(Tlist=rxn.kinetics.Tdata.value_si, klist=rxn.kinetics.kdata.value_si, kunits=kunits)
             elif isinstance(rxn.kinetics, MultiArrhenius):
-                logging.info('Converting multiple kinetics to a single Arrhenius expression for reaction {rxn}'.format(
-                    rxn=rxn))
+                logging.info("Converting multiple kinetics to a single Arrhenius expression for reaction {rxn}".format(rxn=rxn))
                 rxn.kinetics = rxn.kinetics.to_arrhenius(Tmin=Tmin, Tmax=Tmax)
             elif not isinstance(rxn.kinetics, Arrhenius) and rxn.network_kinetics is None:
-                raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has invalid kinetics '
-                                'type "{2!s}".'.format(rxn, self.index, rxn.kinetics.__class__))
+                raise Exception(
+                    'Path reaction "{0}" in PDepNetwork #{1:d} has invalid kinetics ' 'type "{2!s}".'.format(rxn, self.index, rxn.kinetics.__class__)
+                )
             rxn.fix_barrier_height(force_positive=True)
             if rxn.network_kinetics is None:
                 E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si + energy_correction
@@ -858,7 +866,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         # Set collision model
         bath_gas = [spec for spec in reaction_model.core.species if not spec.reactive]
-        assert len(bath_gas) > 0, 'No unreactive species to identify as bath gas'
+        assert len(bath_gas) > 0, "No unreactive species to identify as bath gas"
 
         self.bath_gas = {}
         for spec in bath_gas:
@@ -870,12 +878,10 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             self.label = str(self.index)
 
         if output_directory:
-            job.save_input_file(
-                os.path.join(output_directory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))))
+            job.save_input_file(os.path.join(output_directory, "pdep", "network{0:d}_{1:d}.py".format(self.index, len(self.isomers))))
 
         # Calculate the rate coefficients
-        self.initialize(Tmin, Tmax, Pmin, Pmax, maximum_grain_size, minimum_grain_count, active_j_rotor, active_k_rotor,
-                        rmgmode)
+        self.initialize(Tmin, Tmax, Pmin, Pmax, maximum_grain_size, minimum_grain_count, active_j_rotor, active_k_rotor, rmgmode)
         K = self.calculate_rate_coefficients(Tlist, Plist, method)
 
         # Generate PDepReaction objects
@@ -905,8 +911,9 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
                     # Place the net reaction in the core or edge if necessary
                     # Note that leak reactions are not placed in the edge
-                    if all([s in reaction_model.core.species for s in net_reaction.reactants]) \
-                            and all([s in reaction_model.core.species for s in net_reaction.products]):
+                    if all([s in reaction_model.core.species for s in net_reaction.reactants]) and all(
+                        [s in reaction_model.core.species for s in net_reaction.products]
+                    ):
                         # Check whether netReaction already exists in the core as a LibraryReaction
                         for rxn in reaction_model.core.reactions:
                             if isinstance(rxn, LibraryReaction) \
@@ -935,14 +942,14 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 kdata = K[:, :, i, j].copy()
                 order = len(net_reaction.reactants)
                 kdata *= 1e6 ** (order - 1)
-                kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
+                kunits = {1: "s^-1", 2: "cm^3/(mol*s)", 3: "cm^6/(mol^2*s)"}[order]
                 net_reaction.kinetics = job.fit_interpolation_model(Tlist, Plist, kdata, kunits)
 
                 # Check: For each net reaction that has a path reaction, make
                 # sure the k(T,P) values for the net reaction do not exceed
                 # the k(T) values of the path reaction
                 # Only check the k(T,P) value at the highest P and lowest T,
-                # as this is the one most likely to be in the high-pressure 
+                # as this is the one most likely to be in the high-pressure
                 # limit
                 t = 0
                 p = len(Plist) - 1
@@ -961,21 +968,23 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         else:
                             kinf = pathReaction.kinetics.get_rate_coefficient(Tlist[t])
                         if K[t, p, i, j] > 2 * kinf:  # To allow for a small discretization error
-                            logging.warning('k(T,P) for net reaction {0} exceeds high-P k(T) by {1:g} at {2:g} K, '
-                                            '{3:g} bar'.format(net_reaction, K[t, p, i, j] / kinf, Tlist[t], Plist[p] / 1e5))
-                            logging.info('    k(T,P) = {0:9.2e}    k(T) = {1:9.2e}'.format(K[t, p, i, j], kinf))
+                            logging.warning(
+                                "k(T,P) for net reaction {0} exceeds high-P k(T) by {1:g} at {2:g} K, "
+                                "{3:g} bar".format(net_reaction, K[t, p, i, j] / kinf, Tlist[t], Plist[p] / 1e5)
+                            )
+                            logging.info("    k(T,P) = {0:9.2e}    k(T) = {1:9.2e}".format(K[t, p, i, j], kinf))
                         break
                     elif pathReaction.products == net_reaction.reactants and pathReaction.reactants == net_reaction.products:
                         if pathReaction.network_kinetics is not None:
-                            kinf = pathReaction.network_kinetics.get_rate_coefficient(
-                                Tlist[t]) / pathReaction.get_equilibrium_constant(Tlist[t])
+                            kinf = pathReaction.network_kinetics.get_rate_coefficient(Tlist[t]) / pathReaction.get_equilibrium_constant(Tlist[t])
                         else:
-                            kinf = pathReaction.kinetics.get_rate_coefficient(
-                                Tlist[t]) / pathReaction.get_equilibrium_constant(Tlist[t])
+                            kinf = pathReaction.kinetics.get_rate_coefficient(Tlist[t]) / pathReaction.get_equilibrium_constant(Tlist[t])
                         if K[t, p, i, j] > 2 * kinf:  # To allow for a small discretization error
-                            logging.warning('k(T,P) for net reaction {0} exceeds high-P k(T) by {1:g} at {2:g} K, '
-                                            '{3:g} bar'.format(net_reaction, K[t, p, i, j] / kinf, Tlist[t], Plist[p] / 1e5))
-                            logging.info('    k(T,P) = {0:9.2e}    k(T) = {1:9.2e}'.format(K[t, p, i, j], kinf))
+                            logging.warning(
+                                "k(T,P) for net reaction {0} exceeds high-P k(T) by {1:g} at {2:g} K, "
+                                "{3:g} bar".format(net_reaction, K[t, p, i, j] / kinf, Tlist[t], Plist[p] / 1e5)
+                            )
+                            logging.info("    k(T,P) = {0:9.2e}    k(T) = {1:9.2e}".format(K[t, p, i, j], kinf))
                         break
 
         self.log_summary(level=logging.INFO)

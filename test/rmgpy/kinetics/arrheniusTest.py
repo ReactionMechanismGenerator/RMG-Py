@@ -125,7 +125,7 @@ class TestArrhenius:
         Test the Arrhenius.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
+        validdata = np.array([False, True, True, True, True, True, True, True, True, True], bool)
         for T, valid in zip(Tdata, validdata):
             valid0 = self.arrhenius.is_temperature_valid(T)
             assert valid0 == valid
@@ -357,7 +357,7 @@ class TestArrheniusEP:
         Test the ArrheniusEP.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
+        validdata = np.array([False, True, True, True, True, True, True, True, True, True], bool)
         for T, valid in zip(Tdata, validdata):
             valid0 = self.arrhenius.is_temperature_valid(T)
             assert valid0 == valid
@@ -592,7 +592,7 @@ class TestArrheniusBM:
         Test the ArrheniusBM.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
+        validdata = np.array([False, True, True, True, True, True, True, True, True, True], bool)
         for T, valid in zip(Tdata, validdata):
             valid0 = self.arrhenius_bm.is_temperature_valid(T)
             assert valid0 == valid
@@ -966,7 +966,7 @@ class TestMultiArrhenius:
         Test the MultiArrhenius.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array([False, True, True, True, True, True, True, False, False, False], np.bool)
+        validdata = np.array([False, True, True, True, True, True, True, False, False, False], bool)
         for T, valid in zip(Tdata, validdata):
             valid0 = self.kinetics.is_temperature_valid(T)
             assert valid0 == valid
@@ -1210,7 +1210,7 @@ class TestMultiPDepArrhenius:
         Test the MultiPDepArrhenius.is_temperature_valid() method.
         """
         Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
-        validdata = np.array([False, True, True, True, True, True, True, False, False, False], np.bool)
+        validdata = np.array([False, True, True, True, True, True, True, False, False, False], bool)
         for T, valid in zip(Tdata, validdata):
             valid0 = self.kinetics.is_temperature_valid(T)
             assert valid0 == valid
@@ -1220,7 +1220,7 @@ class TestMultiPDepArrhenius:
         Test the MultiPDepArrhenius.is_pressure_valid() method.
         """
         Pdata = np.array([1e3, 1e4, 1e5, 1e6, 1e7])
-        validdata = np.array([False, True, True, True, False], np.bool)
+        validdata = np.array([False, True, True, True, False], bool)
         for P, valid in zip(Pdata, validdata):
             valid0 = self.kinetics.is_pressure_valid(P)
             assert valid0 == valid

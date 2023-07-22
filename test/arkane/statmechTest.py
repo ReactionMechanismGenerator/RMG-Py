@@ -55,7 +55,9 @@ class TestStatmech:
     def setup_class(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        cls.job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "Benzyl", "input.py"))
+        cls.job_list = arkane.load_input_file(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "arkane", "data", "Benzyl", "input.py")
+        )
 
     def test_gaussian_log_file_error(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are not the same"""
@@ -68,8 +70,8 @@ class TestStatmech:
         """
         Test that the correct symmetry number is determined for rotor potential scans.
         """
-        path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "NCC_NRotor.out")
-        path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "NCC_CRotor.out")
+        path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "arkane", "data", "NCC_NRotor.out")
+        path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "arkane", "data", "NCC_CRotor.out")
         scan_log1 = QChemLog(path1)
         scan_log2 = QChemLog(path2)
         v_list1, angle = scan_log1.load_scan_energies()
@@ -206,7 +208,8 @@ frequencies = Log('{freq}')
 rotors = [HinderedRotor(scanLog=Log('{scan}'), pivots=[1, 2], top=[1, 3], symmetry=1, fit='fourier')]
 
 """
-        abs_arkane_path = os.path.abspath(os.path.dirname(__file__))  # this is the absolute path to `.../RMG-Py/arkane`
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        abs_arkane_path = os.path.join(cwd, "..", "..", "arkane")  # this is the absolute path to `.../RMG-Py/arkane`
         energy_path = os.path.join("arkane", "data", "H2O2", "sp_a19032.out")
         freq_path = os.path.join("arkane", "data", "H2O2", "freq_a19031.out")
         scan_path = os.path.join("arkane", "data", "H2O2", "scan_a19034.out")
@@ -346,7 +349,8 @@ rotors = [HinderedRotor1DArray(
                 6.14367036e-01,
             ]
         )
-        abs_arkane_path = os.path.abspath(os.path.dirname(__file__))  # this is the absolute path to `.../RMG-Py/arkane`
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        abs_arkane_path = os.path.join(cwd, "..", "..", "arkane")  # this is the absolute path to `.../RMG-Py/arkane`
         energy_path = os.path.join("arkane", "data", "H2O2", "sp_a19032.out")
         freq_path = os.path.join("arkane", "data", "H2O2", "freq_a19031.out")
         h2o2_input = h2o2_input.format(energy=energy_path, freq=freq_path, angles=angles, energies=energies)
@@ -452,7 +456,8 @@ rotors = [HinderedRotor1DArray(
                 6.14367036e-01,
             ]
         )
-        abs_arkane_path = os.path.abspath(os.path.dirname(__file__))
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        abs_arkane_path = os.path.join(cwd, "..", "..", "arkane")
         scanpath1 = os.path.join(abs_arkane_path, "data", "H2O2", "scan.txt")
         scanlog1 = ScanLog(scanpath1)
         angles1, energies1 = scanlog1.load()
@@ -578,7 +583,9 @@ frequencies = Log('{freq}')
 rotors = [HinderedRotor(scanLog=ScanLog('{scan}'), pivots=[1, 2], top=[1, 3], symmetry=1, fit='fourier')]
 
 """
-        abs_arkane_path = os.path.abspath(os.path.dirname(__file__))  # this is the absolute path to `.../RMG-Py/arkane`
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        abs_arkane_path = os.path.join(cwd, "..", "..", "arkane")
+        # this is the absolute path to `.../RMG-Py/arkane`
         energy_path = os.path.join(abs_arkane_path, "data", "H2O2", "sp_a19032.out")
         freq_path = os.path.join(abs_arkane_path, "data", "H2O2", "freq_a19031.out")
         h2o2_path = os.path.join(abs_arkane_path, "data", "H2O2", "H2O2.py")

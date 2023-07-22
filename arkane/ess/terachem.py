@@ -62,21 +62,20 @@ class TeraChemLog(ESSAdapter):
         Checks for common errors in a TeraChem log file.
         If any are found, this method will raise an error and crash.
         """
-        with open(os.path.join(self.path), 'r') as f:
+        with open(os.path.join(self.path), "r") as f:
             lines = f.readlines()
             error = None
             for line in reversed(lines):
                 # check for common error messages
-                if 'incorrect method' in line.lower():
-                    error = 'incorrect method'
+                if "incorrect method" in line.lower():
+                    error = "incorrect method"
                     break
-                elif 'error: ' in line.lower():
+                elif "error: " in line.lower():
                     # e.g.: "ERROR: Closed shell calculations can't have spin multiplicity 0."
-                    error = 'multiplicity'
+                    error = "multiplicity"
                     break
             if error:
-                raise LogError(f'There was an error ({error}) with TeraChem output file {self.path} '
-                               f'due to line:\n{line}')
+                raise LogError(f"There was an error ({error}) with TeraChem output file {self.path} " f"due to line:\n{line}")
 
     def get_number_of_atoms(self):
         """
@@ -84,19 +83,18 @@ class TeraChemLog(ESSAdapter):
         Accepted output files: TeraChem's log file, xyz format file, TeraChem's output.geometry file.
         """
         n_atoms = 0
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             file_extension = os.path.splitext(self.path)[1]
-            if file_extension == '.xyz':
+            if file_extension == ".xyz":
                 n_atoms = int(f.readline())
             else:
                 line = f.readline()
                 while line and n_atoms == 0:
-                    if 'Total atoms:' in line:
+                    if "Total atoms:" in line:
                         n_atoms = int(line.split()[-1])
-                    elif '****** QM coordinates ******' in line \
-                            or 'Type         X              Y              Z            Mass' in line:
+                    elif "****** QM coordinates ******" in line or "Type         X              Y              Z            Mass" in line:
                         line = f.readline()
-                        while line != '\n':
+                        while line != "\n":
                             n_atoms += 1
                             line = f.readline()
                     line = f.readline()
@@ -113,12 +111,12 @@ class TeraChemLog(ESSAdapter):
         n_atoms = self.get_number_of_atoms()
         n_rows = n_atoms * 3
 
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             line = f.readline()
-            while line != '':
+            while line != "":
                 # Read force constant matrix
-                if '*** Hessian Matrix (Hartree/Bohr^2) ***' in line:
-                    force = np.zeros((n_rows, n_rows), np.float64)
+                if "*** Hessian Matrix (Hartree/Bohr^2) ***" in line:
+                    force = np.zeros((n_rows, n_rows), float)
                     for i in range(int(math.ceil(n_rows / 6.0))):
                         # Matrix element rows
                         for j in range(n_rows):
@@ -130,7 +128,7 @@ class TeraChemLog(ESSAdapter):
                             for k in range(len(data) - 1):
                                 force[j, i * 6 + k] = float(data[k + 1])
                     # Convert from atomic units (Hartree/Bohr^2) to SI (J/m^2)
-                    force *= 4.35974417e-18 / 5.291772108e-11 ** 2
+                    force *= 4.35974417e-18 / 5.291772108e-11**2
                 line = f.readline()
 
         return force
@@ -147,7 +145,7 @@ class TeraChemLog(ESSAdapter):
             lines = f.readlines()
 
         num_of_atoms = None  # used to verify the result
-        if os.path.splitext(self.path)[1] == '.xyz':
+        if os.path.splitext(self.path)[1] == ".xyz":
             skip_line = False
             for line in lines:
                 if not skip_line and line.rstrip():
@@ -165,7 +163,7 @@ class TeraChemLog(ESSAdapter):
                     coords, numbers, masses = list(), list(), list()
         else:
             for i, line in enumerate(lines):
-                if 'Type         X              Y              Z            Mass' in line:
+                if "Type         X              Y              Z            Mass" in line:
                     # this is an output.geometry file
                     j = i + 1
                     while lines[j].strip():
@@ -177,7 +175,7 @@ class TeraChemLog(ESSAdapter):
                         numbers.append(list(symbol_by_number.keys())[list(symbol_by_number.values()).index(splits[0])])
                         j += 1
                     break
-                if '*** Reference Geometry ***' in line:
+                if "*** Reference Geometry ***" in line:
                     # this is an output.out file, e.g., from a freq run
                     j = i + 2
                     while lines[j].strip():
@@ -190,20 +188,25 @@ class TeraChemLog(ESSAdapter):
                         j += 1
                     break
 
-        coords = np.array(coords, np.float64)
+        coords = np.array(coords, float)
         numbers = np.array(numbers, np.int)
-        masses = np.array(masses, np.float64)
-        if len(coords) == 0 or len(numbers) == 0 or len(masses) == 0 \
-                or ((len(coords) != num_of_atoms or len(numbers) != num_of_atoms or len(masses) != num_of_atoms)
-                    and num_of_atoms is not None):
-            raise LogError(f'Unable to read atoms from TeraChem geometry output file {self.path}. '
-                           f'If this is a TeraChem optimization log file, try using either the '
-                           f'frequencies calculation log file (important if torsion modes exist) or '
-                           f'the "output.geometry" or a ".xyz" file instead.')
+        masses = np.array(masses, float)
+        if (
+            len(coords) == 0
+            or len(numbers) == 0
+            or len(masses) == 0
+            or ((len(coords) != num_of_atoms or len(numbers) != num_of_atoms or len(masses) != num_of_atoms) and num_of_atoms is not None)
+        ):
+            raise LogError(
+                f"Unable to read atoms from TeraChem geometry output file {self.path}. "
+                f"If this is a TeraChem optimization log file, try using either the "
+                f"frequencies calculation log file (important if torsion modes exist) or "
+                f'the "output.geometry" or a ".xyz" file instead.'
+            )
 
         return coords, numbers, masses
 
-    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=''):
+    def load_conformer(self, symmetry=None, spin_multiplicity=0, optical_isomers=None, label=""):
         """
         Load the molecular degree of freedom data from an output file created as the result of a
         TeraChem "Freq" calculation. As TeraChem's guess of the external symmetry number might not always correct,
@@ -217,37 +220,36 @@ class TeraChemLog(ESSAdapter):
             if optical_isomers is None:
                 optical_isomers = _optical_isomers
 
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             line = f.readline()
-            while line != '':
+            while line != "":
                 # Read spin multiplicity if not explicitly given
-                if 'Spin multiplicity' in line and spin_multiplicity == 0 and len(line.split()) == 3:
+                if "Spin multiplicity" in line and spin_multiplicity == 0 and len(line.split()) == 3:
                     spin_multiplicity = int(float(line.split()[-1]))
-                    logging.debug(f'Conformer {label} is assigned a spin multiplicity of {spin_multiplicity}')
+                    logging.debug(f"Conformer {label} is assigned a spin multiplicity of {spin_multiplicity}")
                 # Read vibrational modes
-                elif 'Mode      Eigenvalue(AU)      Frequency(cm-1)' in line:
+                elif "Mode      Eigenvalue(AU)      Frequency(cm-1)" in line:
                     line = f.readline()
-                    while line != '\n':
+                    while line != "\n":
                         # example:
                         # 'Mode  Eigenvalue(AU)  Frequency(cm-1)  Intensity(km/mol)   Vib.Temp(K)      ZPE(AU) ...'
                         # '  1     0.0331810528   170.5666870932      52.2294230772  245.3982965841   0.0003885795 ...'
-                        if 'i' not in line.split()[2]:
+                        if "i" not in line.split()[2]:
                             # only consider non-imaginary frequencies in this function
                             unscaled_freqs.append(float(line.split()[2]))
                         line = f.readline()
-                if 'Vibrational Frequencies/Thermochemical Analysis' in line:
+                if "Vibrational Frequencies/Thermochemical Analysis" in line:
                     converged = True
                 line = f.readline()
             if not len(unscaled_freqs):
-                raise LogError(f'Could not read frequencies from TeraChem log file {self.path}')
+                raise LogError(f"Could not read frequencies from TeraChem log file {self.path}")
             if not converged:
-                raise LogError(f'TeraChem job {self.path} did not converge.')
+                raise LogError(f"TeraChem job {self.path} did not converge.")
             modes.append(HarmonicOscillator(frequencies=(unscaled_freqs, "cm^-1")))
 
-        return Conformer(E0=(0.0, "kJ/mol"), modes=modes, spin_multiplicity=spin_multiplicity,
-                         optical_isomers=optical_isomers), unscaled_freqs
+        return Conformer(E0=(0.0, "kJ/mol"), modes=modes, spin_multiplicity=spin_multiplicity, optical_isomers=optical_isomers), unscaled_freqs
 
-    def load_energy(self, zpe_scale_factor=1.):
+    def load_energy(self, zpe_scale_factor=1.0):
         """
         Load the energy in J/mol from a TeraChem log file. Only the last energy
         in the file is returned, unless the log file represents a frequencies calculation,
@@ -255,22 +257,22 @@ class TeraChemLog(ESSAdapter):
         in the returned value.
         """
         e_elect, return_first = None, False
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             lines = f.readlines()
         for i, line in enumerate(lines):
-            if 'FREQUENCY ANALYSIS' in line:
+            if "FREQUENCY ANALYSIS" in line:
                 return_first = True
-            if 'Ground state energy (a.u.):' in line:
+            if "Ground state energy (a.u.):" in line:
                 e_elect = float(lines[i + 1].strip())
                 if return_first:
                     break
-            if 'FINAL ENERGY:' in line:
+            if "FINAL ENERGY:" in line:
                 # example: 'FINAL ENERGY: -114.5008455547 a.u.'
                 e_elect = float(line.split()[2])
                 if return_first:
                     break
         if e_elect is None:
-            raise LogError(f'Unable to find energy in TeraChem output file {self.path}.')
+            raise LogError(f"Unable to find energy in TeraChem output file {self.path}.")
         return e_elect * constants.E_h * constants.Na
 
     def load_zero_point_energy(self):
@@ -278,33 +280,33 @@ class TeraChemLog(ESSAdapter):
         Load the unscaled zero-point energy in J/mol from a TeraChem log file.
         """
         zpe = None
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             for line in f:
-                if 'Vibrational zero-point energy (ZPE)' in line:
+                if "Vibrational zero-point energy (ZPE)" in line:
                     # example:
                     # 'Vibrational zero-point energy (ZPE) = 243113.467652369843563065 J/mol =     0.09259703 AU'
-                    zpe = float(line.split('J/mol')[0].split()[-1])
-                    logging.debug(f'ZPE is {zpe}')
+                    zpe = float(line.split("J/mol")[0].split()[-1])
+                    logging.debug(f"ZPE is {zpe}")
         if zpe is not None:
             return zpe
         else:
-            raise LogError(f'Unable to find zero-point energy in TeraChem output file {self.path}.')
+            raise LogError(f"Unable to find zero-point energy in TeraChem output file {self.path}.")
 
     def load_scan_energies(self):
         """
         Extract the optimized energies in J/mol from a TeraChem torsional scan log file.
         """
         v_list = list()
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             lines = f.readlines()
             v_index, expected_num_of_points = 0, 0
             for line in lines:
-                if 'Scan Cycle' in line:
+                if "Scan Cycle" in line:
                     # example: '-=#=-     Scan Cycle     5/37        -=#=-'
                     v_index += 1
                     if not expected_num_of_points:
-                        expected_num_of_points = int(line.split()[3].split('/')[1])
-                if 'Optimized Energy:' in line:
+                        expected_num_of_points = int(line.split()[3].split("/")[1])
+                if "Optimized Energy:" in line:
                     # example: '-=#=- Optimized Energy:    -155.0315243910 a.u.'
                     v = float(line.split()[3])
                     if len(v_list) == v_index - 1:
@@ -316,10 +318,10 @@ class TeraChemLog(ESSAdapter):
                         v_list.extend([None] * (v_index - 1 - len(v_list)))
                     else:
                         # we added more points that we should have, something is wrong with the log file or this method
-                        raise LogError(f'Could not parse scan energies from {self.path}')
-        logging.info('   Assuming {0} is the output from a TeraChem PES scan...'.format(os.path.basename(self.path)))
+                        raise LogError(f"Could not parse scan energies from {self.path}")
+        logging.info("   Assuming {0} is the output from a TeraChem PES scan...".format(os.path.basename(self.path)))
 
-        v_list = np.array(v_list, np.float64)
+        v_list = np.array(v_list, float)
 
         # check to see if the scanlog indicates that one of the reacting species may not be the lowest energy conformer
         check_conformer_energy(v_list, self.path)
@@ -328,7 +330,7 @@ class TeraChemLog(ESSAdapter):
         # Also convert units from Hartree/particle to J/mol
         v_list -= np.min(v_list)
         v_list *= constants.E_h * constants.Na
-        angles = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), np.float64)
+        angles = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), float)
 
         # remove None's:
         indices_to_pop = [v_list.index[entry] for entry in v_list if entry is None]
@@ -336,8 +338,7 @@ class TeraChemLog(ESSAdapter):
             v_list.pop(i)
             angles.pop(i)
         if v_index != expected_num_of_points:
-            raise LogError(f'Expected to find {expected_num_of_points} scan points in TeraChem scan log file '
-                           f'{self.path}, but found: {v_index}')
+            raise LogError(f"Expected to find {expected_num_of_points} scan points in TeraChem scan log file " f"{self.path}, but found: {v_index}")
 
         return v_list, angles
 
@@ -347,16 +348,16 @@ class TeraChemLog(ESSAdapter):
         calculation in cm^-1.
         """
         frequencies = []
-        with open(self.path, 'r') as f:
+        with open(self.path, "r") as f:
             line = f.readline()
-            while line != '':
+            while line != "":
                 # Read vibrational modes
-                if 'Mode      Eigenvalue(AU)      Frequency(cm-1)' in line:
+                if "Mode      Eigenvalue(AU)      Frequency(cm-1)" in line:
                     line = f.readline()
                     # example:
                     # 'Mode  Eigenvalue(AU)  Frequency(cm-1)  Intensity(km/mol)   Vib.Temp(K)      ZPE(AU) ...'
                     # '  1     0.0331810528   170.5666870932i     52.2294230772  245.3982965841   0.0003885795 ...'
-                    while 'i' in line:
+                    while "i" in line:
                         frequencies.append(-1 * float(line.split()[2][:-1]))  # remove 'i'
                         line = f.readline()
                     break
@@ -364,18 +365,18 @@ class TeraChemLog(ESSAdapter):
         if len(frequencies) == 1:
             return frequencies[0]
         elif len(frequencies) > 1:
-            logging.info('More than one imaginary frequency in TeraChem output file {0}.'.format(self.path))
+            logging.info("More than one imaginary frequency in TeraChem output file {0}.".format(self.path))
             return frequencies[0]
         else:
-            raise LogError(f'Unable to find imaginary frequency in TeraChem output file {self.path}.')
+            raise LogError(f"Unable to find imaginary frequency in TeraChem output file {self.path}.")
 
     def load_scan_pivot_atoms(self):
         """Not implemented for TeraChem"""
-        raise NotImplementedError('The load_scan_pivot_atoms method is not implemented for TeraChem Logs')
+        raise NotImplementedError("The load_scan_pivot_atoms method is not implemented for TeraChem Logs")
 
     def load_scan_frozen_atoms(self):
         """Not implemented for TeraChem"""
-        raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for TeraChem Logs')
+        raise NotImplementedError("The load_scan_frozen_atoms method is not implemented for TeraChem Logs")
 
 
 register_ess_adapter("TeraChemLog", TeraChemLog)

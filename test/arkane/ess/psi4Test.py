@@ -185,7 +185,7 @@ class Psi4LogTest:
                     385.24274073,
                 ],
             ],
-            np.float64,
+            float,
         )
         assert np.allclose(log.load_force_constant_matrix(), expected_mat_1)
 
@@ -262,7 +262,7 @@ class Psi4LogTest:
                     336.25221646,
                 ],
             ],
-            np.float64,
+            float,
         )
         assert np.allclose(log.load_force_constant_matrix(), expected_mat_2)
 
@@ -438,7 +438,7 @@ class Psi4LogTest:
                     742.27868659,
                 ],
             ],
-            np.float64,
+            float,
         )
         assert np.allclose(log.load_force_constant_matrix(), expected_mat_3)
 
@@ -614,7 +614,7 @@ class Psi4LogTest:
                     889.16020169,
                 ],
             ],
-            np.float64,
+            float,
         )
         assert np.allclose(log.load_force_constant_matrix(), expected_mat_4)
 

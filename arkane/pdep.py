@@ -101,24 +101,41 @@ class PressureDependenceJob(object):
     RMG mode should be turned off by default except in RMG jobs.
     """
 
-    def __init__(self, network,
-                 Tmin=None, Tmax=None, Tcount=0, Tlist=None,
-                 Pmin=None, Pmax=None, Pcount=0, Plist=None,
-                 maximumGrainSize=None, minimumGrainCount=0,
-                 method=None, interpolationModel=None, maximumAtoms=None,
-                 activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None,
-                 sensitivity_perturbation=0):
-
+    def __init__(
+        self,
+        network,
+        Tmin=None,
+        Tmax=None,
+        Tcount=0,
+        Tlist=None,
+        Pmin=None,
+        Pmax=None,
+        Pcount=0,
+        Plist=None,
+        maximumGrainSize=None,
+        minimumGrainCount=0,
+        method=None,
+        interpolationModel=None,
+        maximumAtoms=None,
+        activeKRotor=True,
+        activeJRotor=True,
+        rmgmode=False,
+        sensitivity_conditions=None,
+        sensitivity_perturbation=0,
+    ):
         if network and network.products and len(network.products) > 0:
             if "simulation least squares" in method:
-                raise InputError("""The current simulation least squares implementation should not be
+                raise InputError(
+                    """The current simulation least squares implementation should not be
                               used with product channels. Please specify all bimolecular channels as
-                              reactant channels.""")
+                              reactant channels."""
+                )
             elif method == "chemically-significant eigenvalues georgievskii":
-                raise InputError("""The chemically-significant eigenvalues georgievskii method cannot be
+                raise InputError(
+                    """The chemically-significant eigenvalues georgievskii method cannot be
                               used with product channels. Please specify all bimolecular channels as
-                              reactant channels.""")
-
+                              reactant channels."""
+                )
 
         self.network = network
 
@@ -126,7 +143,7 @@ class PressureDependenceJob(object):
         self.Tmax = Tmax
         self.Tcount = Tcount
         if sensitivity_perturbation == 0:
-            self.sensitivity_perturbation = quantity.Quantity(2.0,'kcal/mol')
+            self.sensitivity_perturbation = quantity.Quantity(2.0, "kcal/mol")
         else:
             self.sensitivity_perturbation = quantity.Quantity(sensitivity_perturbation)
 
@@ -166,8 +183,7 @@ class PressureDependenceJob(object):
         if sensitivity_conditions is not None:
             if not isinstance(sensitivity_conditions[0], list):
                 sensitivity_conditions = [sensitivity_conditions]  # allow `[T, P]` as conditions input
-            self.sensitivity_conditions = [[quantity.Quantity(condition[0]), quantity.Quantity(condition[1])]
-                                           for condition in sensitivity_conditions]
+            self.sensitivity_conditions = [[quantity.Quantity(condition[0]), quantity.Quantity(condition[1])] for condition in sensitivity_conditions]
         else:
             self.sensitivity_conditions = None
 
@@ -262,23 +278,27 @@ class PressureDependenceJob(object):
             rmgmode=self.rmgmode,
         )
 
-    def execute(self, output_file, plot, file_format='pdf', print_summary=True):
+    def execute(self, output_file, plot, file_format="pdf", print_summary=True):
         """Execute a PressureDependenceJob"""
         for config in self.network.isomers + self.network.reactants + self.network.products:
             for spec in config.species:
                 if spec.conformer.E0 is None:
-                    raise AttributeError('species {0} is missing energy for its conformer'.format(spec.label))
+                    raise AttributeError("species {0} is missing energy for its conformer".format(spec.label))
 
         # set transition state Energy if not set previously using same method as RMG pdep
         for reaction in self.network.path_reactions:
             transition_state = reaction.transition_state
             if transition_state.conformer and transition_state.conformer.E0 is None:
-                transition_state.conformer.E0 = (sum([spec.conformer.E0.value_si for spec in reaction.reactants])
-                                                 + reaction.kinetics.Ea.value_si, 'J/mol')
-                logging.info('Approximated transitions state E0 for reaction {3} from kinetics '
-                             'A={0}, n={1}, Ea={2} J/mol'.format(reaction.kinetics.A.value_si,
-                                                                 reaction.kinetics.n.value_si,
-                                                                 reaction.kinetics.Ea.value_si, reaction.label))
+                transition_state.conformer.E0 = (
+                    sum([spec.conformer.E0.value_si for spec in reaction.reactants]) + reaction.kinetics.Ea.value_si,
+                    "J/mol",
+                )
+                logging.info(
+                    "Approximated transitions state E0 for reaction {3} from kinetics "
+                    "A={0}, n={1}, Ea={2} J/mol".format(
+                        reaction.kinetics.A.value_si, reaction.kinetics.n.value_si, reaction.kinetics.Ea.value_si, reaction.label
+                    )
+                )
         if print_summary:
             self.network.log_summary()
 
@@ -296,9 +316,9 @@ class PressureDependenceJob(object):
             if plot:
                 self.plot(os.path.dirname(output_file))
             if self.sensitivity_conditions is not None:
-                logging.info('\n\nRunning sensitivity analysis...')
+                logging.info("\n\nRunning sensitivity analysis...")
                 SensAnalysis(deepcopy(self), os.path.dirname(output_file), perturbation=self.sensitivity_perturbation)
-        logging.debug('Finished pdep job for reaction {0}.'.format(self.network.label))
+        logging.debug("Finished pdep job for reaction {0}.".format(self.network.label))
         logging.debug(repr(self.network))
 
     def generate_T_list(self):
@@ -315,9 +335,9 @@ class PressureDependenceJob(object):
         Tmax = self.Tmax.value_si
         Tcount = self.Tcount
         if self.Tlist is None:
-            if self.interpolation_model[0].lower() == 'chebyshev':
+            if self.interpolation_model[0].lower() == "chebyshev":
                 # Distribute temperatures on a Gauss-Chebyshev grid
-                Tlist = np.zeros(Tcount, np.float64)
+                Tlist = np.zeros(Tcount, float)
                 for i in range(Tcount):
                     T = -math.cos((2 * i + 1) * math.pi / (2 * self.Tcount))
                     T = 2.0 / ((1.0 / Tmax - 1.0 / Tmin) * T + 1.0 / Tmax + 1.0 / Tmin)
@@ -335,25 +355,27 @@ class PressureDependenceJob(object):
             tunneling = reaction.transition_state.tunneling
             # throw descriptive error if tunneling not allowed
             if tunneling and reaction.transition_state.frequency is None and reaction.kinetics is not None:
-                raise ValueError("""Cannot apply tunneling for reaction {0} when inverse laplace is used.
+                raise ValueError(
+                    """Cannot apply tunneling for reaction {0} when inverse laplace is used.
                                  Either remove tunnelling parameter or input transitionState
-                                 frequencies/quantum file""".format(reaction.label))
+                                 frequencies/quantum file""".format(
+                        reaction.label
+                    )
+                )
             # add tunneling parameters
             if isinstance(tunneling, Wigner) and tunneling.frequency is None:
                 tunneling.frequency = (reaction.transition_state.frequency.value_si, "cm^-1")
             elif isinstance(tunneling, Eckart) and tunneling.frequency is None:
                 tunneling.frequency = (reaction.transition_state.frequency.value_si, "cm^-1")
-                tunneling.E0_reac = (sum([reactant.conformer.E0.value_si
-                                          for reactant in reaction.reactants]) * 0.001, "kJ/mol")
+                tunneling.E0_reac = (sum([reactant.conformer.E0.value_si for reactant in reaction.reactants]) * 0.001, "kJ/mol")
                 tunneling.E0_TS = (reaction.transition_state.conformer.E0.value_si * 0.001, "kJ/mol")
-                tunneling.E0_prod = (sum([product.conformer.E0.value_si
-                                          for product in reaction.products]) * 0.001, "kJ/mol")
+                tunneling.E0_prod = (sum([product.conformer.E0.value_si for product in reaction.products]) * 0.001, "kJ/mol")
             elif tunneling is not None:
                 if tunneling.frequency is not None:
                     # Frequency was given by the user
                     pass
                 else:
-                    raise ValueError('Unknown tunneling model {0!r} for path reaction {1}.'.format(tunneling, reaction))
+                    raise ValueError("Unknown tunneling model {0!r} for path reaction {1}.".format(tunneling, reaction))
 
         maximum_grain_size = self.maximum_grain_size.value_si if self.maximum_grain_size is not None else 0.0
 
@@ -387,9 +409,9 @@ class PressureDependenceJob(object):
         Pcount = self.Pcount
         if self.Plist is not None:
             pass
-        elif self.interpolation_model[0].lower() == 'chebyshev':
+        elif self.interpolation_model[0].lower() == "chebyshev":
             # Distribute pressures on a Gauss-Chebyshev grid
-            Plist = np.zeros(Pcount, np.float64)
+            Plist = np.zeros(Pcount, float)
             for i in range(Pcount):
                 P = -math.cos((2 * i + 1) * math.pi / (2 * self.Pcount))
                 P = 10 ** (0.5 * ((math.log10(Pmax) - math.log10(Pmin)) * P + math.log10(Pmax) + math.log10(Pmin)))
@@ -419,14 +441,13 @@ class PressureDependenceJob(object):
             for reac in range(n_reac):
                 if reac == prod:
                     continue
-                reaction = Reaction(reactants=configurations[reac].species,
-                                    products=configurations[prod].species)
+                reaction = Reaction(reactants=configurations[reac].species, products=configurations[prod].species)
 
                 kdata = self.K[:, :, prod, reac].copy()
                 order = len(reaction.reactants)
                 kdata *= 1e6 ** (order - 1)
-                k_units = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
-                logging.debug('Fitting master eqn data to kinetics for reaction {}.'.format(reaction))
+                k_units = {1: "s^-1", 2: "cm^3/(mol*s)", 3: "cm^6/(mol^2*s)"}[order]
+                logging.debug("Fitting master eqn data to kinetics for reaction {}.".format(reaction))
                 reaction.kinetics = self.fit_interpolation_model(Tdata, Pdata, kdata, k_units)
 
                 self.network.net_reactions.append(reaction)
@@ -440,21 +461,21 @@ class PressureDependenceJob(object):
 
         model = self.interpolation_model[0].lower()
 
-        if model == 'chebyshev':
-            kinetics = Chebyshev().fit_to_data(Tdata, Pdata, kdata, k_units,
-                                               self.interpolation_model[1], self.interpolation_model[2],
-                                               Tmin, Tmax, Pmin, Pmax)
-        elif model == 'pdeparrhenius':
+        if model == "chebyshev":
+            kinetics = Chebyshev().fit_to_data(
+                Tdata, Pdata, kdata, k_units, self.interpolation_model[1], self.interpolation_model[2], Tmin, Tmax, Pmin, Pmax
+            )
+        elif model == "pdeparrhenius":
             kinetics = PDepArrhenius().fit_to_data(Tdata, Pdata, kdata, k_units)
         else:
-            raise PressureDependenceError('Invalid interpolation model {0!r}.'.format(self.interpolation_model[0]))
+            raise PressureDependenceError("Invalid interpolation model {0!r}.".format(self.interpolation_model[0]))
         return kinetics
 
     def save(self, output_file):
         """Save the output of a pressure dependent job"""
-        logging.info('Saving pressure dependence results for network {0}...'.format(self.network.label))
-        f = open(output_file, 'a')
-        f_chemkin = open(os.path.join(os.path.dirname(output_file), 'chem.inp'), 'a')
+        logging.info("Saving pressure dependence results for network {0}...".format(self.network.label))
+        f = open(output_file, "a")
+        f_chemkin = open(os.path.join(os.path.dirname(output_file), "chem.inp"), "a")
 
         n_reac = self.network.n_isom + self.network.n_reac
         n_prod = n_reac + self.network.n_prod
@@ -489,8 +510,7 @@ class PressureDependenceJob(object):
                 reaction = self.network.net_reactions[count]
                 count += 1
                 # make sure we aren't double counting any reactions
-                if not any([reaction.is_isomorphic(other_rxn, check_only_label=True)
-                            for other_rxn in printed_reactions]):
+                if not any([reaction.is_isomorphic(other_rxn, check_only_label=True) for other_rxn in printed_reactions]):
                     duplicate = False
                     # add reaction to printed reaction
                     printed_reactions.append(reaction)
@@ -500,43 +520,43 @@ class PressureDependenceJob(object):
 
                 # write chemkin output.
                 string = write_kinetics_entry(reaction, species_list=None, verbose=False, commented=duplicate)
-                f_chemkin.write('{0}\n'.format(string))
+                f_chemkin.write("{0}\n".format(string))
 
                 # write to 'output.py'
                 kdata = self.K[:, :, prod, reac].copy()
                 order = len(reaction.reactants)
                 kdata *= 1e6 ** (order - 1)
-                k_units = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
+                k_units = {1: "s^-1", 2: "cm^3/(mol*s)", 3: "cm^6/(mol^2*s)"}[order]
 
-                f.write('#   =========== ')
-                f.write('=========== ' * Pcount)
-                f.write('\n')
-                f.write('#         T / P ')
-                f.write(' '.join(['{0:11.3e}'.format(P * 1e-5) for P in Plist]))
-                f.write('\n')
-                f.write('#   =========== ')
-                f.write('=========== ' * Pcount)
-                f.write('\n')
+                f.write("#   =========== ")
+                f.write("=========== " * Pcount)
+                f.write("\n")
+                f.write("#         T / P ")
+                f.write(" ".join(["{0:11.3e}".format(P * 1e-5) for P in Plist]))
+                f.write("\n")
+                f.write("#   =========== ")
+                f.write("=========== " * Pcount)
+                f.write("\n")
 
                 for t in range(Tcount):
-                    f.write('#   {0:11g}'.format(Tlist[t]))
+                    f.write("#   {0:11g}".format(Tlist[t]))
                     for p in range(Pcount):
-                        f.write(' {0:11.3e}'.format(kdata[t, p]))
-                    f.write('\n')
+                        f.write(" {0:11.3e}".format(kdata[t, p]))
+                    f.write("\n")
 
-                f.write('#   =========== ')
-                f.write('=========== ' * Pcount)
-                f.write('\n')
+                f.write("#   =========== ")
+                f.write("=========== " * Pcount)
+                f.write("\n")
 
-                string = 'pdepreaction(reactants={0!r}, products={1!r}, kinetics={2!r})'.format(
+                string = "pdepreaction(reactants={0!r}, products={1!r}, kinetics={2!r})".format(
                     [reactant.label for reactant in reaction.reactants],
                     [product.label for product in reaction.products],
                     reaction.kinetics,
                 )
-                pdep_function = '{0}\n\n'.format(prettify(string))
+                pdep_function = "{0}\n\n".format(prettify(string))
                 if duplicate:
                     # add comments to the start of the string
-                    pdep_function = '#   ' + pdep_function.replace('\n', '\n#   ')
+                    pdep_function = "#   " + pdep_function.replace("\n", "\n#   ")
                 f.write(pdep_function)
 
         f.close()
@@ -551,6 +571,7 @@ class PressureDependenceJob(object):
             return
 
         import matplotlib.cm
+
         cm = matplotlib.cm.jet
 
         n_reac = self.network.n_isom + self.network.n_reac
@@ -570,10 +591,10 @@ class PressureDependenceJob(object):
                 reaction = self.network.net_reactions[count]
                 count += 1
 
-                reaction_str = '{0} {1} {2}'.format(
-                    ' + '.join([reactant.label for reactant in reaction.reactants]),
-                    '<=>' if prod < n_reac else '-->',
-                    ' + '.join([product.label for product in reaction.products]),
+                reaction_str = "{0} {1} {2}".format(
+                    " + ".join([reactant.label for reactant in reaction.reactants]),
+                    "<=>" if prod < n_reac else "-->",
+                    " + ".join([product.label for product in reaction.products]),
                 )
 
                 fig = plt.figure(figsize=(10, 6))
@@ -588,37 +609,41 @@ class PressureDependenceJob(object):
                 order = len(reaction.reactants)
                 K *= 1e6 ** (order - 1)
                 K2 *= 1e6 ** (order - 1)
-                k_units = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
+                k_units = {1: "s^-1", 2: "cm^3/(mol*s)", 3: "cm^6/(mol^2*s)"}[order]
 
                 plt.subplot(1, 2, 1)
                 for p in range(Pcount):
-                    plt.semilogy(1000.0 / Tlist, K[:, p], color=cm(1. * p / (Pcount - 1)), marker='o', linestyle='',
-                                 label=str('%.2e' % (Plist[p] / 1e+5)) + ' bar')
+                    plt.semilogy(
+                        1000.0 / Tlist,
+                        K[:, p],
+                        color=cm(1.0 * p / (Pcount - 1)),
+                        marker="o",
+                        linestyle="",
+                        label=str("%.2e" % (Plist[p] / 1e5)) + " bar",
+                    )
                     if reaction.kinetics is not None:
-                        plt.semilogy(1000.0 / Tlist, K2[:, p], color=cm(1. * p / (Pcount - 1)), marker='',
-                                     linestyle='-')
-                plt.xlabel('1000 / Temperature (K^-1)')
-                plt.ylabel('Rate coefficient ({0})'.format(k_units))
+                        plt.semilogy(1000.0 / Tlist, K2[:, p], color=cm(1.0 * p / (Pcount - 1)), marker="", linestyle="-")
+                plt.xlabel("1000 / Temperature (K^-1)")
+                plt.ylabel("Rate coefficient ({0})".format(k_units))
                 plt.title(reaction_str)
                 plt.legend()
 
                 plt.subplot(1, 2, 2)
                 for t in range(Tcount):
-                    plt.loglog(Plist * 1e-5, K[t, :], color=cm(1. * t / (Tcount - 1)), marker='o', linestyle='',
-                               label=str('%.0d' % Tlist[t]) + ' K')
-                    plt.loglog(Plist * 1e-5, K2[t, :], color=cm(1. * t / (Tcount - 1)), marker='', linestyle='-')
-                plt.xlabel('Pressure (bar)')
-                plt.ylabel('Rate coefficient ({0})'.format(k_units))
+                    plt.loglog(Plist * 1e-5, K[t, :], color=cm(1.0 * t / (Tcount - 1)), marker="o", linestyle="", label=str("%.0d" % Tlist[t]) + " K")
+                    plt.loglog(Plist * 1e-5, K2[t, :], color=cm(1.0 * t / (Tcount - 1)), marker="", linestyle="-")
+                plt.xlabel("Pressure (bar)")
+                plt.ylabel("Rate coefficient ({0})".format(k_units))
                 plt.title(reaction_str)
                 plt.legend()
 
                 fig.subplots_adjust(left=0.10, bottom=0.13, right=0.95, top=0.92, wspace=0.3, hspace=0.3)
-                if not os.path.exists(os.path.join(output_directory, 'plots', '')):
-                    os.mkdir(os.path.join(output_directory, 'plots', ''))
-                plt.savefig(os.path.join(output_directory, 'plots', 'kinetics_{0:d}.pdf'.format(count)))
+                if not os.path.exists(os.path.join(output_directory, "plots", "")):
+                    os.mkdir(os.path.join(output_directory, "plots", ""))
+                plt.savefig(os.path.join(output_directory, "plots", "kinetics_{0:d}.pdf".format(count)))
                 plt.close()
 
-    def draw(self, output_directory, file_format='pdf'):
+    def draw(self, output_directory, file_format="pdf"):
         """
         Generate a PDF drawing of the pressure-dependent reaction network.
         This requires that Cairo and its Python wrapper be available; if not,
@@ -639,7 +664,7 @@ class PressureDependenceJob(object):
 
         from rmgpy.pdep.draw import NetworkDrawer
 
-        path = os.path.join(output_directory, 'network.' + file_format)
+        path = os.path.join(output_directory, "network." + file_format)
 
         NetworkDrawer().draw(self.network, file_format=file_format, path=path)
 
@@ -652,117 +677,117 @@ class PressureDependenceJob(object):
         # Add labels for species, reactions, transition states that don't have them
         for i, spec in enumerate(species_list):
             if not spec.label:
-                spec.label = 'species{0:d}'.format(i + 1)
+                spec.label = "species{0:d}".format(i + 1)
         for i, rxn in enumerate(self.network.path_reactions):
             if not rxn.label:
-                rxn.label = 'reaction{0:d}'.format(i + 1)
+                rxn.label = "reaction{0:d}".format(i + 1)
             if not rxn.transition_state.label:
-                rxn.transition_state.label = 'TS{0:d}'.format(i + 1)
+                rxn.transition_state.label = "TS{0:d}".format(i + 1)
         if not self.network.label:
-            self.network.label = 'network'
+            self.network.label = "network"
 
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             # Write species
             for spec in species_list:
-                f.write('species(\n')
-                f.write('    label = {0!r},\n'.format(str(spec)))
+                f.write("species(\n")
+                f.write("    label = {0!r},\n".format(str(spec)))
                 if len(spec.molecule) > 0:
                     f.write(f'    structure = adjacencyList("""{spec.molecule[0].to_adjacency_list()}"""),\n')
                 if spec.conformer is not None:
                     if spec.conformer.E0 is not None:
-                        f.write('    E0 = {0!r},\n'.format(spec.conformer.E0))
+                        f.write("    E0 = {0!r},\n".format(spec.conformer.E0))
                     if len(spec.conformer.modes) > 0:
-                        f.write('    modes = [\n')
+                        f.write("    modes = [\n")
                         for mode in spec.conformer.modes:
-                            f.write('        {0!r},\n'.format(mode))
-                        f.write('    ],\n')
-                    f.write('    spinMultiplicity = {0:d},\n'.format(spec.conformer.spin_multiplicity))
-                    f.write('    opticalIsomers = {0:d},\n'.format(spec.conformer.optical_isomers))
+                            f.write("        {0!r},\n".format(mode))
+                        f.write("    ],\n")
+                    f.write("    spinMultiplicity = {0:d},\n".format(spec.conformer.spin_multiplicity))
+                    f.write("    opticalIsomers = {0:d},\n".format(spec.conformer.optical_isomers))
                 if spec.molecular_weight is not None:
-                    f.write('    molecularWeight = {0!r},\n'.format(spec.molecular_weight))
+                    f.write("    molecularWeight = {0!r},\n".format(spec.molecular_weight))
                 if spec.transport_data is not None:
-                    f.write('    collisionModel = {0!r},\n'.format(spec.transport_data))
+                    f.write("    collisionModel = {0!r},\n".format(spec.transport_data))
                 if spec.energy_transfer_model is not None:
-                    f.write('    energyTransferModel = {0!r},\n'.format(spec.energy_transfer_model))
+                    f.write("    energyTransferModel = {0!r},\n".format(spec.energy_transfer_model))
                 if spec.thermo is not None:
-                    f.write('    thermo = {0!r},\n'.format(spec.thermo))
-                f.write(')\n\n')
+                    f.write("    thermo = {0!r},\n".format(spec.thermo))
+                f.write(")\n\n")
 
             # Write transition states
             for rxn in self.network.path_reactions:
                 ts = rxn.transition_state
-                f.write('transitionState(\n')
-                f.write('    label = {0!r},\n'.format(ts.label))
+                f.write("transitionState(\n")
+                f.write("    label = {0!r},\n".format(ts.label))
                 if ts.conformer is not None:
                     if ts.conformer.E0 is not None:
-                        f.write('    E0 = {0!r},\n'.format(ts.conformer.E0))
+                        f.write("    E0 = {0!r},\n".format(ts.conformer.E0))
                     if len(ts.conformer.modes) > 0:
-                        f.write('    modes = [\n')
+                        f.write("    modes = [\n")
                         for mode in ts.conformer.modes:
-                            f.write('        {0!r},\n'.format(mode))
-                        f.write('    ],\n')
-                    f.write('    spinMultiplicity = {0:d},\n'.format(ts.conformer.spin_multiplicity))
-                    f.write('    opticalIsomers = {0:d},\n'.format(ts.conformer.optical_isomers))
+                            f.write("        {0!r},\n".format(mode))
+                        f.write("    ],\n")
+                    f.write("    spinMultiplicity = {0:d},\n".format(ts.conformer.spin_multiplicity))
+                    f.write("    opticalIsomers = {0:d},\n".format(ts.conformer.optical_isomers))
                 if ts.frequency is not None:
-                    f.write('    frequency = {0!r},\n'.format(ts.frequency))
-                f.write(')\n\n')
+                    f.write("    frequency = {0!r},\n".format(ts.frequency))
+                f.write(")\n\n")
 
             # Write reactions
             for rxn in self.network.path_reactions:
                 ts = rxn.transition_state
-                f.write('reaction(\n')
-                f.write('    label = {0!r},\n'.format(rxn.label))
-                f.write('    reactants = [{0}],\n'.format(', '.join([repr(str(spec)) for spec in rxn.reactants])))
-                f.write('    products = [{0}],\n'.format(', '.join([repr(str(spec)) for spec in rxn.products])))
-                f.write('    transitionState = {0!r},\n'.format(rxn.transition_state.label))
+                f.write("reaction(\n")
+                f.write("    label = {0!r},\n".format(rxn.label))
+                f.write("    reactants = [{0}],\n".format(", ".join([repr(str(spec)) for spec in rxn.reactants])))
+                f.write("    products = [{0}],\n".format(", ".join([repr(str(spec)) for spec in rxn.products])))
+                f.write("    transitionState = {0!r},\n".format(rxn.transition_state.label))
                 if rxn.kinetics is not None:
-                    if isinstance(rxn, LibraryReaction) and 'Reaction library:' not in rxn.kinetics.comment:
-                        rxn.kinetics.comment += 'Reaction library: {0!r}'.format(rxn.library)
+                    if isinstance(rxn, LibraryReaction) and "Reaction library:" not in rxn.kinetics.comment:
+                        rxn.kinetics.comment += "Reaction library: {0!r}".format(rxn.library)
                     if rxn.network_kinetics is not None:
-                        f.write('    kinetics = {0!r},\n'.format(rxn.network_kinetics))
+                        f.write("    kinetics = {0!r},\n".format(rxn.network_kinetics))
                     else:
-                        f.write('    kinetics = {0!r},\n'.format(rxn.kinetics))
+                        f.write("    kinetics = {0!r},\n".format(rxn.kinetics))
                 if ts.tunneling is not None:
-                    f.write('    tunneling = {0!r},\n'.format(ts.tunneling.__class__.__name__))
-                f.write(')\n\n')
+                    f.write("    tunneling = {0!r},\n".format(ts.tunneling.__class__.__name__))
+                f.write(")\n\n")
 
             # Write network
-            f.write('network(\n')
-            f.write('    label = {0!r},\n'.format(self.network.label))
-            f.write('    isomers = [\n')
+            f.write("network(\n")
+            f.write("    label = {0!r},\n".format(self.network.label))
+            f.write("    isomers = [\n")
             for isomer in self.network.isomers:
-                f.write('        {0!r},\n'.format(str(isomer.species[0])))
-            f.write('    ],\n')
-            f.write('    reactants = [\n')
+                f.write("        {0!r},\n".format(str(isomer.species[0])))
+            f.write("    ],\n")
+            f.write("    reactants = [\n")
             for reactants in self.network.reactants:
-                f.write('        ({0}),\n'.format(', '.join([repr(str(spec)) for spec in reactants.species])))
-            f.write('    ],\n')
-            f.write('    bathGas = {\n')
+                f.write("        ({0}),\n".format(", ".join([repr(str(spec)) for spec in reactants.species])))
+            f.write("    ],\n")
+            f.write("    bathGas = {\n")
             for spec, frac in self.network.bath_gas.items():
-                f.write('        {0!r}: {1:g},\n'.format(str(spec), frac))
-            f.write('    },\n')
-            f.write(')\n\n')
+                f.write("        {0!r}: {1:g},\n".format(str(spec), frac))
+            f.write("    },\n")
+            f.write(")\n\n")
 
             # Write pressure dependence
-            f.write('pressureDependence(\n')
-            f.write('    label = {0!r},\n'.format(self.network.label))
-            f.write('    Tmin = {0!r},\n'.format(self.Tmin))
-            f.write('    Tmax = {0!r},\n'.format(self.Tmax))
-            f.write('    Tcount = {0:d},\n'.format(self.Tcount))
-            f.write('    Tlist = {0!r},\n'.format(self.Tlist))
-            f.write('    Pmin = {0!r},\n'.format(self.Pmin))
-            f.write('    Pmax = {0!r},\n'.format(self.Pmax))
-            f.write('    Pcount = {0:d},\n'.format(self.Pcount))
-            f.write('    Plist = {0!r},\n'.format(self.Plist))
+            f.write("pressureDependence(\n")
+            f.write("    label = {0!r},\n".format(self.network.label))
+            f.write("    Tmin = {0!r},\n".format(self.Tmin))
+            f.write("    Tmax = {0!r},\n".format(self.Tmax))
+            f.write("    Tcount = {0:d},\n".format(self.Tcount))
+            f.write("    Tlist = {0!r},\n".format(self.Tlist))
+            f.write("    Pmin = {0!r},\n".format(self.Pmin))
+            f.write("    Pmax = {0!r},\n".format(self.Pmax))
+            f.write("    Pcount = {0:d},\n".format(self.Pcount))
+            f.write("    Plist = {0!r},\n".format(self.Plist))
             if self.maximum_grain_size is not None:
-                f.write('    maximumGrainSize = {0!r},\n'.format(self.maximum_grain_size))
+                f.write("    maximumGrainSize = {0!r},\n".format(self.maximum_grain_size))
             if self.minimum_grain_count != 0:
-                f.write('    minimumGrainCount = {0:d},\n'.format(self.minimum_grain_count))
-            f.write('    method = {0!r},\n'.format(self.method))
+                f.write("    minimumGrainCount = {0:d},\n".format(self.minimum_grain_count))
+            f.write("    method = {0!r},\n".format(self.method))
             if self.interpolation_model is not None:
-                f.write('    interpolationModel = {0!r},\n'.format(self.interpolation_model))
-            f.write('    activeKRotor = {0!r},\n'.format(self.active_k_rotor))
-            f.write('    activeJRotor = {0!r},\n'.format(self.active_j_rotor))
+                f.write("    interpolationModel = {0!r},\n".format(self.interpolation_model))
+            f.write("    activeKRotor = {0!r},\n".format(self.active_k_rotor))
+            f.write("    activeJRotor = {0!r},\n".format(self.active_j_rotor))
             if self.rmgmode:
-                f.write('    rmgmode = {0!r},\n'.format(self.rmgmode))
-            f.write(')\n\n')
+                f.write("    rmgmode = {0!r},\n".format(self.rmgmode))
+            f.write(")\n\n")
