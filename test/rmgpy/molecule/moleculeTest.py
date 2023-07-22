@@ -40,7 +40,7 @@ class TestAtom:
     Contains unit tests of the Atom class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A method called before each unit test in this class.
         """
@@ -503,7 +503,7 @@ class TestBond:
     Contains unit tests of the Bond class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A method called before each unit test in this class.
         """
@@ -921,7 +921,7 @@ class TestMolecule:
     Contains unit tests of the Molecule class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         self.adjlist_1 = """
 1 *1 C u1 p0 c0  {2,S} {3,S} {4,S}
 2    H u0 p0 c0  {1,S}

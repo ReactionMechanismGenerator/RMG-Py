@@ -48,7 +48,7 @@ class TestQMSettings:
     Contains unit tests for the QMSettings class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -88,7 +88,7 @@ class TestQMCalculator:
     gaussexecutable_path = Gaussian.executable_path
     NO_GAUSSIAN = not os.path.exists(gaussexecutable_path)
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

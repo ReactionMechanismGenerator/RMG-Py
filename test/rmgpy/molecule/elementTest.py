@@ -41,7 +41,7 @@ class TestElement:
     Contains unit tests of the Element class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

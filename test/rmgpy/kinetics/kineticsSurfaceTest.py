@@ -45,7 +45,7 @@ class TestStickingCoefficient:
     Contains unit tests of the :class:`StickingCoefficient` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -258,7 +258,7 @@ class TestSurfaceArrhenius:
     Contains unit tests of the :class:`SurfaceArrhenius` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

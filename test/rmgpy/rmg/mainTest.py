@@ -357,7 +357,7 @@ class TestProfiling:
 
 
 class TestCanteraOutput:
-    def setUp(self):
+    def setup_class(self):
         self.chemkin_files = {
             """ELEMENTS
 	H
@@ -480,7 +480,7 @@ ethane(1)           2     252.301     4.302     0.000     0.000     1.500    ! G
 CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! GRI-Mech
         """
 
-    def tearDown(self):
+    def teardown_class(self):
         os.chdir(originalPath)
         # try to remove the tree. If testChemkinToCanteraConversion properly
         # ran, the files should already be removed.

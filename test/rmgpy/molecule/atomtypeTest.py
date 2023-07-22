@@ -45,7 +45,7 @@ class TestAtomType:
     Contains unit tests of the AtomType class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -208,7 +208,7 @@ class TestGetAtomType:
     Contains unit tests of the get_atomtype() method.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

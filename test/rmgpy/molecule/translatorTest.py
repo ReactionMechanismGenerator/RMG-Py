@@ -853,7 +853,7 @@ class SMILESGenerationTest:
 
 
 class ParsingTest:
-    def setUp(self):
+    def setup_class(self):
         self.methane = Molecule().from_adjacency_list(
             """
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}

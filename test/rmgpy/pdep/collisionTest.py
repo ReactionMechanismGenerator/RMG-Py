@@ -40,7 +40,7 @@ class TestSingleExponentialDown:
     Contains unit tests of the SingleExponentialDown class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         self.alpha0 = 0.5
         self.T0 = 300.0
         self.n = 0.85

@@ -39,7 +39,7 @@ class TestMLEstimator:
     Contains unit tests for rmgpy.ml.estimator
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         Set up the MLEstimator class. This method is run once before all
         other unit tests.

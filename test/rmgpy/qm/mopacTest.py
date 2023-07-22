@@ -48,7 +48,7 @@ class TestMopacMolPM3:
     Contains unit tests for the Geometry class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -114,7 +114,7 @@ class TestMopacMolPM6:
     Contains unit tests for the Geometry class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -181,7 +181,7 @@ class TestMopacMolPM7:
     Contains unit tests for the Geometry class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

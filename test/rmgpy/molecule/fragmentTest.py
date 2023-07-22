@@ -11,7 +11,7 @@ import rmgpy.molecule.fragment
 
 
 class TestCuttingLabel:
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -32,7 +32,7 @@ class TestCuttingLabel:
 
 
 class TestFragment:
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

@@ -43,7 +43,7 @@ class TestGroupAdjLists:
     Contains adjacency list unit tests of the Graph class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         pass
 
     def test_from_old_adjacency_list1(self):
@@ -227,7 +227,7 @@ class TestMoleculeAdjLists:
     adjlist: Contains adjacency list unit tests of the Molecule class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         pass
 
     def test_from_adjacency_list1(self):

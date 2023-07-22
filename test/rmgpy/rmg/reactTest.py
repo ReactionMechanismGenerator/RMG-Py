@@ -49,7 +49,7 @@ TESTFAMILIES = [
 
 
 class TestReact:
-    def setUp(self):
+    def setup_class(self):
         """
         A method that is run before each unit test in this class.
         """
@@ -157,7 +157,7 @@ class TestReact:
         # Reset module level maxproc back to default
         rmgpy.rmg.main.maxproc = 1
 
-    def tearDown(self):
+    def teardown_class(self):
         """
         Reset the loaded database
         """

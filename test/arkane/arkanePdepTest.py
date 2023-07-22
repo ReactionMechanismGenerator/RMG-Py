@@ -53,7 +53,7 @@ class ArkaneTest:
     """
 
     @classmethod
-    def setUp(cls):
+    def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
         cls.directory = os.path.join(settings["test_data.directory"], "arkane", "tst1", "")
         cls.input_file = os.path.join(cls.directory, "pdep_sa.py")
@@ -121,7 +121,7 @@ class ArkaneTest:
         assert abs(float(sa_coeff) - -7.02e-07) < 0.02e-6
 
     @classmethod
-    def tearDown(cls):
+    def teardown_class(cls):
         """A function that is run ONCE after all unit tests in this class."""
         cls.directory = os.path.join(settings["test_data.directory"], "arkane", "tst1", "")
         cls.input_file = os.path.join(cls.directory, "pdep_sa.py")

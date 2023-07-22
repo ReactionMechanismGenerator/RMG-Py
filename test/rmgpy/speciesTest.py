@@ -49,7 +49,7 @@ class TestSpecies:
     Contains unit tests for the Species class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A method that is run before each unit test in this class.
         """

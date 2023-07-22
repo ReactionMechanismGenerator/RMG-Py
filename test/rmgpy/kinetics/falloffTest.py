@@ -45,7 +45,7 @@ class TestThirdBody:
     Contains unit tests of the ThirdBody class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -302,7 +302,7 @@ class TestLindemann:
     Contains unit tests of the Lindemann class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -510,7 +510,7 @@ class TestTroe:
     Contains unit tests of the Troe class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """

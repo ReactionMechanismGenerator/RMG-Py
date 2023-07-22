@@ -939,7 +939,7 @@ class TestQuantity:
     Contains unit tests testing the value and uncertainty storage behavior for ScalarQuantity and ArrayQuantity objects
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.  This tests the creation of several both ScalarQuantity
         and ArrayQuantity objects
@@ -1050,7 +1050,7 @@ class TestQuantityDictionaryConversion:
     Test that Scalar and Array Quantity objects can be represented and reconstructed from dictionaries
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         Initialize necessary variables for the TestQuantityDictionaryConversion unit test
         """

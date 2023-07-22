@@ -318,7 +318,7 @@ class TestCrossVal:
     A class for testing that the CrossVal class functions properly.
     """
 
-    def setUp(self):
+    def setup_class(self):
         lot = LevelOfTheory(method="wB97M-V", basis="def2-TZVPD", software="Q-Chem")
         self.cross_val = CrossVal(lot)
 

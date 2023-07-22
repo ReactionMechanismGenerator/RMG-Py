@@ -47,7 +47,7 @@ class regressionTest:
         args = read_input_file(input_file)
         run(benchmark, tested, *args)
 
-    def tearDown(self):
+    def teardown_class(self):
         import rmgpy.data.rmg
 
         rmgpy.data.rmg.database = None

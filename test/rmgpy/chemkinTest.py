@@ -667,7 +667,7 @@ class ChemkinTest:
 
 
 class TestThermoReadWrite:
-    def setUp(self):
+    def setup_class(self):
         """This method is run once before each test."""
         coeffs_low = [
             4.03055,

@@ -93,7 +93,7 @@ class FluxDiagramTest:
         shutil.rmtree(outputdir)
         shutil.rmtree(speciesdir)
 
-    def tearDown(self):
+    def teardown_class(self):
         import rmgpy.data.rmg
 
         rmgpy.data.rmg.database = None

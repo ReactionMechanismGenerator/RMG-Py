@@ -1218,7 +1218,7 @@ class TestThermoAccuracy:
         global database
         cls.database = database.thermo
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -1482,7 +1482,7 @@ class TestThermoAccuracyAromatics:
         global database
         cls.database = database.thermo
 
-    def setUp(self):
+    def setup_class(self):
         self.Tlist = [300, 400, 500, 600, 800, 1000, 1500]
         self.testCases = [
             # SMILES         symm    H298   S298  Cp300  Cp400  Cp500  Cp600  Cp800 Cp1000 Cp1500

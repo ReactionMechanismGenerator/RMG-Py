@@ -46,7 +46,7 @@ class TestWilhoit:
     Contains unit tests of the :class:`Wilhoit` class.
     """
 
-    def setUp(self):
+    def setup_class(self):
         """
         A function run before each unit test in this class.
         """
@@ -77,7 +77,7 @@ class TestWilhoit:
             comment=self.comment,
         )
 
-    def tearDown(self):
+    def teardown_class(self):
         """
         Reset the database & liquid parameters for solution
         """

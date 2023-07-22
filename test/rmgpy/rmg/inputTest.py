@@ -55,7 +55,7 @@ class TestInputDatabase:
     Contains unit tests rmgpy.rmg.input.database
     """
 
-    def tearDown(self):
+    def teardown_class(self):
         # remove the reactionLibraries value
         global rmg
         rmg.reaction_libraries = None
@@ -96,7 +96,7 @@ class TestInputMLEstimator:
     Contains unit tests rmgpy.rmg.input.mlEstimator
     """
 
-    def tearDown(self):
+    def teardown_class(self):
         # remove the reactionLibraries value
         global rmg
         rmg.ml_estimator = None
@@ -119,7 +119,7 @@ class TestInputThemoCentralDatabase:
     Contains unit tests rmgpy.rmg.input.thermo_central_database
     """
 
-    def tearDown(self):
+    def teardown_class(self):
         # remove the reactionLibraries value
         global rmg
         rmg.thermo_central_database = None
@@ -150,7 +150,7 @@ class TestInputReactors:
     Contains unit tests for reactor input classes
     """
 
-    def setUp(self):
+    def setup_class(self):
         """This method is run before every test in this class"""
         # Create a mock species dictionary
         # In reality, the values would be Species objects, but it doesn't matter for testing
@@ -168,7 +168,7 @@ class TestInputReactors:
         global rmg
         rmg.reaction_systems = []
 
-    def tearDown(self):
+    def teardown_class(self):
         """This method is run after every test in this class"""
         # Reset the global species_dict variable in the input module
         inp.species_dict = {}

@@ -136,7 +136,7 @@ class RDKitTest:
 
 
 class ConverterTest:
-    def setUp(self):
+    def setup_class(self):
         """Function run before each test in this class."""
         self.test_mols = [
             Molecule().from_smiles("C"),

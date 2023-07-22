@@ -41,7 +41,7 @@ class TestVF2:
     given Molecule object.
     """
 
-    def setUp(self):
+    def setup_class(self):
         self.vf2 = VF2()
         self.mol = Molecule().from_smiles("CC(=O)C[CH2]")
         self.mol2 = self.mol.copy(deep=True)
