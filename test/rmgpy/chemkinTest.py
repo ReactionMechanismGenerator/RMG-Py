@@ -204,7 +204,7 @@ class ChemkinTest:
         an entry in H_Abstraction, the other was just an estimate.'
         won't interfere reaction family info retrival.
         """
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py")
+        folder = os.path.join(os.path.dirname(__file__), "test_data", "chemkin", "chemkin_py")
 
         chemkin_path = os.path.join(folder, "pdd", "chem.inp")
         dictionary_path = os.path.join(folder, "pdd", "species_dictionary.txt")
@@ -256,7 +256,7 @@ class ChemkinTest:
         )
 
         Ar_write = Species(label="Ar")
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data")
+        folder = os.path.join(os.path.dirname(__file__), "test_data", "chemkin", "chemkin_py")
 
         temp_transport_path = os.path.join(folder, "tran_temp.dat")
 
@@ -272,7 +272,7 @@ class ChemkinTest:
         Test that the official chemkin names are used as labels for the created Species objects.
         """
 
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py")
+        folder = os.path.join(os.path.dirname(__file__), "test_data", "chemkin", "chemkin_py")
 
         chemkin_path = os.path.join(folder, "minimal", "chem.inp")
         dictionary_path = os.path.join(folder, "minimal", "species_dictionary.txt")
@@ -291,7 +291,7 @@ class ChemkinTest:
         inert list of RMG, should be treated as reactive species and given right species
         Identifier when it's reacting in reactions.
         """
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py")
+        folder = os.path.join(os.path.dirname(__file__), "test_data", "chemkin", "chemkin_py")
 
         chemkin_path = os.path.join(folder, "NC", "chem.inp")
         dictionary_path = os.path.join(folder, "NC", "species_dictionary.txt")
@@ -557,7 +557,7 @@ class ChemkinTest:
     def test_read_write_coverage_dependence(self):
         """Test that we can properly read and write coverage dependent parameters"""
 
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py")
+        folder = os.path.join(os.path.dirname(__file__), "test_data", "chemkin", "chemkin_py")
 
         s_x_entry = """X                       X   1               G   100.000  5000.000 1554.80      1
  1.60299900E-01-2.52235409E-04 1.14181275E-07-1.21471653E-11 3.85790025E-16    2
@@ -801,7 +801,7 @@ C 1 H 3 N 1 O 2 S 1 X 1
     def test_write_bidentate_species(self):
         """Test that species with 2 or more surface sites get proper formatting"""
 
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py")
+        folder = os.path.join(os.path.dirname(__file__), "test_data", "chemkin", "chemkin_py")
         chemkin_path = os.path.join(folder, "surface", "chem-surface.inp")
         dictionary_path = os.path.join(folder, "surface", "species_dictionary.txt")
         chemkin_save_path = os.path.join(folder, "surface", "chem-surface-test.inp")

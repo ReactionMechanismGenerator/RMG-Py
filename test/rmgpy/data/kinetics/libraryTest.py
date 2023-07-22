@@ -116,7 +116,7 @@ class TestLibrary:
     def test_loading_external_kinetic_library(self):
         """This tests loading a kinetic library which is not in the RMG-database repo"""
         kinetic_lib_in_db_path = os.path.join(settings["database.directory"], "kinetics", "libraries", "NOx2018")
-        kinetic_lib_in_test_dir_path = os.path.join(os.path.dirname(rmgpy.__file__), "test_data", "copied_kinetic_lib")
+        kinetic_lib_in_test_dir_path = os.path.join(os.path.dirname(__file__), "..", "..", "test_data", "copied_kinetic_lib")
         os.makedirs(kinetic_lib_in_test_dir_path)
         for file_name in ["reactions.py", "dictionary.txt"]:
             shutil.copyfile(
