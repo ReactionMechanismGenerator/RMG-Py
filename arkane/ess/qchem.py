@@ -197,7 +197,7 @@ class QChemLog(ESSAdapter):
             mass.append(mass1)
             number.append(num1)
         coord = np.array(coord, float)
-        number = np.array(number, np.int)
+        number = np.array(number, int)
         mass = np.array(mass, float)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise LogError("Unable to read atoms from QChem geometry output file {0}.".format(self.path))

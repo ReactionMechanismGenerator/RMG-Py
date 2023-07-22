@@ -182,7 +182,7 @@ class OrcaLog(ESSAdapter):
             mass.append(mass1)
             numbers.append(num1)
         coord = np.array(coords, float)
-        number = np.array(numbers, np.int)
+        number = np.array(numbers, int)
         mass = np.array(mass, float)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise LogError(f"Unable to read atoms from orca geometry output file {self.path}.")

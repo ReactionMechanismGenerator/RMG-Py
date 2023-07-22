@@ -36,15 +36,13 @@ import rmgpy.constants as constants
 from rmgpy.quantity import DipoleMoment, Length, Volume, Energy
 from rmgpy.transport import TransportData
 
-#
-
 
 class TestTransportData:
     """
     Contains unit test of the :class: 'transportData' class
     """
 
-    def setup_class(self):
+    def setup_method(self):
         """
         A function run before each unit test in this class.
         """

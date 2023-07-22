@@ -186,7 +186,7 @@ class GaussianLog(ESSAdapter):
             mass1, _ = get_element_mass(num)
             mass.append(mass1)
         coord = np.array(coord, float)
-        number = np.array(number, np.int)
+        number = np.array(number, int)
         mass = np.array(mass, float)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise LogError(

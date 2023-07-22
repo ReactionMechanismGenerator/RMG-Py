@@ -1,0 +1,43 @@
+ELEMENTS
+	H
+	D /2.014/
+	T /3.016/
+	C
+	CI /13.003/
+	O
+	OI /17.999/
+	N
+	Ne
+	Ar
+	He
+	Si
+	S
+	F
+	Cl
+	Br
+	I
+	X /195.083/
+END
+
+SPECIES
+
+
+END
+
+
+
+THERM ALL
+    300.000  1000.000  5000.000
+
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+! Fitted to 100 data points; dA = *|/ 1.02664, dn = +|- 0, dEa = +|- 0.0671562 kJ/mol
+CH3OO + imipramine <=> CH3OOH + imipraminerad       1.132e+09     0.000    13.996
+
+END
+

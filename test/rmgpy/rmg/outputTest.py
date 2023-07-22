@@ -42,7 +42,7 @@ class TestOutput:
         This example is to test if an HTML file can be generated
         for the provided chemkin model.
         """
-        folder = os.path.join(os.path.dirname(__file__), "test_data/saveOutputHTML/")
+        folder = os.path.join(os.path.dirname(__file__), "..", "test_data", "saveOutputHTML")
 
         chemkin_path = os.path.join(folder, "eg6", "chem_annotated.inp")
         dictionary_path = os.path.join(folder, "eg6", "species_dictionary.txt")

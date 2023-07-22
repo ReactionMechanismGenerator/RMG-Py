@@ -431,10 +431,10 @@ class Network(object):
                 # Choose the angular momenta to use to compute k(T,P) values at this temperature
                 # (This only applies if the J-rotor is adiabatic
                 if not self.active_j_rotor:
-                    j_list = self.j_list = np.arange(0, 20, 1, np.int)
+                    j_list = self.j_list = np.arange(0, 20, 1, int)
                     n_j = self.n_j = len(j_list)
                 else:
-                    j_list = self.j_list = np.array([0], np.int)
+                    j_list = self.j_list = np.array([0], int)
                     n_j = self.n_j = 1
 
                 # Map the densities of states onto this set of energies

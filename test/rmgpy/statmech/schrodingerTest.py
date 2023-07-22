@@ -52,6 +52,7 @@ class TestSchrodinger:
     that of a linear rigid rotor with a rotational constant of 1 cm^-1.
     """
 
+    @classmethod
     def setup_class(self):
         """
         A function run before each unit test in this class.

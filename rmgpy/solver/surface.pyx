@@ -167,8 +167,8 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef np.ndarray[np.int_t, ndim=1] species_on_surface, reactions_on_surface
         cdef Py_ssize_t index
         #: 1 if it's on a surface, 0 if it's in the gas phase
-        reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), np.int)
-        species_on_surface = np.zeros((self.num_core_species), np.int)
+        reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), int)
+        species_on_surface = np.zeros((self.num_core_species), int)
         for spec, index in self.species_index.items():
             if index >= self.num_core_species:
                 continue

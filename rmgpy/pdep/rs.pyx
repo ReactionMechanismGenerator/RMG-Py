@@ -77,7 +77,7 @@ cpdef apply_reservoir_state_method(network):
 
     # Determine the reservoir cutoff grain for each isomer
     # Start by simply placing it at the lowest reactive grain
-    n_res = np.zeros((n_isom, n_j), np.int)
+    n_res = np.zeros((n_isom, n_j), int)
     for i in range(n_isom):
         for s in range(n_j):
             for r in range(n_grains):
@@ -98,7 +98,7 @@ cpdef apply_reservoir_state_method(network):
 
     # Determine pseudo-steady state populations of active state
     row = 0
-    indices = -np.ones((n_isom, n_grains, n_j), np.int)
+    indices = -np.ones((n_isom, n_grains, n_j), int)
     for r in range(n_grains):
         for s in range(n_j):
             for i in range(n_isom):

@@ -187,7 +187,7 @@ jobs:
       # non-regression testing
       - name: Run Unit, Functional, and Database Tests
         # aggregate into one command so we only have to eat the collection time once
-        run: make test
+        run: make test-all
 
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution
