@@ -926,21 +926,21 @@ class TestReadReactionComments(unittest.TestCase):
             """
                              Reaction index: Chemkin #2; RMG #4
                              Template reaction: H_Abstraction
-                             Estimated using template (C/H3/Cs;C_methyl) for rate rule (C/H3/Cs\H3;C_methyl)
+                             Estimated using template (C/H3/Cs;C_methyl) for rate rule (C/H3/Cs\\H3;C_methyl)
                              Multiplied by reaction path degeneracy 6
                              """,
             """
                               Reaction index: Chemkin #13; RMG #8
                               Template reaction: H_Abstraction
                               Flux pairs: [CH3], CC; [CH3], CC; 
-                              Estimated using an average for rate rule [C/H3/Cs\H3;C_rad/H2/Cs]
+                              Estimated using an average for rate rule [C/H3/Cs\\H3;C_rad/H2/Cs]
                               Multiplied by reaction path degeneracy 6.0
                               """,
             """
                               Reaction index: Chemkin #17; RMG #31
                               Template reaction: H_Abstraction
                               Flux pairs: [CH3], CC; [CH3], CC; 
-                              Estimated using average of templates [C/H3/Cs;H_rad] + [C/H3/Cs\H3;Y_rad] for rate rule [C/H3/Cs\H3;H_rad]
+                              Estimated using average of templates [C/H3/Cs;H_rad] + [C/H3/Cs\\H3;Y_rad] for rate rule [C/H3/Cs\\H3;H_rad]
                               Multiplied by reaction path degeneracy 6.0
                               """,
             """
@@ -971,7 +971,7 @@ class TestReadReactionComments(unittest.TestCase):
                               Reaction index: Chemkin #51; RMG #136
                               Template reaction: H_Abstraction
                               Flux pairs: [CH3], CC; [CH3], CC; 
-                              Estimated using an average for rate rule [C/H3/Cd\H_Cd\H2;C_rad/H2/Cs]
+                              Estimated using an average for rate rule [C/H3/Cd\\H_Cd\\H2;C_rad/H2/Cs]
                               Euclidian distance = 0
                               Multiplied by reaction path degeneracy 3.0
                               """,
@@ -993,13 +993,13 @@ class TestReadReactionComments(unittest.TestCase):
         ]
         cls.template_list = [
             ["C_methyl", "C_methyl"],
-            ["C/H3/Cs\H3", "C_methyl"],
-            ["C/H3/Cs\H3", "C_rad/H2/Cs"],
-            ["C/H3/Cs\H3", "H_rad"],
+            [r"C/H3/Cs\H3", "C_methyl"],
+            [r"C/H3/Cs\H3", "C_rad/H2/Cs"],
+            [r"C/H3/Cs\H3", "H_rad"],
             ["R3H_SS_Cs", "O_rad_out", "Cs_H_out_2H"],
             ["CH_quartet", "O_Csrad"],
             None,
-            ["C/H3/Cd\H_Cd\H2", "C_rad/H2/Cs"],
+            [r"C/H3/Cd\H_Cd\H2", "C_rad/H2/Cs"],
             ["C_methyl", "C_methyl"],
             ["C_rad/H2/Cs", "C_methyl"],
         ]

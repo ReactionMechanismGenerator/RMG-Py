@@ -28,7 +28,7 @@
 ###############################################################################
 
 import os
-from unittest import TestCase, TestLoader, TextTestRunner
+from unittest import TestCase
 
 from rmgpy import settings
 from rmgpy.data.solvation import (
