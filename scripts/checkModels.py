@@ -111,16 +111,16 @@ def checkModel(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig, commonReacti
     orig_model_species = len(commonSpecies) + len(uniqueSpeciesOrig)
 
     logger.error(f"Original model has {orig_model_species} species.")
-    logger.error(f"Test model has {test_model_species} species." +
-                 '✅' if test_model_species == orig_model_species else '❌')
+    logger.error(f"Test model has {test_model_species} species. " +
+                 ('✅' if test_model_species == orig_model_species else '❌'))
 
 
     test_model_rxns = len(commonReactions) + len(uniqueReactionsTest)
     orig_model_rxns = len(commonReactions) + len(uniqueReactionsOrig)
 
     logger.error(f"Original model has {orig_model_rxns} reactions.")
-    logger.error(f"Test model has {test_model_rxns} reactions." +
-                    '✅' if test_model_rxns == orig_model_rxns else '❌')
+    logger.error(f"Test model has {test_model_rxns} reactions. " +
+                 ('✅' if test_model_rxns == orig_model_rxns else '❌'))
 
 
     return (test_model_species != orig_model_species) or (test_model_rxns != orig_model_rxns)
