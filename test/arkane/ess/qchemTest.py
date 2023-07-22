@@ -223,10 +223,3 @@ class QChemLogTest(unittest.TestCase):
         with self.assertRaises(LogError):
             log = QChemLog(os.path.join(self.data_path, "npropyl.out"))
             imaginary_freq = log.load_negative_frequency()
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

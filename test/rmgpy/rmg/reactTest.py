@@ -180,7 +180,3 @@ class TestReact(unittest.TestCase):
         import rmgpy.data.rmg
 
         rmgpy.data.rmg.database = None
-
-
-if __name__ == "__main__":
-    unittest.main()

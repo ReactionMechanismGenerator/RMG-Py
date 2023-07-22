@@ -1384,10 +1384,3 @@ class TeraChemLogTest(unittest.TestCase):
         ]  # radians
         np.testing.assert_almost_equal(v_list, expected_v_list, 4)
         np.testing.assert_almost_equal(angles, expected_angles)
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

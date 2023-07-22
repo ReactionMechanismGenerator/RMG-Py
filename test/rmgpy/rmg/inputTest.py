@@ -380,7 +380,3 @@ class TestInputReactors(unittest.TestCase):
         mock_logging.warning.assert_called_with(
             "Initial mole fractions do not sum to one; normalizing."
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

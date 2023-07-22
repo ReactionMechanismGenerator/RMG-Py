@@ -149,11 +149,3 @@ class TestMetalDatabase(TestCase):
         self.assertGreaterEqual(len(self.database.get_all_entries_on_metal("Pt")), 2)
         self.assertGreaterEqual(len(self.database.get_all_entries_on_metal("Ni")), 2)
         self.assertGreaterEqual(len(self.database.get_all_entries_on_metal("Co")), 2)
-
-
-#####################################################
-
-
-if __name__ == "__main__":
-    suite = TestLoader().loadTestsFromTestCase(TestMetalDatabase)
-    TextTestRunner(verbosity=2).run(suite)

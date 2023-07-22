@@ -303,7 +303,3 @@ class TestFuncs(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             get_software_id("g")
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

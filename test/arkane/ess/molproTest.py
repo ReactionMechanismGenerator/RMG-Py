@@ -217,10 +217,3 @@ class MolproLogTest(unittest.TestCase):
         log = MolproLog(os.path.join(self.data_path, "ethylene_f12_dz.out"))
         t1_diagnostic = log.get_T1_diagnostic()
         self.assertAlmostEqual(t1_diagnostic, 0.01152184)
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

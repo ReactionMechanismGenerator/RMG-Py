@@ -139,7 +139,3 @@ class TestCorr(unittest.TestCase):
 
         freq_scale_factor = assign_frequency_scale_factor(self.composite_lot)
         self.assertAlmostEqual(freq_scale_factor, 0.984, places=1)
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

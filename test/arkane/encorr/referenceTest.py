@@ -284,7 +284,3 @@ class TestReferenceDatabase(unittest.TestCase):
         retrieved_species = self.database.get_species_from_label(test_labels)
         self.assertEqual(len(retrieved_species), 3)
         self.assertEqual(retrieved_species[0].label, "1-Butene")
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

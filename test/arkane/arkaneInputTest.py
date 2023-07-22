@@ -403,10 +403,3 @@ class InputTest(unittest.TestCase):
             process_model_chemistry(
                 "CCSD(T)-F12a/aug-cc-pVTZ//CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd)"
             )
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

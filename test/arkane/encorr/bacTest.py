@@ -405,7 +405,3 @@ class TestCrossVal(unittest.TestCase):
             self.assertEqual(len(bac.dataset), 2)
             for d in bac.dataset:
                 self.assertNotEqual(d.spc.index, train_folds[i])
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

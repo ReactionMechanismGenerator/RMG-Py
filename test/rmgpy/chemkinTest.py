@@ -175,7 +175,7 @@ class ChemkinTest(unittest.TestCase):
         reaction2 = reactions[1]
         self.assertEqual(reaction2.family, "H_Abstraction")
         self.assertEqual(
-            frozenset("C/H3/Cs\H3;C_methyl".split(";")), frozenset(reaction2.template)
+            frozenset(r"C/H3/Cs\H3;C_methyl".split(";")), frozenset(reaction2.template)
         )
         # save_chemkin_file
         chemkin_save_path = os.path.join(folder, "minimal", "chem_new.inp")

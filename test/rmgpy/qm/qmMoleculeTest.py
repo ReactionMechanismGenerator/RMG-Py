@@ -98,7 +98,3 @@ class TestQMMolecule(unittest.TestCase):
             rdmol, _ = geom.rd_embed(rdmol, num_conf_attempts=20)
             self.assertEqual(rdmol.GetNumConformers(), 20)
         shutil.rmtree(scratch_dir)
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

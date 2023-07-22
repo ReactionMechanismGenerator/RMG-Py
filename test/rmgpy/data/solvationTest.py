@@ -611,11 +611,3 @@ class TestSoluteDatabase(TestCase):
             self.assertTrue(
                 any([spc1.is_isomorphic(spc2) for spc2 in solvent_species_list])
             )
-
-
-#####################################################
-
-
-if __name__ == "__main__":
-    suite = TestLoader().loadTestsFromTestCase(TestSoluteDatabase)
-    TextTestRunner(verbosity=2).run(suite)

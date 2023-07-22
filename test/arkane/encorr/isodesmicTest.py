@@ -456,7 +456,3 @@ class TestErrorCancelingScheme(unittest.TestCase):
                 n_reactions_max=3, milp_software=["pyomo"]
             )
             self.assertEqual(target_thermo.value_si, 115000.0)
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

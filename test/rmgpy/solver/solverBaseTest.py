@@ -239,7 +239,3 @@ class ReactionSystemTest(unittest.TestCase):
         self.assertEqual(
             rxn_sys.termination[1].time.value_si, rxn_sys1.termination[1].time.value_si
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -380,10 +380,3 @@ class ArkaneGaussianLogTest(unittest.TestCase):
         with self.assertRaises(LogError):
             log = GaussianLog(os.path.join(self.data_path, "rocbs-qb3_85_methanol.out"))
             imaginary_freq = log.load_negative_frequency()
-
-
-################################################################################
-
-
-if __name__ == "__main__":
-    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
