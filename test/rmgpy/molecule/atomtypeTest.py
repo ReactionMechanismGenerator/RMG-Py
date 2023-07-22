@@ -37,6 +37,8 @@ import rmgpy.molecule
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.atomtype import get_atomtype
 
+import pytest
+
 
 class TestAtomType:
     """

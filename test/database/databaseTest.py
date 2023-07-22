@@ -937,7 +937,7 @@ class TestDatabase:
         """
         family = self.database.kinetics.families[family_name]
         if family.own_reverse:
-            assert family.forward_template.reactants == family.forward_template.products)
+            assert family.forward_template.reactants == family.forward_template.products
         else:
             tst = []
             reactant_labels = [reactant.label for reactant in family.forward_template.reactants]

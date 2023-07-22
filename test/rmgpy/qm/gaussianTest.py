@@ -38,6 +38,8 @@ from rmgpy.molecule.molecule import Molecule
 from rmgpy.qm.gaussian import Gaussian, GaussianMolPM3, GaussianMolPM6
 from rmgpy.qm.main import QMCalculator
 
+import pytest
+
 executable_path = Gaussian.executable_path
 NO_GAUSSIAN = not os.path.exists(executable_path)
 
@@ -49,7 +51,7 @@ class TestGaussianMolPM3:
     Contains unit tests for the Geometry class.
     """
 
-    @unittest.skipIf(
+    @pytest.mark.skipif(
         NO_GAUSSIAN,
         "Gaussian not found. Try resetting your environment variables if you want to use it.",
     )
@@ -113,7 +115,7 @@ class TestGaussianMolPM6:
     Contains unit tests for the Geometry class.
     """
 
-    @unittest.skipIf(
+    @pytest.mark.skipif(
         NO_GAUSSIAN,
         "Gaussian not found. Try resetting your environment variables if you want to use it.",
     )
@@ -135,7 +137,7 @@ class TestGaussianMolPM6:
 
         self.qmmol1 = GaussianMolPM6(mol1, qm.settings)
 
-    @unittest.skipIf("g03" in executable_path, "This test was shown not to work on g03.")
+    @pytest.mark.skipif("g03" in executable_path, "This test was shown not to work on g03.")
     def test_generate_thermo_data(self):
         """
         Test that generate_thermo_data() works correctly for gaussian PM6.
@@ -156,7 +158,7 @@ class TestGaussianMolPM6:
         if result.molecularMass.units == "amu":
             assert round(abs(result.molecularMass.value - 128.0626), 3) == 0
 
-    @unittest.skipIf("g03" in executable_path, "This test was shown not to work on g03.")
+    @pytest.mark.skipif("g03" in executable_path, "This test was shown not to work on g03.")
     def test_load_thermo_data(self):
         """
         Test that generate_thermo_data() can load thermo from the previous gaussian PM6 run.

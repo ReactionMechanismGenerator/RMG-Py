@@ -29,7 +29,6 @@
 
 import os
 import shutil
-import subprocess
 
 
 from rmgpy import get_path
@@ -242,7 +241,7 @@ class TestQMCalculator:
         assert abs(thermo3.H298.value_si - 166168) < 166168 * MOPAC_CLOSE_ENOUGH_PERCENT
         assert abs(thermo3.S298.value_si - 336.333) < 336.333 * MOPAC_CLOSE_ENOUGH_PERCENT
 
-    @unittest.skipIf(
+    @pytest.mark.skipif(
         NO_GAUSSIAN,
         "Gaussian not found. Try resetting your environment variables if you want to use it.",
     )

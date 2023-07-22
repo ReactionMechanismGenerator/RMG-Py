@@ -39,6 +39,8 @@ from rmgpy.molecule.symmetry import (
 )
 from rmgpy.species import Species
 
+import pytest
+
 
 class TestMoleculeSymmetry:
     """

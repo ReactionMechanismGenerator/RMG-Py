@@ -37,6 +37,8 @@ from rmgpy.quantity import Energy, Length
 from rmgpy.species import Species
 from rmgpy.transport import TransportData
 
+import pytest
+
 
 class TestCriticalPointGroupContribution:
     """
@@ -185,7 +187,7 @@ class TestTransportDatabase:
             if epsilon:
                 assert round(abs(transport_data.epsilon.value_si - epsilon.value_si), 1) == 0
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_joback_on_benzene_bonds(self):
         """
         Test Joback doesn't crash on Cb desription of benzene
