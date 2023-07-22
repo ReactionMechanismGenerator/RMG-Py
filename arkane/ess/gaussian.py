@@ -143,7 +143,7 @@ class GaussianLog(ESSAdapter):
             while line != '':
                 # Read force constant matrix
                 if 'Force constants in Cartesian coordinates:' in line:
-                    force = np.zeros((n_rows, n_rows), np.float64)
+                    force = np.zeros((n_rows, n_rows), float)
                     for i in range(int(math.ceil(n_rows / 5.0))):
                         # Header row
                         line = f.readline()
@@ -187,9 +187,9 @@ class GaussianLog(ESSAdapter):
         for num in number:
             mass1, _ = get_element_mass(num)
             mass.append(mass1)
-        coord = np.array(coord, np.float64)
+        coord = np.array(coord, float)
         number = np.array(number, np.int)
-        mass = np.array(mass, np.float64)
+        mass = np.array(mass, float)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise LogError('Unable to read atoms from Gaussian geometry output file {0}. '
                            'Make sure the output file is not corrupt.\nNote: if your species has '
@@ -460,9 +460,9 @@ class GaussianLog(ESSAdapter):
             print(f'   Assuming {os.path.basename(self.path)} is the output from a rigid scan...')
             # For rigid scans, all of the angles are evenly spaced with a constant step size
             scan_res = math.pi / 180 * self._load_scan_angle()
-            angle = np.arange(0.0, scan_res * (len(vlist) - 1) + 0.00001, scan_res, np.float64)
+            angle = np.arange(0.0, scan_res * (len(vlist) - 1) + 0.00001, scan_res, float)
         else:
-            angle = np.array(angle, np.float64)
+            angle = np.array(angle, float)
             # Convert -180 ~ 180 degrees to 0 ~ 2pi rads
             angle = (angle - angle[0])
             angle[angle < 0] += 360.0
@@ -470,7 +470,7 @@ class GaussianLog(ESSAdapter):
             angle[-1] = angle[-1] if angle[-1] > 2 * self._load_scan_angle() else angle[-1] + 360.0
             angle = angle * math.pi / 180
 
-        vlist = np.array(vlist, np.float64)
+        vlist = np.array(vlist, float)
         # check to see if the scanlog indicates that a one of your reacting species may not be
         # the lowest energy conformer
         check_conformer_energy(vlist, self.path)

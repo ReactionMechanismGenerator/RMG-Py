@@ -263,7 +263,7 @@ cdef class MBSampledReactor(ReactionSystem):
                     self.specific_collider_species.append(rxn.specific_collider)
 
         self.pdep_collision_reaction_indices = np.array(pdep_collider_reaction_indices, np.int)
-        self.collider_efficiencies = np.array(collider_efficiencies, np.float64)
+        self.collider_efficiencies = np.array(collider_efficiencies, float)
         self.pdep_specific_collider_reaction_indices = np.array(pdep_specific_collider_reaction_indices, np.int)
 
     def set_initial_conditions(self):
@@ -294,22 +294,22 @@ cdef class MBSampledReactor(ReactionSystem):
             self.core_species_concentrations[j] = self.y0[j] / self.V
 
     @cython.boundscheck(False)
-    def residual(self, double t, np.ndarray[np.float64_t, ndim=1] y, np.ndarray[np.float64_t, ndim=1] dydt,
-                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float64)):
+    def residual(self, double t, np.ndarray[float_t, ndim=1] y, np.ndarray[float_t, ndim=1] dydt,
+                 np.ndarray[float_t, ndim=1] senpar = np.zeros(1, float)):
         """
         Return the residual function for the governing DAE system for the
         simple reaction system.
         """
         cdef np.ndarray[np.int_t, ndim=2] ir, ip, inet
-        cdef np.ndarray[np.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
+        cdef np.ndarray[float_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
         cdef Py_ssize_t num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
         cdef Py_ssize_t i, j, z, first, second, third, real_species_index
         cdef double k, V, reaction_rate, rev_reaction_rate, T, P, Peff, core_species_rate
-        cdef np.ndarray[np.float64_t, ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates
-        cdef np.ndarray[np.float64_t, ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
-        cdef np.ndarray[np.float64_t, ndim=1] core_species_consumption_rates, core_species_production_rates
-        cdef np.ndarray[np.float64_t, ndim=1] C, y_core_species
-        cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk, collider_efficiencies
+        cdef np.ndarray[float_t, ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates
+        cdef np.ndarray[float_t, ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
+        cdef np.ndarray[float_t, ndim=1] core_species_consumption_rates, core_species_production_rates
+        cdef np.ndarray[float_t, ndim=1] C, y_core_species
+        cdef np.ndarray[float_t, ndim=2] jacobian, dgdk, collider_efficiencies
         cdef np.ndarray[np.int_t, ndim=1] pdep_collider_reaction_indices, pdep_specific_collider_reaction_indices
         cdef list pdep_collider_kinetics, pdep_specific_collider_kinetics
 
@@ -357,7 +357,7 @@ cdef class MBSampledReactor(ReactionSystem):
         inet = self.network_indices
         knet = self.network_leak_coefficients
 
-        res = np.zeros(num_core_species, np.float64)
+        res = np.zeros(num_core_species, float)
 
         core_species_concentrations = np.zeros_like(self.core_species_concentrations)
         core_species_rates = np.zeros_like(self.core_species_rates)

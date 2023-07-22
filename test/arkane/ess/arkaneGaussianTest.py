@@ -93,7 +93,7 @@ class ArkaneGaussianLogTest:
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = np.array([298.15], np.float64)
+        t_list = np.array([298.15], float)
         assert abs(trans.get_partition_function(t_list) - 5.83338e6) < 1e1
         assert abs(rot.get_partition_function(t_list) - 2.59622e3) < 1e-2
         assert abs(vib.get_partition_function(t_list) - 1.0481e0) < 1e-4
@@ -150,7 +150,7 @@ class ArkaneGaussianLogTest:
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, LinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = np.array([298.15], np.float64)
+        t_list = np.array([298.15], float)
         assert abs(trans.get_partition_function(t_list) - 7.11169e6) < 1e1
         assert abs(rot.get_partition_function(t_list) - 7.13316e1) < 1e-4
         assert abs(vib.get_partition_function(t_list) - 1.00037e0) < 1e-4
@@ -178,7 +178,7 @@ class ArkaneGaussianLogTest:
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = np.array([298.15], np.float64)
+        t_list = np.array([298.15], float)
 
         assert abs(trans.get_partition_function(t_list) - 5.83338e6) < 1e1
         assert abs(rot.get_partition_function(t_list) - 2.53410e3) < 1e-2

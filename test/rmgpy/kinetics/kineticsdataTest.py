@@ -47,7 +47,7 @@ class TestKineticsData:
         """
         A function run before each unit test in this class.
         """
-        self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float64)
+        self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], float)
         self.kdata = np.array(
             [
                 4.73e-19,
@@ -61,7 +61,7 @@ class TestKineticsData:
                 3.72e-12,
                 1.49e-11,
             ],
-            np.float64,
+            float,
         )
         self.Tmin = 300.0
         self.Tmax = 3000.0
@@ -197,8 +197,8 @@ class TestPDepKineticsData:
         """
         A function run before each unit test in this class.
         """
-        self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], np.float64)
-        self.Pdata = np.array([1e-1, 1e0, 1e1], np.float64)
+        self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], float)
+        self.Pdata = np.array([1e-1, 1e0, 1e1], float)
         self.kdata = np.array(
             [
                 [
@@ -238,7 +238,7 @@ class TestPDepKineticsData:
                     1.49e-11,
                 ],
             ],
-            np.float64,
+            float,
         ).T
         self.Tmin = 300.0
         self.Tmax = 3000.0

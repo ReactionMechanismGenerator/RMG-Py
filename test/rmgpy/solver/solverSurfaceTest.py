@@ -107,7 +107,7 @@ class SurfaceReactorCheck:
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-        tlist = np.logspace(-13, -5, 81, dtype=np.float64)
+        tlist = np.logspace(-13, -5, 81, dtype=float)
 
         # Integrate to get the solution at each time point
         t = []
@@ -124,10 +124,10 @@ class SurfaceReactorCheck:
             species_rates.append(rxn_system.core_species_rates.copy())
 
         # Convert the solution vectors to np arrays
-        t = np.array(t, np.float64)
-        y = np.array(y, np.float64)
-        reaction_rates = np.array(reaction_rates, np.float64)
-        species_rates = np.array(species_rates, np.float64)
+        t = np.array(t, float)
+        y = np.array(y, float)
+        reaction_rates = np.array(reaction_rates, float)
+        species_rates = np.array(species_rates, float)
         total_sites = y[0, 1]
 
         # Check that we're computing the species fluxes correctly
@@ -303,7 +303,7 @@ class SurfaceReactorCheck:
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-        tlist = np.logspace(-13, -5, 81, dtype=np.float64)
+        tlist = np.logspace(-13, -5, 81, dtype=float)
 
         print("Surface site density:", rxn_system.surface_site_density.value_si)
 
@@ -337,10 +337,10 @@ class SurfaceReactorCheck:
             species_rates.append(rxn_system.core_species_rates.copy())
 
         # Convert the solution vectors to np arrays
-        t = np.array(t, np.float64)
-        y = np.array(y, np.float64)
-        reaction_rates = np.array(reaction_rates, np.float64)
-        species_rates = np.array(species_rates, np.float64)
+        t = np.array(t, float)
+        y = np.array(y, float)
+        reaction_rates = np.array(reaction_rates, float)
+        species_rates = np.array(species_rates, float)
         V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P_initial.value_si
 
         # Check that we're computing the species fluxes correctly
@@ -443,7 +443,7 @@ class SurfaceReactorCheck:
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-        tlist = np.logspace(-13, -5, 81, dtype=np.float64)
+        tlist = np.logspace(-13, -5, 81, dtype=float)
 
         assert isinstance(rxn1.kinetics.coverage_dependence, dict)  # check to make sure coverage_dependence is still the correct type
         for species, parameters in rxn1.kinetics.coverage_dependence.items():
@@ -471,10 +471,10 @@ class SurfaceReactorCheck:
         print(f"Simulation took {run_time:.3e} seconds in {self.id()}")
 
         # Convert the solution vectors to np arrays
-        t = np.array(t, np.float64)
-        y = np.array(y, np.float64)
-        reaction_rates = np.array(reaction_rates, np.float64)
-        species_rates = np.array(species_rates, np.float64)
+        t = np.array(t, float)
+        y = np.array(y, float)
+        reaction_rates = np.array(reaction_rates, float)
+        species_rates = np.array(species_rates, float)
         total_sites = y[0, 1]
 
         # Check that we're computing the species fluxes correctly
@@ -631,7 +631,7 @@ class SurfaceReactorCheck:
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-        tlist = np.logspace(-13, -5, 81, dtype=np.float64)
+        tlist = np.logspace(-13, -5, 81, dtype=float)
 
         print("Surface site density:", rxn_system.surface_site_density.value_si)
 
@@ -676,10 +676,10 @@ class SurfaceReactorCheck:
         print(f"Simulation took {run_time:.3e} seconds in {self.id()}")
 
         # Convert the solution vectors to np arrays
-        t = np.array(t, np.float64)
-        y = np.array(y, np.float64)
-        reaction_rates = np.array(reaction_rates, np.float64)
-        species_rates = np.array(species_rates, np.float64)
+        t = np.array(t, float)
+        y = np.array(y, float)
+        reaction_rates = np.array(reaction_rates, float)
+        species_rates = np.array(species_rates, float)
         V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P_initial.value_si
 
         # Check that we're computing the species fluxes correctly
@@ -705,7 +705,7 @@ class SurfaceReactorCheck:
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-        tlist = np.logspace(-13, -5, 81, dtype=np.float64)
+        tlist = np.logspace(-13, -5, 81, dtype=float)
 
         # Integrate to get the solution at each time point
         t = []
@@ -728,9 +728,9 @@ class SurfaceReactorCheck:
         print(f"Simulation took {run_time:.3e} seconds in {self.id()}")
 
         # Convert the solution vectors to np arrays
-        t = np.array(t, np.float64)
-        y_off = np.array(y_off, np.float64)
-        species_rates_off = np.array(species_rates_off, np.float64)
+        t = np.array(t, float)
+        y_off = np.array(y_off, float)
+        species_rates_off = np.array(species_rates_off, float)
 
         # Check that we've reached equilibrium
         assert abs(species_rates_off[-1, 0] - 0.0) < 1e-2

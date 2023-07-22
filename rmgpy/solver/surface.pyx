@@ -357,9 +357,9 @@ cdef class SurfaceReactor(ReactionSystem):
     @cython.boundscheck(False)
     def residual(self,
                  double t,
-                 np.ndarray[np.float64_t, ndim=1] N,
-                 np.ndarray[np.float64_t, ndim=1] dNdt,
-                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float64)
+                 np.ndarray[float_t, ndim=1] N,
+                 np.ndarray[float_t, ndim=1] dNdt,
+                 np.ndarray[float_t, ndim=1] senpar = np.zeros(1, float)
                  ):
 
         """
@@ -368,14 +368,14 @@ cdef class SurfaceReactor(ReactionSystem):
         """
         cdef np.ndarray[np.int_t, ndim=2] ir, ip, inet
         cdef np.ndarray[np.int_t, ndim=1] reactions_on_surface, species_on_surface
-        cdef np.ndarray[np.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants, coverage_corrections
+        cdef np.ndarray[float_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants, coverage_corrections
         cdef Py_ssize_t num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
         cdef Py_ssize_t i, j, z, first, second, third
         cdef double k, V, reaction_rate, surface_volume_ratio_si
-        cdef np.ndarray[np.float64_t, ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates
-        cdef np.ndarray[np.float64_t, ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
-        cdef np.ndarray[np.float64_t, ndim=1] C
-        cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk
+        cdef np.ndarray[float_t, ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates
+        cdef np.ndarray[float_t, ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
+        cdef np.ndarray[float_t, ndim=1] C
+        cdef np.ndarray[float_t, ndim=2] jacobian, dgdk
         cdef list list_of_coverage_deps
         cdef double surface_site_fraction, total_sites, a, m, E
 
@@ -397,7 +397,7 @@ cdef class SurfaceReactor(ReactionSystem):
         num_edge_reactions = len(self.edge_reaction_rates)
         num_pdep_networks = len(self.network_leak_rates)
 
-        res = np.zeros(num_core_species, np.float64)
+        res = np.zeros(num_core_species, float)
 
         core_species_concentrations = np.zeros_like(self.core_species_concentrations)
         core_species_rates = np.zeros_like(self.core_species_rates)
@@ -424,7 +424,7 @@ cdef class SurfaceReactor(ReactionSystem):
             core_species_concentrations[j] = C[j]
 
         # Coverage dependence
-        coverage_corrections = np.ones_like(kf, np.float64)
+        coverage_corrections = np.ones_like(kf, float)
         if self.coverage_dependence:
             """
             self.coverage_dependencies[2] = [(3, 0.1, -1.0, 12000.0),]
@@ -538,7 +538,7 @@ cdef class SurfaceReactor(ReactionSystem):
         # mol/s
 
         if self.sensitivity and False:
-            delta = np.zeros(len(N), np.float64)
+            delta = np.zeros(len(N), float)
             delta[:num_core_species] = res
             if self.jacobian_matrix is None:
                 jacobian = self.jacobian(t, N, dNdt, 0, senpar)

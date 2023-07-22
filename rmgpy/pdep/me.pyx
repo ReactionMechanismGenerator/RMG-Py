@@ -46,11 +46,11 @@ cpdef generate_full_me_matrix(network, bint products=True, bint exclude_associat
 
     cdef np.ndarray[np.int_t,ndim=1] j_list
     cdef np.ndarray[np.int_t,ndim=3] indices
-    cdef np.ndarray[np.float64_t,ndim=1] e_list
-    cdef np.ndarray[np.float64_t,ndim=2] me_mat
-    cdef np.ndarray[np.float64_t,ndim=3] dens_states
-    cdef np.ndarray[np.float64_t,ndim=4] k_ij, g_nj, f_im
-    cdef np.ndarray[np.float64_t,ndim=5] m_coll
+    cdef np.ndarray[float_t,ndim=1] e_list
+    cdef np.ndarray[float_t,ndim=2] me_mat
+    cdef np.ndarray[float_t,ndim=3] dens_states
+    cdef np.ndarray[float_t,ndim=4] k_ij, g_nj, f_im
+    cdef np.ndarray[float_t,ndim=5] m_coll
     cdef double temperature, pressure, beta, val, ktot
     cdef int n_isom, n_reac, n_prod, n_grains, n_j
     cdef int i, n, r, s, u, v, ind1, ind2, ind
@@ -86,7 +86,7 @@ cpdef generate_full_me_matrix(network, bint products=True, bint exclude_associat
         n_rows += n_prod
 
     # Construct full ME matrix
-    me_mat = np.zeros([n_rows, n_rows], np.float64)
+    me_mat = np.zeros([n_rows, n_rows], float)
 
     # Collision terms
     for i in range(n_isom):
@@ -172,7 +172,7 @@ def states_to_configurations(network, indices, state, exclude_association=False)
     else:
         xs = np.zeros(network.n_isom+network.n_reac+network.n_prod)
     for i in range(network.n_isom):
-        cum = np.float64(0.0)
+        cum = float(0.0)
         for r in range(network.n_grains):
             for s in range(network.n_j):
                 index = indices[i,r,s]

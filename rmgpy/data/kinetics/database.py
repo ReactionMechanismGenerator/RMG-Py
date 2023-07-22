@@ -657,7 +657,7 @@ and immediately used in input files without any additional changes.
             elif len(reverse) == 1 and len(forward) == 0:
                 # The reaction is in the reverse direction
                 # First fit Arrhenius kinetics in that direction
-                T_data = 1000.0 / np.arange(0.5, 3.301, 0.1, np.float64)
+                T_data = 1000.0 / np.arange(0.5, 3.301, 0.1, float)
                 k_data = np.zeros_like(T_data)
                 for i in range(T_data.shape[0]):
                     k_data[i] = entry.data.get_rate_coefficient(T_data[i]) / reaction.get_equilibrium_constant(T_data[i])

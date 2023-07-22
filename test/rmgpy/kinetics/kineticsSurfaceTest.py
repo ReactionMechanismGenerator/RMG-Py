@@ -142,7 +142,7 @@ class TestStickingCoefficient:
         Test the StickingCoefficient.is_temperature_valid() method.
         """
         T_data = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 4000])
-        valid_data = np.array([False, True, True, True, True, True, True, True, True, False], np.bool)
+        valid_data = np.array([False, True, True, True, True, True, True, True, True, False], bool)
         for T, valid in zip(T_data, valid_data):
             valid0 = self.stick.is_temperature_valid(T)
             assert valid0 == valid
@@ -355,7 +355,7 @@ class TestSurfaceArrhenius:
         Test the SurfaceArrhenius.is_temperature_valid() method.
         """
         T_data = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 4000])
-        valid_data = np.array([False, True, True, True, True, True, True, True, True, False], np.bool)
+        valid_data = np.array([False, True, True, True, True, True, True, True, True, False], bool)
         for T, valid in zip(T_data, valid_data):
             valid0 = self.surfarr.is_temperature_valid(T)
             assert valid0 == valid

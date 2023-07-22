@@ -46,11 +46,11 @@ cpdef apply_reservoir_state_method(network):
     cdef np.ndarray[np.int_t,ndim=1] j_list
     cdef np.ndarray[np.int_t,ndim=2] n_res, n_act
     cdef np.ndarray[np.int_t,ndim=3] indices
-    cdef np.ndarray[np.float64_t,ndim=1] e_list
-    cdef np.ndarray[np.float64_t,ndim=2] active_state_mat, source_vectors, pss_active_state, k
-    cdef np.ndarray[np.float64_t,ndim=3] dens_states, eq_dist
-    cdef np.ndarray[np.float64_t,ndim=4] k_ij, g_nj, f_im, pa
-    cdef np.ndarray[np.float64_t,ndim=5] m_coll
+    cdef np.ndarray[float_t,ndim=1] e_list
+    cdef np.ndarray[float_t,ndim=2] active_state_mat, source_vectors, pss_active_state, k
+    cdef np.ndarray[float_t,ndim=3] dens_states, eq_dist
+    cdef np.ndarray[float_t,ndim=4] k_ij, g_nj, f_im, pa
+    cdef np.ndarray[float_t,ndim=5] m_coll
     cdef list ind
     cdef double temperature, tol, y, beta
     cdef int n_isom, n_reac, n_prod, n_grains, n_j, bandwidth, halfbandwidth, width, width0
@@ -72,8 +72,8 @@ cpdef apply_reservoir_state_method(network):
 
     beta = 1. / (constants.R * temperature)  # [=] mol/kJ
 
-    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float64)
-    pa = np.zeros((n_isom, n_isom + n_reac, n_grains, n_j), np.float64)
+    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), float)
+    pa = np.zeros((n_isom, n_isom + n_reac, n_grains, n_j), float)
 
     # Determine the reservoir cutoff grain for each isomer
     # Start by simply placing it at the lowest reactive grain
@@ -91,7 +91,7 @@ cpdef apply_reservoir_state_method(network):
     n_act = n_grains - n_res
 
     # Determine equilibrium distributions
-    eq_dist = np.zeros((n_isom + n_reac, n_grains, n_j), np.float64)
+    eq_dist = np.zeros((n_isom + n_reac, n_grains, n_j), float)
     for i in range(n_isom + n_reac):
         for s in range(n_j):
             eq_dist[i, :, s] = dens_states[i, :, s] * (2 * j_list[s] + 1) * np.exp(-e_list * beta)
@@ -126,8 +126,8 @@ cpdef apply_reservoir_state_method(network):
     bandwidth = 2 * halfbandwidth + 1
 
     # Populate active-state matrix and source vectors
-    active_state_mat = np.zeros((bandwidth, np.sum(n_act)), np.float64)
-    source_vectors = np.zeros((np.sum(n_act), n_isom + n_reac), np.float64)
+    active_state_mat = np.zeros((bandwidth, np.sum(n_act)), float)
+    source_vectors = np.zeros((np.sum(n_act), n_isom + n_reac), float)
     # Collisional terms
     for i in range(n_isom):
         for u in range(n_j):
@@ -188,7 +188,7 @@ cpdef apply_reservoir_state_method(network):
     # k = computeRateCoefficients(m_coll, k_ij, f_im, g_nj, pa, n_isom, n_reac, n_prod)
 
     # Determine the phenomenological rate coefficients
-    k = np.zeros((n_isom+n_reac+n_prod, n_isom+n_reac+n_prod), np.float64)
+    k = np.zeros((n_isom+n_reac+n_prod, n_isom+n_reac+n_prod), float)
     # Rows relating to isomers
     for i in range(n_isom):
         for u in range(n_j):

@@ -115,7 +115,7 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
                 raise Exception("Central species '{}' could not be found in species list.".format(centralSpecies))
 
     # Compute the rates between each pair of species (big matrix warning!)
-    species_rates = np.zeros((len(times), num_species, num_species), np.float64)
+    species_rates = np.zeros((len(times), num_species, num_species), float)
     for index, reaction in enumerate(reaction_list):
         rate = reaction_rates[:, index]
         if not reaction.pairs: reaction.generate_pairs()

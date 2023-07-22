@@ -92,7 +92,7 @@ class TestQMCalculator:
         """
         A function run before each unit test in this class.
         """
-        rmg_path = os.path.normpath(os.path.join(get_path(), ".."))
+        rmg_path = os.path.normpath(os.path.join(get_path(), "..", ".."))
         self.fileStore = os.path.join(rmg_path, "testing", "qm", "QMfiles")
 
         self.mop1 = QMCalculator(software="mopac", method="pm3", fileStore=self.fileStore)

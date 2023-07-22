@@ -212,7 +212,7 @@ cdef class Conformer(RMGObject):
         be used to calculate the center of mass. Otherwise, all atoms will be
         used.
         """
-        cdef np.ndarray[np.float64_t, ndim=1] mass
+        cdef np.ndarray[float_t, ndim=1] mass
         cdef int atom
         mass = self._mass.value_si
         if atoms is None: atoms = range(1, mass.shape[0] + 1)
@@ -225,8 +225,8 @@ cdef class Conformer(RMGObject):
         only those atoms will be used to calculate the center of mass. 
         Otherwise, all atoms will be used.
         """
-        cdef np.ndarray[np.float64_t, ndim=1] mass
-        cdef np.ndarray[np.float64_t, ndim=2] coordinates
+        cdef np.ndarray[float_t, ndim=1] mass
+        cdef np.ndarray[float_t, ndim=2] coordinates
         cdef double total_mass
         cdef int atom
 
@@ -290,17 +290,17 @@ cdef class Conformer(RMGObject):
         in kg*m^2. If the coordinates are not at the center of mass, they are
         temporarily shifted there for the purposes of this calculation.
         """
-        cdef np.ndarray[np.float64_t, ndim=1] mass
-        cdef np.ndarray[np.float64_t, ndim=2] coordinates
-        cdef np.ndarray[np.float64_t, ndim=1] coord, center_of_mass
-        cdef np.ndarray[np.float64_t, ndim=2] I
+        cdef np.ndarray[float_t, ndim=1] mass
+        cdef np.ndarray[float_t, ndim=2] coordinates
+        cdef np.ndarray[float_t, ndim=1] coord, center_of_mass
+        cdef np.ndarray[float_t, ndim=2] I
         cdef double m
         cdef int atom
 
         mass = self._mass.value_si
         coordinates = self._coordinates.value_si
 
-        I = np.zeros((3, 3), np.float64)
+        I = np.zeros((3, 3), float)
         center_of_mass = self.get_center_of_mass()
 
         atoms = range(1, mass.shape[0] + 1)
@@ -365,9 +365,9 @@ cdef class Conformer(RMGObject):
         
         .. [2] East, A. L. L. and Radom, L. *J. Chem. Phys.* **106**, p. 6655-6674 (1997).
         """
-        cdef np.ndarray[np.float64_t, ndim=1] mass, top1_center_of_mass, top2_center_of_mass
-        cdef np.ndarray[np.float64_t, ndim=2] coordinates
-        cdef np.ndarray[np.float64_t, ndim=1] coord_pivot1, coord_pivot2, axis
+        cdef np.ndarray[float_t, ndim=1] mass, top1_center_of_mass, top2_center_of_mass
+        cdef np.ndarray[float_t, ndim=2] coordinates
+        cdef np.ndarray[float_t, ndim=1] coord_pivot1, coord_pivot2, axis
         cdef double I1, I2
         cdef int n_atoms, atom
 
@@ -470,7 +470,7 @@ cdef class Conformer(RMGObject):
         constant and the J-rotor rotational constant.
         """
         cdef double A, B
-        cdef np.ndarray[np.float64_t, ndim=1] Blist
+        cdef np.ndarray[float_t, ndim=1] Blist
 
         Jrotor = None
         Krotor = None
@@ -543,7 +543,7 @@ cpdef double phi(double beta, int k, double E, logQ) except -10000000:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def get_density_of_states_forst(np.ndarray[np.float64_t, ndim=1] e_list, logQ, int order=1):
+def get_density_of_states_forst(np.ndarray[float_t, ndim=1] e_list, logQ, int order=1):
     """
     Return the density of states :math:`\\rho(E) \\ dE` and sum of states
     :math:`N(E)` at the specified total energies `e_list` in J/mol above the
@@ -555,7 +555,7 @@ def get_density_of_states_forst(np.ndarray[np.float64_t, ndim=1] e_list, logQ, i
     faster to compute, and generally accurate enough for most applications.
     """
 
-    cdef np.ndarray[np.float64_t, ndim=1] dens_states, sum_states
+    cdef np.ndarray[float_t, ndim=1] dens_states, sum_states
     cdef double x, dx, v, E, dE
     cdef int i, k
 

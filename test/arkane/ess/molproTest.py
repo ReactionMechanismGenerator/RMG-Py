@@ -126,7 +126,7 @@ class MolproLogTest:
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = np.array([298.15], np.float64)
+        t_list = np.array([298.15], float)
 
         assert abs(trans.get_partition_function(t_list) - 9.175364e7) < 1e1
         assert abs(rot.get_partition_function(t_list) - 1.00005557e5) < 1e-2

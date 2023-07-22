@@ -138,7 +138,7 @@ class MolproLog(ESSAdapter):
             while line != '':
                 # Read force constant matrix
                 if 'Force Constants (Second Derivatives of the Energy) in [a.u.]' in line:
-                    fc = np.zeros((n_rows, n_rows), np.float64)
+                    fc = np.zeros((n_rows, n_rows), float)
                     for i in range(int(math.ceil(n_rows / 5.0))):
                         # Header row
                         line = f.readline()
@@ -203,8 +203,8 @@ class MolproLog(ESSAdapter):
             mass.append(mass1)
             number.append(num1)
         number = np.array(number, np.int)
-        mass = np.array(mass, np.float64)
-        coord = np.array(coord, np.float64)
+        mass = np.array(mass, float)
+        coord = np.array(coord, float)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise LogError('Unable to read atoms from Molpro geometry output file {0}'.format(self.path))
 

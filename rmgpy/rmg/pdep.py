@@ -454,7 +454,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 if any(c <= 0.0):
                     c, rnorm = opt.nnls(A, b)
 
-                c = c.astype(np.float64)
+                c = c.astype(float)
             except:  # fall back to raw flux analysis rather than solve steady state problem
                 return None
         

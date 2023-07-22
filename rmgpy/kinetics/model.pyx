@@ -365,7 +365,7 @@ cdef class PDepKineticsModel(KineticsModel):
         `P` in Pa composed of the given list of `species` (Species or Molecule objects) with the given
         `fractions`.  
         """
-        cdef np.ndarray[np.float64_t, ndim=1] _fractions
+        cdef np.ndarray[float_t, ndim=1] _fractions
         cdef double Peff, frac, eff, total_frac, eff_frac
         cdef int i
 
@@ -405,11 +405,11 @@ cdef class PDepKineticsModel(KineticsModel):
         Return the effective collider efficiencies for all species in the form of
         a numpy array.  This function helps assist rapid effective pressure calculations in the solver.
         """
-        cdef np.ndarray[np.float64_t, ndim=1] all_efficiencies
+        cdef np.ndarray[float_t, ndim=1] all_efficiencies
         cdef double eff
         cdef int i
 
-        all_efficiencies = np.ones(len(species), np.float64)
+        all_efficiencies = np.ones(len(species), float)
         for mol, eff in self.efficiencies.iteritems():
             for spec in species:
                 if spec.is_isomorphic(mol):

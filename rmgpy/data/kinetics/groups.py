@@ -425,7 +425,7 @@ class KineticsGroups(Database):
             for t, T in enumerate(Tdata):
 
                 # Determine error in each group (on log scale)
-                stdev = np.zeros(len(group_list) + 1, np.float64)
+                stdev = np.zeros(len(group_list) + 1, float)
                 count = np.zeros(len(group_list) + 1, np.int)
 
                 for index in range(len(training_set)):

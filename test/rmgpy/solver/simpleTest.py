@@ -128,7 +128,7 @@ class SimpleReactorCheck:
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
 
-        tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], np.float64)
+        tlist = np.array([10 ** (i / 10.0) for i in range(-130, -49)], float)
 
         # Integrate to get the solution at each time point
         t = []
@@ -145,10 +145,10 @@ class SimpleReactorCheck:
             species_rates.append(rxn_system.core_species_rates.copy())
 
         # Convert the solution vectors to np arrays
-        t = np.array(t, np.float64)
-        y = np.array(y, np.float64)
-        reaction_rates = np.array(reaction_rates, np.float64)
-        species_rates = np.array(species_rates, np.float64)
+        t = np.array(t, float)
+        y = np.array(y, float)
+        reaction_rates = np.array(reaction_rates, float)
+        species_rates = np.array(species_rates, float)
         V = constants.R * rxn_system.T.value_si * np.sum(y) / rxn_system.P.value_si
 
         # Check that we're computing the species fluxes correctly
