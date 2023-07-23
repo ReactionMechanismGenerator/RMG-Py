@@ -689,7 +689,7 @@ class TestBond:
             bond = bond0.copy()
             try:
                 bond.apply_action(action)
-                self.fail("Bond.apply_action() unexpectedly processed a BREAK_BOND action " "with order {0}.".format(order0))
+                assert False, "Bond.apply_action() unexpectedly processed a BREAK_BOND action " "with order {0}.".format(order0)
             except ActionError:
                 pass
 
@@ -703,7 +703,7 @@ class TestBond:
             bond = bond0.copy()
             try:
                 bond.apply_action(action)
-                self.fail("Bond.apply_action() unexpectedly processed a FORM_BOND action " "with order {0}.".format(order0))
+                assert False, "Bond.apply_action() unexpectedly processed a FORM_BOND action " "with order {0}.".format(order0)
             except ActionError:
                 pass
 
@@ -743,7 +743,7 @@ class TestBond:
             bond = bond0.copy()
             try:
                 bond.apply_action(action)
-                self.fail("Bond.apply_action() unexpectedly processed a GAIN_RADICAL action " "with order {0}.".format(order0))
+                assert False, "Bond.apply_action() unexpectedly processed a GAIN_RADICAL action " "with order {0}.".format(order0)
             except ActionError:
                 pass
 
@@ -757,7 +757,7 @@ class TestBond:
             bond = bond0.copy()
             try:
                 bond.apply_action(action)
-                self.fail("Bond.apply_action() unexpectedly processed a LOSE_RADICAL action " "with order {0}.".format(order0))
+                assert False, "Bond.apply_action() unexpectedly processed a LOSE_RADICAL action " "with order {0}.".format(order0)
             except ActionError:
                 pass
 
@@ -999,7 +999,7 @@ class TestMolecule:
                 assert atom == self.molecule[0].get_labeled_atoms(atom.label)[0]
         try:
             self.molecule[0].get_labeled_atoms("*3")[0]
-            self.fail("Unexpected successful return from Molecule.get_labeled_atoms() with invalid atom label.")
+            assert False, "Unexpected successful return from Molecule.get_labeled_atoms() with invalid atom label."
         except ValueError:
             pass
 
@@ -2190,7 +2190,7 @@ multiplicity 2
         try:
             mol.update_connectivity_values()
         except OverflowError:
-            self.fail("update_connectivity_values() raised OverflowError unexpectedly!")
+            assert False, "update_connectivity_values() raised OverflowError unexpectedly!"
 
     def test_large_mol_creation(self):
         """
@@ -2202,7 +2202,7 @@ multiplicity 2
             try:
                 Molecule(smiles=smi)
             except OverflowError:
-                self.fail("Creation of C{} failed!".format(i))
+                assert False, "Creation of C{} failed!".format(i)
 
     def test_get_polycyclic_rings(self):
         """

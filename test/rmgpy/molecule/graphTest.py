@@ -83,7 +83,7 @@ class TestGraph:
         edge = Edge(vertex1, vertex2)
         try:
             self.graph.add_edge(edge)
-            self.fail("Added edge between vertices not in graph to graph.")
+            assert False, "Added edge between vertices not in graph to graph."
         except ValueError:
             pass
         self.graph.add_vertex(vertex1)
@@ -104,7 +104,7 @@ class TestGraph:
         vertex2 = self.graph.vertices[4]
         try:
             self.graph.get_edge(vertex1, vertex2)
-            self.fail("Returned an edge between vertices that should not be connected in graph.")
+            assert False, "Returned an edge between vertices that should not be connected in graph."
         except ValueError:
             pass
         vertex1 = self.graph.vertices[2]

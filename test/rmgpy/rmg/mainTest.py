@@ -51,7 +51,7 @@ class TestMain:
     @classmethod
     def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
-        cls.testDir = os.path.join(originalPath, "rmg", "test_data", "mainTest")
+        cls.testDir = os.path.join(originalPath, "..", "test", "rmgpy", "test_data", "mainTest")
         cls.outputDir = "output"
         cls.databaseDirectory = settings["database.directory"]
 
@@ -183,7 +183,7 @@ class TestMain:
                 try:
                     ct.Solution(os.path.join(outName, f))
                 except:
-                    self.fail("The output Cantera file is not loadable in Cantera.")
+                    assert False, "The output Cantera file is not loadable in Cantera."
 
 
 @pytest.mark.functional
@@ -191,7 +191,7 @@ class TestRestartWithFilters:
     @classmethod
     def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
-        cls.testDir = os.path.join(originalPath, "rmg", "test_data", "restartTest")
+        cls.testDir = os.path.join(originalPath, "..", "test", "rmgpy", "test_data", "restartTest")
         cls.outputDir = os.path.join(cls.testDir, "output_w_filters")
         cls.databaseDirectory = settings["database.directory"]
 
@@ -228,7 +228,7 @@ class TestRestartNoFilters:
     @classmethod
     def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
-        cls.testDir = os.path.join(originalPath, "rmg", "test_data", "restartTest")
+        cls.testDir = os.path.join(originalPath, "..", "test", "rmgpy", "test_data", "restartTest")
         cls.outputDir = os.path.join(cls.testDir, "output_no_filters")
         cls.databaseDirectory = settings["database.directory"]
 
@@ -265,7 +265,7 @@ class TestMainFunctions:
     @classmethod
     def setup_class(cls):
         """A function that is run ONCE before all unit tests in this class."""
-        cls.testDir = os.path.join(originalPath, "rmg", "test_data", "mainTest")
+        cls.testDir = os.path.join(originalPath, "..", "test", "rmgpy", "test_data", "mainTest")
         cls.outputDir = os.path.join(cls.testDir, "output")
         cls.databaseDirectory = settings["database.directory"]
 
@@ -323,7 +323,7 @@ class TestProfiling:
             cls.display_found = bool(os.environ["DISPLAY"])
         except KeyError:  # This means that no display was found
             pass
-        cls.test_dir = os.path.join(originalPath, "rmg", "test_data", "mainTest")
+        cls.test_dir = os.path.join(originalPath, "..", "test", "rmgpy", "test_data", "mainTest")
 
     @patch("rmgpy.rmg.main.logging")
     def test_make_profile_graph(self, mock_logging):
@@ -471,7 +471,7 @@ END
         }
         self.rmg = RMG()
         self.dir_name = "temp_dir_for_testing"
-        self.rmg.output_directory = os.path.join(originalPath, self.dir_name)
+        self.rmg.output_directory = os.path.join(originalPath, "..", "test", "rmgpy", "test_data", self.dir_name)
 
         self.tran_dat = """
 ! Species         Shape    LJ-depth  LJ-diam   DiplMom   Polzblty  RotRelaxNum Data     

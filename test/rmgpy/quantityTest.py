@@ -98,7 +98,7 @@ class TestConcentration:
         """
         try:
             quantity.Concentration(1.0, "m^-3")
-            self.fail('Allowed invalid unit type "m^-3".')
+            assert False, 'Allowed invalid unit type "m^-3".'
         except quantity.QuantityError:
             pass
 
@@ -132,7 +132,7 @@ class TestEnergy:
         """
         try:
             quantity.Energy(1.0, "J")
-            self.fail('Allowed invalid unit type "J".')
+            assert False, 'Allowed invalid unit type "J".'
         except quantity.QuantityError:
             pass
 
@@ -151,7 +151,7 @@ class TestEnergy:
         """
         try:
             quantity.Energy(1.0, "cal")
-            self.fail('Allowed invalid unit type "cal".')
+            assert False, 'Allowed invalid unit type "cal".'
         except quantity.QuantityError:
             pass
 
@@ -170,7 +170,7 @@ class TestEnergy:
         """
         try:
             quantity.Energy(1.0, "kJ")
-            self.fail('Allowed invalid unit type "kJ".')
+            assert False, 'Allowed invalid unit type "kJ".'
         except quantity.QuantityError:
             pass
 
@@ -189,7 +189,7 @@ class TestEnergy:
         """
         try:
             quantity.Energy(1.0, "kcal")
-            self.fail('Allowed invalid unit type "kcal".')
+            assert False, 'Allowed invalid unit type "kcal".'
         except quantity.QuantityError:
             pass
 
@@ -246,7 +246,7 @@ class TestFlux:
         """
         try:
             quantity.Flux(1.0, "m^-2*s^-1")
-            self.fail('Allowed invalid unit type "m^-2*s^-1".')
+            assert False, 'Allowed invalid unit type "m^-2*s^-1".'
         except quantity.QuantityError:
             pass
 
@@ -375,7 +375,7 @@ class TestHeatCapacity:
         """
         try:
             quantity.HeatCapacity(1.0, "J/K")
-            self.fail('Allowed invalid unit type "J/K".')
+            assert False, 'Allowed invalid unit type "J/K".'
         except quantity.QuantityError:
             pass
 
@@ -394,7 +394,7 @@ class TestHeatCapacity:
         """
         try:
             quantity.HeatCapacity(1.0, "cal/K")
-            self.fail('Allowed invalid unit type "cal/K".')
+            assert False, 'Allowed invalid unit type "cal/K".'
         except quantity.QuantityError:
             pass
 
@@ -413,7 +413,7 @@ class TestHeatCapacity:
         """
         try:
             quantity.HeatCapacity(1.0, "kJ/K")
-            self.fail('Allowed invalid unit type "kJ/K".')
+            assert False, 'Allowed invalid unit type "kJ/K".'
         except quantity.QuantityError:
             pass
 
@@ -432,7 +432,7 @@ class TestHeatCapacity:
         """
         try:
             quantity.HeatCapacity(1.0, "kcal/K")
-            self.fail('Allowed invalid unit type "kcal/K".')
+            assert False, 'Allowed invalid unit type "kcal/K".'
         except quantity.QuantityError:
             pass
 

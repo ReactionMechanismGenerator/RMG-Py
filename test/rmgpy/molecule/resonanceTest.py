@@ -477,7 +477,7 @@ multiplicity 2
             if perylene.is_isomorphic(isomer):
                 break
         else:  # didn't break
-            self.fail("{} isn't isomorphic with any aromatic forms of {}".format(perylene.to_smiles(), perylene2.to_smiles()))
+            assert False, "{} isn't isomorphic with any aromatic forms of {}".format(perylene.to_smiles(), perylene2.to_smiles())
 
     def test_fused_aromatic2(self):
         """Test we can make aromatic naphthalene from both adjlist and SMILES"""
@@ -508,7 +508,7 @@ multiplicity 2
             if naphthalene.is_isomorphic(isomer):
                 break
         else:  # didn't break
-            self.fail("{} isn't isomorphic with any aromatic forms of {}".format(naphthalene.to_smiles(), naphthalene2.to_smiles()))
+            assert False, "{} isn't isomorphic with any aromatic forms of {}".format(naphthalene.to_smiles(), naphthalene2.to_smiles())
 
     def test_aromatic_resonance_structures(self):
         """Test that generate_optimal_aromatic_resonance_structures gives consistent output
