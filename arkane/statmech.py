@@ -47,6 +47,7 @@ import rmgpy.constants as constants
 from rmgpy.exceptions import InputError, ElementError, StatmechError
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.species import TransitionState, Species
+from rmgpy.statmech.ndTorsions import HinderedRotor2D, HinderedRotorClassicalND
 from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor
 from rmgpy.statmech.torsion import HinderedRotor, FreeRotor
 from rmgpy.statmech.translation import Translation, IdealGasTranslation
