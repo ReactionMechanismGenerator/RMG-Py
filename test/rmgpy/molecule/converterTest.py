@@ -120,7 +120,7 @@ class RDKitTest:
                     try:
                         rdkitmol.GetBondBetweenAtoms(rd_atom_indices[at1], rd_atom_indices[at2])
                     except RuntimeError:
-                        self.fail("RDKit failed in finding the bond in the original atom!")
+                        assert False, "RDKit failed in finding the bond in the original atom!"
 
     def test_atom_mapping_3(self):
         """Test that to_rdkit_mol with save_order=True retains the atom order and create the correct RDKit Molecule"""

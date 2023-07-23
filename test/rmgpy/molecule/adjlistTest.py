@@ -898,7 +898,7 @@ class TestConsistencyChecker:
                 saturate_h=True,
             )
         except InvalidAdjacencyListError:
-            self.fail("InvalidAdjacencyListError thrown unexpectedly!")
+            assert False, "InvalidAdjacencyListError thrown unexpectedly!"
 
     def test_check_multiplicity(self):
         """
@@ -911,7 +911,7 @@ class TestConsistencyChecker:
                                             1 N u3 p1 c0"""
             )
         except InvalidAdjacencyListError:
-            self.fail("InvalidAdjacencyListError thrown unexpectedly for N tri-rad!")
+            assert False, "InvalidAdjacencyListError thrown unexpectedly for N tri-rad!"
 
         # A general molecule with 4 radicals, multiplicity 5:
         try:
@@ -924,7 +924,7 @@ class TestConsistencyChecker:
                                             5 O u1 p2 c0 {4,S}"""
             )
         except InvalidAdjacencyListError:
-            self.fail("InvalidAdjacencyListError thrown unexpectedly for a molecule with 4 radicals, multiplicity 5")
+            assert False, "InvalidAdjacencyListError thrown unexpectedly for a molecule with 4 radicals, multiplicity 5"
 
         # A general molecule with 4 radicals, multiplicity 3:
         try:
@@ -937,7 +937,7 @@ class TestConsistencyChecker:
                                             5 O u1 p2 c0 {4,S}"""
             )
         except InvalidAdjacencyListError:
-            self.fail("InvalidAdjacencyListError thrown unexpectedly for a molecule with 4 radicals, multiplicity 3")
+            assert False, "InvalidAdjacencyListError thrown unexpectedly for a molecule with 4 radicals, multiplicity 3"
 
         # [N]=C=[N] singlet:
         try:
@@ -948,4 +948,4 @@ class TestConsistencyChecker:
                                             3 N u1 p1 c0 {2,D}"""
             )
         except InvalidAdjacencyListError:
-            self.fail("InvalidAdjacencyListError thrown unexpectedly for singlet [N]=C=[N]!")
+            assert False, "InvalidAdjacencyListError thrown unexpectedly for singlet [N]=C=[N]!"

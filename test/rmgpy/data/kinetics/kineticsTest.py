@@ -114,42 +114,42 @@ class TestKineticsDatabase:
         try:
             database.load_families(path, families=[])
         except DatabaseError:
-            self.fail("Unable to load families using list []")
+            assert False, "Unable to load families using list []"
 
         try:
             database.load_families(path, families="none")
         except DatabaseError:
-            self.fail("Unable to load families using keyword 'none'")
+            assert False, "Unable to load families using keyword 'none'"
 
         try:
             database.load_families(path, families="default")
         except DatabaseError:
-            self.fail("Unable to load families using keyword 'default'")
+            assert False, "Unable to load families using keyword 'default'"
 
         try:
             database.load_families(path, families=["default", "pah"])
         except DatabaseError:
-            self.fail("Unable to load families using list ['default', 'pah']")
+            assert False, "Unable to load families using list ['default', 'pah']"
 
         try:
             database.load_families(path, families=["R_Addition_MultipleBond"])
         except DatabaseError:
-            self.fail("Unable to load families using list ['R_Addition_MultipleBond']")
+            assert False, "Unable to load families using list ['R_Addition_MultipleBond']"
 
         try:
             database.load_families(path, families=["!H_Abstraction", "!Disproportionation"])
         except DatabaseError:
-            self.fail("Unable to load families using list ['!H_Abstraction', '!Disproportionation']")
+            assert False, "Unable to load families using list ['!H_Abstraction', '!Disproportionation']"
 
         try:
             database.load_families(path, families="!pah")
         except DatabaseError:
-            self.fail("Unable to load families using keyword '!pah'")
+            assert False, "Unable to load families using keyword '!pah'"
 
         try:
             database.load_families(path, families=["H_Abstraction", "pah"])
         except DatabaseError:
-            self.fail("Unable to load families using list ['H_Abstraction', 'pah']")
+            assert False, "Unable to load families using list ['H_Abstraction', 'pah']"
 
 
 class TestReactionDegeneracy:

@@ -72,7 +72,7 @@ class TestQMSettings:
         try:
             self.settings1.check_all_set()
         except AssertionError:
-            self.fail("check_all_set() raised unexpected AssertionError.")
+            assert False, "check_all_set() raised unexpected AssertionError."
 
         with pytest.raises(AssertionError):
             self.settings2.check_all_set()
@@ -177,9 +177,9 @@ class TestQMCalculator:
             self.gauss1.initialize()
             self.gauss2.initialize()
         except AssertionError:
-            self.fail("initialize() raised unexpected AssertionError.")
+            assert False, "initialize() raised unexpected AssertionError."
         except Exception:
-            self.fail("initialize() raised Exception. Output file paths not correctly set.")
+            assert False, "initialize() raised Exception. Output file paths not correctly set."
 
     def test_get_thermo_data(self):
         """

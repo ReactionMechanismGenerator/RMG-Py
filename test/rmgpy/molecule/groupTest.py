@@ -591,7 +591,7 @@ class TestGroupBond:
             bond = bond0.copy()
             try:
                 bond.apply_action(action)
-                self.fail("GroupBond.apply_action() unexpectedly processed a BREAK_BOND action.")
+                assert False, "GroupBond.apply_action() unexpectedly processed a BREAK_BOND action."
             except ActionError:
                 pass
 
@@ -608,7 +608,7 @@ class TestGroupBond:
             bond = bond0.copy()
             try:
                 bond.apply_action(action)
-                self.fail("GroupBond.apply_action() unexpectedly processed a FORM_BOND action.")
+                assert False, "GroupBond.apply_action() unexpectedly processed a FORM_BOND action."
             except ActionError:
                 pass
 
@@ -648,7 +648,7 @@ class TestGroupBond:
             bond = bond0.copy()
             try:
                 bond.apply_action(action)
-                self.fail("GroupBond.apply_action() unexpectedly processed a GAIN_RADICAL action.")
+                assert False, "GroupBond.apply_action() unexpectedly processed a GAIN_RADICAL action."
             except ActionError:
                 pass
 
@@ -662,7 +662,7 @@ class TestGroupBond:
             bond = bond0.copy()
             try:
                 bond.apply_action(action)
-                self.fail("GroupBond.apply_action() unexpectedly processed a LOSE_RADICAL action.")
+                assert False, "GroupBond.apply_action() unexpectedly processed a LOSE_RADICAL action."
             except ActionError:
                 pass
 
@@ -784,7 +784,7 @@ class TestGroup:
                 assert atom == self.group.get_labeled_atoms(atom.label)[0]
         try:
             self.group.get_labeled_atoms("*3")[0]
-            self.fail("Unexpected successful return from Group.get_labeled_atoms() with invalid atom label.")
+            assert False, "Unexpected successful return from Group.get_labeled_atoms() with invalid atom label."
         except ValueError:
             pass
 
