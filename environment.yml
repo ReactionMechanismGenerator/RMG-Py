@@ -64,7 +64,13 @@ dependencies:
   - pyyaml
   - networkx
   - pytest
-  - conda-forge::pytest-check
+  # we use a the pytest-check plugin, which is on Conda and PyPI, but the
+  # version compatible with Python 3.7 is only on PyPI
+  # switch to the conda version after upgrading to 3.11
+  # - conda-forge::pytest-check
+  - pip
+  - pip:
+    - pytest-check
   - matplotlib >=1.5
   - mpmath
   - pandas
