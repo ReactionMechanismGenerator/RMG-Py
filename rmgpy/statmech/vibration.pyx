@@ -120,7 +120,7 @@ cdef class HarmonicOscillator(Vibration):
         """
         cdef double Q = 1.0, beta = 1.0 / (constants.kB * T), freq
         cdef int i
-        cdef np.ndarray[float_t, ndim=1] frequencies
+        cdef np.ndarray[np.float64_t, ndim=1] frequencies
         frequencies = self._frequencies.value_si
         if self.quantum:
             for i in range(frequencies.shape[0]):
@@ -139,7 +139,7 @@ cdef class HarmonicOscillator(Vibration):
         """
         cdef double Cv = 0.0, beta = 1.0 / (constants.kB * T), freq, x, exp_x
         cdef int i
-        cdef np.ndarray[float_t, ndim=1] frequencies
+        cdef np.ndarray[np.float64_t, ndim=1] frequencies
         frequencies = self._frequencies.value_si
         if self.quantum:
             for i in range(frequencies.shape[0]):
@@ -162,7 +162,7 @@ cdef class HarmonicOscillator(Vibration):
         """
         cdef double H = 0.0, beta = 1.0 / (constants.kB * T), freq, x
         cdef int i
-        cdef np.ndarray[float_t, ndim=1] frequencies
+        cdef np.ndarray[np.float64_t, ndim=1] frequencies
         frequencies = self._frequencies.value_si
         if self.quantum:
             for i in range(frequencies.shape[0]):
@@ -180,7 +180,7 @@ cdef class HarmonicOscillator(Vibration):
         """
         cdef double S = 0.0, beta = 1.0 / (constants.kB * T), freq, x
         cdef int i
-        cdef np.ndarray[float_t, ndim=1] frequencies
+        cdef np.ndarray[np.float64_t, ndim=1] frequencies
         S = log(self.get_partition_function(T))
         frequencies = self._frequencies.value_si
         if self.quantum:
@@ -201,7 +201,7 @@ cdef class HarmonicOscillator(Vibration):
         """
         cdef double freq
         cdef int i, Nfreq
-        cdef np.ndarray[float_t, ndim=1] frequencies
+        cdef np.ndarray[np.float64_t, ndim=1] frequencies
         cdef np.ndarray sum_states
         frequencies = self._frequencies.value_si
         if self.quantum:
@@ -231,7 +231,7 @@ cdef class HarmonicOscillator(Vibration):
         """
         cdef double freq, dE
         cdef int i, Nfreq
-        cdef np.ndarray[float_t, ndim=1] frequencies
+        cdef np.ndarray[np.float64_t, ndim=1] frequencies
         cdef np.ndarray dens_states
         frequencies = self._frequencies.value_si
         if self.quantum:

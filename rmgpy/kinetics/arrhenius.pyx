@@ -779,7 +779,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
         Returns the pressures and Arrhenius expressions for the pressures that
         most closely bound the specified pressure `P` in Pa.
         """
-        cdef np.ndarray[float_t, ndim=1] pressures
+        cdef np.ndarray[np.float64_t, ndim=1] pressures
         cdef int i, ilow, ihigh
 
         pressures = self._pressures.value_si

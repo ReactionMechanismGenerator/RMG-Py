@@ -122,7 +122,7 @@ cdef class ThermoData(HeatCapacityModel):
         Return the constant-pressure heat capacity in J/mol*K at the specified
         temperature `T` in K.
         """
-        cdef np.ndarray[float_t,ndim=1] Tdata, Cpdata
+        cdef np.ndarray[np.float64_t,ndim=1] Tdata, Cpdata
         cdef double Cp0, CpInf
         cdef double Tlow, Thigh, Cplow, Cphigh
         cdef double Cp
@@ -173,7 +173,7 @@ cdef class ThermoData(HeatCapacityModel):
         """
         Return the enthalpy in J/mol at the specified temperature `T` in K.
         """
-        cdef np.ndarray[float_t,ndim=1] Tdata, Cpdata
+        cdef np.ndarray[np.float64_t,ndim=1] Tdata, Cpdata
         cdef double Cp0, CpInf
         cdef double Tlow, Thigh, Cplow, Cphigh
         cdef double H, slope, intercept, T0
@@ -246,7 +246,7 @@ cdef class ThermoData(HeatCapacityModel):
         """
         Return the entropy in J/mol*K at the specified temperature `T` in K.
         """
-        cdef np.ndarray[float_t,ndim=1] Tdata, Cpdata
+        cdef np.ndarray[np.float64_t,ndim=1] Tdata, Cpdata
         cdef double Cp0, CpInf
         cdef double Tlow, Thigh, Cplow, Cphigh
         cdef double S, slope, intercept, T0
@@ -323,7 +323,7 @@ cdef class ThermoData(HeatCapacityModel):
         Return the Gibbs free energy in J/mol at the specified temperature
         `T` in K.
         """
-        cdef np.ndarray[float_t,ndim=1] Tdata
+        cdef np.ndarray[np.float64_t,ndim=1] Tdata
         cdef double Cp0, CpInf
         cdef int N
 

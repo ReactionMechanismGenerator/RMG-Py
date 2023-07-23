@@ -50,10 +50,10 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
     """A method for applying the Chemically Significant Eigenvalues approach for solving the master equation."""
     cdef np.ndarray[np.int_t, ndim=1] j_list
     cdef np.ndarray[np.int_t, ndim=3] indices
-    cdef np.ndarray[float_t, ndim=1] e_list, s_mat, s_mat_inv, omega0, omega, eq_ratios
-    cdef np.ndarray[float_t, ndim=2] me_mat, k, eigen_vectors0, eigen_vectors, z_mat, z_mat_inv, y, x
-    cdef np.ndarray[float_t, ndim=3] dens_states
-    cdef np.ndarray[float_t, ndim=4] g_nj, pa
+    cdef np.ndarray[np.float64_t, ndim=1] e_list, s_mat, s_mat_inv, omega0, omega, eq_ratios
+    cdef np.ndarray[np.float64_t, ndim=2] me_mat, k, eigen_vectors0, eigen_vectors, z_mat, z_mat_inv, y, x
+    cdef np.ndarray[np.float64_t, ndim=3] dens_states
+    cdef np.ndarray[np.float64_t, ndim=4] g_nj, pa
     cdef list lumping, unlumping
     cdef double temperature, pressure, ym_b
     cdef int n_isom, n_reac, n_prod, n_grains, n_j, n_chem, n_cse, n_rows

@@ -248,11 +248,6 @@ def freeRotor(pivots, top, symmetry):
     return [pivots, top, symmetry]
 
 
-def hinderedRotor2D(scandir, pivots1, top1, symmetry1, pivots2, top2, symmetry2, symmetry="none"):
-    """Read a two dimensional hindered rotor directive, and return the attributes in a list"""
-    return [scandir, pivots1, top1, symmetry1, pivots2, top2, symmetry2, symmetry]
-
-
 def hinderedRotorClassicalND(calcPath, pivots, tops, sigmas, semiclassical):
     """Read an N dimensional hindered rotor directive, and return the attributes in a list"""
     return [calcPath, pivots, tops, sigmas, semiclassical]
@@ -356,7 +351,6 @@ class StatMechJob(object):
             "HinderedRotor": hinderedRotor,
             "HinderedRotor1DArray": hinderedRotor1DArray,
             "FreeRotor": freeRotor,
-            "HinderedRotor2D": hinderedRotor2D,
             "HinderedRotorClassicalND": hinderedRotorClassicalND,
             "ScanLog": ScanLog,
             "Log": create_log,  # The Log class no longer exists, so route the path to ess_factory instead
@@ -751,25 +745,10 @@ class StatMechJob(object):
                 conformer.modes.append(rotor)
                 rotor_count += 1
             elif len(q) == 8:
-                scan_dir, pivots1, top1, symmetry1, pivots2, top2, symmetry2, symmetry = q
-                logging.info("Calculating energy levels for 2D-HR, may take a while...")
-                rotor = HinderedRotor2D(
-                    name="r" + str(j),
-                    torsigma1=symmetry1,
-                    torsigma2=symmetry2,
-                    symmetry=symmetry,
-                    calc_path=os.path.join(directory, scan_dir),
-                    pivots1=pivots1,
-                    pivots2=pivots2,
-                    top1=top1,
-                    top2=top2,
-                )
-                rotor.run()
-                conformer.modes.append(rotor)
-                rotor_count += 2
+                raise RuntimeError("Support for HinderedRotor2D has been removed.")
             elif len(q) == 5 and isinstance(q[1][0], list):
                 scan_dir, pivots, tops, sigmas, semiclassical = q
-                rotor = HinderedRotorClassicalND(
+                rotor = hinderedRotorClassicalND(
                     pivots,
                     tops,
                     sigmas,

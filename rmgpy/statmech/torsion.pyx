@@ -204,7 +204,7 @@ cdef class HinderedRotor(Torsion):
         Return the frequency of vibration in cm^-1 corresponding to the limit of
         harmonic oscillation.
         """
-        cdef np.ndarray[float_t, ndim=2] fourier
+        cdef np.ndarray[np.float64_t, ndim=2] fourier
         cdef double V0, I, frequency
         cdef int k
         I = self._inertia.value_si
@@ -272,7 +272,7 @@ cdef class HinderedRotor(Torsion):
         returned in banded lower triangular form and with units of J/mol.
         """
         cdef int M, m, col, n
-        cdef np.ndarray[float_t, ndim=2] coeffs
+        cdef np.ndarray[np.float64_t, ndim=2] coeffs
         cdef double V0
 
         # The number of terms to use is 2*M + 1, ranging from -M to M inclusive
@@ -308,7 +308,7 @@ cdef class HinderedRotor(Torsion):
         Return the value of the hindered rotor potential :math:`V(\\phi)`
         in J/mol at the angle `phi` in radians.
         """
-        cdef np.ndarray[float_t, ndim=2] fourier
+        cdef np.ndarray[np.float64_t, ndim=2] fourier
         cdef double V = 0.0
         cdef int k
         if self._fourier is not None:
@@ -438,7 +438,7 @@ cdef class HinderedRotor(Torsion):
         `sum_states_0` is given, the rotor sum of states will be convoluted into
         these states.
         """
-        cdef np.ndarray[float_t, ndim=1] sum_states, _e_list = e_list
+        cdef np.ndarray[np.float64_t, ndim=1] sum_states, _e_list = e_list
         cdef double q1f, pre, V0
         cdef int i
 
@@ -477,7 +477,7 @@ cdef class HinderedRotor(Torsion):
         of states `dens_states_0` is given, the rotor density of states will be
         convoluted into these states.
         """
-        cdef np.ndarray[float_t, ndim=1] dens_states, _e_list = e_list
+        cdef np.ndarray[np.float64_t, ndim=1] dens_states, _e_list = e_list
         cdef double q1f, pre, V0
         cdef int i
 
@@ -517,8 +517,8 @@ cdef class HinderedRotor(Torsion):
         should begin at zero and end at :math:`2 \pi`, with the minimum energy
         conformation having a potential of zero be placed at zero angle.
         """
-        cdef np.ndarray[float_t, ndim=2] A, fourier
-        cdef np.ndarray[float_t, ndim=1] b, fit
+        cdef np.ndarray[np.float64_t, ndim=2] A, fourier
+        cdef np.ndarray[np.float64_t, ndim=1] b, fit
         cdef double phi, value, V0
         cdef int N, i, m, numterms, maxterms
         numterms = 6

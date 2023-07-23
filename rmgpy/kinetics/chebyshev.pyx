@@ -157,7 +157,7 @@ cdef class Chebyshev(PDepKineticsModel):
         mol, and s at temperature `T` in K and pressure `P` in Pa by 
         evaluating the Chebyshev expression.
         """
-        cdef np.ndarray[float_t, ndim=2] coeffs
+        cdef np.ndarray[np.float64_t, ndim=2] coeffs
         cdef double Tred, Pred, k
         cdef int i, j, t, p
 

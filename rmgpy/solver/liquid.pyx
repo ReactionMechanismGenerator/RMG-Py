@@ -211,23 +211,23 @@ cdef class LiquidReactor(ReactionSystem):
             self.y0[j] = self.core_species_concentrations[j] * V
 
     @cython.boundscheck(False)
-    def residual(self, double t, np.ndarray[float_t, ndim=1] y, np.ndarray[float_t, ndim=1] dydt,
-                 np.ndarray[float_t, ndim=1] senpar = np.zeros(1, float)):
+    def residual(self, double t, np.ndarray[np.float64_t, ndim=1] y, np.ndarray[np.float64_t, ndim=1] dydt,
+                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, float)):
 
         """
         Return the residual function for the governing DAE system for the
         liquid reaction system.
         """
         cdef np.ndarray[np.int_t, ndim=2] ir, ip, inet
-        cdef np.ndarray[float_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
+        cdef np.ndarray[np.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
         cdef Py_ssize_t num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
         cdef Py_ssize_t i, j, z, first, second, third
         cdef double k, V, reaction_rate
-        cdef np.ndarray[float_t,ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates
-        cdef np.ndarray[float_t,ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
-        cdef np.ndarray[float_t,ndim=1] core_species_consumption_rates, core_species_production_rates
-        cdef np.ndarray[float_t, ndim=1] C
-        cdef np.ndarray[float_t, ndim=2] jacobian, dgdk
+        cdef np.ndarray[np.float64_t,ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates
+        cdef np.ndarray[np.float64_t,ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
+        cdef np.ndarray[np.float64_t,ndim=1] core_species_consumption_rates, core_species_production_rates
+        cdef np.ndarray[np.float64_t, ndim=1] C
+        cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk
 
         ir = self.reactant_indices
         ip = self.product_indices
@@ -398,14 +398,14 @@ cdef class LiquidReactor(ReactionSystem):
         return delta, 1
 
     @cython.boundscheck(False)
-    def jacobian(self, double t, np.ndarray[float_t, ndim=1] y, np.ndarray[float_t, ndim=1] dydt,
-                 double cj, np.ndarray[float_t, ndim=1] senpar = np.zeros(1, float)):
+    def jacobian(self, double t, np.ndarray[np.float64_t, ndim=1] y, np.ndarray[np.float64_t, ndim=1] dydt,
+                 double cj, np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, float)):
         """
         Return the analytical Jacobian for the reaction system.
         """
         cdef np.ndarray[np.int_t, ndim=2] ir, ip
-        cdef np.ndarray[float_t, ndim=1] kf, kr, C
-        cdef np.ndarray[float_t, ndim=2] pd
+        cdef np.ndarray[np.float64_t, ndim=1] kf, kr, C
+        cdef np.ndarray[np.float64_t, ndim=2] pd
         cdef Py_ssize_t num_core_reactions, num_core_species, i, j
         cdef double k, V, Ctot, deriv, corr
 

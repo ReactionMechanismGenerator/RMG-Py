@@ -354,13 +354,13 @@ cdef class Configuration(object):
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def map_density_of_states(self, np.ndarray[float_t, ndim=1] e_list, np.ndarray[np.int_t, ndim=1] j_list=None):
+    def map_density_of_states(self, np.ndarray[np.float64_t, ndim=1] e_list, np.ndarray[np.int_t, ndim=1] j_list=None):
         """
         Return a mapping of the density of states for the configuration to the
         given energies `e_list` in J/mol and, if the J-rotor is not active, the
         total angular momentum quantum numbers `j_list`.
         """
-        cdef np.ndarray[float_t,ndim=2] dens_states
+        cdef np.ndarray[np.float64_t,ndim=2] dens_states
         cdef double E0, de0, b1, b2, e, d_j
         cdef int r0, r, s, t, n_grains, n_j, j, j1, j2
         cdef list b_list
@@ -423,13 +423,13 @@ cdef class Configuration(object):
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    def map_sum_of_states(self, np.ndarray[float_t, ndim=1] e_list, np.ndarray[np.int_t, ndim=1] j_list=None):
+    def map_sum_of_states(self, np.ndarray[np.float64_t, ndim=1] e_list, np.ndarray[np.int_t, ndim=1] j_list=None):
         """
         Return a mapping of the density of states for the configuration to the
         given energies `e_list` in J/mol and, if the J-rotor is not active, the
         total angular momentum quantum numbers `j_list`.
         """
-        cdef np.ndarray[float_t,ndim=2] sum_states
+        cdef np.ndarray[np.float64_t,ndim=2] sum_states
         cdef double E0, b1, b2, d_j
         cdef int r0, r, s, n_grains, n_j, j1, j2
 
