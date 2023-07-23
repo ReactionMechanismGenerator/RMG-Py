@@ -44,9 +44,6 @@ class TestIdealGasTranslation:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.mass = 32.0
         self.quantum = False
         self.mode = IdealGasTranslation(

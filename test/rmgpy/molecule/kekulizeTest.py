@@ -34,7 +34,6 @@ from rmgpy.molecule.kekulize import AromaticRing
 
 class KekulizeTest:
     def setup_class(self):
-        """To be run before each test."""
         molecule = Molecule().from_adjacency_list(
             """
 1  C u0 p0 c0 {2,B} {6,B} {7,S}

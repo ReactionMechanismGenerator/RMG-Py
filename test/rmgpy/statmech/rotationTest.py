@@ -49,9 +49,6 @@ class TestLinearRotor:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.inertia = 11.75
         self.symmetry = 2
         self.quantum = False
@@ -275,9 +272,6 @@ class TestNonlinearRotor:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.inertia = np.array([3.415, 16.65, 20.07])
         self.symmetry = 4
         self.quantum = False
@@ -416,9 +410,6 @@ class TestKRotor:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.inertia = 11.75
         self.symmetry = 2
         self.quantum = False
@@ -641,9 +632,6 @@ class TestSphericalTopRotor:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.inertia = 11.75
         self.symmetry = 2
         self.quantum = False

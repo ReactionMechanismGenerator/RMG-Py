@@ -49,9 +49,6 @@ class TestMopacMolPM3:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         rmgpy_path = os.path.normpath(os.path.join(get_path(), ".."))
 
         qm = QMCalculator(
@@ -115,9 +112,6 @@ class TestMopacMolPM6:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         rmgpy_path = os.path.normpath(os.path.join(get_path(), ".."))
 
         qm = QMCalculator(
@@ -182,9 +176,6 @@ class TestMopacMolPM7:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         rmgpy_path = os.path.normpath(os.path.join(get_path(), ".."))
 
         qm = QMCalculator(

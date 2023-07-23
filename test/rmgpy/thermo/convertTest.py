@@ -45,9 +45,6 @@ class TestConverter:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.wilhoit = Wilhoit(
             Cp0=(4.0 * constants.R, "J/(mol*K)"),
             CpInf=(21.5 * constants.R, "J/(mol*K)"),

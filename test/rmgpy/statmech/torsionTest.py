@@ -46,9 +46,6 @@ class TestHinderedRotor:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.inertia = 1.56764
         self.symmetry = 3
         self.barrier = 11.373

@@ -56,9 +56,6 @@ class TestGaussianMolPM3:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         rmgpy_path = os.path.normpath(os.path.join(get_path(), ".."))
 
         qm = QMCalculator(
@@ -120,9 +117,6 @@ class TestGaussianMolPM6:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         rmgpy_path = os.path.normpath(os.path.join(get_path(), ".."))
 
         qm = QMCalculator(

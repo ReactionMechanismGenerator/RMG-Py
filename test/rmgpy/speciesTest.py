@@ -43,13 +43,16 @@ from rmgpy.statmech import (
     HarmonicOscillator,
 )
 
+import pytest
+
 
 class TestSpecies:
     """
     Contains unit tests for the Species class.
     """
 
-    def setup_class(self):
+    @pytest.fixture(autouse=True)
+    def setup_species(self):
         """
         A method that is run before each unit test in this class.
         """
@@ -144,6 +147,7 @@ class TestSpecies:
             11 H u0 p0 c0 {3,S}
             """
         )
+        yield
 
     def test_pickle(self):
         """

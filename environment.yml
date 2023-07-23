@@ -64,6 +64,7 @@ dependencies:
   - pyyaml
   - networkx
   - pytest
+  - conda-forge::pytest-check
   - matplotlib >=1.5
   - mpmath
   - pandas

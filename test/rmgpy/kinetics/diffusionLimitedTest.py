@@ -51,9 +51,6 @@ class TestDiffusionLimited:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         octyl_pri = Species(
             label="",
             thermo=NASA(

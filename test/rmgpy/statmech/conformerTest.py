@@ -51,9 +51,6 @@ class TestConformer:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.ethylene = Conformer(
             E0=(0.0, "kJ/mol"),
             modes=[

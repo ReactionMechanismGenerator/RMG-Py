@@ -32,8 +32,10 @@ from unittest.mock import patch
 import rmgpy.rmg.input as inp
 from rmgpy.rmg.main import RMG
 
+import pytest
 
-def setUpModule():
+
+def setup_module(module):
     """
     A method that is run before the class.
     """
@@ -44,7 +46,7 @@ def setUpModule():
     inp.set_global_rmg(rmg)
 
 
-def tearDownModule():
+def teardown_module(module):
     # remove RMG object
     global rmg
     rmg = None
@@ -150,7 +152,8 @@ class TestInputReactors:
     Contains unit tests for reactor input classes
     """
 
-    def setup_class(self):
+    @pytest.fixture(autouse=True)
+    def setup_rmg(self):
         """This method is run before every test in this class"""
         # Create a mock species dictionary
         # In reality, the values would be Species objects, but it doesn't matter for testing
@@ -167,6 +170,7 @@ class TestInputReactors:
         # Initialize the rmg.reaction_systems attribute
         global rmg
         rmg.reaction_systems = []
+        yield
 
     def teardown_class(self):
         """This method is run after every test in this class"""

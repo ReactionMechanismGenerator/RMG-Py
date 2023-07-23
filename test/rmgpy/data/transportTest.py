@@ -46,9 +46,6 @@ class TestCriticalPointGroupContribution:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.Tc = 0.0141
         self.Pc = -0.0012
         self.Vc = 65

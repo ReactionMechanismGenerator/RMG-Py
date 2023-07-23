@@ -248,11 +248,6 @@ def freeRotor(pivots, top, symmetry):
     return [pivots, top, symmetry]
 
 
-def hinderedRotorClassicalND(calcPath, pivots, tops, sigmas, semiclassical):
-    """Read an N dimensional hindered rotor directive, and return the attributes in a list"""
-    return [calcPath, pivots, tops, sigmas, semiclassical]
-
-
 class StatMechJob(object):
     """
     A representation of a Arkane statistical mechanics job. This job is used
@@ -351,7 +346,6 @@ class StatMechJob(object):
             "HinderedRotor": hinderedRotor,
             "HinderedRotor1DArray": hinderedRotor1DArray,
             "FreeRotor": freeRotor,
-            "HinderedRotorClassicalND": hinderedRotorClassicalND,
             "ScanLog": ScanLog,
             "Log": create_log,  # The Log class no longer exists, so route the path to ess_factory instead
             "LevelOfTheory": LevelOfTheory,
@@ -747,21 +741,7 @@ class StatMechJob(object):
             elif len(q) == 8:
                 raise RuntimeError("Support for HinderedRotor2D has been removed.")
             elif len(q) == 5 and isinstance(q[1][0], list):
-                scan_dir, pivots, tops, sigmas, semiclassical = q
-                rotor = hinderedRotorClassicalND(
-                    pivots,
-                    tops,
-                    sigmas,
-                    calc_path=os.path.join(directory, scan_dir),
-                    conformer=conformer,
-                    F=hessian,
-                    semiclassical=semiclassical,
-                    is_linear=linear,
-                    is_ts=is_ts,
-                )
-                rotor.run()
-                conformer.modes.append(rotor)
-                rotor_count += len(pivots)
+                raise RuntimeError("Support for HinderedRotorClassicalND has been removed.")
             elif len(q) in [4, 5, 6]:
                 # This is a hindered rotor
                 if len(q) == 5 and isinstance(q[0], (ESSAdapter, ScanLog)):

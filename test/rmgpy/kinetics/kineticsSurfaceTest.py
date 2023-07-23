@@ -46,9 +46,6 @@ class TestStickingCoefficient:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.A = 4.3e-2
         self.n = -0.21
         self.Ea = 1.2
@@ -259,9 +256,6 @@ class TestSurfaceArrhenius:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.A = 1.44e18
         self.n = -0.087
         self.Ea = 63.4

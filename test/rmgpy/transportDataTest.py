@@ -43,9 +43,6 @@ class TestTransportData:
     """
 
     def setup_method(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.shapeIndex = 1
         self.epsilon = Energy(2.104, "kJ/mol")
         self.sigma = Length(3.402, "angstroms")

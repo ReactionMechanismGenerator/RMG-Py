@@ -44,9 +44,6 @@ class TestThermoData:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.H298 = -32.9725
         self.S298 = 27.5727
         self.Tdata = np.array([300, 400, 500, 600, 800, 1000, 1500])

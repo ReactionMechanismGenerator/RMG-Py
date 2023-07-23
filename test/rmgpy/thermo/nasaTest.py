@@ -47,9 +47,6 @@ class TestNASA:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.coeffs_low = [
             4.03055,
             -0.00214171,

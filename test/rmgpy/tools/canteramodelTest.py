@@ -81,9 +81,6 @@ class RMGToCanteraTest:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         from rmgpy.chemkin import load_chemkin_file
 
         folder = os.path.join(os.path.dirname(rmgpy.__file__), "tools/data/various_kinetics")

@@ -51,6 +51,10 @@ from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.quantity import ScalarQuantity
 
+# allow asserts to 'fail' and then continue - this test file relies on a lot
+# of asserts in each test and we want them all to run
+from pytest_check import check
+
 
 @pytest.mark.database
 class TestDatabase:
@@ -70,54 +74,66 @@ class TestDatabase:
     # calls the methods below
     def test_kinetics(self):
         for family_name, family in self.database.kinetics.families.items():
-            assert self.kinetics_check_correct_number_of_nodes_in_rules(
-                family_name
-            ), "Kinetics family {0}: rules have correct number of nodes?".format(family_name)
+            with check:
+                assert self.kinetics_check_correct_number_of_nodes_in_rules(
+                    family_name
+                ), "Kinetics family {0}: rules have correct number of nodes?".format(family_name)
 
-            assert self.kinetics_check_nodes_in_rules_found_in_groups(family_name), "Kinetics family {0}: rules' nodes exist in the groups?".format(
-                family_name
-            )
+            with check:
+                assert self.kinetics_check_nodes_in_rules_found_in_groups(
+                    family_name
+                ), "Kinetics family {0}: rules' nodes exist in the groups?".format(family_name)
 
-            assert self.kinetics_check_groups_found_in_tree(family_name), "Kinetics family {0}: groups are in the tree with proper parents?".format(
-                family_name
-            )
+            with check:
+                assert self.kinetics_check_groups_found_in_tree(
+                    family_name
+                ), "Kinetics family {0}: groups are in the tree with proper parents?".format(family_name)
 
             if not family.auto_generated:
-                assert self.kinetics_check_groups_nonidentical(family_name), "Kinetics family {0}: groups are not identical?".format(family_name)
+                with check:
+                    assert self.kinetics_check_groups_nonidentical(family_name), "Kinetics family {0}: groups are not identical?".format(family_name)
 
-            assert self.kinetics_check_child_parent_relationships(family_name), "Kinetics family {0}: parent-child relationships are correct?".format(
-                family_name
-            )
+            with check:
+                assert self.kinetics_check_child_parent_relationships(
+                    family_name
+                ), "Kinetics family {0}: parent-child relationships are correct?".format(family_name)
 
-            assert self.kinetics_check_siblings_for_parents(family_name), "Kinetics family {0}: sibling relationships are correct?".format(
-                family_name
-            )
+            with check:
+                assert self.kinetics_check_siblings_for_parents(family_name), "Kinetics family {0}: sibling relationships are correct?".format(
+                    family_name
+                )
 
-            assert self.kinetics_check_cd_atom_type(family_name), "Kinetics family {0}: Cd, CS, CO, and Cdd atomtype used correctly?".format(
-                family_name
-            )
+            with check:
+                assert self.kinetics_check_cd_atom_type(family_name), "Kinetics family {0}: Cd, CS, CO, and Cdd atomtype used correctly?".format(
+                    family_name
+                )
 
-            assert self.kinetics_check_reactant_and_product_template(
-                family_name
-            ), "Kinetics family {0}: reactant and product templates correctly defined?".format(family_name)
+            with check:
+                assert self.kinetics_check_reactant_and_product_template(
+                    family_name
+                ), "Kinetics family {0}: reactant and product templates correctly defined?".format(family_name)
 
-            assert self.kinetics_check_num_reactant_and_product(family_name), "Kinetics family {0}: number of reactant and product defined?".format(
-                family_name
-            )
+            with check:
+                assert self.kinetics_check_num_reactant_and_product(
+                    family_name
+                ), "Kinetics family {0}: number of reactant and product defined?".format(family_name)
 
             # tests for surface families
             if "surface" in family_name.lower():
-                assert self.kinetics_check_surface_training_reactions_can_be_used(
-                    family_name
-                ), "Kinetics surface family {0}: entries can be used to generate rate rules?".format(family_name)
+                with check:
+                    assert self.kinetics_check_surface_training_reactions_can_be_used(
+                        family_name
+                    ), "Kinetics surface family {0}: entries can be used to generate rate rules?".format(family_name)
 
-                assert self.kinetics_check_training_reactions_have_surface_attributes(
-                    family_name
-                ), "Kinetics surface family {0}: entries have surface attributes?".format(family_name)
+                with check:
+                    assert self.kinetics_check_training_reactions_have_surface_attributes(
+                        family_name
+                    ), "Kinetics surface family {0}: entries have surface attributes?".format(family_name)
 
-                assert self.kinetics_check_coverage_dependence_units_are_correct(
-                    family_name
-                ), "Kinetics surface family {0}: check coverage dependent units are correct?".format(family_name)
+                with check:
+                    assert self.kinetics_check_coverage_dependence_units_are_correct(
+                        family_name
+                    ), "Kinetics surface family {0}: check coverage dependent units are correct?".format(family_name)
 
             # these families have some sort of difficulty which prevents us from testing accessibility right now
             # See RMG-Py PR #2232 for reason why adding Bimolec_Hydroperoxide_Decomposition here. Basically some nodes
@@ -131,142 +147,185 @@ class TestDatabase:
             ]
 
             if len(family.forward_template.reactants) < len(family.groups.top) and family_name not in difficult_families:
-                assert self.kinetics_check_unimolecular_groups(
-                    family_name
-                ), "Kinetics family {0} check that unimolecular group is formatted correctly?".format(family_name)
+                with check:
+                    assert self.kinetics_check_unimolecular_groups(
+                        family_name
+                    ), "Kinetics family {0} check that unimolecular group is formatted correctly?".format(family_name)
 
             if family_name not in difficult_families and not family.auto_generated:
-                assert self.kinetics_check_sample_descends_to_group(family_name), "Kinetics family {0}: Entry is accessible?".format(family_name)
+                with check:
+                    assert self.kinetics_check_sample_descends_to_group(family_name), "Kinetics family {0}: Entry is accessible?".format(family_name)
 
-                assert self.kinetics_check_sample_can_react(family_name), "Kinetics family {0}: Recipe applies to group entry?".format(family_name)
+                with check:
+                    assert self.kinetics_check_sample_can_react(family_name), "Kinetics family {0}: Recipe applies to group entry?".format(
+                        family_name
+                    )
 
             for depository in family.depositories:
-                assert self.kinetics_check_adjlists_nonidentical(
-                    depository
-                ), "Kinetics depository {0}: check adjacency lists are nonidentical?".format(depository.label)
+                with check:
+                    assert self.kinetics_check_adjlists_nonidentical(
+                        depository
+                    ), "Kinetics depository {0}: check adjacency lists are nonidentical?".format(depository.label)
 
-                assert self.kinetics_check_rate_units_are_correct(
-                    depository, tag="depository"
-                ), "Kinetics depository {0}: check rates have correct units?".format(depository.label)
+                with check:
+                    assert self.kinetics_check_rate_units_are_correct(
+                        depository, tag="depository"
+                    ), "Kinetics depository {0}: check rates have correct units?".format(depository.label)
 
         for library_name, library in self.database.kinetics.libraries.items():
-            assert self.kinetics_check_adjlists_nonidentical(library), "Kinetics library {0}: check adjacency lists are nonidentical?".format(
-                library_name
-            )
+            with check:
+                assert self.kinetics_check_adjlists_nonidentical(library), "Kinetics library {0}: check adjacency lists are nonidentical?".format(
+                    library_name
+                )
 
-            assert self.kinetics_check_rate_units_are_correct(library), "Kinetics library {0}: check rates have correct units?".format(library_name)
+            with check:
+                assert self.kinetics_check_rate_units_are_correct(library), "Kinetics library {0}: check rates have correct units?".format(
+                    library_name
+                )
 
-            assert self.kinetics_check_library_rates_are_reasonable(library), "Kinetics library {0}: check rates are reasonable?".format(library_name)
+            with check:
+                assert self.kinetics_check_library_rates_are_reasonable(library), "Kinetics library {0}: check rates are reasonable?".format(
+                    library_name
+                )
 
             # tests for surface families
             if "surface" in library_name.lower():
-                assert self.kinetics_check_surface_library_reactions_have_surface_attributes(
-                    library
-                ), "Kinetics surface library {0}: entries have surface attributes?".format(library_name)
+                with check:
+                    assert self.kinetics_check_surface_library_reactions_have_surface_attributes(
+                        library
+                    ), "Kinetics surface library {0}: entries have surface attributes?".format(library_name)
 
     def test_thermo(self):
         for group_name, group in self.database.thermo.groups.items():
-            assert self.general_check_nodes_found_in_tree(group_name, group), "Thermo groups {0}: nodes are in the tree with proper parents?".format(
-                group_name
-            )
+            with check:
+                assert self.general_check_nodes_found_in_tree(
+                    group_name, group
+                ), "Thermo groups {0}: nodes are in the tree with proper parents?".format(group_name)
 
-            assert self.general_check_groups_nonidentical(group_name, group), "Thermo groups {0}: nodes are nonidentical?".format(group_name)
+            with check:
+                assert self.general_check_groups_nonidentical(group_name, group), "Thermo groups {0}: nodes are nonidentical?".format(group_name)
 
-            assert self.general_check_child_parent_relationships(
-                group_name, group
-            ), "Thermo groups {0}: parent-child relationships are correct?".format(group_name)
+            with check:
+                assert self.general_check_child_parent_relationships(
+                    group_name, group
+                ), "Thermo groups {0}: parent-child relationships are correct?".format(group_name)
 
-            assert self.general_check_siblings_for_parents(group_name, group), "Thermo groups {0}: sibling relationships are correct?".format(
-                group_name
-            )
+            with check:
+                assert self.general_check_siblings_for_parents(group_name, group), "Thermo groups {0}: sibling relationships are correct?".format(
+                    group_name
+                )
 
-            assert self.general_check_cd_atom_type(group_name, group), "Thermo groups {0}: Cd atomtype used correctly?".format(group_name)
+            with check:
+                assert self.general_check_cd_atom_type(group_name, group), "Thermo groups {0}: Cd atomtype used correctly?".format(group_name)
 
-            assert self.general_check_sample_descends_to_group(group_name, group), "Thermo groups {0}: Entry is accessible?".format(group_name)
+            with check:
+                assert self.general_check_sample_descends_to_group(group_name, group), "Thermo groups {0}: Entry is accessible?".format(group_name)
 
             # tests for adsorption groups
             if "adsorption" in group_name.lower():
-                assert self.check_surface_thermo_groups_have_surface_attributes(
-                    group_name, group
-                ), "Thermo surface groups {0}: Entry has metal attributes?".format(group_name)
+                with check:
+                    assert self.check_surface_thermo_groups_have_surface_attributes(
+                        group_name, group
+                    ), "Thermo surface groups {0}: Entry has metal attributes?".format(group_name)
 
         for library_name, library in self.database.thermo.libraries.items():
             if "surface" in library_name.lower():
-                assert self.check_surface_thermo_libraries_have_surface_attributes(
-                    library_name, library
-                ), "Thermo surface libraries {0}: Entry has metal attributes?".format(library_name)
+                with check:
+                    assert self.check_surface_thermo_libraries_have_surface_attributes(
+                        library_name, library
+                    ), "Thermo surface libraries {0}: Entry has metal attributes?".format(library_name)
 
     def test_solvation(self):
         for group_name, group in self.database.solvation.groups.items():
-            assert self.general_check_nodes_found_in_tree(
-                group_name, group
-            ), "Solvation groups {0}: nodes are in the tree with proper parents?".format(group_name)
+            with check:
+                assert self.general_check_nodes_found_in_tree(
+                    group_name, group
+                ), "Solvation groups {0}: nodes are in the tree with proper parents?".format(group_name)
 
-            assert self.general_check_groups_nonidentical(group_name, group), "Solvation groups {0}: nodes are nonidentical?".format(group_name)
+            with check:
+                assert self.general_check_groups_nonidentical(group_name, group), "Solvation groups {0}: nodes are nonidentical?".format(group_name)
 
-            assert self.general_check_child_parent_relationships(
-                group_name, group
-            ), "Solvation groups {0}: parent-child relationships are correct?".format(group_name)
+            with check:
+                assert self.general_check_child_parent_relationships(
+                    group_name, group
+                ), "Solvation groups {0}: parent-child relationships are correct?".format(group_name)
 
-            assert self.general_check_siblings_for_parents(group_name, group), "Solvation groups {0}: sibling relationships are correct?".format(
-                group_name
-            )
+            with check:
+                assert self.general_check_siblings_for_parents(group_name, group), "Solvation groups {0}: sibling relationships are correct?".format(
+                    group_name
+                )
 
-            assert self.general_check_cd_atom_type(group_name, group), "Solvation groups {0}: Cd atomtype used correctly?".format(group_name)
+            with check:
+                assert self.general_check_cd_atom_type(group_name, group), "Solvation groups {0}: Cd atomtype used correctly?".format(group_name)
 
-            assert self.general_check_sample_descends_to_group(group_name, group), "Solvation groups {0}: Entry is accessible?".format(group_name)
+            with check:
+                assert self.general_check_sample_descends_to_group(group_name, group), "Solvation groups {0}: Entry is accessible?".format(group_name)
 
     def test_statmech(self):
         for group_name, group in self.database.statmech.groups.items():
-            assert self.general_check_nodes_found_in_tree(
-                group_name, group
-            ), "Statmech groups {0}: nodes are in the tree with proper parents?".format(group_name)
+            with check:
+                assert self.general_check_nodes_found_in_tree(
+                    group_name, group
+                ), "Statmech groups {0}: nodes are in the tree with proper parents?".format(group_name)
 
-            assert self.general_check_groups_nonidentical(group_name, group), "Statmech groups {0}: nodes are nonidentical?".format(group_name)
+            with check:
+                assert self.general_check_groups_nonidentical(group_name, group), "Statmech groups {0}: nodes are nonidentical?".format(group_name)
 
-            assert self.general_check_child_parent_relationships(
-                group_name, group
-            ), "Statmech groups {0}: parent-child relationships are correct?".format(group_name)
+            with check:
+                assert self.general_check_child_parent_relationships(
+                    group_name, group
+                ), "Statmech groups {0}: parent-child relationships are correct?".format(group_name)
 
-            assert self.general_check_siblings_for_parents(group_name, group), "Statmech groups {0}: sibling relationships are correct?".format(
-                group_name
-            )
+            with check:
+                assert self.general_check_siblings_for_parents(group_name, group), "Statmech groups {0}: sibling relationships are correct?".format(
+                    group_name
+                )
 
-            assert self.general_check_cd_atom_type(group_name, group), "Statmech groups {0}: Cd atomtype used correctly?".format(group_name)
+            with check:
+                assert self.general_check_cd_atom_type(group_name, group), "Statmech groups {0}: Cd atomtype used correctly?".format(group_name)
 
-            assert self.general_check_sample_descends_to_group(group_name, group), "Statmech groups {0}: Entry is accessible?".format(group_name)
+            with check:
+                assert self.general_check_sample_descends_to_group(group_name, group), "Statmech groups {0}: Entry is accessible?".format(group_name)
 
     def test_transport(self):
         for group_name, group in self.database.transport.groups.items():
-            assert self.general_check_nodes_found_in_tree(
-                group_name, group
-            ), "Transport groups {0}: nodes are in the tree with proper parents?".format(group_name)
+            with check:
+                assert self.general_check_nodes_found_in_tree(
+                    group_name, group
+                ), "Transport groups {0}: nodes are in the tree with proper parents?".format(group_name)
 
-            assert self.general_check_groups_nonidentical(group_name, group), "Transport groups {0}: nodes are nonidentical?".format(group_name)
+            with check:
+                assert self.general_check_groups_nonidentical(group_name, group), "Transport groups {0}: nodes are nonidentical?".format(group_name)
 
-            assert self.general_check_child_parent_relationships(
-                group_name, group
-            ), "Transport groups {0}: parent-child relationships are correct?".format(group_name)
+            with check:
+                assert self.general_check_child_parent_relationships(
+                    group_name, group
+                ), "Transport groups {0}: parent-child relationships are correct?".format(group_name)
 
-            assert self.general_check_siblings_for_parents(group_name, group), "Transport groups {0}: sibling relationships are correct?".format(
-                group_name
-            )
+            with check:
+                assert self.general_check_siblings_for_parents(group_name, group), "Transport groups {0}: sibling relationships are correct?".format(
+                    group_name
+                )
 
-            assert self.general_check_cd_atom_type(group_name, group), "Transport groups {0}: Cd, CS, CO, and Cdd atomtype used correctly?".format(
-                group_name
-            )
+            with check:
+                assert self.general_check_cd_atom_type(
+                    group_name, group
+                ), "Transport groups {0}: Cd, CS, CO, and Cdd atomtype used correctly?".format(group_name)
 
-            assert self.general_check_sample_descends_to_group(group_name, group), "Transport groups {0}: Entry is accessible?".format(group_name)
+            with check:
+                assert self.general_check_sample_descends_to_group(group_name, group), "Transport groups {0}: Entry is accessible?".format(group_name)
 
     def test_metal_libraries(self):
         for library_name, library in self.database.thermo.surface["metal"].libraries.items():
-            assert self.general_check_metal_database_has_catalyst_properties(library), "Metal library {0}: Entries have catalyst properties?".format(
-                library_name
-            )
+            with check:
+                assert self.general_check_metal_database_has_catalyst_properties(
+                    library
+                ), "Metal library {0}: Entries have catalyst properties?".format(library_name)
 
-            assert self.general_check_metal_database_has_reasonable_labels(library), "Metal library {0}: Entries have reasonable labels?".format(
-                library_name
-            )
+            with check:
+                assert self.general_check_metal_database_has_reasonable_labels(library), "Metal library {0}: Entries have reasonable labels?".format(
+                    library_name
+                )
 
     # These are the actual tests, that don't start with a "test_" name:
     def kinetics_check_surface_training_reactions_can_be_used(self, family_name):
@@ -275,13 +334,15 @@ class TestDatabase:
         if not family.auto_generated:
             family.add_rules_from_training(thermo_database=self.database.thermo)
             family.fill_rules_by_averaging_up(verbose=True)
+        return True
 
     def general_check_metal_database_has_catalyst_properties(self, library):
         """Test that each entry has catalyst properties"""
         for entry in library.entries.values():
             if not entry.binding_energies:
                 raise AttributeError("Entry {} has no binding energies".format(entry.label))
-            assert isinstance(entry.binding_energies, dict)
+            with check:
+                assert isinstance(entry.binding_energies, dict)
             for element in "CHON":
                 if not entry.binding_energies[element]:
                     raise KeyError("Entry {} has no {} binding energy".format(entry.label, element))
@@ -299,23 +360,31 @@ class TestDatabase:
                             type(entry.binding_energies[element].value),
                         )
                     )
-                assert entry.binding_energies[element].value < 0.0  # binding energies should all be negative... probably
-                assert entry.binding_energies[element].units == "eV/molecule"
+                with check:
+                    assert entry.binding_energies[element].value < 0.0  # binding energies should all be negative... probably
+                with check:
+                    assert entry.binding_energies[element].units == "eV/molecule"
 
             if not entry.surface_site_density:
                 raise AttributeError("Entry {} has no surface site density".format(entry.label))
-            assert isinstance(entry.surface_site_density, ScalarQuantity)
+            with check:
+                assert isinstance(entry.surface_site_density, ScalarQuantity)
             if not isinstance(entry.surface_site_density.value, float):
                 raise TypeError("Entry {} should be a float, but is type {}".format(entry.label, type(entry.surface_site_density.value)))
             if not isinstance(entry.surface_site_density.units, str):
                 raise TypeError("Entry {} should be a str, but is type {}".format(entry.label, type(entry.surface_site_density.units)))
-            assert 1e-4 > entry.surface_site_density.value_si > 1e-6  # values should be reasonable
+            with check:
+                assert 1e-4 > entry.surface_site_density.value_si > 1e-6  # values should be reasonable
 
-            assert isinstance(entry.metal, str)  # all entries should have a metal attribute, at minimum
+            with check:
+                assert isinstance(entry.metal, str)  # all entries should have a metal attribute, at minimum
             if entry.facet:
-                assert isinstance(entry.facet, str)
+                with check:
+                    assert isinstance(entry.facet, str)
             if entry.site:
-                assert isinstance(entry.site, str)
+                with check:
+                    assert isinstance(entry.site, str)
+        return True
 
     def general_check_metal_database_has_reasonable_labels(self, library):
         """Test that each entry has a reasonable label corresponding to its metal and facet"""
@@ -326,6 +395,7 @@ class TestDatabase:
                 raise NameError("Entry {} with facet attribute {} does not have facet in its label".format(entry.label, entry.facet))
             if not entry.label[0].isupper():
                 raise NameError("Entry {} should start with a capital letter".format(entry.label))
+        return True
 
     def kinetics_check_coverage_dependence_units_are_correct(self, family_name):
         """Test that each surface training reaction that has coverage dependent parameters has acceptable units"""
@@ -336,10 +406,13 @@ class TestDatabase:
         for entry in training:
             cov_dep = entry.data.coverage_dependence
             if cov_dep:
-                assert isinstance(cov_dep, dict)
+                with check:
+                    assert isinstance(cov_dep, dict)
                 for species, parameters in cov_dep.items():
-                    assert isinstance(species, str)
-                    assert parameters["E"]
+                    with check:
+                        assert isinstance(species, str)
+                    with check:
+                        assert parameters["E"]
                     if parameters["a"].units:
                         "Should be dimensionless"
                         failed = True
@@ -351,6 +424,7 @@ class TestDatabase:
 
         if failed:
             raise ValueError("Surface coverage dependent parameters have incorrect units." "Please check log warnings for all error messages.")
+        return True
 
     def kinetics_check_training_reactions_have_surface_attributes(self, family_name):
         """Test that each surface training reaction has surface attributes"""
@@ -362,15 +436,19 @@ class TestDatabase:
                 logging.error(f"Expected a metal attribute for {entry} in {family} family but found {entry.metal!r}")
                 failed = True
             else:
-                assert isinstance(entry.metal, str)
+                with check:
+                    assert isinstance(entry.metal, str)
 
             if entry.facet:
-                assert isinstance(entry.facet, str)
+                with check:
+                    assert isinstance(entry.facet, str)
             if entry.site:
-                assert isinstance(entry.site, str)
+                with check:
+                    assert isinstance(entry.site, str)
 
         if failed:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
+        return True
 
     def kinetics_check_surface_library_reactions_have_surface_attributes(self, library):
         """Test that each surface reaction library has surface attributes"""
@@ -392,6 +470,7 @@ class TestDatabase:
                 failed = True
         if failed:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
+        return True
 
     def kinetics_check_correct_number_of_nodes_in_rules(self, family_name):
         """
@@ -424,8 +503,7 @@ class TestDatabase:
                 logging.error(item[2])
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
-        else:
-            return True
+        return True
 
     def kinetics_check_nodes_in_rules_found_in_groups(self, family_name):
         """
@@ -473,8 +551,7 @@ class TestDatabase:
 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
-        else:
-            return True
+        return True
 
     def kinetics_check_groups_found_in_tree(self, family_name):
         """
@@ -536,8 +613,7 @@ class TestDatabase:
 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
-        else:
-            return True
+        return True
 
     def kinetics_check_groups_nonidentical(self, family_name):
         """
@@ -570,8 +646,7 @@ class TestDatabase:
 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
-        else:
-            return True
+        return True
 
     def kinetics_check_child_parent_relationships(self, family_name):
         """
@@ -632,8 +707,7 @@ class TestDatabase:
 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
-        else:
-            return True
+        return True
 
     def kinetics_check_siblings_for_parents(self, family_name):
         """
@@ -670,8 +744,7 @@ class TestDatabase:
 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
-        else:
-            return True
+        return True
 
     def kinetics_check_adjlists_nonidentical(self, database):
         """
@@ -718,8 +791,7 @@ class TestDatabase:
                     boo = True
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
-        else:
-            return True
+        return True
 
     def kinetics_check_rate_units_are_correct(self, database, tag="library"):
         """
@@ -881,8 +953,7 @@ class TestDatabase:
                 raise
         if boo:
             raise ValueError("{0} {1} has some incorrect units".format(tag.capitalize(), database.label))
-        else:
-            return True
+        return True
 
     def kinetics_check_library_rates_are_reasonable(self, library):
         """
@@ -925,8 +996,7 @@ class TestDatabase:
                     )
         if boo:
             raise ValueError("library {0} has unreasonable rates".format(library.label))
-        else:
-            return True
+        return True
 
     def kinetics_check_reactant_and_product_template(self, family_name):
         """
@@ -937,7 +1007,8 @@ class TestDatabase:
         """
         family = self.database.kinetics.families[family_name]
         if family.own_reverse:
-            assert family.forward_template.reactants == family.forward_template.products
+            with check:
+                assert family.forward_template.reactants == family.forward_template.products
         else:
             tst = []
             reactant_labels = [reactant.label for reactant in family.forward_template.reactants]
@@ -960,8 +1031,7 @@ class TestDatabase:
 
             if boo:
                 raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
-            else:
-                return True
+        return True
 
     def kinetics_check_num_reactant_and_product(self, family_name):
         """
@@ -978,6 +1048,7 @@ class TestDatabase:
                 raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
             else:
                 return True
+        return True
 
     def kinetics_check_cd_atom_type(self, family_name):
         """
@@ -1052,8 +1123,7 @@ The following adjList may have atoms in a different ordering than the input file
 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
-        else:
-            return True
+        eturn True
 
     def kinetics_check_unimolecular_groups(self, family_name):
         """
@@ -1123,7 +1193,8 @@ The following adjList may have atoms in a different ordering than the input file
             end_labels[end_group] = set(labels)
 
         # get boundary atoms to test that backbones have labels between end groups
-        assert family.boundary_atoms is not None
+        with check:
+            assert family.boundary_atoms is not None
 
         # set of all end_labels should be backbone label
         backbone_label = set([])
@@ -1225,8 +1296,7 @@ The following adjList may have atoms in a different ordering than the input file
 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
-        else:
-            return True
+        return True
 
     def kinetics_check_sample_descends_to_group(self, family_name):
         """
@@ -1375,8 +1445,7 @@ Origin Group AdjList:
 
         if boo:
             raise ValueError("Error Occurred")
-        else:
-            return True
+        return True
 
     def kinetics_check_sample_can_react(self, family_name):
         """
@@ -1547,7 +1616,8 @@ Origin Group AdjList:
             elif longest == 1:
                 triplets = zip(itertools.cycle(sr[0]), sr[1], itertools.cycle(sr[2]))
             else:
-                assert longest == 2
+                with check:
+                    assert longest == 2
                 triplets = zip(itertools.cycle(sr[0]), itertools.cycle(sr[1]), sr[2])
             for reactant1, reactant2, reactant3 in triplets:
                 try:
@@ -1587,8 +1657,7 @@ Origin Group AdjList:
             boo = True
         if boo:
             raise ValueError("Error Occurred. See log for details.")
-        else:
-            return True
+        return True
 
     def check_surface_thermo_groups_have_surface_attributes(self, group_name, group):
         """
@@ -1644,8 +1713,7 @@ Origin Group AdjList:
                 failed = True
             if failed:
                 raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
-            else:
-                return True
+        return True
 
     def general_check_nodes_found_in_tree(self, group_name, group):
         """
@@ -1699,8 +1767,7 @@ Origin Group AdjList:
 
         if boo:
             raise ValueError("Error Occurred")
-        else:
-            return True
+        return True
 
     def general_check_groups_nonidentical(self, group_name, group):
         """
@@ -1736,8 +1803,7 @@ Origin Group AdjList:
 
         if boo:
             raise ValueError("Error Occurred")
-        else:
-            return True
+        return True
 
     def general_check_child_parent_relationships(self, group_name, group):
         """
@@ -1796,8 +1862,7 @@ Origin Group AdjList:
 
         if boo:
             raise ValueError("Error Occurred")
-        else:
-            return True
+        return True
 
     def general_check_siblings_for_parents(self, group_name, group):
         """
@@ -1836,8 +1901,7 @@ Origin Group AdjList:
 
         if boo:
             raise ValueError("Error Occurred")
-        else:
-            return True
+        return True
 
     def general_check_cd_atom_type(self, group_name, group):
         """
@@ -1898,8 +1962,7 @@ The following adjList may have atoms in a different ordering than the input file
 
         if boo:
             raise ValueError("Error Occurred")
-        else:
-            return True
+        return True
 
     def general_check_sample_descends_to_group(self, group_name, group):
         """
@@ -2008,5 +2071,4 @@ Origin Group AdjList:
 
         if boo:
             raise ValueError("Error Occurred")
-        else:
-            return True
+        return True

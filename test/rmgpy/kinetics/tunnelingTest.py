@@ -43,9 +43,6 @@ class TestWigner:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.frequency = -2017.96
         self.tunneling = Wigner(
             frequency=(self.frequency, "cm^-1"),
@@ -97,9 +94,6 @@ class TestEckart:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.frequency = -2017.96
         self.E0_reac = -295.563
         self.E0_TS = -12.7411

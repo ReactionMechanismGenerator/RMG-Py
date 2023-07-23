@@ -44,9 +44,6 @@ class TestKineticsData:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], float)
         self.kdata = np.array(
             [
@@ -194,9 +191,6 @@ class TestPDepKineticsData:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000], float)
         self.Pdata = np.array([1e-1, 1e0, 1e1], float)
         self.kdata = np.array(

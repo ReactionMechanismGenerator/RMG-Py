@@ -908,6 +908,8 @@ def to_adjacency_list(atoms, multiplicity, metal="", facet="", label=None, group
     Convert a chemical graph defined by a list of `atoms` into a string
     adjacency list.
     """
+    if old_style:
+        warnings.warn("Support for writing old style adjacency lists has been removed in RMG-Py v3.", RuntimeWarning)
     if not atoms:
         return ""
 
