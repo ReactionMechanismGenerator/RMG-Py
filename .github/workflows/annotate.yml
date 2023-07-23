@@ -41,7 +41,7 @@ jobs:
             fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/regression_summary.zip`, Buffer.from(download.data));
 
       - name: Report the github.event.workflow_run as json
-        if: ${{ error() }}
+        if: ${{ failure() }}
         run: echo '${{ toJson(github.event.workflow_run) }}'
 
       - name: 'Unzip artifact'
