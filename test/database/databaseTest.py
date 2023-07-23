@@ -1123,7 +1123,7 @@ The following adjList may have atoms in a different ordering than the input file
 
         if boo:
             raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
-        eturn True
+        return True
 
     def kinetics_check_unimolecular_groups(self, family_name):
         """
