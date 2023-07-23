@@ -48,7 +48,7 @@ class TestLinearRotor:
     Contains unit tests of the LinearRotor class.
     """
 
-    def setup_class(self):
+    def setup_method(self):
         self.inertia = 11.75
         self.symmetry = 2
         self.quantum = False
@@ -271,7 +271,7 @@ class TestNonlinearRotor:
     Contains unit tests of the NonlinearRotor class.
     """
 
-    def setup_class(self):
+    def setup_method(self):
         self.inertia = np.array([3.415, 16.65, 20.07])
         self.symmetry = 4
         self.quantum = False
@@ -409,7 +409,7 @@ class TestKRotor:
     Contains unit tests of the KRotor class.
     """
 
-    def setup_class(self):
+    def setup_method(self):
         self.inertia = 11.75
         self.symmetry = 2
         self.quantum = False
@@ -631,7 +631,7 @@ class TestSphericalTopRotor:
     Contains unit tests of the SphericalTopRotor class.
     """
 
-    def setup_class(self):
+    def setup_method(self):
         self.inertia = 11.75
         self.symmetry = 2
         self.quantum = False
