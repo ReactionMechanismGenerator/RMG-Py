@@ -48,7 +48,7 @@ if __debug__:
     except Exception as e:
         import warnings
 
-        warnings.warn("Unable to import Julia dependencies, original error:", str(e))
+        warnings.warn("Unable to import Julia dependencies, original error: " + str(e), RuntimeWarning)
 else:
     from pyrms import rms
     from diffeqpy import de
