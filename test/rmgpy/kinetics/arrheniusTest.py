@@ -286,8 +286,12 @@ class TestArrheniusEP:
     Contains unit tests of the :class:`ArrheniusEP` class.
     """
 
-    def setup_class(self):
-        f.n = 0.5
+    def setup_method(self):
+        """
+        A function run before each unit test in this class.
+        """
+        self.A = 1.0e12
+        self.n = 0.5
         self.alpha = 0.5
         self.E0 = 41.84
         self.Tmin = 300.0
@@ -790,10 +794,10 @@ class TestPDepArrhenius:
         """
         Tdata = np.array(
             [300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500],
-            np.float,
+            float,
         )
-        Pdata = np.array([1e4, 3e4, 1e5, 3e5, 1e6], np.float)
-        kdata = np.zeros([len(Tdata), len(Pdata)], np.float)
+        Pdata = np.array([1e4, 3e4, 1e5, 3e5, 1e6], float)
+        kdata = np.zeros([len(Tdata), len(Pdata)], float)
         for t in range(len(Tdata)):
             for p in range(len(Pdata)):
                 kdata[t, p] = self.kinetics.get_rate_coefficient(Tdata[t], Pdata[p])

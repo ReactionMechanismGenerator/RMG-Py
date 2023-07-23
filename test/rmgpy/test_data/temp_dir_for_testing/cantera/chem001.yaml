@@ -1,0 +1,24 @@
+generator: ck2yaml
+input-files: [chem001.inp]
+cantera-version: 2.6.0
+date: Sun, 23 Jul 2023 17:48:35 -0400
+
+units: {length: cm, time: s, quantity: mol, activation-energy: kcal/mol}
+
+phases:
+- name: gas
+  thermo: ideal-gas
+  elements: [H, D, T, C, Ci, O, Oi, N]
+  species: [ethane(1), CH3(4)]
+  kinetics: gas
+  state: {T: 300.0, P: 1 atm}
+
+elements:
+- symbol: Ci
+  atomic-weight: 13.003
+- symbol: D
+  atomic-weight: 2.014
+- symbol: Oi
+  atomic-weight: 18.0
+- symbol: T
+  atomic-weight: 3.016

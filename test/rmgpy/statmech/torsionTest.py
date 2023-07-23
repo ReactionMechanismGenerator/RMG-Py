@@ -37,15 +37,13 @@ import numpy as np
 import rmgpy.constants as constants
 from rmgpy.statmech.torsion import FreeRotor, HinderedRotor
 
-import pytest
-
 
 class TestHinderedRotor:
     """
     Contains unit tests of the HinderedRotor class.
     """
 
-    def setup_class(self):
+    def setup_method(self):
         self.inertia = 1.56764
         self.symmetry = 3
         self.barrier = 11.373
