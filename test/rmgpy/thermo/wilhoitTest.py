@@ -47,9 +47,6 @@ class TestWilhoit:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.Cp0 = 4.0
         self.CpInf = 21.5
         self.a0 = 0.0977518

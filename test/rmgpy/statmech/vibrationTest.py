@@ -44,9 +44,6 @@ class TestHarmonicOscillator:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.frequencies = np.array([500, 1000, 2000])
         self.quantum = True
         self.mode = HarmonicOscillator(

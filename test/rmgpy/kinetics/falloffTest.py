@@ -46,9 +46,6 @@ class TestThirdBody:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.arrheniusLow = Arrhenius(
             A=(2.62e33, "cm^6/(mol^2*s)"),
             n=-4.76,
@@ -303,9 +300,6 @@ class TestLindemann:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.arrheniusHigh = Arrhenius(
             A=(1.39e16, "cm^3/(mol*s)"),
             n=-0.534,
@@ -511,9 +505,6 @@ class TestTroe:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.arrheniusHigh = Arrhenius(
             A=(1.39e16, "cm^3/(mol*s)"),
             n=-0.534,

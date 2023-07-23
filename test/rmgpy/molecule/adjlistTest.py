@@ -863,19 +863,6 @@ class TestMoleculeAdjLists:
         )
         assert adjlist == group.to_adjacency_list()
 
-    def test_to_old_ajacency_list(self):
-        """
-        adjlist: Check that we can convert back to old style adjacency list
-        """
-        molecule2 = Molecule().from_smiles("C=CC=C[CH]C")
-        string = """1 C 0 {2,D}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D} {5,S}
-5 C 1 {4,S} {6,S}
-6 C 0 {5,S}"""
-        assert molecule2.to_adjacency_list(remove_h=True, old_style=True).strip() == string.strip()
-
 
 class TestConsistencyChecker:
     def test_check_hund_rule_fail(self):

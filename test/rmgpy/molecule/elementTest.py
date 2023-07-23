@@ -42,9 +42,6 @@ class TestElement:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.element = rmgpy.molecule.element.C
         self.element_x = rmgpy.molecule.element.X
 

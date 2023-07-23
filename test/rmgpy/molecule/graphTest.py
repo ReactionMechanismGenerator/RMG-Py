@@ -40,10 +40,8 @@ class TestGraph:
     for each.
     """
 
-    def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
+    @pytest.fixture(autouse=True)
+    def setup_graph(self):
         vertices = [Vertex() for _ in range(6)]
         edges = [
             Edge(vertices[0], vertices[1]),
@@ -56,6 +54,7 @@ class TestGraph:
         self.graph = Graph(vertices)
         for edge in edges:
             self.graph.add_edge(edge)
+        yield
 
     def test_vertices(self):
         """

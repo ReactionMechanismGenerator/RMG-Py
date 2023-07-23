@@ -73,5 +73,5 @@ class TestExecutionStatsWriter:
 
         assert os.path.isfile(statsfile)
 
-    def teardown_class(self):
+    def tearDown(self):
         shutil.rmtree(self.rmg.output_directory)

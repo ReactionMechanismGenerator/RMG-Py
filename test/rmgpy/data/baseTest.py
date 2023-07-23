@@ -31,18 +31,22 @@
 from rmgpy.data.base import Entry, Database, ForbiddenStructures
 from rmgpy.molecule import Group, Molecule
 
+import pytest
+
 
 class TestBaseDatabase:
     """
     Contains unit tests for the base class of rmgpy.data.
     """
 
-    def setup_class(self):
+    @pytest.fixture(autouse=True)
+    def setup_database(self):
         """
         A function run before each unit test in this class.
         """
         # Set up a dummy database
         self.database = Database()
+        yield
 
     def test_match_node_to_structure(self):
         """

@@ -256,7 +256,6 @@ class TestArkaneInput:
     Contains unit tests for loading and processing Arkane input files.
     """
 
-    @classmethod
     def setup_class(cls):
         """Preparation for all unit tests in this class."""
         cls.directory = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "..", "examples", "arkane")

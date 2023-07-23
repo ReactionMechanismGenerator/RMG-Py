@@ -58,9 +58,6 @@ class TestArrhenius:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.A = 1.0e12
         self.n = 0.5
         self.Ea = 41.84
@@ -290,9 +287,6 @@ class TestArrheniusEP:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.A = 1.0e12
         self.n = 0.5
         self.alpha = 0.5
@@ -446,9 +440,6 @@ class TestArrheniusBM:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.A = 8.00037e12
         self.n = 0.391734
         self.w0 = 798000
@@ -634,9 +625,6 @@ class TestPDepArrhenius:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.arrhenius0 = Arrhenius(
             A=(1.0e6, "s^-1"),
             n=1.0,
@@ -898,9 +886,6 @@ class TestMultiArrhenius:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.Tmin = 350.0
         self.Tmax = 1500.0
         self.comment = "Comment"
@@ -1093,9 +1078,6 @@ class TestMultiPDepArrhenius:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.Tmin = 350.0
         self.Tmax = 1500.0
         self.Pmin = 1e-1

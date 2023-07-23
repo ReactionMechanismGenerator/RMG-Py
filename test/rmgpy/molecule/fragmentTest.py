@@ -41,9 +41,6 @@ import rmgpy.molecule.fragment
 
 class TestCuttingLabel:
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.cutting_label_R = rmgpy.molecule.fragment.CuttingLabel("R")
 
     def test_symbol(self):
@@ -62,10 +59,6 @@ class TestCuttingLabel:
 
 class TestFragment:
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
-
         # construct the first fragment
         atom_C1 = Atom(element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0)
 

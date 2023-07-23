@@ -45,9 +45,6 @@ class TestChebyshev:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.Tmin = 300.0
         self.Tmax = 2000.0
         self.Pmin = 0.01

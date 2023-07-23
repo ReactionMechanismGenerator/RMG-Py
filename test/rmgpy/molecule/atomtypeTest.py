@@ -46,9 +46,6 @@ class TestAtomType:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.atomtype = rmgpy.molecule.atomtype.ATOMTYPES["Cd"]
 
     def test_pickle(self):
@@ -209,9 +206,6 @@ class TestGetAtomType:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.mol1 = Molecule().from_smiles("COC(=O)CC=C=CC#C")
         # self.mol2 = Molecule().from_smiles('c1ccccc1')
         # the from_smiles method currently Kekulizes, so to test Benzene we use from_adjacency_list

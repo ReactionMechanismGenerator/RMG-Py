@@ -46,9 +46,6 @@ class TestMoleculeDrawer:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.drawer = MoleculeDrawer()
         self.molecule = Molecule(smiles="CC(=O)CC")
 

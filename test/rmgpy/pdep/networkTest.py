@@ -51,9 +51,6 @@ class TestNetwork:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         self.nC4H10O = Species(
             label="n-C4H10O",
             conformer=Conformer(

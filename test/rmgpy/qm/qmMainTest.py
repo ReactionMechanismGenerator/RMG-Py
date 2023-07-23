@@ -49,9 +49,6 @@ class TestQMSettings:
     """
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         rmg_path = os.path.normpath(os.path.join(get_path(), ".."))
 
         self.settings1 = QMSettings(
@@ -89,9 +86,6 @@ class TestQMCalculator:
     NO_GAUSSIAN = not os.path.exists(gaussexecutable_path)
 
     def setup_class(self):
-        """
-        A function run before each unit test in this class.
-        """
         rmg_path = os.path.normpath(os.path.join(get_path(), "..", ".."))
         self.fileStore = os.path.join(rmg_path, "testing", "qm", "QMfiles")
 
