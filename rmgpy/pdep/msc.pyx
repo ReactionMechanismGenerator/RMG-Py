@@ -44,10 +44,10 @@ from rmgpy.exceptions import ModifiedStrongCollisionError
 cpdef apply_modified_strong_collision_method(network, str efficiency_model='default'):
     """A method for applying the Modified Strong Collision approach for solving the master equation."""
     cdef np.ndarray[np.int_t,ndim=1] j_list
-    cdef np.ndarray[float_t,ndim=1] e_list, coll_freq, coll_eff, d_e_down, E0, e_reac
-    cdef np.ndarray[float_t,ndim=2] a_mat, b, k, x
-    cdef np.ndarray[float_t,ndim=3] dens_states
-    cdef np.ndarray[float_t,ndim=4] k_ij, g_nj, f_im, pa
+    cdef np.ndarray[np.float64_t,ndim=1] e_list, coll_freq, coll_eff, d_e_down, E0, e_reac
+    cdef np.ndarray[np.float64_t,ndim=2] a_mat, b, k, x
+    cdef np.ndarray[np.float64_t,ndim=3] dens_states
+    cdef np.ndarray[np.float64_t,ndim=4] k_ij, g_nj, f_im, pa
     cdef double temperature, val, beta
     cdef int n_isom, n_reac, n_prod, n_grains, n_j
     cdef int i, j, n, r, s, start, src

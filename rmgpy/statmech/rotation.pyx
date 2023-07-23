@@ -357,7 +357,7 @@ cdef class NonlinearRotor(Rotation):
         """
         cdef double Q, theta = 1.0
         cdef int i
-        cdef np.ndarray[float_t, ndim=1] rotational_constants
+        cdef np.ndarray[np.float64_t, ndim=1] rotational_constants
         if self.quantum:
             raise NotImplementedError('Quantum mechanical model not yet implemented for NonlinearRotor.')
         else:
@@ -412,7 +412,7 @@ cdef class NonlinearRotor(Rotation):
         """
         cdef double theta = 1.0
         cdef int i
-        cdef np.ndarray[float_t, ndim=1] rotational_constants
+        cdef np.ndarray[np.float64_t, ndim=1] rotational_constants
         cdef np.ndarray sum_states
         if self.quantum:
             raise NotImplementedError('Quantum mechanical model not yet implemented for NonlinearRotor.')
@@ -436,7 +436,7 @@ cdef class NonlinearRotor(Rotation):
         """
         cdef double theta = 1.0, inertia, dE
         cdef int i
-        cdef np.ndarray[float_t, ndim=1] rotational_constants
+        cdef np.ndarray[np.float64_t, ndim=1] rotational_constants
         cdef np.ndarray dens_states
         if self.quantum:
             raise NotImplementedError('Quantum mechanical model not yet implemented for NonlinearRotor.')

@@ -130,8 +130,8 @@ cdef class SingleExponentialDown(RMGObject):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def generate_collision_matrix(self, double T,
-                                  np.ndarray[float_t,ndim=2] dens_states,
-                                  np.ndarray[float_t,ndim=1] e_list,
+                                  np.ndarray[np.float64_t,ndim=2] dens_states,
+                                  np.ndarray[np.float64_t,ndim=1] e_list,
                                   np.ndarray[np.int_t,ndim=1] j_list=None):
         """
         Generate and return the collision matrix
@@ -144,9 +144,9 @@ cdef class SingleExponentialDown(RMGObject):
         cdef double alpha, beta
         cdef double c, left, right
         cdef int n_grains, start, i, r, s, u, v
-        cdef np.ndarray[float_t,ndim=1] rho
-        cdef np.ndarray[float_t,ndim=2] phi, p0
-        cdef np.ndarray[float_t,ndim=4] p
+        cdef np.ndarray[np.float64_t,ndim=1] rho
+        cdef np.ndarray[np.float64_t,ndim=2] phi, p0
+        cdef np.ndarray[np.float64_t,ndim=4] p
 
         n_grains = e_list.shape[0]
         n_j = j_list.shape[0] if j_list is not None else 1
@@ -234,9 +234,9 @@ cdef class SingleExponentialDown(RMGObject):
 
     def calculate_collision_efficiency(self,
                                        double T,
-                                       np.ndarray[float_t,ndim=1] e_list,
+                                       np.ndarray[np.float64_t,ndim=1] e_list,
                                        np.ndarray[np.int_t,ndim=1] j_list,
-                                       np.ndarray[float_t,ndim=2] dens_states,
+                                       np.ndarray[np.float64_t,ndim=2] dens_states,
                                        double E0, double e_reac):
         """
         Calculate an efficiency factor for collisions, particularly useful for the

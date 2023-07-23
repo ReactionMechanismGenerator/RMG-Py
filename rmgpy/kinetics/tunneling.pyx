@@ -203,7 +203,7 @@ cdef class Eckart(TunnelingModel):
         the reaction at the energies `e_list` in J/mol.
         """
         cdef double frequency, E0_reac, E0_prod, E0_TS
-        cdef np.ndarray[float_t, ndim=1] kappa, _Elist
+        cdef np.ndarray[np.float64_t, ndim=1] kappa, _Elist
         cdef double E0, dV1, dV2, alpha1, alpha2, E, xi, twopia, twopib, twopid
         cdef int r, r0
 

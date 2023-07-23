@@ -595,26 +595,26 @@ cdef class ReactionSystem(DASx):
         cdef int index, spc_index, max_species_index, max_network_index
         cdef int num_core_species, num_edge_species, num_pdep_networks, num_core_reactions
         cdef double step_time, char_rate, max_species_rate, max_network_rate, maxEdgeReactionAccum, stdan
-        cdef np.ndarray[float_t, ndim=1] y0  # Vector containing the number of moles of each species
-        cdef np.ndarray[float_t, ndim=1] core_species_rates, edge_species_rates, network_leak_rates
-        cdef np.ndarray[float_t, ndim=1] core_species_production_rates, core_species_consumption_rates, total_div_accum_nums
-        cdef np.ndarray[float_t, ndim=1] max_edge_species_rate_ratios, max_network_leak_rate_ratios
+        cdef np.ndarray[np.float64_t, ndim=1] y0  # Vector containing the number of moles of each species
+        cdef np.ndarray[np.float64_t, ndim=1] core_species_rates, edge_species_rates, network_leak_rates
+        cdef np.ndarray[np.float64_t, ndim=1] core_species_production_rates, core_species_consumption_rates, total_div_accum_nums
+        cdef np.ndarray[np.float64_t, ndim=1] max_edge_species_rate_ratios, max_network_leak_rate_ratios
         cdef bint terminated
         cdef object max_species, max_network
         cdef int i, j, k
-        cdef float_t conversion
-        cdef np.ndarray[float_t, ndim=1] surface_species_production, surface_species_consumption, branching_nums
-        cdef np.ndarray[float_t, ndim=1] surface_total_div_accum_nums, surface_species_rate_ratios
-        cdef np.ndarray[float_t, ndim=1] forward_rate_coefficients, core_species_concentrations
+        cdef np.float64_t conversion
+        cdef np.ndarray[np.float64_t, ndim=1] surface_species_production, surface_species_consumption, branching_nums
+        cdef np.ndarray[np.float64_t, ndim=1] surface_total_div_accum_nums, surface_species_rate_ratios
+        cdef np.ndarray[np.float64_t, ndim=1] forward_rate_coefficients, core_species_concentrations
         cdef double prev_time, total_moles, c, volume, RTP, max_char_rate, br, rr
         cdef double unimolecular_threshold_val, bimolecular_threshold_val, trimolecular_threshold_val
         cdef bool useDynamicsTemp, first_time, use_dynamics, terminate_at_max_objects, schanged, invalid_objects_print_boolean
-        cdef np.ndarray[float_t, ndim=1] edge_reaction_rates
+        cdef np.ndarray[np.float64_t, ndim=1] edge_reaction_rates
         cdef double reaction_rate, production, consumption
         cdef np.ndarray[np.int_t, ndim=1] surface_species_indices, surface_reaction_indices
         # cython declations for sensitivity analysis
         cdef np.ndarray[np.int_t, ndim=1] sens_species_indices, reactant_side, product_side
-        cdef np.ndarray[float_t, ndim=1] mole_sens, dVdk, norm_sens
+        cdef np.ndarray[np.float64_t, ndim=1] mole_sens, dVdk, norm_sens
         cdef list time_array, norm_sens_array, new_surface_reactions, new_surface_reaction_inds, new_objects, new_object_inds
 
         zero_production = False
@@ -1322,8 +1322,8 @@ cdef class ReactionSystem(DASx):
         k_j is the rate parameter for the jth core reaction.
         """
         cdef np.ndarray[np.int_t, ndim=2] ir, ip
-        cdef np.ndarray[float_t, ndim=1] kf, kr, C, deriv
-        cdef np.ndarray[float_t, ndim=2] rate_deriv
+        cdef np.ndarray[np.float64_t, ndim=1] kf, kr, C, deriv
+        cdef np.ndarray[np.float64_t, ndim=2] rate_deriv
         cdef double fderiv, rderiv, flux, V
         cdef int j, num_core_reactions, num_core_species
 

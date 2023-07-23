@@ -46,11 +46,11 @@ cpdef apply_reservoir_state_method(network):
     cdef np.ndarray[np.int_t,ndim=1] j_list
     cdef np.ndarray[np.int_t,ndim=2] n_res, n_act
     cdef np.ndarray[np.int_t,ndim=3] indices
-    cdef np.ndarray[float_t,ndim=1] e_list
-    cdef np.ndarray[float_t,ndim=2] active_state_mat, source_vectors, pss_active_state, k
-    cdef np.ndarray[float_t,ndim=3] dens_states, eq_dist
-    cdef np.ndarray[float_t,ndim=4] k_ij, g_nj, f_im, pa
-    cdef np.ndarray[float_t,ndim=5] m_coll
+    cdef np.ndarray[np.float64_t,ndim=1] e_list
+    cdef np.ndarray[np.float64_t,ndim=2] active_state_mat, source_vectors, pss_active_state, k
+    cdef np.ndarray[np.float64_t,ndim=3] dens_states, eq_dist
+    cdef np.ndarray[np.float64_t,ndim=4] k_ij, g_nj, f_im, pa
+    cdef np.ndarray[np.float64_t,ndim=5] m_coll
     cdef list ind
     cdef double temperature, tol, y, beta
     cdef int n_isom, n_reac, n_prod, n_grains, n_j, bandwidth, halfbandwidth, width, width0

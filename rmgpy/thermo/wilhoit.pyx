@@ -215,8 +215,8 @@ cdef class Wilhoit(HeatCapacityModel):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def fit_to_data(self,
-                    np.ndarray[float_t, ndim=1] Tdata,
-                    np.ndarray[float_t, ndim=1] Cpdata,
+                    np.ndarray[np.float64_t, ndim=1] Tdata,
+                    np.ndarray[np.float64_t, ndim=1] Cpdata,
                     double Cp0, double CpInf,
                     double H298, double S298, double B0=500.0):
         """
@@ -239,8 +239,8 @@ cdef class Wilhoit(HeatCapacityModel):
     @cython.boundscheck(False)
     @cython.wraparound(False)
     def fit_to_data_for_constant_b(self,
-                                   np.ndarray[float_t, ndim=1] Tdata,
-                                   np.ndarray[float_t, ndim=1] Cpdata,
+                                   np.ndarray[np.float64_t, ndim=1] Tdata,
+                                   np.ndarray[np.float64_t, ndim=1] Cpdata,
                                    double Cp0, double CpInf,
                                    double H298, double S298, double B):
         """
@@ -251,8 +251,8 @@ cdef class Wilhoit(HeatCapacityModel):
         at zero and infinite temperature, the dimensionless enthalpy `H298` at 
         298 K, and the dimensionless entropy `S298` at 298 K. 
         """
-        cdef np.ndarray[float_t, ndim=1] b, x
-        cdef np.ndarray[float_t, ndim=2] A
+        cdef np.ndarray[np.float64_t, ndim=1] b, x
+        cdef np.ndarray[np.float64_t, ndim=2] A
         cdef double y
         cdef int i, j
         
@@ -617,8 +617,8 @@ cpdef wilhoit_to_nasa(Wilhoit wilhoit, double Tmin, double Tmax, double Tint, bi
                      
     :result: The pair of NASA polynomials with scaled parameters
     """
-    cdef np.ndarray[float_t, ndim=2] A
-    cdef np.ndarray[float_t, ndim=1] b, x
+    cdef np.ndarray[np.float64_t, ndim=2] A
+    cdef np.ndarray[np.float64_t, ndim=1] b, x
     cdef double w0min, w1min, w2min, w3min, w4min, wM1min
     cdef double w0int, w1int, w2int, w3int, w4int, wM1int
     cdef double w0max, w1max, w2max, w3max, w4max, wM1max

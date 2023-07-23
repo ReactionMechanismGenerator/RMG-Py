@@ -212,11 +212,11 @@ cpdef np.ndarray get_density_of_states(np.ndarray e_list, energy, degeneracy=uni
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def convolve(np.ndarray[float_t, ndim=1] rho1, np.ndarray[float_t, ndim=1] rho2):
+def convolve(np.ndarray[np.float64_t, ndim=1] rho1, np.ndarray[np.float64_t, ndim=1] rho2):
     """
     Return the convolution of two arrays `rho1` and `rho2`.
     """
-    cdef np.ndarray[float_t, ndim=1] rho
+    cdef np.ndarray[np.float64_t, ndim=1] rho
     cdef int i, j, nE
 
     if rho1.shape[0] != rho2.shape[0]:
@@ -234,8 +234,8 @@ def convolve(np.ndarray[float_t, ndim=1] rho1, np.ndarray[float_t, ndim=1] rho2)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def convolve_bs(np.ndarray[float_t, ndim=1] e_list,
-                np.ndarray[float_t, ndim=1] rho0,
+def convolve_bs(np.ndarray[np.float64_t, ndim=1] e_list,
+                np.ndarray[np.float64_t, ndim=1] rho0,
                 double energy, int degeneracy=1):
     """
     Convolve a molecular degree of freedom into a density or sum of states
@@ -248,7 +248,7 @@ def convolve_bs(np.ndarray[float_t, ndim=1] e_list,
     cdef int n = 0
     cdef double Emax = np.max(e_list), E_n
     cdef int i, j, nE = e_list.shape[0], g_n
-    cdef np.ndarray[float_t, ndim=1] rho
+    cdef np.ndarray[np.float64_t, ndim=1] rho
 
     rho = rho0.copy()
 
@@ -262,8 +262,8 @@ def convolve_bs(np.ndarray[float_t, ndim=1] e_list,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def convolve_bssr(np.ndarray[float_t, ndim=1] e_list,
-                  np.ndarray[float_t, ndim=1] rho0,
+def convolve_bssr(np.ndarray[np.float64_t, ndim=1] e_list,
+                  np.ndarray[np.float64_t, ndim=1] rho0,
                   energy, degeneracy=unit_degeneracy, int n0=0):
     """
     Convolve a molecular degree of freedom into a density or sum of states
@@ -275,7 +275,7 @@ def convolve_bssr(np.ndarray[float_t, ndim=1] e_list,
     cdef int n = n0
     cdef double Emax = np.max(e_list), E_n
     cdef int i, j, nE = e_list.shape[0], g_n
-    cdef np.ndarray[float_t, ndim=1] rho
+    cdef np.ndarray[np.float64_t, ndim=1] rho
 
     rho = np.zeros_like(rho0)
 
