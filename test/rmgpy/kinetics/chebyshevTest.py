@@ -84,7 +84,7 @@ class TestChebyshev:
                 C = float(self.chebyshev.coeffs.value_si[i, j])
                 if i == 0 and j == 0:
                     C0 -= 6  # Unit conversion from cm^3/(mol*s) to m^3/(mol*s)
-                assert abs(C0 - C) < 1e-6 * C0
+                assert abs(C0 - C) < abs(1e-6 * C0)
 
     def test_temperature_min(self):
         """
@@ -234,7 +234,7 @@ class TestChebyshev:
             for j in range(self.chebyshev.coeffs.value.shape[1]):
                 C0 = self.chebyshev.coeffs.value_si[i, j]
                 C = chebyshev.coeffs.value_si[i, j]
-                assert abs(C0 - C) < 1e-4 * C0
+                assert abs(C0 - C) < abs(1e-4 * C0)
         assert round(abs(self.chebyshev.Tmin.value - chebyshev.Tmin.value), 4) == 0
         assert self.chebyshev.Tmin.units == chebyshev.Tmin.units
         assert round(abs(self.chebyshev.Tmax.value - chebyshev.Tmax.value), 4) == 0
@@ -260,7 +260,7 @@ class TestChebyshev:
             for j in range(self.chebyshev.coeffs.value.shape[1]):
                 C0 = self.chebyshev.coeffs.value[i, j]
                 C = chebyshev.coeffs.value[i, j]
-                assert abs(C0 - C) < 1e-4 * C0
+                assert abs(C0 - C) < abs(1e-4 * C0)
         assert round(abs(self.chebyshev.Tmin.value - chebyshev.Tmin.value), 4) == 0
         assert self.chebyshev.Tmin.units == chebyshev.Tmin.units
         assert round(abs(self.chebyshev.Tmax.value - chebyshev.Tmax.value), 4) == 0

@@ -1367,25 +1367,6 @@ def read_reactions_block(f, species_dict, read_comments=True):
                     energy_units = unit
                 else:
                     raise ChemkinError('Unknown unit type "{0}"'.format(unit))
-
-        elif len(tokens) > 0 and tokens[0].lower() == 'unit:':
-            # RMG-Java kinetics library file
-            warnings.warn("The RMG-Java kinetic library files are"
-                          " no longer supported and may be"
-                          " removed in version 2.3.", DeprecationWarning)
-            found = True
-            while 'reactions:' not in line.lower():
-                line = f.readline()
-                line = remove_comment_from_line(line)[0]
-                line = line.strip()
-
-                if 'A:' in line or 'E:' in line:
-                    units = line.split()[1]
-                    if 'A:' in line:
-                        molecule_units, volume_units, time_units = units.lower().split(
-                            '/')  # Assume this is a 3-tuple: moles or molecules, volume, time
-                    elif 'E:' in line:
-                        energy_units = units.lower()
         else:
             line = f.readline()
 
@@ -1480,12 +1461,6 @@ def read_reactions_block(f, species_dict, read_comments=True):
         # True for Chemkin files generated from RMG-Py
         kinetics_list.pop(0)
         comments_list.pop(-1)
-    elif kinetics_list[0] == '' and comments_list[0] == '':
-        # True for Chemkin files generated from RMG-Java
-        warnings.warn("RMG-Java loading is no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
-        kinetics_list.pop(0)
-        comments_list.pop(0)
     else:
         # In reality, comments can occur anywhere in the Chemkin
         # file (e.g. either or both of before and after the
@@ -1514,30 +1489,6 @@ def read_reactions_block(f, species_dict, read_comments=True):
         reaction_list.append(reaction)
 
     return reaction_list
-
-################################################################################
-
-
-def save_html_file(path, read_comments=True):
-    """
-    Save an output HTML file from the contents of a RMG-Java output folder
-    """
-    warnings.warn("RMG-Java loading is no longer supported and may be"
-                  " removed in version 2.3.", DeprecationWarning)
-    from rmgpy.rmg.model import CoreEdgeReactionModel
-    from rmgpy.rmg.output import save_output_html
-    chemkin_path = os.path.join(path, 'chemkin', 'chem.inp')
-    dictionary_path = os.path.join(path, 'RMG_Dictionary.txt')
-    model = CoreEdgeReactionModel()
-    model.core.species, model.core.reactions = load_chemkin_file(chemkin_path, dictionary_path,
-                                                                 read_comments=read_comments)
-    output_path = os.path.join(path, 'output.html')
-    species_path = os.path.join(path, 'species')
-    if not os.path.isdir(species_path):
-        os.makedirs(species_path)
-    save_output_html(output_path, model)
-
-################################################################################
 
 
 def get_species_identifier(species):
@@ -1738,45 +1689,22 @@ def write_reaction_string(reaction, java_library=False):
                            'that support different reaction orders for the Low and High pressures limits. '
                            'You should revise reaction {0}'.format(reaction.label))
 
-    if java_library:
-        warnings.warn("Writing RMG-Java format is no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
-        third_body = ''
-        if kinetics.is_pressure_dependent():
-            if (isinstance(kinetics, _kinetics.ThirdBody) and
-                    not isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe))):
-                third_body = ' + M'
-            elif isinstance(kinetics, _kinetics.PDepArrhenius):
-                third_body = ''
-            elif isinstance(kinetics, _kinetics.Chebyshev):
-                third_body = ''
-            else:
-                third_body = ' (+{0})'.format(
-                    get_species_identifier(reaction.specific_collider)) if reaction.specific_collider else ' (+M)'
+    third_body = ''
+    if kinetics.is_pressure_dependent():
+        if (isinstance(kinetics, _kinetics.ThirdBody) and
+                not isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe))):
+            third_body = '+M'
+        elif isinstance(kinetics, (_kinetics.PDepArrhenius, _kinetics.MultiPDepArrhenius)):
+            third_body = ''
+        else:
+            third_body = '(+{0})'.format(
+                get_species_identifier(reaction.specific_collider)) if reaction.specific_collider else '(+M)'
 
-        reaction_string = ' + '.join([get_species_identifier(reactant) for reactant in reaction.reactants])
-        reaction_string += third_body
-        reaction_string += ' = ' if reaction.reversible else ' => '
-        reaction_string += ' + '.join([get_species_identifier(product) for product in reaction.products])
-        reaction_string += third_body
-
-    else:
-        third_body = ''
-        if kinetics.is_pressure_dependent():
-            if (isinstance(kinetics, _kinetics.ThirdBody) and
-                    not isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe))):
-                third_body = '+M'
-            elif isinstance(kinetics, (_kinetics.PDepArrhenius, _kinetics.MultiPDepArrhenius)):
-                third_body = ''
-            else:
-                third_body = '(+{0})'.format(
-                    get_species_identifier(reaction.specific_collider)) if reaction.specific_collider else '(+M)'
-
-        reaction_string = '+'.join([get_species_identifier(reactant) for reactant in reaction.reactants])
-        reaction_string += third_body
-        reaction_string += '<=>' if reaction.reversible else '=>'
-        reaction_string += '+'.join([get_species_identifier(product) for product in reaction.products])
-        reaction_string += third_body
+    reaction_string = '+'.join([get_species_identifier(reactant) for reactant in reaction.reactants])
+    reaction_string += third_body
+    reaction_string += '<=>' if reaction.reversible else '=>'
+    reaction_string += '+'.join([get_species_identifier(product) for product in reaction.products])
+    reaction_string += third_body
 
     if len(reaction_string) > 52:
         logging.debug("Chemkin reaction string '%s' is too long for Chemkin 2!", reaction_string)
@@ -1932,12 +1860,6 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
     else:
         # Print dummy values that Chemkin parses but ignores
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(1, 0, 0)
-
-    if java_library:
-        warnings.warn("RMG-Java libraries are no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
-        # Assume uncertainties are zero (when parsing from chemkin), may need to adapt later
-        string += '{0:<9.1f} {1:<9.1f} {2:<9.1f}'.format(0, 0, 0)
 
     string += '\n'
 
@@ -2289,48 +2211,6 @@ def save_chemkin_surface_file(path, species, reactions, verbose=True, check_for_
     f.close()
     logging.info("Chemkin file contains {0} reactions.".format(_chemkin_reaction_count))
     _chemkin_reaction_count = None
-
-
-def save_java_kinetics_library(path, species, reactions):
-    """
-    Save the reaction files for a RMG-Java kinetics library: pdepreactions.txt
-    and reactions.txt given a list of reactions, with species.txt containing the
-    RMG-Java formatted dictionary.
-    """
-    warnings.warn("Java kinetics libararies are no longer supported and may be" \
-                  "removed in version 2.3.", DeprecationWarning)
-    # Check for duplicate
-    mark_duplicate_reactions(reactions)
-
-    f = open(os.path.join(path, 'reactions.txt'), 'w')
-    f2 = open(os.path.join(path, 'pdepreactions.txt'), 'w')
-
-    # Headers
-    f.write('Unit:\n')
-    f.write('A: mol/cm3/s\n')
-    f.write('E: kcal/mol\n')
-    f.write('\n')
-    f.write('Reactions:\n')
-    f.write('\n')
-
-    f2.write('Unit:\n')
-    f2.write('A: mol/cm3/s\n')
-    f2.write('E: kcal/mol\n')
-    f2.write('\n')
-    f2.write('Reactions:\n')
-    f2.write('\n')
-
-    for rxn in reactions:
-        if rxn.kinetics.is_pressure_dependent():
-            f2.write(write_kinetics_entry(rxn, species_list=species, verbose=False, java_library=True))
-            f2.write('\n')
-        else:
-            f.write(write_kinetics_entry(rxn, species_list=species, verbose=False, java_library=True))
-            f.write('\n')
-    f.close()
-    f2.close()
-
-    save_species_dictionary(os.path.join(path, 'species.txt'), species, old_style=True)
 
 
 def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, transport_path=None, 

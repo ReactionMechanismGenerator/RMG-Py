@@ -538,10 +538,6 @@ def create_flux_diagram(input_file, chemkin_file, species_dict, save_path=None, 
     Generates the flux diagram based on a condition 'input_file', chemkin.inp chemkin_file,
     a species_dict txt file, plus an optional chemkin_output file.
     """
-
-    if java == True:
-        warnings.warn("RMG-Java loading is no longer supported and may be" \
-                      "removed in version 2.3.", DeprecationWarning)
     if species_path is None:
         species_path = os.path.join(os.path.dirname(input_file), 'species')
         generate_images = True

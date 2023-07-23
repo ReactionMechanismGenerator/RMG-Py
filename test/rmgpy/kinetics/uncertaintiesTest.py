@@ -48,4 +48,4 @@ class TestUncertainties:
         """
         unc = RateUncertainty(mu=0.3, var=0.6, Tref=1000.0, N=1, correlation="ab")
         u = unc.get_expected_log_uncertainty()
-        assert round(abs(u - 0.3 + np.sqrt(0.6 * 2.0 / np.pi)), 7) == 0
+        assert round(abs(u - (0.3 + np.sqrt(0.6 * 2.0 / np.pi))), 7) == 0

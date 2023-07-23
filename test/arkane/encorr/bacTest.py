@@ -225,11 +225,11 @@ class TestBAC:
         """
         with pytest.raises(BondAdditivityCorrectionError) as e:
             self.bac.test(species=[], db_names=[])
-        assert "several data sources" in str(e.exception)
+        assert "several data sources" in str(e.exconly())
 
         with pytest.raises(BondAdditivityCorrectionError) as e:
             self.bac.test(species=[])
-        assert "No data" in str(e.exception)
+        assert "No data" in str(e.exconly())
 
         self.bac.level_of_theory = self.lot_fit
         self.bac.bac_type = "m"
@@ -251,7 +251,7 @@ class TestBAC:
         self.bac.bacs = None
         with pytest.raises(BondAdditivityCorrectionError) as e:
             self.bac.write_to_database()
-        assert "No BACs" in str(e.exception)
+        assert "No BACs" in str(e.exconly())
 
         self.bac.level_of_theory = self.lot_get
         self.bac.bac_type = "p"
@@ -262,7 +262,7 @@ class TestBAC:
         # Check that error is raised if BACs already exist and overwrite is False
         with pytest.raises(IOError) as e:
             self.bac.write_to_database(alternate_path=tmp_datafile_path)
-        assert "overwrite" in str(e.exception)
+        assert "overwrite" in str(e.exconly())
 
         # Dynamically set data file as module
         spec = importlib.util.spec_from_file_location(os.path.basename(tmp_datafile_path), tmp_datafile_path)

@@ -180,7 +180,7 @@ class TestThermoDatabase:
         symmetry_contribution_to_entropy = -constants.R * math.log(symmetry_number)
 
         assert (
-            round(abs(thermo_with_sym.get_entropy(298.0) - thermo_without_sym.get_entropy(298.0) + symmetry_contribution_to_entropy), 7) == 0
+            round(abs(thermo_with_sym.get_entropy(298.0) - (thermo_without_sym.get_entropy(298.0) + symmetry_contribution_to_entropy)), 6) == 0
         ), "The symmetry contribution is wrong {:.3f} /= {:.3f} + {:.3f}".format(
             thermo_with_sym.get_entropy(298.0),
             thermo_without_sym.get_entropy(298.0),

@@ -85,7 +85,7 @@ class TestAE:
         self.ae.atom_energies = None
         with pytest.raises(ValueError) as e:
             self.ae.write_to_database("test")
-        assert "No atom energies" in str(e.exception)
+        assert "No atom energies" in str(e.exconly())
 
         # Check that error is raised if energies already exist
         self.ae.atom_energies = {"H": 1.0, "C": 2.0}
@@ -94,7 +94,7 @@ class TestAE:
         lot = LevelOfTheory(method="wb97m-v", basis="def2-tzvpd", software="Q-Chem")
         with pytest.raises(ValueError) as e:
             self.ae.write_to_database(lot, alternate_path=tmp_datafile_path)
-        assert "overwrite" in str(e.exception)
+        assert "overwrite" in str(e.exconly())
 
         # Dynamically set data file as module
         spec = importlib.util.spec_from_file_location(os.path.basename(tmp_datafile_path), tmp_datafile_path)
