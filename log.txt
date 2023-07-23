@@ -1,326 +1,146 @@
-DEBUG (132863) 
-DEBUG (132863) Debug-level logging is enabled for PyJulia.
-DEBUG (132863) PyJulia version: 0.6.1
-DEBUG (132863) pyprogramname = /home/jackson/mambaforge/envs/rmg_env/bin/python3
-DEBUG (132863) sys.executable = /home/jackson/mambaforge/envs/rmg_env/bin/python3
-DEBUG (132863) bindir = /home/jackson/mambaforge/envs/rmg_env/bin
-DEBUG (132863) libjulia_path = /home/jackson/mambaforge/envs/rmg_env/lib/libjulia.so.1
-DEBUG (132863) py_libpython = /home/jackson/mambaforge/envs/rmg_env/lib/libpython3.7m.so.1.0
-DEBUG (132863) jl_libpython = /home/jackson/mambaforge/envs/rmg_env/lib/libpython3.7m.so.1.0
+DEBUG (148669) 
+DEBUG (148669) Debug-level logging is enabled for PyJulia.
+DEBUG (148669) PyJulia version: 0.6.1
+DEBUG (148669) pyprogramname = /home/jackson/mambaforge/envs/rmg_env/bin/python3
+DEBUG (148669) sys.executable = /home/jackson/mambaforge/envs/rmg_env/bin/python3
+DEBUG (148669) bindir = /home/jackson/mambaforge/envs/rmg_env/bin
+DEBUG (148669) libjulia_path = /home/jackson/mambaforge/envs/rmg_env/lib/libjulia.so.1
+DEBUG (148669) py_libpython = /home/jackson/mambaforge/envs/rmg_env/lib/libpython3.7m.so.1.0
+DEBUG (148669) jl_libpython = /home/jackson/mambaforge/envs/rmg_env/lib/libpython3.7m.so.1.0
 ============================= test session starts ==============================
 platform linux -- Python 3.7.12, pytest-7.4.0, pluggy-1.2.0
 rootdir: /home/jackson/rmg/RMG-Py
 configfile: pytest.ini
 testpaths: test
 plugins: anyio-3.5.0, cov-4.1.0
-collected 1554 items / 1522 deselected / 32 selected
-run-last-failure: rerun previous 32 failures
+collected 1557 items / 1538 deselected / 19 selected
+run-last-failure: rerun previous 19 failures
 
-test/arkane/arkaneMainTest.py  (132863) exception occured? 139753065703696
- (132863) exception occured? None
- (132863) exception occured? 139753065711664
- (132863) exception occured? None
- (132863) exception occured? 139753065721632
- (132863) exception occured? None
- (132863) exception occured? 139753065732480
- (132863) exception occured? None
-F.E                                        [  6%]
-test/arkane/commonTest.py FFF                                            [ 15%]
-test/arkane/encorr/aeTest.py F                                           [ 18%]
-test/arkane/encorr/bacTest.py FF                                         [ 25%]
-test/arkane/encorr/isodesmicTest.py FFFF                                 [ 37%]
-test/arkane/ess/factoryTest.py F                                         [ 40%]
-test/rmgpy/chemkinTest.py  (132863) exception occured? 139753065739760
- (132863) exception occured? None
- (132863) exception occured? 139753065764480
- (132863) exception occured? None
- (132863) exception occured? 139753065772048
- (132863) exception occured? None
- (132863) exception occured? 139753065780080
- (132863) exception occured? None
- (132863) exception occured? 139753065789696
- (132863) exception occured? None
- (132863) exception occured? 139753065914480
- (132863) exception occured? None
- (132863) exception occured? 139753065929136
- (132863) exception occured? None
- (132863) exception occured? 139753065943280
- (132863) exception occured? None
-F                                              [ 43%]
-test/rmgpy/transportDataTest.py F                                        [ 46%]
-test/rmgpy/data/thermoTest.py F                                          [ 50%]
-test/rmgpy/data/kinetics/familyTest.py F                                 [ 53%]
-test/rmgpy/data/kinetics/libraryTest.py F                                [ 56%]
-test/rmgpy/kinetics/chebyshevTest.py FFF                                 [ 65%]
-test/rmgpy/kinetics/uncertaintiesTest.py F                               [ 68%]
-test/rmgpy/rmg/modelTest.py  (132863) exception occured? 139753038144688
- (132863) exception occured? None
- (132863) exception occured? 139753038443296
- (132863) exception occured? None
- (132863) exception occured? 139753038988352
- (132863) exception occured? None
- (132863) exception occured? 139753039000304
- (132863) exception occured? None
-F (132863) exception occured? 139753039123872
- (132863) exception occured? None
- (132863) exception occured? 139753039139264
- (132863) exception occured? None
- (132863) exception occured? 139753039149920
- (132863) exception occured? None
- (132863) exception occured? 139753039499216
- (132863) exception occured? None
-F (132863) exception occured? 139753039563440
- (132863) exception occured? None
- (132863) exception occured? 139753039822448
- (132863) exception occured? None
- (132863) exception occured? 139753040721424
- (132863) exception occured? None
- (132863) exception occured? 139753041930784
- (132863) exception occured? None
-F (132863) exception occured? 139753042076832
- (132863) exception occured? None
- (132863) exception occured? 139753043448912
- (132863) exception occured? None
- (132863) exception occured? 139753043559776
- (132863) exception occured? None
- (132863) exception occured? 139753043739264
- (132863) exception occured? None
-F (132863) exception occured? 139753043788288
- (132863) exception occured? None
- (132863) exception occured? 139753043800064
- (132863) exception occured? None
- (132863) exception occured? 139753043878688
- (132863) exception occured? None
- (132863) exception occured? 139753043972064
- (132863) exception occured? None
-F                                        [ 84%]
-test/rmgpy/statmech/schrodingerTest.py  (132863) exception occured? 139753044056064
- (132863) exception occured? None
- (132863) exception occured? 139753044283536
- (132863) exception occured? None
- (132863) exception occured? 139753044294400
- (132863) exception occured? None
- (132863) exception occured? 139753044407920
- (132863) exception occured? None
- (132863) exception occured? 139753044881328
- (132863) exception occured? None
- (132863) exception occured? 139753048188304
- (132863) exception occured? None
- (132863) exception occured? 139753048298544
- (132863) exception occured? None
- (132863) exception occured? 139753048409744
- (132863) exception occured? None
-F (132863) exception occured? 139753048419488
- (132863) exception occured? None
- (132863) exception occured? 139753048527856
- (132863) exception occured? None
- (132863) exception occured? 139753048556368
- (132863) exception occured? None
- (132863) exception occured? 139753048606128
- (132863) exception occured? None
- (132863) exception occured? 139753048617840
- (132863) exception occured? None
- (132863) exception occured? 139753048777648
- (132863) exception occured? None
- (132863) exception occured? 139753048885248
- (132863) exception occured? None
- (132863) exception occured? 139753048894752
- (132863) exception occured? None
-F (132863) exception occured? 139753048920752
- (132863) exception occured? None
- (132863) exception occured? 139753049084992
- (132863) exception occured? None
- (132863) exception occured? 139753049095648
- (132863) exception occured? None
- (132863) exception occured? 139753049174528
- (132863) exception occured? None
- (132863) exception occured? 139753049231936
- (132863) exception occured? None
- (132863) exception occured? 139753049260592
- (132863) exception occured? None
- (132863) exception occured? 139753049268976
- (132863) exception occured? None
- (132863) exception occured? 139753049300128
- (132863) exception occured? None
-F (132863) exception occured? 139753049737392
- (132863) exception occured? None
- (132863) exception occured? 139753049746240
- (132863) exception occured? None
- (132863) exception occured? 139753049821440
- (132863) exception occured? None
- (132863) exception occured? 139753050096832
- (132863) exception occured? None
- (132863) exception occured? 139753050109488
- (132863) exception occured? None
- (132863) exception occured? 139753050255056
- (132863) exception occured? None
- (132863) exception occured? 139753050279904
- (132863) exception occured? None
- (132863) exception occured? 139753050291120
- (132863) exception occured? None
-F (132863) exception occured? 139753050303056
- (132863) exception occured? None
- (132863) exception occured? 139753050361952
- (132863) exception occured? None
- (132863) exception occured? 139753050818288
- (132863) exception occured? None
- (132863) exception occured? 139753050828048
- (132863) exception occured? None
- (132863) exception occured? 139753051214784
- (132863) exception occured? None
- (132863) exception occured? 139753051691216
- (132863) exception occured? None
- (132863) exception occured? 139753051851344
- (132863) exception occured? None
- (132863) exception occured? 139753051975424
- (132863) exception occured? None
- (132863) exception occured? 139753054184880
- (132863) exception occured? None
- (132863) exception occured? 139753054328784
- (132863) exception occured? None
- (132863) exception occured? 139753054338928
- (132863) exception occured? None
- (132863) exception occured? 139753054566624
- (132863) exception occured? None
+test/arkane/arkaneMainTest.py  (148669) exception occured? 140298314722720
+ (148669) exception occured? None
+ (148669) exception occured? 140298314748928
+ (148669) exception occured? None
+ (148669) exception occured? 140298314756576
+ (148669) exception occured? None
+ (148669) exception occured? 140298314764144
+ (148669) exception occured? None
+ (148669) exception occured? 140298314773824
+ (148669) exception occured? None
+ (148669) exception occured? 140298314887296
+ (148669) exception occured? None
+ (148669) exception occured? 140298314897136
+ (148669) exception occured? None
+ (148669) exception occured? 140298314908960
+ (148669) exception occured? None
+ (148669) exception occured? 140298314918176
+ (148669) exception occured? None
+ (148669) exception occured? 140298314928592
+ (148669) exception occured? None
+ (148669) exception occured? 140298314937696
+ (148669) exception occured? None
+ (148669) exception occured? 140298314947648
+ (148669) exception occured? None
+F                                          [  5%]
+test/arkane/commonTest.py FFF                                            [ 21%]
+test/arkane/encorr/aeTest.py .                                           [ 26%]
+test/arkane/encorr/bacTest.py ..                                         [ 36%]
+test/rmgpy/transportDataTest.py .                                        [ 42%]
+test/rmgpy/kinetics/uncertaintiesTest.py F                               [ 47%]
+test/rmgpy/rmg/modelTest.py ..FFF                                        [ 73%]
+test/rmgpy/statmech/schrodingerTest.py  (148669) exception occured? 140298270230592
+ (148669) exception occured? None
+ (148669) exception occured? 140298270910736
+ (148669) exception occured? None
+ (148669) exception occured? 140298271178880
+ (148669) exception occured? None
+ (148669) exception occured? 140298271897504
+ (148669) exception occured? None
+ (148669) exception occured? 140298272601968
+ (148669) exception occured? None
+ (148669) exception occured? 140298273659104
+ (148669) exception occured? None
+ (148669) exception occured? 140298273789184
+ (148669) exception occured? None
+ (148669) exception occured? 140298273852992
+ (148669) exception occured? None
+F (148669) exception occured? 140298273890064
+ (148669) exception occured? None
+ (148669) exception occured? 140298274181488
+ (148669) exception occured? None
+ (148669) exception occured? 140298274610144
+ (148669) exception occured? None
+ (148669) exception occured? 140298275155744
+ (148669) exception occured? None
+ (148669) exception occured? 140298276996080
+ (148669) exception occured? None
+ (148669) exception occured? 140298277010928
+ (148669) exception occured? None
+ (148669) exception occured? 140298277259120
+ (148669) exception occured? None
+ (148669) exception occured? 140298277272800
+ (148669) exception occured? None
+F (148669) exception occured? 140298277672832
+ (148669) exception occured? None
+ (148669) exception occured? 140298277847808
+ (148669) exception occured? None
+ (148669) exception occured? 140298277862720
+ (148669) exception occured? None
+ (148669) exception occured? 140298278172240
+ (148669) exception occured? None
+ (148669) exception occured? 140298278566320
+ (148669) exception occured? None
+ (148669) exception occured? 140298278741152
+ (148669) exception occured? None
+ (148669) exception occured? 140298279119600
+ (148669) exception occured? None
+ (148669) exception occured? 140298279583472
+ (148669) exception occured? None
+F (148669) exception occured? 140298281798448
+ (148669) exception occured? None
+ (148669) exception occured? 140298282723248
+ (148669) exception occured? None
+ (148669) exception occured? 140298286460416
+ (148669) exception occured? None
+ (148669) exception occured? 140298286806576
+ (148669) exception occured? None
+ (148669) exception occured? 140298287005712
+ (148669) exception occured? None
+ (148669) exception occured? 140298287114160
+ (148669) exception occured? None
+ (148669) exception occured? 140298287841360
+ (148669) exception occured? None
+ (148669) exception occured? 140298287908768
+ (148669) exception occured? None
+F (148669) exception occured? 140298287921392
+ (148669) exception occured? None
+ (148669) exception occured? 140298287992320
+ (148669) exception occured? None
+ (148669) exception occured? 140298288022928
+ (148669) exception occured? None
+ (148669) exception occured? 140298288035472
+ (148669) exception occured? None
+ (148669) exception occured? 140298288646528
+ (148669) exception occured? None
+ (148669) exception occured? 140298288658832
+ (148669) exception occured? None
+ (148669) exception occured? 140298289322592
+ (148669) exception occured? None
+ (148669) exception occured? 140298289631872
+ (148669) exception occured? None
+ (148669) exception occured? 140298291397984
+ (148669) exception occured? None
+ (148669) exception occured? 140298291412288
+ (148669) exception occured? None
+ (148669) exception occured? 140298292259056
+ (148669) exception occured? None
+ (148669) exception occured? 140298292403120
+ (148669) exception occured? None
 F                             [100%]
 
-==================================== ERRORS ====================================
-_ ERROR at teardown of TestArkaneExamples.test_arkane_two_parameter_arrhenius_fit _
-
-cls = <class 'arkaneMainTest.TestArkaneExamples'>
-
-    @classmethod
-    def teardown_class(cls):
-        """A function that is run ONCE after all unit tests in this class."""
-        cls.extensions_to_delete = ["pdf", "csv", "txt", "inp"]
-        cls.files_to_delete = ["arkane.log", "output.py", "supporting_information.csv"]
-        cls.files_to_keep = ["README.txt"]  # files to keep that have extensions marked for deletion
-        cls.base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "examples", "arkane")
-        for example_type in cls.example_types:
-            example_type_path = os.path.join(cls.base_path, example_type)
-            for example in os.listdir(example_type_path):
-                # clean working folder from all previous test output
-                example_path = os.path.join(example_type_path, example)
-                clean_dir(
-                    base_dir_path=example_path,
-                    files_to_delete=cls.files_to_delete,
-                    file_extensions_to_delete=cls.extensions_to_delete,
-                    files_to_keep=cls.files_to_keep,
-                    sub_dir_to_keep=["r0"],
-                )
-        cls.test_base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
-        tests = ["two_parameter_arrhenius_fit"]
-        for test in tests:
-            test_path = os.path.join(cls.test_base_path, test)
-            clean_dir(
-                base_dir_path=test_path,
-                files_to_delete=cls.files_to_delete,
->               file_extensions_to_delete=cls.extensions_to_delete,
-            )
-
-test/arkane/arkaneMainTest.py:127: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-base_dir_path = '/home/jackson/rmg/RMG-Py/test/data/two_parameter_arrhenius_fit'
-files_to_delete = ['arkane.log', 'output.py', 'supporting_information.csv']
-file_extensions_to_delete = ['pdf', 'csv', 'txt', 'inp'], files_to_keep = None
-sub_dir_to_keep = None
-
-    def clean_dir(
-        base_dir_path: str = "",
-        files_to_delete: List[str] = None,
-        file_extensions_to_delete: List[str] = None,
-        files_to_keep: List[str] = None,
-        sub_dir_to_keep: List[str] = None,
-    ) -> None:
-        """
-        Clean up a directory. Commonly used for removing unwanted files after unit tests.
-    
-        Args:
-            base_dir_path (str): absolute path of the directory to clean up.
-            files_to_delete (list[str]): full name of the file (includes extension) to delete.
-            file_extensions_to_delete: extensions of files to delete.
-            files_to_keep: full name of the file (includes extension) to keep, files specified here will NOT be deleted even
-                           if its extension is also in file_extensions_to_delete.
-            sub_dir_to_keep: name of the subdirectories in the base directory to keep.
-        """
->       for item in os.listdir(base_dir_path):
-E       FileNotFoundError: [Errno 2] No such file or directory: '/home/jackson/rmg/RMG-Py/test/data/two_parameter_arrhenius_fit'
-
-arkane/common.py:999: FileNotFoundError
------------------------------ Captured stdout call -----------------------------
-Arkane execution initiated at Sat Jul 22 16:31:44 2023
-
-################################################################
-#                                                              #
-# Automated Reaction Kinetics and Network Exploration (Arkane) #
-#                                                              #
-#   Version: 3.1.0                                             #
-#   Authors: RMG Developers (rmg_dev@mit.edu)                  #
-#   P.I.s:   William H. Green (whgreen@mit.edu)                #
-#            Richard H. West (r.west@neu.edu)                  #
-#   Website: http://reactionmechanismgenerator.github.io/      #
-#                                                              #
-################################################################
-
-The current git HEAD for RMG-Py is:
-	d8a8936c301d918488fe7b11020ed4bf31b6176d
-	Sat Jul 22 15:37:00 2023 -0400
-
-The current git HEAD for RMG-database is:
-	113cb53eadea0c17ed6f76eaee3ad952774b8728
-	Tue Jun 27 09:11:34 2023 -0400
-
-Loading species imipramine...
-Loading species imipraminerad...
-Loading species CH3OO...
-Loading species CH3OOH...
-Loading transition state TS...
-Loading reaction imipramine + CH3OO = imipraminerad + CH3OOH...
-
-
-Loading statistical mechanics parameters for imipramine...
-Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
-Point group: C1
-Warning: Atom corrections are not being used. Do not trust energies and thermo.
-Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
-Point group: C1
-Saving statistical mechanics parameters for imipramine...
-Loading statistical mechanics parameters for imipraminerad...
-Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
-Point group: C1
-Warning: Atom corrections are not being used. Do not trust energies and thermo.
-Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
-Point group: C1
-Saving statistical mechanics parameters for imipraminerad...
-Loading statistical mechanics parameters for CH3OO...
-Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
-Point group: Cs
-Warning: Atom corrections are not being used. Do not trust energies and thermo.
-Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
-Point group: Cs
-Saving statistical mechanics parameters for CH3OO...
-Loading statistical mechanics parameters for CH3OOH...
-Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
-Point group: C1
-Warning: Atom corrections are not being used. Do not trust energies and thermo.
-Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
-Point group: C1
-Saving statistical mechanics parameters for CH3OOH...
-Loading statistical mechanics parameters for TS...
-Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
-Point group: C1
-Warning: Atom corrections are not being used. Do not trust energies and thermo.
-Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
-Point group: C1
-Saving statistical mechanics parameters for TS...
-Saving kinetics for CH3OO + imipramine <=> CH3OOH + imipraminerad...
-
-Arkane execution terminated at Sat Jul 22 16:31:45 2023
 =================================== FAILURES ===================================
 ___________________ TestArkaneExamples.test_arkane_examples ____________________
 
-self = <arkaneMainTest.TestArkaneExamples object at 0x7f1a982bbad0>
+self = <arkaneMainTest.TestArkaneExamples object at 0x7f998b8b6a50>
 
     def test_arkane_examples(self):
         for example_type in self.example_types:
@@ -338,26 +158,16 @@ arkane/main.py:215: in execute
     job.execute(output_directory=self.output_directory, plot=self.plot, pdep=is_pdep(self.job_list))
 arkane/statmech.py:292: in execute
     self.load(pdep, plot)
-arkane/statmech.py:694: in load
-    isodesmic_thermo, self.isodesmicReactionList = scheme.calculate_target_enthalpy()
-arkane/encorr/isodesmic.py:458: in calculate_target_enthalpy
-    reaction_list = self.multiple_error_canceling_reaction_search(n_reactions_max, milp_software)
-arkane/encorr/isodesmic.py:431: in multiple_error_canceling_reaction_search
-    reaction, subset_indices = self._find_error_canceling_reaction(subset, milp_software=milp_software)
-arkane/encorr/isodesmic.py:378: in _find_error_canceling_reaction
-    signal.signal(signal.SIGINT, sig)
+arkane/statmech.py:371: in load
+    exec(f.read(), global_context, local_context)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-signalnum = <Signals.SIGINT: 2>, handler = None
+>   ???
+E   TypeError: 'NoneType' object is not subscriptable
 
-    @_wraps(_signal.signal)
-    def signal(signalnum, handler):
->       handler = _signal.signal(_enum_to_int(signalnum), _enum_to_int(handler))
-E       TypeError: signal handler must be signal.SIG_IGN, signal.SIG_DFL, or a callable object
-
-../../mambaforge/envs/rmg_env/lib/python3.7/signal.py:47: TypeError
+<string>:21: TypeError
 ----------------------------- Captured stdout call -----------------------------
-Arkane execution initiated at Sat Jul 22 16:31:26 2023
+Arkane execution initiated at Sat Jul 22 19:40:13 2023
 
 ################################################################
 #                                                              #
@@ -372,8 +182,8 @@ Arkane execution initiated at Sat Jul 22 16:31:26 2023
 ################################################################
 
 The current git HEAD for RMG-Py is:
-	d8a8936c301d918488fe7b11020ed4bf31b6176d
-	Sat Jul 22 15:37:00 2023 -0400
+	8480a8a3da6c55ddc7b1fd8584cecc7d1deb9a69
+	Sat Jul 22 18:07:51 2023 -0400
 
 The current git HEAD for RMG-database is:
 	113cb53eadea0c17ed6f76eaee3ad952774b8728
@@ -399,9 +209,9 @@ Point group: C2v
 Saving statistical mechanics parameters for C7H7...
 Saving thermo for C7H7...
 
-Arkane execution terminated at Sat Jul 22 16:31:28 2023
+Arkane execution terminated at Sat Jul 22 19:40:14 2023
 running C2H4
-Arkane execution initiated at Sat Jul 22 16:31:28 2023
+Arkane execution initiated at Sat Jul 22 19:40:14 2023
 
 ################################################################
 #                                                              #
@@ -416,8 +226,8 @@ Arkane execution initiated at Sat Jul 22 16:31:28 2023
 ################################################################
 
 The current git HEAD for RMG-Py is:
-	d8a8936c301d918488fe7b11020ed4bf31b6176d
-	Sat Jul 22 15:37:00 2023 -0400
+	8480a8a3da6c55ddc7b1fd8584cecc7d1deb9a69
+	Sat Jul 22 18:07:51 2023 -0400
 
 The current git HEAD for RMG-database is:
 	113cb53eadea0c17ed6f76eaee3ad952774b8728
@@ -433,9 +243,9 @@ Point group: D2h
 Saving statistical mechanics parameters for C2H4...
 Saving thermo for C2H4...
 
-Arkane execution terminated at Sat Jul 22 16:31:29 2023
+Arkane execution terminated at Sat Jul 22 19:40:15 2023
 running C2H5
-Arkane execution initiated at Sat Jul 22 16:31:29 2023
+Arkane execution initiated at Sat Jul 22 19:40:15 2023
 
 ################################################################
 #                                                              #
@@ -450,8 +260,8 @@ Arkane execution initiated at Sat Jul 22 16:31:29 2023
 ################################################################
 
 The current git HEAD for RMG-Py is:
-	d8a8936c301d918488fe7b11020ed4bf31b6176d
-	Sat Jul 22 15:37:00 2023 -0400
+	8480a8a3da6c55ddc7b1fd8584cecc7d1deb9a69
+	Sat Jul 22 18:07:51 2023 -0400
 
 The current git HEAD for RMG-database is:
 	113cb53eadea0c17ed6f76eaee3ad952774b8728
@@ -469,9 +279,9 @@ Saving statistical mechanics parameters for C2H5...
 Saving thermo for C2H5...
 Warning: Could not write chemkin output due to error: Cannot generate Chemkin string for species "C2H5": Thermodynamics data must be a NASA object. for species C2H5
 
-Arkane execution terminated at Sat Jul 22 16:31:29 2023
+Arkane execution terminated at Sat Jul 22 19:40:16 2023
 running C2H6
-Arkane execution initiated at Sat Jul 22 16:31:29 2023
+Arkane execution initiated at Sat Jul 22 19:40:16 2023
 
 ################################################################
 #                                                              #
@@ -486,8 +296,8 @@ Arkane execution initiated at Sat Jul 22 16:31:29 2023
 ################################################################
 
 The current git HEAD for RMG-Py is:
-	d8a8936c301d918488fe7b11020ed4bf31b6176d
-	Sat Jul 22 15:37:00 2023 -0400
+	8480a8a3da6c55ddc7b1fd8584cecc7d1deb9a69
+	Sat Jul 22 18:07:51 2023 -0400
 
 The current git HEAD for RMG-database is:
 	113cb53eadea0c17ed6f76eaee3ad952774b8728
@@ -503,9 +313,9 @@ Point group: D3d
 Saving statistical mechanics parameters for C2H6...
 Saving thermo for C2H6...
 
-Arkane execution terminated at Sat Jul 22 16:31:30 2023
+Arkane execution terminated at Sat Jul 22 19:40:16 2023
 running C2H6_from_yaml
-Arkane execution initiated at Sat Jul 22 16:31:30 2023
+Arkane execution initiated at Sat Jul 22 19:40:16 2023
 
 ################################################################
 #                                                              #
@@ -520,8 +330,8 @@ Arkane execution initiated at Sat Jul 22 16:31:30 2023
 ################################################################
 
 The current git HEAD for RMG-Py is:
-	d8a8936c301d918488fe7b11020ed4bf31b6176d
-	Sat Jul 22 15:37:00 2023 -0400
+	8480a8a3da6c55ddc7b1fd8584cecc7d1deb9a69
+	Sat Jul 22 18:07:51 2023 -0400
 
 The current git HEAD for RMG-database is:
 	113cb53eadea0c17ed6f76eaee3ad952774b8728
@@ -542,9 +352,9 @@ Replacing keyword "opticalIsomers" with "optical_isomers" in the Arkane YAML fil
 Saving statistical mechanics parameters for C2H6...
 Saving thermo for C2H6...
 
-Arkane execution terminated at Sat Jul 22 16:31:31 2023
+Arkane execution terminated at Sat Jul 22 19:40:17 2023
 running H
-Arkane execution initiated at Sat Jul 22 16:31:31 2023
+Arkane execution initiated at Sat Jul 22 19:40:17 2023
 
 ################################################################
 #                                                              #
@@ -559,8 +369,8 @@ Arkane execution initiated at Sat Jul 22 16:31:31 2023
 ################################################################
 
 The current git HEAD for RMG-Py is:
-	d8a8936c301d918488fe7b11020ed4bf31b6176d
-	Sat Jul 22 15:37:00 2023 -0400
+	8480a8a3da6c55ddc7b1fd8584cecc7d1deb9a69
+	Sat Jul 22 18:07:51 2023 -0400
 
 The current git HEAD for RMG-database is:
 	113cb53eadea0c17ed6f76eaee3ad952774b8728
@@ -577,9 +387,9 @@ Saving statistical mechanics parameters for H...
 Saving thermo for H...
 Warning: Could not write chemkin output due to error: Cannot generate Chemkin string for species "H": Thermodynamics data must be a NASA object. for species H
 
-Arkane execution terminated at Sat Jul 22 16:31:31 2023
+Arkane execution terminated at Sat Jul 22 19:40:17 2023
 running N4H6
-Arkane execution initiated at Sat Jul 22 16:31:31 2023
+Arkane execution initiated at Sat Jul 22 19:40:17 2023
 
 ################################################################
 #                                                              #
@@ -594,8 +404,8 @@ Arkane execution initiated at Sat Jul 22 16:31:31 2023
 ################################################################
 
 The current git HEAD for RMG-Py is:
-	d8a8936c301d918488fe7b11020ed4bf31b6176d
-	Sat Jul 22 15:37:00 2023 -0400
+	8480a8a3da6c55ddc7b1fd8584cecc7d1deb9a69
+	Sat Jul 22 18:07:51 2023 -0400
 
 The current git HEAD for RMG-database is:
 	113cb53eadea0c17ed6f76eaee3ad952774b8728
@@ -612,9 +422,9 @@ Point group: C2
 Saving statistical mechanics parameters for N4H6...
 Saving thermo for N4H6...
 
-Arkane execution terminated at Sat Jul 22 16:31:31 2023
+Arkane execution terminated at Sat Jul 22 19:40:18 2023
 running Pentyl_isodesmic
-Arkane execution initiated at Sat Jul 22 16:31:31 2023
+Arkane execution initiated at Sat Jul 22 19:40:18 2023
 
 ################################################################
 #                                                              #
@@ -629,8 +439,8 @@ Arkane execution initiated at Sat Jul 22 16:31:31 2023
 ################################################################
 
 The current git HEAD for RMG-Py is:
-	d8a8936c301d918488fe7b11020ed4bf31b6176d
-	Sat Jul 22 15:37:00 2023 -0400
+	8480a8a3da6c55ddc7b1fd8584cecc7d1deb9a69
+	Sat Jul 22 18:07:51 2023 -0400
 
 The current git HEAD for RMG-database is:
 	113cb53eadea0c17ed6f76eaee3ad952774b8728
@@ -703,6 +513,130 @@ Error: Unable to generate identifier for this molecule:
 4 H u0 p0 c0 {1,S}
 5 H u0 p0 c0 {1,S}
 
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Failed to reset signal handling in LPSolve - are you running pytest?
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: C1
+Saving statistical mechanics parameters for Pentyl...
+Thermo already generated for species Pentyl. Skipping thermo generation.
+Saving thermo for Pentyl...
+
+Arkane execution terminated at Sat Jul 22 19:40:31 2023
+running Toulene_Free_Rotor
+Arkane execution initiated at Sat Jul 22 19:40:31 2023
+
+################################################################
+#                                                              #
+# Automated Reaction Kinetics and Network Exploration (Arkane) #
+#                                                              #
+#   Version: 3.1.0                                             #
+#   Authors: RMG Developers (rmg_dev@mit.edu)                  #
+#   P.I.s:   William H. Green (whgreen@mit.edu)                #
+#            Richard H. West (r.west@neu.edu)                  #
+#   Website: http://reactionmechanismgenerator.github.io/      #
+#                                                              #
+################################################################
+
+The current git HEAD for RMG-Py is:
+	8480a8a3da6c55ddc7b1fd8584cecc7d1deb9a69
+	Sat Jul 22 18:07:51 2023 -0400
+
+The current git HEAD for RMG-database is:
+	113cb53eadea0c17ed6f76eaee3ad952774b8728
+	Tue Jun 27 09:11:34 2023 -0400
+
+Loading species Toluene...
+Assigned a frequency scale factor of 1.00386 for LevelOfTheory(method='cbsqb3')
+
+
+Loading statistical mechanics parameters for Toluene...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: Cs
+Saving statistical mechanics parameters for Toluene...
+Saving thermo for Toluene...
+
+Arkane execution terminated at Sat Jul 22 19:40:31 2023
+running Toulene_Hindered_Rotor
+Arkane execution initiated at Sat Jul 22 19:40:31 2023
+
+################################################################
+#                                                              #
+# Automated Reaction Kinetics and Network Exploration (Arkane) #
+#                                                              #
+#   Version: 3.1.0                                             #
+#   Authors: RMG Developers (rmg_dev@mit.edu)                  #
+#   P.I.s:   William H. Green (whgreen@mit.edu)                #
+#            Richard H. West (r.west@neu.edu)                  #
+#   Website: http://reactionmechanismgenerator.github.io/      #
+#                                                              #
+################################################################
+
+The current git HEAD for RMG-Py is:
+	8480a8a3da6c55ddc7b1fd8584cecc7d1deb9a69
+	Sat Jul 22 18:07:51 2023 -0400
+
+The current git HEAD for RMG-database is:
+	113cb53eadea0c17ed6f76eaee3ad952774b8728
+	Tue Jun 27 09:11:34 2023 -0400
+
+Loading species Toluene...
+Assigned a frequency scale factor of 1.00386 for LevelOfTheory(method='cbsqb3')
+
+
+Loading statistical mechanics parameters for Toluene...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: Cs
+Saving statistical mechanics parameters for Toluene...
+Saving thermo for Toluene...
+
+Arkane execution terminated at Sat Jul 22 19:40:32 2023
+running Toulene_Hindered_Rotor_SemiClassicalND
+Arkane execution initiated at Sat Jul 22 19:40:32 2023
+
+################################################################
+#                                                              #
+# Automated Reaction Kinetics and Network Exploration (Arkane) #
+#                                                              #
+#   Version: 3.1.0                                             #
+#   Authors: RMG Developers (rmg_dev@mit.edu)                  #
+#   P.I.s:   William H. Green (whgreen@mit.edu)                #
+#            Richard H. West (r.west@neu.edu)                  #
+#   Website: http://reactionmechanismgenerator.github.io/      #
+#                                                              #
+################################################################
+
+The current git HEAD for RMG-Py is:
+	8480a8a3da6c55ddc7b1fd8584cecc7d1deb9a69
+	Sat Jul 22 18:07:51 2023 -0400
+
+The current git HEAD for RMG-database is:
+	113cb53eadea0c17ed6f76eaee3ad952774b8728
+	Tue Jun 27 09:11:34 2023 -0400
+
+Loading species Toluene...
+Assigned a frequency scale factor of 1.00386 for LevelOfTheory(method='cbsqb3')
+
+
+Loading statistical mechanics parameters for Toluene...
+Error: The species file /home/jackson/rmg/RMG-Py/test/../examples/arkane/species/Toulene_Hindered_Rotor_SemiClassicalND/toluene_HinderedRotor.py was invalid:
 ----------------------------- Captured stderr call -----------------------------
 ==============================
 *** Open Babel Warning  in InChI code
@@ -890,14 +824,14 @@ Error: Unable to generate identifier for this molecule:
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): C(2)
-[16:31:36] WARNING: Proton(s) added/removed
+[19:40:22] WARNING: Proton(s) added/removed
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): O(1)
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): O(1)
-[16:31:36] WARNING: Proton(s) added/removed
+[19:40:22] WARNING: Proton(s) added/removed
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): C(3)
@@ -922,7 +856,7 @@ Error: Unable to generate identifier for this molecule:
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): C(2)
-[16:31:37] WARNING: Proton(s) added/removed
+[19:40:23] WARNING: Proton(s) added/removed
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): O(1)
@@ -977,14 +911,14 @@ Error: Unable to generate identifier for this molecule:
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): C(3);
-[16:31:38] WARNING: Proton(s) added/removed
+[19:40:24] WARNING: Proton(s) added/removed
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): N(2)
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): N(2)
-[16:31:38] WARNING: Proton(s) added/removed
+[19:40:24] WARNING: Proton(s) added/removed
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): C(1)
@@ -1069,7 +1003,7 @@ Error: Unable to generate identifier for this molecule:
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): C(3)
-[16:31:39] WARNING: Proton(s) added/removed
+[19:40:26] WARNING: Proton(s) added/removed
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): C(3)
@@ -1094,7 +1028,7 @@ Error: Unable to generate identifier for this molecule:
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): N(2)
-[16:31:40] WARNING: Proton(s) added/removed
+[19:40:27] WARNING: Proton(s) added/removed
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): O(1)
@@ -1137,14 +1071,14 @@ Error: Unable to generate identifier for this molecule:
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): C(3)
-[16:31:41] WARNING: Proton(s) added/removed
+[19:40:28] WARNING: Proton(s) added/removed
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): C(2)
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): C(2)
-[16:31:41] WARNING: Proton(s) added/removed
+[19:40:28] WARNING: Proton(s) added/removed
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): C(3)
@@ -1205,6 +1139,12 @@ Error: Unable to generate identifier for this molecule:
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): O(1)
+==============================
+*** Open Babel Warning  in InChI code
+  #1 :Accepted unusual valence(s): C(3)
+==============================
+*** Open Babel Warning  in InChI code
+  #1 :Accepted unusual valence(s): C(3)
 ==============================
 *** Open Babel Warning  in InChI code
   #1 :Accepted unusual valence(s): C(3)
@@ -1219,7 +1159,7 @@ Error: Unable to generate identifier for this molecule:
   #1 :Accepted unusual valence(s): C(3)
 ____________________ TestArkaneInput.test_species_statmech _____________________
 
-self = <commonTest.TestArkaneInput object at 0x7f1a97fcdb10>
+self = <commonTest.TestArkaneInput object at 0x7f998b5cbb10>
 
     def test_species_statmech(self):
         """Test loading of statmech job from species input file."""
@@ -1242,7 +1182,7 @@ arkane/input.py:464: KeyError
 
 During handling of the above exception, another exception occurred:
 
-self = <commonTest.TestArkaneInput object at 0x7f1a97fcdcd0>
+self = <commonTest.TestArkaneInput object at 0x7f998b5cbcd0>
 
     def test_species_thermo(self):
         """Test thermo job execution for species from separate input file."""
@@ -1265,7 +1205,7 @@ E           ValueError: Unknown species label 'C2H4' for thermo() job.
 arkane/input.py:466: ValueError
 ________________ TestArkaneInput.test_transition_state_statmech ________________
 
-self = <commonTest.TestArkaneInput object at 0x7f1a97fda090>
+self = <commonTest.TestArkaneInput object at 0x7f998b5d9090>
 
     def test_transition_state_statmech(self):
         """Test loading of statmech job from transition state input file."""
@@ -1273,607 +1213,9 @@ self = <commonTest.TestArkaneInput object at 0x7f1a97fda090>
 E       IndexError: list index out of range
 
 test/arkane/commonTest.py:298: IndexError
-________________________ TestAE.test_write_to_database _________________________
-
-self = <aeTest.TestAE object at 0x7f1a97fec0d0>
-
-    def test_write_to_database(self):
-        """
-        Test that results can be written to the database.
-        """
-        # Check that error is raised when no energies are available
-        self.ae.atom_energies = None
-        with pytest.raises(ValueError) as e:
-            self.ae.write_to_database("test")
->       assert "No atom energies" in str(e.exception)
-E       AttributeError: 'ExceptionInfo' object has no attribute 'exception'
-
-test/arkane/encorr/aeTest.py:88: AttributeError
-______________________________ TestBAC.test_test _______________________________
-
-self = <bacTest.TestBAC object at 0x7f1a97ff4e10>
-
-    def test_test(self):
-        """
-        Test that enthalpies of formation can be evaluated.
-        """
-        with pytest.raises(BondAdditivityCorrectionError) as e:
-            self.bac.test(species=[], db_names=[])
->       assert "several data sources" in str(e.exception)
-E       AttributeError: 'ExceptionInfo' object has no attribute 'exception'
-
-test/arkane/encorr/bacTest.py:228: AttributeError
-________________________ TestBAC.test_write_to_database ________________________
-
-self = <bacTest.TestBAC object at 0x7f1a97ffd090>
-
-    def test_write_to_database(self):
-        """
-        Test that BAC parameters can be written to a file.
-        """
-        # Check that error is raised when no BACs are available
-        self.bac.bacs = None
-        with pytest.raises(BondAdditivityCorrectionError) as e:
-            self.bac.write_to_database()
->       assert "No BACs" in str(e.exception)
-E       AttributeError: 'ExceptionInfo' object has no attribute 'exception'
-
-test/arkane/encorr/bacTest.py:254: AttributeError
-_____ TestErrorCancelingReactionAndSpecies.test_error_canceling_reactions ______
-
-self = <isodesmicTest.TestErrorCancelingReactionAndSpecies object at 0x7f1a97f8ded0>
-
-    def test_error_canceling_reactions(self):
-        """
-        Test that ErrorCancelingReaction object can be created and that hf298 can be calculated for the target
-        """
-        # Take ethane as the target
-        lot = LevelOfTheory("test")
-        ethane = ErrorCancelingSpecies(self.molecule1, (100.0, "kJ/mol"), lot)
-        methyl = ErrorCancelingSpecies(self.molecule2, (20.0, "kcal/mol"), lot, (21000.0, "cal/mol"))
-    
-        # This reaction is not an isodesmic reaction, but that does not matter for the unit test
-        rxn = ErrorCancelingReaction(ethane, {methyl: 2})
->       assert round(abs(rxn.calculate_target_thermo().value_si - 2 * 21000.0 * 4.184 - (2 * 20.0 * 4184 - 100.0 * 1000)), 7) == 0
-E       AssertionError: assert 134720.0 == 0
-E        +  where 134720.0 = round(134720.0, 7)
-E        +    where 134720.0 = abs(((108368.0 - ((2 * 21000.0) * 4.184)) - (((2 * 20.0) * 4184) - (100.0 * 1000))))
-E        +      where 108368.0 = (108368,'J/mol').value_si
-E        +        where (108368,'J/mol') = <bound method ErrorCancelingReaction.calculate_target_thermo of <ErrorCancelingReaction 1*CC <=> 2*[CH3] >>()
-E        +          where <bound method ErrorCancelingReaction.calculate_target_thermo of <ErrorCancelingReaction 1*CC <=> 2*[CH3] >> = <ErrorCancelingReaction 1*CC <=> 2*[CH3] >.calculate_target_thermo
-
-test/arkane/encorr/isodesmicTest.py:96: AssertionError
-_________ TestErrorCancelingScheme.test_find_error_canceling_reaction __________
-
-self = <isodesmicTest.TestErrorCancelingScheme object at 0x7f1a97f987d0>
-
-    def test_find_error_canceling_reaction(self):
-        """
-        Test that the MILP problem can be solved to find a single isodesmic reaction
-        """
-        scheme = IsodesmicScheme(
-            self.propene,
-            [self.propane, self.butane, self.butene, self.caffeine, self.ethyne],
-        )
-    
-        # Note that caffeine and ethyne will not be allowed, so for the full set the indices are [0, 1, 2]
->       rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software=["lpsolve"])
-
-test/arkane/encorr/isodesmicTest.py:301: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-arkane/encorr/isodesmic.py:378: in _find_error_canceling_reaction
-    signal.signal(signal.SIGINT, sig)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-signalnum = <Signals.SIGINT: 2>, handler = None
-
-    @_wraps(_signal.signal)
-    def signal(signalnum, handler):
->       handler = _signal.signal(_enum_to_int(signalnum), _enum_to_int(handler))
-E       TypeError: signal handler must be signal.SIG_IGN, signal.SIG_DFL, or a callable object
-
-../../mambaforge/envs/rmg_env/lib/python3.7/signal.py:47: TypeError
-_______ TestErrorCancelingScheme.test_multiple_error_canceling_reactions _______
-
-self = <isodesmicTest.TestErrorCancelingScheme object at 0x7f1a97f98990>
-
-    def test_multiple_error_canceling_reactions(self):
-        """
-        Test that multiple error canceling reactions can be found
-        """
-        scheme = IsodesmicScheme(
-            self.propene,
-            [
-                self.propane,
-                self.butane,
-                self.butene,
-                self.pentane,
-                self.pentene,
-                self.hexane,
-                self.hexene,
-                self.benzene,
-            ],
-        )
-    
->       reaction_list = scheme.multiple_error_canceling_reaction_search(n_reactions_max=20)
-
-test/arkane/encorr/isodesmicTest.py:330: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-arkane/encorr/isodesmic.py:431: in multiple_error_canceling_reaction_search
-    reaction, subset_indices = self._find_error_canceling_reaction(subset, milp_software=milp_software)
-arkane/encorr/isodesmic.py:378: in _find_error_canceling_reaction
-    signal.signal(signal.SIGINT, sig)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-signalnum = <Signals.SIGINT: 2>, handler = None
-
-    @_wraps(_signal.signal)
-    def signal(signalnum, handler):
->       handler = _signal.signal(_enum_to_int(signalnum), _enum_to_int(handler))
-E       TypeError: signal handler must be signal.SIG_IGN, signal.SIG_DFL, or a callable object
-
-../../mambaforge/envs/rmg_env/lib/python3.7/signal.py:47: TypeError
-___________ TestErrorCancelingScheme.test_calculate_target_enthalpy ____________
-
-self = <isodesmicTest.TestErrorCancelingScheme object at 0x7f1a97f98b50>
-
-    def test_calculate_target_enthalpy(self):
-        """
-        Test that ErrorCancelingScheme is able to calculate thermochemistry for the target species
-        """
-        scheme = IsodesmicScheme(
-            self.propene,
-            [
-                self.propane,
-                self.butane,
-                self.butene,
-                self.pentane,
-                self.pentene,
-                self.hexane,
-                self.hexene,
-                self.benzene,
-            ],
-        )
-    
->       target_thermo, rxn_list = scheme.calculate_target_enthalpy(n_reactions_max=3, milp_software=["lpsolve"])
-
-test/arkane/encorr/isodesmicTest.py:363: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-arkane/encorr/isodesmic.py:458: in calculate_target_enthalpy
-    reaction_list = self.multiple_error_canceling_reaction_search(n_reactions_max, milp_software)
-arkane/encorr/isodesmic.py:431: in multiple_error_canceling_reaction_search
-    reaction, subset_indices = self._find_error_canceling_reaction(subset, milp_software=milp_software)
-arkane/encorr/isodesmic.py:378: in _find_error_canceling_reaction
-    signal.signal(signal.SIGINT, sig)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-signalnum = <Signals.SIGINT: 2>, handler = None
-
-    @_wraps(_signal.signal)
-    def signal(signalnum, handler):
->       handler = _signal.signal(_enum_to_int(signalnum), _enum_to_int(handler))
-E       TypeError: signal handler must be signal.SIG_IGN, signal.SIG_DFL, or a callable object
-
-../../mambaforge/envs/rmg_env/lib/python3.7/signal.py:47: TypeError
-_________________________ TestThermo.test_ess_factory __________________________
-
-self = <factoryTest.TestThermo object at 0x7f1a97f9d890>
-
-    def test_ess_factory(self):
-        """Test identifying the electronic structure software from the log file"""
-        gaussian_log_path1 = os.path.join(self.data_path, "gaussian", "ethylene_G3.log")
-        gaussian_log_path2 = os.path.join(self.data_path, "gaussian", "oxygen.log")
-        molpro_log_path1 = os.path.join(self.data_path, "molpro", "HOSI_ccsd_t1.out")
-        molpro_log_path2 = os.path.join(self.data_path, "molpro", "molpro_mrci+q.out")
-        orca_path_1 = os.path.join(self.data_path, "orca", "Orca_dlpno_test.log")
-        orca_path_2 = os.path.join(self.data_path, "orca", "Orca_opt_freq_test.log")
-        orca_path_3 = os.path.join(self.data_path, "orca", "Orca_TS_test.log")
-        psi4_path_1 = os.path.join(self.data_path, "psi4", "opt_freq.out")
-        psi4_path_2 = os.path.join(self.data_path, "psi4", "opt_freq_dft.out")
-        psi4_path_3 = os.path.join(self.data_path, "psi4", "opt_freq_dft_ts.out")
-        psi4_path_4 = os.path.join(self.data_path, "psi4", "opt_freq_ts.out")
-        qchem_log_path1 = os.path.join(self.data_path, "qchem", "CH4_sp.out")
-        qchem_log_path2 = os.path.join(self.data_path, "qchem", "co.out")
-        terachem_log_path_1 = os.path.join(self.data_path, "terachem", "ethane_minimize_output.out")
-        terachem_log_path_2 = os.path.join(self.data_path, "terachem", "formaldehyde_sp_terachem_output.out")
-        terachem_log_path_3 = os.path.join(self.data_path, "terachem", "formaldehyde_sp_terachem_results.dat")
-        terachem_log_path_4 = os.path.join(self.data_path, "terachem", "formaldehyde_coords.xyz")
-        terachem_log_path_5 = os.path.join(self.data_path, "terachem", "formaldehyde_output.geometry")
-        non_ess_log_path = os.path.abspath(os.path.join(self.data_path, "methoxy.py"))
-    
->       assert isinstance(ess_factory(gaussian_log_path1), GaussianLog)
-
-test/arkane/ess/factoryTest.py:78: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-fullpath = '/home/jackson/rmg/RMG-Py/test/arkane/data/gaussian/ethylene_G3.log'
-check_for_errors = True
-
-    def ess_factory(fullpath: str,
-                    check_for_errors: bool = True,
-                    ) -> Type[ESSAdapter]:
-        """
-        A factory generating the ESS adapter corresponding to ``ess_adapter``.
-        Given a path to the log file of a QM software, determine whether it is
-        Gaussian, Molpro, Orca, Psi4, QChem, or TeraChem.
-    
-        Args:
-            fullpath (str): The disk location of the output file of interest.
-            check_for_errors (bool): Boolean indicating whether to check the QM log for common errors
-                                     before parsing relevant information.
-    
-        Returns:
-            Type[ESSAdapter]: The requested ESSAdapter child, initialized with the respective arguments.
-        """
-    
-        ess_name = None
-        if os.path.splitext(fullpath)[-1] in ['.xyz', '.dat', '.geometry']:
-            ess_name = 'TeraChemLog'
-        else:
->           with open(fullpath, 'r') as f:
-E           FileNotFoundError: [Errno 2] No such file or directory: '/home/jackson/rmg/RMG-Py/test/arkane/data/gaussian/ethylene_G3.log'
-
-arkane/ess/factory.py:83: FileNotFoundError
-_______________ TestThermoReadWrite.test_write_bidentate_species _______________
-
-self = <chemkinTest.TestThermoReadWrite object at 0x7f1a97f01ad0>
-
-    def test_write_bidentate_species(self):
-        """Test that species with 2 or more surface sites get proper formatting"""
-    
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), "test_data/chemkin/chemkin_py")
-        chemkin_path = os.path.join(folder, "surface", "chem-surface.inp")
-        dictionary_path = os.path.join(folder, "surface", "species_dictionary.txt")
-        chemkin_save_path = os.path.join(folder, "surface", "chem-surface-test.inp")
->       species, reactions = load_chemkin_file(chemkin_path, dictionary_path)
-
-test/rmgpy/chemkinTest.py:808: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-rmgpy/chemkin.pyx:982: in rmgpy.chemkin.load_chemkin_file
-    species_dict = load_species_dictionary(dictionary_path, generate_resonance_structures=generate_resonance_structures)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
->   with open(path, 'r') as f:
-E   FileNotFoundError: [Errno 2] No such file or directory: '/home/jackson/rmg/RMG-Py/rmgpy/test_data/chemkin/chemkin_py/surface/species_dictionary.txt'
-
-rmgpy/chemkin.pyx:872: FileNotFoundError
-______________________ TestTransportData.test_to_cantera _______________________
-
-self = <transportDataTest.TestTransportData object at 0x7f1a97f27cd0>
-
-    def test_to_cantera(self):
-        """
-        Test that the Cantera GasTransportData creation is successful.
-        """
-        transport = TransportData(
-            shapeIndex=0,
-            epsilon=(1134.93, "J/mol"),
-            sigma=(3.33, "angstrom"),
-            dipoleMoment=(2, "De"),
-            polarizability=(1, "angstrom^3"),
-            rotrelaxcollnum=15.0,
-            comment="""GRI-Mech""",
-        )
-        rmg_ct_transport = transport.to_cantera()
-        import cantera as ct
-    
-        ct_species = ct.Species.fromCti(
-            """species(name=u'Ar',
-        atoms='Ar:1',
-        transport=gas_transport(geom='atom',
-                                diam=3.33,
-                                well_depth=136.501,
-                                dipole=2.0,
-                                polar=1.0,
-                                rot_relax=15.0))"""
-        )
-    
-        ct_transport = ct_species.transport
-    
->       assert round(abs(rmg_ct_transport.geometry - ct_transport.geometry), 7) == 0
-E       TypeError: unsupported operand type(s) for -: 'str' and 'str'
-
-test/rmgpy/transportDataTest.py:180: TypeError
-__________ TestThermoDatabase.test_symmetry_added_by_get_thermo_data ___________
-
-self = <thermoTest.TestThermoDatabase object at 0x7f1a97eea3d0>
-
-    def test_symmetry_added_by_get_thermo_data(self):
-        """
-        Test that `get_thermo_data` properly accounts for symmetry in thermo
-        by comping with the method `estimate_thermo_via_group_additivity`
-        """
-    
-        spc = Species(molecule=[Molecule().from_smiles("C[CH]C=CC")])
-    
-        thermo_with_sym = self.databaseWithoutLibraries.get_thermo_data(spc)
-        thermo_without_sym = self.databaseWithoutLibraries.estimate_thermo_via_group_additivity(spc.molecule[0])
-    
-        symmetry_number = spc.get_symmetry_number()
-        assert (
-            symmetry_number != spc.molecule[0].get_symmetry_number()
-        ), "For this test to be robust, species symmetry ({}) and molecule symmetry ({}) " "must be different".format(
-            symmetry_number, spc.molecule[0].get_symmetry_number()
-        )
-    
-        symmetry_contribution_to_entropy = -constants.R * math.log(symmetry_number)
-    
->       assert (
-            round(abs(thermo_with_sym.get_entropy(298.0) - thermo_without_sym.get_entropy(298.0) + symmetry_contribution_to_entropy), 7) == 0
-        ), "The symmetry contribution is wrong {:.3f} /= {:.3f} + {:.3f}".format(
-            thermo_with_sym.get_entropy(298.0),
-            thermo_without_sym.get_entropy(298.0),
-            symmetry_contribution_to_entropy,
-        )
-E       AssertionError: The symmetry contribution is wrong 322.194 /= 346.226 + -24.032
-E       assert 48.0638301 == 0
-E        +  where 48.0638301 = round(48.0638301012369, 7)
-E        +    where 48.0638301012369 = abs(((322.1940849493816 - 346.22600000000006) + -24.03191505061844))
-E        +      where 322.1940849493816 = <bound method ThermoData.get_entropy of ThermoData(Tdata=([300,400,500,600,800,1000,1500],'K'), Cpdata=([101.588,128.7...ds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + radical(Allyl_S)""")>(298.0)
-E        +        where <bound method ThermoData.get_entropy of ThermoData(Tdata=([300,400,500,600,800,1000,1500],'K'), Cpdata=([101.588,128.7...ds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + radical(Allyl_S)""")> = ThermoData(Tdata=([300,400,500,600,800,1000,1500],'K'), Cpdata=([101.588,128.784,153.385,174.682,208.405,233.384,271.5...Cds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + radical(Allyl_S)""").get_entropy
-E        +      and   346.22600000000006 = <bound method ThermoData.get_entropy of ThermoData(Tdata=([300,400,500,600,800,1000,1500],'K'), Cpdata=([101.588,128.7...ds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + radical(Allyl_S)""")>(298.0)
-E        +        where <bound method ThermoData.get_entropy of ThermoData(Tdata=([300,400,500,600,800,1000,1500],'K'), Cpdata=([101.588,128.7...ds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + radical(Allyl_S)""")> = ThermoData(Tdata=([300,400,500,600,800,1000,1500],'K'), Cpdata=([101.588,128.784,153.385,174.682,208.405,233.384,271.5...Cds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + radical(Allyl_S)""").get_entropy
-
-test/rmgpy/data/thermoTest.py:182: AssertionError
----------------------------- Captured stdout setup -----------------------------
-Warning: An instance of RMGDatabase already exists. Re-initializing it.
-Loading thermodynamics library from DFT_QCI_thermo.py in /home/jackson/rmg/RMG-database/input/thermo/libraries...
-Loading thermodynamics library from SABIC_aromatics.py in /home/jackson/rmg/RMG-database/input/thermo/libraries...
-Loading thermodynamics library from primaryThermoLibrary.py in /home/jackson/rmg/RMG-database/input/thermo/libraries...
-Loading thermodynamics group database from /home/jackson/rmg/RMG-database/input/thermo/groups...
-Loading thermodynamics group database from /home/jackson/rmg/RMG-database/input/thermo/groups...
-Loading pretrained parameter "encoder.encoder.cached_zero_vector".
-Loading pretrained parameter "encoder.encoder.W_i.weight".
-Loading pretrained parameter "encoder.encoder.W_h.weight".
-Loading pretrained parameter "encoder.encoder.W_o.weight".
-Loading pretrained parameter "encoder.encoder.W_o.bias".
-Loading pretrained parameter "ffns.0.1.weight".
-Loading pretrained parameter "ffns.0.1.bias".
-Loading pretrained parameter "ffns.0.4.weight".
-Loading pretrained parameter "ffns.0.4.bias".
-Loading pretrained parameter "encoder.encoder.cached_zero_vector".
-Loading pretrained parameter "encoder.encoder.W_i.weight".
-Loading pretrained parameter "encoder.encoder.W_h.weight".
-Loading pretrained parameter "encoder.encoder.W_o.weight".
-Loading pretrained parameter "encoder.encoder.W_o.bias".
-Loading pretrained parameter "ffns.0.1.weight".
-Loading pretrained parameter "ffns.0.1.bias".
-Loading pretrained parameter "ffns.0.4.weight".
-Loading pretrained parameter "ffns.0.4.bias".
-Loading pretrained parameter "encoder.encoder.cached_zero_vector".
-Loading pretrained parameter "encoder.encoder.W_i.weight".
-Loading pretrained parameter "encoder.encoder.W_h.weight".
-Loading pretrained parameter "encoder.encoder.W_o.weight".
-Loading pretrained parameter "encoder.encoder.W_o.bias".
-Loading pretrained parameter "ffns.0.1.weight".
-Loading pretrained parameter "ffns.0.1.bias".
-Loading pretrained parameter "ffns.0.4.weight".
-Loading pretrained parameter "ffns.0.4.bias".
-Loading pretrained parameter "encoder.encoder.cached_zero_vector".
-Loading pretrained parameter "encoder.encoder.W_i.weight".
-Loading pretrained parameter "encoder.encoder.W_h.weight".
-Loading pretrained parameter "encoder.encoder.W_o.weight".
-Loading pretrained parameter "encoder.encoder.W_o.bias".
-Loading pretrained parameter "ffns.0.1.weight".
-Loading pretrained parameter "ffns.0.1.bias".
-Loading pretrained parameter "ffns.0.4.weight".
-Loading pretrained parameter "ffns.0.4.bias".
-Loading pretrained parameter "encoder.encoder.cached_zero_vector".
-Loading pretrained parameter "encoder.encoder.W_i.weight".
-Loading pretrained parameter "encoder.encoder.W_h.weight".
-Loading pretrained parameter "encoder.encoder.W_o.weight".
-Loading pretrained parameter "encoder.encoder.W_o.bias".
-Loading pretrained parameter "ffns.0.1.weight".
-Loading pretrained parameter "ffns.0.1.bias".
-Loading pretrained parameter "ffns.0.4.weight".
-Loading pretrained parameter "ffns.0.4.bias".
-Loading pretrained parameter "encoder.encoder.cached_zero_vector".
-Loading pretrained parameter "encoder.encoder.W_i.weight".
-Loading pretrained parameter "encoder.encoder.W_h.weight".
-Loading pretrained parameter "encoder.encoder.W_o.weight".
-Loading pretrained parameter "encoder.encoder.W_o.bias".
-Loading pretrained parameter "ffns.0.1.weight".
-Loading pretrained parameter "ffns.0.1.bias".
-Loading pretrained parameter "ffns.0.4.weight".
-Loading pretrained parameter "ffns.0.4.bias".
-Loading pretrained parameter "encoder.encoder.cached_zero_vector".
-Loading pretrained parameter "encoder.encoder.W_i.weight".
-Loading pretrained parameter "encoder.encoder.W_h.weight".
-Loading pretrained parameter "encoder.encoder.W_o.weight".
-Loading pretrained parameter "encoder.encoder.W_o.bias".
-Loading pretrained parameter "ffns.0.1.weight".
-Loading pretrained parameter "ffns.0.1.bias".
-Loading pretrained parameter "ffns.0.4.weight".
-Loading pretrained parameter "ffns.0.4.bias".
-Loading pretrained parameter "encoder.encoder.cached_zero_vector".
-Loading pretrained parameter "encoder.encoder.W_i.weight".
-Loading pretrained parameter "encoder.encoder.W_h.weight".
-Loading pretrained parameter "encoder.encoder.W_o.weight".
-Loading pretrained parameter "encoder.encoder.W_o.bias".
-Loading pretrained parameter "ffns.0.1.weight".
-Loading pretrained parameter "ffns.0.1.bias".
-Loading pretrained parameter "ffns.0.4.weight".
-Loading pretrained parameter "ffns.0.4.bias".
-Loading pretrained parameter "encoder.encoder.cached_zero_vector".
-Loading pretrained parameter "encoder.encoder.W_i.weight".
-Loading pretrained parameter "encoder.encoder.W_h.weight".
-Loading pretrained parameter "encoder.encoder.W_o.weight".
-Loading pretrained parameter "encoder.encoder.W_o.bias".
-Loading pretrained parameter "ffns.0.1.weight".
-Loading pretrained parameter "ffns.0.1.bias".
-Loading pretrained parameter "ffns.0.4.weight".
-Loading pretrained parameter "ffns.0.4.bias".
-Loading pretrained parameter "encoder.encoder.cached_zero_vector".
-Loading pretrained parameter "encoder.encoder.W_i.weight".
-Loading pretrained parameter "encoder.encoder.W_h.weight".
-Loading pretrained parameter "encoder.encoder.W_o.weight".
-Loading pretrained parameter "encoder.encoder.W_o.bias".
-Loading pretrained parameter "ffns.0.1.weight".
-Loading pretrained parameter "ffns.0.1.bias".
-Loading pretrained parameter "ffns.0.4.weight".
-Loading pretrained parameter "ffns.0.4.bias".
------------------------------- Captured log setup ------------------------------
-WARNING  root:rmg.py:71 An instance of RMGDatabase already exists. Re-initializing it.
-INFO     root:thermo.py:952 Loading thermodynamics library from DFT_QCI_thermo.py in /home/jackson/rmg/RMG-database/input/thermo/libraries...
-INFO     root:thermo.py:952 Loading thermodynamics library from SABIC_aromatics.py in /home/jackson/rmg/RMG-database/input/thermo/libraries...
-INFO     root:thermo.py:952 Loading thermodynamics library from primaryThermoLibrary.py in /home/jackson/rmg/RMG-database/input/thermo/libraries...
-INFO     root:thermo.py:979 Loading thermodynamics group database from /home/jackson/rmg/RMG-database/input/thermo/groups...
-INFO     root:thermo.py:979 Loading thermodynamics group database from /home/jackson/rmg/RMG-database/input/thermo/groups...
-_________________________ TestFamily.test_save_family __________________________
-
-self = <familyTest.TestFamily object at 0x7f1a97e10090>
-
-    def test_save_family(self):
-        """
-    
-        This tests the the family.save method by writing a new temporary file and
-        comparing it to the original source.
-    
-        """
-        base_path = os.path.join(settings["test_data.directory"], "testing_database", "kinetics", "families")
-        try:
-            os.makedirs(os.path.join(base_path, "intra_H_copy"))
-            self.family.save(os.path.join(base_path, "intra_H_copy"))
->           assert filecmp.cmp(
-                os.path.join(base_path, "intra_H_migration", "groups.py"),
-                os.path.join(base_path, "intra_H_copy", "groups.py"),
-            )
-E           AssertionError: assert False
-E            +  where False = <function cmp at 0x7f1ace5d0320>('/home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/families/intra_H_migration/groups.py', '/home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/families/intra_H_copy/groups.py')
-E            +    where <function cmp at 0x7f1ace5d0320> = filecmp.cmp
-E            +    and   '/home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/families/intra_H_migration/groups.py' = <function join at 0x7f1b0d58a170>('/home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/families', 'intra_H_migration', 'groups.py')
-E            +      where <function join at 0x7f1b0d58a170> = <module 'posixpath' from '/home/jackson/mambaforge/envs/rmg_env/lib/python3.7/posixpath.py'>.join
-E            +        where <module 'posixpath' from '/home/jackson/mambaforge/envs/rmg_env/lib/python3.7/posixpath.py'> = os.path
-E            +    and   '/home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/families/intra_H_copy/groups.py' = <function join at 0x7f1b0d58a170>('/home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/families', 'intra_H_copy', 'groups.py')
-E            +      where <function join at 0x7f1b0d58a170> = <module 'posixpath' from '/home/jackson/mambaforge/envs/rmg_env/lib/python3.7/posixpath.py'>.join
-E            +        where <module 'posixpath' from '/home/jackson/mambaforge/envs/rmg_env/lib/python3.7/posixpath.py'> = os.path
-
-test/rmgpy/data/kinetics/familyTest.py:702: AssertionError
-______________ TestLibrary.test_loading_external_kinetic_library _______________
-
-self = <libraryTest.TestLibrary object at 0x7f1a97e2a650>
-
-    def test_loading_external_kinetic_library(self):
-        """This tests loading a kinetic library which is not in the RMG-database repo"""
-        kinetic_lib_in_db_path = os.path.join(settings["database.directory"], "kinetics", "libraries", "NOx2018")
-        kinetic_lib_in_test_dir_path = os.path.join(os.path.dirname(rmgpy.__file__), "test_data", "copied_kinetic_lib")
->       os.makedirs(kinetic_lib_in_test_dir_path)
-
-test/rmgpy/data/kinetics/libraryTest.py:120: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-name = '/home/jackson/rmg/RMG-Py/rmgpy/test_data/copied_kinetic_lib', mode = 511
-exist_ok = False
-
-    def makedirs(name, mode=0o777, exist_ok=False):
-        """makedirs(name [, mode=0o777][, exist_ok=False])
-    
-        Super-mkdir; create a leaf directory and all intermediate ones.  Works like
-        mkdir, except that any intermediate path segment (not just the rightmost)
-        will be created if it does not exist. If the target directory already
-        exists, raise an OSError if exist_ok is False. Otherwise no exception is
-        raised.  This is recursive.
-    
-        """
-        head, tail = path.split(name)
-        if not tail:
-            head, tail = path.split(head)
-        if head and tail and not path.exists(head):
-            try:
-                makedirs(head, exist_ok=exist_ok)
-            except FileExistsError:
-                # Defeats race condition when another thread created the path
-                pass
-            cdir = curdir
-            if isinstance(tail, bytes):
-                cdir = bytes(curdir, 'ASCII')
-            if tail == cdir:           # xxx/newdir/. exists if xxx/newdir exists
-                return
-        try:
->           mkdir(name, mode)
-E           FileExistsError: [Errno 17] File exists: '/home/jackson/rmg/RMG-Py/rmgpy/test_data/copied_kinetic_lib'
-
-../../mambaforge/envs/rmg_env/lib/python3.7/os.py:223: FileExistsError
----------------------------- Captured stdout setup -----------------------------
-Loading kinetics library GRI-Mech3.0 from /home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/libraries/GRI-Mech3.0/reactions.py...
-Loading kinetics library ethane-oxidation from /home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/libraries/ethane-oxidation/reactions.py...
-Loading kinetics library surface-example from /home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/libraries/surface-example/reactions.py...
-Loading kinetics library lib_net from /home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/libraries/lib_net/reactions.py...
------------------------------- Captured log setup ------------------------------
-INFO     root:database.py:270 Loading kinetics library GRI-Mech3.0 from /home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/libraries/GRI-Mech3.0/reactions.py...
-INFO     root:database.py:270 Loading kinetics library ethane-oxidation from /home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/libraries/ethane-oxidation/reactions.py...
-INFO     root:database.py:270 Loading kinetics library surface-example from /home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/libraries/surface-example/reactions.py...
-INFO     root:database.py:270 Loading kinetics library lib_net from /home/jackson/rmg/RMG-Py/test/rmgpy/test_data/testing_database/kinetics/libraries/lib_net/reactions.py...
-__________________________ TestChebyshev.test_coeffs ___________________________
-
-self = <chebyshevTest.TestChebyshev object at 0x7f1a97e375d0>
-
-    def test_coeffs(self):
-        """
-        Test that the Chebyshev coeffs property was properly set.
-        """
-        assert self.chebyshev.coeffs.value.shape == self.coeffs.shape
-        for i in range(self.chebyshev.coeffs.value.shape[0]):
-            for j in range(self.chebyshev.coeffs.value.shape[1]):
-                C0 = float(self.coeffs[i, j])
-                C = float(self.chebyshev.coeffs.value_si[i, j])
-                if i == 0 and j == 0:
-                    C0 -= 6  # Unit conversion from cm^3/(mol*s) to m^3/(mol*s)
->               assert abs(C0 - C) < 1e-6 * C0
-E               assert 0.0 < (1e-06 * -0.11984)
-E                +  where 0.0 = abs((-0.11984 - -0.11984))
-
-test/rmgpy/kinetics/chebyshevTest.py:87: AssertionError
-__________________________ TestChebyshev.test_pickle ___________________________
-
-self = <chebyshevTest.TestChebyshev object at 0x7f1a97e2a450>
-
-    def test_pickle(self):
-        """
-        Test that a Chebyshev object can be pickled and unpickled with no loss
-        of information.
-        """
-        import pickle
-    
-        chebyshev = pickle.loads(pickle.dumps(self.chebyshev, -1))
-        assert self.chebyshev.coeffs.value.shape[0] == chebyshev.coeffs.value.shape[0]
-        assert self.chebyshev.coeffs.value.shape[1] == chebyshev.coeffs.value.shape[1]
-        for i in range(self.chebyshev.coeffs.value.shape[0]):
-            for j in range(self.chebyshev.coeffs.value.shape[1]):
-                C0 = self.chebyshev.coeffs.value_si[i, j]
-                C = chebyshev.coeffs.value_si[i, j]
->               assert abs(C0 - C) < 1e-4 * C0
-E               assert 0.0 < (0.0001 * -0.11984)
-E                +  where 0.0 = abs((-0.11984 - -0.11984))
-
-test/rmgpy/kinetics/chebyshevTest.py:237: AssertionError
-___________________________ TestChebyshev.test_repr ____________________________
-
-self = <chebyshevTest.TestChebyshev object at 0x7f1a97dc3050>
-
-    def test_repr(self):
-        """
-        Test that a Chebyshev object can be reconstructed from its repr()
-        output with no loss of information.
-        """
-        namespace = {}
-        exec("chebyshev = {0!r}".format(self.chebyshev), globals(), namespace)
-        assert "chebyshev" in namespace
-        chebyshev = namespace["chebyshev"]
-        assert self.chebyshev.coeffs.value.shape[0] == chebyshev.coeffs.value.shape[0]
-        assert self.chebyshev.coeffs.value.shape[1] == chebyshev.coeffs.value.shape[1]
-        for i in range(self.chebyshev.coeffs.value.shape[0]):
-            for j in range(self.chebyshev.coeffs.value.shape[1]):
-                C0 = self.chebyshev.coeffs.value[i, j]
-                C = chebyshev.coeffs.value[i, j]
->               assert abs(C0 - C) < 1e-4 * C0
-E               assert 0.0 < (0.0001 * -0.11984)
-E                +  where 0.0 = abs((-0.11984 - -0.11984))
-
-test/rmgpy/kinetics/chebyshevTest.py:263: AssertionError
 _________________ TestUncertainties.test_expected_uncertainty __________________
 
-self = <uncertaintiesTest.TestUncertainties object at 0x7f1a97dc3b90>
+self = <uncertaintiesTest.TestUncertainties object at 0x7f998b511e90>
 
     def test_expected_uncertainty(self):
         """
@@ -1890,466 +1232,9 @@ E        +        where <ufunc 'sqrt'> = np.sqrt
 E        +        and   3.141592653589793 = np.pi
 
 test/rmgpy/kinetics/uncertaintiesTest.py:51: AssertionError
-_____________ TestCoreEdgeReactionModel.test_thermo_filter_species _____________
-
-self = <modelTest.TestCoreEdgeReactionModel object at 0x7f1a97dde9d0>
-
-    def test_thermo_filter_species(self):
-        """
-        test that thermo_filter_species leaves species alone if if toleranceThermoKeepInEdge
-        is high and removes them if if toleranceThermoKeepInEdge is low
-        """
-    
-        cerm = CoreEdgeReactionModel()
-    
-        spcs = [
-            Species().from_smiles("[OH]"),
-            Species().from_smiles("C"),
-            Species().from_smiles("[CH3]"),
-            Species().from_smiles("[CH2]"),
-            Species().from_smiles("O"),
-        ]
-    
-        for spc in spcs:
-            cerm.make_new_species(spc, label=spc.molecule[0].to_smiles())
-            spc.label = spc.molecule[0].to_smiles()
-    
-        thermo_dict = {
-            "[OH]": NASA(
-                polynomials=[
-                    NASAPolynomial(
-                        coeffs=[
-                            3.51457,
-                            2.92787e-05,
-                            -5.32168e-07,
-                            1.0195e-09,
-                            -3.85947e-13,
-                            3414.25,
-                            2.10435,
-                        ],
-                        Tmin=(100, "K"),
-                        Tmax=(1145.75, "K"),
-                    ),
-                    NASAPolynomial(
-                        coeffs=[
-                            3.07194,
-                            0.000604014,
-                            -1.39775e-08,
-                            -2.13448e-11,
-                            2.48067e-15,
-                            3579.39,
-                            4.578,
-                        ],
-                        Tmin=(1145.75, "K"),
-                        Tmax=(5000, "K"),
-                    ),
-                ],
-                Tmin=(100, "K"),
-                Tmax=(5000, "K"),
-                E0=(28.3945, "kJ/mol"),
-                Cp0=(29.1007, "J/(mol*K)"),
-                CpInf=(37.4151, "J/(mol*K)"),
-                label="""OH(D)""",
-                comment="""Thermo library: primaryThermoLibrary""",
-            ),
-            "C": NASA(
-                polynomials=[
-                    NASAPolynomial(
-                        coeffs=[
-                            4.20541,
-                            -0.00535551,
-                            2.51121e-05,
-                            -2.1376e-08,
-                            5.97513e-12,
-                            -10161.9,
-                            -0.921259,
-                        ],
-                        Tmin=(100, "K"),
-                        Tmax=(1084.13, "K"),
-                    ),
-                    NASAPolynomial(
-                        coeffs=[
-                            0.908298,
-                            0.011454,
-                            -4.57171e-06,
-                            8.29185e-10,
-                            -5.66309e-14,
-                            -9719.99,
-                            13.9929,
-                        ],
-                        Tmin=(1084.13, "K"),
-                        Tmax=(5000, "K"),
-                    ),
-                ],
-                Tmin=(100, "K"),
-                Tmax=(5000, "K"),
-                E0=(-84.435, "kJ/mol"),
-                Cp0=(33.2579, "J/(mol*K)"),
-                CpInf=(108.088, "J/(mol*K)"),
-                label="""CH4""",
-                comment="""Thermo library: primaryThermoLibrary""",
-            ),
-            "[CH3]": NASA(
-                polynomials=[
-                    NASAPolynomial(
-                        coeffs=[
-                            3.67359,
-                            0.00201095,
-                            5.73022e-06,
-                            -6.87117e-09,
-                            2.54386e-12,
-                            16445,
-                            1.60456,
-                        ],
-                        Tmin=(200, "K"),
-                        Tmax=(1000, "K"),
-                    ),
-                    NASAPolynomial(
-                        coeffs=[
-                            2.28572,
-                            0.0072399,
-                            -2.98714e-06,
-                            5.95685e-10,
-                            -4.67154e-14,
-                            16775.6,
-                            8.48007,
-                        ],
-                        Tmin=(1000, "K"),
-                        Tmax=(3500, "K"),
-                    ),
-                ],
-                Tmin=(200, "K"),
-                Tmax=(3500, "K"),
-                E0=(136.42, "kJ/mol"),
-                Cp0=(33.2579, "J/(mol*K)"),
-                CpInf=(83.1447, "J/(mol*K)"),
-                label="""CH3""",
-                comment="""Thermo library: GRI-Mech3.0""",
-            ),
-            "[CH2]": NASA(
-                polynomials=[
-                    NASAPolynomial(
-                        coeffs=[
-                            4.01192,
-                            -0.000154978,
-                            3.26298e-06,
-                            -2.40422e-09,
-                            5.69497e-13,
-                            45867.7,
-                            0.533201,
-                        ],
-                        Tmin=(100, "K"),
-                        Tmax=(1104.62, "K"),
-                    ),
-                    NASAPolynomial(
-                        coeffs=[
-                            3.14983,
-                            0.00296674,
-                            -9.76056e-07,
-                            1.54115e-10,
-                            -9.50338e-15,
-                            46058.1,
-                            4.77808,
-                        ],
-                        Tmin=(1104.62, "K"),
-                        Tmax=(5000, "K"),
-                    ),
-                ],
-                Tmin=(100, "K"),
-                Tmax=(5000, "K"),
-                E0=(381.37, "kJ/mol"),
-                Cp0=(33.2579, "J/(mol*K)"),
-                CpInf=(58.2013, "J/(mol*K)"),
-                label="""CH2(T)""",
-                comment="""Thermo library: primaryThermoLibrary""",
-            ),
-            "O": NASA(
-                polynomials=[
-                    NASAPolynomial(
-                        coeffs=[
-                            4.05764,
-                            -0.000787936,
-                            2.90877e-06,
-                            -1.47519e-09,
-                            2.12842e-13,
-                            -30281.6,
-                            -0.311364,
-                        ],
-                        Tmin=(100, "K"),
-                        Tmax=(1130.24, "K"),
-                    ),
-                    NASAPolynomial(
-                        coeffs=[
-                            2.84325,
-                            0.00275109,
-                            -7.81031e-07,
-                            1.07244e-10,
-                            -5.79392e-15,
-                            -29958.6,
-                            5.91042,
-                        ],
-                        Tmin=(1130.24, "K"),
-                        Tmax=(5000, "K"),
-                    ),
-                ],
-                Tmin=(100, "K"),
-                Tmax=(5000, "K"),
-                E0=(-251.755, "kJ/mol"),
-                Cp0=(33.2579, "J/(mol*K)"),
-                CpInf=(58.2013, "J/(mol*K)"),
-                label="""H2O""",
-                comment="""Thermo library: primaryThermoLibrary""",
-            ),
-        }
-    
-        for spc in spcs[:3]:
->           cerm.add_species_to_core(spc)
-
-test/rmgpy/rmg/modelTest.py:497: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-rmgpy/rmg/model.py:1172: in add_species_to_core
-    self.core.phase_system.phases["Default"].add_species(spec, edge_phase=self.edge.phase_system.phases["Default"])
-rmgpy/rmg/reactors.py:292: in add_species
-    spec = to_rms(spc)
-rmgpy/rmg/reactors.py:695: in to_rms
-    th = obj.get_thermo_data()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
->   self.thermo = self.thermo.result()
-E   AttributeError: 'NoneType' object has no attribute 'result'
-
-rmgpy/species.py:770: AttributeError
-______________ TestCoreEdgeReactionModel.test_thermo_filter_down _______________
-
-self = <modelTest.TestCoreEdgeReactionModel object at 0x7f1a97ddec90>
-
-    def test_thermo_filter_down(self):
-        """
-        test that thermo_filter_down with maximum_edge_species = 1 reduces
-        the edge to one species
-        """
-        cerm = CoreEdgeReactionModel()
-    
-        spcs = [
-            Species().from_smiles("[OH]"),
-            Species().from_smiles("C"),
-            Species().from_smiles("[CH3]"),
-            Species().from_smiles("[CH2]"),
-            Species().from_smiles("O"),
-        ]
-    
-        for spc in spcs:
-            cerm.make_new_species(spc, label=spc.molecule[0].to_smiles())
-            spc.label = spc.molecule[0].to_smiles()
-    
-        thermo_dict = {
-            "[OH]": NASA(
-                polynomials=[
-                    NASAPolynomial(
-                        coeffs=[
-                            3.51457,
-                            2.92787e-05,
-                            -5.32168e-07,
-                            1.0195e-09,
-                            -3.85947e-13,
-                            3414.25,
-                            2.10435,
-                        ],
-                        Tmin=(100, "K"),
-                        Tmax=(1145.75, "K"),
-                    ),
-                    NASAPolynomial(
-                        coeffs=[
-                            3.07194,
-                            0.000604014,
-                            -1.39775e-08,
-                            -2.13448e-11,
-                            2.48067e-15,
-                            3579.39,
-                            4.578,
-                        ],
-                        Tmin=(1145.75, "K"),
-                        Tmax=(5000, "K"),
-                    ),
-                ],
-                Tmin=(100, "K"),
-                Tmax=(5000, "K"),
-                E0=(28.3945, "kJ/mol"),
-                Cp0=(29.1007, "J/(mol*K)"),
-                CpInf=(37.4151, "J/(mol*K)"),
-                label="""OH(D)""",
-                comment="""Thermo library: primaryThermoLibrary""",
-            ),
-            "C": NASA(
-                polynomials=[
-                    NASAPolynomial(
-                        coeffs=[
-                            4.20541,
-                            -0.00535551,
-                            2.51121e-05,
-                            -2.1376e-08,
-                            5.97513e-12,
-                            -10161.9,
-                            -0.921259,
-                        ],
-                        Tmin=(100, "K"),
-                        Tmax=(1084.13, "K"),
-                    ),
-                    NASAPolynomial(
-                        coeffs=[
-                            0.908298,
-                            0.011454,
-                            -4.57171e-06,
-                            8.29185e-10,
-                            -5.66309e-14,
-                            -9719.99,
-                            13.9929,
-                        ],
-                        Tmin=(1084.13, "K"),
-                        Tmax=(5000, "K"),
-                    ),
-                ],
-                Tmin=(100, "K"),
-                Tmax=(5000, "K"),
-                E0=(-84.435, "kJ/mol"),
-                Cp0=(33.2579, "J/(mol*K)"),
-                CpInf=(108.088, "J/(mol*K)"),
-                label="""CH4""",
-                comment="""Thermo library: primaryThermoLibrary""",
-            ),
-            "[CH3]": NASA(
-                polynomials=[
-                    NASAPolynomial(
-                        coeffs=[
-                            3.67359,
-                            0.00201095,
-                            5.73022e-06,
-                            -6.87117e-09,
-                            2.54386e-12,
-                            16445,
-                            1.60456,
-                        ],
-                        Tmin=(200, "K"),
-                        Tmax=(1000, "K"),
-                    ),
-                    NASAPolynomial(
-                        coeffs=[
-                            2.28572,
-                            0.0072399,
-                            -2.98714e-06,
-                            5.95685e-10,
-                            -4.67154e-14,
-                            16775.6,
-                            8.48007,
-                        ],
-                        Tmin=(1000, "K"),
-                        Tmax=(3500, "K"),
-                    ),
-                ],
-                Tmin=(200, "K"),
-                Tmax=(3500, "K"),
-                E0=(136.42, "kJ/mol"),
-                Cp0=(33.2579, "J/(mol*K)"),
-                CpInf=(83.1447, "J/(mol*K)"),
-                label="""CH3""",
-                comment="""Thermo library: GRI-Mech3.0""",
-            ),
-            "[CH2]": NASA(
-                polynomials=[
-                    NASAPolynomial(
-                        coeffs=[
-                            4.01192,
-                            -0.000154978,
-                            3.26298e-06,
-                            -2.40422e-09,
-                            5.69497e-13,
-                            45867.7,
-                            0.533201,
-                        ],
-                        Tmin=(100, "K"),
-                        Tmax=(1104.62, "K"),
-                    ),
-                    NASAPolynomial(
-                        coeffs=[
-                            3.14983,
-                            0.00296674,
-                            -9.76056e-07,
-                            1.54115e-10,
-                            -9.50338e-15,
-                            46058.1,
-                            4.77808,
-                        ],
-                        Tmin=(1104.62, "K"),
-                        Tmax=(5000, "K"),
-                    ),
-                ],
-                Tmin=(100, "K"),
-                Tmax=(5000, "K"),
-                E0=(381.37, "kJ/mol"),
-                Cp0=(33.2579, "J/(mol*K)"),
-                CpInf=(58.2013, "J/(mol*K)"),
-                label="""CH2(T)""",
-                comment="""Thermo library: primaryThermoLibrary""",
-            ),
-            "O": NASA(
-                polynomials=[
-                    NASAPolynomial(
-                        coeffs=[
-                            4.05764,
-                            -0.000787936,
-                            2.90877e-06,
-                            -1.47519e-09,
-                            2.12842e-13,
-                            -30281.6,
-                            -0.311364,
-                        ],
-                        Tmin=(100, "K"),
-                        Tmax=(1130.24, "K"),
-                    ),
-                    NASAPolynomial(
-                        coeffs=[
-                            2.84325,
-                            0.00275109,
-                            -7.81031e-07,
-                            1.07244e-10,
-                            -5.79392e-15,
-                            -29958.6,
-                            5.91042,
-                        ],
-                        Tmin=(1130.24, "K"),
-                        Tmax=(5000, "K"),
-                    ),
-                ],
-                Tmin=(100, "K"),
-                Tmax=(5000, "K"),
-                E0=(-251.755, "kJ/mol"),
-                Cp0=(33.2579, "J/(mol*K)"),
-                CpInf=(58.2013, "J/(mol*K)"),
-                label="""H2O""",
-                comment="""Thermo library: primaryThermoLibrary""",
-            ),
-        }
-    
-        for spc in spcs[:3]:
->           cerm.add_species_to_core(spc)
-
-test/rmgpy/rmg/modelTest.py:753: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-rmgpy/rmg/model.py:1172: in add_species_to_core
-    self.core.phase_system.phases["Default"].add_species(spec, edge_phase=self.edge.phase_system.phases["Default"])
-rmgpy/rmg/reactors.py:292: in add_species
-    spec = to_rms(spc)
-rmgpy/rmg/reactors.py:695: in to_rms
-    th = obj.get_thermo_data()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
->   self.thermo = self.thermo.result()
-E   AttributeError: 'NoneType' object has no attribute 'result'
-
-rmgpy/species.py:770: AttributeError
 _ TestCoreEdgeReactionModel.test_check_for_existing_reaction_eliminates_identical_reactions _
 
-self = <modelTest.TestCoreEdgeReactionModel object at 0x7f1a97ddee50>
+self = <modelTest.TestCoreEdgeReactionModel object at 0x7f998b4ad090>
 
     def test_check_for_existing_reaction_eliminates_identical_reactions(self):
         """
@@ -2368,25 +1253,14 @@ self = <modelTest.TestCoreEdgeReactionModel object at 0x7f1a97ddee50>
         spcD.label = "[H][H]"
         spcB.generate_resonance_structures()
     
->       cerm.add_species_to_core(spcA)
+        for spc in (spcA, spcB, spcC, spcD):
+>           spc.thermo = THERMO_DICT[spc.molecule[0].to_smiles()]
+E           KeyError: '[H]'
 
-test/rmgpy/rmg/modelTest.py:808: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-rmgpy/rmg/model.py:1172: in add_species_to_core
-    self.core.phase_system.phases["Default"].add_species(spec, edge_phase=self.edge.phase_system.phases["Default"])
-rmgpy/rmg/reactors.py:292: in add_species
-    spec = to_rms(spc)
-rmgpy/rmg/reactors.py:695: in to_rms
-    th = obj.get_thermo_data()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
->   self.thermo = self.thermo.result()
-E   AttributeError: 'NoneType' object has no attribute 'result'
-
-rmgpy/species.py:770: AttributeError
+test/rmgpy/rmg/modelTest.py:627: KeyError
 _ TestCoreEdgeReactionModel.test_check_for_existing_reaction_keeps_identical_reactions_with_duplicate_flag _
 
-self = <modelTest.TestCoreEdgeReactionModel object at 0x7f1a97de6050>
+self = <modelTest.TestCoreEdgeReactionModel object at 0x7f998b4ad990>
 
     def test_check_for_existing_reaction_keeps_identical_reactions_with_duplicate_flag(
         self,
@@ -2401,31 +1275,15 @@ self = <modelTest.TestCoreEdgeReactionModel object at 0x7f1a97de6050>
         spcB = Species().from_smiles("C=C[CH2]C")
         spcC = Species().from_smiles("C=C=CC")
         spcD = Species().from_smiles("[H][H]")
-        spcA.label = "[H]"
-        spcB.label = "C=C[CH2]C"
-        spcC.label = "C=C=CC"
-        spcD.label = "[H][H]"
-        spcB.generate_resonance_structures()
     
->       cerm.add_species_to_core(spcA)
+        for spc in (spcA, spcB, spcC, spcD):
+>           spc.thermo = THERMO_DICT[spc.molecule[0].to_smiles()]
+E           KeyError: '[H]'
 
-test/rmgpy/rmg/modelTest.py:854: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-rmgpy/rmg/model.py:1172: in add_species_to_core
-    self.core.phase_system.phases["Default"].add_species(spec, edge_phase=self.edge.phase_system.phases["Default"])
-rmgpy/rmg/reactors.py:292: in add_species
-    spec = to_rms(spc)
-rmgpy/rmg/reactors.py:695: in to_rms
-    th = obj.get_thermo_data()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
->   self.thermo = self.thermo.result()
-E   AttributeError: 'NoneType' object has no attribute 'result'
-
-rmgpy/species.py:770: AttributeError
+test/rmgpy/rmg/modelTest.py:671: KeyError
 _ TestCoreEdgeReactionModel.test_check_for_existing_reaction_eliminates_identical_reactions_without_duplicate_flag _
 
-self = <modelTest.TestCoreEdgeReactionModel object at 0x7f1a97de6210>
+self = <modelTest.TestCoreEdgeReactionModel object at 0x7f998b4ad210>
 
     def test_check_for_existing_reaction_eliminates_identical_reactions_without_duplicate_flag(
         self,
@@ -2440,31 +1298,15 @@ self = <modelTest.TestCoreEdgeReactionModel object at 0x7f1a97de6210>
         spcB = Species().from_smiles("C=C[CH2]C")
         spcC = Species().from_smiles("C=C=CC")
         spcD = Species().from_smiles("[H][H]")
-        spcA.label = "[H]"
-        spcB.label = "C=C[CH2]C"
-        spcC.label = "C=C=CC"
-        spcD.label = "[H][H]"
-        spcB.generate_resonance_structures()
     
->       cerm.add_species_to_core(spcA)
+        for spc in (spcA, spcB, spcC, spcD):
+>           spc.thermo = THERMO_DICT[spc.molecule[0].to_smiles()]
+E           KeyError: '[H]'
 
-test/rmgpy/rmg/modelTest.py:902: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-rmgpy/rmg/model.py:1172: in add_species_to_core
-    self.core.phase_system.phases["Default"].add_species(spec, edge_phase=self.edge.phase_system.phases["Default"])
-rmgpy/rmg/reactors.py:292: in add_species
-    spec = to_rms(spc)
-rmgpy/rmg/reactors.py:695: in to_rms
-    th = obj.get_thermo_data()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
->   self.thermo = self.thermo.result()
-E   AttributeError: 'NoneType' object has no attribute 'result'
-
-rmgpy/species.py:770: AttributeError
+test/rmgpy/rmg/modelTest.py:723: KeyError
 _________________ TestSchrodinger.test_get_partition_function __________________
 
-self = <schrodingerTest.TestSchrodinger object at 0x7f1a97df5b50>
+self = <schrodingerTest.TestSchrodinger object at 0x7f998b579e10>
 
     def test_get_partition_function(self):
         """
@@ -2487,7 +1329,7 @@ E   TypeError: <lambda>() takes 1 positional argument but 2 were given
 rmgpy/statmech/schrodinger.pyx:69: TypeError
 ____________________ TestSchrodinger.test_get_heat_capacity ____________________
 
-self = <schrodingerTest.TestSchrodinger object at 0x7f1a97df5d10>
+self = <schrodingerTest.TestSchrodinger object at 0x7f998b579890>
 
     def test_get_heat_capacity(self):
         """
@@ -2510,7 +1352,7 @@ E   TypeError: <lambda>() takes 1 positional argument but 2 were given
 rmgpy/statmech/schrodinger.pyx:100: TypeError
 ______________________ TestSchrodinger.test_get_enthalpy _______________________
 
-self = <schrodingerTest.TestSchrodinger object at 0x7f1a97df5ed0>
+self = <schrodingerTest.TestSchrodinger object at 0x7f998b4b7190>
 
     def test_get_enthalpy(self):
         """
@@ -2533,7 +1375,7 @@ E   TypeError: <lambda>() takes 1 positional argument but 2 were given
 rmgpy/statmech/schrodinger.pyx:134: TypeError
 _______________________ TestSchrodinger.test_get_entropy _______________________
 
-self = <schrodingerTest.TestSchrodinger object at 0x7f1a97dfb0d0>
+self = <schrodingerTest.TestSchrodinger object at 0x7f998b4b73d0>
 
     def test_get_entropy(self):
         """
@@ -2556,7 +1398,7 @@ E   TypeError: <lambda>() takes 1 positional argument but 2 were given
 rmgpy/statmech/schrodinger.pyx:166: TypeError
 __________________ TestSchrodinger.test_get_density_of_states __________________
 
-self = <schrodingerTest.TestSchrodinger object at 0x7f1a97df5e90>
+self = <schrodingerTest.TestSchrodinger object at 0x7f998b4b7550>
 
     def test_get_density_of_states(self):
         """
@@ -2580,23 +1422,9 @@ E   TypeError: <lambda>() takes 1 positional argument but 2 were given
 
 rmgpy/statmech/schrodinger.pyx:282: TypeError
 =============================== warnings summary ===============================
-test/rmgpy/data/thermoTest.py:1472
-  /home/jackson/rmg/RMG-Py/test/rmgpy/data/thermoTest.py:1472: PytestCollectionWarning: cannot collect test class 'TestThermoAccuracyAromatics' because it has a __init__ constructor (from: test/rmgpy/data/thermoTest.py)
-    class TestThermoAccuracyAromatics:
-
-test/arkane/arkaneMainTest.py: 27 warnings
-  /home/jackson/rmg/RMG-Py/arkane/ess/gaussian.py:189: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
-  Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-    number = np.array(number, int)
-
 test/arkane/arkaneMainTest.py::TestArkaneExamples::test_arkane_examples
   /home/jackson/mambaforge/envs/rmg_env/lib/python3.7/site-packages/fontTools/misc/py23.py:14: DeprecationWarning: The py23 module has been deprecated and will be removed in a future release. Please update your code.
     DeprecationWarning,
-
-test/arkane/arkaneMainTest.py::TestArkaneExamples::test_arkane_examples
-  /home/jackson/rmg/RMG-Py/arkane/ess/qchem.py:200: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
-  Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-    number = np.array(number, int)
 
 test/rmgpy/transportDataTest.py::TestTransportData::test_to_cantera
   /home/jackson/rmg/RMG-Py/test/rmgpy/transportDataTest.py:175: DeprecationWarning: XML_Node::build: 
@@ -2605,583 +1433,6 @@ test/rmgpy/transportDataTest.py::TestTransportData::test_to_cantera
   files to the YAML format. See https://cantera.org/tutorials/legacy2yaml.html
   for more information.
     rot_relax=15.0))"""
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:5427: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:5539: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:5628: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:5672: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:5698: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:5860: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:5904: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:5930: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:6097: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:6141: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:6167: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:6295: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:7200: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:7470: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:7726: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:7840: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:8025: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:8128: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:9315: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:10169: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:10258: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:11178: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:20791: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:20884: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:21052: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:21078: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:21531: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:21711: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:21739: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:21927: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:22858: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:22951: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:23114: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:23297: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:23392: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:24051: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:24336: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:27050: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:27143: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:27280: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:27308: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:27491: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:28152: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:30542: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:38231: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:38277: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:38304: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:38507: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:39316: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:41060: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:41126: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:41383: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:42688: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:42759: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:43026: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:43634: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:43680: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:43707: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:51842: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:51867: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:51916: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:52269: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:52295: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:52359: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:52384: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:52461: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:22378: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:22405: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:22458: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:22486: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:22515: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:22545: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:22574: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:22602: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:22631: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:23066: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:23095: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:23125: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:23156: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:23186: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:23214: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:23242: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:23479: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:23508: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:23537: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:24531: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:24668: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:24742: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:24769: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:24798: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:26751: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:26779: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:33222: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:33684: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:33736: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:33780: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:34311: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:34339: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:34368: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:34817: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:34845: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:34938: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:35231: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:35330: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:35376: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:36210: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:36236: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:36783: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:37597: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:40266: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:40293: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:40321: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:40350: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:40378: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:40405: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:40433: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:40458: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:40484: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:40511: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:40537: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:41052: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:41160: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:41225: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:41874: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:44422: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:44449: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:44476: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:49272: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:50344: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:50369: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:50397: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:50424: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:50450: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:50610: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:50636: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:50663: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:50689: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:50716: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:50984: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:51613: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:51732: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-  <string>:51756: DeprecationWarning: invalid escape sequence \D
-
-test/rmgpy/data/kinetics/libraryTest.py::TestLibrary::test_loading_external_kinetic_library
-  <string>:68: DeprecationWarning: invalid escape sequence \H
-
-test/rmgpy/data/kinetics/libraryTest.py::TestLibrary::test_loading_external_kinetic_library
-  <string>:192: DeprecationWarning: invalid escape sequence \H
-
-test/rmgpy/data/kinetics/libraryTest.py::TestLibrary::test_loading_external_kinetic_library
-  <string>:273: DeprecationWarning: invalid escape sequence \H
 
 test/rmgpy/rmg/modelTest.py::TestCoreEdgeReactionModel::test_thermo_filter_species
   /home/jackson/rmg/RMG-Py/rmgpy/data/kinetics/database.py:140: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module's documentation for alternative uses
@@ -3193,25 +1444,7 @@ FAILED test/arkane/arkaneMainTest.py::TestArkaneExamples::test_arkane_examples
 FAILED test/arkane/commonTest.py::TestArkaneInput::test_species_statmech - In...
 FAILED test/arkane/commonTest.py::TestArkaneInput::test_species_thermo - Valu...
 FAILED test/arkane/commonTest.py::TestArkaneInput::test_transition_state_statmech
-FAILED test/arkane/encorr/aeTest.py::TestAE::test_write_to_database - Attribu...
-FAILED test/arkane/encorr/bacTest.py::TestBAC::test_test - AttributeError: 'E...
-FAILED test/arkane/encorr/bacTest.py::TestBAC::test_write_to_database - Attri...
-FAILED test/arkane/encorr/isodesmicTest.py::TestErrorCancelingReactionAndSpecies::test_error_canceling_reactions
-FAILED test/arkane/encorr/isodesmicTest.py::TestErrorCancelingScheme::test_find_error_canceling_reaction
-FAILED test/arkane/encorr/isodesmicTest.py::TestErrorCancelingScheme::test_multiple_error_canceling_reactions
-FAILED test/arkane/encorr/isodesmicTest.py::TestErrorCancelingScheme::test_calculate_target_enthalpy
-FAILED test/arkane/ess/factoryTest.py::TestThermo::test_ess_factory - FileNot...
-FAILED test/rmgpy/chemkinTest.py::TestThermoReadWrite::test_write_bidentate_species
-FAILED test/rmgpy/transportDataTest.py::TestTransportData::test_to_cantera - ...
-FAILED test/rmgpy/data/thermoTest.py::TestThermoDatabase::test_symmetry_added_by_get_thermo_data
-FAILED test/rmgpy/data/kinetics/familyTest.py::TestFamily::test_save_family
-FAILED test/rmgpy/data/kinetics/libraryTest.py::TestLibrary::test_loading_external_kinetic_library
-FAILED test/rmgpy/kinetics/chebyshevTest.py::TestChebyshev::test_coeffs - ass...
-FAILED test/rmgpy/kinetics/chebyshevTest.py::TestChebyshev::test_pickle - ass...
-FAILED test/rmgpy/kinetics/chebyshevTest.py::TestChebyshev::test_repr - asser...
 FAILED test/rmgpy/kinetics/uncertaintiesTest.py::TestUncertainties::test_expected_uncertainty
-FAILED test/rmgpy/rmg/modelTest.py::TestCoreEdgeReactionModel::test_thermo_filter_species
-FAILED test/rmgpy/rmg/modelTest.py::TestCoreEdgeReactionModel::test_thermo_filter_down
 FAILED test/rmgpy/rmg/modelTest.py::TestCoreEdgeReactionModel::test_check_for_existing_reaction_eliminates_identical_reactions
 FAILED test/rmgpy/rmg/modelTest.py::TestCoreEdgeReactionModel::test_check_for_existing_reaction_keeps_identical_reactions_with_duplicate_flag
 FAILED test/rmgpy/rmg/modelTest.py::TestCoreEdgeReactionModel::test_check_for_existing_reaction_eliminates_identical_reactions_without_duplicate_flag
@@ -3220,5 +1453,4 @@ FAILED test/rmgpy/statmech/schrodingerTest.py::TestSchrodinger::test_get_heat_ca
 FAILED test/rmgpy/statmech/schrodingerTest.py::TestSchrodinger::test_get_enthalpy
 FAILED test/rmgpy/statmech/schrodingerTest.py::TestSchrodinger::test_get_entropy
 FAILED test/rmgpy/statmech/schrodingerTest.py::TestSchrodinger::test_get_density_of_states
-ERROR test/arkane/arkaneMainTest.py::TestArkaneExamples::test_arkane_two_parameter_arrhenius_fit
-= 31 failed, 1 passed, 1522 deselected, 319 warnings, 1 error in 88.96s (0:01:28) =
+===== 13 failed, 6 passed, 1538 deselected, 3 warnings in 91.35s (0:01:31) =====

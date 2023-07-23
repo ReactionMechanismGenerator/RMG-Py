@@ -177,13 +177,10 @@ class TestTransportData:
 
         ct_transport = ct_species.transport
 
-        assert round(abs(rmg_ct_transport.geometry - ct_transport.geometry), 7) == 0
+        assert rmg_ct_transport.geometry == ct_transport.geometry
         assert round(abs(rmg_ct_transport.acentric_factor - ct_transport.acentric_factor), 7) == 0
         assert round(abs(rmg_ct_transport.diameter - ct_transport.diameter), 7) == 0
         assert round(abs(rmg_ct_transport.dipole - ct_transport.dipole), 7) == 0
         assert round(abs(rmg_ct_transport.polarizability - ct_transport.polarizability), 7) == 0
         assert round(abs(rmg_ct_transport.rotational_relaxation - ct_transport.rotational_relaxation), 7) == 0
         assert round(abs(rmg_ct_transport.well_depth - ct_transport.well_depth), 7) == 0
-
-
-#

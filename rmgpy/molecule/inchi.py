@@ -44,9 +44,9 @@ from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.molecule.util import agglomerate, partition, generate_combo, swap
 
 # search for (*) PARENTHESES
-PARENTHESES = re.compile(r'\((.[^\(\)]*)\)')
+PARENTHESES = re.compile(r"\((.[^\(\)]*)\)")
 
-INCHI_PREFIX = 'InChI=1'
+INCHI_PREFIX = "InChI=1"
 
 """
 The prefix with the information on the distribution of unpaired electrons across the atoms.
@@ -60,10 +60,10 @@ The indices refer to the 1-based indices in the InChI string (NOT the 0-based
     indices of the Molecule container!)
 
 """
-U_LAYER_PREFIX = '/u'
+U_LAYER_PREFIX = "/u"
 
 """The separator that separates the indices of the atoms that bear unpaired electrons."""
-U_LAYER_SEPARATOR = ','
+U_LAYER_SEPARATOR = ","
 
 """
 The prefix with the information on the distribution of the atoms 
@@ -78,24 +78,24 @@ The indices refer to the 1-based indices in the InChI string (NOT the 0-based
     indices of the Molecule container!)
 
 """
-P_LAYER_PREFIX = '/lp'
+P_LAYER_PREFIX = "/lp"
 
 """The separator that separates the indices of the atoms that bear unpaired electrons."""
-P_LAYER_SEPARATOR = ','
+P_LAYER_SEPARATOR = ","
 
-ulayer_pattern = re.compile(U_LAYER_PREFIX + r'(.*)')
-player_pattern = re.compile(P_LAYER_PREFIX + r'(.*)')
+ulayer_pattern = re.compile(U_LAYER_PREFIX + r"(.*)")
+player_pattern = re.compile(P_LAYER_PREFIX + r"(.*)")
 
 
 def decompose_aug_inchi(string):
     """
-    Converts an augmented inchi into 
-    - an inchi, 
+    Converts an augmented inchi into
+    - an inchi,
     - indices array for the atoms bearing unpaired electrons.
     - indices array for the atoms bearing (unexpected) lone pairs.
 
     Atoms that unexpectedly bear zero lone pairs will be mentioned as follows:
-    "x(0)", with x the index of the atom, and (0) denoting that the atom does not 
+    "x(0)", with x the index of the atom, and (0) denoting that the atom does not
     bear any lone pairs.
 
     The "x(0)" will be parsed into a tuple (x, 0).
@@ -116,14 +116,14 @@ def decompose_aug_inchi(string):
     u_indices, p_indices = [], []
     matches = re.findall(ulayer_pattern, string)
     if matches:
-        u_indices = list(map(int, matches.pop().split('/')[0].split(U_LAYER_SEPARATOR)))
+        u_indices = list(map(int, matches.pop().split("/")[0].split(U_LAYER_SEPARATOR)))
 
     matches = re.findall(player_pattern, string)
     if matches:
-        dummy = matches.pop().split('/')[0].split(P_LAYER_SEPARATOR)
+        dummy = matches.pop().split("/")[0].split(P_LAYER_SEPARATOR)
         for index in dummy:
-            if '(0)' in str(index):
-                index = int(str(index).split('(0)')[0])
+            if "(0)" in str(index):
+                index = int(str(index).split("(0)")[0])
                 p_indices.append((index, 0))
             else:
                 p_indices.append(int(index))
@@ -138,7 +138,7 @@ def remove_inchi_prefix(string):
     """
 
     if not INCHI_PREFIX in string:
-        raise InchiException('Not a valid InChI: {}'.format(string))
+        raise InchiException("Not a valid InChI: {}".format(string))
 
     return re.split(r"(InChI=1+)(S*)/", string)[-1]
 
@@ -154,7 +154,7 @@ def compose_aug_inchi(inchi, ulayer=None, player=None):
         temp=str,
     )
 
-    aug_inchi = INCHI_PREFIX + '/' if not INCHI_PREFIX in inchi else ''
+    aug_inchi = INCHI_PREFIX + "/" if not INCHI_PREFIX in inchi else ""
     aug_inchi += inchi
 
     for layer in [_f for _f in [ulayer, player] if _f]:
@@ -176,7 +176,7 @@ def compose_aug_inchi_key(inchi_key, ulayer=None, player=None):
     aug_inchi_key = inchi_key
 
     for layer in [_f for _f in [ulayer, player] if _f]:
-        aug_inchi_key += '-' + layer[1:]  # cut off the '/'
+        aug_inchi_key += "-" + layer[1:]  # cut off the '/'
 
     return aug_inchi_key
 
@@ -185,13 +185,14 @@ def compose_aug_inchi_key(inchi_key, ulayer=None, player=None):
 # Methods for parsing layers in InChI and auxiliary info #
 ##########################################################
 
+
 def _parse_h_layer(inchi):
     """
-    Converts the Mobile H layer of an inchi string into a 
+    Converts the Mobile H layer of an inchi string into a
     list of atom indices couples that carry a mobile hydrogen.
 
     Example:
-    The hydrogen of the hydroxyl group can migrate to the carbonyl 
+    The hydrogen of the hydroxyl group can migrate to the carbonyl
     oxygen.
 
     O=C-O
@@ -213,18 +214,18 @@ def _parse_h_layer(inchi):
         mobile_h_atoms=list,
     )
 
-    pieces = inchi.split('/')
+    pieces = inchi.split("/")
     h_layer = None
     for piece in pieces:
-        if piece.startswith('h'):
+        if piece.startswith("h"):
             h_layer = piece
             break
     else:
-        raise Exception('Could not find the hydrogen layer in the inchi: {}'.format(inchi))
+        raise Exception("Could not find the hydrogen layer in the inchi: {}".format(inchi))
 
     couples = []
     for match in re.findall(PARENTHESES, h_layer):
-        mobile_h_atoms = list(map(int, match[2:].split(',')))
+        mobile_h_atoms = list(map(int, match[2:].split(",")))
         couples.append(mobile_h_atoms)
 
     return couples
@@ -232,17 +233,17 @@ def _parse_h_layer(inchi):
 
 def _parse_e_layer(auxinfo):
     """
-    Converts the layer with equivalence information (E-layer) 
+    Converts the layer with equivalence information (E-layer)
     on atoms into a list of lists of equivalent atom indices.
 
     Example:
     Auxiliary info of InChI=1S/C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3:
     AuxInfo=1/0/N:1,8,4,6,2,7,3,5/E:(1,2)(3,4)(5,6)(7,8)/rA:8C.2C.2CCCCCC/rB:s1;s2;s3;s3;s5;s5;d7;/rC:;;;;;;;;
-    E-layer: 
+    E-layer:
 
     /E:(1,2)(3,4)(5,6)(7,8)/
 
-    denotes that atoms (1,2), (3,4), (5,6), (7,8) are equivalent and cannot be distinguished based on the 
+    denotes that atoms (1,2), (3,4), (5,6), (7,8) are equivalent and cannot be distinguished based on the
     implemented canonicalization algorithm.
 
     Returned object:
@@ -262,10 +263,10 @@ def _parse_e_layer(auxinfo):
         indices=list,
     )
 
-    pieces = auxinfo.split('/')
+    pieces = auxinfo.split("/")
     e_layer = None
     for piece in pieces:
-        if piece.startswith('E'):
+        if piece.startswith("E"):
             e_layer = piece[2:]  # cut off /E:
             break
     else:
@@ -273,7 +274,7 @@ def _parse_e_layer(auxinfo):
 
     equivalent_atoms = []
     for atomtuple in re.findall(PARENTHESES, e_layer):
-        indices = list(map(int, atomtuple.split(',')))
+        indices = list(map(int, atomtuple.split(",")))
         equivalent_atoms.append(indices)
 
     return equivalent_atoms
@@ -306,16 +307,16 @@ def _parse_n_layer(auxinfo):
         indices=list,
     )
 
-    pieces = auxinfo.split('/')
+    pieces = auxinfo.split("/")
     atom_numbers = None
     for piece in pieces:
-        if piece.startswith('N'):
+        if piece.startswith("N"):
             atom_numbers = piece[2:]  # cut off N:
             break
     else:
-        raise Exception('Could not find the N-layer in the auxiliary info: {}'.format(auxinfo))
+        raise Exception("Could not find the N-layer in the auxiliary info: {}".format(auxinfo))
 
-    indices = list(map(int, atom_numbers.split(',')))
+    indices = list(map(int, atom_numbers.split(",")))
 
     return indices
 
@@ -323,6 +324,7 @@ def _parse_n_layer(auxinfo):
 ###########################################
 # Methods for generating augmented layers #
 ###########################################
+
 
 def _has_unexpected_lone_pairs(mol):
     """
@@ -343,7 +345,8 @@ def _has_unexpected_lone_pairs(mol):
         except KeyError:
             raise Exception("Unrecognized element: {}".format(at.symbol))
         else:
-            if at.lone_pairs != exp: return True
+            if at.lone_pairs != exp:
+                return True
 
     return False
 
@@ -365,44 +368,6 @@ def _get_unpaired_electrons(mol):
             locations.append(index)
 
     return sorted(locations)
-
-
-def _generate_minimum_resonance_isomer(mol):
-    """
-    Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
-    electrons descriptor.
-
-    First, we generate all isomorphic resonance isomers.
-    Next, we return the candidate with the lowest unpaired electrons metric.
-
-    The metric is a sorted list with indices of the atoms that bear an unpaired electron
-
-    This function is currently deprecated since InChI effectively eliminates resonance,
-    see InChI, the IUPAC International Chemical Identifier, J. Cheminform 2015, 7, 23, doi: 10.1186/s13321-015-0068-4
-    """
-
-    cython.declare(
-        candidates=list,
-        sel=Molecule,
-        cand=Molecule,
-        metric_sel=list,
-        metric_cand=list,
-    )
-
-    warnings.warn("The _generate_minimum_resonance_isomer method is no longer used"
-                    " and may be removed in RMG version 2.3.", DeprecationWarning)
-
-    candidates = resonance.generate_isomorphic_resonance_structures(mol, saturate_h=True)
-
-    sel = candidates[0]
-    metric_sel = _get_unpaired_electrons(sel)
-    for cand in candidates[1:]:
-        metric_cand = _get_unpaired_electrons(cand)
-        if metric_cand < metric_sel:
-            sel = cand
-            metric_sel = metric_cand
-
-    return sel
 
 
 def _compute_agglomerate_distance(agglomerates, mol):
@@ -445,7 +410,8 @@ def _is_valid_combo(combo, mol, distances):
 
     # combo is valid if the distance is equal to the parameter distance
 
-    if len(distances) != len(new_distances): return False
+    if len(distances) != len(new_distances):
+        return False
 
     for orig_dist, new_dist in zip(distances, new_distances):
         # only compare the values of the dictionaries:
@@ -549,8 +515,8 @@ def _create_u_layer(mol, auxinfo):
 
     if mol.get_radical_count() == 0:
         return None
-    elif mol.get_formula() == 'H':
-        return U_LAYER_PREFIX + '1'
+    elif mol.get_formula() == "H":
+        return U_LAYER_PREFIX + "1"
 
     # create preliminary u-layer:
     u_layer = []
@@ -563,7 +529,7 @@ def _create_u_layer(mol, auxinfo):
         # select lowest u-layer:
         u_layer = _find_lowest_u_layer(mol, u_layer, equivalent_atoms)
 
-    return (U_LAYER_PREFIX + ','.join(map(str, u_layer)))
+    return U_LAYER_PREFIX + ",".join(map(str, u_layer))
 
 
 def _find_lowest_p_layer(minmol, p_layer, equivalent_atoms):
@@ -602,7 +568,7 @@ def _create_p_layer(mol, auxinfo):
         else:
             if at.lone_pairs != exp:
                 if at.lone_pairs == 0:
-                    p_layer.append('{}{}'.format(i, '(0)'))
+                    p_layer.append("{}{}".format(i, "(0)"))
                 else:
                     p_layer.extend([i + 1] * at.lone_pairs)
 
@@ -613,7 +579,7 @@ def _create_p_layer(mol, auxinfo):
         p_layer = _find_lowest_p_layer(mol, p_layer, equivalent_atoms)
 
     if p_layer:
-        return (P_LAYER_PREFIX + P_LAYER_SEPARATOR.join(map(str, p_layer)))
+        return P_LAYER_PREFIX + P_LAYER_SEPARATOR.join(map(str, p_layer))
     else:
         return None
 
@@ -635,8 +601,8 @@ def create_augmented_layers(mol):
 
     if mol.get_radical_count() == 0 and not _has_unexpected_lone_pairs(mol):
         return None, None
-    elif mol.get_formula() == 'H':
-        return U_LAYER_PREFIX + '1', None
+    elif mol.get_formula() == "H":
+        return U_LAYER_PREFIX + "1", None
     else:
         molcopy = mol.copy(deep=True)
 
@@ -645,7 +611,7 @@ def create_augmented_layers(mol):
             molcopy.remove_atom(h)
 
         rdkitmol = to_rdkit_mol(molcopy)
-        _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')  # suppress stereo warnings
+        _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options="-SNon")  # suppress stereo warnings
 
         # extract the atom numbers from N-layer of auxiliary info:
         atom_indices = _parse_n_layer(auxinfo)
@@ -664,6 +630,7 @@ def create_augmented_layers(mol):
 ##################################################################
 # Methods for fixing molecules generated from an augmented InChI #
 ##################################################################
+
 
 def _fix_triplet_to_singlet(mol, p_indices):
     """
@@ -762,7 +729,7 @@ def _convert_3_atom_2_bond_path(start, mol):
             at.label = str(i)
         # we have found the atom we are looking for
         recipe = ReactionRecipe()
-        recipe.add_action(['GAIN_RADICAL', start.label, 1])
+        recipe.add_action(["GAIN_RADICAL", start.label, 1])
 
         end = path[-1]
         end_original_charge = end.charge
@@ -770,9 +737,9 @@ def _convert_3_atom_2_bond_path(start, mol):
         # filter bonds from path and convert bond orders:
         bonds = path[1::2]  # odd elements
         for bond in bonds[::2]:  # even
-            recipe.add_action(['CHANGE_BOND', bond.atom1.label, -1, bond.atom2.label])
+            recipe.add_action(["CHANGE_BOND", bond.atom1.label, -1, bond.atom2.label])
         for bond in bonds[1::2]:  # odd
-            recipe.add_action(['CHANGE_BOND', bond.atom1.label, 1, bond.atom2.label])
+            recipe.add_action(["CHANGE_BOND", bond.atom1.label, 1, bond.atom2.label])
 
         end.charge += 1 if end.charge < 0 else -1
         recipe.apply_forward(mol)
@@ -780,7 +747,7 @@ def _convert_3_atom_2_bond_path(start, mol):
         if is_valid(mol):
             # unlabel atoms so that they never cause trouble downstream
             for i, at in enumerate(path[::2]):
-                at.label = ''
+                at.label = ""
             return True
         else:
             recipe.apply_reverse(mol)
@@ -789,7 +756,7 @@ def _convert_3_atom_2_bond_path(start, mol):
             # unlabel atoms so that they never cause trouble downstream
             for i, at in enumerate(path[::2]):
                 assert isinstance(at, Atom)
-                at.label = ''
+                at.label = ""
 
     return False
 
@@ -869,8 +836,7 @@ def _reset_lone_pairs(mol, p_indices):
             at.lone_pairs = count
         else:
             order = at.get_total_bond_order()
-            at.lone_pairs = (elements.PeriodicSystem.valence_electrons[
-                                at.symbol] - order - at.radical_electrons - at.charge) / 2
+            at.lone_pairs = (elements.PeriodicSystem.valence_electrons[at.symbol] - order - at.radical_electrons - at.charge) / 2
 
 
 def _fix_oxygen_unsaturated_bond(mol, u_indices):
@@ -934,10 +900,7 @@ def _is_unsaturated(mol):
     Does the molecule have a bond that's not single?
     Eg. a bond that is double or triple or benzene
     """
-    cython.declare(atom1=Atom,
-                   atom2=Atom,
-                   bonds=dict,
-                   bond=Bond)
+    cython.declare(atom1=Atom, atom2=Atom, bonds=dict, bond=Bond)
     for atom in mol.atoms:
         for bond in atom.bonds.values():
             if not bond.is_single():
@@ -987,8 +950,7 @@ def _fix_mobile_h(mol, inchi, u1, u2):
         # find central atom:
         central, original, new_partner = swap(mobile_hydrogens, [u1, u2])
 
-        central, original, new_partner = \
-            mol.atoms[central - 1], mol.atoms[original - 1], mol.atoms[new_partner - 1]
+        central, original, new_partner = mol.atoms[central - 1], mol.atoms[original - 1], mol.atoms[new_partner - 1]
 
         # search hydrogen atom and bond
         hydrogen = None
@@ -998,7 +960,7 @@ def _fix_mobile_h(mol, inchi, u1, u2):
                 mol.remove_bond(bond)
                 break
 
-        new_h_bond = Bond(new_partner, hydrogen, order='S')
+        new_h_bond = Bond(new_partner, hydrogen, order="S")
         mol.add_bond(new_h_bond)
 
         mol.get_bond(central, new_partner).decrement_order()
@@ -1072,9 +1034,10 @@ def _fix_unsaturated_bond_to_biradical(mol, inchi, u_indices):
         return mol
     else:
         raise Exception(
-            'Could not convert an unsaturated bond into a biradical for the \
-            indices {} provided in the molecule: {}.'
-                .format(u_indices, mol.to_adjacency_list())
+            "Could not convert an unsaturated bond into a biradical for the \
+            indices {} provided in the molecule: {}.".format(
+                u_indices, mol.to_adjacency_list()
+            )
         )
 
 
@@ -1092,8 +1055,9 @@ def _fix_unsaturated_bond(mol, indices, aug_inchi):
     correct = mol.get_radical_count() == (mol.multiplicity - 1)
 
     if not correct and not indices:
-        raise Exception('Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...' \
-                        .format(mol.to_adjacency_list(), aug_inchi))
+        raise Exception(
+            "Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...".format(mol.to_adjacency_list(), aug_inchi)
+        )
 
     unsaturated = _is_unsaturated(mol)
 
@@ -1114,13 +1078,11 @@ def _check_molecule(mol, aug_inchi):
     number of unpaired electrons, lone pairs and charge.
 
     """
-    cython.declare(inchi=str,
-                   at=Atom
-                   )
+    cython.declare(inchi=str, at=Atom)
 
     ConsistencyChecker.check_multiplicity(mol.get_radical_count(), mol.multiplicity)
     _, u_indices, _ = decompose_aug_inchi(str(aug_inchi))
-    assert(mol.get_radical_count() == len(u_indices))
+    assert mol.get_radical_count() == len(u_indices)
 
     for at in mol.atoms:
         ConsistencyChecker.check_partial_charge(at)
@@ -1139,12 +1101,14 @@ def fix_molecule(mol, aug_inchi):
     # ignore atoms that bear already unpaired electrons:
     for i in set(u_indices[:]):
         atom = mol.atoms[i - 1]
-        for _ in range(atom.radical_electrons): u_indices.remove(i)
+        for _ in range(atom.radical_electrons):
+            u_indices.remove(i)
 
         # ignore atoms that bear already lone pairs:
     for i in set(p_indices[:]):
         atom = mol.atoms[i - 1]
-        for _ in range(atom.lone_pairs): p_indices.remove(i)
+        for _ in range(atom.lone_pairs):
+            p_indices.remove(i)
 
     _fix_triplet_to_singlet(mol, p_indices)
 
@@ -1164,7 +1128,7 @@ class InChI(str):
 
     def __new__(self, inchi):
         if not INCHI_PREFIX in inchi:
-            raise InchiException('Not a valid InChI: {}'.format(inchi))
+            raise InchiException("Not a valid InChI: {}".format(inchi))
 
         return str.__new__(self, remove_inchi_prefix(inchi))
 

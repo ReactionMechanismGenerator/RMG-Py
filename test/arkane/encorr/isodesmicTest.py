@@ -93,7 +93,7 @@ class TestErrorCancelingReactionAndSpecies:
 
         # This reaction is not an isodesmic reaction, but that does not matter for the unit test
         rxn = ErrorCancelingReaction(ethane, {methyl: 2})
-        assert round(abs(rxn.calculate_target_thermo().value_si - 2 * 21000.0 * 4.184 - (2 * 20.0 * 4184 - 100.0 * 1000)), 7) == 0
+        assert round(abs(rxn.calculate_target_thermo().value_si - (2 * 21000.0 * 4.184 - (2 * 20.0 * 4184 - 100.0 * 1000))), 7) == 0
 
     def test_level_of_theory_consistency(self):
         """

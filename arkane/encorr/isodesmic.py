@@ -76,21 +76,25 @@ class ErrorCancelingSpecies:
         if isinstance(molecule, Molecule):
             self.molecule = molecule
         else:
-            raise ValueError(f'ErrorCancelingSpecies molecule attribute must be an rmgpy Molecule object. Instead a '
-                             f'{type(molecule)} object was given')
+            raise ValueError(
+                f"ErrorCancelingSpecies molecule attribute must be an rmgpy Molecule object. Instead a " f"{type(molecule)} object was given"
+            )
 
         if isinstance(level_of_theory, LOT):
             self.level_of_theory = level_of_theory
         else:
-            raise ValueError(f'The level of theory used to calculate the low level Hf298 must be provided '
-                             f'for consistency checks. Instead, a {type(level_of_theory)} object was given')
+            raise ValueError(
+                f"The level of theory used to calculate the low level Hf298 must be provided "
+                f"for consistency checks. Instead, a {type(level_of_theory)} object was given"
+            )
 
         if not isinstance(low_level_hf298, ScalarQuantity):
             if isinstance(low_level_hf298, tuple):
                 low_level_hf298 = ScalarQuantity(*low_level_hf298)
             else:
-                raise TypeError(f'Low level Hf298 should be a ScalarQuantity object or its tuple representation, but '
-                                f'received {low_level_hf298} instead.')
+                raise TypeError(
+                    f"Low level Hf298 should be a ScalarQuantity object or its tuple representation, but " f"received {low_level_hf298} instead."
+                )
         self.low_level_hf298 = low_level_hf298
 
         # If the species is a reference species, then the high level data is already known
@@ -98,13 +102,14 @@ class ErrorCancelingSpecies:
             if isinstance(high_level_hf298, tuple):
                 high_level_hf298 = ScalarQuantity(*high_level_hf298)
             else:
-                raise TypeError(f'High level Hf298 should be a ScalarQuantity object or its tuple representation, but '
-                                f'received {high_level_hf298} instead.')
+                raise TypeError(
+                    f"High level Hf298 should be a ScalarQuantity object or its tuple representation, but " f"received {high_level_hf298} instead."
+                )
         self.high_level_hf298 = high_level_hf298
         self.source = source
 
     def __repr__(self):
-        return f'<ErrorCancelingSpecies {self.molecule.to_smiles()}>'
+        return f"<ErrorCancelingSpecies {self.molecule.to_smiles()}>"
 
 
 class ErrorCancelingReaction:
@@ -131,22 +136,24 @@ class ErrorCancelingReaction:
         # Perform a consistency check that all species are using the same level of theory
         for spcs in species.keys():
             if spcs.level_of_theory != self.level_of_theory:
-                raise ValueError(f'Species {spcs} has level of theory {spcs.level_of_theory}, which does not match the '
-                                 f'level of theory of the reaction of {self.level_of_theory}')
+                raise ValueError(
+                    f"Species {spcs} has level of theory {spcs.level_of_theory}, which does not match the "
+                    f"level of theory of the reaction of {self.level_of_theory}"
+                )
 
         # Does not include the target, which is handled separately.
         self.species = species
 
     def __repr__(self):
-        reactant_string = f'1*{self.target.molecule.to_smiles()}'
-        product_string = ''
+        reactant_string = f"1*{self.target.molecule.to_smiles()}"
+        product_string = ""
         for spcs, coeff in self.species.items():
             if coeff > 0:
-                product_string += f' + {int(coeff)}*{spcs.molecule.to_smiles()}'
+                product_string += f" + {int(coeff)}*{spcs.molecule.to_smiles()}"
             else:
-                reactant_string += f' + {-1*int(coeff)}*{spcs.molecule.to_smiles()}'
+                reactant_string += f" + {-1*int(coeff)}*{spcs.molecule.to_smiles()}"
 
-        return f'<ErrorCancelingReaction {reactant_string} <=> {product_string[3:]} >'
+        return f"<ErrorCancelingReaction {reactant_string} <=> {product_string[3:]} >"
 
     def calculate_target_thermo(self):
         """
@@ -155,12 +162,10 @@ class ErrorCancelingReaction:
         Returns:
             rmgpy.quantity.ScalarQuantity: Hf298 in 'J/mol' estimated for the target species
         """
-        low_level_h_rxn = sum(spec[0].low_level_hf298.value_si*spec[1] for spec in self.species.items()) - \
-            self.target.low_level_hf298.value_si
+        low_level_h_rxn = sum(spec[0].low_level_hf298.value_si * spec[1] for spec in self.species.items()) - self.target.low_level_hf298.value_si
 
-        target_thermo = sum(spec[0].high_level_hf298.value_si*spec[1] for spec in self.species.items()) - \
-            low_level_h_rxn
-        return ScalarQuantity(target_thermo, 'J/mol')
+        target_thermo = sum(spec[0].high_level_hf298.value_si * spec[1] for spec in self.species.items()) - low_level_h_rxn
+        return ScalarQuantity(target_thermo, "J/mol")
 
 
 class SpeciesConstraints:
@@ -197,12 +202,10 @@ class SpeciesConstraints:
         constraint_map = {label: i for i, label in enumerate(self.target.molecule.get_element_count().keys())}
         if self.conserve_bonds:
             j = len(constraint_map)
-            constraint_map.update(
-                {label: j + i for i, label in enumerate(self.target.molecule.enumerate_bonds().keys())})
+            constraint_map.update({label: j + i for i, label in enumerate(self.target.molecule.enumerate_bonds().keys())})
         if self.conserve_ring_size:
             j = len(constraint_map)
-            possible_rings_sizes = set(f'{len(sssr)}_ring' for sssr in
-                                       self.target.molecule.get_smallest_set_of_smallest_rings())
+            possible_rings_sizes = set(f"{len(sssr)}_ring" for sssr in self.target.molecule.get_smallest_set_of_smallest_rings())
             constraint_map.update({label: j + i for i, label in enumerate(possible_rings_sizes)})
 
         return constraint_map
@@ -233,7 +236,7 @@ class SpeciesConstraints:
             if self.conserve_ring_size:
                 rings = molecule.get_smallest_set_of_smallest_rings()
                 for ring in rings:
-                    constraint_vector[self.constraint_map[f'{len(ring)}_ring']] += 1
+                    constraint_vector[self.constraint_map[f"{len(ring)}_ring"]] += 1
         except KeyError:  # This molecule has a feature not found in the target molecule. Return None to exclude this
             return None
 
@@ -279,8 +282,7 @@ class ErrorCancelingScheme:
         """
 
         self.target = target
-        self.constraints = SpeciesConstraints(target, reference_set, conserve_bonds=conserve_bonds,
-                                              conserve_ring_size=conserve_ring_size)
+        self.constraints = SpeciesConstraints(target, reference_set, conserve_bonds=conserve_bonds, conserve_ring_size=conserve_ring_size)
 
         self.target_constraint, self.constraint_matrix = self.constraints.calculate_constraints()
         self.reference_species = self.constraints.reference_species
@@ -302,35 +304,36 @@ class ErrorCancelingScheme:
             - Indices (of the subset) for the species that participated in the return reaction
         """
         if milp_software is None:
-            milp_software = ['lpsolve']
+            milp_software = ["lpsolve"]
             if pyo is not None:
-                milp_software.append('pyomo')
+                milp_software.append("pyomo")
 
         # Define the constraints based on the provided subset
         c_matrix = np.take(self.constraint_matrix, reference_subset, axis=0)
         c_matrix = np.tile(c_matrix, (2, 1))
         sum_constraints = np.sum(c_matrix, 1, dtype=int)
-        targets = -1*self.target_constraint
+        targets = -1 * self.target_constraint
         m = c_matrix.shape[0]
         n = c_matrix.shape[1]
-        split = int(m/2)
+        split = int(m / 2)
 
         for solver in milp_software:
-            if solver == 'pyomo':
+            if solver == "pyomo":
                 # Check that pyomo is available
                 if pyo is None:
-                    raise ImportError('Cannot import optional package pyomo. Either install this dependency with '
-                                      '`conda install -c conda-forge pyomo glpk` or set milp_software to `lpsolve`')
+                    raise ImportError(
+                        "Cannot import optional package pyomo. Either install this dependency with "
+                        "`conda install -c conda-forge pyomo glpk` or set milp_software to `lpsolve`"
+                    )
 
                 # Setup the MILP problem using pyomo
                 lp_model = pyo.ConcreteModel()
                 lp_model.i = pyo.RangeSet(0, m - 1)
                 lp_model.j = pyo.RangeSet(0, n - 1)
-                lp_model.r = pyo.RangeSet(0, split-1)  # indices before the split correspond to reactants
+                lp_model.r = pyo.RangeSet(0, split - 1)  # indices before the split correspond to reactants
                 lp_model.p = pyo.RangeSet(split, m - 1)  # indices after the split correspond to products
                 lp_model.v = pyo.Var(lp_model.i, domain=pyo.NonNegativeIntegers)  # The stoich. coef. we are solving for
-                lp_model.c = pyo.Param(lp_model.i, lp_model.j, initialize=lambda _, i_ind, j_ind: c_matrix[i_ind,
-                                                                                                           j_ind])
+                lp_model.c = pyo.Param(lp_model.i, lp_model.j, initialize=lambda _, i_ind, j_ind: c_matrix[i_ind, j_ind])
                 lp_model.s = pyo.Param(lp_model.i, initialize=lambda _, i_ind: sum_constraints[i_ind])
                 lp_model.t = pyo.Param(lp_model.j, initialize=lambda _, j_ind: targets[j_ind])
 
@@ -338,7 +341,7 @@ class ErrorCancelingScheme:
                 lp_model.constraints = pyo.Constraint(lp_model.j, rule=_pyo_constraint_rule)
 
                 # Solve the MILP problem using the GLPK MILP solver (https://www.gnu.org/software/glpk/)
-                opt = pyo.SolverFactory('glpk')
+                opt = pyo.SolverFactory("glpk")
                 results = opt.solve(lp_model, timelimit=1)
 
                 # Return the solution if a valid reaction is found. Otherwise continue to next solver
@@ -347,31 +350,30 @@ class ErrorCancelingScheme:
                     solution = lp_model.v.extract_values().values()
                     break
 
-            elif solver == 'lpsolve':
+            elif solver == "lpsolve":
                 # Save the current signal handler
                 sig = signal.getsignal(signal.SIGINT)
 
                 # Setup the MILP problem using lpsolve
-                lp = lpsolve('make_lp', 0, m)
-                lpsolve('set_verbose', lp, 2)  # Reduce the logging from lpsolve
-                lpsolve('set_obj_fn', lp, sum_constraints)
-                lpsolve('set_minim', lp)
+                lp = lpsolve("make_lp", 0, m)
+                lpsolve("set_verbose", lp, 2)  # Reduce the logging from lpsolve
+                lpsolve("set_obj_fn", lp, sum_constraints)
+                lpsolve("set_minim", lp)
 
                 for j in range(n):
-                    lpsolve('add_constraint', lp, np.concatenate((c_matrix[:split, j], -1*c_matrix[split:, j])), EQ,
-                            targets[j])
+                    lpsolve("add_constraint", lp, np.concatenate((c_matrix[:split, j], -1 * c_matrix[split:, j])), EQ, targets[j])
 
-                lpsolve('add_constraint', lp, np.ones(m), LE, 20)  # Use at most 20 species (including replicates)
-                lpsolve('set_timeout', lp, 1)  # Move on if lpsolve can't find a solution quickly
+                lpsolve("add_constraint", lp, np.ones(m), LE, 20)  # Use at most 20 species (including replicates)
+                lpsolve("set_timeout", lp, 1)  # Move on if lpsolve can't find a solution quickly
 
                 # Constrain v_i to be 4 or less
                 for i in range(m):
-                    lpsolve('set_upbo', lp, i, 4)
+                    lpsolve("set_upbo", lp, i, 4)
 
                 # All v_i must be integers
-                lpsolve('set_int', lp, [True]*m)
+                lpsolve("set_int", lp, [True] * m)
 
-                status = lpsolve('solve', lp)
+                status = lpsolve("solve", lp)
 
                 # Reset signal handling since lpsolve changed it
                 try:
@@ -379,14 +381,16 @@ class ErrorCancelingScheme:
                 except ValueError:
                     # This is not being run in the main thread, so we cannot reset signal
                     pass
+                except TypeError:
+                    print("Failed to reset signal handling in LPSolve - are you running pytest?")
 
                 # Return the solution if a valid reaction is found. Otherwise continue to next solver
                 if status == 0:
-                    _, solution = lpsolve('get_solution', lp)[:2]
+                    _, solution = lpsolve("get_solution", lp)[:2]
                     break
 
             else:
-                raise ValueError(f'Unrecognized MILP solver {solver} for isodesmic reaction generation')
+                raise ValueError(f"Unrecognized MILP solver {solver} for isodesmic reaction generation")
 
         else:
             return None, None
@@ -461,7 +465,7 @@ class ErrorCancelingScheme:
         for i, rxn in enumerate(reaction_list):
             h298_list[i] = rxn.calculate_target_thermo().value_si
 
-        return ScalarQuantity(np.median(h298_list), 'J/mol'), reaction_list
+        return ScalarQuantity(np.median(h298_list), "J/mol"), reaction_list
 
 
 def _pyo_obj_expression(model):
@@ -469,14 +473,14 @@ def _pyo_obj_expression(model):
 
 
 def _pyo_constraint_rule(model, col):
-    return sum(model.v[row] * model.c[row, col] for row in model.r) - \
-           sum(model.v[row] * model.c[row, col] for row in model.p) == model.t[col]
+    return sum(model.v[row] * model.c[row, col] for row in model.r) - sum(model.v[row] * model.c[row, col] for row in model.p) == model.t[col]
 
 
 class IsodesmicScheme(ErrorCancelingScheme):
     """
     An error canceling reaction where the number and type of both atoms and bonds are conserved
     """
+
     def __init__(self, target, reference_set):
         super().__init__(target, reference_set, conserve_bonds=True, conserve_ring_size=False)
 
@@ -485,9 +489,10 @@ class IsodesmicRingScheme(ErrorCancelingScheme):
     """
     A stricter form of the traditional isodesmic reaction scheme where the number of each ring size is also conserved
     """
+
     def __init__(self, target, reference_set):
         super().__init__(target, reference_set, conserve_bonds=True, conserve_ring_size=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
