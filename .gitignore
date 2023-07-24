@@ -27,10 +27,8 @@ documentation/build/*
 # (These will be unique to each developer's setup)
 make.inc
 
-# Example output files
-examples/*
-!examples/*/input.py
-!examples/**/*.ipynb
+# output files
+rmgpy/output/*
 
 # NetBeans project files
 nbproject/*
