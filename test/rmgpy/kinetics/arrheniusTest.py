@@ -57,7 +57,7 @@ class TestArrhenius:
     Contains unit tests of the :class:`Arrhenius` class.
     """
 
-    def setup_class(self):
+    def setup_method(self):
         self.A = 1.0e12
         self.n = 0.5
         self.Ea = 41.84
@@ -79,37 +79,37 @@ class TestArrhenius:
         """
         Test that the Arrhenius A property was properly set.
         """
-        assert abs(self.arrhenius.A.value_si * 1e6 - self.A) < 1e0
+        assert abs(self.arrhenius.A.value_si * 1e6) - abs(self.A) < 1e0
 
     def test_n(self):
         """
         Test that the Arrhenius n property was properly set.
         """
-        assert round(abs(self.arrhenius.n.value_si - self.n), 6) == 0
+        assert round(abs(self.arrhenius.n.value_si) - abs(self.n), 6) == 0
 
     def test_ea(self):
         """
         Test that the Arrhenius Ea property was properly set.
         """
-        assert round(abs(self.arrhenius.Ea.value_si * 0.001 - self.Ea), 6) == 0
+        assert round(abs(self.arrhenius.Ea.value_si * 0.001) - abs(self.Ea), 6) == 0
 
     def test_temperature0(self):
         """
         Test that the Arrhenius T0 property was properly set.
         """
-        assert round(abs(self.arrhenius.T0.value_si - self.T0), 6) == 0
+        assert round(abs(self.arrhenius.T0.value_si) - abs(self.T0), 6) == 0
 
     def test_temperature_min(self):
         """
         Test that the Arrhenius Tmin property was properly set.
         """
-        assert round(abs(self.arrhenius.Tmin.value_si - self.Tmin), 6) == 0
+        assert round(abs(self.arrhenius.Tmin.value_si) - abs(self.Tmin), 6) == 0
 
     def test_temperature_max(self):
         """
         Test that the Arrhenius Tmax property was properly set.
         """
-        assert round(abs(self.arrhenius.Tmax.value_si - self.Tmax), 6) == 0
+        assert round(abs(self.arrhenius.Tmax.value_si) - abs(self.Tmax), 6) == 0
 
     def test_comment(self):
         """
@@ -148,7 +148,7 @@ class TestArrhenius:
         )
         for T, kexp in zip(Tlist, kexplist):
             kact = self.arrhenius.get_rate_coefficient(T)
-            assert abs(kexp - kact) < 1e-4 * kexp
+            assert abs(kexp) - abs(kact) < 1e-4 * kexp
 
     def test_change_t0(self):
         """
@@ -160,7 +160,7 @@ class TestArrhenius:
         assert self.arrhenius.T0.value_si == 300
         for T, kexp in zip(Tlist, k0list):
             kact = self.arrhenius.get_rate_coefficient(T)
-            assert abs(kexp - kact) < 1e-6 * kexp
+            assert abs(kexp) - abs(kact) < 1e-6 * kexp
 
     def test_fit_to_data(self):
         """
@@ -171,11 +171,11 @@ class TestArrhenius:
         arrhenius = Arrhenius().fit_to_data(Tdata, kdata, kunits="m^3/(mol*s)")
         assert float(self.arrhenius.T0.value_si) == 1
         for T, k in zip(Tdata, kdata):
-            assert abs(k - arrhenius.get_rate_coefficient(T)) < 1e-6 * k
-        assert abs(arrhenius.A.value_si - self.arrhenius.A.value_si) < 1e0
-        assert round(abs(arrhenius.n.value_si - self.arrhenius.n.value_si), 1) == 0, 4
-        assert round(abs(arrhenius.Ea.value_si - self.arrhenius.Ea.value_si), 2) == 0
-        assert round(abs(arrhenius.T0.value_si - self.arrhenius.T0.value_si), 4) == 0
+            assert abs(k) - abs(arrhenius.get_rate_coefficient(T)) < 1e-6 * k
+        assert abs(arrhenius.A.value_si) - abs(self.arrhenius.A.value_si) < 1e0
+        assert round(abs(arrhenius.n.value_si) - abs(self.arrhenius.n.value_si), 1) == 0, 4
+        assert round(abs(arrhenius.Ea.value_si) - abs(self.arrhenius.Ea.value_si), 2) == 0
+        assert round(abs(arrhenius.T0.value_si) - abs(self.arrhenius.T0.value_si), 4) == 0
 
     def test_fit_to_negative_data(self):
         """
@@ -186,11 +186,11 @@ class TestArrhenius:
         arrhenius = Arrhenius().fit_to_data(Tdata, kdata, kunits="m^3/(mol*s)")
         assert float(self.arrhenius.T0.value_si) == 1
         for T, k in zip(Tdata, kdata):
-            assert abs(k - arrhenius.get_rate_coefficient(T)) < 1e-6 * abs(k)
-        assert abs(arrhenius.A.value_si - -1 * self.arrhenius.A.value_si) < 1e0
-        assert round(abs(arrhenius.n.value_si - self.arrhenius.n.value_si), 1) == 0, 4
-        assert round(abs(arrhenius.Ea.value_si - self.arrhenius.Ea.value_si), 2) == 0
-        assert round(abs(arrhenius.T0.value_si - self.arrhenius.T0.value_si), 4) == 0
+            assert abs(k) - abs(arrhenius.get_rate_coefficient(T)) < 1e-6 * abs(k)
+        assert abs(arrhenius.A.value_si) - abs(-1 * self.arrhenius.A.value_si) < 1e0
+        assert round(abs(arrhenius.n.value_si) - abs(self.arrhenius.n.value_si), 1) == 0
+        assert round(abs(arrhenius.Ea.value_si) - abs(self.arrhenius.Ea.value_si), 2) == 0
+        assert round(abs(arrhenius.T0.value_si) - abs(self.arrhenius.T0.value_si), 4) == 0
 
     def test_pickle(self):
         """
@@ -200,16 +200,16 @@ class TestArrhenius:
         import pickle
 
         arrhenius = pickle.loads(pickle.dumps(self.arrhenius, -1))
-        assert abs(self.arrhenius.A.value - arrhenius.A.value) < 1e0
+        assert abs(self.arrhenius.A.value) - abs(arrhenius.A.value) < 1e0
         assert self.arrhenius.A.units == arrhenius.A.units
-        assert round(abs(self.arrhenius.n.value - arrhenius.n.value), 4) == 0
-        assert round(abs(self.arrhenius.Ea.value - arrhenius.Ea.value), 4) == 0
+        assert round(abs(self.arrhenius.n.value) - abs(arrhenius.n.value), 4) == 0
+        assert round(abs(self.arrhenius.Ea.value) - abs(arrhenius.Ea.value), 4) == 0
         assert self.arrhenius.Ea.units == arrhenius.Ea.units
-        assert round(abs(self.arrhenius.T0.value - arrhenius.T0.value), 4) == 0
+        assert round(abs(self.arrhenius.T0.value) - abs(arrhenius.T0.value), 4) == 0
         assert self.arrhenius.T0.units == arrhenius.T0.units
-        assert round(abs(self.arrhenius.Tmin.value - arrhenius.Tmin.value), 4) == 0
+        assert round(abs(self.arrhenius.Tmin.value) - abs(arrhenius.Tmin.value), 4) == 0
         assert self.arrhenius.Tmin.units == arrhenius.Tmin.units
-        assert round(abs(self.arrhenius.Tmax.value - arrhenius.Tmax.value), 4) == 0
+        assert round(abs(self.arrhenius.Tmax.value) - abs(arrhenius.Tmax.value), 4) == 0
         assert self.arrhenius.Tmax.units == arrhenius.Tmax.units
         assert self.arrhenius.comment == arrhenius.comment
 
@@ -222,16 +222,16 @@ class TestArrhenius:
         exec("arrhenius = {0!r}".format(self.arrhenius), globals(), namespace)
         assert "arrhenius" in namespace
         arrhenius = namespace["arrhenius"]
-        assert abs(self.arrhenius.A.value - arrhenius.A.value) < 1e0
+        assert abs(self.arrhenius.A.value) - abs(arrhenius.A.value) < 1e0
         assert self.arrhenius.A.units == arrhenius.A.units
-        assert round(abs(self.arrhenius.n.value - arrhenius.n.value), 4) == 0
-        assert round(abs(self.arrhenius.Ea.value - arrhenius.Ea.value), 4) == 0
+        assert round(abs(self.arrhenius.n.value) - abs(arrhenius.n.value), 4) == 0
+        assert round(abs(self.arrhenius.Ea.value) - abs(arrhenius.Ea.value), 4) == 0
         assert self.arrhenius.Ea.units == arrhenius.Ea.units
-        assert round(abs(self.arrhenius.T0.value - arrhenius.T0.value), 4) == 0
+        assert round(abs(self.arrhenius.T0.value) - abs(arrhenius.T0.value), 4) == 0
         assert self.arrhenius.T0.units == arrhenius.T0.units
-        assert round(abs(self.arrhenius.Tmin.value - arrhenius.Tmin.value), 4) == 0
+        assert round(abs(self.arrhenius.Tmin.value) - abs(arrhenius.Tmin.value), 4) == 0
         assert self.arrhenius.Tmin.units == arrhenius.Tmin.units
-        assert round(abs(self.arrhenius.Tmax.value - arrhenius.Tmax.value), 4) == 0
+        assert round(abs(self.arrhenius.Tmax.value) - abs(arrhenius.Tmax.value), 4) == 0
         assert self.arrhenius.Tmax.units == arrhenius.Tmax.units
         assert self.arrhenius.comment == arrhenius.comment
 
@@ -244,7 +244,7 @@ class TestArrhenius:
         self.arrhenius.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
             kact = self.arrhenius.get_rate_coefficient(T)
-            assert abs(2 * kexp - kact) < 1e-6 * kexp
+            assert abs(2 * kexp) - abs(kact) < 1e-6 * kexp
 
     def test_to_cantera_kinetics(self):
         """
@@ -252,9 +252,9 @@ class TestArrhenius:
         a cantera Reaction object
         """
         ctArrhenius = self.arrhenius.to_cantera_kinetics()
-        assert round(abs(ctArrhenius.pre_exponential_factor - 1e9), 6) == 0
-        assert round(abs(ctArrhenius.temperature_exponent - 0.5), 7) == 0
-        assert round(abs(ctArrhenius.activation_energy - 41.84e6), 7) == 0
+        assert round(abs(ctArrhenius.pre_exponential_factor) - abs(1e9), 6) == 0
+        assert round(abs(ctArrhenius.temperature_exponent) - abs(0.5), 7) == 0
+        assert round(abs(ctArrhenius.activation_energy) - abs(41.84e6), 7) == 0
 
     def test_to_arrhenius_ep(self):
         """
@@ -263,7 +263,7 @@ class TestArrhenius:
         arr_rate = self.arrhenius.get_rate_coefficient(500)
         arr_ep = self.arrhenius.to_arrhenius_ep()
         arr_ep_rate = arr_ep.get_rate_coefficient(500, 10)  # the second number should not matter
-        assert round(abs(arr_rate - arr_ep_rate), 7) == 0
+        assert round(abs(arr_rate) - abs(arr_ep_rate), 7) == 0
 
     def test_to_arrhenius_ep_with_alpha_and_hrxn(self):
         """
@@ -272,9 +272,9 @@ class TestArrhenius:
         hrxn = 5
         arr_rate = self.arrhenius.get_rate_coefficient(500)
         arr_ep = self.arrhenius.to_arrhenius_ep(alpha=1, dHrxn=hrxn)
-        assert round(abs(1.0 - arr_ep.alpha.value_si), 7) == 0
+        assert round(abs(1.0) - abs(arr_ep.alpha.value_si), 7) == 0
         arr_ep_rate = arr_ep.get_rate_coefficient(500, hrxn)
-        assert round(abs(arr_rate - arr_ep_rate), 7) == 0
+        assert round(abs(arr_rate) - abs(arr_ep_rate), 7) == 0
 
     def test_to_arrhenius_ep_throws_error_with_just_alpha(self):
         with pytest.raises(Exception):
@@ -311,37 +311,37 @@ class TestArrheniusEP:
         """
         Test that the ArrheniusEP A property was properly set.
         """
-        assert abs(self.arrhenius.A.value_si * 1e6 - self.A) < 1e0
+        assert abs(self.arrhenius.A.value_si * 1e6) - abs(self.A) < 1e0
 
     def test_n(self):
         """
         Test that the ArrheniusEP n property was properly set.
         """
-        assert round(abs(self.arrhenius.n.value_si - self.n), 6) == 0
+        assert round(abs(self.arrhenius.n.value_si) - abs(self.n), 6) == 0
 
     def test_alpha(self):
         """
         Test that the ArrheniusEP alpha property was properly set.
         """
-        assert round(abs(self.arrhenius.alpha.value_si - self.alpha), 6) == 0
+        assert round(abs(self.arrhenius.alpha.value_si) - abs(self.alpha), 6) == 0
 
     def test_e0(self):
         """
         Test that the ArrheniusEP E0 property was properly set.
         """
-        assert round(abs(self.arrhenius.E0.value_si * 0.001 - self.E0), 6) == 0
+        assert round(abs(self.arrhenius.E0.value_si * 0.001) - abs(self.E0), 6) == 0
 
     def test_temperature_min(self):
         """
         Test that the ArrheniusEP Tmin property was properly set.
         """
-        assert round(abs(self.arrhenius.Tmin.value_si - self.Tmin), 6) == 0
+        assert round(abs(self.arrhenius.Tmin.value_si) - abs(self.Tmin), 6) == 0
 
     def test_temperature_max(self):
         """
         Test that the ArrheniusEP Tmax property was properly set.
         """
-        assert round(abs(self.arrhenius.Tmax.value_si - self.Tmax), 6) == 0
+        assert round(abs(self.arrhenius.Tmax.value_si) - abs(self.Tmax), 6) == 0
 
     def test_comment(self):
         """
@@ -382,7 +382,7 @@ class TestArrheniusEP:
             kact = self.arrhenius.get_rate_coefficient(
                 T,
             )
-            assert abs(kexp - kact) < 1e-4 * kexp
+            assert abs(kexp) - abs(kact) < 1e-4 * kexp
 
     def test_pickle(self):
         """
@@ -392,15 +392,15 @@ class TestArrheniusEP:
         import pickle
 
         arrhenius = pickle.loads(pickle.dumps(self.arrhenius, -1))
-        assert abs(self.arrhenius.A.value - arrhenius.A.value) < 1e0
+        assert abs(self.arrhenius.A.value) - abs(arrhenius.A.value) < 1e0
         assert self.arrhenius.A.units == arrhenius.A.units
-        assert round(abs(self.arrhenius.n.value - arrhenius.n.value), 4) == 0
-        assert round(abs(self.arrhenius.alpha.value - arrhenius.alpha.value), 4) == 0
-        assert round(abs(self.arrhenius.E0.value - arrhenius.E0.value), 4) == 0
+        assert round(abs(self.arrhenius.n.value) - abs(arrhenius.n.value), 4) == 0
+        assert round(abs(self.arrhenius.alpha.value) - abs(arrhenius.alpha.value), 4) == 0
+        assert round(abs(self.arrhenius.E0.value) - abs(arrhenius.E0.value), 4) == 0
         assert self.arrhenius.E0.units == arrhenius.E0.units
-        assert round(abs(self.arrhenius.Tmin.value - arrhenius.Tmin.value), 4) == 0
+        assert round(abs(self.arrhenius.Tmin.value) - abs(arrhenius.Tmin.value), 4) == 0
         assert self.arrhenius.Tmin.units == arrhenius.Tmin.units
-        assert round(abs(self.arrhenius.Tmax.value - arrhenius.Tmax.value), 4) == 0
+        assert round(abs(self.arrhenius.Tmax.value) - abs(arrhenius.Tmax.value), 4) == 0
         assert self.arrhenius.Tmax.units == arrhenius.Tmax.units
         assert self.arrhenius.comment == arrhenius.comment
 
@@ -413,15 +413,15 @@ class TestArrheniusEP:
         exec("arrhenius = {0!r}".format(self.arrhenius), globals(), namespace)
         assert "arrhenius" in namespace
         arrhenius = namespace["arrhenius"]
-        assert abs(self.arrhenius.A.value - arrhenius.A.value) < 1e0
+        assert abs(self.arrhenius.A.value) - abs(arrhenius.A.value) < 1e0
         assert self.arrhenius.A.units == arrhenius.A.units
-        assert round(abs(self.arrhenius.n.value - arrhenius.n.value), 4) == 0
-        assert round(abs(self.arrhenius.alpha.value - arrhenius.alpha.value), 4) == 0
-        assert round(abs(self.arrhenius.E0.value - arrhenius.E0.value), 4) == 0
+        assert round(abs(self.arrhenius.n.value) - abs(arrhenius.n.value), 4) == 0
+        assert round(abs(self.arrhenius.alpha.value) - abs(arrhenius.alpha.value), 4) == 0
+        assert round(abs(self.arrhenius.E0.value) - abs(arrhenius.E0.value), 4) == 0
         assert self.arrhenius.E0.units == arrhenius.E0.units
-        assert round(abs(self.arrhenius.Tmin.value - arrhenius.Tmin.value), 4) == 0
+        assert round(abs(self.arrhenius.Tmin.value) - abs(arrhenius.Tmin.value), 4) == 0
         assert self.arrhenius.Tmin.units == arrhenius.Tmin.units
-        assert round(abs(self.arrhenius.Tmax.value - arrhenius.Tmax.value), 4) == 0
+        assert round(abs(self.arrhenius.Tmax.value) - abs(arrhenius.Tmax.value), 4) == 0
         assert self.arrhenius.Tmax.units == arrhenius.Tmax.units
         assert self.arrhenius.comment == arrhenius.comment
 
@@ -434,7 +434,7 @@ class TestArrheniusEP:
         self.arrhenius.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
             kact = self.arrhenius.get_rate_coefficient(T)
-            assert abs(2 * kexp - kact) < 1e-6 * kexp
+            assert abs(2 * kexp) - abs(kact) < 1e-6 * kexp
 
 
 class TestArrheniusBM:
@@ -549,37 +549,37 @@ class TestArrheniusBM:
         """
         Test that the ArrheniusBM A property was properly set.
         """
-        assert abs(self.arrhenius_bm.A.value_si - self.A) < 1e0
+        assert abs(self.arrhenius_bm.A.value_si) - abs(self.A) < 1e0
 
     def test_n(self):
         """
         Test that the ArrheniusBM n property was properly set.
         """
-        assert round(abs(self.arrhenius_bm.n.value_si - self.n), 6) == 0
+        assert round(abs(self.arrhenius_bm.n.value_si) - abs(self.n), 6) == 0
 
     def test_w0(self):
         """
         Test that the ArrheniusBM w0 property was properly set.
         """
-        assert round(abs(self.arrhenius_bm.w0.value_si - self.w0), 6) == 0
+        assert round(abs(self.arrhenius_bm.w0.value_si) - abs(self.w0), 6) == 0
 
     def test_e0(self):
         """
         Test that the ArrheniusBM E0 property was properly set.
         """
-        assert round(abs(self.arrhenius_bm.E0.value_si - self.E0), 6) == 0
+        assert round(abs(self.arrhenius_bm.E0.value_si) - abs(self.E0), 6) == 0
 
     def test_temperature_min(self):
         """
         Test that the ArrheniusBM Tmin property was properly set.
         """
-        assert round(abs(self.arrhenius_bm.Tmin.value_si - self.Tmin), 6) == 0
+        assert round(abs(self.arrhenius_bm.Tmin.value_si) - abs(self.Tmin), 6) == 0
 
     def test_temperature_max(self):
         """
         Test that the ArrheniusBM Tmax property was properly set.
         """
-        assert round(abs(self.arrhenius_bm.Tmax.value_si - self.Tmax), 6) == 0
+        assert round(abs(self.arrhenius_bm.Tmax.value_si) - abs(self.Tmax), 6) == 0
 
     def test_is_temperature_valid(self):
         """
@@ -609,9 +609,9 @@ class TestArrheniusBM:
         )
 
         arrhenius_bm = ArrheniusBM().fit_to_reactions([reaction], w0=self.w0)
-        assert abs(arrhenius_bm.A.value_si - self.arrhenius_bm.A.value_si) < 1.5e1
-        assert round(abs(arrhenius_bm.n.value_si - self.arrhenius_bm.n.value_si), 1) == 0, 4
-        assert round(abs(arrhenius_bm.E0.value_si - self.arrhenius_bm.E0.value_si), 1) == 0
+        assert abs(arrhenius_bm.A.value_si) - abs(self.arrhenius_bm.A.value_si) < 1.5e1
+        assert round(abs(arrhenius_bm.n.value_si) - abs(self.arrhenius_bm.n.value_si), 1) == 0
+        assert round(abs(arrhenius_bm.E0.value_si) - abs(self.arrhenius_bm.E0.value_si), 1) == 0
 
     def test_get_activation_energy(self):
         """
@@ -619,7 +619,7 @@ class TestArrheniusBM:
         """
         Hrxn = -44000  # J/mol
         Ea = self.arrhenius_bm.get_activation_energy(Hrxn)
-        assert abs(Ea - 95074) < 1e1
+        assert abs(Ea) - abs(95074) < 1e1
 
 
 class TestPDepArrhenius:
@@ -669,7 +669,7 @@ class TestPDepArrhenius:
         """
         assert len(self.kinetics.pressures.value_si) == 2
         for i in range(2):
-            assert round(abs(self.kinetics.pressures.value_si[i] * 1e-5 - self.pressures[i]), 4) == 0
+            assert round(abs(self.kinetics.pressures.value_si[i] * 1e-5) - abs(self.pressures[i]), 4) == 0
 
     def test_arrhenius(self):
         """
@@ -677,16 +677,16 @@ class TestPDepArrhenius:
         """
         assert len(self.kinetics.arrhenius) == 2
         for i in range(2):
-            assert abs(self.kinetics.arrhenius[i].A.value - self.arrhenius[i].A.value) < 1e0
+            assert abs(self.kinetics.arrhenius[i].A.value) - abs(self.arrhenius[i].A.value) < 1e0
             assert self.kinetics.arrhenius[i].A.units == self.arrhenius[i].A.units
-            assert round(abs(self.kinetics.arrhenius[i].n.value - self.arrhenius[i].n.value), 4) == 0
-            assert round(abs(self.kinetics.arrhenius[i].Ea.value - self.arrhenius[i].Ea.value), 4) == 0
+            assert round(abs(self.kinetics.arrhenius[i].n.value) - abs(self.arrhenius[i].n.value), 4) == 0
+            assert round(abs(self.kinetics.arrhenius[i].Ea.value) - abs(self.arrhenius[i].Ea.value), 4) == 0
             assert self.kinetics.arrhenius[i].Ea.units == self.arrhenius[i].Ea.units
-            assert round(abs(self.kinetics.arrhenius[i].T0.value - self.arrhenius[i].T0.value), 4) == 0
+            assert round(abs(self.kinetics.arrhenius[i].T0.value) - abs(self.arrhenius[i].T0.value), 4) == 0
             assert self.kinetics.arrhenius[i].T0.units == self.arrhenius[i].T0.units
-            assert round(abs(self.kinetics.arrhenius[i].Tmin.value - self.arrhenius[i].Tmin.value), 4) == 0
+            assert round(abs(self.kinetics.arrhenius[i].Tmin.value) - abs(self.arrhenius[i].Tmin.value), 4) == 0
             assert self.kinetics.arrhenius[i].Tmin.units == self.arrhenius[i].Tmin.units
-            assert round(abs(self.kinetics.arrhenius[i].Tmax.value - self.arrhenius[i].Tmax.value), 4) == 0
+            assert round(abs(self.kinetics.arrhenius[i].Tmax.value) - abs(self.arrhenius[i].Tmax.value), 4) == 0
             assert self.kinetics.arrhenius[i].Tmax.units == self.arrhenius[i].Tmax.units
             assert self.kinetics.arrhenius[i].comment == self.arrhenius[i].comment
 
@@ -694,25 +694,25 @@ class TestPDepArrhenius:
         """
         Test that the PDepArrhenius Tmin property was properly set.
         """
-        assert round(abs(self.kinetics.Tmin.value_si - self.Tmin), 6) == 0
+        assert round(abs(self.kinetics.Tmin.value_si) - abs(self.Tmin), 6) == 0
 
     def test_temperature_max(self):
         """
         Test that the PDepArrhenius Tmax property was properly set.
         """
-        assert round(abs(self.kinetics.Tmax.value_si - self.Tmax), 6) == 0
+        assert round(abs(self.kinetics.Tmax.value_si) - abs(self.Tmax), 6) == 0
 
     def test_pressure_min(self):
         """
         Test that the PDepArrhenius Pmin property was properly set.
         """
-        assert round(abs(self.kinetics.Pmin.value_si * 1e-5 - self.Pmin), 6) == 0
+        assert round(abs(self.kinetics.Pmin.value_si * 1e-5) - abs(self.Pmin), 6) == 0
 
     def test_pressure_max(self):
         """
         Test that the PDepArrhenius Pmax property was properly set.
         """
-        assert round(abs(self.kinetics.Pmax.value_si * 1e-5 - self.Pmax), 6) == 0
+        assert round(abs(self.kinetics.Pmax.value_si * 1e-5) - abs(self.Pmax), 6) == 0
 
     def test_comment(self):
         """
@@ -748,7 +748,7 @@ class TestPDepArrhenius:
         ]:
             k0 = self.kinetics.get_rate_coefficient(T, P)
             k1 = self.arrhenius0.get_rate_coefficient(T)
-            assert abs(k0 - k1) < 1e-6 * k1
+            assert abs(k0) - abs(k1) < 1e-6 * k1
         P = 1e6
         for T in [
             300,
@@ -767,7 +767,7 @@ class TestPDepArrhenius:
         ]:
             k0 = self.kinetics.get_rate_coefficient(T, P)
             k1 = self.arrhenius1.get_rate_coefficient(T)
-            assert abs(k0 - k1) < 1e-6 * k1
+            assert abs(k0) - abs(k1) < 1e-6 * k1
         P = 1e5
         for T in [
             300,
@@ -786,7 +786,7 @@ class TestPDepArrhenius:
         ]:
             k0 = self.kinetics.get_rate_coefficient(T, P)
             k1 = math.sqrt(self.arrhenius0.get_rate_coefficient(T) * self.arrhenius1.get_rate_coefficient(T))
-            assert abs(k0 - k1) < 1e-6 * k1
+            assert abs(k0) - abs(k1) < 1e-6 * k1
 
     def test_fit_to_data(self):
         """
@@ -804,7 +804,7 @@ class TestPDepArrhenius:
         kinetics = PDepArrhenius().fit_to_data(Tdata, Pdata, kdata, kunits="s^-1")
         for t in range(len(Tdata)):
             for p in range(len(Pdata)):
-                assert abs(kinetics.get_rate_coefficient(Tdata[t], Pdata[p]) - kdata[t, p]) < 1e-6 * kdata[t, p]
+                assert abs(kinetics.get_rate_coefficient(Tdata[t], Pdata[p])) - abs(kdata[t, p]) < 1e-6 * kdata[t, p]
 
     def test_pickle(self):
         """
@@ -820,21 +820,21 @@ class TestPDepArrhenius:
         assert len(self.kinetics.arrhenius) == Narrh
         assert len(kinetics.arrhenius) == Narrh
         for i in range(Narrh):
-            assert round(abs(self.kinetics.pressures.value[i] - kinetics.pressures.value[i]), 4) == 0
-            assert abs(self.kinetics.arrhenius[i].A.value - kinetics.arrhenius[i].A.value) < 1e0
+            assert round(abs(self.kinetics.pressures.value[i]) - abs(kinetics.pressures.value[i]), 4) == 0
+            assert abs(self.kinetics.arrhenius[i].A.value) - abs(kinetics.arrhenius[i].A.value) < 1e0
             assert self.kinetics.arrhenius[i].A.units == kinetics.arrhenius[i].A.units
-            assert round(abs(self.kinetics.arrhenius[i].n.value - kinetics.arrhenius[i].n.value), 7) == 0
-            assert round(abs(self.kinetics.arrhenius[i].T0.value - kinetics.arrhenius[i].T0.value), 4) == 0
+            assert round(abs(self.kinetics.arrhenius[i].n.value) - abs(kinetics.arrhenius[i].n.value), 7) == 0
+            assert round(abs(self.kinetics.arrhenius[i].T0.value) - abs(kinetics.arrhenius[i].T0.value), 4) == 0
             assert self.kinetics.arrhenius[i].T0.units == kinetics.arrhenius[i].T0.units
-            assert round(abs(self.kinetics.arrhenius[i].Ea.value - kinetics.arrhenius[i].Ea.value), 4) == 0
+            assert round(abs(self.kinetics.arrhenius[i].Ea.value) - abs(kinetics.arrhenius[i].Ea.value), 4) == 0
             assert self.kinetics.arrhenius[i].Ea.units == kinetics.arrhenius[i].Ea.units
-        assert round(abs(self.kinetics.Tmin.value - kinetics.Tmin.value), 4) == 0
+        assert round(abs(self.kinetics.Tmin.value) - abs(kinetics.Tmin.value), 4) == 0
         assert self.kinetics.Tmin.units == kinetics.Tmin.units
-        assert round(abs(self.kinetics.Tmax.value - kinetics.Tmax.value), 4) == 0
+        assert round(abs(self.kinetics.Tmax.value) - abs(kinetics.Tmax.value), 4) == 0
         assert self.kinetics.Tmax.units == kinetics.Tmax.units
-        assert round(abs(self.kinetics.Pmin.value - kinetics.Pmin.value), 4) == 0
+        assert round(abs(self.kinetics.Pmin.value) - abs(kinetics.Pmin.value), 4) == 0
         assert self.kinetics.Pmin.units == kinetics.Pmin.units
-        assert round(abs(self.kinetics.Pmax.value - kinetics.Pmax.value), 4) == 0
+        assert round(abs(self.kinetics.Pmax.value) - abs(kinetics.Pmax.value), 4) == 0
         assert self.kinetics.Pmax.units == kinetics.Pmax.units
         assert self.kinetics.comment == kinetics.comment
 
@@ -853,21 +853,21 @@ class TestPDepArrhenius:
         assert len(self.kinetics.arrhenius) == Narrh
         assert len(kinetics.arrhenius) == Narrh
         for i in range(Narrh):
-            assert round(abs(self.kinetics.pressures.value[i] - kinetics.pressures.value[i]), 4) == 0
-            assert abs(self.kinetics.arrhenius[i].A.value - kinetics.arrhenius[i].A.value) < 1e0
+            assert round(abs(self.kinetics.pressures.value[i]) - abs(kinetics.pressures.value[i]), 4) == 0
+            assert abs(self.kinetics.arrhenius[i].A.value) - abs(kinetics.arrhenius[i].A.value) < 1e0
             assert self.kinetics.arrhenius[i].A.units == kinetics.arrhenius[i].A.units
-            assert round(abs(self.kinetics.arrhenius[i].n.value - kinetics.arrhenius[i].n.value), 7) == 0
-            assert round(abs(self.kinetics.arrhenius[i].T0.value - kinetics.arrhenius[i].T0.value), 4) == 0
+            assert round(abs(self.kinetics.arrhenius[i].n.value) - abs(kinetics.arrhenius[i].n.value), 7) == 0
+            assert round(abs(self.kinetics.arrhenius[i].T0.value) - abs(kinetics.arrhenius[i].T0.value), 4) == 0
             assert self.kinetics.arrhenius[i].T0.units == kinetics.arrhenius[i].T0.units
-            assert round(abs(self.kinetics.arrhenius[i].Ea.value - kinetics.arrhenius[i].Ea.value), 4) == 0
+            assert round(abs(self.kinetics.arrhenius[i].Ea.value) - abs(kinetics.arrhenius[i].Ea.value), 4) == 0
             assert self.kinetics.arrhenius[i].Ea.units == kinetics.arrhenius[i].Ea.units
-        assert round(abs(self.kinetics.Tmin.value - kinetics.Tmin.value), 4) == 0
+        assert round(abs(self.kinetics.Tmin.value) - abs(kinetics.Tmin.value), 4) == 0
         assert self.kinetics.Tmin.units == kinetics.Tmin.units
-        assert round(abs(self.kinetics.Tmax.value - kinetics.Tmax.value), 4) == 0
+        assert round(abs(self.kinetics.Tmax.value) - abs(kinetics.Tmax.value), 4) == 0
         assert self.kinetics.Tmax.units == kinetics.Tmax.units
-        assert round(abs(self.kinetics.Pmin.value - kinetics.Pmin.value), 4) == 0
+        assert round(abs(self.kinetics.Pmin.value) - abs(kinetics.Pmin.value), 4) == 0
         assert self.kinetics.Pmin.units == kinetics.Pmin.units
-        assert round(abs(self.kinetics.Pmax.value - kinetics.Pmax.value), 4) == 0
+        assert round(abs(self.kinetics.Pmax.value) - abs(kinetics.Pmax.value), 4) == 0
         assert self.kinetics.Pmax.units == kinetics.Pmax.units
         assert self.kinetics.comment == kinetics.comment
 
@@ -880,7 +880,7 @@ class TestPDepArrhenius:
         self.kinetics.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
             kact = self.kinetics.get_rate_coefficient(T, 1e5)
-            assert abs(2 * kexp - kact) < 1e-6 * kexp
+            assert abs(2 * kexp) - abs(kact) < 1e-6 * kexp
 
 
 class TestMultiArrhenius:
@@ -935,13 +935,13 @@ class TestMultiArrhenius:
         """
         Test that the MultiArrhenius Tmin property was properly set.
         """
-        assert round(abs(self.kinetics.Tmin.value_si - self.Tmin), 6) == 0
+        assert round(abs(self.kinetics.Tmin.value_si) - abs(self.Tmin), 6) == 0
 
     def test_temperature_max(self):
         """
         Test that the MultiArrhenius Tmax property was properly set.
         """
-        assert round(abs(self.kinetics.Tmax.value_si - self.Tmax), 6) == 0
+        assert round(abs(self.kinetics.Tmax.value_si) - abs(self.Tmax), 6) == 0
 
     def test_comment(self):
         """
@@ -980,7 +980,7 @@ class TestMultiArrhenius:
         )
         for T, kexp in zip(Tlist, kexplist):
             kact = self.kinetics.get_rate_coefficient(T)
-            assert abs(kexp - kact) < 1e-4 * kexp
+            assert abs(kexp) - abs(kact) < 1e-4 * kexp
 
     def test_pickle(self):
         """
@@ -992,16 +992,16 @@ class TestMultiArrhenius:
         kinetics = pickle.loads(pickle.dumps(self.kinetics, -1))
         assert len(self.kinetics.arrhenius) == len(kinetics.arrhenius)
         for arrh0, arrh in zip(self.kinetics.arrhenius, kinetics.arrhenius):
-            assert abs(arrh0.A.value - arrh.A.value) < 1e-18
+            assert abs(arrh0.A.value) - abs(arrh.A.value) < 1e-18
             assert arrh0.A.units == arrh.A.units
-            assert round(abs(arrh0.n.value - arrh.n.value), 4) == 0
-            assert round(abs(arrh0.Ea.value - arrh.Ea.value), 4) == 0
+            assert round(abs(arrh0.n.value) - abs(arrh.n.value), 4) == 0
+            assert round(abs(arrh0.Ea.value) - abs(arrh.Ea.value), 4) == 0
             assert arrh0.Ea.units == arrh.Ea.units
-            assert round(abs(arrh0.T0.value - arrh.T0.value), 4) == 0
+            assert round(abs(arrh0.T0.value) - abs(arrh.T0.value), 4) == 0
             assert arrh0.T0.units == arrh.T0.units
-        assert round(abs(self.kinetics.Tmin.value - kinetics.Tmin.value), 4) == 0
+        assert round(abs(self.kinetics.Tmin.value) - abs(kinetics.Tmin.value), 4) == 0
         assert self.kinetics.Tmin.units == kinetics.Tmin.units
-        assert round(abs(self.kinetics.Tmax.value - kinetics.Tmax.value), 4) == 0
+        assert round(abs(self.kinetics.Tmax.value) - abs(kinetics.Tmax.value), 4) == 0
         assert self.kinetics.Tmax.units == kinetics.Tmax.units
         assert self.kinetics.comment == kinetics.comment
 
@@ -1016,16 +1016,16 @@ class TestMultiArrhenius:
         kinetics = namespace["kinetics"]
         assert len(self.kinetics.arrhenius) == len(kinetics.arrhenius)
         for arrh0, arrh in zip(self.kinetics.arrhenius, kinetics.arrhenius):
-            assert abs(arrh0.A.value - arrh.A.value) < 1e-18
+            assert abs(arrh0.A.value) - abs(arrh.A.value) < 1e-18
             assert arrh0.A.units == arrh.A.units
-            assert round(abs(arrh0.n.value - arrh.n.value), 4) == 0
-            assert round(abs(arrh0.Ea.value - arrh.Ea.value), 4) == 0
+            assert round(abs(arrh0.n.value) - abs(arrh.n.value), 4) == 0
+            assert round(abs(arrh0.Ea.value) - abs(arrh.Ea.value), 4) == 0
             assert arrh0.Ea.units == arrh.Ea.units
-            assert round(abs(arrh0.T0.value - arrh.T0.value), 4) == 0
+            assert round(abs(arrh0.T0.value) - abs(arrh.T0.value), 4) == 0
             assert arrh0.T0.units == arrh.T0.units
-        assert round(abs(self.kinetics.Tmin.value - kinetics.Tmin.value), 4) == 0
+        assert round(abs(self.kinetics.Tmin.value) - abs(kinetics.Tmin.value), 4) == 0
         assert self.kinetics.Tmin.units == kinetics.Tmin.units
-        assert round(abs(self.kinetics.Tmax.value - kinetics.Tmax.value), 4) == 0
+        assert round(abs(self.kinetics.Tmax.value) - abs(kinetics.Tmax.value), 4) == 0
         assert self.kinetics.Tmax.units == kinetics.Tmax.units
         assert self.kinetics.comment == kinetics.comment
 
@@ -1036,10 +1036,10 @@ class TestMultiArrhenius:
         answer = self.single_kinetics.arrhenius[0]
         fitted = self.single_kinetics.to_arrhenius()
 
-        assert abs(fitted.A.value_si - answer.A.value_si) < 1e0
-        assert round(abs(fitted.n.value_si - answer.n.value_si), 1) == 0, 4
-        assert round(abs(fitted.Ea.value_si - answer.Ea.value_si), 2) == 0
-        assert round(abs(fitted.T0.value_si - answer.T0.value_si), 4) == 0
+        assert abs(fitted.A.value_si) - abs(answer.A.value_si) < 1e0
+        assert round(abs(fitted.n.value_si) - abs(answer.n.value_si), 1) == 0, 4
+        assert round(abs(fitted.Ea.value_si) - abs(answer.Ea.value_si), 2) == 0
+        assert round(abs(fitted.T0.value_si) - abs(answer.T0.value_si), 4) == 0
 
     def test_to_arrhenius_temperature_range(self):
         """
@@ -1047,10 +1047,10 @@ class TestMultiArrhenius:
         """
         answer = self.single_kinetics.arrhenius[0]
         fitted = self.single_kinetics.to_arrhenius(Tmin=800, Tmax=1200)
-        assert round(abs(fitted.Tmin.value_si - 800.0), 7) == 0
-        assert round(abs(fitted.Tmax.value_si - 1200.0), 7) == 0
+        assert round(abs(fitted.Tmin.value_si) - abs(800.0), 7) == 0
+        assert round(abs(fitted.Tmax.value_si) - abs(1200.0), 7) == 0
         for T in [800, 1000, 1200]:
-            assert round(abs(fitted.get_rate_coefficient(T) / answer.get_rate_coefficient(T) - 1.0), 7) == 0
+            assert round(abs(fitted.get_rate_coefficient(T) / answer.get_rate_coefficient(T)) - abs(1.0), 7) == 0
 
     def test_to_arrhenius_multiple(self):
         """
@@ -1058,10 +1058,10 @@ class TestMultiArrhenius:
         """
         answer = self.kinetics
         fitted = self.kinetics.to_arrhenius(Tmin=800, Tmax=1200)
-        assert round(abs(fitted.Tmin.value_si - 800.0), 7) == 0
-        assert round(abs(fitted.Tmax.value_si - 1200.0), 7) == 0
+        assert round(abs(fitted.Tmin.value_si) - abs(800.0), 7) == 0
+        assert round(abs(fitted.Tmax.value_si) - abs(1200.0), 7) == 0
         for T in [800, 1000, 1200]:
-            assert abs(fitted.get_rate_coefficient(T) / answer.get_rate_coefficient(T) - 1.0) < 0.05
+            assert abs(fitted.get_rate_coefficient(T) / answer.get_rate_coefficient(T)) - abs(1.0) < 0.05
 
     def test_change_rate(self):
         """
@@ -1072,7 +1072,7 @@ class TestMultiArrhenius:
         self.kinetics.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
             kact = self.kinetics.get_rate_coefficient(T)
-            assert abs(2 * kexp - kact) < 1e-6 * kexp
+            assert abs(2 * kexp) - abs(kact) < 1e-6 * kexp
 
 
 class TestMultiPDepArrhenius:
@@ -1164,25 +1164,25 @@ class TestMultiPDepArrhenius:
         """
         Test that the MultiPDepArrhenius Tmin property was properly set.
         """
-        assert round(abs(self.kinetics.Tmin.value_si - self.Tmin), 6) == 0
+        assert round(abs(self.kinetics.Tmin.value_si) - abs(self.Tmin), 6) == 0
 
     def test_temperature_max(self):
         """
         Test that the MultiPDepArrhenius Tmax property was properly set.
         """
-        assert round(abs(self.kinetics.Tmax.value_si - self.Tmax), 6) == 0
+        assert round(abs(self.kinetics.Tmax.value_si) - abs(self.Tmax), 6) == 0
 
     def test_pressure_min(self):
         """
         Test that the MultiPDepArrhenius Pmin property was properly set.
         """
-        assert round(abs(self.kinetics.Pmin.value_si * 1e-5 - self.Pmin), 6) == 0
+        assert round(abs(self.kinetics.Pmin.value_si * 1e-5) - abs(self.Pmin), 6) == 0
 
     def test_pressure_max(self):
         """
         Test that the MultiPDepArrhenius Pmax property was properly set.
         """
-        assert round(abs(self.kinetics.Pmax.value_si * 1e-5 - self.Pmax), 6) == 0
+        assert round(abs(self.kinetics.Pmax.value_si * 1e-5) - abs(self.Pmax), 6) == 0
 
     def test_comment(self):
         """
@@ -1260,7 +1260,7 @@ class TestMultiPDepArrhenius:
             for j in range(Plist.shape[0]):
                 kexp = kexplist[i, j]
                 kact = self.kinetics.get_rate_coefficient(Tlist[i], Plist[j])
-                assert abs(kexp - kact) < 1e-4 * kexp
+                assert abs(kexp) - abs(kact) < 1e-4 * kexp
 
     def test_get_rate_coefficient_diff_plist(self):
         """
@@ -1317,7 +1317,7 @@ class TestMultiPDepArrhenius:
             for j in range(Plist.shape[0]):
                 kexp = kexplist[i, j]
                 kact = self.kinetics.get_rate_coefficient(Tlist[i], Plist[j])
-                assert abs(kexp - kact) < 1e-4 * kexp
+                assert abs(kexp) - abs(kact) < 1e-4 * kexp
 
     def test_pickle(self):
         """
@@ -1328,9 +1328,9 @@ class TestMultiPDepArrhenius:
 
         kinetics = pickle.loads(pickle.dumps(self.kinetics, -1))
         assert len(self.kinetics.arrhenius) == len(kinetics.arrhenius)
-        assert round(abs(self.kinetics.Tmin.value - kinetics.Tmin.value), 4) == 0
+        assert round(abs(self.kinetics.Tmin.value) - abs(kinetics.Tmin.value), 4) == 0
         assert self.kinetics.Tmin.units == kinetics.Tmin.units
-        assert round(abs(self.kinetics.Tmax.value - kinetics.Tmax.value), 4) == 0
+        assert round(abs(self.kinetics.Tmax.value) - abs(kinetics.Tmax.value), 4) == 0
         assert self.kinetics.Tmax.units == kinetics.Tmax.units
         assert self.kinetics.comment == kinetics.comment
 
@@ -1344,9 +1344,9 @@ class TestMultiPDepArrhenius:
         assert "kinetics" in namespace
         kinetics = namespace["kinetics"]
         assert len(self.kinetics.arrhenius) == len(kinetics.arrhenius)
-        assert round(abs(self.kinetics.Tmin.value - kinetics.Tmin.value), 4) == 0
+        assert round(abs(self.kinetics.Tmin.value) - abs(kinetics.Tmin.value), 4) == 0
         assert self.kinetics.Tmin.units == kinetics.Tmin.units
-        assert round(abs(self.kinetics.Tmax.value - kinetics.Tmax.value), 4) == 0
+        assert round(abs(self.kinetics.Tmax.value) - abs(kinetics.Tmax.value), 4) == 0
         assert self.kinetics.Tmax.units == kinetics.Tmax.units
         assert self.kinetics.comment == kinetics.comment
 
@@ -1359,7 +1359,7 @@ class TestMultiPDepArrhenius:
         self.kinetics.change_rate(2)
         for T, kexp in zip(Tlist, k0list):
             kact = self.kinetics.get_rate_coefficient(T, 1e5)
-            assert abs(2 * kexp - kact) < 1e-6 * kexp
+            assert abs(2 * kexp) - abs(kact) < 1e-6 * kexp
 
     def test_generate_reverse_rate_coefficient(self):
         """

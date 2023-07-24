@@ -95,8 +95,7 @@ class TestThermoDatabaseLoading:
     def test_loading_external_thermo_library(self):
         """This tests loading a thermo library which is not in the RMG-database repo"""
         thermo_lib_in_db_path = os.path.join(settings["database.directory"], "thermo", "libraries", "primaryNS.py")
-        # this next filepath is defined relative to the database loading function for some god forsaken reason
-        thermo_lib_in_test_dir_path = os.path.join(os.path.dirname(__file__), "..", "test", "rmgpy", "test_data", "copied_thermo_lib.py")
+        thermo_lib_in_test_dir_path = os.path.join(os.path.dirname(__file__), "..", "test_data", "copied_thermo_lib.py")
         shutil.copyfile(src=thermo_lib_in_db_path, dst=thermo_lib_in_test_dir_path)
         database = ThermoDatabase()
         database.load_libraries(path="", libraries=[thermo_lib_in_test_dir_path])
