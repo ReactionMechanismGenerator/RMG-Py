@@ -32,4 +32,4 @@ omit =
     arkane/data/*
 
 [html]
-directory = testing/coverage
+directory = html_cov

@@ -96,3 +96,5 @@ test/regression/*
 test/arkane/data/H2O2/
 rmgpy/test_data/copied_kinetic_lib/
 testing/qm/*
+
+test_log.txt

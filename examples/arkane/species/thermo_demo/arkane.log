@@ -1,0 +1,121 @@
+Arkane execution initiated at Mon Jul 24 10:06:25 2023
+
+################################################################
+#                                                              #
+# Automated Reaction Kinetics and Network Exploration (Arkane) #
+#                                                              #
+#   Version: 3.1.0                                             #
+#   Authors: RMG Developers (rmg_dev@mit.edu)                  #
+#   P.I.s:   William H. Green (whgreen@mit.edu)                #
+#            Richard H. West (r.west@neu.edu)                  #
+#   Website: http://reactionmechanismgenerator.github.io/      #
+#                                                              #
+################################################################
+
+The current git HEAD for RMG-Py is:
+	c2e795b70e5323fc03eecfe4e49ae27f190efaca
+	Mon Jul 24 10:01:00 2023 -0400
+
+The current git HEAD for RMG-database is:
+	113cb53eadea0c17ed6f76eaee3ad952774b8728
+	Tue Jun 27 09:11:34 2023 -0400
+
+Loading species methoxy...
+Loading species 1,2-butadiene...
+Loading species aziridine...
+Loading species hydrazino...
+Loading species 1-propene-12-diol...
+Loading species hydroxyiminomethyl...
+Loading species 2-methyl-2-propanamine...
+Loading species nitrosodioxaziridine...
+Loading species ethynol...
+Loading species 2-iminoethyl...
+Warning: No exact frequency scaling factor match found for LevelOfTheory(method='ccsd(t)f12',basis='ccpvtzf12',software='molpro'). Using LevelOfTheory(method='ccsd(t)f12',basis='ccpvtzf12') instead.
+Assigned a frequency scale factor of 0.998 for LevelOfTheory(method='ccsd(t)f12',basis='ccpvtzf12',software='molpro')
+
+
+Warning: Species label is longer than 16 characters and will break CHEMKIN 2.0
+Warning: Species label is longer than 16 characters and will break CHEMKIN 2.0
+Warning: Species label is longer than 16 characters and will break CHEMKIN 2.0
+Warning: Species label is longer than 16 characters and will break CHEMKIN 2.0
+Loading statistical mechanics parameters for methoxy...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: Cs
+Saving statistical mechanics parameters for methoxy...
+Loading statistical mechanics parameters for 1,2-butadiene...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: Cs
+Saving statistical mechanics parameters for 1,2-butadiene...
+Loading statistical mechanics parameters for aziridine...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: Cs
+Saving statistical mechanics parameters for aziridine...
+Loading statistical mechanics parameters for hydrazino...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: C1
+Saving statistical mechanics parameters for hydrazino...
+Loading statistical mechanics parameters for 1-propene-12-diol...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: C1
+Saving statistical mechanics parameters for 1-propene-12-diol...
+Loading statistical mechanics parameters for hydroxyiminomethyl...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: Cs
+Saving statistical mechanics parameters for hydroxyiminomethyl...
+Loading statistical mechanics parameters for 2-methyl-2-propanamine...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: Cs
+Saving statistical mechanics parameters for 2-methyl-2-propanamine...
+Loading statistical mechanics parameters for nitrosodioxaziridine...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: Cs
+Saving statistical mechanics parameters for nitrosodioxaziridine...
+Loading statistical mechanics parameters for ethynol...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: Cs
+Saving statistical mechanics parameters for ethynol...
+Loading statistical mechanics parameters for 2-iminoethyl...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: Cs
+Saving statistical mechanics parameters for 2-iminoethyl...
+Saving thermo for methoxy...
+exception occured? 139651328714928
+exception occured? None
+exception occured? 139651328724048
+exception occured? None
+exception occured? 139651328732896
+exception occured? None
+exception occured? 139651328840144
+exception occured? None
+exception occured? 139651328851792
+exception occured? None
+exception occured? 139651328859968
+exception occured? None
+exception occured? 139651328872192
+exception occured? None
+exception occured? 139651328880976
+exception occured? None
+exception occured? 139651328892192
+exception occured? None
+exception occured? 139651328900576
+exception occured? None
+exception occured? 139651329173792
+exception occured? None
+exception occured? 139651329199712
+exception occured? None
+exception occured? 139651329211760
+exception occured? None
+exception occured? 139654298192560
+exception occured? None
+exception occured? 139654298586224
+exception occured? None
+exception occured? 139654299144496
+exception occured? None
+exception occured? 139654299182640
+exception occured? None
+exception occured? 139654299209232
+exception occured? None
+exception occured? 139654299308080
+exception occured? None
+exception occured? 139654299321536
+exception occured? None

@@ -60,7 +60,7 @@ class TestArkaneExamples:
                 path = os.path.join(example_type_path, example)
                 arkane = Arkane(input_file=os.path.join(path, "input.py"), output_directory=path)
                 arkane.plot = example_type != "bac"  # Don't plot BAC examples because they require a lot of memory
-                logging.info("running {}".format(example))
+                logging.info("running {}".format(path))
                 arkane.execute()
                 with open(os.path.join(path, "arkane.log"), "r") as f:
                     log = f.readlines()

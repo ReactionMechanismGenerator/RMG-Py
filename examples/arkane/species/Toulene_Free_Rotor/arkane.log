@@ -1,0 +1,34 @@
+Arkane execution initiated at Mon Jul 24 10:06:24 2023
+
+################################################################
+#                                                              #
+# Automated Reaction Kinetics and Network Exploration (Arkane) #
+#                                                              #
+#   Version: 3.1.0                                             #
+#   Authors: RMG Developers (rmg_dev@mit.edu)                  #
+#   P.I.s:   William H. Green (whgreen@mit.edu)                #
+#            Richard H. West (r.west@neu.edu)                  #
+#   Website: http://reactionmechanismgenerator.github.io/      #
+#                                                              #
+################################################################
+
+The current git HEAD for RMG-Py is:
+	c2e795b70e5323fc03eecfe4e49ae27f190efaca
+	Mon Jul 24 10:01:00 2023 -0400
+
+The current git HEAD for RMG-database is:
+	113cb53eadea0c17ed6f76eaee3ad952774b8728
+	Tue Jun 27 09:11:34 2023 -0400
+
+Loading species Toluene...
+Assigned a frequency scale factor of 1.00386 for LevelOfTheory(method='cbsqb3')
+
+
+Loading statistical mechanics parameters for Toluene...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: Cs
+Saving statistical mechanics parameters for Toluene...
+Saving thermo for Toluene...
+
+Arkane execution terminated at Mon Jul 24 10:06:24 2023
+running Toulene_Hindered_Rotor
