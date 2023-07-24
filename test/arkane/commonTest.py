@@ -59,13 +59,6 @@ from arkane.modelchem import LevelOfTheory
 from arkane.statmech import InputError, StatMechJob
 import pytest
 
-ADMONITION = (
-    "FIXME: This test was not run for a few years and no longer works. "
-    "Should be fixed by getting rid of global state abuse in Arkane and RMG-Py, "
-    "which is making it impossible to debug this test. It may implicitly depend "
-    "on the execution order of the tests."
-)
-
 
 class CommonTest:
     """
@@ -269,10 +262,7 @@ class TestArkaneInput:
         spec = input.species("C2H4", os.path.join(self.directory, "species", "C2H4", "ethene.py"))
         assert isinstance(spec, Species)
         assert len(spec.molecule) == 0
-
-    @pytest.mark.skip(reason=ADMONITION)
-    def test_species_statmech(self):
-        """Test loading of statmech job from species input file."""
+        # statmech job test
         job = job_list[-1]
         assert isinstance(job, StatMechJob)
         job.level_of_theory = self.level_of_theory
@@ -283,10 +273,7 @@ class TestArkaneInput:
         assert isinstance(job.species.props["element_counts"], dict)
         assert job.species.props["element_counts"]["C"] == 2
         assert job.species.props["element_counts"]["H"] == 4
-
-    @pytest.mark.skip(reason=ADMONITION)
-    def test_species_thermo(self):
-        """Test thermo job execution for species from separate input file."""
+        # thermo job tests
         input.thermo("C2H4", "NASA")
         job = job_list[-1]
         filepath = os.path.join(self.directory, "reactions", "H+C2H4=C2H5")
@@ -300,10 +287,7 @@ class TestArkaneInput:
         """Test loading of transition state input file."""
         ts = input.transitionState("TS", os.path.join(self.directory, "reactions", "H+C2H4=C2H5", "TS.py"))
         assert isinstance(ts, TransitionState)
-
-    @pytest.mark.skip(reason=ADMONITION)
-    def test_transition_state_statmech(self):
-        """Test loading of statmech job from transition state input file."""
+        # stat mech job tests
         job = job_list[-1]
         assert isinstance(job, StatMechJob)
         job.level_of_theory = self.level_of_theory
