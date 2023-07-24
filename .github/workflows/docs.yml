@@ -16,10 +16,6 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v2
-      - name: Patch the environment file
-        run: |
-          echo -e "\n  - libstdcxx-ng < 13\n" >> environment.yml
-          cat environment.yml
       - name: Setup Mambaforge Python 3.7
         uses: conda-incubator/setup-miniconda@v2
         with:
