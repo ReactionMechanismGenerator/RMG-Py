@@ -27,14 +27,8 @@ documentation/build/*
 # (These will be unique to each developer's setup)
 make.inc
 
-# Example output files
+# output files
 rmgpy/output/*
-examples/*
-!examples/arkane/reactions/rate_demo/*
-!examples/arkane/networks/CH2NH2/yaml_files/*
-!examples/arkane/species/thermo_demo/data/*
-!examples/*/input.py
-!examples/**/*.ipynb
 
 # NetBeans project files
 nbproject/*

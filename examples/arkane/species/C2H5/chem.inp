@@ -1,0 +1,41 @@
+ELEMENTS
+	H
+	D /2.014/
+	T /3.016/
+	C
+	CI /13.003/
+	O
+	OI /17.999/
+	N
+	Ne
+	Ar
+	He
+	Si
+	S
+	F
+	Cl
+	Br
+	I
+	X /195.083/
+END
+
+SPECIES
+
+C2H5
+
+END
+
+
+
+THERM ALL
+    300.000  1000.000  5000.000
+
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+END
+

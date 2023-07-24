@@ -1,0 +1,43 @@
+ELEMENTS
+	H
+	D /2.014/
+	T /3.016/
+	C
+	CI /13.003/
+	O
+	OI /17.999/
+	N
+	Ne
+	Ar
+	He
+	Si
+	S
+	F
+	Cl
+	Br
+	I
+	X /195.083/
+END
+
+SPECIES
+
+
+END
+
+
+
+THERM ALL
+    300.000  1000.000  5000.000
+
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+! Fitted to 50 data points; dA = *|/ 1.05079, dn = +|- 0.00650945, dEa = +|- 0.0354242 kJ/mol
+ch3oh + hco <=> ch3oh + hco                         3.508e+00     3.479    16.586
+
+END
+
