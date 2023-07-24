@@ -12,10 +12,12 @@ on:
     types:
       - completed
 
+run-name: Annotate PR ${{ github.event.workflow_run.event.display_title }}.
+
 jobs:
   on-success:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request' }}
     steps:
       - run: echo 'The triggering workflow passed'
       - name: 'Download regression_summary artifact'
@@ -43,20 +45,19 @@ jobs:
         run: unzip regression_summary.zip
 
       - name: 'Get pull request number'
-        id: pr_number
         run: |
           echo "PR_NUMBER=$( head -n 1 summary.txt )" >> $GITHUB_ENV
           # remove the first line from the file
           sed -i '1d' summary.txt
+
       - name: Write summary to pull request as a comment
         uses: thollander/actions-comment-pull-request@v2
         with:
           filePath: summary.txt
           pr_number: ${{ env.PR_NUMBER }}
 
-  on-failure:
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-    steps:
-      - run: echo 'The triggering workflow failed'
-
+      - name: Report the github.event.workflow_run as json
+        if: ${{ failure() }}
+        run: echo $JSON
+        env:
+          JSON: ${{ toJson(github.event.workflow_run) }}
