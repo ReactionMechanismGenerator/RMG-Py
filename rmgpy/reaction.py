@@ -669,11 +669,6 @@ class Reaction:
             number_of_gas_reactants = len([spcs for spcs in self.reactants if not spcs.contains_surface_site()])
             number_of_gas_products = len([spcs for spcs in self.products if not spcs.contains_surface_site()])
         except IndexError:
-            logging.warning(
-                "Species do not have an rmgpy.molecule.Molecule "
-                "Cannot determine phases of species. We will assume "
-                "ideal gas mixture when calculating Kc and Kp."
-            )
             number_of_gas_reactants = len(self.reactants)
             number_of_gas_products = len(self.products)
 
@@ -697,7 +692,7 @@ class Reaction:
             # Convert from Ka to Kp; P0 is the reference pressure
             K *= P0**dN_gas
         elif type != "Ka" and type != "":
-            raise ReactionError('Invalid type "{0}" passed to Reaction.get_equilibrium_constant(); ' 'should be "Ka", "Kc", or "Kp".'.format(type))
+            raise ReactionError('Invalid type "{0}" passed to Reaction.get_equilibrium_constant(); should be "Ka", "Kc", or "Kp".'.format(type))
         if K == 0:
             raise ReactionError("Got equilibrium constant of 0")
         return K
@@ -1029,7 +1024,6 @@ class Reaction:
             surf_prods = [spcs for spcs in self.products if spcs.contains_surface_site()]
         except IndexError:
             surf_prods = []
-            logging.warning(f"Species do not have an rmgpy.molecule.Molecule " "Cannot determine phases of species. We will assume gas")
         n_surf = len(surf_prods)
         n_gas = len(self.products) - len(surf_prods)
         kunits = get_rate_coefficient_units_from_reaction_order(n_gas, n_surf)
