@@ -19,7 +19,6 @@ jobs:
     steps:
       - run: echo 'The triggering workflow passed'
       - name: 'Download regression_summary artifact'
-        continue-on-error: true
         uses: actions/github-script@v6
         with:
           script: |
@@ -40,26 +39,23 @@ jobs:
             let fs = require('fs');
             fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/regression_summary.zip`, Buffer.from(download.data));
 
-      - name: Report the github.event.workflow_run as json
-        if: ${{ failure() }}
-        run: echo '${{ toJson(github.event.workflow_run) }}'
-
       - name: 'Unzip artifact'
         run: unzip regression_summary.zip
-        if : ${{ success() }}
 
       - name: 'Get pull request number'
-        if: ${{ success() }}
         run: |
           echo "PR_NUMBER=$( head -n 1 summary.txt )" >> $GITHUB_ENV
           # remove the first line from the file
           sed -i '1d' summary.txt
       - name: Write summary to pull request as a comment
-        if: ${{ success() }}
         uses: thollander/actions-comment-pull-request@v2
         with:
           filePath: summary.txt
           pr_number: ${{ env.PR_NUMBER }}
+
+      - name: Report the github.event.workflow_run as json
+        if: ${{ failure() }}
+        run: echo '${{ toJson(github.event.workflow_run) }}'
 
   on-failure:
     runs-on: ubuntu-latest
