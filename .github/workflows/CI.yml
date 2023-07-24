@@ -346,9 +346,9 @@ jobs:
           fi
 
       - name: Prepare Results for PR Comment
-        if : ${{ github.event_name == 'pull_request' }}
+        if: ${{ env.REFERENCE_JOB == 'false' }}
         env:
-          PR_NUMBER: ${{ github.event.number }}
+          PR_NUMBER: ${{ github.event.number || github.event.after || github.event_name }}
         run: |
           echo $PR_NUMBER > summary.txt
           echo "## Regression Testing Results" >> summary.txt
