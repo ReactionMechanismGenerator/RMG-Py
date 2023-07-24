@@ -38,6 +38,7 @@ import pytest
 
 from arkane import Arkane
 from arkane.explorer import ExplorerJob
+import rmgpy.data.rmg
 
 
 @pytest.mark.functional
@@ -46,15 +47,14 @@ class TestExplorerJob:
     Contains tests for ExplorerJob class execute method
     """
 
-    @classmethod
-    def setup_class(cls):
+    def test_explorer(self):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
 
-        cls.job_list = arkane.load_input_file(
+        job_list = arkane.load_input_file(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "arkane", "data", "methoxy_explore.py")
         )
-        for job in cls.job_list:
+        for job in job_list:
             if not isinstance(job, ExplorerJob):
                 job.execute(output_file=None, plot=None)
             else:
@@ -65,35 +65,12 @@ class TestExplorerJob:
                     thermo_library=thermo_library,
                     kinetics_library=kinetics_library,
                 )
-                cls.thermo_library = thermo_library
-                cls.kinetics_library = kinetics_library
-                cls.explorer_job = cls.job_list[-1]
-                cls.pdep_job = cls.job_list[-2]
-
-    @classmethod
-    def teardown_class(cls):
-        """A function that is run ONCE after all unit tests in this class."""
-        # Reset module level database
-        import rmgpy.data.rmg
+                thermo_library = thermo_library
+                kinetics_library = kinetics_library
+                explorer_job = job_list[-1]
+                assert len(explorer_job.networks[0].path_reactions) in [6, 7]
+                assert len(explorer_job.networks[0].isomers) == 2
+                for rxn in explorer_job.job_rxns:
+                    assert rxn in explorer_job.networks[0].path_reactions
 
         rmgpy.data.rmg.database.kinetics = None
-
-    def test_reactions(self):
-        """
-        test that the right number of reactions are in output network
-        """
-        assert len(self.explorer_job.networks[0].path_reactions) in [6, 7]
-
-    def test_isomers(self):
-        """
-        test that the right number of isomers are in the output network
-        """
-        assert len(self.explorer_job.networks[0].isomers) == 2
-
-    def test_job_rxns(self):
-        """
-        test that in this case all the reactions in the job
-        ended up in the final network
-        """
-        for rxn in self.explorer_job.job_rxns:
-            assert rxn in self.explorer_job.networks[0].path_reactions

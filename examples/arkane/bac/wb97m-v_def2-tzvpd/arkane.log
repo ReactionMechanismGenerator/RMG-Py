@@ -200,3 +200,104 @@ Saving results for LevelOfTheory(method='wb97mv',basis='def2tzvpd',software='qch
 
 Arkane execution terminated at Mon Jul 24 16:28:29 2023
 executed /home/jackson/rmg/RMG-Py/test/../examples/arkane/bac/wb97m-v_def2-tzvpd
+Arkane execution initiated at Mon Jul 24 16:58:31 2023
+
+################################################################
+#                                                              #
+# Automated Reaction Kinetics and Network Exploration (Arkane) #
+#                                                              #
+#   Version: 3.1.0                                             #
+#   Authors: RMG Developers (rmg_dev@mit.edu)                  #
+#   P.I.s:   William H. Green (whgreen@mit.edu)                #
+#            Richard H. West (r.west@neu.edu)                  #
+#   Website: http://reactionmechanismgenerator.github.io/      #
+#                                                              #
+################################################################
+
+The current git HEAD for RMG-Py is:
+	61d96be0e5320b2a2ef2116e51c893841ead250e
+	Mon Jul 24 16:48:54 2023 -0400
+
+The current git HEAD for RMG-database is:
+	113cb53eadea0c17ed6f76eaee3ad952774b8728
+	Tue Jun 27 09:11:34 2023 -0400
+
+
+
+Running BAC job 1
+Loading reference database from ['/home/jackson/rmg/RMG-database/input/reference_sets/main']
+Loading in reference set `main` from /home/jackson/rmg/RMG-database/input/reference_sets/main ...
+Error: Unable to generate identifier for this molecule:
+1 O u0 p2 c0 {2,S} {3,S}
+2 O u0 p3 c-1 {1,S}
+3 C u0 p0 c0 {1,S} {4,S} {5,S} {6,S}
+4 H u0 p0 c0 {3,S}
+5 H u0 p0 c0 {3,S}
+6 H u0 p0 c0 {3,S}
+
+Error: Unable to generate identifier for this molecule:
+1 O u0 p3 c-1 {3,S}
+2 O u0 p2 c0 {3,D}
+3 C u0 p0 c0 {1,S} {2,D} {4,S}
+4 H u0 p0 c0 {3,S}
+
+Error: Unable to generate identifier for this molecule:
+1  O u0 p3 c-1 {2,S}
+2  C u0 p0 c0 {1,S} {3,D} {7,S}
+3  C u0 p0 c0 {2,D} {4,S} {8,S}
+4  C u0 p0 c0 {3,S} {5,D} {9,S}
+5  C u0 p0 c0 {4,D} {6,S} {10,S}
+6  C u0 p0 c0 {5,S} {7,D} {11,S}
+7  C u0 p0 c0 {2,S} {6,D} {12,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {5,S}
+11 H u0 p0 c0 {6,S}
+12 H u0 p0 c0 {7,S}
+
+Error: Unable to generate identifier for this molecule:
+1 N u0 p0 c+1 {2,T} {3,S}
+2 N u0 p1 c0 {1,T}
+3 H u0 p0 c0 {1,S}
+
+Error: Unable to generate identifier for this molecule:
+1 O u0 p2 c0 {2,S} {3,S}
+2 O u0 p3 c-1 {1,S}
+3 H u0 p0 c0 {1,S}
+
+Error: Unable to generate identifier for this molecule:
+1 O u0 p3 c-1 {3,S}
+2 O u0 p2 c0 {3,D}
+3 N u0 p1 c0 {1,S} {2,D}
+
+Error: Unable to generate identifier for this molecule:
+1 O u0 p1 c+1 {2,S} {3,S} {4,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+
+Error: Unable to generate identifier for this molecule:
+1 O u0 p3 c-1 {2,S}
+2 H u0 p0 c0 {1,S}
+
+Error: Unable to generate identifier for this molecule:
+1 N u0 p0 c+1 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+
+Fitting Petersson-type BACs for LevelOfTheory(method='wb97mv',basis='def2tzvpd',software='qchem')...
+Training RMSE/MAE before fitting: 2.53/1.83 kcal/mol
+Training RMSE/MAE after fitting: 1.20/0.84 kcal/mol
+Saving results for LevelOfTheory(method='wb97mv',basis='def2tzvpd',software='qchem')...
+Running BAC job 2
+Fitting Melius-type BACs for LevelOfTheory(method='wb97mv',basis='def2tzvpd',software='qchem')...
+Global opt iteration 0
+Global opt iteration 1
+Training RMSE/MAE before fitting: 2.53/1.83 kcal/mol
+Training RMSE/MAE after fitting: 1.34/0.88 kcal/mol
+Saving results for LevelOfTheory(method='wb97mv',basis='def2tzvpd',software='qchem')...
+
+Arkane execution terminated at Mon Jul 24 16:59:49 2023
+executed /home/jackson/rmg/RMG-Py/test/../examples/arkane/bac/wb97m-v_def2-tzvpd

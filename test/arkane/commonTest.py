@@ -251,7 +251,7 @@ class TestArkaneInput:
 
     def setup_class(cls):
         """Preparation for all unit tests in this class."""
-        cls.directory = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "..", "examples", "arkane")
+        cls.directory = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "examples", "arkane")
         cls.level_of_theory = LevelOfTheory("cbs-qb3")
         cls.frequencyScaleFactor = 0.99
         cls.useHinderedRotors = False
