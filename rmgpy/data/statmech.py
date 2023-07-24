@@ -458,8 +458,8 @@ class StatmechGroups(Database):
                 uncertainties = [0 for f in frequencies]  # probably shouldn't be zero
                 frequencies.extend(mode.frequencies.value_si)
                 uncertainties.extend(mode.frequencies.uncertainty)
-                mode.frequencies.value_si = np.array(frequencies, np.float)
-                mode.frequencies.uncertainty = np.array(uncertainties, np.float)
+                mode.frequencies.value_si = np.array(frequencies, float)
+                mode.frequencies.uncertainty = np.array(uncertainties, float)
                 break
         else:
             modes.insert(0, HarmonicOscillator(frequencies=(frequencies, "cm^-1")))
