@@ -18,7 +18,6 @@ otherwise.
     simulate
     generateFluxDiagram
     thermoEstimation
-    convertFAME
     databaseScripts
     standardizeModelSpeciesNames
     isotopes
