@@ -1,0 +1,80 @@
+Arkane execution initiated at Mon Jul 24 12:29:59 2023
+
+################################################################
+#                                                              #
+# Automated Reaction Kinetics and Network Exploration (Arkane) #
+#                                                              #
+#   Version: 3.1.0                                             #
+#   Authors: RMG Developers (rmg_dev@mit.edu)                  #
+#   P.I.s:   William H. Green (whgreen@mit.edu)                #
+#            Richard H. West (r.west@neu.edu)                  #
+#   Website: http://reactionmechanismgenerator.github.io/      #
+#                                                              #
+################################################################
+
+The current git HEAD for RMG-Py is:
+	e181335685f2182ecba117e1141835623f023633
+	Mon Jul 24 11:52:36 2023 -0400
+
+The current git HEAD for RMG-database is:
+	113cb53eadea0c17ed6f76eaee3ad952774b8728
+	Tue Jun 27 09:11:34 2023 -0400
+
+Loading species NH...
+Loading species NH2...
+Loading species N2H3...
+Loading species N2H4...
+Loading transition state TS1...
+Loading reaction NH2 + N2H3 = NH + N2H4...
+
+
+Loading statistical mechanics parameters for NH from NH.yml file...
+
+The loaded YAML file for species NH seems to be from an older version of RMG/Arkane.
+Some keywords will be automatically replaced before loading objects from this file.
+Replacing keyword "spinMultiplicity" with "spin_multiplicity" in the Arkane YAML file.
+Replacing keyword "opticalIsomers" with "optical_isomers" in the Arkane YAML file.
+
+
+Saving statistical mechanics parameters for NH...
+Loading statistical mechanics parameters for NH2 from NH2.yml file...
+
+The loaded YAML file for species NH2 seems to be from an older version of RMG/Arkane.
+Some keywords will be automatically replaced before loading objects from this file.
+Replacing keyword "spinMultiplicity" with "spin_multiplicity" in the Arkane YAML file.
+Replacing keyword "opticalIsomers" with "optical_isomers" in the Arkane YAML file.
+
+
+Saving statistical mechanics parameters for NH2...
+Loading statistical mechanics parameters for N2H3 from N2H3.yml file...
+
+The loaded YAML file for species N2H3 seems to be from an older version of RMG/Arkane.
+Some keywords will be automatically replaced before loading objects from this file.
+Replacing keyword "spinMultiplicity" with "spin_multiplicity" in the Arkane YAML file.
+Replacing keyword "opticalIsomers" with "optical_isomers" in the Arkane YAML file.
+
+
+Saving statistical mechanics parameters for N2H3...
+Loading statistical mechanics parameters for N2H4 from N2H4.yml file...
+
+The loaded YAML file for species N2H4 seems to be from an older version of RMG/Arkane.
+Some keywords will be automatically replaced before loading objects from this file.
+Replacing keyword "spinMultiplicity" with "spin_multiplicity" in the Arkane YAML file.
+Replacing keyword "opticalIsomers" with "optical_isomers" in the Arkane YAML file.
+
+
+Saving statistical mechanics parameters for N2H4...
+Loading statistical mechanics parameters for TS1 from TS1.yml file...
+
+The loaded YAML file for species TS1 seems to be from an older version of RMG/Arkane.
+Some keywords will be automatically replaced before loading objects from this file.
+Replacing keyword "spinMultiplicity" with "spin_multiplicity" in the Arkane YAML file.
+Replacing keyword "opticalIsomers" with "optical_isomers" in the Arkane YAML file.
+
+
+Saving statistical mechanics parameters for TS1...
+Saving kinetics for N2H3 + NH2 <=> N2H4 + NH...
+
+Arkane execution terminated at Mon Jul 24 12:30:00 2023
+executed /home/jackson/rmg/RMG-Py/test/../examples/arkane/reactions/NH2+N2H3=NH+N2H4
+running /home/jackson/rmg/RMG-Py/test/../examples/arkane/reactions/rate_demo

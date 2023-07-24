@@ -1,0 +1,187 @@
+Arkane execution initiated at Mon Jul 24 12:29:57 2023
+
+################################################################
+#                                                              #
+# Automated Reaction Kinetics and Network Exploration (Arkane) #
+#                                                              #
+#   Version: 3.1.0                                             #
+#   Authors: RMG Developers (rmg_dev@mit.edu)                  #
+#   P.I.s:   William H. Green (whgreen@mit.edu)                #
+#            Richard H. West (r.west@neu.edu)                  #
+#   Website: http://reactionmechanismgenerator.github.io/      #
+#                                                              #
+################################################################
+
+The current git HEAD for RMG-Py is:
+	e181335685f2182ecba117e1141835623f023633
+	Mon Jul 24 11:52:36 2023 -0400
+
+The current git HEAD for RMG-database is:
+	113cb53eadea0c17ed6f76eaee3ad952774b8728
+	Tue Jun 27 09:11:34 2023 -0400
+
+Loading species ch3oh...
+Loading transition state ts...
+Loading species hco...
+Loading reaction hco + ch3oh <=> hco + ch3oh...
+
+
+Loading statistical mechanics parameters for ch3oh...
+Warning: Relative error with QChem output file /home/jackson/rmg/RMG-Py/examples/arkane/reactions/CH3OH+HCO/ch3oh.out due to line:
+   Relative error      =    -0.1307431993 %
+
+ 
+                    Per the QChem version 5 documentation: https://manual.q-chem.com/pdf/qchem_manual_5.0.pdf
+                    A warning message is printed whenever the relative error in the numerical electron count
+                    reaches 0.01%, indicating that the numerical XC results may not be reliable. If the warning
+                    appears on the first SCF cycle, it is probably not serious, because the initial-guess density
+                    matrix is sometimes not idempotent.
+                    
+Warning: Relative error with QChem output file /home/jackson/rmg/RMG-Py/examples/arkane/reactions/CH3OH+HCO/ch3oh.out due to line:
+   Relative error      =    -0.1307431993 %
+
+ 
+                    Per the QChem version 5 documentation: https://manual.q-chem.com/pdf/qchem_manual_5.0.pdf
+                    A warning message is printed whenever the relative error in the numerical electron count
+                    reaches 0.01%, indicating that the numerical XC results may not be reliable. If the warning
+                    appears on the first SCF cycle, it is probably not serious, because the initial-guess density
+                    matrix is sometimes not idempotent.
+                    
+Warning: Relative error with QChem output file /home/jackson/rmg/RMG-Py/examples/arkane/reactions/CH3OH+HCO/ch3oh.out due to line:
+   Relative error      =    -0.1307431993 %
+
+ 
+                    Per the QChem version 5 documentation: https://manual.q-chem.com/pdf/qchem_manual_5.0.pdf
+                    A warning message is printed whenever the relative error in the numerical electron count
+                    reaches 0.01%, indicating that the numerical XC results may not be reliable. If the warning
+                    appears on the first SCF cycle, it is probably not serious, because the initial-guess density
+                    matrix is sometimes not idempotent.
+                    
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: Cs
+Saving statistical mechanics parameters for ch3oh...
+Loading statistical mechanics parameters for ts...
+Warning: Relative error with QChem output file /home/jackson/rmg/RMG-Py/examples/arkane/reactions/CH3OH+HCO/ts1.out due to line:
+   Relative error      =    -0.2590472828 %
+
+ 
+                    Per the QChem version 5 documentation: https://manual.q-chem.com/pdf/qchem_manual_5.0.pdf
+                    A warning message is printed whenever the relative error in the numerical electron count
+                    reaches 0.01%, indicating that the numerical XC results may not be reliable. If the warning
+                    appears on the first SCF cycle, it is probably not serious, because the initial-guess density
+                    matrix is sometimes not idempotent.
+                    
+Warning: Relative error with QChem output file /home/jackson/rmg/RMG-Py/examples/arkane/reactions/CH3OH+HCO/ts1.out due to line:
+   Relative error      =    -0.2590472828 %
+
+ 
+                    Per the QChem version 5 documentation: https://manual.q-chem.com/pdf/qchem_manual_5.0.pdf
+                    A warning message is printed whenever the relative error in the numerical electron count
+                    reaches 0.01%, indicating that the numerical XC results may not be reliable. If the warning
+                    appears on the first SCF cycle, it is probably not serious, because the initial-guess density
+                    matrix is sometimes not idempotent.
+                    
+Warning: Relative error with QChem output file /home/jackson/rmg/RMG-Py/examples/arkane/reactions/CH3OH+HCO/ts1.out due to line:
+   Relative error      =    -0.2590472828 %
+
+ 
+                    Per the QChem version 5 documentation: https://manual.q-chem.com/pdf/qchem_manual_5.0.pdf
+                    A warning message is printed whenever the relative error in the numerical electron count
+                    reaches 0.01%, indicating that the numerical XC results may not be reliable. If the warning
+                    appears on the first SCF cycle, it is probably not serious, because the initial-guess density
+                    matrix is sometimes not idempotent.
+                    
+Identified 1 frequency block(s)...
+Only examining frequencies from the last block...
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: C1
+Saving statistical mechanics parameters for ts...
+Loading statistical mechanics parameters for hco...
+Warning: Relative error with QChem output file /home/jackson/rmg/RMG-Py/examples/arkane/reactions/CH3OH+HCO/hco.out due to line:
+   Relative error      =    -0.0829944358 %
+
+ 
+                    Per the QChem version 5 documentation: https://manual.q-chem.com/pdf/qchem_manual_5.0.pdf
+                    A warning message is printed whenever the relative error in the numerical electron count
+                    reaches 0.01%, indicating that the numerical XC results may not be reliable. If the warning
+                    appears on the first SCF cycle, it is probably not serious, because the initial-guess density
+                    matrix is sometimes not idempotent.
+                    
+Warning: Relative error with QChem output file /home/jackson/rmg/RMG-Py/examples/arkane/reactions/CH3OH+HCO/hco.out due to line:
+   Relative error      =    -0.0829944358 %
+
+ 
+                    Per the QChem version 5 documentation: https://manual.q-chem.com/pdf/qchem_manual_5.0.pdf
+                    A warning message is printed whenever the relative error in the numerical electron count
+                    reaches 0.01%, indicating that the numerical XC results may not be reliable. If the warning
+                    appears on the first SCF cycle, it is probably not serious, because the initial-guess density
+                    matrix is sometimes not idempotent.
+                    
+Warning: Relative error with QChem output file /home/jackson/rmg/RMG-Py/examples/arkane/reactions/CH3OH+HCO/hco.out due to line:
+   Relative error      =    -0.0829944358 %
+
+ 
+                    Per the QChem version 5 documentation: https://manual.q-chem.com/pdf/qchem_manual_5.0.pdf
+                    A warning message is printed whenever the relative error in the numerical electron count
+                    reaches 0.01%, indicating that the numerical XC results may not be reliable. If the warning
+                    appears on the first SCF cycle, it is probably not serious, because the initial-guess density
+                    matrix is sometimes not idempotent.
+                    
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: Cs
+Saving statistical mechanics parameters for hco...
+Saving kinetics for ch3oh + hco <=> ch3oh + hco...
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+Warning: Species do not have an rmgpy.molecule.Molecule Cannot determine phases of species. We will assume ideal gas mixture when calculating Kc and Kp.
+
+Arkane execution terminated at Mon Jul 24 12:29:57 2023
+executed /home/jackson/rmg/RMG-Py/test/../examples/arkane/reactions/CH3OH+HCO
+running /home/jackson/rmg/RMG-Py/test/../examples/arkane/reactions/H+C2H4=C2H5

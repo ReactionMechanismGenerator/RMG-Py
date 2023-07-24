@@ -29,3 +29,18 @@ END
 THERM ALL
     300.000  1000.000  5000.000
 
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+! Fitted to 25 data points; dA = *|/ 5.06424, dn = +|- 0.21246, dEa = +|- 1.17535 kJ/mol
+NH2 + CH4 <=> NH3 + CH3                             5.374e-05     5.377     5.962
+
+! Fitted to 25 data points; dA = *|/ 3.13894, dn = +|- 0.149815, dEa = +|- 0.828791 kJ/mol
+NH2 + C2H6 <=> NH3 + C2H5                           3.580e-03     4.844     4.312
+
+END
+

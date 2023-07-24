@@ -1,0 +1,46 @@
+NH2
+multiplicity 2
+1 N u1 p1 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+
+CH4
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+
+NH3
+1 N u0 p1 c0 {2,S} {3,S} {4,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+
+CH3
+multiplicity 2
+1 C u1 p0 c0 {2,S} {3,S} {4,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+
+C2H6
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {2,S}
+8 H u0 p0 c0 {2,S}
+
+C2H5
+multiplicity 2
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 C u1 p0 c0 {1,S} {6,S} {7,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {2,S}
+

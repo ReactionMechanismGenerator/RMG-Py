@@ -1,0 +1,25 @@
+oxygen
+multiplicity 3
+1 O u1 p2 c0 {2,S}
+2 O u1 p2 c0 {1,S}
+
+acetyl
+multiplicity 2
+1 O u0 p2 c0 {3,D}
+2 C u0 p0 c0 {3,S} {4,S} {5,S} {6,S}
+3 C u1 p0 c0 {1,D} {2,S}
+4 H u0 p0 c0 {2,S}
+5 H u0 p0 c0 {2,S}
+6 H u0 p0 c0 {2,S}
+
+acetylperoxy
+multiplicity 2
+1 O u0 p2 c0 {3,S} {5,S}
+2 O u0 p2 c0 {5,D}
+3 O u1 p2 c0 {1,S}
+4 C u0 p0 c0 {5,S} {6,S} {7,S} {8,S}
+5 C u0 p0 c0 {1,S} {2,D} {4,S}
+6 H u0 p0 c0 {4,S}
+7 H u0 p0 c0 {4,S}
+8 H u0 p0 c0 {4,S}
+
