@@ -62,3 +62,67 @@ Arkane execution terminated at Mon Jul 24 12:34:47 2023
 Warning: Reaction rxn1 did not contain any kinetic data and was omitted from the kinetics library.
 executed /home/jackson/rmg/RMG-Py/test/../examples/arkane/networks/n-butanol
 running /home/jackson/rmg/RMG-Py/test/../examples/arkane/bac/wb97m-v_def2-tzvpd
+Arkane execution initiated at Mon Jul 24 16:27:36 2023
+
+################################################################
+#                                                              #
+# Automated Reaction Kinetics and Network Exploration (Arkane) #
+#                                                              #
+#   Version: 3.1.0                                             #
+#   Authors: RMG Developers (rmg_dev@mit.edu)                  #
+#   P.I.s:   William H. Green (whgreen@mit.edu)                #
+#            Richard H. West (r.west@neu.edu)                  #
+#   Website: http://reactionmechanismgenerator.github.io/      #
+#                                                              #
+################################################################
+
+The current git HEAD for RMG-Py is:
+	282a6ec04c54c4d861b780eae6708821d04389e5
+	Mon Jul 24 14:14:18 2023 -0400
+
+The current git HEAD for RMG-database is:
+	113cb53eadea0c17ed6f76eaee3ad952774b8728
+	Tue Jun 27 09:11:34 2023 -0400
+
+Loading species n-C4H10...
+Loading species C4H8...
+Loading species H2O...
+Loading species bath_gas...
+Loading transition state TS...
+Loading reaction rxn1...
+Loading network n-butanol dehydration...
+
+
+Saving thermo for H2O...
+Saving thermo for C4H8...
+Saving thermo for n-C4H10...
+========================================================================
+n-butanol dehydration network information
+-----------------------------------------
+Isomers:
+    n-C4H10                                              -317.807 kJ/mol
+Reactant channels:
+Product channels:
+    H2O + C4H8                                           -287.481 kJ/mol
+Path reactions:
+    n-C4H10 <=> H2O + C4H8                               -42.4373 kJ/mol
+Net reactions:
+========================================================================
+
+Calculating densities of states for n-butanol dehydration network...
+Using 501 grains from -317.81 to 624.76 kJ/mol in steps of 1.89 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for n-C4H10 <=> H2O + C4H8...
+Using 200 grains from -317.81 to 58.16 kJ/mol in steps of 1.89 kJ/mol to compute the k(T,P) values at 302.47 K
+Using 200 grains from -317.81 to 65.03 kJ/mol in steps of 1.92 kJ/mol to compute the k(T,P) values at 323.145 K
+Using 200 grains from -317.81 to 80.57 kJ/mol in steps of 2.00 kJ/mol to compute the k(T,P) values at 369.86 K
+Using 206 grains from -317.81 to 111.05 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 455.987 K
+Using 230 grains from -317.81 to 161.26 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 609.649 K
+Using 274 grains from -317.81 to 253.31 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 885.262 K
+Using 348 grains from -317.81 to 408.12 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1353.64 K
+Using 435 grains from -317.81 to 590.12 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1896.74 K
+Saving pressure dependence results for network n-butanol dehydration...
+
+Arkane execution terminated at Mon Jul 24 16:27:42 2023
+Warning: Reaction rxn1 did not contain any kinetic data and was omitted from the kinetics library.
+executed /home/jackson/rmg/RMG-Py/test/../examples/arkane/networks/n-butanol
+running /home/jackson/rmg/RMG-Py/test/../examples/arkane/bac/wb97m-v_def2-tzvpd

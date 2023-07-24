@@ -181,3 +181,186 @@ Warning: Reaction exit2 did not contain any kinetic data and was omitted from th
 Warning: Reaction exit3 did not contain any kinetic data and was omitted from the kinetics library.
 executed /home/jackson/rmg/RMG-Py/test/../examples/arkane/networks/acetyl+O2
 running /home/jackson/rmg/RMG-Py/test/../examples/arkane/networks/n-butanol
+Arkane execution initiated at Mon Jul 24 16:27:08 2023
+
+################################################################
+#                                                              #
+# Automated Reaction Kinetics and Network Exploration (Arkane) #
+#                                                              #
+#   Version: 3.1.0                                             #
+#   Authors: RMG Developers (rmg_dev@mit.edu)                  #
+#   P.I.s:   William H. Green (whgreen@mit.edu)                #
+#            Richard H. West (r.west@neu.edu)                  #
+#   Website: http://reactionmechanismgenerator.github.io/      #
+#                                                              #
+################################################################
+
+The current git HEAD for RMG-Py is:
+	282a6ec04c54c4d861b780eae6708821d04389e5
+	Mon Jul 24 14:14:18 2023 -0400
+
+The current git HEAD for RMG-database is:
+	113cb53eadea0c17ed6f76eaee3ad952774b8728
+	Tue Jun 27 09:11:34 2023 -0400
+
+Loading species acetylperoxy...
+Loading species hydroperoxylvinoxy...
+Loading species acetyl...
+Loading species oxygen...
+Loading species ketene...
+Loading species lactone...
+Loading species hydroxyl...
+Loading species hydroperoxyl...
+Loading species nitrogen...
+Loading transition state entrance1...
+Loading transition state isom1...
+Loading transition state exit1...
+Loading transition state exit2...
+Loading transition state exit3...
+Loading reaction entrance1...
+Loading reaction isom1...
+Loading reaction exit1...
+Loading reaction exit2...
+Loading reaction exit3...
+Loading network acetyl + O2...
+
+
+========================================================================
+acetyl + O2 network information
+-------------------------------
+Isomers:
+    acetylperoxy                                         -144.766 kJ/mol
+    hydroperoxylvinoxy                                   -135.562 kJ/mol
+Reactant channels:
+    oxygen + acetyl                                             0 kJ/mol
+    hydroperoxyl + ketene                                -27.6144 kJ/mol
+    hydroxyl + lactone                                   -128.867 kJ/mol
+Product channels:
+Path reactions:
+    oxygen + acetyl <=> acetylperoxy                            0 kJ/mol
+    acetylperoxy <=> hydroperoxylvinoxy                  -24.2672 kJ/mol
+    acetylperoxy <=> hydroperoxyl + ketene                 2.5104 kJ/mol
+    hydroperoxylvinoxy <=> hydroperoxyl + ketene         -19.2464 kJ/mol
+    hydroperoxylvinoxy <=> hydroxyl + lactone            -30.1248 kJ/mol
+Net reactions:
+========================================================================
+
+Calculating densities of states for acetyl + O2 network...
+Using 820 grains from -144.77 to 667.82 kJ/mol in steps of 0.99 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for hydroperoxylvinoxy <=> hydroxyl + lactone...
+Using 250 grains from -144.77 to 103.11 kJ/mol in steps of 1.00 kJ/mol to compute the k(T,P) values at 302.47 K
+Error: Negative rate coefficient generated; rejecting result.
+[[ 1.02513733e-06  4.39904681e-05  4.86316374e+05 -1.45948244e+01
+   2.59374048e-07]
+ [ 4.52078982e-07 -6.35235770e-05  1.37383677e+04  9.15650915e+01
+  -3.82302410e-07]
+ [ 4.67295458e-11  1.28455308e-10 -1.01217761e+06  4.64624876e-01
+   5.74299461e-16]
+ [-5.13128805e-11  3.13257677e-08  1.70003293e+04 -3.24278859e+02
+  -2.50518499e-10]
+ [ 1.62009520e-02 -2.32362113e+00  3.73325112e+05 -4.45067934e+06
+   2.65977199e+00]]
+Using 250 grains from -144.77 to 109.98 kJ/mol in steps of 1.02 kJ/mol to compute the k(T,P) values at 323.145 K
+Error: Negative rate coefficient generated; rejecting result.
+[[-1.29053773e-06  2.83637727e-04  4.12559838e+05  3.49733083e+01
+   3.60270583e-10]
+ [ 3.61399694e-06 -4.89531147e-04  1.10123717e+04  7.24897327e+01
+   1.77984561e-09]
+ [ 1.60849354e-09  3.36968602e-09 -9.12915411e+05  9.29783822e-01
+   1.21216800e-14]
+ [ 2.51748809e-09  4.09527833e-07  1.71664440e+04 -4.04602710e+02
+  -7.30266188e-09]
+ [ 3.39285135e-05  1.31550863e-02  2.92796572e+05 -9.55401381e+06
+   1.71941353e+00]]
+Error: Negative rate coefficient generated; rejecting result.
+[[-9.25289980e-06  2.80850968e-04  1.10965537e+06  6.96489688e+00
+  -3.80036260e-05]
+ [ 3.57848919e-06 -5.61104725e-04  2.26074975e+04  1.89215033e+02
+  -2.45739383e-07]
+ [ 4.32633837e-09  6.91768944e-09 -1.38186733e+06  5.38209689e-01
+  -3.86237900e-14]
+ [ 5.01355044e-10  1.06896273e-06  9.93687617e+03 -3.81014862e+02
+  -3.93815219e-10]
+ [-3.57898944e+00 -1.81629489e+00 -9.32953922e+05 -5.15225093e+05
+   1.69546637e+00]]
+Error: Negative rate coefficient generated; rejecting result.
+[[ 3.43356828e-05  2.89579841e-04  2.59471379e+06  7.04581179e-01
+   7.96902940e-15]
+ [ 3.68970895e-06 -7.20627009e-04  4.64365450e+03  3.73248916e+02
+   4.95901990e-11]
+ [ 1.01163028e-08  1.42091609e-09 -2.59964547e+06  8.15190717e-03
+   2.39458286e-17]
+ [ 5.07179565e-11  2.10865476e-06  1.50507320e+02 -3.78188323e+02
+  -5.37242146e-16]
+ [ 7.50482915e-10  3.66528246e-04  5.78406270e+02 -7.02869579e-01
+   3.19493067e-02]]
+Using 250 grains from -144.77 to 125.52 kJ/mol in steps of 1.09 kJ/mol to compute the k(T,P) values at 369.86 K
+Error: Negative rate coefficient generated; rejecting result.
+[[-2.50960303e-04  1.10941488e-02  2.84178739e+05  2.40509121e+01
+  -1.28251436e-09]
+ [ 2.12479860e-04 -3.54298396e-02  7.69264334e+03  7.10413341e+01
+   2.11620443e-09]
+ [ 1.01700060e-06  1.43741253e-06 -7.28625718e+05  3.31880399e+00
+   7.56228588e-12]
+ [ 4.53770641e-07  6.99829371e-05  1.74967278e+04 -5.86248592e+02
+   3.92286749e-09]
+ [-2.54756154e-04  2.19480673e-02  4.19745170e+05  4.13010765e+04
+  -3.99183103e+01]]
+Error: Negative rate coefficient generated; rejecting result.
+[[-4.07370361e-04  1.35789896e-02  2.62739186e+06  1.86577201e+00
+   4.21365410e-13]
+ [ 2.60070588e-04 -7.50583185e-02  1.34593811e+03  5.62394611e+02
+   5.87746587e-09]
+ [ 9.40274077e-06  2.51495872e-07 -2.62893143e+06  1.32697173e-02
+   1.30299774e-15]
+ [ 3.52016820e-08  5.54015874e-04  6.99579302e+01 -5.66869141e+02
+  -4.68383265e-13]
+ [ 8.36992132e-08  6.09577357e-02  7.23230367e+01 -4.93127273e+00
+   4.34142862e-02]]
+Using 250 grains from -144.77 to 154.16 kJ/mol in steps of 1.20 kJ/mol to compute the k(T,P) values at 455.987 K
+Error: Negative rate coefficient generated; rejecting result.
+[[-1.17771870e-01  1.93171470e+00  1.43173741e+05  2.27417544e+01
+   9.44785403e-08]
+ [ 6.53352634e-02 -1.17744646e+01  3.83319932e+03  5.36903164e+01
+   6.50873708e-07]
+ [ 3.58621165e-03  2.83876429e-03 -4.98515451e+05  1.74727153e+01
+   1.63107789e-08]
+ [ 6.00319919e-04  4.19033996e-02  1.84139272e+04 -9.60027676e+02
+  -1.85429647e-06]
+ [ 4.81034198e-02  9.79793179e+00  3.31546699e+05 -3.57654061e+04
+  -7.30375679e+01]]
+Using 250 grains from -144.77 to 205.27 kJ/mol in steps of 1.41 kJ/mol to compute the k(T,P) values at 609.649 K
+Using 250 grains from -144.77 to 296.93 kJ/mol in steps of 1.77 kJ/mol to compute the k(T,P) values at 885.262 K
+Using 250 grains from -144.77 to 452.70 kJ/mol in steps of 2.40 kJ/mol to compute the k(T,P) values at 1353.64 K
+Error: Could only identify 4 distinct eigenvalues, when 5 are required.
+Last IERE = -5.1194e+06    First CSE = -2.07253e+06    Ratio = 2.47013
+Error: Could only identify 4 distinct eigenvalues, when 5 are required.
+Last IERE = -2.34069e+07    First CSE = -8.90581e+06    Ratio = 2.62827
+Using 250 grains from -144.77 to 633.33 kJ/mol in steps of 3.12 kJ/mol to compute the k(T,P) values at 1896.74 K
+Error: Could only identify 4 distinct eigenvalues, when 5 are required.
+Last IERE = -9.76893e+06    First CSE = -6.26282e+06    Ratio = 1.55983
+Error: Could only identify 4 distinct eigenvalues, when 5 are required.
+Last IERE = -4.51442e+07    First CSE = -2.82883e+07    Ratio = 1.59586
+Error: Could only identify 4 distinct eigenvalues, when 5 are required.
+Last IERE = -5.24787e+08    First CSE = -2.91145e+08    Ratio = 1.8025
+Error: Could only identify 4 distinct eigenvalues, when 5 are required.
+Last IERE = -5.52044e+09    First CSE = -2.46764e+09    Ratio = 2.23713
+Error: Could only identify 4 distinct eigenvalues, when 5 are required.
+Last IERE = -2.19947e+10    First CSE = -8.01739e+09    Ratio = 2.74337
+Saving pressure dependence results for network acetyl + O2...
+Warning: Species label is longer than 16 characters and will break CHEMKIN 2.0
+Warning: Species label is longer than 16 characters and will break CHEMKIN 2.0
+Warning: Species label is longer than 16 characters and will break CHEMKIN 2.0
+Warning: Species label is longer than 16 characters and will break CHEMKIN 2.0
+Warning: Species label is longer than 16 characters and will break CHEMKIN 2.0
+Warning: Species label is longer than 16 characters and will break CHEMKIN 2.0
+Warning: Species label is longer than 16 characters and will break CHEMKIN 2.0
+Warning: Species label is longer than 16 characters and will break CHEMKIN 2.0
+
+Arkane execution terminated at Mon Jul 24 16:27:36 2023
+Warning: Reaction isom1 did not contain any kinetic data and was omitted from the kinetics library.
+Warning: Reaction exit1 did not contain any kinetic data and was omitted from the kinetics library.
+Warning: Reaction exit2 did not contain any kinetic data and was omitted from the kinetics library.
+Warning: Reaction exit3 did not contain any kinetic data and was omitted from the kinetics library.
+executed /home/jackson/rmg/RMG-Py/test/../examples/arkane/networks/acetyl+O2
+running /home/jackson/rmg/RMG-Py/test/../examples/arkane/networks/n-butanol

@@ -582,3 +582,101 @@ Saving thermo for Pentyl...
 Arkane execution terminated at Mon Jul 24 12:29:49 2023
 executed /home/jackson/rmg/RMG-Py/test/../examples/arkane/species/Pentyl_isodesmic
 running /home/jackson/rmg/RMG-Py/test/../examples/arkane/species/Toulene_Free_Rotor
+Arkane execution initiated at Mon Jul 24 16:22:24 2023
+
+################################################################
+#                                                              #
+# Automated Reaction Kinetics and Network Exploration (Arkane) #
+#                                                              #
+#   Version: 3.1.0                                             #
+#   Authors: RMG Developers (rmg_dev@mit.edu)                  #
+#   P.I.s:   William H. Green (whgreen@mit.edu)                #
+#            Richard H. West (r.west@neu.edu)                  #
+#   Website: http://reactionmechanismgenerator.github.io/      #
+#                                                              #
+################################################################
+
+The current git HEAD for RMG-Py is:
+	282a6ec04c54c4d861b780eae6708821d04389e5
+	Mon Jul 24 14:14:18 2023 -0400
+
+The current git HEAD for RMG-database is:
+	113cb53eadea0c17ed6f76eaee3ad952774b8728
+	Tue Jun 27 09:11:34 2023 -0400
+
+Loading species Pentyl...
+Warning: No exact frequency scaling factor match found for LevelOfTheory(method='wb97mv',basis='def2tzvpd',software='qchem'). Using LevelOfTheory(method='wb97mv',basis='def2tzvpd') instead.
+Assigned a frequency scale factor of 1.002 for LevelOfTheory(method='wb97mv',basis='def2tzvpd',software='qchem')
+
+
+Loading statistical mechanics parameters for Pentyl...
+Loading in reference set `main` from /home/jackson/rmg/RMG-database/input/reference_sets/main ...
+Error: Unable to generate identifier for this molecule:
+1 O u0 p2 c0 {2,S} {3,S}
+2 O u0 p3 c-1 {1,S}
+3 C u0 p0 c0 {1,S} {4,S} {5,S} {6,S}
+4 H u0 p0 c0 {3,S}
+5 H u0 p0 c0 {3,S}
+6 H u0 p0 c0 {3,S}
+
+Error: Unable to generate identifier for this molecule:
+1 O u0 p3 c-1 {3,S}
+2 O u0 p2 c0 {3,D}
+3 C u0 p0 c0 {1,S} {2,D} {4,S}
+4 H u0 p0 c0 {3,S}
+
+Error: Unable to generate identifier for this molecule:
+1  O u0 p3 c-1 {2,S}
+2  C u0 p0 c0 {1,S} {3,D} {7,S}
+3  C u0 p0 c0 {2,D} {4,S} {8,S}
+4  C u0 p0 c0 {3,S} {5,D} {9,S}
+5  C u0 p0 c0 {4,D} {6,S} {10,S}
+6  C u0 p0 c0 {5,S} {7,D} {11,S}
+7  C u0 p0 c0 {2,S} {6,D} {12,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {5,S}
+11 H u0 p0 c0 {6,S}
+12 H u0 p0 c0 {7,S}
+
+Error: Unable to generate identifier for this molecule:
+1 N u0 p0 c+1 {2,T} {3,S}
+2 N u0 p1 c0 {1,T}
+3 H u0 p0 c0 {1,S}
+
+Error: Unable to generate identifier for this molecule:
+1 O u0 p2 c0 {2,S} {3,S}
+2 O u0 p3 c-1 {1,S}
+3 H u0 p0 c0 {1,S}
+
+Error: Unable to generate identifier for this molecule:
+1 O u0 p3 c-1 {3,S}
+2 O u0 p2 c0 {3,D}
+3 N u0 p1 c0 {1,S} {2,D}
+
+Error: Unable to generate identifier for this molecule:
+1 O u0 p1 c+1 {2,S} {3,S} {4,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+
+Error: Unable to generate identifier for this molecule:
+1 O u0 p3 c-1 {2,S}
+2 H u0 p0 c0 {1,S}
+
+Error: Unable to generate identifier for this molecule:
+1 N u0 p0 c+1 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+
+Symmetry input file written to /home/jackson/rmg/RMG-Py/scratch/0.symm
+Point group: C1
+Saving statistical mechanics parameters for Pentyl...
+Thermo already generated for species Pentyl. Skipping thermo generation.
+Saving thermo for Pentyl...
+
+Arkane execution terminated at Mon Jul 24 16:22:42 2023
+executed /home/jackson/rmg/RMG-Py/test/../examples/arkane/species/Pentyl_isodesmic
+running /home/jackson/rmg/RMG-Py/test/../examples/arkane/species/Toulene_Free_Rotor

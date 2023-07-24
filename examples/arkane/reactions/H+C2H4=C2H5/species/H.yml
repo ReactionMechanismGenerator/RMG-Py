@@ -46,7 +46,7 @@ conformer:
       - 1.0
   optical_isomers: 1
   spin_multiplicity: 2
-datetime: 2023-07-24 12:29
+datetime: 2023-07-24 16:22
 energy_transfer_model:
   T0:
     class: ScalarQuantity
