@@ -12,6 +12,8 @@ on:
     types:
       - completed
 
+run-name: Annotate PR ${{ github.event.workflow_run.event.display_title }}.
+
 jobs:
   on-success:
     runs-on: ubuntu-latest
