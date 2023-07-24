@@ -57,7 +57,7 @@ class TestArrhenius:
     Contains unit tests of the :class:`Arrhenius` class.
     """
 
-    def setup_class(self):
+    def setup_method(self):
         self.A = 1.0e12
         self.n = 0.5
         self.Ea = 41.84

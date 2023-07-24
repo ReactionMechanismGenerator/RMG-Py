@@ -37,9 +37,6 @@ import os
 import pytest
 
 from arkane import Arkane
-from arkane.common import clean_dir
-
-from warnings import warn
 
 
 @pytest.mark.functional
@@ -60,9 +57,6 @@ class TestArkaneExamples:
         for example_type in self.example_types:
             example_type_path = os.path.join(self.base_path, example_type)
             for example in sorted(os.listdir(example_type_path)):
-                if example == "thermo_demo":
-                    warn("Skipping thermo_demo test - no longer working.", RuntimeWarning)
-                    continue
                 path = os.path.join(example_type_path, example)
                 arkane = Arkane(input_file=os.path.join(path, "input.py"), output_directory=path)
                 arkane.plot = example_type != "bac"  # Don't plot BAC examples because they require a lot of memory
@@ -102,32 +96,3 @@ class TestArkaneExamples:
         assert msg_output == msg_expected
         n_expected = "0"
         assert n_output == n_expected
-
-    @classmethod
-    def teardown_class(cls):
-        """A function that is run ONCE after all unit tests in this class."""
-        cls.extensions_to_delete = ["pdf", "csv", "txt", "inp"]
-        cls.files_to_delete = ["arkane.log", "output.py", "supporting_information.csv"]
-        cls.files_to_keep = ["README.txt"]  # files to keep that have extensions marked for deletion
-        cls.base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "examples", "arkane")
-        for example_type in cls.example_types:
-            example_type_path = os.path.join(cls.base_path, example_type)
-            for example in os.listdir(example_type_path):
-                # clean working folder from all previous test output
-                example_path = os.path.join(example_type_path, example)
-                clean_dir(
-                    base_dir_path=example_path,
-                    files_to_delete=cls.files_to_delete,
-                    file_extensions_to_delete=cls.extensions_to_delete,
-                    files_to_keep=cls.files_to_keep,
-                    sub_dir_to_keep=["r0"],
-                )
-        cls.test_base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "arkane", "data")
-        tests = ["two_parameter_arrhenius_fit"]
-        for test in tests:
-            test_path = os.path.join(cls.test_base_path, test)
-            clean_dir(
-                base_dir_path=test_path,
-                files_to_delete=cls.files_to_delete,
-                file_extensions_to_delete=cls.extensions_to_delete,
-            )

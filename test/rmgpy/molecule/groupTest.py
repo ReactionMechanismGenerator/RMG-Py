@@ -39,7 +39,7 @@ class TestGroupAtom:
     Contains unit tests of the GroupAtom class.
     """
 
-    def setup_class(self):
+    def setup_method(self):
         """
         A method called before each unit test in this class.
         """
@@ -488,7 +488,7 @@ class TestGroupBond:
     Contains unit tests of the GroupBond class.
     """
 
-    def setup_class(self):
+    def setup_method(self):
         """
         A method called before each unit test in this class.
         """
@@ -719,7 +719,7 @@ class TestGroup:
     Contains unit tests of the Graph class.
     """
 
-    def setup_class(self):
+    def setup_method(self):
         self.adjlist = """
 1 *2 [Cs,Cd]   u0 {2,[S,D]} {3,S}
 2 *1 [O2s,O2d] u0 {1,[S,D]}

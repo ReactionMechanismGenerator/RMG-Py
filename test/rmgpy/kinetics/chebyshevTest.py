@@ -44,7 +44,7 @@ class TestChebyshev:
     Contains unit tests of the Chebyshev class.
     """
 
-    def setup_class(self):
+    def setup_method(self):
         self.Tmin = 300.0
         self.Tmax = 2000.0
         self.Pmin = 0.01
