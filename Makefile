@@ -74,25 +74,22 @@ eg1: all
 	coverage run rmg.py -p testing/eg1/input.py
 	coverage report
 	coverage html
+
 eg2: all
 	mkdir -p testing/eg2
 	rm -rf testing/eg2/*
 	cp examples/rmg/1,3-hexadiene/input.py testing/eg2/input.py
 	coverage erase
-	@ echo "Running eg2: 1,3-hexadiene example with coverage tracking AND profiling"
-	coverage run rmg.py -p testing/eg2/input.py
-	coverage report
-	coverage html
+	@ echo "Running eg2: 1,3-hexadiene example with profiling"
+	python rmg.py -p testing/eg2/input.py
 
 eg3: all
 	mkdir -p testing/eg3
 	rm -rf testing/eg3/*
 	cp examples/rmg/liquid_phase/input.py testing/eg3/input.py
 	coverage erase
-	@ echo "Running eg3: liquid_phase example with coverage tracking AND profiling"
-	coverage run rmg.py -p testing/eg3/input.py
-	coverage report
-	coverage html
+	@ echo "Running eg3: liquid_phase example with profiling"
+	python rmg.py -p testing/eg3/input.py
 
 eg5: all
 	mkdir -p testing/eg5
