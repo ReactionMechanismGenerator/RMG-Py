@@ -62,6 +62,7 @@ class TestArkaneExamples:
                 arkane.plot = example_type != "bac"  # Don't plot BAC examples because they require a lot of memory
                 logging.info("running {}".format(path))
                 arkane.execute()
+                logging.info("executed {}".format(path))
                 with open(os.path.join(path, "arkane.log"), "r") as f:
                     log = f.readlines()
                 for line in log[::-1]:

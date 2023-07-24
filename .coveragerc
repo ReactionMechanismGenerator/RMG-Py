@@ -1,16 +1,6 @@
-# .coveragerc to control coverage.py
 [run]
 plugins = Cython.Coverage
 branch = True
-source =
-    arkane
-    Arkane.py
-    rmgpy
-    rmg.py
-omit =
-    *Test.py
-    */test_data/*
-    arkane/data/*
 
 [report]
 show_missing = False
@@ -27,9 +17,8 @@ include =
     arkane/*
     rmgpy/*
 omit =
-    *Test.py
     */test_data/*
     arkane/data/*
 
 [html]
-directory = html_cov
+directory = htmlcov
