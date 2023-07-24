@@ -13,10 +13,6 @@ Main functions
 
 .. autofunction:: rmgpy.chemkin.save_transport_file
 
-.. autofunction:: rmgpy.chemkin.save_html_file
-
-.. autofunction:: rmgpy.chemkin.save_java_kinetics_library
-
 Helper functions
 ================
 
