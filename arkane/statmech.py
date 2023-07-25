@@ -63,8 +63,10 @@ from arkane.output import prettify
 from arkane.encorr.reference import ReferenceDatabase
 from arkane.thermo import ThermoJob
 
+################################################################################
 
-class ScanLog:
+
+class ScanLog(object):
     """
     Represent a text file containing a table of angles and corresponding
     scan energies.

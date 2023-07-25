@@ -31,7 +31,6 @@
 This script contains unit tests of the :mod:`arkane.multidimensionalTorsions` module.
 """
 
-
 import os
 import zipfile
 import shutil
@@ -39,18 +38,21 @@ import shutil
 import rmgpy
 from rmgpy.statmech.ndTorsions import HinderedRotor2D, HinderedRotorClassicalND
 from arkane.ess.factory import ess_factory
+import numpy as np
+import pytest
 
 RMG_PATH = os.path.abspath(os.path.dirname(os.path.dirname(rmgpy.__file__)))
+Q2DTOR_PATH = os.path.join(RMG_PATH, "external", "Q2DTor", "src", "Q2DTor.py")
 
 
+@pytest.mark.skipif(not os.path.isfile(Q2DTOR_PATH), "Q2DTor not installed")
 class TestHinderedRotor2D:
     """
     Contains unit tests of the StatmechJob class.
     """
 
     @classmethod
-    def setUp(cls):
-        """A method that is run before each unit test in this class"""
+    def setup_class(cls):
         cls.path = os.path.join(RMG_PATH, "arkane", "data", "CH2CHOOH", "CH2CHOOHscans")
         if not os.path.exists(cls.path):
             zippath = os.path.join(RMG_PATH, "arkane", "data", "CH2CHOOH", "CH2CHOOHscans.zip")
@@ -58,23 +60,24 @@ class TestHinderedRotor2D:
                 zip_ref.extractall(os.path.dirname(cls.path))
 
         cls.hd2d = HinderedRotor2D(
-            calc_path=cls.path,
-            name="r0",
-            torsigma1=1,
-            torsigma2=1,
-            symmetry="b",
-            pivots1=[6, 7],
-            pivots2=[1, 6],
-            top1=[7, 8],
-            top2=[6, 7, 8],
+            calc_path=cls.path, name="r0", torsigma1=1, torsigma2=1, symmetry="b", pivots1=[6, 7], pivots2=[1, 6], top1=[7, 8], top2=[6, 7, 8]
         )
+
+    def test_q2dtor_setup(self):
+        self.hd2d.read_scan()
+        self.assertAlmostEquals(self.hd2d.Es[0] / 10**9, -594373977.268 / 10**9, 3)
+        self.hd2d.get_torsions()
+        assert np.testing.assert_array_equal(self.hd2d.torsion1, [2, 1, 6, 7]) is None
+        self.hd2d.write_inp()
+        self.hd2d.write_pes()
+        self.hd2d.get_ics_file()
 
     def test_partition_function_calc(self):
         self.hd2d.read_eigvals()
-        assert round(abs(self.hd2d.get_partition_function(300.0) - 3.29752), 4) == 0
+        self.assertAlmostEqual(self.hd2d.get_partition_function(300.0), 3.29752, 4)
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         """A function that is run ONCE after all unit tests in this class."""
         if os.path.exists(cls.path):
             shutil.rmtree(cls.path)  # delete unzipped and created files
@@ -86,12 +89,10 @@ class TestHinderedRotor2D:
 
 class TestHinderedRotorClassicalND:
     """
-    Contains unit tests of the StatmechJob class.
+    Contains unit tests of the HinderedRotorClassicalND class.
     """
 
-    @classmethod
-    def setUp(cls):
-        """A method that is run before each unit test in this class"""
+    def test_hindered_rotor_nd(self):
         freqpath = os.path.join(RMG_PATH, "arkane", "data", "TolueneFreq.log")
         rotpath = os.path.join(RMG_PATH, "arkane", "data", "TolueneRot1.log")
         log = ess_factory(freqpath)
@@ -104,18 +105,10 @@ class TestHinderedRotorClassicalND:
 
         hessian = log.load_force_constant_matrix()
 
-        cls.hdnd = HinderedRotorClassicalND(
-            pivots=[[3, 12]],
-            tops=[[12, 13, 14, 15]],
-            sigmas=[6.0],
-            calc_path=rotpath,
-            conformer=conf,
-            F=hessian,
-            semiclassical=True,
+        hdnd = HinderedRotorClassicalND(
+            pivots=[[3, 12]], tops=[[12, 13, 14, 15]], sigmas=[6.0], calc_path=rotpath, conformer=conf, F=hessian, semiclassical=True
         )
-
-    def test_hindered_rotor_nd(self):
-        self.hdnd.read_scan()
-        assert round(abs(self.hdnd.Es[0] - 8.58538448), 4) == 0
-        self.hdnd.fit()
-        assert round(abs(self.hdnd.calc_partition_function(300.0) - 2.899287634962152), 5) == 0
+        hdnd.read_scan()
+        assert round(abs(self.hdnd.Es[0]) - 8.58538448, 4) == 0
+        hdnd.fit()
+        assert round(abs(self.hdnd.calc_partition_function(300.0)) - 2.899287634962152, 5) == 0
