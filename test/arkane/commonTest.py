@@ -244,59 +244,6 @@ class TestArkaneJob:
         assert self.kineticsjob.reaction.transition_state.tunneling == None
 
 
-class TestArkaneInput:
-    """
-    Contains unit tests for loading and processing Arkane input files.
-    """
-
-    def setup_class(cls):
-        """Preparation for all unit tests in this class."""
-        cls.directory = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "examples", "arkane")
-        cls.level_of_theory = LevelOfTheory("cbs-qb3")
-        cls.frequencyScaleFactor = 0.99
-        cls.useHinderedRotors = False
-        cls.useBondCorrections = True
-
-    def test_species(self):
-        """Test loading of species input file."""
-        spec = input.species("C2H4", os.path.join(self.directory, "species", "C2H4", "ethene.py"))
-        assert isinstance(spec, Species)
-        assert len(spec.molecule) == 0
-        # statmech job test
-        job = job_list[-1]
-        assert isinstance(job, StatMechJob)
-        job.level_of_theory = self.level_of_theory
-        job.frequencyScaleFactor = self.frequencyScaleFactor
-        job.includeHinderedRotors = self.useHinderedRotors
-        job.applyBondEnergyCorrections = self.useBondCorrections
-        job.load()
-        assert isinstance(job.species.props["element_counts"], dict)
-        assert job.species.props["element_counts"]["C"] == 2
-        assert job.species.props["element_counts"]["H"] == 4
-        # thermo job tests
-        input.thermo("C2H4", "NASA")
-        job = job_list[-1]
-        filepath = os.path.join(self.directory, "reactions", "H+C2H4=C2H5")
-        job.execute(output_directory=filepath)
-        assert os.path.isfile(os.path.join(filepath, "output.py"))
-        assert os.path.isfile(os.path.join(filepath, "chem.inp"))
-        os.remove(os.path.join(filepath, "output.py"))
-        os.remove(os.path.join(filepath, "chem.inp"))
-
-    def test_transition_state(self):
-        """Test loading of transition state input file."""
-        ts = input.transitionState("TS", os.path.join(self.directory, "reactions", "H+C2H4=C2H5", "TS.py"))
-        assert isinstance(ts, TransitionState)
-        # stat mech job tests
-        job = job_list[-1]
-        assert isinstance(job, StatMechJob)
-        job.level_of_theory = self.level_of_theory
-        job.frequencyScaleFactor = self.frequencyScaleFactor
-        job.includeHinderedRotors = self.useHinderedRotors
-        job.applyBondEnergyCorrections = self.useBondCorrections
-        job.load()
-
-
 class TestStatmech:
     """
     Contains unit tests of statmech.py
@@ -440,33 +387,6 @@ H      -1.80315400   -1.20387400   -0.22872900"""
         arkane_current.load_yaml(path=os.path.join(self.data_path, "vinoxy_current.yml"))
         assert isinstance(arkane_current, ArkaneSpecies)  # checks make_object
         assert arkane_current.conformer.spin_multiplicity == 2
-
-    @classmethod
-    def teardown_class(cls):
-        """
-        A method that is run ONCE after all unit tests in this class.
-        """
-        path = os.path.join(
-            os.path.dirname(os.path.dirname(rmgpy.__file__)),
-            "examples",
-            "arkane",
-            "species",
-        )
-        cls.dump_path = os.path.join(path, "C2H6")
-        cls.load_path = os.path.join(path, "C2H6_from_yaml")
-        cls.extensions_to_delete = ["pdf", "txt", "inp", "csv"]
-        cls.files_to_delete = ["arkane.log", "output.py"]
-        cls.files_to_keep = ["C2H6.yml"]
-        for path in [cls.dump_path, cls.load_path]:
-            for name in os.listdir(path):
-                item_path = os.path.join(path, name)
-                if os.path.isfile(item_path):
-                    extension = name.split(".")[-1]
-                    if name in cls.files_to_delete or (extension in cls.extensions_to_delete and name not in cls.files_to_keep):
-                        os.remove(item_path)
-                else:
-                    # This is a sub-directory. remove.
-                    shutil.rmtree(item_path)
 
 
 class TestMomentOfInertia:

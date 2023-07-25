@@ -33,10 +33,19 @@ This module contains unit tests of the :mod:`arkane.input` module.
 
 import os
 
+
+from rmgpy.pdep.collision import SingleExponentialDown
+from rmgpy.species import Species, TransitionState
+
+from arkane import input
+from arkane.input import job_list
+from arkane.modelchem import LevelOfTheory
+from arkane.statmech import StatMechJob
+import pytest
+
 import rmgpy
 from rmgpy.exceptions import InputError
 from rmgpy.kinetics.tunneling import Eckart
-from rmgpy.pdep.collision import SingleExponentialDown
 from rmgpy.statmech.rotation import NonlinearRotor
 from rmgpy.statmech.translation import IdealGasTranslation
 from rmgpy.statmech.vibration import HarmonicOscillator
@@ -373,3 +382,56 @@ class InputTest:
 
         with pytest.raises(InputError):
             process_model_chemistry("CCSD(T)-F12a/aug-cc-pVTZ//CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd)")
+
+
+class TestArkaneInput:
+    """
+    Contains unit tests for loading and processing Arkane input files.
+    """
+
+    def setup_class(cls):
+        """Preparation for all unit tests in this class."""
+        cls.directory = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "examples", "arkane")
+        cls.level_of_theory = LevelOfTheory("cbs-qb3")
+        cls.frequencyScaleFactor = 0.99
+        cls.useHinderedRotors = False
+        cls.useBondCorrections = True
+
+    def test_species(self):
+        """Test loading of species input file."""
+        spec = input.species("C2H4", os.path.join(self.directory, "species", "C2H4", "ethene.py"))
+        assert isinstance(spec, Species)
+        assert len(spec.molecule) == 0
+        # statmech job test
+        job = job_list[-1]
+        assert isinstance(job, StatMechJob)
+        job.level_of_theory = self.level_of_theory
+        job.frequencyScaleFactor = self.frequencyScaleFactor
+        job.includeHinderedRotors = self.useHinderedRotors
+        job.applyBondEnergyCorrections = self.useBondCorrections
+        job.load()
+        assert isinstance(job.species.props["element_counts"], dict)
+        assert job.species.props["element_counts"]["C"] == 2
+        assert job.species.props["element_counts"]["H"] == 4
+        # thermo job tests
+        input.thermo("C2H4", "NASA")
+        job = job_list[-1]
+        filepath = os.path.join(self.directory, "reactions", "H+C2H4=C2H5")
+        job.execute(output_directory=filepath)
+        assert os.path.isfile(os.path.join(filepath, "output.py"))
+        assert os.path.isfile(os.path.join(filepath, "chem.inp"))
+        os.remove(os.path.join(filepath, "output.py"))
+        os.remove(os.path.join(filepath, "chem.inp"))
+
+    def test_transition_state(self):
+        """Test loading of transition state input file."""
+        ts = input.transitionState("TS", os.path.join(self.directory, "reactions", "H+C2H4=C2H5", "TS.py"))
+        assert isinstance(ts, TransitionState)
+        # stat mech job tests
+        job = job_list[-1]
+        assert isinstance(job, StatMechJob)
+        job.level_of_theory = self.level_of_theory
+        job.frequencyScaleFactor = self.frequencyScaleFactor
+        job.includeHinderedRotors = self.useHinderedRotors
+        job.applyBondEnergyCorrections = self.useBondCorrections
+        job.load()
