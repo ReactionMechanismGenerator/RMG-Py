@@ -1,0 +1,93 @@
+RMG_version: 2.3.0
+adjacency_list: |
+  multiplicity 3
+  1 N u2 p1 c0 {2,S}
+  2 H u0 p0 c0 {1,S}
+chemkin_thermo_string: |
+  NH                      H   1N   1          G   100.000  5000.000 1030.80      1
+   2.91320000E+00 1.04459000E-03-2.66510000E-07 2.82366000E-11-9.08496000E-16    2
+   4.22955000E+04 5.02249000E+00 3.52449000E+00-5.78193000E-07-6.76543000E-07    3
+   1.54227000E-09-6.70991000E-13 4.20990000E+04 1.71287000E+00                   4
+class: ArkaneSpecies
+conformer:
+  E0: {class: ScalarQuantity, units: kJ/mol, value: 350.04200000000003}
+  class: Conformer
+  coordinates:
+    class: ArrayQuantity
+    units: angstroms
+    value:
+    - [0.0, 0.0, 0.1296667233]
+    - [0.0, 0.0, -0.9076670631]
+  mass:
+    class: ArrayQuantity
+    units: amu
+    value: [14.00307400443, 1.00782503224]
+  modes:
+  - class: IdealGasTranslation
+    mass: {class: ScalarQuantity, units: amu, value: 15.010900000000001}
+    quantum: false
+  - class: LinearRotor
+    inertia: {class: ScalarQuantity, units: amu*angstrom^2, value: 1.011675837927761}
+    quantum: false
+    rotationalConstant: {class: ScalarQuantity, units: cm^-1, value: 16.66307370538607}
+    symmetry: 1
+  - class: HarmonicOscillator
+    frequencies:
+      class: ArrayQuantity
+      units: cm^-1
+      value: [3226.9669]
+    quantum: true
+  number:
+    class: ArrayQuantity
+    value: [7.0, 1.0]
+  opticalIsomers: 1
+  spinMultiplicity: 3
+datetime: 2019-03-14 19:32
+energy_transfer_model:
+  T0: {class: ScalarQuantity, units: K, value: 300.0}
+  alpha0: {class: ScalarQuantity, units: kJ/mol, value: 3.5886}
+  class: SingleExponentialDown
+  n: 0.85
+frequency_scale_factor: 0.97
+inchi: InChI=1S/HN/h1H
+inchi_key: PDCKRJPYJMCOFO-UHFFFAOYSA-N
+is_ts: false
+label: NH
+molecular_weight: {class: ScalarQuantity, units: amu, value: 15.014681708558934}
+smiles: '[NH]'
+thermo:
+  Cp0: {class: ScalarQuantity, units: J/(mol*K), value: 29.100652}
+  CpInf: {class: ScalarQuantity, units: J/(mol*K), value: 37.415124}
+  E0: {class: ScalarQuantity, units: kJ/mol, value: 350.04200000000003}
+  Tmax: {class: ScalarQuantity, units: K, value: 5000.0}
+  Tmin: {class: ScalarQuantity, units: K, value: 100.0}
+  class: NASA
+  polynomials:
+    polynomial1:
+      Tmax: {class: ScalarQuantity, units: K, value: 1030.8}
+      Tmin: {class: ScalarQuantity, units: K, value: 100.0}
+      class: NASAPolynomial
+      coeffs: [3.52449, -5.78193e-07, -6.76543e-07, 1.54227e-09, -6.70991e-13, 42099.0,
+        1.71287]
+    polynomial2:
+      Tmax: {class: ScalarQuantity, units: K, value: 5000.0}
+      Tmin: {class: ScalarQuantity, units: K, value: 1030.8}
+      class: NASAPolynomial
+      coeffs: [2.9132, 0.00104459, -2.6651e-07, 2.82366e-11, -9.08496e-16, 42295.5,
+        5.02249]
+thermo_data:
+  Cp (cal/mol*K): {1000 K: '7.39', 1500 K: '7.89', 2000 K: '8.25', 2400 K: '8.43',
+    300 K: '6.95', 400 K: '6.95', 500 K: '6.96', 600 K: '7.01', 800 K: '7.17'}
+  H298: 85.74 kcal/mol
+  S298: 43.27 cal/mol*K
+transport_data:
+  class: TransportData
+  epsilon: {class: ScalarQuantity, units: J/mol, value: 665.16}
+  sigma: {class: ScalarQuantity, units: angstrom, value: 2.6499999999999995}
+use_bond_corrections: false
+use_hindered_rotors: true
+xyz: |-
+  2
+  NH
+  N 0.0 0.0 1.296667233e-11
+  H 0.0 0.0 -9.076670631e-11
