@@ -93,6 +93,22 @@ test/regression/*
 !test/regression/*/regression_input.py
 
 # testing files
+test/arkane/data/two_parameter_arrhenius_fit/arkane.log
+test/rmgpy/test_data/temp_dir_for_testing/cantera/chem001.yaml
 rmgpy/test_data/copied_kinetic_lib/
 testing/qm/*
 test_log.txt
+
+# example directory - save the inputs but not the outputs
+# cantera input files
+examples/**/chem.inp
+# log files from the runs
+examples/**/arkane.log
+# results from the runs
+examples/**/species_dictionary.txt
+examples/**/output*py
+examples/**/network*py
+examples/**/dictionary.txt
+examples/**/reactions.py
+examples/**/RMG_libraries
+examples/**/species

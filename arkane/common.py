@@ -937,7 +937,7 @@ def get_moment_of_inertia_tensor(coords, numbers=None, symbols=None):
     if numbers is not None:
         symbols = [symbol_by_number[number] for number in numbers]
     if len(coords) != len(symbols):
-        raise InputError(f"The number of atoms ({len(symbols)}) is not equal to the number of " f"atomic coordinates ({len(list(coords))})")
+        raise InputError(f"The number of atoms ({len(symbols)}) is not equal to the number of atomic coordinates ({len(list(coords))})")
     tensor = np.zeros((3, 3), float)
     center_of_mass = get_center_of_mass(coords=coords, numbers=numbers, symbols=symbols)
     for symbol, coord in zip(symbols, coords):
