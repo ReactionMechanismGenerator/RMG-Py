@@ -99,7 +99,7 @@ def get_mech_dict(spcs, rxns, solvent='solvent', solvent_data=None):
 
 
 def get_radicals(spc):
-    if spc.molecule[0].to_smiles() == "[O][O]":  # treat oxygen as stable to improve radical analysis
+    if spc.molecule[0].smiles == "[O][O]":  # treat oxygen as stable to improve radical analysis
         return 0
     else:
         return spc.molecule[0].multiplicity-1
@@ -112,7 +112,7 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
         result_dict["type"] = "Species"
         if obj.contains_surface_site():
             result_dict["adjlist"] = obj.molecule[0].to_adjacency_list()
-        result_dict["smiles"] = obj.molecule[0].to_smiles()
+        result_dict["smiles"] = obj.molecule[0].smiles
         result_dict["thermo"] = obj_to_dict(obj.thermo, spcs)
         result_dict["radicalelectrons"] = get_radicals(obj)
         if obj.liquid_volumetric_mass_transfer_coefficient_data:
