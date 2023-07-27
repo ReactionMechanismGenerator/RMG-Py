@@ -126,3 +126,15 @@ eg4: all
 	cp examples/thermoEstimator/input.py testing/eg4/input.py
 	@ echo "Running thermo data estimator example. This tests QM."
 	python scripts/thermoEstimator.py testing/eg4/input.py
+
+q2dtor:
+	@ echo -e "\nInstalling Q2DTor...\n"
+	@ echo -e "Q2DTor is a software for calculating the partition functions and themodynamic properties\
+	of molecular systems with two or more torsional modes developed by David Ferro Costas (david.ferro@usc.es)\
+	 and Antonio Fernandez Ramos (qf.ramos@usc.es) at the Universidade de Santiago de Compostela. Arkane can\
+	  integrate Q2DTor to compute the quantum mechanical partition function of 2D rotors.  \n\nFor use of Q2DTor\
+ and HinderedRotor2D within Arkane please cite:  \n\nD. Ferro-Costas, M. N. D. S.Cordeiro, D. G. Truhlar, A.\
+		  Fernández-Ramos, Comput. Phys. Commun. 232, 190-205, 2018.\n"
+	@ read -p "Press ENTER to continue" dummy
+	@ mkdir -p external
+	@ git clone https://github.com/cathedralpkg/Q2DTor external/Q2DTor
