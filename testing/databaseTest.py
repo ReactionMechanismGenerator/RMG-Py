@@ -1420,7 +1420,7 @@ Origin Group AdjList:
                         backbone_msg += backbone_sample.item.to_adjacency_list()
                     else:
                         backbone_msg = ''
-                    tst3.append((False, """
+                    test1.append((False, """
 In family {0}, a sample molecule made from node {1} returns an unexpectedly charged molecule:
 Sample molecule AdjList:
 {2}
