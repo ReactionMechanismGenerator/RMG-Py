@@ -45,7 +45,7 @@ RMG_PATH = os.path.abspath(os.path.dirname(os.path.dirname(rmgpy.__file__)))
 Q2DTOR_PATH = os.path.join(RMG_PATH, "external", "Q2DTor", "src", "Q2DTor.py")
 
 
-@pytest.mark.skipif(not os.path.isfile(Q2DTOR_PATH), "Q2DTor not installed")
+@pytest.mark.skipif(not os.path.isfile(Q2DTOR_PATH), reason="Q2DTor not installed")
 class TestHinderedRotor2D:
     """
     Contains unit tests of the StatmechJob class.
