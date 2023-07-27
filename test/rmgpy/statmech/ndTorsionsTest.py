@@ -109,6 +109,6 @@ class TestHinderedRotorClassicalND:
             pivots=[[3, 12]], tops=[[12, 13, 14, 15]], sigmas=[6.0], calc_path=rotpath, conformer=conf, F=hessian, semiclassical=True
         )
         hdnd.read_scan()
-        assert round(abs(self.hdnd.Es[0]) - 8.58538448, 4) == 0
+        assert round(abs(hdnd.Es[0]) - 8.58538448, 4) == 0
         hdnd.fit()
-        assert round(abs(self.hdnd.calc_partition_function(300.0)) - 2.899287634962152, 5) == 0
+        assert round(abs(hdnd.calc_partition_function(300.0)) - 2.899287634962152, 5) == 0
