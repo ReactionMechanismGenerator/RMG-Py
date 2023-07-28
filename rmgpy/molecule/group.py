@@ -806,9 +806,9 @@ class GroupBond(Edge):
                 values.append('B')
             elif value == 0:
                 values.append('vdW')
-            elif value == 0.1:
+            elif abs(value-0.1) < 1e-4:
                 values.append('H')
-            elif value == 0.05:
+            elif abs(value-0.05) < 1e-4:
                 values.append('R')
             else:
                 raise TypeError('Bond order number {} is not hardcoded as a string'.format(value))
@@ -939,6 +939,23 @@ class GroupBond(Edge):
                 return False
         else:
             return abs(self.order[0]) <= 1e-9 and len(self.order) == 1
+
+            
+    def is_reaction_bond(self, wildcards=False):
+        """
+        Return ``True`` if the bond represents a van der Waals bond or ``False`` if
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are van der Waals.
+        """
+        if wildcards:
+            for order in self.order:
+                if abs(order[0]-0.05) <= 1e-9:
+                    return True
+            else:
+                return False
+        else:
+            return abs(self.order[0]-0.05) <= 1e-9 and len(self.order) == 1
 
     def is_benzene(self, wildcards=False):
         """
