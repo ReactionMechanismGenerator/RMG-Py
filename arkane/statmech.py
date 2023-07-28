@@ -252,9 +252,9 @@ def hinderedRotor2D(scandir, pivots1, top1, symmetry1, pivots2, top2, symmetry2,
     return [scandir, pivots1, top1, symmetry1, pivots2, top2, symmetry2, symmetry]
 
 
-def hinderedRotorClassicalND(calcPath, pivots, tops, sigmas, semiclassical):
+def hinderedRotorClassicalND(calc_path, pivots, tops, sigmas, semiclassical):
     """Read an N dimensional hindered rotor directive, and return the attributes in a list"""
-    return [calcPath, pivots, tops, sigmas, semiclassical]
+    return [calc_path, pivots, tops, sigmas, semiclassical]
 
 
 class StatMechJob(object):
