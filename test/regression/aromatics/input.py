@@ -57,5 +57,6 @@ options(
     saveSimulationProfiles = False,
     saveEdgeSpecies = True,
     verboseComments = False,
+    generateRMSEachIter=False,
 )
 

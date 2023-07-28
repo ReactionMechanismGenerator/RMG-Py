@@ -56,6 +56,7 @@ options(
     units='si',
     saveRestartPeriod=None,
     generateOutputHTML=True,
+    generateRMSEachIter=False,
     generatePlots=True,
     saveEdgeSpecies=True,
     saveSimulationProfiles=True,

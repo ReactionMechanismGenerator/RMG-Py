@@ -73,6 +73,7 @@ options(
     name='testSeed',
     units='si',
     generateSeedEachIteration=True,
+    generateRMSEachIter=False,
     saveSeedToDatabase=True,
     generateOutputHTML=False,
     generatePlots=False,

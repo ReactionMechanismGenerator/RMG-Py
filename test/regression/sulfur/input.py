@@ -64,6 +64,7 @@ model(
 
 options(
     generateOutputHTML=False,
+    generateRMSEachIter=False,
     generatePlots=False,
     saveEdgeSpecies=True,
     saveSimulationProfiles=False,
