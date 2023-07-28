@@ -120,7 +120,7 @@ jobs:
     env: 
       # if running on RMG-Py but requiring changes on an un-merged branch of RMG-database, replace
       # main with the name of the branch
-      RMG_DATABASE_BRANCH: main
+      RMG_DATABASE_BRANCH: lithium
 
       # This is true only if this is a reference case for the regression testing:
       REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
@@ -302,7 +302,7 @@ jobs:
               export FAILED=Yes
             fi
             echo "" # blank line so next block is interpreted as markdown
-            cat "$regr_test-core.log"
+            cat "$regr_test-core.log" || (echo "Dumping the whole log failed, please download it from GitHub actions. Here are the first 100 lines:" && head -n100 "$regr_test-core.log")
             echo "</details>"
             echo "<details>"
             if python-jl scripts/checkModels.py \
@@ -319,7 +319,7 @@ jobs:
               export FAILED=Yes
             fi
             echo "" # blank line so next block is interpreted as markdown
-            cat "$regr_test-edge.log"
+            cat "$regr_test-edge.log" || (echo "Dumping the whole log failed, please download it from GitHub actions. Here are the first 100 lines:" && head -n100 "$regr_test-core.log")
             echo "</details>"
 
             # Check for Regression between Reference and Dynamic (skip superminimal)

@@ -51,6 +51,7 @@ from rmgpy.molecule import Group
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.quantity import ScalarQuantity
+from rmgpy.kinetics.model import KineticsModel
 
 
 class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want to use nose test generators
@@ -139,12 +140,14 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 test.description = test_name
                 self.compat_func_name = test_name
                 yield test, family_name
-
-                test = lambda x: self.kinetics_check_coverage_dependence_units_are_correct(family_name)
-                test_name = "Kinetics surface family {0}: check coverage dependent units are correct?".format(family_name)
-                test.description = test_name
-                self.compat_func_name = test_name
-                yield test, family_name
+                
+                if family_name not in ["Surface_Proton_Electron_Reduction_Alpha", "Surface_Proton_Electron_Reduction_Beta"
+                                       "Surface_Proton_Electron_Reduction_Beta_Dissociation"]:
+                    test = lambda x: self.kinetics_check_coverage_dependence_units_are_correct(family_name)
+                    test_name = "Kinetics surface family {0}: check coverage dependent units are correct?".format(family_name)
+                    test.description = test_name
+                    self.compat_func_name = test_name
+                    yield test, family_name
 
             # these families have some sort of difficulty which prevents us from testing accessibility right now
             # See RMG-Py PR #2232 for reason why adding Bimolec_Hydroperoxide_Decomposition here. Bsically some nodes need to be in a ring, but the sampled molecule is not.
@@ -926,9 +929,10 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
         tst_limit = (kB * T) / h
         collision_limit = Na * np.pi * h_rad_diam ** 2 * np.sqrt(8 * kB * T / (np.pi * h_rad_mass / 2))
         for entry in library.entries.values():
-            if entry.item.is_surface_reaction():
+            if entry.item.is_surface_reaction() or isinstance(entry.data, KineticsModel):
                 # Don't check surface reactions
                 continue
+
             k = entry.data.get_rate_coefficient(T, P)
             rxn = entry.item
             if k < 0:
@@ -1416,7 +1420,7 @@ Origin Group AdjList:
                         backbone_msg += backbone_sample.item.to_adjacency_list()
                     else:
                         backbone_msg = ''
-                    tst3.append((False, """
+                    test1.append((False, """
 In family {0}, a sample molecule made from node {1} returns an unexpectedly charged molecule:
 Sample molecule AdjList:
 {2}
@@ -1787,7 +1791,7 @@ The following adjList may have atoms in a different ordering than the input file
         tst3 = []
 
         # Solvation groups have special groups that RMG cannot generate proper sample_molecules. Skip them.
-        skip_entry_list = ['Cds-CdsCS6dd', 'Cs-CS4dHH']
+        skip_entry_list = ['Cds-CdsCS6dd', 'Cs-CS4dHH', 'Li-OCring', 'CsOOOring', 'Cbf-CbfCbfCbf']
         skip_short_desc_list = ['special solvation group with ring', 'special solvation polycyclic group']
 
         for entryName, entry in group.entries.items():

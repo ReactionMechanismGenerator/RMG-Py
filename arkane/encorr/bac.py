@@ -237,7 +237,7 @@ class BAC:
     ref_databases = {}
     atom_spins = {
         'H': 0.5, 'C': 1.0, 'N': 1.5, 'O': 1.0, 'F': 0.5,
-        'Si': 1.0, 'P': 1.5, 'S': 1.0, 'Cl': 0.5, 'Br': 0.5, 'I': 0.5
+        'Si': 1.0, 'P': 1.5, 'S': 1.0, 'Cl': 0.5, 'Br': 0.5, 'I': 0.5, 'Li': 0.5,
     }
     exp_coeff = 3.0  # Melius-type parameter (Angstrom^-1)
 

@@ -112,6 +112,9 @@ class CuttingLabel(Vertex):
     def is_iodine(self):
         return False
 
+    def is_lithium(self):
+        return False
+
     def is_nos(self):
         """
         Return ``True`` if the atom represent either nitrogen, sulfur, or oxygen
@@ -1449,7 +1452,7 @@ class Fragment(Graph):
             if isinstance(atom, CuttingLabel):
                 substi = Atom(element=get_element('Si'),
                     radical_electrons=0,
-                    charge=0,
+                    charge=-3,
                     lone_pairs=3)
                 substi.label = element_symbol
 

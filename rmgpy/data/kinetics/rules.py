@@ -44,7 +44,8 @@ import numpy as np
 from rmgpy.data.base import Database, Entry, get_all_combinations
 from rmgpy.data.kinetics.common import save_entry
 from rmgpy.exceptions import KineticsError, DatabaseError
-from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP
+from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP, \
+                            SurfaceChargeTransfer, SurfaceChargeTransferBEP
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
 
@@ -565,12 +566,23 @@ class KineticsRules(Database):
         n = 0.0
         E0 = 0.0
         alpha = 0.0
-        count = len(kinetics_list)
+        electrons = None
+        V0 = None
+        count = 0
         for kinetics in kinetics_list:
+            if isinstance(kinetics, SurfaceChargeTransfer):
+                continue
+            count += 1
             logA += math.log10(kinetics.A.value_si)
             n += kinetics.n.value_si
             alpha += kinetics.alpha.value_si
             E0 += kinetics.E0.value_si
+            if isinstance(kinetics, SurfaceChargeTransferBEP):
+                if electrons is None:
+                    electrons = kinetics.electrons.value_si
+                if V0 is None:
+                    V0 = kinetics.V0.value_si
+
         logA /= count
         n /= count
         alpha /= count
@@ -595,15 +607,25 @@ class KineticsRules(Database):
         else:
             raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
 
-        if type(kinetics) not in [ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP]:
+        if type(kinetics) not in [ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, SurfaceChargeTransferBEP]:
             raise Exception('Invalid kinetics type {0!r} for {1!r}.'.format(type(kinetics), self))
 
-        averaged_kinetics = type(kinetics)(
-            A=(10 ** logA, Aunits),
-            n=n,
-            alpha=alpha,
-            E0=(E0 * 0.001, "kJ/mol"),
-        )
+        if isinstance(kinetics, SurfaceChargeTransferBEP):
+            averaged_kinetics = SurfaceChargeTransferBEP(
+                A=(10 ** logA, Aunits),
+                n=n,
+                electrons=electrons,
+                alpha=alpha,
+                V0=(V0,'V'),
+                E0=(E0 * 0.001, "kJ/mol"),
+                )
+        else:
+            averaged_kinetics = type(kinetics)(
+                A=(10 ** logA, Aunits),
+                n=n,
+                alpha=alpha,
+                E0=(E0 * 0.001, "kJ/mol"),
+            )
         return averaged_kinetics
 
     def estimate_kinetics(self, template, degeneracy=1):

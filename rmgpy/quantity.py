@@ -776,6 +776,8 @@ Mass = UnitType('amu', extra_dimensionality={'kg/mol': 1000. * constants.amu})
 
 Momentum = UnitType('kg*m/s^2')
 
+Potential = UnitType('V')
+
 Power = UnitType('W')
 
 Pressure = UnitType('Pa', common_units=['bar', 'atm', 'torr', 'psi', 'mbar'])
