@@ -87,7 +87,7 @@ jobs:
         if: github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event.repository.name == 'RMG-Py'
         uses: actions/checkout@v3
         with:
-          repository: ${{ github.event.repository.owner }}/RMG-Py
+          repository: ${{ github.repository_owner }}/RMG-Py
           path: RMG-Py
       - name: Checkout RMG-database
         if: github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event.repository.name == 'RMG-Py'
@@ -118,14 +118,14 @@ jobs:
         if: github.repository != 'ReactionMechanismGenerator/RMG-database' && github.event.repository.name == 'RMG-database'
         uses: actions/checkout@v3
         with:
-          repository: ${{ github.event.repository.owner }}/RMG-Py
+          repository: ${{ github.repository_owner }}/RMG-Py
           path: RMG-Py
           ref: ${{ inputs.rmg-py-branch }}
       - name: Checkout RMG-database
         if: github.repository != 'ReactionMechanismGenerator/RMG-database' && github.event.repository.name == 'RMG-database'
         uses: actions/checkout@v3
         with:
-          repository: ${{ github.event.repository.owner }}/RMG-database
+          repository: ${{ github.repository_owner }}/RMG-database
           path: RMG-database
           ref: ${{ inputs.rmg-db-branch }}          
 
