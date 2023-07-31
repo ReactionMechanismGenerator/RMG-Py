@@ -1240,6 +1240,19 @@ class Fragment(Molecule):
                 return True
         return False
 
+    def is_multidentate(self):
+        """
+        Return ``True`` if the adsorbate contains at least two binding sites,
+        or ``False`` otherwise.
+        """
+        surface_sites = 0
+        for atom in self.vertices:
+            if atom.is_surface_site():
+                surface_sites += 1
+                if surface_sites >= 2:
+                    return True
+        return False
+
     def from_smiles_like_string(self, smiles_like_string):
         smiles = smiles_like_string
 
