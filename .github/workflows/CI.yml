@@ -80,7 +80,7 @@ jobs:
         with:
           repository: ReactionMechanismGenerator/RMG-database
           path: RMG-database
-          ref: $RMG_DATABASE_BRANCH
+          ref: ${{ env.RMG_DATABASE_BRANCH }}
 
       # Option 2: calling from fork of RMG-Py and using branch on RMG/RMG-database
       - name: Checkout RMG-Py
@@ -95,7 +95,7 @@ jobs:
         with:
           repository: ReactionMechanismGenerator/RMG-database
           path: RMG-database
-          ref: $RMG_DATABASE_BRANCH
+          ref: ${{ env.RMG_DATABASE_BRANCH }}
 
       # Option 3: calling from branch on RMG-database
       - name: Checkout RMG-Py
@@ -133,7 +133,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: repositories
-          path: $GITHUB_WORKSPACE
+          path: ${{ github.workspace }}
 
   build-osx:
     needs: clone
@@ -147,7 +147,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: repositories
-          path: $GITHUB_WORKSPACE
+          path: ${{ github.workspace }}
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
@@ -193,7 +193,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: repositories
-          path: $GITHUB_WORKSPACE
+          path: ${{ github.workspace }}
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
