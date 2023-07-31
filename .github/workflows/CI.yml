@@ -38,13 +38,6 @@ on:
   push:
   # runs on PRs against RMG-Py (and anywhere else, but we add this for RMG-Py)
   pull_request:
-  # allow calling from other repos in the ReactionMechanismGenerator organization
-  workflow_call:
-    inputs:
-      rmg-db-branch:
-        # if calling from RMG-database, must provide a branch
-        required: true
-        type: string
 
 # this prevents one PR from simultaneously running multiple runners, which will clog up the queue
 # and prevent other PRs from running the CI
@@ -52,15 +45,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # if running on RMG-Py but requiring changes on an un-merged branch of RMG-database, replace
+  # main with the name of the branch
+  RMG_DATABASE_BRANCH: main
+
+
 jobs:
   build-osx:
     runs-on: macos-latest
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
-    env: 
-      # if running on RMG-Py but requiring changes on an un-merged branch of RMG-database, replace
-      # main with the name of the branch
-      RMG_DATABASE_BRANCH: main
     defaults:
       run:
         shell: bash -l {0}
@@ -88,14 +83,7 @@ jobs:
           mamba list
 
       # Clone RMG-database
-      - name: Clone RMG-database - Reusable Workflow
-        if: github.repository == 'ReactionMechanismGenerator/RMG-database'
-        run: |
-          cd ..
-          git clone -b ${{ inputs.rmg-db-branch }} https://github.com/ReactionMechanismGenerator/RMG-database.git
-
-      - name: Clone RMG-database - RMG-Py
-        if: github.repository != 'ReactionMechanismGenerator/RMG-database'
+      - name: Clone RMG-database
         run: |
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
@@ -118,10 +106,6 @@ jobs:
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: 
-      # if running on RMG-Py but requiring changes on an un-merged branch of RMG-database, replace
-      # main with the name of the branch
-      RMG_DATABASE_BRANCH: main
-
       # This is true only if this is a reference case for the regression testing:
       REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
     defaults:
@@ -151,13 +135,7 @@ jobs:
           mamba list
 
       # Clone RMG-database
-      - name: Clone RMG-database - Reusable Workflow
-        if: github.repository == 'ReactionMechanismGenerator/RMG-database'
-        run: |
-          cd ..
-          git clone -b ${{ inputs.rmg-db-branch }} https://github.com/ReactionMechanismGenerator/RMG-database.git
-
-      - name: Clone RMG-database - RMG-Py
+      - name: Clone RMG-database
         if: github.repository != 'ReactionMechanismGenerator/RMG-database'
         run: |
           cd ..
