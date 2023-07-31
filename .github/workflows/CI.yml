@@ -80,7 +80,7 @@ jobs:
         with:
           repository: ReactionMechanismGenerator/RMG-database
           path: RMG-database
-          ref: ${RMG_DATABASE_BRANCH}
+          ref: $${ RMG_DATABASE_BRANCH }}
 
       # Option 2: calling from fork of RMG-Py and using branch on RMG/RMG-database
       - name: Checkout RMG-Py
@@ -95,7 +95,7 @@ jobs:
         with:
           repository: ReactionMechanismGenerator/RMG-database
           path: RMG-database
-          ref: ${RMG_DATABASE_BRANCH}
+          ref: $${ RMG_DATABASE_BRANCH }}
 
       # Option 3: calling from branch on RMG-database
       - name: Checkout RMG-Py
