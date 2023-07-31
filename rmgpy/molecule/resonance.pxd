@@ -63,3 +63,13 @@ cpdef list generate_clar_structures(Graph mol, bint save_order=?)
 cpdef list _clar_optimization(Graph mol, list constraints=?, max_num=?, save_order=?)
 
 cpdef list _clar_transformation(Graph mol, list aromatic_ring)
+
+cpdef list generate_adsorbate_shift_down_resonance_structures(Graph mol)
+
+cpdef list generate_adsorbate_shift_up_resonance_structures(Graph mol)
+
+cpdef list generate_adsorbate_double_shift_up_resonance_structures(Graph mol)
+
+cpdef list generate_adsorbate_double_shift_down_resonance_structures(Graph mol)
+
+cpdef list generate_adsorbate_conjugate_resonance_structures(Graph mol)
