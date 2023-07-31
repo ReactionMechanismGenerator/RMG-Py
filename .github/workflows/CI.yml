@@ -133,10 +133,15 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - name: Checkout RMG-Py
+      - name: Checkout RMG-Py - Resuable Workflow
+        if: github.repository == 'ReactionMechanismGenerator/RMG-database'
         uses: actions/checkout@v3
         with:
           repository: ReactionMechanismGenerator/RMG-Py
+
+      - name: Clone RMG-Py - RMG-Py
+        if: github.repository != 'ReactionMechanismGenerator/RMG-database'
+        uses: actions/checkout@v3
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
