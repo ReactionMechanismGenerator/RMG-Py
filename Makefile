@@ -50,7 +50,7 @@ test-all:
 	python-jl -m pytest
 
 test test-unittests:
-	python-jl -m pytest -m "not functional not database"
+	python-jl -m pytest -m "not functional and not database"
 
 test-functional:
 	python-jl -m pytest -m "functional"
