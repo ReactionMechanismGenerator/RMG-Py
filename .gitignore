@@ -86,8 +86,8 @@ RMG_Py.egg-info/*
 # RMG configuration file
 rmgpy/rmgrc
 
+# treegen log files
 scripts/treegen.log
-
 scripts/treegen_backup.log
 
 # regression testing files - ignore everything but input and regression input
@@ -97,6 +97,7 @@ test/regression/*
 
 # testing files
 test/arkane/data/two_parameter_arrhenius_fit/arkane.log
+test/arkane/data/two_parameter_arrhenius_fit/output.py
 test/rmgpy/test_data/temp_dir_for_testing/cantera/chem001.yaml
 rmgpy/test_data/copied_kinetic_lib/
 testing/qm/*
