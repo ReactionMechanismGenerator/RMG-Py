@@ -65,7 +65,7 @@ class ArkaneKineticsTest:
         assert round(abs(4000 - max(kjob.Tlist.value_si)), 7) == 0
         inverse_tlist = 1 / kjob.Tlist.value_si
         assert (
-            round(abs(inverse_tlist[1] - inverse_tlist[0] - inverse_tlist[-1] - inverse_tlist[-2]), 7) == 0
+            round(abs(inverse_tlist[1] - inverse_tlist[0]) - abs(inverse_tlist[-1] - inverse_tlist[-2]), 7) == 0
         ), "The points for fitting do not appear 1/T spaced. " "Obtained values of {0} and {1}".format(
             inverse_tlist[1] - inverse_tlist[0],
             inverse_tlist[-1] - inverse_tlist[-2],
@@ -85,7 +85,7 @@ class ArkaneKineticsTest:
         assert round(abs(2500 - max(kjob.Tlist.value_si)), 7) == 0
         inverse_tlist = 1 / kjob.Tlist.value_si
         assert (
-            round(abs(inverse_tlist[1] - inverse_tlist[0] - inverse_tlist[-1] - inverse_tlist[-2]), 7) == 0
+            round(abs(inverse_tlist[1] - inverse_tlist[0]) - abs(inverse_tlist[-1] - inverse_tlist[-2]), 7) == 0
         ), "The points for fitting do not appear 1/T spaced. " "Obtained values of {0} and {1}".format(
             inverse_tlist[1] - inverse_tlist[0],
             inverse_tlist[-1] - inverse_tlist[-2],
