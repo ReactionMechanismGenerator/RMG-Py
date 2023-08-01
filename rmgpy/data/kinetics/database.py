@@ -251,8 +251,7 @@ class KineticsDatabase(object):
             self.library_order = []
             for (root, dirs, files) in os.walk(os.path.join(path)):
                 for f in files:
-                    name, ext = os.path.splitext(f)
-                    if ext.lower() == '.py':
+                    if f.lower() == 'reactions.py':
                         library_file = os.path.join(root, f)
                         label = os.path.dirname(library_file)[len(path) + 1:]
                         logging.info(f'Loading kinetics library {label} from {library_file}...')
