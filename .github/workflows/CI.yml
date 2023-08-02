@@ -12,10 +12,6 @@
 # them. These 'answers' are re-generated daily, or on any push to main, and retrieved whenever
 # a push is made to a non-main branch. The new proposed changes are referred to as "Dynamic".
 #
-# The `workflow_call` section below allows running this exact file from RMG-database, saving
-# us from having to maintain two copies of it. The only liens needed to facilitate that are
-# the `workflow_call` block in the `on` section and the passed `rmg-db-branch` so that we can
-# pull appropriately for RMG-database.
 #
 # Changelog:
 # 2023-04    - Jackson Burns - Added this header, regression tests, cleanup of action in 
@@ -28,6 +24,8 @@
 # 2023-06-27 - add option to run from RMG-database with GitHub resuable workflows
 # 2023-07-17 - made it pass by default
 # 2023-07-21 - upload the regression results summary as artifact (for use as a comment on PRs)
+# 2023-07-31 - removed option to run from RMG-database with GitHub resuable workflows
+
 name: Continuous Integration
 
 on:
