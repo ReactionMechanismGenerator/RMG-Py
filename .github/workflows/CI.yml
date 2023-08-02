@@ -156,6 +156,9 @@ jobs:
           python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true
           julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="for_rmg")); using ReactionMechanismSimulator' || true 
 
+      - name: Install Q2DTor
+        run: echo "" | make q2dtor
+
       # non-regression testing
       - name: Run Unit, Functional, and Database Tests
         # aggregate into one command so we only have to eat the collection time once
