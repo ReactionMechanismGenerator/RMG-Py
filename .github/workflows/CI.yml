@@ -62,8 +62,6 @@ jobs:
     steps:
       - name: Checkout RMG-Py
         uses: actions/checkout@v3
-        with:
-          repository: ReactionMechanismGenerator/RMG-Py
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
@@ -114,8 +112,6 @@ jobs:
     steps:
       - name: Checkout RMG-Py
         uses: actions/checkout@v3
-        with:
-          repository: ReactionMechanismGenerator/RMG-Py
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
