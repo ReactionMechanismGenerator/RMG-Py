@@ -61,7 +61,7 @@ from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError, InputError
+from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError, InputError, NetworkError
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 from rmgpy.kinetics import ThirdBody
@@ -973,7 +973,12 @@ class RMG(util.Subject):
                         self.rmg_memories[index].generate_cond()
                         log_conditions(self.rmg_memories, index)
 
-                        reactor_done = self.reaction_model.add_new_surface_objects(obj, new_surface_species, new_surface_reactions, reaction_system)
+                        try:
+                            reactor_done = self.reaction_model.add_new_surface_objects(obj, new_surface_species,
+                                                                                       new_surface_reactions, reaction_system)
+                        except NetworkError:
+                            reactor_done = True
+
 
                         all_terminated = all_terminated and terminated
                         logging.info("")

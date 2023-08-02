@@ -639,7 +639,9 @@ class CoreEdgeReactionModel:
 
             elif isinstance(new_object, tuple) and isinstance(new_object[0], PDepNetwork) and self.pressure_dependence:
                 pdep_network, new_species = new_object
-                new_reactions.extend(pdep_network.explore_isomer(new_species))
+                val = pdep_network.explore_isomer(new_species)
+                if val is not None:
+                    new_reactions.extend(val)
 
                 self.process_new_reactions(new_reactions, new_species, pdep_network)
 

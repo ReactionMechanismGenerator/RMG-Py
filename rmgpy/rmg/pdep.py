@@ -234,6 +234,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         # Make sure we've identified a species
         if max_species is None:
+            return None
             raise NetworkError('No unimolecular isomers left to explore!')
         # Return the species
         return max_species
@@ -282,6 +283,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             if product.species == [isomer]:
                 break
         else:
+            return None
             raise Exception('Attempted to explore isomer {0}, but that species not found in product channels.'.format(isomer))
 
         logging.info('Exploring isomer {0} in pressure-dependent network #{1:d}'.format(isomer, self.index))
