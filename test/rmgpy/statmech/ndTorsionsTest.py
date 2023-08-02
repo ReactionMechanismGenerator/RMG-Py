@@ -48,7 +48,7 @@ Q2DTOR_PATH = os.path.join(RMG_PATH, "external", "Q2DTor", "src", "Q2DTor.py")
 @pytest.mark.skipif(not os.path.isfile(Q2DTOR_PATH), reason="Q2DTor not installed")
 class TestHinderedRotor2D:
     """
-    Contains unit tests of the StatmechJob class.
+    Contains unit tests of the TestHinderedRotor2D class.
     """
 
     @classmethod
@@ -65,7 +65,7 @@ class TestHinderedRotor2D:
 
     def test_q2dtor_setup(self):
         self.hd2d.read_scan()
-        self.assertAlmostEquals(self.hd2d.Es[0] / 10**9, -594373977.268 / 10**9, 3)
+        assert abs(self.hd2d.Es[0] - -594373977.268) < 1e6
         self.hd2d.get_torsions()
         assert np.testing.assert_array_equal(self.hd2d.torsion1, [2, 1, 6, 7]) is None
         self.hd2d.write_inp()
@@ -74,7 +74,7 @@ class TestHinderedRotor2D:
 
     def test_partition_function_calc(self):
         self.hd2d.read_eigvals()
-        self.assertAlmostEqual(self.hd2d.get_partition_function(300.0), 3.29752, 4)
+        assert abs(self.hd2d.get_partition_function(300.0) - 3.29752) < 1e-4
 
     @classmethod
     def teardown_class(cls):
