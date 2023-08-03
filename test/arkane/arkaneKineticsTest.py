@@ -66,10 +66,7 @@ class ArkaneKineticsTest:
         inverse_tlist = 1 / kjob.Tlist.value_si
         assert (
             round(abs(inverse_tlist[1] - inverse_tlist[0]) - abs(inverse_tlist[-1] - inverse_tlist[-2]), 7) == 0
-        ), "The points for fitting do not appear 1/T spaced. " "Obtained values of {0} and {1}".format(
-            inverse_tlist[1] - inverse_tlist[0],
-            inverse_tlist[-1] - inverse_tlist[-2],
-        )
+        ), f"The points for fitting do not appear 1/T spaced. Obtained values of {inverse_tlist[1] - inverse_tlist[0]} and {inverse_tlist[-1] - inverse_tlist[-2]}"
 
     def test_get_tlist_for_kineticsjob(self):
         """
@@ -86,7 +83,4 @@ class ArkaneKineticsTest:
         inverse_tlist = 1 / kjob.Tlist.value_si
         assert (
             round(abs(inverse_tlist[1] - inverse_tlist[0]) - abs(inverse_tlist[-1] - inverse_tlist[-2]), 7) == 0
-        ), "The points for fitting do not appear 1/T spaced. " "Obtained values of {0} and {1}".format(
-            inverse_tlist[1] - inverse_tlist[0],
-            inverse_tlist[-1] - inverse_tlist[-2],
-        )
+        ), f"The points for fitting do not appear 1/T spaced. Obtained values of {inverse_tlist[1] - inverse_tlist[0]} and {inverse_tlist[-1] - inverse_tlist[-2]}"
