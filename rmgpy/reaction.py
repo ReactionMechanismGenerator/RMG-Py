@@ -683,7 +683,7 @@ class Reaction:
         this function currently assumes an ideal gas mixture.
         """
         return np.array(
-            [self.get_equilibrium_constant(T, type) for T in Tlist], np.float64
+            [self.get_equilibrium_constant(T, type) for T in Tlist], float
         )
 
     def get_stoichiometric_coefficient(self, spec):

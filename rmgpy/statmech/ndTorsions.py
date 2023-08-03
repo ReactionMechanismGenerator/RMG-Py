@@ -588,7 +588,7 @@ class HinderedRotorClassicalND(Mode):
             self.V = interpolate.CubicSpline(self.phis, self.Es)
             self.rootD = interpolate.CubicSpline(self.phis, self.rootDs)
 
-        Tlist = np.linspace(10.0, 3001.0, num=20, dtype=np.float64)
+        Tlist = np.linspace(10.0, 3001.0, num=20, dtype=float)
 
         Qs = []
         for T in Tlist:
