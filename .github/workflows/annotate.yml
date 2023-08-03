@@ -12,7 +12,7 @@ on:
     types:
       - completed
 
-run-name: Annotate PR ${{ github.event.workflow_run.event.display_title }}.
+run-name: Annotate "${{ github.event.workflow_run.display_title }}"
 
 jobs:
   on-success:
