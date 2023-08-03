@@ -719,7 +719,7 @@ class TestRateCoefficient:
         assert round(abs(q.value - 1.0), 6) == 0
         assert abs(q.value_si * 1e6 - 1.0) < 1e-6
         assert q.units == "cm^3/(mol*s)"
-        assert round(abs(q.get_conversion_factor_from_si_to_cm_mol_s() - 1e6), 1) == 0  # 1 m3/mol/s  =  1 cm3/mol/s
+        assert round(abs(q.get_conversion_factor_from_si_to_cm_mol_s() - 1e6), 1) == 0  # 1 m3/mol/s  =  1e6 cm3/mol/s
 
     def test_cm6permol2s(self):
         """
