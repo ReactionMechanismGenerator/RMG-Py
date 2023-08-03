@@ -34,18 +34,16 @@ This script contains unit tests of the :mod:`arkane.multidimensionalTorsions` mo
 import os
 import zipfile
 import shutil
-
+import numpy as np
+import pytest
 import rmgpy
 from rmgpy.statmech.ndTorsions import HinderedRotor2D, HinderedRotorClassicalND
 from arkane.ess.factory import ess_factory
-import numpy as np
-import pytest
 
 RMG_PATH = os.path.abspath(os.path.dirname(os.path.dirname(rmgpy.__file__)))
-Q2DTOR_PATH = os.path.join(RMG_PATH, "external", "Q2DTor", "src", "Q2DTor.py")
+Q2DTOR_PATH = HinderedRotor2D.Q2DTOR_PATH
 
-
-@pytest.mark.skipif(not os.path.isfile(Q2DTOR_PATH), reason="Q2DTor not installed")
+@pytest.mark.skipif(not os.path.isfile(Q2DTOR_PATH), reason=f"Q2DTor not installed at {Q2DTOR_PATH}")
 class TestHinderedRotor2D:
     """
     Contains unit tests of the TestHinderedRotor2D class.
