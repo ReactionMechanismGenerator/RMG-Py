@@ -57,13 +57,22 @@ class TestArkaneExamples:
         for example_type in self.example_types:
             example_type_path = os.path.join(self.base_path, example_type)
             for example in sorted(os.listdir(example_type_path)):
+                if example in {".DS_Store"}:
+                    continue
                 if example in {
                     "Toulene_Hindered_Rotor_SemiClassicalND",
                 }:
-                    logging.warning("Skipping {} (global state problems).".format(example))
+                    logging.warning(f"Skipping {example} (global state problems).")
                     continue
                 path = os.path.join(example_type_path, example)
-                arkane = Arkane(input_file=os.path.join(path, "input.py"), output_directory=path)
+                if not os.path.isdir(path):
+                    logging.warning(f"Skipping {example} (not a directory).")
+                    continue
+                input_file = os.path.join(path, "input.py")
+                if not os.path.isfile(input_file):
+                    logging.warning(f"Skipping {example} (no input.py file).")
+                    continue
+                arkane = Arkane(input_file=input_file, output_directory=path)
                 arkane.plot = example_type != "bac"  # Don't plot BAC examples because they require a lot of memory
                 logging.info("running {}".format(path))
                 arkane.execute()
