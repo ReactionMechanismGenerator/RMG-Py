@@ -178,16 +178,16 @@ python-jl. ::
         },
 
 This configuration will allow you to debug a subset of the unit tests.
-Open one of the many test files named `*Test.py` before you launch it::
+Open one of the many test files named `*Test.py` in `test/rmgpy` before you launch it::
 
-            {
-            "name": "Python: nosetest Current File",
+        {
+            "name": "Python: pytest Current File",
             "type": "python",
             "request": "launch",
-            "program": "/opt/miniconda3/envs/rmg_env/bin/nosetests",
+            "program": "/opt/miniconda3/envs/rmg_env/bin/pytest",
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
             "args": [
-                "--nologcapture",
-                "--nocapture",
+                "--capture=no",
                 "--verbose",
                 "${file}"
             ],
@@ -204,13 +204,12 @@ This configuration will allow you to debug running all the database tests.::
             "name": "Test RMG-database",
             "type": "python",
             "request": "launch",
-            "program": "/opt/miniconda3/envs/rmg_env/bin/nosetests",
+            "program": "/opt/miniconda3/envs/rmg_env/bin/pytest",
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
             "args": [
-                "--nologcapture",
-                "--nocapture",
+                "--capture=no",
                 "--verbose",
-                "--detailed-errors",
-                "${workspaceFolder}/testing/databaseTest.py"
+                "${workspaceFolder}/test/database/databaseTest.py"
             ],
             "console": "integratedTerminal",
             "env": {
