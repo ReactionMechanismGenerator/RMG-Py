@@ -4,7 +4,10 @@
 Credits
 *******
  
-RMG is based upon work supported by the Department of Energy, Office of Basic Energy Sciences through grant DE-FG02-98ER14914 and by the National Science Foundation under Grants No. 0312359 and 0535604.
+RMG is based upon work supported by the U.S. Department of Energy, Office of Basic Energy Sciences 
+(through grant DE-FG02-98ER14914 and as part of the Computational Chemical Sciences Program),
+and by the National Science Foundation (under Grants No. 0312359, 0535604, and 1751720).
+Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation or the Department of Energy.
 
 Project Supervisors:
 
@@ -13,17 +16,33 @@ Project Supervisors:
  
 Current Developers: (rmg_dev@mit.edu)
 
-- Dr. Alon G. Dana
-- Mark Goldman
-- Colin Grambow
-- Matt Johnson
-- Mengjie Liu
-- Mark Payne
+- Dr. Alon Grinberg Dana
+- Dr. Matt Johnson
+- Yen-Ting Wang
+- Xiaorui Dong
+- Hao-Wei Pang
+- Oscar Wu
+- Kevin Spiekermann
+- Jonathan Zheng
+- Jackson Burns
+- Nathan Morgan
+- Prof. C. Franklin Goldsmith
+- Dr. Katrin Blondal
+- Dr. Bjarne Kreitz
+- Chris Blais
+- Sevy Harris
+- Nora Khalil
 
 Previous Developers: 
 
 - Dr. Joshua W. Allen
-- Jacob Barlow
+- Dr. Yunsie Chung
+- Dr. David Farina
+- Dr. Mark Goldman
+- Dr. Colin Grambow
+- Dr. Mengjie Liu
+- Dr. Mark Payne
+- Dr. Jacob Barlow
 - Dr. Pierre L. Bhoorasingh
 - Dr. Beat A. Buesser
 - Dr. Caleb A. Class
@@ -31,7 +50,10 @@ Previous Developers:
 - Dr. Kehang Han
 - Dr. Fariba S. Khanshan
 - Victor Lambert
+- Dr. Emily Mazeau
 - Dr. Shamel S. Merchant
+- Priyanka Satpute
+- Dr. Sai Krishna Sirumalla
 - Dr. Belinda Slakman
 - Sean Troiano
 - Dr. Aaron Vandeputte
@@ -44,5 +66,25 @@ Previous Developers:
 How to Cite
 ***********
 
-Connie W. Gao, Joshua W. Allen, William H. Green, Richard H. West, "Reaction Mechanism Generator: Automatic 
-construction of chemical kinetic mechanisms." *Computer Physics Communications* 203 (2016) 212-225. https://doi.org/10.1016/j.cpc.2016.02.013
+C.W. Gao, J.W. Allen, W.H. Green, R.H. West,
+"Reaction Mechanism Generator: Automatic construction of chemical kinetic mechanisms",
+*Computer Physics Communications* 2016, 203, 212-225.
+
+DOI: `10.1016/j.cpc.2016.02.013 <https://doi.org/10.1016/j.cpc.2016.02.013>`_
+
+
+M. Liu, A. Grinberg Dana, M.S. Johnson, M.J. Goldman, A. Jocher, A.M. Payne, C.A. Grambow, K. Han, N.W. Yee,
+E.J. Mazeau, K. Blondal, R.H. West, C.F. Goldsmith, W.H. Green,
+"Reaction Mechanism Generator v3.0: Advances in Automatic Mechanism Generation",
+*Journal of Chemical Information and Modeling* 2021, 61(6), 2686–2696.
+
+DOI: `10.1021/acs.jcim.0c01480 <https://doi.org/10.1021/acs.jcim.0c01480>`_
+
+
+
+M.S. Johnson, X. Dong, A. Grinberg Dana, Y. Chung, D. Farina, R.J. Gillis, M. Liu, N.W. Yee, K. Blondal,
+E. Mazeau, C.A. Grambow, A.M. Payne, K.A. Spiekermann, H.-W. Pang, C.F. Goldsmith, R.H. West, W.H. Green,
+"The RMG Database for Chemical Property Prediction",
+*Chemical Information* 2022, 62(20), 4906–4915.
+
+DOI: `10.1021/acs.jcim.2c00965 <https://doi.org/10.1021/acs.jcim.2c00965>`_

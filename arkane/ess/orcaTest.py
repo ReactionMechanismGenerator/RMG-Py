@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -35,6 +35,8 @@ import os
 import unittest
 
 from arkane.ess.orca import OrcaLog
+from arkane.exceptions import LogError
+from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator
 
 ################################################################################
 
@@ -50,9 +52,17 @@ class OrcaTest(unittest.TestCase):
         """
         cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'orca')
 
+    def test_check_for_errors(self):
+        """
+        Uses an Orca log file with SCF error
+        to test if errors are properly parsed.
+        """
+        with self.assertRaises(LogError):
+            OrcaLog(os.path.join(self.data_path, 'Orca_scf_error.log'))
+
     def test_number_of_atoms_from_orca_log(self):
         """
-        Uses a Orca log files to test that
+        Uses Orca log files to test that
         number of atoms can be properly read.
         """
         log = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
@@ -62,7 +72,7 @@ class OrcaTest(unittest.TestCase):
 
     def test_read_coordinates_from_orca_log(self):
         """
-        Uses a Orca log files to test that
+        Uses Orca log files to test that
         coordinate can be properly read.
         """
         log1 = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
@@ -74,7 +84,7 @@ class OrcaTest(unittest.TestCase):
 
     def test_energy_from_orca_log(self):
         """
-        Uses a Orca log files to test that
+        Uses Orca log files to test that
         molecular energies can be properly read.
         """
         log = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
@@ -86,7 +96,7 @@ class OrcaTest(unittest.TestCase):
 
     def test_load_zero_point_energy_from_orca_log(self):
         """
-        Uses a Orca log files to test that
+        Uses Orca log files to test that
         molecular zero point_energy can be properly read.
         """
         log = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
@@ -96,7 +106,7 @@ class OrcaTest(unittest.TestCase):
 
     def test_load_negative_frequency_from_orca_log(self):
         """
-        Uses a orca log file for npropyl to test that its
+        Uses an Orca log file for npropyl to test that its
         negative frequency can be properly read.
         """
         log = OrcaLog(os.path.join(self.data_path, 'Orca_TS_test.log'))
@@ -104,11 +114,46 @@ class OrcaTest(unittest.TestCase):
 
     def test_T1_diagnostic_from_orca_log(self):
         """
-        Uses a Orca log file for npropyl to test that its
+        Uses an Orca log file for a DLPNO calculation to test that its
         T1_diagnostic of freedom can be properly read.
         """
         log = OrcaLog(os.path.join(self.data_path, 'Orca_dlpno_test.log'))
         self.assertAlmostEqual(log.get_T1_diagnostic(), 0.009872238, delta=1e-3)
+
+    def test_load_vibrations_from_orca_log(self):
+        """
+        Test that molecular energies can be properly read.
+        """
+        log = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
+        conformer, unscaled_frequencies = log.load_conformer()
+        self.assertEqual(len(conformer.modes[2]._frequencies.value), 3)
+        self.assertEqual(conformer.modes[2]._frequencies.value[1], 3780.96)
+        log = OrcaLog(os.path.join(self.data_path, 'Orca_TS_test.log'))
+        conformer, unscaled_frequencies = log.load_conformer()
+        self.assertEqual(len(conformer.modes[2]._frequencies.value), 11)
+        self.assertEqual(conformer.modes[2]._frequencies.value[2], 331.23)
+
+    def test_load_modes_from_orca_log(self):
+        """
+        Test that molecular modes can be properly read.
+        """
+        log = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
+        conformer, unscaled_frequencies = log.load_conformer()
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1)
+        self.assertEqual(len(unscaled_frequencies), 3)
+
+    def test_spin_multiplicity_from_orca_log(self):
+        """
+        Test that molecular degrees of freedom can be properly read.
+        """
+        log = OrcaLog(os.path.join(self.data_path, 'Orca_opt_freq_test.log'))
+        conformer, unscaled_frequencies = log.load_conformer()
+        self.assertEqual(conformer.spin_multiplicity, 1)
+        log = OrcaLog(os.path.join(self.data_path, 'Orca_TS_test.log'))
+        conformer, unscaled_frequencies = log.load_conformer()
+        self.assertEqual(conformer.spin_multiplicity, 1)
 
 ################################################################################
 

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -44,6 +44,8 @@ from rmgpy.data.base import Database, Entry, Group, LogicNode, get_all_combinati
 from rmgpy.exceptions import KineticsError, UndeterminableKineticsError, DatabaseError
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, KineticsData
 from rmgpy.species import Species
+from rmgpy.molecule import Molecule
+from rmgpy.molecule.fragment import Fragment
 
 # Prior to np 1.14, `np.linalg.lstsq` does not accept None as a value
 RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
@@ -131,9 +133,8 @@ class KineticsGroups(Database):
 
         # Descend reactant trees as far as possible
         template = []
-        special_cases = ['peroxyl_disproportionation', 'bimolec_hydroperoxide_decomposition']
         if (len(forward_template) == 1 and len(reaction.reactants) > len(forward_template) and
-                self.label.lower().split('/')[0] not in special_cases):
+                self.label.lower().split('/')[0]):
             entry = forward_template[0]
             group = entry.item
 
@@ -142,7 +143,10 @@ class KineticsGroups(Database):
                 if isinstance(react, Species):
                     react = react.molecule[0]
                 if r:
-                    r = r.merge(react)
+                    if isinstance(r, Molecule) and isinstance(react,Fragment):
+                        r = react.merge(r)
+                    else:
+                        r = r.merge(react)
                 else:
                     r = deepcopy(react)
 
@@ -184,9 +188,6 @@ class KineticsGroups(Database):
 
             # Get fresh templates (with duplicate nodes back in)
             forward_template = self.top[:]
-            if (self.label.lower().startswith('peroxyl_disproportionation') or
-                    self.label.lower().startswith('bimolec_hydroperoxide_decomposition')):
-                forward_template.append(forward_template[0])
 
         # Check that we were able to match the template.
         # template is a list of the actual matched nodes

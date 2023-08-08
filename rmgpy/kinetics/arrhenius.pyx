@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -227,11 +227,14 @@ cdef class Arrhenius(KineticsModel):
         """
         self._A.value_si *= factor
 
-    def to_cantera_kinetics(self):
+    def to_cantera_kinetics(self, arrhenius_class=False):
         """
-        Converts the Arrhenius object to a cantera Arrhenius object
+        Converts the RMG Arrhenius object to a cantera ArrheniusRate or
+        the auxiliary cantera Arrhenius class (used by falloff reactions). 
+        Inputs for both are (A,b,E)  where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol
 
-        Arrhenius(A,b,E) where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol
+        arrhenius_class: If ``True``, uses cantera.Arrhenius (for falloff reactions). If ``False``, uses 
+        Cantera.ArrheniusRate
         """
 
         import cantera as ct
@@ -261,15 +264,18 @@ cdef class Arrhenius(KineticsModel):
 
         b = self._n.value_si
         E = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
-        return ct.Arrhenius(A, b, E)
+        if arrhenius_class:
+            return ct.Arrhenius(A, b, E)
+        else:
+            return ct.ArrheniusRate(A, b, E)
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """
-        Passes in a cantera ElementaryReaction() object and sets its
-        rate to a Cantera Arrhenius() object.
+        Passes in a cantera Reaction() object and sets its
+        rate to a Cantera ArrheniusRate object.
         """
         import cantera as ct
-        assert isinstance(ct_reaction, ct.ElementaryReaction), "Must be a Cantera ElementaryReaction object"
+        assert isinstance(ct_reaction.rate, ct.ArrheniusRate), "Must have a Cantera ArrheniusRate attribute"
 
         # Set the rate parameter to a cantera Arrhenius object
         ct_reaction.rate = self.to_cantera_kinetics()
@@ -449,7 +455,7 @@ cdef class ArrheniusEP(KineticsModel):
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """
-        Sets a cantera ElementaryReaction() object with the modified Arrhenius object
+        Sets a cantera Reaction() object with the modified Arrhenius object
         converted to an Arrhenius form.
         """
         raise NotImplementedError('set_cantera_kinetics() is not implemented for ArrheniusEP class kinetics.')
@@ -591,7 +597,7 @@ cdef class ArrheniusBM(KineticsModel):
         assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
 
         if Ts is None:
-            Ts = [300.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1100.0, 1200.0, 1500.0]
+            Ts = [300.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1100.0, 1200.0, 1500.0, 2000.0]
         if w0 is None:
             #estimate w0
             w0s = get_w0s(recipe, rxns)
@@ -619,23 +625,16 @@ cdef class ArrheniusBM(KineticsModel):
             self.Tmax = rxn.kinetics.Tmax
             self.comment = 'Fitted to {0} reaction at temperature: {1} K'.format(len(rxns), T)
         else:
-            # define optimization function
+            # define optimization function            
             def kfcn(xs, lnA, n, E0):
-                out = []
-                for x in xs:
-                    T = x[0]
-                    dHrxn = x[1]
-                    if dHrxn < -4 * E0:
-                        Ea = 0.0
-                    elif dHrxn > 4 * E0:
-                        Ea = dHrxn
-                    else:
-                        Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
-                        Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
-
-                    out.append(lnA + np.log(T ** n * np.exp(-Ea / (8.314 * T))))
-                return out
-
+                T = xs[:,0]
+                dHrxn = xs[:,1]
+                Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
+                Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
+                Ea = np.where(dHrxn< -4.0*E0, 0.0, Ea)
+                Ea = np.where(dHrxn > 4.0*E0, dHrxn, Ea)
+                return lnA + np.log(T ** n * np.exp(-Ea / (8.314 * T)))
+              
             # get (T,dHrxn(T)) -> (Ln(k) mappings
             xdata = []
             ydata = []
@@ -710,7 +709,7 @@ cdef class ArrheniusBM(KineticsModel):
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """
-        Sets a cantera ElementaryReaction() object with the modified Arrhenius object
+        Sets a cantera Reaction() object with the modified Arrhenius object
         converted to an Arrhenius form.
         """
         raise NotImplementedError('set_cantera_kinetics() is not implemented for ArrheniusBM class kinetics.')
@@ -870,12 +869,13 @@ cdef class PDepArrhenius(PDepKineticsModel):
         """
         import cantera as ct
         import copy
-        assert isinstance(ct_reaction, ct.PlogReaction), "Must be a Cantera PlogReaction object"
+        assert isinstance(ct_reaction.rate, ct.PlogRate), "Must have a Cantera PlogRate attribute"
 
         pressures = copy.deepcopy(self._pressures.value_si)
-        ctArrhenius = [arr.to_cantera_kinetics() for arr in self.arrhenius]
+        ctArrhenius = [arr.to_cantera_kinetics(arrhenius_class=True) for arr in self.arrhenius]
 
-        ct_reaction.rates = list(zip(pressures, ctArrhenius))
+        new_rates = ct.PlogRate(list(zip(pressures, ctArrhenius)))
+        ct_reaction.rate = new_rates
 
 ################################################################################
 
@@ -1103,14 +1103,13 @@ def get_w0(actions, rxn):
     and wb (total bond energy of bonds broken) with w0 = (wf+wb)/2
     """
     mol = None
-    a_dict = {}
     for r in rxn.reactants:
         m = r.molecule[0]
-        a_dict.update(m.get_all_labeled_atoms())
         if mol:
             mol = mol.merge(m)
         else:
             mol = m.copy(deep=True)
+    a_dict = mol.get_all_labeled_atoms()
 
     recipe = actions
 
@@ -1118,14 +1117,23 @@ def get_w0(actions, rxn):
     wf = 0.0
     for act in recipe:
 
+        if act[0] in ['BREAK_BOND','FORM_BOND','CHANGE_BOND']:
+
+            if act[1] == act[3]: # the labels are the same
+                atom1 = a_dict[act[1]][0]
+                atom2 = a_dict[act[3]][1]
+            else:
+                atom1 = a_dict[act[1]]
+                atom2 = a_dict[act[3]]
+
         if act[0] == 'BREAK_BOND':
-            bd = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
+            bd = mol.get_bond(atom1, atom2)
             wb += bd.get_bde()
         elif act[0] == 'FORM_BOND':
-            bd = Bond(a_dict[act[1]], a_dict[act[3]], act[2])
+            bd = Bond(atom1, atom2, act[2])
             wf += bd.get_bde()
         elif act[0] == 'CHANGE_BOND':
-            bd1 = mol.get_bond(a_dict[act[1]], a_dict[act[3]])
+            bd1 = mol.get_bond(atom1, atom2)
 
             if act[2] + bd1.order == 0.5:
                 mol2 = None
@@ -1135,9 +1143,17 @@ def get_w0(actions, rxn):
                         mol2 = mol2.merge(m)
                     else:
                         mol2 = m.copy(deep=True)
-                bd2 = mol2.get_bond(a_dict[act[1]], a_dict[act[3]])
+                a_dict_mol2 = mol2.get_all_labeled_atoms()
+                if act[1] == act[3]: # the labels are the same
+                    atom1_mol2 = a_dict_mol2[act[1]][0]
+                    atom2_mol2 = a_dict_mol2[act[3]][1]
+                else:
+                    atom1_mol2 = a_dict_mol2[act[1]]
+                    atom2_mol2 = a_dict_mol2[act[3]]
+
+                bd2 = mol2.get_bond(atom1_mol2, atom2_mol2)
             else:
-                bd2 = Bond(a_dict[act[1]], a_dict[act[3]], bd1.order + act[2])
+                bd2 = Bond(atom1, atom2, bd1.order + act[2])
 
             if bd2.order == 0:
                 bd2_bde = 0.0

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -62,6 +62,7 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
             maximumSiliconAtoms=1,
             maximumSulfurAtoms=1,
             maximumSurfaceSites=2,
+            maximumSurfaceBondOrder=3,
             maximumHeavyAtoms=3,
             maximumRadicalElectrons=2,
             maximumSingletCarbenes=1,
@@ -210,6 +211,16 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
 
         self.rmg.species_constraints['maximumCarbonAtoms'] = max_carbon
         self.rmg.species_constraints['maximumHeavyAtoms'] = max_heavy_atoms
+
+    def test_surface_bond_order_constraint(self):
+        """
+        Test that we can constrain the max bond order of surface sites.
+        """
+        mol_1site = Molecule().from_adjacency_list("""
+1 C u0 p0 c0 {2,Q}
+2 X u0 p0 c0 {1,Q}
+""")
+        self.assertTrue(fails_species_constraints(mol_1site))
 
     def test_heavy_constraint(self):
         """

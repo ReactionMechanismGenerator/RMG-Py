@@ -125,7 +125,8 @@ Model Chemistry                                  AEC   BC   SOC  Freq Scale Supp
 ``'CCSD-F12/cc-pVDZ-F12'``                        v         v    v (0.947)  H, C, N, O
 ``'CCSD(T)-F12/cc-pVDZ-F12_H-TZ'``                v         v               H, C, N, O
 ``'CCSD(T)-F12/cc-pVDZ-F12_H-QZ'``                v         v               H, C, N, O
-``'CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*        v    v    v    v          H, C, N, O, S
+``'CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T*          v    v    v    v          H, C, N, O, F, S, Cl
+``'CCSD(T)-F12/cc-pVQZ-F12'``                     v    v    v    v          H, C, N, O, S
 ``'CCSD(T)-F12/cc-pVDZ-F12_noscale'``             v         v               H, C, N, O
 ``'CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*       v         v    v          H, C, N, O
 ``'CCSD(T)-F12/aug-cc-pVnZ'``, *n = D,T,Q*        v         v    v          H, C, N, O, S
@@ -278,7 +279,10 @@ they can specify the path to a quantum chemistry calculation output file that co
 
 In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified
 directly. The energy used will depend on what ``modelChemistry`` was specified in the input file. Arkane can parse the
-energy from a Gaussian, Molpro, or QChem log file, all using the same ``Log`` class, as shown below.
+energy from a Gaussian, Molpro, or QChem log file, all using the same ``Log`` class, as shown below. The first
+(and required) argument for the ``Log`` class is the path to the log file. Optionally, a second keyword argument
+``check_for_errors=False`` can be provided that will prevent Arkane from raising an exception if it finds an error
+in the QM job based on common phrases from the log file.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free
 rotors are included. If ``geometry`` is not set, then Arkane will read the geometry from the ``frequencies`` file.
@@ -349,21 +353,53 @@ Therefore, the proper workflow for generating the ``geometry/frequencies`` log f
 
 The output of step 2 is the correct log file to use for ``geometry/frequencies``.
 
-``rotors`` is a list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects. Each :class:`HinderedRotor()`
+``rotors`` is a list of :class:`HinderedRotor()` and/or :class:`HinderedRotor1DArray()` and/or :class:`FreeRotor()` objects. Each :class:`HinderedRotor()`
 object requires the following parameters:
 
 ======================= =========================== ====================================
 Parameter               Required?                   Description
 ======================= =========================== ====================================
-``scanLog``             yes                         The path to the Gaussian/Qchem log file, or a text file containing the scan energies
+``scanLog``             yes                         The path to the Gaussian/Qchem log file, or a text/csv/yaml file containing the scan energies
 ``pivots``              yes                         The indices of the atoms in the hindered rotor torsional bond
 ``top``                 yes                         The indices of all atoms on one side of the torsional bond (including the pivot atom)
 ``symmetry``            optional                    The symmetry number for the torsional rotation (number of indistinguishable energy minima)
 ``fit``                 optional                    Fit to the scan data. Can be either ``fourier``, ``cosine`` or ``best`` (default).
 ======================= =========================== ====================================
 
-``scanLog`` can either point to a ``Log`` file, or simply a ``ScanLog``, with the path to a text file summarizing the
-scan in the following format::
+``scanLog`` can either point to a ``Log`` file from a QM calculation, or simply a ``ScanLog``, with the path to a file summarizing the
+scan. If a yaml file is feeded, it should satisfy the the following format::
+
+    angle_unit: radians
+    energy_unit: kJ/mol
+    angles:
+    - 0.0000000000
+    - 0.1745329252
+    - 0.3490658504
+            .
+            .
+            .
+    - 6.2831853072
+    energies:
+    - 0.0147251160
+    - 0.7223109804
+    - 2.6856059517
+            .
+            .
+            .
+    - 0.0000000000
+
+If a csv file is feeded, it should satisfy the following format::
+
+    Angle (radians),Energy (kJ/mol)
+    0.0000000000,0.0147251160
+    0.1745329252,0.7223109804
+    0.3490658504,2.6856059517
+        .       ,    .
+        .       ,    .
+        .       ,    .
+    6.2831853072,0.0000000000
+
+If a text file is feeded, it should satisfy the the following format::
 
           Angle (radians)          Energy (kJ/mol)
            0.0000000000            0.0147251160
@@ -374,11 +410,26 @@ scan in the following format::
                  .                       .
            6.2831853072            0.0000000000
 
-The ``Energy`` can be in units of ``kJ/mol``, ``J/mol`` (default), ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``,
-and the ``Angle`` can be either in ``radians`` (default) or in ``degrees``. Units must be specified in parenthesis
-if different than the default.
+For all above options, the ``Energy`` can be in units of ``kJ/mol``, ``J/mol`` (default), ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``,
+and the ``Angle`` can be either in ``radians`` (default) or in ``degrees``. If ``angle_unit`` or ``energy_unit`` is not provided in the yaml file,
+the default unit will be used. If a header is included in either the csv file or the text file, units must be specified in parenthesis; otherwise,
+the column sequence will be assumed to be [angles, energies], and the default units will be used.
 
-The ``symmetry`` parameter will usually equal either 1, 2 or 3. It could be determined automatically by Arkane
+:class:`HinderedRotor1DArray()` is an alternative way to define a hindered rotor without the need of a scan log file.
+The object requires the following parameters:
+
+======================= =========================== ====================================
+Parameter               Required?                   Description
+======================= =========================== ====================================
+``angles``              yes                         The angle values of the PES scan in unit of radians.
+``energies``            yes                         The energy values of the PES scan in unit of J/mol.
+``pivots``              yes                         The indices of the atoms in the hindered rotor torsional bond
+``top``                 yes                         The indices of all atoms on one side of the torsional bond (including the pivot atom)
+``symmetry``            optional                    The symmetry number for the torsional rotation (number of indistinguishable energy minima)
+``fit``                 optional                    Fit to the scan data. Can be either ``fourier``, ``cosine`` or ``best`` (default).
+======================= =========================== ====================================
+
+For the above two objects, ``symmetry`` parameter will usually equal either 1, 2 or 3. It could be determined automatically by Arkane
 (by simply not specifying it altogether), however it is always better to explicitly specify it if it is known. If it is
 determined by Arkane, the log file will specify the determined value and what it was based on. Below are examples of
 internal rotor scans with these commonly encountered symmetry numbers. First, ``symmetry = 3``:
@@ -544,7 +595,7 @@ The ``collisionModel`` is defined for unimolecular isomers with the transport da
     collisionModel = TransportData(sigma=(3.70,'angstrom'), epsilon=(94.9,'K'))
 
 ``sigma`` and ``epsilon`` are Lennard-Jones parameters, which can be estimated using the Joback method on the
-`RMG website <http://rmg.mit.edu/molecule_search>`_.
+`RMG website <https://rmg.mit.edu/molecule_search>`_.
 
 The ``energyTransferModel`` model available is a ``SingleExponentialDown``.
 
@@ -1114,11 +1165,14 @@ Parameter              Required?    Description
 ``level_of_theory``    Yes          Calculated data will be extracted from the reference database using this level of theory
 ``bac_type``           No           BAC type: 'p' for Petersson (default), 'm' for Melius
 ``train_names``        No           Names of training data folders in the RMG database (default: 'main')
+``crossval_n_folds``   No           If 1, perform no cross-validation. If -1, perform leave-one-out cross-validation. If any other positive integer, perfrom k-fold cross-validation. (default: 1)
+``idxs``               No           Only include reference species with these indices in the training data (default: None)
+``exclude_idxs``       No           Exclude reference species with these indices from the training data (default: None)
 ``exclude_elements``   No           Exclude molecules with the elements in this list from the training data (default: None)
 ``charge``             No           Set the allowed charges ('neutral', 'positive', 'negative', or integers) for molecules in the training data (default: 'all')
 ``multiplicity``       No           Set the allowed multiplicities for molecules in the training data (default: 'all')
 ``weighted``           No           Weight the data to diversify substructures (default: False)
-``write_to_database``  No           Write the BACs to the database (default: False)
+``write_to_database``  No           Write the BACs to the database; has no effect if doing cross-validation (default: False)
 ``overwrite``          No           If BACs already exist, overwrite them (default: False)
 ``fit_mol_corr``       No           Fit the optional molecular correction term (Melius only, default: True)
 ``global_opt``         No           Perform a global optimization (Melius only, default: True)

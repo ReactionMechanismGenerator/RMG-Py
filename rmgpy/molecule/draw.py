@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -60,7 +60,7 @@ except ImportError:
 import numpy as np
 from rdkit.Chem import AllChem
 
-from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.molecule import Atom, Molecule
 from rmgpy.qm.molecule import Geometry
 
 
@@ -153,7 +153,7 @@ class MoleculeDrawer(object):
         png. If `path` is given, the drawing is saved to that location on disk. The
         `options` dict is an optional set of key-value pairs that can be used to
         control the generated drawing.
-        
+
         This function returns the Cairo surface and context used to create the
         drawing, as well as a bounding box for the molecule being drawn as the
         tuple (`left`, `top`, `width`, `height`).
@@ -175,9 +175,8 @@ class MoleculeDrawer(object):
         self.implicitHydrogens = {}
         surface_sites = []
         for atom in self.molecule.atoms:
-            if atom.is_hydrogen() and atom.label == '':
-                if not any(bond.is_hydrogen_bond() for bond in atom.bonds.values()):
-                    atoms_to_remove.append(atom)
+            if isinstance(atom, Atom) and atom.is_hydrogen() and atom.label == '':
+                atoms_to_remove.append(atom)
             elif atom.is_surface_site():
                 surface_sites.append(atom)
         if len(atoms_to_remove) < len(self.molecule.atoms) - len(surface_sites):
@@ -195,7 +194,9 @@ class MoleculeDrawer(object):
         # Handle carbon monoxide special case
         if self.molecule.get_formula() == 'CO' and len(atoms_to_remove) == 0:
             # RDKit does not accept atom type O4tc
-            self.molecule.remove_atom(self.molecule.atoms[-1])
+            for atom in self.molecule.atoms:
+                if atom.symbol == 'O':
+                    self.molecule.remove_atom(atom)
             self.symbols = ['CO']
             self.molecule.atoms[0].charge = 0  # don't label the C as - if you're not drawing the O with a +
             self.coordinates = np.array([[0, 0]], np.float64)
@@ -994,7 +995,7 @@ class MoleculeDrawer(object):
         draw_lone_pairs = False
 
         for atom in atoms:
-            if atom.is_nitrogen():
+            if isinstance(atom, Atom) and atom.is_nitrogen():
                 draw_lone_pairs = True
 
         left = 0.0
@@ -1228,7 +1229,7 @@ class MoleculeDrawer(object):
             heavy_atom = symbol[0]
 
             # Split label by atoms
-            labels = re.findall('[A-Z][a-z]*[0-9]*', symbol)
+            labels = re.findall(r'[A-Z][a-z]*[0-9]*', symbol)
             if not heavy_first:
                 labels.reverse()
             if 'C' not in symbol and 'O' not in symbol and len(atoms) == 1:
@@ -1307,7 +1308,7 @@ class MoleculeDrawer(object):
             bounding_rect = [x1, y1, x2, y2]
 
             # Set color for text
-            if atom.element.isotope != -1:
+            if not isinstance(atom, Atom) or atom.element.isotope != -1:
                 cr.set_source_rgba(0.0, 0.5, 0.0, 1.0)
             elif heavy_atom == 'C':
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)

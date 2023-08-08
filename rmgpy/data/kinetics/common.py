@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -37,6 +37,7 @@ import logging
 from rmgpy.data.base import LogicNode
 from rmgpy.exceptions import DatabaseError
 from rmgpy.molecule import Group, Molecule
+from rmgpy.molecule.fragment import Fragment
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 
@@ -151,7 +152,7 @@ def ensure_species(input_list, resonance=False, keep_isomorphic=False):
     in place to only have :class:`Species` objects. Returns None.
     """
     for index, item in enumerate(input_list):
-        if isinstance(item, Molecule):
+        if isinstance(item, Molecule) or isinstance(item, Fragment):
             new_item = Species(molecule=[item])
         elif isinstance(item, Species):
             new_item = item
@@ -223,7 +224,7 @@ def ensure_independent_atom_ids(input_species, resonance=True):
 
 
 def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kinetics_database=None,
-                              kinetics_family=None):
+                              kinetics_family=None, save_order=False):
     """
     Given a list of Reaction objects, this method combines degenerate
     reactions and increments the reaction degeneracy value. For multiple
@@ -248,6 +249,7 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
         template (list, optional):                      specify a specific template to filter by
         kinetics_database (KineticsDatabase, optional): provide a KineticsDatabase instance for calculating degeneracy
         kinetics_family (KineticsFamily, optional):     provide a KineticsFamily instance for calculating degeneracy
+        save_order (bool, optional):                    reset atom order after performing atom isomorphism
 
     Returns:
         Reaction list with degenerate reactions combined with proper degeneracy values
@@ -270,7 +272,7 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
     # with degenerate transition states
     sorted_rxns = []
     for rxn0 in selected_rxns:
-        rxn0.ensure_species()
+        rxn0.ensure_species(save_order=save_order)
         if len(sorted_rxns) == 0:
             # This is the first reaction, so create a new sublist
             sorted_rxns.append([rxn0])
@@ -283,10 +285,10 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
                 same_template = True
                 for rxn in sub_list:
                     isomorphic = rxn0.is_isomorphic(rxn, check_identical=False, strict=False,
-                                                    check_template_rxn_products=True)
+                                                    check_template_rxn_products=True, save_order=save_order)
                     if isomorphic:
                         identical = rxn0.is_isomorphic(rxn, check_identical=True, strict=False,
-                                                       check_template_rxn_products=True)
+                                                       check_template_rxn_products=True, save_order=save_order)
                         if identical:
                             # An exact copy of rxn0 is already in our list, so we can move on
                             break

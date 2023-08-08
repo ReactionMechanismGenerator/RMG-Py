@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -240,7 +240,7 @@ class MetalDatabase(object):
             raise DatabaseError("Cannot search for nothing.")
         assert isinstance(metal, str)
 
-        facet = re.search('\d+', metal)
+        facet = re.search(r'\d+', metal)
 
         if facet is not None:
             try:

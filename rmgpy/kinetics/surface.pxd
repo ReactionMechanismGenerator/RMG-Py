@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -39,6 +39,7 @@ cdef class StickingCoefficient(KineticsModel):
     cdef public ScalarQuantity _n
     cdef public ScalarQuantity _Ea
     cdef public ScalarQuantity _T0
+    cdef public dict _coverage_dependence
     
     cpdef double get_sticking_coefficient(self, double T) except -1
 
@@ -46,9 +47,13 @@ cdef class StickingCoefficient(KineticsModel):
 
     cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=?, np.ndarray weights=?, bint three_params=?)
 
+    cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2
+
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
     cpdef change_rate(self, double factor)
+
+    cpdef to_html(self)
 
 cdef class StickingCoefficientBEP(KineticsModel):
 
@@ -56,17 +61,20 @@ cdef class StickingCoefficientBEP(KineticsModel):
     cdef public ScalarQuantity _n
     cdef public ScalarQuantity _alpha
     cdef public ScalarQuantity _E0
-    
+    cdef public dict _coverage_dependence
     cpdef double get_sticking_coefficient(self, double T, double dHrxn=?) except -1
     cpdef double get_activation_energy(self, double dHrxn) except -1
     cpdef StickingCoefficient to_arrhenius(self, double dHrxn)
+    cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     cpdef change_rate(self, double factor)
 
 ################################################################################
 cdef class SurfaceArrhenius(Arrhenius):
+    cdef public dict _coverage_dependence
     pass
 ################################################################################
 cdef class SurfaceArrheniusBEP(ArrheniusEP):
+    cdef public dict _coverage_dependence
     pass
 

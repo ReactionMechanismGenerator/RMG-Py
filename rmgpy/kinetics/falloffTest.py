@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -615,10 +615,10 @@ class TestTroe(unittest.TestCase):
         Tlist = np.array([300, 500, 1000, 1500])
         Plist = np.array([1e4, 1e5, 1e6])
         Kexp = np.array([
-            [1.00866e+08, 2.03759e+08, 2.55190e+08],
-            [4.74623e+07, 1.41629e+08, 2.47597e+08],
-            [3.97397e+06, 2.89521e+07, 9.57569e+07],
-            [5.91277e+05, 5.14013e+06, 3.12239e+07],
+            [1.00648177e+08, 2.01999460e+08, 2.53938097e+08],
+            [4.71247326e+07, 1.41526885e+08, 2.45386923e+08],
+            [3.94987723e+06, 2.87338709e+07, 9.57539092e+07],
+            [5.88566395e+05, 5.10614193e+06, 3.10462030e+07],
         ])
         for t in range(Tlist.shape[0]):
             for p in range(Plist.shape[0]):

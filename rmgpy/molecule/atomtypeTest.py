@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -32,10 +32,11 @@ This module contains unit tests of the rmgpy.molecule.atomtype module.
 """
 
 import unittest
-
+import logging
 import rmgpy.molecule
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.atomtype import get_atomtype
+from external.wip import work_in_progress
 
 
 ################################################################################
@@ -128,7 +129,71 @@ class TestAtomType(unittest.TestCase):
         self.assertEqual(self.atomtype.increment_radical, other.increment_radical)
         self.assertEqual(self.atomtype.decrement_radical, other.decrement_radical)
 
+    """
+    Currently RMG doesn't even detect aromaticity of furan or thiophene, so making
+    them out of atom type group definitions is not an easy fix. Even if we did make a
+    sample molecule out of it, we'd probably not realize it was right. Currently
+    it tries to make a 6-membered ring (not realizing it should be 5-membered)
+    and then gets the wrong number of pi electrons.
+    """
+    EXPECTED_FAILING_ATOMTYPES = ['O4b', 'S4b']
+    
+    def test_make_sample_molecule(self):
+        """
+        Test we can make a sample molecule for most atom type without crashing.
+        """
+        failed = []
+        for name, atom_type in rmgpy.molecule.atomtype.ATOMTYPES.items():
+            if name in self.EXPECTED_FAILING_ATOMTYPES:
+                continue # These are known to fail. See next WIP test
+            adjlist = f"1 {name} ux"
+            group = rmgpy.molecule.Group().from_adjacency_list(adjlist)
+            try:
+                result = group.make_sample_molecule()
+                # logging.info(f"For {name} made\n{result.to_adjacency_list()}")
+            except:
+                logging.exception(f"Couldn't make sample molecule for atomType {name}")
+                failed.append(name)
+        self.assertFalse(failed, f"Couldn't make sample molecules for types {', '.join(failed)}")
 
+    @work_in_progress
+    def test_make_sample_molecule_wip(self):
+        """
+        Test we can make a sample molecule for some failing atom types.
+        """
+        failed = []
+        for name in self.EXPECTED_FAILING_ATOMTYPES:
+            adjlist = f"1 {name} ux"
+            group = rmgpy.molecule.Group().from_adjacency_list(adjlist)
+            try:
+                result = group.make_sample_molecule()
+            except:
+                logging.exception(f"Couldn't make sample molecule for atomType {name}")
+                failed.append(name)
+        self.assertFalse(failed, f"Couldn't make sample molecules for types {', '.join(failed)}")
+
+    @work_in_progress
+    def test_make_sample_molecule_right(self):
+        """
+        Test we can make the correct sample molecule for each atom type.
+        """
+        failed = []
+        for name, atom_type in rmgpy.molecule.atomtype.ATOMTYPES.items():
+            if name in self.EXPECTED_FAILING_ATOMTYPES:
+                continue # These are known to fail. See next WIP test
+            adjlist = f"1 {name} ux"
+            group = rmgpy.molecule.Group().from_adjacency_list(adjlist)
+            try:
+                result = group.make_sample_molecule()
+                if not result.is_subgraph_isomorphic(group):
+                    failed.append(name)
+                    logging.error(f"Sample molecule for {name} is not correct. "
+                                  f"Expected:\n{group.to_adjacency_list().strip()}\n"
+                                  f"Got:\n{result.to_adjacency_list().strip()}")
+            except:
+                logging.exception(f"Couldn't make sample molecule for atomType {name}")
+                failed.append(name)
+        self.assertFalse(failed, f"Couldn't make correct sample molecules for types {', '.join(failed)}")
 ################################################################################
 
 class TestGetAtomType(unittest.TestCase):
@@ -610,6 +675,9 @@ class TestGetAtomType(unittest.TestCase):
                                                        11 H u0 p0 {5,S}
                                                        12 H u0 p0 {6,S}''')
 
+        self.mol95 = Molecule().from_adjacency_list('''1 C u0 p0 c+1 {2,T}
+                                                       2 C u0 p1 c-1 {1,T}''')
+
     def atom_type(self, mol, atom_id):
         atom = mol.atoms[atom_id]
         atom_type = get_atomtype(atom, mol.get_bonds(atom))
@@ -645,6 +713,7 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atom_type(self.mol60, 2), 'C2dc')
         self.assertEqual(self.atom_type(self.mol20, 0), 'C2tc')
         self.assertEqual(self.atom_type(self.mol29, 0), 'C2tc')  # todo: add in a ciq unit test?
+        self.assertEqual(self.atom_type(self.mol95, 0), 'Ctc')
 
     def test_nitrogen_types(self):
         """

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -34,18 +34,23 @@ from copy import deepcopy
 import numpy as np
 
 from rmgpy import settings
+from rmgpy.data.base import Entry
 from rmgpy.exceptions import DatabaseError, InputError
 from rmgpy.molecule import Molecule
+from rmgpy.molecule.group import Group
 from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
-from rmgpy.solver.base import TerminationTime, TerminationConversion, TerminationRateRatio
+from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.util import as_list
 from rmgpy.data.surface import MetalDatabase
+from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor, ConstantTPIdealGasReactor
+from rmgpy.data.vaporLiquidMassTransfer import liquidVolumetricMassTransferCoefficientPowerLaw
+from rmgpy.molecule.fragment import Fragment
 
 ################################################################################
 
@@ -99,12 +104,14 @@ def database(
 
 def catalyst_properties(bindingEnergies=None,
                         surfaceSiteDensity=None,
-                        metal=None):
+                        metal=None,
+                        coverageDependence=False):
     """
     Specify the properties of the catalyst.
     Binding energies of C,H,O,N atoms, and the surface site density.
     Metal is the label of a metal in the surface metal library.
     Defaults to Pt(111) if not specified.
+    coverageDependence defaults to False if not specified. If True then coverage dependent kinetics from libraries are used.
     """
     # Normally we wouldn't load the database until after reading the input file,
     # but we need to load the metal surfaces library to validate the input.
@@ -140,6 +147,11 @@ def catalyst_properties(bindingEnergies=None,
     logging.info("Using binding energies:\n%r", rmg.binding_energies)
     logging.info("Using surface site density: %r", rmg.surface_site_density)
 
+    if coverageDependence:
+        logging.info("Coverage dependence is turned ON")
+    else:
+        logging.info("Coverage dependence is turned OFF")
+    rmg.coverage_dependence = coverageDependence
 
 def convert_binding_energies(binding_energies):
     """
@@ -163,7 +175,7 @@ def convert_binding_energies(binding_energies):
     return new_dict
 
 
-def species(label, structure, reactive=True):
+def species(label, structure, reactive=True, cut=False, size_threshold=None):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive',
                                                          label,
                                                          structure.to_smiles()))
@@ -171,20 +183,45 @@ def species(label, structure, reactive=True):
     if '+' in label:
         raise InputError('species {0} label cannot include a + sign'.format(label))
 
-    try:
-        spec, is_new = rmg.reaction_model.make_new_species(structure, label=label, reactive=reactive)
-    except:
-        logging.error(f'Error when reading species "{label}" from input file.')
-        raise
-    if not is_new:
-        raise InputError("Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,
-                                                                                                          spec.label))
-    # Force RMG to add the species to edge first, prior to where it is added to the core, in case it is found in 
-    # any reaction libraries along the way
-    rmg.reaction_model.add_species_to_edge(spec)
-    rmg.initial_species.append(spec)
-    species_dict[label] = spec
+    if cut:
+        mol_to_frag[label] = {} # key:original molecule label, value:created fragment label
+        cut_frag_list = structure.cut_molecule(size_threshold=size_threshold)
+        logging.info('The original molecule {0} is divided into several fragments:'.format(label))
+        for initial_frag in cut_frag_list:
+            frag_label = initial_frag.to_smiles()
 
+            logging.info(frag_label)
+
+            if frag_label not in mol_to_frag[label]:
+                mol_to_frag[label][frag_label] = 1
+            else:
+                mol_to_frag[label][frag_label] += 1
+
+            spec, is_new = rmg.reaction_model.make_new_species(initial_frag, label=frag_label, reactive=reactive)
+            # if duplicated fragment is created, combine and add to initialMoleFractions
+            if not is_new:
+                continue
+
+            rmg.initial_species.append(spec)
+            species_dict[frag_label] = spec
+    else:
+        try:
+            spec, is_new = rmg.reaction_model.make_new_species(structure, label=label, reactive=reactive)
+        except:
+            logging.error(f'Error when reading species "{label}" from input file.')
+            raise
+        if not is_new:
+            raise InputError("Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,
+                                                                                                            spec.label))
+
+        rmg.initial_species.append(spec)
+        species_dict[label] = spec
+
+def forbidden(label, structure):
+
+    if '+' in label:
+        raise InputError('forbidden species {0} label cannot include a + sign'.format(label))
+    rmg.forbidden_structures.append(Entry(label=label,item=structure))
 
 def smarts(string):
     return Molecule().from_smarts(string)
@@ -201,6 +238,9 @@ def inchi(string):
 def adjacency_list(string):
     return Molecule().from_adjacency_list(string)
 
+def adjacency_list_group(string):
+    return Group().from_adjacency_list(string)
+
 def react(tups):
     if not isinstance(tups, list):
         raise InputError("React takes a list of tuples of species strings.")
@@ -211,7 +251,13 @@ def react(tups):
             if not isinstance(it, str):
                 raise InputError("React takes a list of tuples of species strings.")
     rmg.init_react_tuples = tups
-            
+
+def fragment_adj(string):
+    return Fragment().from_adjacency_list(string)
+
+def fragment_smiles(string):
+    return Fragment().from_smiles_like_string(string)
+
 # Reaction systems
 def simple_reactor(temperature,
                    pressure,
@@ -228,6 +274,36 @@ def simple_reactor(temperature,
                    sensitivityMoleFractions=None,
                    constantSpecies=None):
     logging.debug('Found SimpleReactor reaction system')
+
+    try:
+        if mol_to_frag:
+            # calculate total as denominator
+            total = float(0)
+            for initial_mol, value in initialMoleFractions.items():
+                if initial_mol not in mol_to_frag: # there might be other species which set cut to be False but in initialMoleFractions
+                    mol_to_frag[initial_mol] = {initial_mol: 1}
+                total += value * sum(mol_to_frag[initial_mol].values())
+            for key, frag_dict in mol_to_frag.items():
+                # if not perform cutting, no need to modify initialMoleFractions
+                # only 1 species in system and it does not get cut, then no need to modify initialMoleFractions
+                if len(mol_to_frag.keys())==1 and len(frag_dict.keys()) == 1 and key == list(frag_dict)[0]:
+                    continue
+                # probably this species does not get cut but other speceis are cut,
+                # so it still requires to re-calculate and normalize molar fraction
+                elif len(frag_dict.keys()) == 1 and key == list(frag_dict)[0]:
+                    initialMoleFractions[key] = initialMoleFractions[key] * frag_dict[key] / total
+                    continue
+                for frag_label, number in frag_dict.items():
+                    if frag_label in initialMoleFractions:
+                        initialMoleFractions[frag_label] += initialMoleFractions[key] * number / total
+                    else:
+                        initialMoleFractions[frag_label] = initialMoleFractions[key] * number / total
+                del initialMoleFractions[key]
+            logging.info('After cutting, new compositions:')
+            for spec, molfrac in initialMoleFractions.items():
+                logging.info('{0} = {1}'.format(spec, molfrac))
+    except NameError:
+        pass
 
     for key, value in initialMoleFractions.items():
         if not isinstance(value, list):
@@ -283,7 +359,13 @@ def simple_reactor(temperature,
     termination = []
     if terminationConversion is not None:
         for spec, conv in terminationConversion.items():
-            termination.append(TerminationConversion(species_dict[spec], conv))
+            # check whether key is in species_dict (not if molecule cut provided)
+            if spec not in species_dict:
+                # select first fragment as species used for terminationConversion
+                repr_frag = sorted(mol_to_frag[spec].keys())[0]
+                termination.append(TerminationConversion(species_dict[repr_frag], conv))
+            else:
+                termination.append(TerminationConversion(species_dict[spec], conv))
     if terminationTime is not None:
         termination.append(TerminationTime(Quantity(terminationTime)))
     if terminationRateRatio is not None:
@@ -343,6 +425,476 @@ def simple_reactor(temperature,
                              'be negative in some cases which is not allowed, either reduce the maximum mole fractions '
                              'or dont use balanceSpecies')
 
+def constant_V_ideal_gas_reactor(temperature,
+                   pressure,
+                   initialMoleFractions,
+                   terminationConversion=None,
+                   terminationTime=None,
+                   terminationRateRatio=None,
+                   balanceSpecies=None):
+    logging.debug('Found ConstantVIdealGasReactor reaction system')
+
+    for key, value in initialMoleFractions.items():
+        if not isinstance(value, list):
+            initialMoleFractions[key] = float(value)
+            if value < 0:
+                raise InputError('Initial mole fractions cannot be negative.')
+        else:
+            if len(value) != 2:
+                raise InputError("Initial mole fraction values must either be a number or a list with 2 entries")
+            initialMoleFractions[key] = [float(value[0]), float(value[1])]
+            if value[0] < 0 or value[1] < 0:
+                raise InputError('Initial mole fractions cannot be negative.')
+            elif value[1] < value[0]:
+                raise InputError('Initial mole fraction range out of order: {0}'.format(key))
+
+    if not isinstance(temperature, list):
+        T = Quantity(temperature).value_si
+    else:
+        raise InputError("Condition ranges not supported for this reaction type")
+        if len(temperature) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
+
+    if not isinstance(pressure, list):
+        P = Quantity(pressure).value_si
+    else:
+        raise InputError("Condition ranges not supported for this reaction type")
+        if len(pressure) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
+        P = [Quantity(p) for p in pressure]
+
+    if not isinstance(temperature, list) and not isinstance(pressure, list) and all(
+            [not isinstance(x, list) for x in initialMoleFractions.values()]):
+        nSims = 1
+
+    # normalize mole fractions if not using a mole fraction range
+    if all([not isinstance(x, list) for x in initialMoleFractions.values()]):
+        total_initial_moles = sum(initialMoleFractions.values())
+        if total_initial_moles != 1:
+            logging.warning('Initial mole fractions do not sum to one; normalizing.')
+            logging.info('')
+            logging.info('Original composition:')
+            for spec, molfrac in initialMoleFractions.items():
+                logging.info('{0} = {1}'.format(spec, molfrac))
+            for spec in initialMoleFractions:
+                initialMoleFractions[spec] /= total_initial_moles
+            logging.info('')
+            logging.info('Normalized mole fractions:')
+            for spec, molfrac in initialMoleFractions.items():
+                logging.info('{0} = {1}'.format(spec, molfrac))
+            logging.info('')
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.items():
+            termination.append((species_dict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
+    
+    initial_cond = initialMoleFractions
+    initial_cond["T"] = T 
+    initial_cond["P"] = P
+    system = ConstantVIdealGasReactor(rmg.reaction_model.core.phase_system,rmg.reaction_model.edge.phase_system,initial_cond,termination)
+    system.T = Quantity(T)
+    system.P = Quantity(P)
+    system.Trange = None
+    system.Prange = None
+    system.sensitive_species = []
+    rmg.reaction_systems.append(system)
+
+    assert balanceSpecies is None or isinstance(balanceSpecies, str), 'balanceSpecies should be the string corresponding to a single species'
+    rmg.balance_species = balanceSpecies
+    if balanceSpecies:  # check that the balanceSpecies can't be taken to zero
+        total = 0.0
+        for key, item in initialMoleFractions.items():
+            if key == balanceSpecies:
+                assert not isinstance(item, list), 'balanceSpecies must not have a defined range'
+                xbspcs = item
+            if isinstance(item, list):
+                total += item[1] - item[0]
+
+        if total > xbspcs:
+            raise ValueError('The sum of the differences in the ranged mole fractions is greater than the mole '
+                             'fraction of the balance species, this would require the balanceSpecies mole fraction to '
+                             'be negative in some cases which is not allowed, either reduce the maximum mole fractions '
+                             'or dont use balanceSpecies')
+
+def constant_TP_ideal_gas_reactor(temperature,
+                   pressure,
+                   initialMoleFractions,
+                   terminationConversion=None,
+                   terminationTime=None,
+                   terminationRateRatio=None,
+                   balanceSpecies=None):
+    logging.debug('Found ConstantTPIdealGasReactor reaction system')
+
+    for key, value in initialMoleFractions.items():
+        if not isinstance(value, list):
+            initialMoleFractions[key] = float(value)
+            if value < 0:
+                raise InputError('Initial mole fractions cannot be negative.')
+        else:
+            if len(value) != 2:
+                raise InputError("Initial mole fraction values must either be a number or a list with 2 entries")
+            initialMoleFractions[key] = [float(value[0]), float(value[1])]
+            if value[0] < 0 or value[1] < 0:
+                raise InputError('Initial mole fractions cannot be negative.')
+            elif value[1] < value[0]:
+                raise InputError('Initial mole fraction range out of order: {0}'.format(key))
+
+    if not isinstance(temperature, list):
+        T = Quantity(temperature).value_si
+    else:
+        raise InputError("Condition ranges not supported for this reaction type")
+        if len(temperature) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
+
+    if not isinstance(pressure, list):
+        P = Quantity(pressure).value_si
+    else:
+        raise InputError("Condition ranges not supported for this reaction type")
+        if len(pressure) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
+        P = [Quantity(p) for p in pressure]
+
+    if not isinstance(temperature, list) and not isinstance(pressure, list) and all(
+            [not isinstance(x, list) for x in initialMoleFractions.values()]):
+        nSims = 1
+
+    # normalize mole fractions if not using a mole fraction range
+    if all([not isinstance(x, list) for x in initialMoleFractions.values()]):
+        total_initial_moles = sum(initialMoleFractions.values())
+        if total_initial_moles != 1:
+            logging.warning('Initial mole fractions do not sum to one; normalizing.')
+            logging.info('')
+            logging.info('Original composition:')
+            for spec, molfrac in initialMoleFractions.items():
+                logging.info('{0} = {1}'.format(spec, molfrac))
+            for spec in initialMoleFractions:
+                initialMoleFractions[spec] /= total_initial_moles
+            logging.info('')
+            logging.info('Normalized mole fractions:')
+            for spec, molfrac in initialMoleFractions.items():
+                logging.info('{0} = {1}'.format(spec, molfrac))
+            logging.info('')
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.items():
+            termination.append((species_dict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
+
+    initial_cond = initialMoleFractions
+    initial_cond["T"] = T
+    initial_cond["P"] = P
+    system = ConstantTPIdealGasReactor(rmg.reaction_model.core.phase_system,rmg.reaction_model.edge.phase_system,initial_cond,termination)
+    system.T = Quantity(T)
+    system.P = Quantity(P)
+    system.Trange = None
+    system.Prange = None
+    system.sensitive_species = []
+    rmg.reaction_systems.append(system)
+
+    assert balanceSpecies is None or isinstance(balanceSpecies, str), 'balanceSpecies should be the string corresponding to a single species'
+    rmg.balance_species = balanceSpecies
+    if balanceSpecies:  # check that the balanceSpecies can't be taken to zero
+        total = 0.0
+        for key, item in initialMoleFractions.items():
+            if key == balanceSpecies:
+                assert not isinstance(item, list), 'balanceSpecies must not have a defined range'
+                xbspcs = item
+            if isinstance(item, list):
+                total += item[1] - item[0]
+
+        if total > xbspcs:
+            raise ValueError('The sum of the differences in the ranged mole fractions is greater than the mole '
+                             'fraction of the balance species, this would require the balanceSpecies mole fraction to '
+                             'be negative in some cases which is not allowed, either reduce the maximum mole fractions '
+                             'or dont use balanceSpecies')
+
+def liquid_cat_reactor(temperature,
+                   initialConcentrations,
+                   initialSurfaceCoverages,
+                   surfaceVolumeRatio,
+                   potential=None,
+                   terminationConversion=None,
+                   terminationTime=None,
+                   terminationRateRatio=None,
+                   constantSpecies=[]):
+    for spec, conc in initialConcentrations.items():
+        if not isinstance(conc, list):
+            concentration = Quantity(conc)
+            # check the dimensions are ok
+            # convert to mol/m^3 (or something numerically nice? or must it be SI)
+            initialConcentrations[spec] = concentration.value_si
+        else:
+            if len(conc) != 2:
+                raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
+                                 "entries of the same format")
+            initialConcentrations[spec] = [Quantity(conc[0]), Quantity(conc[1])]
+
+    if not isinstance(temperature, list) and all([not isinstance(x, list) for x in initialConcentrations.values()]):
+        nSims = 1
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.items():
+            termination.append(TerminationConversion(species_dict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
+
+    if constantSpecies is not None:
+        logging.debug('  Generation with constant species:')
+        for const_spc in constantSpecies:
+            logging.debug("  {0}".format(const_spc))
+            if const_spc not in species_dict:
+                raise InputError('Species {0} not found in the input file'.format(const_spc))
+
+    if not isinstance(temperature, list):
+        T = Quantity(temperature).value_si
+    else:
+        raise InputError("Condition ranges not supported for this reaction type")
+        if len(temperature) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
+
+    if not isinstance(temperature, list) and all(
+            [not isinstance(x, list) for x in initialConcentrations.values()]) and all(
+            [not isinstance(x, list) for x in initialSurfaceCoverages.values()]
+            ):
+        nSims = 1
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.items():
+            termination.append((species_dict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
+
+    initialCondLiq = dict()
+    V = 1.0
+    A = V*Quantity(surfaceVolumeRatio).value_si
+    for key,item in initialConcentrations.items():
+        initialCondLiq[key] = item*V
+    initialCondLiq["T"] = T
+    initialCondLiq["V"] = V
+    initialCondSurf = dict()
+    for key,item in initialSurfaceCoverages.items():
+        initialCondSurf[key] = item*rmg.surface_site_density.value_si*A
+    initialCondSurf["T"] = T
+    initialCondSurf["A"] = A
+    if potential:
+        initialCondSurf["phi"] = Quantity(potential).value_si
+    system = ConstantTLiquidSurfaceReactor(rmg.reaction_model.core.phase_system,
+                                           rmg.reaction_model.edge.phase_system,
+                                           {"liquid":initialCondLiq,"surface":initialCondSurf},termination,constantSpecies)
+    system.T = Quantity(T)
+    system.Trange = None
+    system.sensitive_species = []
+    rmg.reaction_systems.append(system)
+
+def constant_T_V_liquid_reactor(temperature,
+                    initialConcentrations,
+                    liquidVolume=None,
+                    residenceTime=None,
+                    inletVolumetricFlowRate=None,
+                    outletVolumetricFlowRate=None,
+                    inletConcentrations=None,
+                    vaporPressure=None,
+                    vaporMoleFractions=None,
+                    terminationConversion=None,
+                    terminationTime=None,
+                    terminationRateRatio=None,
+                    constantSpecies=[]):
+
+
+    ################################################# check input ########################################################
+
+    if not isinstance(temperature, list):
+        T = Quantity(temperature).value_si
+    else:
+        raise InputError("Condition ranges not supported for this reaction type")
+        if len(temperature) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list '
+                             'with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
+
+    for spec, conc in initialConcentrations.items():
+        if not isinstance(conc, list):
+            concentration = Quantity(conc)
+            initialConcentrations[spec] = concentration.value_si
+        else:
+            raise InputError("Condition ranges not supported for this reaction type")
+            if len(conc) != 2:
+                raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
+                                 "entries of the same format")
+            initialConcentrations[spec] = [Quantity(conc[0]), Quantity(conc[1])]
+
+    V = 1.0
+    if liquidVolume:
+        V = Quantity(liquidVolume).value_si
+    logging.debug(f'  Generation with liquid volume {V}')
+
+    inlet_volumetric_flow_rate = None
+    outlet_volumetric_flow_rate = None
+    residence_time = None
+    if residenceTime:
+        residence_time = Quantity(residenceTime).value_si
+        inlet_volumetric_flow_rate = V/residence_time
+        outlet_volumetric_flow_rate = V/residence_time
+        logging.debug(f'  Generation with residence time {residence_time} s. Calculated inlet/outlet volumetric flow rate is {inlet_volumetric_flow_rate} m^3/s')
+
+    if inletVolumetricFlowRate:
+        if inlet_volumetric_flow_rate:
+            if inlet_volumetric_flow_rate != inletVolumetricFlowRate:
+                raise InputError('  Inconsistent residence time and inlet volumetric flow rate')
+
+        inlet_volumetric_flow_rate = Quantity(inletVolumetricFlowRate).value_si
+
+    if outletVolumetricFlowRate:
+        if outlet_volumetric_flow_rate:
+            if outlet_volumetric_flow_rate != outletVolumetricFlowRate:
+                raise InputError('  Inconsistent residence time and inlet volumetric flow rate')
+            
+        outlet_volumetric_flow_rate = Quantity(outletVolumetricFlowRate).value_si
+
+    if inletConcentrations:
+        if not inlet_volumetric_flow_rate:
+            raise InputError("Inlet volumetric flow rate or residence time must be provided when inlet concentrations are specified")
+
+        for spec, conc in inletConcentrations.items():
+            if not isinstance(conc, list):
+                concentration = Quantity(conc)
+                inletConcentrations[spec] = concentration.value_si
+            else:
+                raise InputError("Condition ranges not supported for this reaction type")
+                if len(conc) != 2:
+                    raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
+                                    "entries of the same format")
+                inletConcentrations[spec] = [Quantity(conc[0]), Quantity(conc[1])]
+    else:
+        if residence_time or inlet_volumetric_flow_rate:
+            inletConcentrations = initialConcentrations
+            logging.debug(f'  Inlet concentrations not provided. Using initial concentrations as inlet concentrations.')
+
+    vapor_pressure = None
+    if vaporPressure or vaporMoleFractions:
+
+        if not (vaporPressure and vaporMoleFractions):
+            raise ImportError("Vapor pressure, vapor mole fractions and liquid volumetric mass transfer coefficient power law"
+                              "must be provided to simulate evaporation/condensation with kLA.")
+
+        if len(vaporPressure) != 2:
+            raise InputError("Vapor pressure value must be in the form of (number, units).")
+        vapor_pressure = Quantity(vaporPressure).value_si
+        logging.debug(f'  Generation with vapor pressure {vapor_pressure} Pa')
+
+        for spec in vaporMoleFractions:
+            vaporMoleFractions[spec] = float(vaporMoleFractions[spec])
+
+        total_vapor_moles = sum(vaporMoleFractions.values())
+        if total_vapor_moles != 1:
+            logging.warning('Initial mole fractions do not sum to one; normalizing.')
+            logging.info('')
+            logging.info('Original composition:')
+            for spec, molfrac in vaporMoleFractions.items():
+                logging.info(f"{spec} = {molfrac}")
+            for spec in vaporMoleFractions:
+                vaporMoleFractions[spec] /= total_vapor_moles
+            logging.info('')
+            logging.info('Normalized mole fractions:')
+            for spec, molfrac in vaporMoleFractions.items():
+                logging.info(f"{spec} = {molfrac}")
+
+    if not isinstance(temperature, list) and all([not isinstance(x, list) for x in initialConcentrations.values()]):
+        nSims = 1
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.items():
+            termination.append((species_dict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
+
+    if constantSpecies is not None:
+        logging.debug('  Generation with constant species:')
+        for const_spc in constantSpecies:
+            logging.debug("  {0}".format(const_spc))
+            if const_spc not in species_dict:
+                raise InputError('Species {0} not found in the input file'.format(const_spc))
+
+    ############################################### process inputs ##############################################
+
+    initial_conditions = dict()
+    for key, item in initialConcentrations.items():
+        initial_conditions[key] = item*V
+    initial_conditions["T"] = T
+    initial_conditions["V"] = V
+
+    inlet_conditions = dict()
+    if inletConcentrations:
+        total_molar_flow_rate = 0
+        for key, item in inletConcentrations.items():
+            inlet_conditions[key] = item*inlet_volumetric_flow_rate
+            total_molar_flow_rate += inlet_conditions[key]
+        for key, item in inlet_conditions.items():
+            inlet_conditions[key] = item/total_molar_flow_rate #molar fraction for each species
+        inlet_conditions["T"] = initial_conditions["T"]
+        inlet_conditions["P"] = 1e8
+        inlet_conditions["F"] = total_molar_flow_rate
+
+    outlet_conditions = dict()
+    if outlet_volumetric_flow_rate:
+        outlet_conditions["Vout"] = outlet_volumetric_flow_rate
+
+    evap_cond_conditions = dict()
+    if vaporMoleFractions:
+        for key, item in vaporMoleFractions.items():
+            evap_cond_conditions[key] = item
+        evap_cond_conditions["P"] = vapor_pressure
+        evap_cond_conditions["T"] = initial_conditions["T"]
+    
+    system = ConstantTVLiquidReactor(rmg.reaction_model.core.phase_system,
+                                           rmg.reaction_model.edge.phase_system,
+                                           initial_conditions,
+                                           termination,
+                                           constantSpecies,
+                                           inlet_conditions,
+                                           outlet_conditions,
+                                           evap_cond_conditions,
+                                           )
+    system.T = Quantity(T)
+    system.Trange = None
+    system.sensitive_species = []
+    rmg.reaction_systems.append(system)
 
 # Reaction systems
 def liquid_reactor(temperature,
@@ -509,7 +1061,8 @@ def surface_reactor(temperature,
                             termination=termination,
                             sensitive_species=sensitive_species,
                             sensitivity_threshold=sensitivityThreshold,
-                            sens_conditions=sens_conditions)
+                            sens_conditions=sens_conditions,
+                            coverage_dependence=rmg.coverage_dependence)
     rmg.reaction_systems.append(system)
     system.log_initial_conditions(number=len(rmg.reaction_systems))
 
@@ -590,7 +1143,8 @@ def solvation(solvent):
     rmg.solvent = solvent
 
 
-def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=np.inf, toleranceKeepInEdge=0.0,
+def model(toleranceMoveToCore=None, toleranceRadMoveToCore=np.inf,
+          toleranceMoveEdgeReactionToCore=np.inf, toleranceKeepInEdge=0.0,
           toleranceInterruptSimulation=1.0,
           toleranceMoveEdgeReactionToSurface=np.inf, toleranceMoveSurfaceSpeciesToCore=np.inf,
           toleranceMoveSurfaceReactionToCore=np.inf,
@@ -600,7 +1154,9 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=np.inf, tole
           ignoreOverallFluxCriterion=False,
           maxNumSpecies=None, maxNumObjsPerIter=1, terminateAtMaxObjects=False,
           toleranceThermoKeepSpeciesInEdge=np.inf, dynamicsTimeScale=(0.0, 'sec'),
-          toleranceBranchReactionToCore=0.0, branchingIndex=0.5, branchingRatioMax=1.0):
+          toleranceBranchReactionToCore=0.0, branchingIndex=0.5, branchingRatioMax=1.0,
+          toleranceTransitoryDict={}, transitoryStepPeriod=20,
+          toleranceReactionToCoreDeadendRadical=0.0):
     """
     How to generate the model. `toleranceMoveToCore` must be specified. 
     toleranceMoveReactionToCore and toleranceReactionInterruptSimulation refers to an additional criterion for forcing an edge reaction to be included in the core
@@ -619,6 +1175,7 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=np.inf, tole
     rmg.model_settings_list.append(
         ModelSettings(
             tol_move_to_core=toleranceMoveToCore,
+            tol_rad_move_to_core=toleranceRadMoveToCore,
             tol_move_edge_rxn_to_core=toleranceMoveEdgeReactionToCore,
             tol_keep_in_edge=toleranceKeepInEdge,
             tol_interrupt_simulation=toleranceInterruptSimulation,
@@ -641,6 +1198,9 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=np.inf, tole
             tol_branch_rxn_to_core=toleranceBranchReactionToCore,
             branching_index=branchingIndex,
             branching_ratio_max=branchingRatioMax,
+            transitory_tol_dict=toleranceTransitoryDict,
+            transitory_step_period=transitoryStepPeriod,
+            tol_rxn_to_core_deadend_radical=toleranceReactionToCoreDeadendRadical,
         )
     )
 
@@ -814,11 +1374,13 @@ def generated_species_constraints(**kwargs):
         'maximumSiliconAtoms',
         'maximumSulfurAtoms',
         'maximumSurfaceSites',
+        'maximumSurfaceBondOrder',
         'maximumHeavyAtoms',
         'maximumRadicalElectrons',
         'maximumSingletCarbenes',
         'maximumCarbeneRadicals',
         'allowSingletO2',
+        'speciesCuttingThreshold',
     ]
 
     for key, value in kwargs.items():
@@ -906,6 +1468,12 @@ def restart_from_seed(path=None, coreSeed=None, edgeSeed=None, filters=None, spe
                              'mechanism: {0}. See the RMG documentation at {1} for more information'.format(path_errors,
                                                                                                             doc_link))
 
+def liquid_volumetric_mass_transfer_coefficient_power_law(prefactor=(0,"1/s"), diffusionCoefficientPower=0, solventViscosityPower=0, solventDensityPower=0):
+
+    rmg.liquid_volumetric_mass_transfer_coefficient_power_law = liquidVolumetricMassTransferCoefficientPowerLaw(prefactor=Quantity(prefactor).value_si,
+                                                                                                                diffusion_coefficient_power=diffusionCoefficientPower,
+                                                                                                                solvent_viscosity_power=solventViscosityPower,
+                                                                                                                solvent_density_power=solventDensityPower)
 
 ################################################################################
 
@@ -923,7 +1491,7 @@ def read_input_file(path, rmg0):
     Read an RMG input file at `path` on disk into the :class:`RMG` object 
     `rmg`.
     """
-    global rmg, species_dict
+    global rmg, species_dict, mol_to_frag
 
     full_path = os.path.abspath(os.path.expandvars(path))
     try:
@@ -942,6 +1510,7 @@ def read_input_file(path, rmg0):
     rmg.initial_species = []
     rmg.reaction_systems = []
     species_dict = {}
+    mol_to_frag = {}
 
     global_context = {'__builtins__': None}
     local_context = {
@@ -951,17 +1520,26 @@ def read_input_file(path, rmg0):
         'database': database,
         'catalystProperties': catalyst_properties,
         'species': species,
+        'forbidden': forbidden,
         'SMARTS': smarts,
+        'fragment_adj': fragment_adj,
+        'fragment_SMILES': fragment_smiles,
         'SMILES': smiles,
         'InChI': inchi,
         'adjacencyList': adjacency_list,
+        'adjacencyListGroup': adjacency_list_group,
         'react': react,
         'simpleReactor': simple_reactor,
+        'constantVIdealGasReactor' : constant_V_ideal_gas_reactor,
+        'constantTPIdealGasReactor' : constant_TP_ideal_gas_reactor,
+        'liquidSurfaceReactor' : liquid_cat_reactor,
+        'constantTVLiquidReactor': constant_T_V_liquid_reactor,
         'liquidReactor': liquid_reactor,
         'surfaceReactor': surface_reactor,
         'mbsampledReactor': mb_sampled_reactor,
         'simulator': simulator,
         'solvation': solvation,
+        'liquidVolumetricMassTransferCoefficientPowerLaw': liquid_volumetric_mass_transfer_coefficient_power_law,
         'model': model,
         'quantumMechanics': quantum_mechanics,
         'mlEstimator': ml_estimator,
@@ -993,8 +1571,9 @@ def read_input_file(path, rmg0):
     rmg.species_constraints['explicitlyAllowedMolecules'] = []
 
     # convert keys from species names into species objects.
-    for reactionSystem in rmg.reaction_systems:
-        reactionSystem.convert_initial_keys_to_species_objects(species_dict)
+    for reaction_system in rmg.reaction_systems:
+        if not isinstance(reaction_system, Reactor):
+            reaction_system.convert_initial_keys_to_species_objects(species_dict)
 
     if rmg.quantum_mechanics:
         rmg.quantum_mechanics.set_default_output_directory(rmg.output_directory)

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -44,6 +44,8 @@ from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 from rmgpy.thermo import NASA, NASAPolynomial
 from rmgpy.transport import TransportData
+from rmgpy.quantity import Quantity
+from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient
 
 
 ###################################################
@@ -309,8 +311,9 @@ class ChemkinTest(unittest.TestCase):
         species_dict['N2(5)'] = s3
         species_dict['HO2(10)'] = s4
         A_units = ['', 's^-1', 'cm^3/(mol*s)', 'cm^6/(mol^2*s)', 'cm^9/(mol^3*s)']
+        A_units_surf = []
         E_units = 'kcal/mol'
-        reaction = read_kinetics_entry(entry, species_dict, A_units, E_units)
+        reaction = read_kinetics_entry(entry, species_dict, A_units, A_units_surf, E_units)
 
         self.assertEqual(reaction.specific_collider.label, 'N2(5)')
 
@@ -428,6 +431,115 @@ class ChemkinTest(unittest.TestCase):
 
         self.assertEqual(duplicate_flags, expected_flags)
 
+    def test_read_write_coverage_dependence(self):
+        """Test that we can properly read and write coverage dependent parameters"""
+
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'test_data/chemkin/chemkin_py')
+
+        s_x_entry = """X                       X   1               G   100.000  5000.000 1554.80      1
+ 1.60299900E-01-2.52235409E-04 1.14181275E-07-1.21471653E-11 3.85790025E-16    2
+-7.08100885E+01-9.09527530E-01 7.10139498E-03-4.25619522E-05 8.98533016E-08    3
+-7.80193649E-11 2.32465471E-14-8.76101712E-01-3.11211229E-02                   4"""
+        s_hx_entry = """H*                      H   1X   1          G   100.000  5000.000  952.91      1
+ 2.80339655E+00-5.41047017E-04 4.99507978E-07-7.54963647E-11 3.06772366E-15    2
+-2.34636021E+03-1.59436787E+01-3.80965452E-01 5.47228709E-03 2.60912778E-06    3
+-9.64961980E-09 4.63946753E-12-1.40561079E+03 1.01725550E+00                   4"""
+        s_h2_entry = """H2                      H   2               G   100.000  5000.000 1959.08      1
+ 2.78816619E+00 5.87640475E-04 1.59010635E-07-5.52739465E-11 4.34311304E-15    2
+-5.96144481E+02 1.12730527E-01 3.43536411E+00 2.12710383E-04-2.78625110E-07    3
+ 3.40267219E-10-7.76032129E-14-1.03135984E+03-3.90841731E+00                   4"""
+        s_ohx_entry = """OH*                     H   1O   1X   1     G   100.000  5000.000  914.54      1
+ 2.43541504E+00 4.64599933E-03-2.39987608E-06 4.26351871E-10-2.60607840E-14    2
+-2.17972457E+04-1.03879495E+01-1.29522792E+00 3.36487597E-02-7.07760603E-05    3
+ 6.54375105E-08-2.19437885E-11-2.16453879E+04 4.37657050E+00                   4"""
+        s_ox_entry = """O*                      O   1X   1          G   100.000  5000.000  888.26      1
+ 1.89893631E+00 2.03295404E-03-1.19976562E-06 2.32680628E-10-1.53508256E-14    2
+-2.21111565E+04-9.64104147E+00-7.59013115E-01 1.89868504E-02-3.82473769E-05    3
+ 3.43558429E-08-1.13974388E-11-2.18356104E+04 1.76017413E+00                   4"""
+ 
+        s_h2 = Species().from_smiles("[H][H]")
+        s_x = Species().from_adjacency_list("1 X u0 p0")
+        s_x.label = 'X'
+        s_hx = Species().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
+        s_hx.label = 'HX'
+        s_ohx = Species().from_smiles("O[*]")
+        s_ohx.label = 'OHX'
+        s_ox = Species().from_smiles("O=[*]")
+        s_ox.label = 'OX'
+
+        species, thermo, formula = read_thermo_entry(s_x_entry)
+        s_x.thermo = thermo
+        species, thermo, formula = read_thermo_entry(s_hx_entry)
+        s_hx.thermo = thermo
+        species, thermo, formula = read_thermo_entry(s_h2_entry)
+        s_h2.thermo = thermo
+        species, thermo, formula = read_thermo_entry(s_ohx_entry)
+        s_ohx.thermo = thermo
+        species, thermo, formula = read_thermo_entry(s_ox_entry)
+        s_ox.thermo = thermo
+
+
+        species = [s_h2, s_x, s_hx, s_ohx, s_ox]
+
+        # test a coverage dependent arrhenius and a coverage dependent sticking coefficient
+        rxn1_entry = """H2+X+X=H*+H*                                        4.000e-02 0.000     7.098
+    STICK
+    COV / H*                                        0         0         1.099     /"""
+
+        rxn2_entry = """X+OH*=O*+H*                                         7.390000e+19 0.000     18.475   
+    COV / O*                                        0         0         -17.500   /"""
+
+        species_dict  = {}
+        species_dict['H2'] = s_h2
+        species_dict['X'] = s_x
+        species_dict['H*'] = s_hx
+        species_dict['OH*'] = s_ohx
+        species_dict['O*'] = s_ox
+
+        A_units = ['', 's^-1', 'cm^3/(mol*s)',
+                   'cm^6/(mol^2*s)', 'cm^9/(mol^3*s)']
+        A_units_surf = ['', 's^-1', 'cm^2/(mol*s)',
+                        'cm^4/(mol^2*s)', 'cm^6/(mol^3*s)']
+
+        E_units = 'kcal/mol'
+        self.rxn1 = read_kinetics_entry(
+            rxn1_entry, species_dict, A_units, A_units_surf, E_units)
+
+        self.rxn2 = read_kinetics_entry(
+            rxn2_entry, species_dict, A_units, A_units_surf, E_units)
+
+        reactions = [self.rxn1, self.rxn2]
+
+        # save_chemkin_file
+        chemkin_save_path = os.path.join(folder, 'surface', 'chem-surface_new.inp')
+        dictionary_save_path = os.path.join(folder, 'surface', 'species_dictionary_new.txt')
+        save_chemkin_file(chemkin_save_path, species, reactions, verbose=True, check_for_duplicates=True)
+        save_species_dictionary(dictionary_save_path, species, old_style=False)
+
+        # load chemkin file
+        species_load, reactions_load = load_chemkin_file(chemkin_save_path, dictionary_save_path)
+
+        # compare only labels because the objects are different
+        species_label = []
+        species_load_label = []
+        for s in range(len(species)):
+            species_label.append(species[s].label)
+            species_load_label.append(species_load[s].label)
+
+        # check the written chemkin file matches what is expected
+        self.assertTrue(all(i in species_load_label for i in species_label))
+
+        for r in range(len(reactions)):
+            for s in range(len(reactions[r].products)):
+                self.assertEqual(reactions[r].products[s].label,reactions_load[r].products[s].label)
+            for s in range(len(reactions[r].reactants)):
+                self.assertEqual(reactions[r].reactants[s].label, reactions_load[r].reactants[s].label)
+            self.assertIsNotNone(reactions[r].kinetics.coverage_dependence)
+            self.assertIsNotNone(reactions_load[r].kinetics.coverage_dependence)
+
+        # clean up
+        os.remove(chemkin_save_path)
+        os.remove(dictionary_save_path)
 
 class TestThermoReadWrite(unittest.TestCase):
 

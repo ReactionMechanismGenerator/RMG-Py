@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -220,8 +220,8 @@ cdef class LiquidReactor(ReactionSystem):
         """
         cdef np.ndarray[np.int_t, ndim=2] ir, ip, inet
         cdef np.ndarray[np.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
-        cdef int num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
-        cdef int i, j, z, first, second, third
+        cdef Py_ssize_t num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
+        cdef Py_ssize_t i, j, z, first, second, third
         cdef double k, V, reaction_rate
         cdef np.ndarray[np.float64_t,ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates
         cdef np.ndarray[np.float64_t,ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
@@ -406,7 +406,7 @@ cdef class LiquidReactor(ReactionSystem):
         cdef np.ndarray[np.int_t, ndim=2] ir, ip
         cdef np.ndarray[np.float64_t, ndim=1] kf, kr, C
         cdef np.ndarray[np.float64_t, ndim=2] pd
-        cdef int num_core_reactions, num_core_species, i, j
+        cdef Py_ssize_t num_core_reactions, num_core_species, i, j
         cdef double k, V, Ctot, deriv, corr
 
         ir = self.reactant_indices

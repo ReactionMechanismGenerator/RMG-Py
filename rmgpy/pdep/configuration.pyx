@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -60,6 +60,7 @@ cdef class Configuration(object):
         self.sum_states = None
         self.active_j_rotor = False
         self.active_k_rotor = False
+        self.energy_correction = 0.0
 
     def __str__(self):
         return ' + '.join([str(spec) for spec in self.species])
@@ -78,7 +79,7 @@ cdef class Configuration(object):
     property E0:
         """The ground-state energy of the configuration in J/mol."""
         def __get__(self):
-            return sum([float(spec.conformer.E0.value_si) for spec in self.species])
+            return sum([float(spec.conformer.E0.value_si) for spec in self.species]) + self.energy_correction 
 
     cpdef cleanup(self):
         """
@@ -147,6 +148,7 @@ cdef class Configuration(object):
         cdef double h = 0.0
         for spec in self.species:
             h += spec.get_enthalpy(T)
+        h += self.energy_correction
         return h
 
     cpdef double get_entropy(self, double T) except -100000000:
@@ -166,6 +168,7 @@ cdef class Configuration(object):
         cdef double g = 0.0
         for spec in self.species:
             g += spec.get_free_energy(T)
+        g += self.energy_correction
         return g
 
     cpdef double calculate_collision_frequency(self, double T, double P, dict bath_gas) except -1:
@@ -331,7 +334,7 @@ cdef class Configuration(object):
                 # interpolation in the steepest descents algorithm
                 import scipy.interpolate
 
-                log_t_data = np.linspace(log(10.), log(10000.), 250.)
+                log_t_data = np.linspace(log(10.), log(10000.), 250)
                 t_data = np.exp(log_t_data)
                 q_data = np.ones_like(t_data)
                 for i in range(t_data.shape[0]):

@@ -89,11 +89,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             self.compat_func_name = test_name
             yield test, None
 
-            test = lambda x: self.kinetics_check_groups_nonidentical(family_name)
-            test_name = "Kinetics family {0}: groups are not identical?".format(family_name)
-            test.description = test_name
-            self.compat_func_name = test_name
-            yield test, family_name
+            if not family.auto_generated:
+                test = lambda x: self.kinetics_check_groups_nonidentical(family_name)
+                test_name = "Kinetics family {0}: groups are not identical?".format(family_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
 
             test = lambda x: self.kinetics_check_child_parent_relationships(family_name)
             test_name = "Kinetics family {0}: parent-child relationships are correct?".format(family_name)
@@ -119,6 +120,12 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             self.compat_func_name = test_name
             yield test, family_name
 
+            test = lambda x: self.kinetics_check_num_reactant_and_product(family_name)
+            test_name = "Kinetics family {0}: number of reactant and product defined?".format(family_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, family_name
+
             # tests for surface families
             if 'surface' in family_name.lower():
                 test = lambda x: self.kinetics_check_surface_training_reactions_can_be_used(family_name)
@@ -133,9 +140,15 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 self.compat_func_name = test_name
                 yield test, family_name
 
+                test = lambda x: self.kinetics_check_coverage_dependence_units_are_correct(family_name)
+                test_name = "Kinetics surface family {0}: check coverage dependent units are correct?".format(family_name)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, family_name
+
             # these families have some sort of difficulty which prevents us from testing accessibility right now
-            difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', 'Retroene']
-            generated_trees = ["R_Recombination"]
+            # See RMG-Py PR #2232 for reason why adding Bimolec_Hydroperoxide_Decomposition here. Bsically some nodes need to be in a ring, but the sampled molecule is not.
+            difficult_families = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic', 'Retroene','Bimolec_Hydroperoxide_Decomposition']
 
             if len(family.forward_template.reactants) < len(family.groups.top) and family_name not in difficult_families:
                 test = lambda x: self.kinetics_check_unimolecular_groups(family_name)
@@ -145,7 +158,7 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 self.compat_func_name = test_name
                 yield test, family_name
 
-            if family_name not in difficult_families and family_name not in generated_trees:
+            if family_name not in difficult_families and not family.auto_generated:
                 test = lambda x: self.kinetics_check_sample_descends_to_group(family_name)
                 test_name = "Kinetics family {0}: Entry is accessible?".format(family_name)
                 test.description = test_name
@@ -384,7 +397,9 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
     def kinetics_check_surface_training_reactions_can_be_used(self, family_name):
         """Test that surface training reactions can be averaged and used for generating rate rules"""
         family = self.database.kinetics.families[family_name]
-        family.add_rules_from_training(thermo_database=self.database.thermo)
+        if not family.auto_generated:
+            family.add_rules_from_training(thermo_database=self.database.thermo)
+            family.fill_rules_by_averaging_up(verbose=True)
 
     def general_check_metal_database_has_catalyst_properties(self, library):
         """Test that each entry has catalyst properties"""
@@ -428,6 +443,32 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
                 raise NameError('Entry {} with facet attribute {} does not have facet in its label'.format(entry.label, entry.facet))
             if not entry.label[0].isupper():
                 raise NameError('Entry {} should start with a capital letter'.format(entry.label))
+
+    def kinetics_check_coverage_dependence_units_are_correct(self, family_name):
+        """Test that each surface training reaction that has coverage dependent parameters has acceptable units"""
+        family = self.database.kinetics.families[family_name]
+        training = family.get_training_depository().entries.values()
+        failed = False
+
+        for entry in training:
+            cov_dep = entry.data.coverage_dependence
+            if cov_dep:
+                assert isinstance(cov_dep, dict)
+                for species, parameters in cov_dep.items():
+                    assert isinstance(species, str)
+                    assert parameters['E']
+                    if parameters['a'].units:
+                        "Should be dimensionless"
+                        failed = True
+                        logging.error(f"Entry {entry.label} has invalid units {parameters['a'].units} for a")
+                    if parameters['m'].units:
+                        "Should be dimensionless"
+                        failed = True
+                        logging.error(f"Entry {entry.label} has invalid units {parameters['m'].units} for m")
+
+        if failed:
+            raise ValueError('Surface coverage dependent parameters have incorrect units.'
+                             'Please check log warnings for all error messages.')
 
     def kinetics_check_training_reactions_have_surface_attributes(self, family_name):
         """Test that each surface training reaction has surface attributes"""
@@ -938,6 +979,20 @@ class TestDatabase(object):  # cannot inherit from unittest.TestCase if we want 
             if boo:
                 raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
+    def kinetics_check_num_reactant_and_product(self, family_name):
+        """
+        This test checks that if the number of reactants and products are specified in the groups.py for
+        rate rules that are generated from the ATG.
+        """
+        family = self.database.kinetics.families[family_name]
+        if family.auto_generated:
+            if not getattr(family, 'reactant_num'):
+                logging.error(f'The number of reactants is not defined in the family {family_name}')
+            if not getattr(family, 'product_num'):
+                logging.error(f'The number of products is not defined in the family {family_name}')
+            if not getattr(family, 'reactant_num') or not getattr(family, 'product_num'):
+                raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
+
     def kinetics_check_cd_atom_type(self, family_name):
         """
         This test checks that groups containing Cd, CO, CS and Cdd atomtypes are used
@@ -1268,7 +1323,7 @@ Origin Group AdjList:
 
         # print out entries skipped from exception we can't currently handle
         if skipped:
-            print("These entries were skipped because too big benzene rings or has nitrogen sample atom:")
+            print("These entries were skipped because too big benzene rings:")
             for entryName in skipped:
                 print(entryName)
 
@@ -1391,26 +1446,6 @@ Origin Group AdjList:
                     continue
                 if products is None:
                     test1.append(make_error_message([reactant],
-                        message="apply_recipe returned None, indicating wrong number of products or a charged product."))
-                    continue
-                for molecule in products:
-                    # Just check none of this throws errors
-                    species = rmgpy.species.Species(index=1,molecule=[molecule])
-                    species.generate_resonance_structures()
-        elif len(sample_reactants) == 1 and len(family.forward_template.reactants) == 2:
-            # eg. Bimolec_Hydroperoxide_Decomposition and Peroxyl_Disproportionation
-            # use the same group twice.
-            reactant_lists = [sample_reactants[k] for k in family.forward_template.reactants ]
-            pairs = zip(*reactant_lists)
-            for reactant1, reactant2 in pairs:
-                try:
-                    products = family.apply_recipe([reactant1, reactant2])
-                except Exception as e:
-                    test1.append(make_error_message([reactant1, reactant2],
-                          message=f"During apply_recipe had an {type(e)!s}: {e!s}"))
-                    continue
-                if products is None:
-                    test1.append(make_error_message([reactant1, reactant2],
                         message="apply_recipe returned None, indicating wrong number of products or a charged product."))
                     continue
                 for molecule in products:
@@ -1541,6 +1576,10 @@ Origin Group AdjList:
         This test checks whether nodes are found in the tree, with proper parents.
         """
         for node_name, node_group in group.entries.items():
+            # Pass this check for special solvation polycyclic groups. These groups are used to put similar polycyclic
+            # groups or polycyclic groups with resonance structures together under one entry.
+            if node_group.short_desc == 'special solvation polycyclic group':
+                continue
             ascend_parent = node_group
             # Check whether the node has proper parents unless it is the top reactant or product node
             tst1 = []
@@ -1583,8 +1622,15 @@ Origin Group AdjList:
         entries_copy = copy(group.entries)
         tst = []
         for node_name, node_group in group.entries.items():
+            # Pass this check for special solvation polycyclic groups. These groups are used to put similar polycyclic
+            # groups or polycyclic groups with resonance structures together under one entry.
+            if node_group.short_desc == 'special solvation polycyclic group':
+                continue
             del entries_copy[node_name]
             for node_name_other, node_group_other in entries_copy.items():
+                # Pass this check for special solvation polycyclic groups.
+                if node_group_other.short_desc == 'special solvation polycyclic group':
+                    continue
                 group.match_node_to_node(node_group, node_group_other)
                 tst.append((group.match_node_to_node(node_group, node_group_other),
                             "Node {node} in {group} group was found to be identical to node {node_other}".format(
@@ -1608,6 +1654,10 @@ Origin Group AdjList:
         for node_name, child_node in group.entries.items():
             # top nodes and product nodes don't have parents by definition, so they get an automatic pass:
             if child_node in group.top:
+                continue
+            # Pass this check for special solvation polycyclic groups. These groups are used to put similar polycyclic
+            # groups or polycyclic groups with resonance structures together under one entry.
+            if child_node.short_desc == 'special solvation polycyclic group':
                 continue
             parent_node = child_node.parent
             # Check whether the node has proper parents unless it is the top reactant or product node
@@ -1735,7 +1785,16 @@ The following adjList may have atoms in a different ordering than the input file
         tst1 = []
         tst2 = []
         tst3 = []
+
+        # Solvation groups have special groups that RMG cannot generate proper sample_molecules. Skip them.
+        skip_entry_list = ['Cds-CdsCS6dd', 'Cs-CS4dHH']
+        skip_short_desc_list = ['special solvation group with ring', 'special solvation polycyclic group']
+
         for entryName, entry in group.entries.items():
+            # Pass special cases
+            if entry.short_desc in skip_short_desc_list or entryName in skip_entry_list:
+                skipped.append(entryName)
+                continue
             try:
                 if isinstance(entry.item, Group):
                     try:
@@ -1744,14 +1803,6 @@ The following adjList may have atoms in a different ordering than the input file
                         logging.error("Problem making sample molecule for group {}\n{}".format(
                             entryName, entry.item.to_adjacency_list()))
                         raise
-                    # for now ignore sample atoms that use nitrogen types
-                    nitrogen = False
-                    for atom in sample_molecule.atoms:
-                        if atom.is_nitrogen():
-                            nitrogen = True
-                    if nitrogen:
-                        skipped.append(entryName)
-                        continue
 
                     atoms = sample_molecule.get_all_labeled_atoms()
                     match = group.descend_tree(sample_molecule, atoms, strict=True)
@@ -1787,7 +1838,7 @@ Origin Group AdjList:
 
         # print out entries skipped from exception we can't currently handle
         if skipped:
-            print("These entries were skipped because too big benzene rings or has nitrogen sample atom:")
+            print("These entries were skipped because too big benzene rings:")
             for entryName in skipped:
                 print(entryName)
 

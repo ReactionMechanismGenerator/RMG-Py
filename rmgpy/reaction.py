@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -31,7 +31,7 @@
 This module contains classes and functions for working with chemical reactions.
 
 From the `IUPAC Compendium of Chemical Terminology 
-<http://dx.doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that 
+<https://doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that 
 results in the interconversion of chemical species".
 
 In RMG Py, a chemical reaction is represented in memory as a :class:`Reaction`
@@ -281,39 +281,81 @@ class Reaction:
                 ct_products[product_name] += 1
             else:
                 ct_products[product_name] = 1
+
         if self.specific_collider:  # add a specific collider if exists
             ct_collider[self.specific_collider.to_chemkin() if use_chemkin_identifier else self.specific_collider.label] = 1
 
         if self.kinetics:
             if isinstance(self.kinetics, Arrhenius):
                 # Create an Elementary Reaction
-                ct_reaction = ct.ElementaryReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
             elif isinstance(self.kinetics, MultiArrhenius):
                 # Return a list of elementary reactions which are duplicates
-                ct_reaction = [ct.ElementaryReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
                                for arr in self.kinetics.arrhenius]
 
             elif isinstance(self.kinetics, PDepArrhenius):
-                ct_reaction = ct.PlogReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
 
             elif isinstance(self.kinetics, MultiPDepArrhenius):
-                ct_reaction = [ct.PlogReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
                                for arr in self.kinetics.arrhenius]
 
             elif isinstance(self.kinetics, Chebyshev):
-                ct_reaction = ct.ChebyshevReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ChebyshevRate())
 
             elif isinstance(self.kinetics, ThirdBody):
                 if ct_collider is not None:
-                    ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products, tbody=ct_collider)
+                    ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products, third_body=ct_collider)
                 else:
                     ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products)
 
-            elif isinstance(self.kinetics, Lindemann) or isinstance(self.kinetics, Troe):
-                if ct_collider is not None:
-                    ct_reaction = ct.FalloffReaction(reactants=ct_reactants, products=ct_products, tbody=ct_collider)
+            elif isinstance(self.kinetics, Troe):
+                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
+                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
+                A = self.kinetics.alpha
+                T3 = self.kinetics.T3.value_si
+                T1 = self.kinetics.T1.value_si
+
+                if self.kinetics.T2 is None:
+                    rate = ct.TroeRate(
+                        high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1]
+                    )
                 else:
-                    ct_reaction = ct.FalloffReaction(reactants=ct_reactants, products=ct_products)
+                    T2 = self.kinetics.T2.value_si
+                    rate = ct.TroeRate(
+                        high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1, T2]
+                    )
+
+                if ct_collider is not None:
+                    ct_reaction = ct.FalloffReaction(
+                        reactants=ct_reactants,
+                        products=ct_products,
+                        tbody=ct_collider,
+                        rate=rate,
+                    )
+                else:
+                    ct_reaction = ct.FalloffReaction(
+                        reactants=ct_reactants, products=ct_products, rate=rate
+                    )
+
+            elif isinstance(self.kinetics, Lindemann):
+                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
+                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
+                falloff = []
+                rate = ct.LindemannRate(low_rate, high_rate, falloff)
+                if ct_collider is not None:
+                    ct_reaction = ct.FalloffReaction(
+                        reactants=ct_reactants,
+                        products=ct_products,
+                        tbody=ct_collider,
+                        rate=rate,
+                    )
+                else:
+                    ct_reaction = ct.FalloffReaction(
+                        reactants=ct_reactants, products=ct_products, rate=rate
+                    )
+
             else:
                 raise NotImplementedError('Unable to set cantera kinetics for {0}'.format(self.kinetics))
 
@@ -343,7 +385,7 @@ class Reaction:
         """
         # eg. http://dev.rmg.mit.edu/database/kinetics/reaction/reactant1=1%20C%200%20%7B2,S%7D;2%20O%200%20%7B1,S%7D;__reactant2=1%20C%202T;__product1=1%20C%201;__product2=1%20C%200%20%7B2,S%7D;2%20O%201%20%7B1,S%7D;
 
-        base_url = "http://rmg.mit.edu/database/kinetics/reaction/"
+        base_url = "https://rmg.mit.edu/database/kinetics/reaction/"
 
         rxn_string = ''
         for i, species in enumerate(self.reactants):
@@ -768,8 +810,8 @@ class Reaction:
             raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
 
         H298 = self.get_enthalpy_of_reaction(298)
-        H0 = sum([spec.get_thermo_data().E0.value_si for spec in self.products]) \
-             - sum([spec.get_thermo_data().E0.value_si for spec in self.reactants])
+        H0 = sum([spec.get_thermo_data().E0.value_si if spec.get_thermo_data().E0 is not None else spec.get_thermo_data().to_wilhoit().E0.value_si for spec in self.products]) \
+             - sum([spec.get_thermo_data().E0.value_si if spec.get_thermo_data().E0 is not None else spec.get_thermo_data().to_wilhoit().E0.value_si  for spec in self.reactants])
         if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusBM)):
             Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
             self.kinetics = self.kinetics.to_arrhenius(H298)
@@ -1090,7 +1132,10 @@ class Reaction:
         Return ``True`` if the reaction has the same number of each atom on
         each side of the reaction equation, or ``False`` if not.
         """
-        cython.declare(reactantElements=dict, productElements=dict, molecule=Molecule, atom=Atom, element=Element)
+        from rmgpy.molecule.element import element_list
+        from rmgpy.molecule.fragment import CuttingLabel, Fragment
+
+        cython.declare(reactant_elements=dict, product_elements=dict, molecule=Graph, atom=Vertex, element=Element)
 
         reactant_elements = {}
         product_elements = {}
@@ -1101,18 +1146,31 @@ class Reaction:
         for reactant in self.reactants:
             if isinstance(reactant, Species):
                 molecule = reactant.molecule[0]
+                for atom in molecule.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        reactant_elements[atom.element] += 1
             elif isinstance(reactant, Molecule):
                 molecule = reactant
-            for atom in molecule.atoms:
-                reactant_elements[atom.element] += 1
-
+                for atom in molecule.atoms:
+                    reactant_elements[atom.element] += 1
+            elif isinstance(reactant, Fragment):
+                for atom in reactant.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        reactant_elements[atom.element] += 1
         for product in self.products:
             if isinstance(product, Species):
                 molecule = product.molecule[0]
+                for atom in molecule.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        product_elements[atom.element] += 1
             elif isinstance(product, Molecule):
                 molecule = product
-            for atom in molecule.atoms:
-                product_elements[atom.element] += 1
+                for atom in molecule.atoms:
+                    product_elements[atom.element] += 1
+            elif isinstance(product, Fragment):
+                for atom in product.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        product_elements[atom.element] += 1
 
         for element in element_list:
             if reactant_elements[element] != product_elements[element]:
@@ -1155,8 +1213,11 @@ class Reaction:
             def get_sorting_key(spc):
                 # List of elements to sort by, order is intentional
                 numbers = [6, 8, 7, 14, 16, 15, 17, 53, 9, 35]  # C, O, N, Si, S, P, Cl, I, F, Br
-                return tuple(sum([1 for atom in spc.molecule[0].atoms if atom.element.number == n]) for n in numbers)
-
+                ele_count = dict([(n,0) for n in numbers])
+                for atom in spc.molecule[0].atoms:
+                    if isinstance(atom, Atom) and atom.element.number in numbers:
+                        ele_count[atom.element.number] += 1
+                return tuple(ele_count[n] for n in numbers)
             # Sort the reactants and products by element counts
             reactants.sort(key=get_sorting_key)
             products.sort(key=get_sorting_key)
@@ -1286,7 +1347,7 @@ class Reaction:
 
         return other
 
-    def ensure_species(self, reactant_resonance=False, product_resonance=False):
+    def ensure_species(self, reactant_resonance=False, product_resonance=False, save_order=False):
         """
         Ensure the reaction contains species objects in its reactant and product
         attributes. If the reaction is found to hold molecule objects, it
@@ -1296,6 +1357,7 @@ class Reaction:
         Generates resonance structures for Molecules if the corresponding options,
         reactant_resonance and/or product_resonance, are True. Does not generate
         resonance for reactants or products that start as Species objects.
+        If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
         """
         from rmgpy.data.kinetics.common import ensure_species
         # if already species' objects, return none
@@ -1315,11 +1377,11 @@ class Reaction:
             for reactant, product in self.pairs:
                 new_pair = []
                 for reactant0 in self.reactants:
-                    if reactant0.is_isomorphic(reactant):
+                    if reactant0.is_isomorphic(reactant, save_order=save_order):
                         new_pair.append(reactant0)
                         break
                 for product0 in self.products:
-                    if product0.is_isomorphic(product):
+                    if product0.is_isomorphic(product, save_order=save_order):
                         new_pair.append(product0)
                         break
                 new_pairs.append(new_pair)
@@ -1459,14 +1521,14 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
     """
 
     def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label,
-             _generate_initial_map=generate_initial_map, _strict=strict, save_order=save_order):
+             _generate_initial_map=generate_initial_map, _strict=strict, _save_order=save_order):
         if _only_check_label:
             return str(object1) == str(object2)
         elif _check_identical:
             return object1.is_identical(object2, strict=_strict)
         else:
             return object1.is_isomorphic(object2, generate_initial_map=_generate_initial_map,
-                                         strict=_strict, save_order=save_order)
+                                         strict=_strict, save_order=_save_order)
 
     if len(list1) == len(list2) == 1:
         if same(list1[0], list2[0]):

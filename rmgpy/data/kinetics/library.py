@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -43,7 +43,8 @@ from rmgpy.data.base import DatabaseError, Database, Entry
 from rmgpy.data.kinetics.common import save_entry
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.kinetics import Arrhenius, ThirdBody, Lindemann, Troe, \
-                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, Chebyshev
+                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, Chebyshev 
+from rmgpy.kinetics.surface import StickingCoefficient
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
@@ -206,6 +207,16 @@ class LibraryReaction(Reaction):
                          " it doesn't answer either of the following criteria:\n1. Has a Lindemann or Troe"
                          " kinetics type; 2. Has a PDepArrhenius or Chebyshev kinetics type and has valid"
                          " kinetics at P >= 100 bar.\n".format(self))
+        return False
+
+    def get_sticking_coefficient(self, T):
+        """
+        Helper function to get sticking coefficient
+        """
+        if isinstance(self.kinetics, StickingCoefficient):
+            stick = self.kinetics.get_sticking_coefficient(T)
+            return stick
+            
         return False
 
 
@@ -434,6 +445,15 @@ class KineticsLibrary(Database):
             # Create a new reaction per entry
             rxn = entry.item
             rxn_string = entry.label
+
+            # Convert coverage dependence label to species label
+            if hasattr(entry.data, 'coverage_dependence'):
+                if entry.data.coverage_dependence:
+                    coverage_dependence_update = {}
+                    for key, value in entry.data.coverage_dependence.items():
+                        coverage_dependence_update[species_dict[key]] = value
+                    entry.data.coverage_dependence = coverage_dependence_update
+
             # Convert the reactants and products to Species objects using the species_dict
             reactants, products = rxn_string.split('=>')
             reversible = True

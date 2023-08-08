@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -289,7 +289,7 @@ class TestHinderedRotor(unittest.TestCase):
         h_exp_list = np.array([0.548251, 0.728974, 0.762396, 0.718702, 0.681764]) * constants.R * t_list
         for temperature, h_exp in zip(t_list, h_exp_list):
             h_act = self.mode.get_enthalpy(temperature)
-            self.assertAlmostEqual(h_exp, h_act, delta=1e-3 * h_exp)
+            self.assertAlmostEqual(h_exp, h_act, delta=2e-3 * h_exp)
 
     def test_get_entropy_free(self):
         t_list = np.array([300, 500, 1000, 1500, 2000])

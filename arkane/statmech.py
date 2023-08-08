@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -36,9 +36,12 @@ information for a single species or transition state.
 import logging
 import math
 import os
+import pathlib
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import yaml
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import InputError, ElementError, StatmechError
@@ -69,13 +72,13 @@ class ScanLog(object):
     scan energies.
     """
 
-    angleFactors = {
+    angle_factors = {
         'radians': 1.0,
         'rad': 1.0,
         'degrees': 180.0 / math.pi,
         'deg': 180.0 / math.pi,
     }
-    energyFactors = {
+    energy_factors = {
         'J/mol': 1.0,
         'kJ/mol': 1.0 / 1000.,
         'cal/mol': 1.0 / 4.184,
@@ -92,38 +95,115 @@ class ScanLog(object):
         Load the scan energies from the file. Returns arrays containing the
         angles (in radians) and energies (in J/mol).
         """
-        angles, energies = [], []
-        angle_units, energy_units, angle_factor, energy_factor = None, None, None, None
+        file_ext = pathlib.Path(self.path).suffix
+        if file_ext.lower() == '.csv':
+            angle_unit, energy_unit, angles, energies = self.load_csv()
+        elif file_ext.lower() in ['.yml', '.yaml']:
+            angle_unit, energy_unit, angles, energies = self.load_yaml()
+        else:
+            angle_unit, energy_unit, angles, energies = self.load_text()
 
+        try:
+            angle_factor = self.angle_factors[angle_unit]
+        except KeyError:
+            raise ValueError(f'Invalid angle unit {angle_unit}.')
+        try:
+            energy_factor = self.energy_factors[energy_unit]
+        except KeyError:
+            raise ValueError(f'Invalid energy units {energy_unit}.')
+
+        angles = np.array(angles) / angle_factor
+        energies = np.array(energies) / energy_factor
+        energies -= energies[0]
+
+        return angles, energies
+
+    def load_csv(self):
+        """
+        Load scan energies from a CSV file. The CSV file should at least contain
+        two columns `'Angle (angle unit)'` and `'Energy (energy unit)'` with
+        corresponding values. For the headers, both 'units' should be replaced
+        by the units supported in `ScanLog.angle_factors` and `ScanLog.energy_factors`.
+        """
+        # Example format
+        # Angle (radians),Energy (kJ/mol)
+        # 0.000000,0.014725
+        # 0.174533,0.722311
+        df = pd.read_csv(self.path, header='infer')
+        # In case, the user's csv file has no header. Use the default header and units.
+        if df.columns[0][0].isnumeric():
+            df = pd.read_csv(self.path, names=['Angle (radians)', 'Energy (J/mol)'])
+        for column in df.columns:
+            if 'angle' in column.lower():
+                try:
+                    angle_unit = column.split()[1][1:-1]
+                except IndexError:
+                    raise ValueError(f'Invalid headers ({column}) in the csv file.')
+                angles = df[column]
+            elif 'energy' in column.lower():
+                try:
+                    energy_unit = column.split()[1][1:-1]
+                except IndexError:
+                    raise ValueError(f'Invalid headers ({column}) in the csv file.')
+                energies = df[column]
+        return angle_unit, energy_unit, angles, energies
+
+    def load_yaml(self):
+        """
+        Load scan energies from a YAML file. The YAML file should at least two fields
+        `angles` and `energies`. If `angle_unit` or `energy_unit` is not provided, 'rad'
+        and 'J/mol' will be used by default.
+        """
+        # Example format
+        # angle_unit: 'radians'
+        # energy_unit: 'J/mol'
+        # angles:
+        # - 0.000000
+        # - 0.174533
+        # ...
+        # energies:
+        # - 0.014725
+        # - 0.722311
+        with open(self.path, 'r') as f:
+            content = yaml.load(stream=f, Loader=yaml.FullLoader)
+            angle_unit = content.get('angle_unit', 'radians')
+            energy_unit = content.get('energy_unit', 'J/mol')
+            angles = content.get('angles', [])
+            energies = content.get('energies', [])
+        return angle_unit, energy_unit, angles, energies
+
+    def load_text(self):
+        """
+        Load scan energies from a text file. The text file should contain
+        two columns `'Angle (angle unit)'` and `'Energy (energy unit)'` with
+        corresponding values. For the headers, both 'units' should be replaced
+        by the units supported in `ScanLog.angle_factors` and `ScanLog.energy_factors`.
+        """
+        # Example format
+        #    Angle (radians)  Energy (kJ/mol)
+        #        0.000000         0.014725
+        #        0.174533         0.722311
+        angles, energies = [], []
+        angle_unit, energy_unit = None, None
         with open(self.path, 'r') as stream:
             for line in stream:
                 line = line.strip()
                 if line == '':
                     continue
-
                 tokens = line.split()
-                if angle_units is None or energy_units is None:
-                    angle_units = tokens[1][1:-1]
-                    energy_units = tokens[3][1:-1]
-
+                if angle_unit is None or energy_unit is None:
                     try:
-                        angle_factor = ScanLog.angleFactors[angle_units]
-                    except KeyError:
-                        raise ValueError('Invalid angle units {0!r}.'.format(angle_units))
-                    try:
-                        energy_factor = ScanLog.energyFactors[energy_units]
-                    except KeyError:
-                        raise ValueError('Invalid energy units {0!r}.'.format(energy_units))
-
-                else:
-                    angles.append(float(tokens[0]) / angle_factor)
-                    energies.append(float(tokens[1]) / energy_factor)
-
-        angles = np.array(angles)
-        energies = np.array(energies)
-        energies -= energies[0]
-
-        return angles, energies
+                        angle_unit = tokens[1][1:-1]
+                        energy_unit = tokens[3][1:-1]
+                    except IndexError:
+                        # It is possible that the user doesn't put a header there
+                        angle_unit = 'radians'
+                        energy_unit = 'J/mol'
+                    else:
+                        continue
+                angles.append(float(tokens[0]))
+                energies.append(float(tokens[1]))
+        return angle_unit, energy_unit, angles, energies
 
     def save(self, angles, energies, angle_units='radians', energy_units='kJ/mol'):
         """
@@ -158,6 +238,9 @@ def hinderedRotor(scanLog, pivots, top, symmetry=None, fit='best'):
     """Read a hindered rotor directive, and return the attributes in a list"""
     return [scanLog, pivots, top, symmetry, fit]
 
+def hinderedRotor1DArray(angles, energies, pivots, top, symmetry=None, fit='best'):
+    """Read a hindered rotor PES profile, and return the attributes in a list"""
+    return [angles, energies, pivots, top, symmetry, fit]
 
 def freeRotor(pivots, top, symmetry):
     """Read a free rotor directive, and return the attributes in a list"""
@@ -234,7 +317,7 @@ class StatMechJob(object):
         path = self.path
         directory = os.path.abspath(os.path.dirname(path))
 
-        def create_log(log_path):
+        def create_log(log_path, check_for_errors=True):
             if not os.path.isfile(log_path):
                 modified_log_path = os.path.join(directory, log_path)
                 if not os.path.isfile(modified_log_path):
@@ -243,7 +326,7 @@ class StatMechJob(object):
                 else:
                     log_path = modified_log_path
 
-            return ess_factory(log_path)
+            return ess_factory(log_path, check_for_errors=check_for_errors)
 
         is_ts = isinstance(self.species, TransitionState)
         file_extension = os.path.splitext(path)[-1]
@@ -273,6 +356,7 @@ class StatMechJob(object):
             'True': True,
             'False': False,
             'HinderedRotor': hinderedRotor,
+            'HinderedRotor1DArray': hinderedRotor1DArray,
             'FreeRotor': freeRotor,
             'HinderedRotor2D': hinderedRotor2D,
             'HinderedRotorClassicalND': hinderedRotorClassicalND,
@@ -673,13 +757,24 @@ class StatMechJob(object):
                 rotor.run()
                 conformer.modes.append(rotor)
                 rotor_count += len(pivots)
-            elif len(q) in [4, 5]:
+            elif len(q) in [4, 5, 6]:
                 # This is a hindered rotor
-                if len(q) == 5:
+                if len(q) == 5 and isinstance(q[0], (ESSAdapter, ScanLog)):
+                    # A hindered rotor PES from a log file with symmetry assigned
                     scan_log, pivots, top, symmetry, fit = q
+                elif len(q) == 5:
+                    # A hindered rotor PES from user input arrays with symmetry not assigned
+                    # the symmetry number will be derived from the scan
+                    angle, v_list, pivots, top, fit = q
+                    scan_log = -1
                 elif len(q) == 4:
+                    # A hindered rotor PES from a log file without symmetry assigned
                     # the symmetry number will be derived from the scan
                     scan_log, pivots, top, fit = q
+                elif len(q) == 6:
+                    # A hindered rotor PES from user input arrays with symmetry assigned
+                    angle, v_list, pivots, top, symmetry, fit = q
+                    scan_log = -1
                 # Load the hindered rotor scan energies
                 if isinstance(scan_log, ScanLog):
                     if not os.path.isfile(scan_log.path):
@@ -705,6 +800,12 @@ class StatMechJob(object):
                     angle, v_list = scan_log.load()
                     # no way to find pivot atoms or frozen atoms from ScanLog
                     pivot_atoms = 'N/A'
+                    frozen_atoms = 'N/A'
+                elif scan_log == -1:
+                    # Assuming no user may input -1 in the input file. None and '' are not used since they are more likely
+                    # to be some input generated from a failure of automatic scripts
+                    angle, v_list = np.array(angle), np.array(v_list)
+                    pivot_atoms = 'N/A',
                     frozen_atoms = 'N/A'
                 else:
                     raise InputError('Invalid log file type {0} for scan log.'.format(scan_log.__class__))
@@ -1042,10 +1143,12 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
     for i, rotor in enumerate(rotors):
         if len(rotor) == 5 and isinstance(rotor[1][0], list):
             scan_dir, pivots_list, tops, sigmas, semiclassical = rotor
-        elif len(rotor) == 5:
+        elif len(rotor) == 5 and isinstance(rotor[0], (ESSAdapter, ScanLog)):
             scanLog, pivots, top, symmetry, fit = rotor
-            pivots_list = [pivots]
-            tops = [top]
+            pivots_list, tops = [pivots], [top]
+        elif len(rotor) == 5:
+            _, _, pivots, top, _ = rotor
+            pivots_list, tops = [pivots], [top]
         elif len(rotor) == 3:
             pivots, top, symmetry = rotor
             pivots_list = [pivots]
@@ -1054,6 +1157,9 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             scan_dir, pivots1, top1, symmetry1, pivots2, top2, symmetry2, symmetry = rotor
             pivots_list = [pivots1, pivots2]
             tops = [top1, top2]
+        elif len(rotor) == 6:
+            _, _, pivots, top, _, _ = rotor
+            pivots_list, tops = [pivots], [top]
         else:
             raise ValueError("{} not a proper rotor format".format(rotor))
         for k in range(len(tops)):

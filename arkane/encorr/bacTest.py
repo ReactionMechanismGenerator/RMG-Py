@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -44,11 +44,11 @@ from rmgpy import settings
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import ScalarQuantity
 
-from arkane.encorr.bac import BAC
+from arkane.encorr.bac import BAC, CrossVal
 from arkane.encorr.data import BACDataset, BOND_SYMBOLS, _pybel_to_rmg
 from arkane.encorr.reference import ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
-from arkane.modelchem import LevelOfTheory
+from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory
 
 
 class TestBAC(unittest.TestCase):
@@ -59,6 +59,7 @@ class TestBAC(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.lot_get = LevelOfTheory(method='CCSD(T)-F12', basis='cc-pVTZ-F12', software='Molpro')
+        cls.lot_get_composite = CompositeLevelOfTheory(freq=LevelOfTheory(method='wb97xd3',basis='def2tzvp',software='qchem'),energy=LevelOfTheory(method='ccsd(t)f12',basis='ccpvtzf12',software='molpro'))
         cls.lot_fit = LevelOfTheory(method='wB97M-V', basis='def2-TZVPD', software='Q-Chem')
         cls.lot_nonexisting = LevelOfTheory('notamethod')
 
@@ -242,6 +243,12 @@ class TestBAC(unittest.TestCase):
         spec.loader.exec_module(module)  # Load data as module
         self.assertEqual(self.bac.bacs, module.pbac[repr(self.bac.level_of_theory)])
 
+        # Check that existing Composite Petersson BACs can be overwritten
+        self.bac.level_of_theory = self.lot_get_composite
+        self.bac.write_to_database(overwrite=True, alternate_path=tmp_datafile_path)
+        spec.loader.exec_module(module)  # Load data as module
+        self.assertEqual(self.bac.bacs, module.pbac[repr(self.bac.level_of_theory)])
+
         # Check that new Petersson BACs can be written
         self.bac.level_of_theory = self.lot_nonexisting
         self.bac.bacs = self.tmp_petersson_params
@@ -274,6 +281,70 @@ class TestBAC(unittest.TestCase):
             tmp_corr_path = os.path.join(tmpdirname, 'corr.pdf')
             self.bac.save_correlation_mat(tmp_corr_path)
             self.assertTrue(os.path.exists(tmp_corr_path))
+
+
+class TestCrossVal(unittest.TestCase):
+    """
+    A class for testing that the CrossVal class functions properly.
+    """
+
+    def setUp(self):
+        lot = LevelOfTheory(method='wB97M-V', basis='def2-TZVPD', software='Q-Chem')
+        self.cross_val = CrossVal(lot)
+
+    def test_init(self):
+        """
+        Test that CrossVal is initialized correctly.
+        """
+        self.assertIsInstance(self.cross_val.level_of_theory, LevelOfTheory)
+        self.assertEqual(self.cross_val.bac_type, 'p')
+        self.assertEqual(self.cross_val.n_folds, -1)
+        self.assertIsNone(self.cross_val.dataset)
+        self.assertIsNone(self.cross_val.bacs)
+
+    def test_leave_one_out(self):
+        """
+        Test leave-one-out cross-validation.
+        Setting n_folds as -1 causes the number of folds to equal the length of the dataset.
+        """
+        idxs = [19, 94, 191]
+        self.cross_val.n_folds = -1
+        self.cross_val.fit(idxs=idxs)
+
+        self.assertIsInstance(self.cross_val.dataset, BACDataset)
+        self.assertEqual(len(self.cross_val.dataset), 3)
+        self.assertIsNotNone(self.cross_val.dataset.bac_data)
+        self.assertEqual(len(self.cross_val.bacs), 3)
+
+        train_folds = [[19, 94], [19, 191], [94, 191]]
+        for i, bac in enumerate(self.cross_val.bacs):
+            self.assertIsInstance(bac, BAC)
+            self.assertEqual(len(bac.dataset), 2)
+            for d in bac.dataset:
+                self.assertNotEqual(d.spc.index, train_folds[i])
+
+    def test_kfold(self):
+        """
+        Test k-fold cross-validation.
+        """
+        idxs = [0, 1, 2, 3]
+        self.cross_val.n_folds = 2
+        self.cross_val.fit(idxs=idxs)
+
+        self.assertIsInstance(self.cross_val.dataset, BACDataset)
+        self.assertEqual(len(self.cross_val.dataset), 4)
+        self.assertIsNotNone(self.cross_val.dataset.bac_data)
+        self.assertEqual(len(self.cross_val.bacs), 2)
+
+        train_folds = [[0, 1], [0, 2], [0, 3], 
+                       [1, 2], [1, 3],
+                       [2, 3],
+                      ]
+        for i, bac in enumerate(self.cross_val.bacs):
+            self.assertIsInstance(bac, BAC)
+            self.assertEqual(len(bac.dataset), 2)
+            for d in bac.dataset:
+                self.assertNotEqual(d.spc.index, train_folds[i])
 
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -217,9 +217,7 @@ class ObservablesTestCase(object):
         conditions_broken = []
         variables_failed = []
 
-        print('')
         print('{0} Comparison'.format(self))
-        print('================')
         # Check the species profile observables
         if 'species' in self.observables:
             old_species_dict = get_rmg_species_from_user_species(self.observables['species'], self.old_sim.species_list)
@@ -255,12 +253,12 @@ class ObservablesTestCase(object):
                     if old_rmg_species:
                         variable_old = next((data for data in data_list_old if data.species == old_rmg_species), None)
                     else:
-                        print('No RMG species found for observable species {0} in old model.'.format(smiles))
+                        print('⁉️ No RMG species found for observable species {0} in old model.'.format(smiles))
                         fail = True
                     if new_rmg_species:
                         variable_new = next((data for data in data_list_new if data.species == new_rmg_species), None)
                     else:
-                        print('No RMG species found for observable species {0} in new model.'.format(smiles))
+                        print('⁉️ No RMG species found for observable species {0} in new model.'.format(smiles))
                         fail = True
 
                     if fail is False:
@@ -283,7 +281,7 @@ class ObservablesTestCase(object):
                             fail_header_printed = True
                         if i not in conditions_broken:
                             conditions_broken.append(i)
-                        print("Observable species {0} varied by more than {1:.3f} on average between old model {2} and "
+                        print("❌ Observable species {0} varied by more than {1:.3f} on average between old model {2} and "
                               "new model {3} in condition {4:d}.".format(smiles, tol, variable_old.label,
                                                                          variable_new.label, i + 1))
                         variables_failed.append((self.conditions[i], smiles, variable_old, variable_new))
@@ -300,7 +298,7 @@ class ObservablesTestCase(object):
                             fail_header_printed = True
                             print(fail_header)
 
-                        print("Observable variable {0} varied by more than {1:.3f} on average between old model and "
+                        print("❌ Observable variable {0} varied by more than {1:.3f} on average between old model and "
                               "new model in condition {2:d}.".format(variable_old.label, tol, i + 1))
                         variables_failed.append((self.conditions[i], varName, variable_old, variable_new))
 
@@ -317,17 +315,15 @@ class ObservablesTestCase(object):
 
         if fail_header_printed:
             print('')
-            print('The following reaction conditions were had some discrepancies:')
-            print('')
+            print('⚠️ The following reaction conditions had some discrepancies:')
             for index in conditions_broken:
                 print("Condition {0:d}:".format(index + 1))
                 print(str(self.conditions[index]))
-                print('')
 
             return variables_failed
         else:
             print('')
-            print('All Observables varied by less than {0:.3f} on average between old model and '
+            print('✅ All Observables varied by less than {0:.3f} on average between old model and '
                   'new model in all conditions!'.format(tol))
             print('')
 

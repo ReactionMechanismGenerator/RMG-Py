@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -112,9 +112,9 @@ class TestHinderedRotorClassicalND(unittest.TestCase):
 
     def test_hindered_rotor_nd(self):
         self.hdnd.read_scan()
-        self.assertAlmostEqual(self.hdnd.Es[0], 20.048316823666962, 4)
+        self.assertAlmostEqual(self.hdnd.Es[0], 8.58538448, 4)
         self.hdnd.fit()
-        self.assertAlmostEqual(self.hdnd.calc_partition_function(300.0), 2.8524691948593133, 5)
+        self.assertAlmostEqual(self.hdnd.calc_partition_function(300.0), 2.899287634962152, 5)
 
 
 if __name__ == '__main__':

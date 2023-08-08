@@ -22,5 +22,5 @@ Checklist before submission:
  - Is your code commented and understandable?
  - Have you updated related documentation?
  - Are the commits logically organized and informative?
- - Is your branch up to date with master?
+ - Is your branch up to date with main?
 -->

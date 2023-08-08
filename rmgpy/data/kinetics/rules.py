@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -56,9 +56,10 @@ class KineticsRules(Database):
     A class for working with a set of "rate rules" for a RMG kinetics family. 
     """
 
-    def __init__(self, label='', name='', short_desc='', long_desc=''):
+    def __init__(self, label='', name='', short_desc='', long_desc='',auto_generated=False):
         Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
-
+        self.auto_generated = auto_generated
+        
     def __repr__(self):
         return '<KineticsRules "{0}">'.format(self.label)
 
@@ -264,7 +265,7 @@ class KineticsRules(Database):
                       " removed in version 2.3.", DeprecationWarning)
         index = 'General'  # mops up comments before the first rate ID
 
-        re_underline = re.compile('^\-+')
+        re_underline = re.compile(r'^\-+')
 
         comments = {}
         comments[index] = ''
@@ -351,7 +352,7 @@ class KineticsRules(Database):
             if len(line) > 48:  # make long lines line up in 10-space columns
                 flib.write(' ' * (10 - len(line) % 10))
             if entry.data.Tmax is None:
-                if re.match('\d+\-\d+', str(entry.data.Tmin).strip()):
+                if re.match(r'\d+\-\d+', str(entry.data.Tmin).strip()):
                     # Tmin contains string of Trange
                     Trange = '{0} '.format(entry.data.Tmin)
                 elif isinstance(entry.data.Tmin, ScalarQuantity):
@@ -616,6 +617,32 @@ class KineticsRules(Database):
         """
         entry = self.get_rule(template)
 
+        if self.auto_generated:
+            entry0 = entry
+            while entry.parent is not None:
+                parent = entry.parent
+                err_parent = abs(parent.data.uncertainty.data_mean + parent.data.uncertainty.mu - entry.data.uncertainty.data_mean) + sqrt(2.0*parent.data.uncertainty.var/pi)
+                err_entry = abs(entry.data.uncertainty.mu) + sqrt(2.0*entry.data.uncertainty.var/pi)
+                if err_entry > err_parent:
+                    entry = entry.parent
+            
+            kinetics = deepcopy(entry.data)
+            if entry0 == entry:
+                kinetics.comment = "Estimated from node {}".format(entry.label)
+                kinetics.A.value_si *= degeneracy
+                if degeneracy > 1:
+                    kinetics.comment += "\n"
+                    kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
+                return kinetics,entry
+            else:
+                kinetics.comment = "Matched node {}\n".format(entry0.label)
+                kinetics.comment += "Estimated from node {}".format(entry.label)
+                kinetics.A.value_si *= degeneracy
+                if degeneracy > 1:
+                    kinetics.comment += "\n"
+                    kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
+                return kinetics,None
+                     
         original_leaves = get_template_label(template)
         template_list = [template]
         distance_list = [np.zeros(len(template))]

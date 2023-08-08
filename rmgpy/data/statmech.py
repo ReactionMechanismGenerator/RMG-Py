@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -338,7 +338,7 @@ class StatmechGroups(Database):
         # Generate estimate of thermodynamics
         for atom in molecule.atoms:
             # Iterate over heavy (non-hydrogen) atoms
-            if atom.is_hydrogen(): continue
+            if atom.is_hydrogen() or atom.is_halogen(): continue
             if molecule.is_atom_in_cycle(atom):
                 # Atom is in cycle
                 # Add each C-H bond to the ringCH group
@@ -407,22 +407,23 @@ class StatmechGroups(Database):
             else:
                 groups_removed = 0
                 freqs_removed = 0
+                total_freqs_removed = 0
                 freq_count = len(frequencies)
                 while freq_count > num_vibrations:
                     min_entry = min((entry for entry in group_count if group_count[entry] > 0),
                                     key=lambda x: x.data.symmetry)
-                    min_degeneracy = min_entry.data.symmetry
                     if group_count[min_entry] > 1:
                         group_count[min_entry] -= 1
                     else:
                         del group_count[min_entry]
                     groups_removed += 1
-                    freqs_removed += min_degeneracy
-                    freq_count -= min_degeneracy
+                    freqs_removed = len(min_entry.data.generate_frequencies())
+                    total_freqs_removed += freqs_removed
+                    freq_count -= freqs_removed
                 # Log warning
                 logging.warning('For {0}, more characteristic frequencies were generated than '
                                 'vibrational modes allowed. Removed {1:d} groups ({2:d} frequencies) to '
-                                'compensate.'.format(molecule.to_smiles(), groups_removed, freqs_removed))
+                                'compensate.'.format(molecule.to_smiles(), groups_removed, total_freqs_removed))
                 # Regenerate characteristic frequencies
                 frequencies = []
                 for entry, count in group_count.items():
@@ -481,6 +482,7 @@ class StatmechDatabase(object):
             'HinderedRotor': HinderedRotor,
             'IdealGasTranslation': IdealGasTranslation,
             'GroupFrequencies': GroupFrequencies,
+            'Conformer' : Conformer,
         }
         self.global_context = {}
 

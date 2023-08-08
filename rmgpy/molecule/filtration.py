@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -39,7 +39,8 @@ The rules this module follows are (by order of importance):
        whereas positive charges will be assigned to less electronegative atoms (charge stabilization)
     4. Opposite charges will be as close as possible to one another, and vice versa (charge stabilization)
 
-(inspired by http://www.chem.ucla.edu/~harding/tutorials/resonance/imp_res_str.html)
+(inspired by http://web.archive.org/web/20140310074727/http://www.chem.ucla.edu/~harding/tutorials/resonance/imp_res_str.html
+which is quite like http://www.chem.ucla.edu/~harding/IGOC/R/resonance_contributor_preference_rules.html)
 """
 
 import logging
@@ -47,14 +48,19 @@ import logging
 from rmgpy.exceptions import ResonanceError
 from rmgpy.molecule.element import PeriodicSystem
 from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.fragment import CuttingLabel, Fragment
 from rmgpy.molecule.pathfinder import find_shortest_path
 
 
-def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True, features=None):
+def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True, features=None, save_order=False):
     """
     We often get too many resonance structures from the combination of all rules, particularly for species containing
     lone pairs. This function filters them out by minimizing the number of C/N/O/S atoms without a full octet.
+    If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
     """
+    if isinstance(mol_list[0], Fragment):
+        for mol in mol_list:
+            mol.update()
     if not all([(mol.multiplicity == mol_list[0].multiplicity) for mol in mol_list]):
         raise ValueError("Cannot filter structures with different multiplicities!")
 
@@ -72,12 +78,12 @@ def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True,
         filtered_list = aromaticity_filtration(filtered_list, features)
 
     if not filtered_list:
-        raise ResonanceError('Could not determine representative localized structures for species {0}'.format(
-            mol_list[0].to_smiles()))
+        raise ResonanceError(f'Could not determine representative localized structures for species '
+                             f'{mol_list[0].to_smiles()}')
 
     if mark_unreactive:
         # Mark selected unreactive structures if OS and/or adjacent birad unidirectional transitions were used
-        mark_unreactive_structures(filtered_list, mol_list)
+        mark_unreactive_structures(filtered_list, mol_list, save_order=save_order)
 
     # Check that there's at least one reactive structure in the list
     check_reactive(filtered_list)
@@ -102,12 +108,12 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
     if `allow_expanded_octet` is ``True`` (by default), then the function also considers dectet for
     third row elements (currently sulfur is the only hypervalance third row element in RMG)
     """
-    if not isinstance(mol, Molecule):
-        raise TypeError("Octet deviation could only be determined for Molecule objects.")
+    if not isinstance(mol, (Molecule, Fragment)):
+        raise TypeError("Octet deviation could only be determined for Molecule or Fragment objects.")
 
     octet_deviation = 0  # This is the overall "score" for the molecule, summed across all non-H atoms
     for atom in mol.vertices:
-        if atom.is_hydrogen():
+        if isinstance(atom, CuttingLabel) or atom.is_hydrogen():
             continue
         val_electrons = 2 * (int(atom.get_total_bond_order()) + atom.lone_pairs) + atom.radical_electrons
         if atom.is_carbon() or atom.is_nitrogen() or atom.is_oxygen():
@@ -389,10 +395,11 @@ def aromaticity_filtration(mol_list, features):
     return filtered_list
 
 
-def mark_unreactive_structures(filtered_list, mol_list):
+def mark_unreactive_structures(filtered_list, mol_list, save_order=False):
     """
     Mark selected structures in filtered_list with the Molecule.reactive flag set to `False` (it is `True` by default)
-    Changes the filtered_list object, and does not return anything
+    Changes the filtered_list object, and does not return anything.
+    If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
     """
     # sort all structures in filtered_list so that the reactive ones are first
     filtered_list.sort(key=lambda mol: mol.reactive, reverse=True)
@@ -401,7 +408,7 @@ def mark_unreactive_structures(filtered_list, mol_list):
     # Important whenever Species.molecule[0] is expected to be used (e.g., training reactions) after generating
     # resonance structures. However, if it was filtered out, it should be appended to the end of the list.
     for index, filtered in enumerate(filtered_list):
-        if filtered.copy(deep=True).is_isomorphic(mol_list[0].copy(deep=True)):
+        if filtered.copy(deep=True).is_isomorphic(mol_list[0].copy(deep=True), save_order=save_order):
             filtered_list.insert(0, filtered_list.pop(index))
             break
     else:
@@ -410,10 +417,6 @@ def mark_unreactive_structures(filtered_list, mol_list):
         # been filtered out. However, for processing reactions (e.g., degeneracy calculations) it should be kept
         # (e.g., [::N]O <=> [::N][::O.] + [H.], where [::N][::O.] should be recognized as [:N.]=[::O]).
         mol = mol_list[0]
-        logging.debug("Setting the unrepresentative resonance structure {0} as unreactive in species {1}.".format(
-            mol.to_smiles(), filtered_list[0].to_smiles()))
-        logging.debug("Unreactive structure:\n{0}\nA representative reactive structure in this species:\n{1}\n".format(
-            mol.to_adjacency_list(), filtered_list[0].to_adjacency_list()))
         mol.reactive = False
         filtered_list.append(mol)
 
@@ -425,9 +428,9 @@ def check_reactive(filtered_list):
     """
     if not any([mol.reactive for mol in filtered_list]):
         logging.info('\n\n')
-        logging.error('No reactive structures were attributed to species {0}'.format(filtered_list[0].to_smiles()))
+        logging.error(f'No reactive structures were attributed to species {filtered_list[0].to_smiles()}')
         for mol in filtered_list:
-            logging.info('Structure: {0}\n{1}Reactive: {2}'.format(mol.to_smiles(), mol.to_adjacency_list(), mol.reactive))
+            logging.info(f'Structure: {mol.to_smiles()}\n{mol.to_adjacency_list()}Reactive: {mol.reactive}')
         logging.info('\n')
-        raise ResonanceError('Each species must have at least one reactive structure. Something probably went wrong'
-                             ' when exploring resonance structures for species {0}'.format(filtered_list[0].to_smiles()))
+        raise ResonanceError(f'Each species must have at least one reactive structure. Something probably went wrong '
+                             f'when exploring resonance structures for species {filtered_list[0].to_smiles()}')

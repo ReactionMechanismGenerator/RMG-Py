@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -36,6 +36,7 @@ import rmgpy.constants as constants
 from rmgpy.data.rmg import get_db
 from rmgpy.statmech import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
+from rmgpy.molecule import Molecule
 
 
 def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
@@ -156,8 +157,15 @@ def evaluator(spc, solvent_name=''):
     """
     logging.debug("Evaluating spc %s ", spc)
 
-    spc.generate_resonance_structures()
-    thermo = generate_thermo_data(spc, solvent_name=solvent_name)
+    if isinstance(spc.molecule[0], Molecule):
+        spc.generate_resonance_structures()
+        thermo = generate_thermo_data(spc, solvent_name=solvent_name)
+    else:
+        # assume it's a species for Fragment
+        spc.molecule[0].assign_representative_species()
+        spc_repr = spc.molecule[0].species_repr
+        spc_repr.generate_resonance_structures()
+        thermo = generate_thermo_data(spc_repr, solvent_name=solvent_name)
 
     return thermo
 

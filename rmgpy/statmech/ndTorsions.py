@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -335,7 +335,7 @@ end_temperatures                   #
         use Q2DTor to generate a .ics file the Q2DTor file that
         has torsional information
         """
-        out = subprocess.check_call(['python', self.q2dtor_path, self.name, '--init'],
+        out = subprocess.check_call(['python3', self.q2dtor_path, self.name, '--init'],
                                     cwd=self.q2dtor_dir)
 
     def fit_fourier(self):
@@ -343,14 +343,14 @@ end_temperatures                   #
         use Q2DTor to fit fourier coefficients
         to the potential
         """
-        out = subprocess.check_call(['python', self.q2dtor_path, self.name, '--fourier'],
+        out = subprocess.check_call(['python3', self.q2dtor_path, self.name, '--fourier'],
                                     cwd=self.q2dtor_dir)
 
     def get_splist_file(self):
         """
         use Q2DTor to generate a .splist file
         """
-        out = subprocess.check_call(['python', self.q2dtor_path, self.name, '--findsp'],
+        out = subprocess.check_call(['python3', self.q2dtor_path, self.name, '--findsp'],
                                     cwd=self.q2dtor_dir)
 
     def get_eigvals(self):
@@ -359,7 +359,7 @@ end_temperatures                   #
         rotors
         writes a .evals file and reads it to fill self.evals and self.energy
         """
-        out = subprocess.check_call(['python', self.q2dtor_path, self.name, '--tor2dns'],
+        out = subprocess.check_call(['python3', self.q2dtor_path, self.name, '--tor2dns'],
                                     cwd=self.q2dtor_dir)
         self.read_eigvals()
 
@@ -550,18 +550,12 @@ class HinderedRotorClassicalND(Mode):
             self.atnums = self.conformer.number
             rootD = self.conformer.get_internal_reduced_moment_of_inertia(self.pivots[0], self.tops[0]) ** 0.5
             self.rootDs = [rootD for i in range(len(self.Es))]
-
-            phis = self.phis.tolist()
-
-            for j, phi in enumerate(self.phis):  # add the negative values to improve fit near 0.0
-                if phi != 2.0 * np.pi:
-                    phis.append(phi - 2.0 * np.pi)
-
-            phis = np.array(phis)
+            # add the negative values to improve fit near 0.0
+            phis = np.concatenate((self.phis, self.phis[:-1] - 2.0 * np.pi), axis=0)
             inds = np.argsort(phis)
             self.phis = phis[inds]
             Es = self.Es.tolist()
-            Es.extend(Es[1:])
+            Es.extend(Es[:-1])
             self.Es = np.array(Es)[inds]
             self.rootDs.extend(self.rootDs[1:])
             self.rootDs = np.array(self.rootDs)[inds].tolist()

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -601,7 +601,9 @@ multiplicity 2
         """Test that we can handle bridged aromatics.
 
         This is affected by how we perceive rings. Using get_smallest_set_of_smallest_rings gives
-        non-deterministic output, so using get_all_cycles_of_size allows this test to pass."""
+        non-deterministic output, so using get_all_cycles_of_size allows this test to pass.
+
+        Update: Highly-strained fused rings are no longer considered aromatic."""
         mol = Molecule(smiles='c12c3cccc1c3ccc2')
         arom = Molecule().from_adjacency_list("""
 1  C u0 p0 c0 {2,B} {3,B} {8,B}
@@ -624,14 +626,16 @@ multiplicity 2
 
         out = generate_resonance_structures(mol)
 
-        self.assertEqual(len(out), 3)
-        self.assertTrue(arom.is_isomorphic(out[0]))
+        self.assertEqual(len(out), 1)
+        self.assertFalse(arom.is_isomorphic(out[0]))
 
     def test_polycyclic_aromatic_with_non_aromatic_ring(self):
         """Test that we can make aromatic resonance structures when there is a pseudo-aromatic ring.
 
         This applies in cases where RDKit misidentifies one ring as aromatic, but there are other
-        rings in the molecule that are actually aromatic."""
+        rings in the molecule that are actually aromatic.
+
+        Update: Highly-strained fused rings are no longer considered aromatic."""
         mol = Molecule(smiles='c1c2cccc1C(=C)C=[C]2')
         arom = Molecule().from_adjacency_list("""
 multiplicity 2
@@ -656,8 +660,8 @@ multiplicity 2
 
         out = generate_resonance_structures(mol)
 
-        self.assertEqual(len(out), 2)
-        self.assertTrue(arom.is_isomorphic(out[0]))
+        self.assertEqual(len(out), 5)
+        self.assertFalse(any(arom.is_isomorphic(res) for res in out))
 
     def test_polycyclic_aromatic_with_non_aromatic_ring2(self):
         """Test that we can make aromatic resonance structures when there is a pseudo-aromatic ring.
@@ -1164,9 +1168,11 @@ multiplicity 2
         self.assertEqual(len(out), 7)
         self.assertTrue(any([m.is_isomorphic(aromatic) for m in out]))
 
-    @work_in_progress
     def test_inconsistent_aromatic_structure_generation(self):
-        """Test an unusual case of inconsistent aromaticity perception."""
+        """Test an unusual case of inconsistent aromaticity perception.
+
+        Update: Highly-strained fused rings are no longer considered aromatic.
+        That prevents the inconsistent aromatic structure for this molecule."""
         mol1 = Molecule().from_adjacency_list("""
 multiplicity 2
 1  C u0 p0 c0 {2,S} {6,S} {11,S} {12,S}
@@ -1216,6 +1222,85 @@ multiplicity 2
         res1 = generate_resonance_structures(mol1)
         res2 = generate_resonance_structures(mol2)
         self.assertEqual(res1, res2)
+
+    def test_resonance_without_changing_atom_order1(self):
+        """Test generating resonance structures without changing the atom order"""
+        mol = Molecule().from_adjacency_list("""multiplicity 2
+1  C u1 p0 c0 {2,S} {8,S} {9,S}
+2  C u0 p0 c0 {1,S} {3,S} {4,D}
+3  C u0 p0 c0 {2,S} {10,S} {11,S} {12,S}
+4  C u0 p0 c0 {2,D} {5,S} {6,S}
+5  C u0 p0 c0 {4,S} {13,S} {14,S} {15,S}
+6  C u0 p0 c0 {4,S} {7,S} {16,S} {17,S}
+7  O u0 p2 c0 {6,S} {18,S}
+8  H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {3,S}
+13 H u0 p0 c0 {5,S}
+14 H u0 p0 c0 {5,S}
+15 H u0 p0 c0 {5,S}
+16 H u0 p0 c0 {6,S}
+17 H u0 p0 c0 {6,S}
+18 H u0 p0 c0 {7,S}""")
+
+        # Note: if save_order = False, atoms will be sorted
+        # and the O atom will be reindexed to 1, which should be
+        # true regardless of RMG's version and environment.
+        # A copy is used to avoid the original mol's atoms are sorted.
+        res_mols = mol.copy(deep=True).generate_resonance_structures(save_order=True)
+
+        # Assign atom ids
+        for molecule in [mol] + res_mols:
+            for idx, atom in enumerate(molecule.atoms):
+                atom.id = idx
+
+        # Comparing atom symbol as its nearest neighbors
+        for res_mol in res_mols:
+            for atom1, atom2 in zip(mol.atoms, res_mol.atoms):
+                self.assertEqual(atom1.element.symbol, atom2.element.symbol)
+                atom1_nb = {nb.id for nb in list(atom1.bonds.keys())}
+                atom2_nb = {nb.id for nb in list(atom2.bonds.keys())}
+                self.assertEqual(atom1_nb, atom2_nb)
+
+    def test_resonance_without_changing_atom_order2(self):
+        """Test generating resonance structures for aromatic molecules without changing the atom order"""
+        mol = Molecule().from_adjacency_list("""
+multiplicity 2
+1  C u0 p0 c0 {2,S} {3,S} {7,D}
+2  O u1 p2 c0 {1,S}
+3  C u0 p0 c0 {1,S} {4,D} {8,S}
+4  C u0 p0 c0 {3,D} {5,S} {9,S}
+5  C u0 p0 c0 {4,S} {6,D} {10,S}
+6  C u0 p0 c0 {5,D} {7,S} {11,S}
+7  C u0 p0 c0 {1,D} {6,S} {12,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {5,S}
+11 H u0 p0 c0 {6,S}
+12 H u0 p0 c0 {7,S}
+""")
+
+        # Note: if save_order = False, atoms will be sorted
+        # and the O atom will be reindexed to 1, which should be
+        # true regardless of RMG's version and environment.
+        # However, at commit 819779 and earlier versions, the atom order will be sorted
+        # regardless the value of `save_order`
+        res_mols = mol.copy(deep=True).generate_resonance_structures(save_order=True)
+
+        # Assign atom ids
+        for molecule in [mol] + res_mols:
+            for idx, atom in enumerate(molecule.atoms):
+                atom.id = idx
+
+        # Comparing atom symbol as its nearest neighbors
+        for res_mol in res_mols:
+            for atom1, atom2 in zip(mol.atoms, res_mol.atoms):
+                self.assertEqual(atom1.element.symbol, atom2.element.symbol)
+                atom1_nb = {nb.id for nb in list(atom1.bonds.keys())}
+                atom2_nb = {nb.id for nb in list(atom2.bonds.keys())}
+                self.assertEqual(atom1_nb, atom2_nb)
 
 
 class ClarTest(unittest.TestCase):
@@ -1417,6 +1502,13 @@ class ClarTest(unittest.TestCase):
         mol_list = generate_resonance_structures(Molecule().from_adjacency_list("""OX
 1 X u0 p0 c0 {2,D}
 2 O u0 p2 c0 {1,D}"""))
+        self.assertEquals(len(mol_list), 1)
+
+    def test_surface_radical(self):
+        """Test resonance structure generation for radical on surface
+
+        Should not put radical on X atom"""
+        mol_list = generate_resonance_structures(Molecule(smiles='*=C[CH]C'))
         self.assertEquals(len(mol_list), 1)
 
     def test_sulfur_triple_bond(self):

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -48,6 +48,9 @@ from rmgpy.ml.estimator import MLEstimator
 from rmgpy.molecule import Molecule, Bond, Group
 from rmgpy.species import Species
 from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
+from rmgpy.data.surface import MetalDatabase
+from rmgpy import settings
+from rmgpy.molecule.fragment import Fragment
 from rmgpy.data.surface import MetalDatabase
 from rmgpy import settings
 
@@ -659,7 +662,10 @@ class ThermoLibrary(Database):
         Note that these argument names are retained for backward compatibility.
         """
 
-        molecule = Molecule().from_adjacency_list(molecule)
+        try:
+            molecule = Molecule().from_adjacency_list(molecule)
+        except TypeError:
+            molecule = Fragment().from_adjacency_list(molecule)
 
         # Internal checks for adding entry to the thermo library
         if label in list(self.entries.keys()):
@@ -934,19 +940,22 @@ class ThermoDatabase(object):
 
         else:
             for libraryName in libraries:
-                f = libraryName + '.py'
-                if os.path.exists(os.path.join(path, f)):
-                    logging.info('Loading thermodynamics library from {0} in {1}...'.format(f, path))
+                f = f'{libraryName}.py'
+                if os.path.isfile(libraryName):
+                    logging.info(f'Loading thermodynamics library from an external location: {libraryName}..')
+                    library = ThermoLibrary()
+                    library.load(libraryName, self.local_context, self.global_context)
+                    library.label = os.path.splitext(os.path.split(libraryName)[-1])[0]
+                    self.libraries[library.label] = library
+                    self.library_order.append(library.label)
+                elif os.path.exists(os.path.join(path, f)):
+                    logging.info(f'Loading thermodynamics library from {f} in {path}...')
                     library = ThermoLibrary()
                     library.load(os.path.join(path, f), self.local_context, self.global_context)
                     library.label = os.path.splitext(f)[0]
                     self.libraries[library.label] = library
                     self.library_order.append(library.label)
                 else:
-                    if libraryName == "KlippensteinH2O2":
-                        logging.info(
-                            '\n** Note: The thermo library KlippensteinH2O2 was replaced and is no longer available '
-                            'in RMG. For H2 combustion chemistry consider using the BurkeH2O2 library instead\n')
                     raise DatabaseError('Library {} not found in {}... Please check if your library is '
                                         'correctly placed'.format(libraryName, path))
 
@@ -1295,53 +1304,57 @@ class ThermoDatabase(object):
             ml_estimator, ml_settings = None, None
 
         if quantum_mechanics:
-            original_molecule = species.molecule[0]
-            if quantum_mechanics.settings.onlyCyclics and not original_molecule.is_cyclic():
-                pass
-            else:  # try a QM calculation
-                if original_molecule.get_radical_count() > quantum_mechanics.settings.maxRadicalNumber:
-                    # Too many radicals for direct calculation: use HBI.
-                    logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
-                        original_molecule.get_radical_count(),
-                        species.label,
-                        quantum_mechanics.settings.maxRadicalNumber,
-                    ))
+            try:
+                original_molecule = species.molecule[0]
+                if quantum_mechanics.settings.onlyCyclics and not original_molecule.is_cyclic():
+                    pass
+                else:  # try a QM calculation
+                    if original_molecule.get_radical_count() > quantum_mechanics.settings.maxRadicalNumber:
+                        # Too many radicals for direct calculation: use HBI.
+                        logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
+                            original_molecule.get_radical_count(),
+                            species.label,
+                            quantum_mechanics.settings.maxRadicalNumber,
+                        ))
 
-                    # Need to estimate thermo via each resonance isomer
-                    thermo = []
-                    for molecule in species.molecule:
-                        molecule.clear_labeled_atoms()
-                        # Try to see if the saturated molecule can be found in the libraries
-                        tdata = self.estimate_radical_thermo_via_hbi(molecule, self.get_thermo_data_from_libraries)
-                        priority = 1
-                        if tdata is None:
-                            # Then attempt quantum mechanics job on the saturated molecule
-                            tdata = self.estimate_radical_thermo_via_hbi(molecule, quantum_mechanics.get_thermo_data)
-                            priority = 2
-                        if tdata is None:
-                            # Fall back to group additivity
-                            tdata = self.estimate_thermo_via_group_additivity(molecule)
-                            priority = 3
+                        # Need to estimate thermo via each resonance isomer
+                        thermo = []
+                        for molecule in species.molecule:
+                            molecule.clear_labeled_atoms()
+                            # Try to see if the saturated molecule can be found in the libraries
+                            tdata = self.estimate_radical_thermo_via_hbi(molecule, self.get_thermo_data_from_libraries)
+                            priority = 1
+                            if tdata is None:
+                                # Then attempt quantum mechanics job on the saturated molecule
+                                tdata = self.estimate_radical_thermo_via_hbi(molecule, quantum_mechanics.get_thermo_data)
+                                priority = 2
+                            if tdata is None:
+                                # Fall back to group additivity
+                                tdata = self.estimate_thermo_via_group_additivity(molecule)
+                                priority = 3
 
-                        thermo.append((priority, tdata.get_enthalpy(298.), molecule, tdata))
+                            thermo.append((priority, tdata.get_enthalpy(298.), molecule, tdata))
 
-                    if len(thermo) > 1:
-                        # Sort thermo first by the priority, then by the most stable H298 value
-                        thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
-                        for i, therm in enumerate(thermo):
-                            logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol"
-                                          "".format(i + 1, therm[2].to_smiles(), therm[1]))
-                        # Save resonance isomers reordered by their thermo
-                        species.molecule = [item[2] for item in thermo]
-                        original_molecule = species.molecule[0]
-                    thermo0 = thermo[0][3]
+                        if len(thermo) > 1:
+                            # Sort thermo first by the priority, then by the most stable H298 value
+                            thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
+                            for i, therm in enumerate(thermo):
+                                logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol"
+                                              "".format(i + 1, therm[2].to_smiles(), therm[1]))
+                            # Save resonance isomers reordered by their thermo
+                            species.molecule = [item[2] for item in thermo]
+                            original_molecule = species.molecule[0]
+                        thermo0 = thermo[0][3]
 
-                    # update entropy by symmetry correction
-                    thermo0.S298.value_si -= constants.R * math.log(species.get_symmetry_number())
+                        # update entropy by symmetry correction
+                        thermo0.S298.value_si -= constants.R * math.log(species.get_symmetry_number())
 
-                else:  # Not too many radicals: do a direct calculation.
-                    thermo0 = quantum_mechanics.get_thermo_data(original_molecule)  # returns None if it fails
-
+                    else:  # Not too many radicals: do a direct calculation.
+                        thermo0 = quantum_mechanics.get_thermo_data(original_molecule)  # returns None if it fails
+            except ValueError as e: #rdkit fails to generate conformers 
+                logging.error("Quantum Mechanics calculation failed for species: %s with ValueError: %s", species.label, e.args[0])
+                logging.error("Falling back to ML (If turned on) or GAV (If not)")
+                    
         if thermo0 is None:
             # First try finding stable species in libraries and using HBI
             for mol in species.molecule:
@@ -1535,100 +1548,17 @@ class ThermoDatabase(object):
         logging.debug("Trying to generate thermo for surface species using first of %d resonance isomer(s):",
                       len(species.molecule))
         molecule = species.molecule[0]
+        # store any labeled atoms to reapply at the end
+        labeled_atoms = molecule.get_all_labeled_atoms()
+        molecule.clear_labeled_atoms()
         logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())
         # only want/need to do one resonance structure,
         # because will need to regenerate others in gas phase
-        dummy_molecule = molecule.copy(deep=True)
-        sites_to_remove = []
-        adsorbed_atoms = []
-        for atom in dummy_molecule.atoms:
-            if atom.is_surface_site():
-                sites_to_remove.append(atom)
-        for site in sites_to_remove:
-            numbonds = len(site.bonds)
-            if numbonds == 0:
-                # vanDerWaals
-                pass
-            else:
-                assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
-                bonded_atom = list(site.bonds.keys())[0]
-                adsorbed_atoms.append(bonded_atom)
-                bond = site.bonds[bonded_atom]
-                dummy_molecule.remove_bond(bond)
-                if bond.is_single():
-                    bonded_atom.increment_radical()
-                elif bond.is_double():
-                    bonded_atom.increment_radical()
-                    bonded_atom.increment_radical()
-                elif bond.is_triple():
-                    bonded_atom.increment_radical()
-                    bonded_atom.increment_lone_pairs()
-                elif bond.is_quadruple():
-                    bonded_atom.increment_radical()
-                    bonded_atom.increment_radical()
-                    bonded_atom.increment_lone_pairs()
-                else:
-                    raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
-            dummy_molecule.remove_atom(site)
-
-        dummy_molecules = [dummy_molecule.copy(deep=True)]
-        if len(adsorbed_atoms) == 2:
-            # Bidentate adsorption.
-            # Try to turn adjacent biradical into a bond.
-            try:
-                bond = adsorbed_atoms[0].bonds[adsorbed_atoms[1]]
-            except KeyError:
-                pass # the two adsorbed atoms are not bonded to each other
-            else:
-                if bond.order < 3:
-                    bond.increment_order()
-                    adsorbed_atoms[0].decrement_radical()
-                    adsorbed_atoms[1].decrement_radical()
-                    dummy_molecules.append(dummy_molecule.copy(deep=True))
-                    if (adsorbed_atoms[0].radical_electrons and
-                            adsorbed_atoms[1].radical_electrons and
-                            bond.order < 3):
-                        # There are still spare adjacenct radicals, so do it again
-                        bond.increment_order()
-                        adsorbed_atoms[0].decrement_radical()
-                        adsorbed_atoms[1].decrement_radical()
-                        dummy_molecules.append(dummy_molecule.copy(deep=True))
-                    if (adsorbed_atoms[0].lone_pairs and
-                            adsorbed_atoms[1].lone_pairs and 
-                            bond.order < 3):
-                        # X#C-C#X will end up with .:C-C:. in gas phase
-                        # and we want to get to .C#C. but not :C=C:
-                        bond.increment_order()
-                        adsorbed_atoms[0].decrement_lone_pairs()
-                        adsorbed_atoms[0].increment_radical()
-                        adsorbed_atoms[1].decrement_lone_pairs()
-                        adsorbed_atoms[1].increment_radical()
-                        dummy_molecules.append(dummy_molecule.copy(deep=True))
-                #For bidentate CO because we want C[-1]#O[+1] but not .C#O.
-                if (bond.order == 3 and adsorbed_atoms[0].radical_electrons and 
-                    adsorbed_atoms[1].radical_electrons and 
-                    (adsorbed_atoms[0].lone_pairs or adsorbed_atoms[1].lone_pairs)):
-                    adsorbed_atoms[0].decrement_radical()
-                    adsorbed_atoms[1].decrement_radical()
-                    if adsorbed_atoms[0].lone_pairs:
-                        adsorbed_atoms[1].increment_lone_pairs()
-                    else:
-                        adsorbed_atoms[0].increment_lone_pairs()
-                    dummy_molecules.append(dummy_molecule.copy(deep=True))
-
-        for dummy_molecule in dummy_molecules[:]:
-            try:
-                dummy_molecule.update_connectivity_values()
-                dummy_molecule.update()
-            except:
-                dummy_molecules.remove(dummy_molecule)
-                logging.debug(f"Removing {dummy_molecule} from possible structure list:\n{dummy_molecule.to_adjacency_list()}")
-            else:
-                logging.debug("After removing from surface:\n" + dummy_molecule.to_adjacency_list())
-
+        dummy_molecules = molecule.get_desorbed_molecules()
+        for mol in dummy_molecules:
+            mol.clear_labeled_atoms()
         if len(dummy_molecules) == 0:
             raise RuntimeError(f"Cannot get thermo for gas-phase molecule. No valid dummy molecules from original molecule:\n{molecule.to_adjacency_list()}")
-
         
         # if len(molecule) > 1, it will assume all resonance structures have already been generated when it tries to generate them, so evaluate each configuration separately and pick the lowest energy one by H298 value
         gas_phase_species_from_libraries = []
@@ -1671,8 +1601,10 @@ class ThermoDatabase(object):
             H298=(0.0, "kJ/mol"),
             S298=(0.0, "J/(mol*K)"),
         )
+
+        surface_sites = molecule.get_surface_sites()
         try:
-            self._add_group_thermo_data(adsorption_thermo, self.groups['adsorptionPt111'], molecule, {})
+            self._add_adsorption_correction(adsorption_thermo, self.groups['adsorptionPt111'], molecule, surface_sites)
         except (KeyError, DatabaseError):
             logging.error("Couldn't find in adsorption thermo database:")
             logging.error(molecule)
@@ -1683,10 +1615,108 @@ class ThermoDatabase(object):
         add_thermo_data(thermo, adsorption_thermo, group_additivity=True)
 
         if thermo.label:
-            thermo.label += 'X' * len(adsorbed_atoms)
+            thermo.label += 'X' * len(surface_sites)
 
         find_cp0_and_cpinf(species, thermo)
+
+        # if the molecule had labels, reapply them 
+        for label,atom in labeled_atoms.items():
+            if isinstance(atom,list):
+                for a in atom:
+                    a.label = label
+            else:
+                atom.label = label
+
         return thermo
+
+    def _add_adsorption_correction(self, adsorption_thermo, adsorption_groups, molecule, surface_sites):
+        """Add thermo adsorption correction(s) to estimate adsorbate thermo from gas phase.
+        If the molecule is multidentate, multiple adsoption corrections may be applied if 
+        there does not exist a multidentate adsorption group with the same number of sites.
+        In this case, only the enthalpy correction (H298) will be used for subsequent groups
+        to avoid over-correcting the entropy and heat capacity due to the loss of translational 
+        and rotational degrees of freedom from the gas phase.
+
+        Args:
+            adsorption_thermo ([ThermoData]): the ThermoData object to add the correction(s)
+            adsorption_groups ([database]): the groups database (adsorptionPt111)
+            molecule ([Molecule]): the molecule to apply the thermo correction
+            surface_sites ([list([Atom])]): a list of the surface site atoms in the molecule
+        """
+
+        number_of_surface_sites = len(surface_sites)
+
+        matches = []
+        for atom in surface_sites:
+            labeled_atoms = {'*': atom}
+            node = adsorption_groups.descend_tree(molecule, labeled_atoms)
+            if node is None: 
+                # no match, so try the next surface site
+                continue
+            while node is not None and node.data is None:
+                node = node.parent
+            if node is None:
+                # no data, so try the next surface site
+                continue
+            data = node.data
+            comment = node.label
+            loop_count = 0
+            while isinstance(data, str):
+                loop_count += 1
+                if loop_count > 100:
+                    raise DatabaseError("Maximum iterations reached while following thermo group data pointers. A circular"
+                                    f" reference may exist. Last node was {node.label} pointing to group called {data} in "
+                                    f"database {adsorption_groups.label}")
+
+                for entry in adsorption_groups.entries.values():
+                    if entry.label == data:
+                        data = entry.data
+                        comment = entry.label
+                        break
+                else:
+                    raise DatabaseError(f"Node {node.label} points to a non-existing group called {data} "
+                                    f"in database {adsorption_groups.label}")
+            data.comment = f'{adsorption_groups.label}({comment})'
+            group_surface_sites = node.item.get_surface_sites()
+            if len(group_surface_sites) == number_of_surface_sites:
+                # all the surface sites are accounted for so add the adsorption group and return
+                add_thermo_data(adsorption_thermo, data, group_additivity=True)
+                return True
+            else:
+                # we have not found a full match yet, so append and keep looking
+                matches.append((len(group_surface_sites),data))
+        
+        if len(matches) == 0:
+            raise DatabaseError(f"Could not find an adsorption correction in {adsorption_groups.label} for {molecule}")
+        matches.sort(key = lambda x: -x[0])
+        # sort the matches by descending number of surface sites
+        corrections_applied = 0
+        # start a counter for the number of corrections applied
+        for number_of_group_sites, data in matches:
+            if number_of_surface_sites - number_of_group_sites < 0:
+                # too many sites in this group, skip to the next one
+                continue
+            if not corrections_applied:
+                # this is the first correction, so add H298, S298, and Cp
+                add_thermo_data(adsorption_thermo, data, group_additivity=True)
+            else:
+                # We have already corrected S298 and Cp, so we only want to correct H298
+                adsorption_thermo.H298.value_si += data.H298.value_si
+                adsorption_thermo.comment += ' + H298({0})'.format(data.comment)
+            corrections_applied += 1
+            number_of_surface_sites -= number_of_group_sites
+            if number_of_surface_sites <= 0:
+                # we have corrected for all the sites
+                if number_of_surface_sites < 0:
+                    adsorption_thermo.comment += ' WARNING(Too many adsorption corrections were added to the thermo!'
+                    adsorption_thermo.comment += 'The H298 is very likely understimated as a result!)'
+                break
+        
+        if number_of_surface_sites > 0:
+            adsorption_thermo.comment += ' WARNING({} surface sites were unaccounted for with adsorption corrections!'.format(number_of_surface_sites)
+            adsorption_thermo.comment += 'The H298 is very likely overestimated as a result!)'
+
+        return True
 
     def get_thermo_data_from_libraries(self, species, training_set=None):
         """
@@ -2138,8 +2168,8 @@ class ThermoDatabase(object):
         cyclic = molecule.is_cyclic()
         # Generate estimates of the thermodynamics parameters
         for atom in molecule.atoms:
-            # Iterate over heavy (non-hydrogen) atoms
-            if atom.is_non_hydrogen():
+            # Iterate over atoms and skip hydogens and halogens (since there are no groups centered on these atomtypes)
+            if atom.is_non_hydrogen() and not atom.is_halogen():
                 # Get initial thermo estimate from main group database
                 data_added = False
                 try:
@@ -2169,14 +2199,17 @@ class ThermoDatabase(object):
                 # Potentially we could include other.py in this database, but it's a little confusing how to label atoms for the entries in other.py
                 if not molecule.is_atom_in_cycle(atom):
                     for atom_2 in molecule.get_nth_neighbor([atom], [1, 2]):
-                        if not molecule.is_atom_in_cycle(atom_2):
-                            # This is the correction for noncyclic structure. If `atom` or `atom_2` is in a cycle, do not apply this correction.
-                            # Note that previously we do not do gauche for cyclic molecule, which is unreasonable for cyclic molecule with a long tail.
-                            try:
-                                self._add_group_thermo_data(thermo_data, self.groups['longDistanceInteraction_noncyclic'],
-                                                            molecule, {'*1': atom, '*2': atom_2})
-                            except KeyError:
-                                pass
+                        if molecule.is_atom_in_cycle(atom_2) and not atom_2.is_bonded_to_halogen():
+                            continue
+                        # This is the correction for noncyclic structure. 
+                        # If `atom_2` is bonded to a halogen, we apply noncyclic corrections regardless if `atom_2` is in a cycle or not.
+                        # If `atom_2` is not bonded to a halogen, and `atom` or `atom_2` is in a cycle, do not apply this correction.
+                        # Note that previously we do not do gauche for cyclic molecule, which is unreasonable for cyclic molecule with a long tail.
+                        try:
+                            self._add_group_thermo_data(thermo_data, self.groups['longDistanceInteraction_noncyclic'],
+                                                        molecule, {'*1': atom, '*2': atom_2})
+                        except KeyError:
+                            pass
                 try:
                     self._add_group_thermo_data(thermo_data, self.groups['other'], molecule, {'*': atom})
                 except KeyError:
@@ -2444,7 +2477,7 @@ class ThermoDatabase(object):
 
         while node is not None and node.data is None:
             # do average of its children
-            success, averaged_thermo_data = self._average_children_thermo(node)
+            success, averaged_thermo_data = self._average_children_thermo(node, ring_database)
             if success:
                 node.data = averaged_thermo_data
             else:
@@ -2468,7 +2501,7 @@ class ThermoDatabase(object):
             # By setting verbose=True, we turn on the comments of ring correction to pass the unittest.
             # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
 
-    def _average_children_thermo(self, node):
+    def _average_children_thermo(self, node, database):
         """
         Use children's thermo data to guess thermo data of parent `node` 
         that doesn't have thermo data built-in in tree yet. 
@@ -2486,11 +2519,14 @@ class ThermoDatabase(object):
             children_thermo_data_list = []
             for child in node.children:
                 if child.data is None:
-                    success, child_thermo_data_average = self._average_children_thermo(child)
+                    success, child_thermo_data_average = self._average_children_thermo(child, database)
                     if success:
                         children_thermo_data_list.append(child_thermo_data_average)
                 else:
-                    children_thermo_data_list.append(child.data)
+                    data = child.data
+                    while isinstance(data, str):
+                        data = database.entries[data].data
+                    children_thermo_data_list.append(data)
             if children_thermo_data_list:
                 return True, average_thermo_data(children_thermo_data_list)
             else:

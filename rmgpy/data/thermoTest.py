@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -29,6 +29,7 @@
 
 import math
 import os
+import shutil
 import unittest
 
 import rmgpy
@@ -76,6 +77,16 @@ class TestThermoDatabaseLoading(unittest.TestCase):
 
         with self.assertRaises(Exception):
             database.load_libraries(os.path.join(path, 'libraries'), libraries)
+
+    def test_loading_external_thermo_library(self):
+        """This tests loading a thermo library which is not in the RMG-database repo"""
+        thermo_lib_in_db_path = os.path.join(settings['database.directory'], 'thermo', 'libraries', 'primaryNS.py')
+        thermo_lib_in_test_dir_path = os.path.join(os.path.dirname(rmgpy.__file__), 'test_data', 'copied_thermo_lib.py')
+        shutil.copyfile(src=thermo_lib_in_db_path, dst=thermo_lib_in_test_dir_path)
+        database = ThermoDatabase()
+        database.load_libraries(path='', libraries=[thermo_lib_in_test_dir_path])
+        self.assertEqual(list(database.libraries.keys()), ['copied_thermo_lib'])
+        os.remove(thermo_lib_in_test_dir_path)
 
 
 class TestThermoDatabase(unittest.TestCase):
@@ -613,10 +624,10 @@ multiplicity 2
     def test_identifying_missing_group(self):
         """Test identifying a missing GAV group"""
         # this test should be updated once data is added to the missing group
-        spc = Species(smiles='CN(C)CCCN1C2=CC=CC=C2CCC3=CC=CC=C31')
+        spc = Species(smiles='S[N+]#[C-]')
         spc.generate_resonance_structures()
         thermo_gav = self.database.get_thermo_data_from_groups(spc)
-        self.assertIn('missing(N3s-CbCbCs)', thermo_gav.comment)
+        self.assertIn('missing(N5tc-C2tcS2s)', thermo_gav.comment)
 
     def test_adsorbate_thermo_generation_gav(self):
         """Test thermo generation for adsorbate from Group Additivity value.
@@ -880,7 +891,7 @@ multiplicity 2
         # change the database to cause errors
         groups['N*'].data = None
         groups['N*'].parent = None
-        with self.assertRaisesRegex(DatabaseError, 'no data for node'):
+        with self.assertRaisesRegex(DatabaseError, 'Could not find an adsorption correction'):
             thermo = self.database.get_thermo_data(spec)
         groups['N*'].data = 'O*'
         groups['O*'].data = 'N*'

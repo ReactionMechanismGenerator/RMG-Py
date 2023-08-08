@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -31,8 +31,8 @@
 This module contains unit tests of the :mod:`arkane.ess.molpro` module.
 """
 
-import unittest
 import os
+import unittest
 
 import numpy as np
 
@@ -40,6 +40,7 @@ import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator, HinderedRotor
 
 from arkane.ess.molpro import MolproLog
+from arkane.exceptions import LogError
 
 ################################################################################
 
@@ -55,12 +56,29 @@ class MolproLogTest(unittest.TestCase):
         """
         cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'molpro')
 
+    def test_check_for_errors(self):
+        """
+        Uses Molpro log files that failed due to insufficient memory and unrecognized basis set
+        to test if errors are properly parsed.
+        """
+        with self.assertRaises(LogError):
+            MolproLog(os.path.join(self.data_path, 'insufficient_memory.out'))
+        with self.assertRaises(LogError):
+            MolproLog(os.path.join(self.data_path, 'unrecognized_basis_set.out'))
+
+    def test_number_of_atoms_from_molpro_log(self):
+        """
+        Uses a Molpro log file for ethylene_dz (C2H4) to test that the
+        number of atoms can be properly read.
+        """
+        log = MolproLog(os.path.join(self.data_path, 'ethylene_f12_dz.out'))
+        self.assertEqual(log.get_number_of_atoms(), 6)
+
     def test_load_dz_from_molpro_log_f12(self):
         """
         Uses a Molpro log file for ethylene_dz (C2H4) to test that F12a
         energy can be properly read.
         """
-
         log = MolproLog(os.path.join(self.data_path, 'ethylene_f12_dz.out'))
         e0 = log.load_energy()
 
@@ -71,7 +89,6 @@ class MolproLogTest(unittest.TestCase):
         Uses a Molpro log file for ethylene_qz (C2H4) to test that F12b
         energy can be properly read.
         """
-
         log = MolproLog(os.path.join(self.data_path, 'ethylene_f12_qz.out'))
         e0 = log.load_energy()
 
@@ -82,7 +99,6 @@ class MolproLogTest(unittest.TestCase):
         Uses a Molpro log file for OH (C2H4) to test that radical
         energy can be properly read.
         """
-
         log = MolproLog(os.path.join(self.data_path, 'OH_f12.out'))
         e0 = log.load_energy()
 
@@ -93,7 +109,6 @@ class MolproLogTest(unittest.TestCase):
         Uses a molpro log file for HOSI to test that its
         molecular degrees of freedom can be properly read.
         """
-
         log = MolproLog(os.path.join(self.data_path, 'HOSI_ccsd_t1.out'))
         conformer, unscaled_frequencies = log.load_conformer(spin_multiplicity=1)
         e0 = log.load_energy()
@@ -137,7 +152,7 @@ class MolproLogTest(unittest.TestCase):
 
     def test_load_negative_frequency(self):
         """
-        Load an imaginary frequency from a  molpro output file
+        Load an imaginary frequency from a molpro output file
         """
         freq_log = MolproLog(os.path.join(self.data_path, 'molpro_TS.out'))
         imaginary_freq = freq_log.load_negative_frequency()

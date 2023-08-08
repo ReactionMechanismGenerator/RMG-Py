@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -36,7 +36,7 @@ import unittest
 
 from rmgpy.exceptions import InputError
 
-from arkane.ess import GaussianLog, MolproLog, OrcaLog, QChemLog, TeraChemLog
+from arkane.ess import GaussianLog, MolproLog, OrcaLog, Psi4Log, QChemLog, TeraChemLog
 from arkane.ess.factory import ess_factory
 
 ################################################################################
@@ -62,6 +62,10 @@ class TestThermo(unittest.TestCase):
         orca_path_1 = os.path.join(self.data_path, 'orca', 'Orca_dlpno_test.log')
         orca_path_2 = os.path.join(self.data_path, 'orca', 'Orca_opt_freq_test.log')
         orca_path_3 = os.path.join(self.data_path, 'orca', 'Orca_TS_test.log')
+        psi4_path_1 = os.path.join(self.data_path, 'psi4', 'opt_freq.out')
+        psi4_path_2 = os.path.join(self.data_path, 'psi4', 'opt_freq_dft.out')
+        psi4_path_3 = os.path.join(self.data_path, 'psi4', 'opt_freq_dft_ts.out')
+        psi4_path_4 = os.path.join(self.data_path, 'psi4', 'opt_freq_ts.out')
         qchem_log_path1 = os.path.join(self.data_path, 'qchem', 'CH4_sp.out')
         qchem_log_path2 = os.path.join(self.data_path, 'qchem', 'co.out')
         terachem_log_path_1 = os.path.join(self.data_path, 'terachem', 'ethane_minimize_output.out')
@@ -79,6 +83,9 @@ class TestThermo(unittest.TestCase):
 
         for orca_path in [orca_path_1, orca_path_2, orca_path_3]:
             self.assertIsInstance(ess_factory(orca_path), OrcaLog)
+
+        for psi4_path in [psi4_path_1, psi4_path_2, psi4_path_3, psi4_path_4]:
+            self.assertIsInstance(ess_factory(psi4_path), Psi4Log)
 
         self.assertIsInstance(ess_factory(qchem_log_path1), QChemLog)
         self.assertIsInstance(ess_factory(qchem_log_path2), QChemLog)

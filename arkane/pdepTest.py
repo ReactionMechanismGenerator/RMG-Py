@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -118,7 +118,7 @@ class ArkaneTest(unittest.TestCase):
                 if '1000.0' in line:
                     break
         sa_coeff = line.split()[-2]
-        self.assertAlmostEqual(float(sa_coeff), -8.23e-6, delta=0.02e-6)
+        self.assertAlmostEqual(float(sa_coeff), -7.02e-07, delta=0.02e-6)
 
     @classmethod
     def tearDown(cls):

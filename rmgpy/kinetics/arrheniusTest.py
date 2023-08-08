@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -37,7 +37,11 @@ import unittest
 import numpy as np
 
 import rmgpy.constants as constants
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
+from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, ArrheniusBM, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
+from rmgpy.molecule.molecule import Molecule
+from rmgpy.reaction import Reaction
+from rmgpy.species import Species
+from rmgpy.thermo import NASA, NASAPolynomial
 
 
 ################################################################################
@@ -229,7 +233,7 @@ class TestArrhenius(unittest.TestCase):
     def test_to_cantera_kinetics(self):
         """
         Test that the Arrhenius cantera object can be set properly within 
-        a cantera ElementaryReaction object
+        a cantera Reaction object
         """
         ctArrhenius = self.arrhenius.to_cantera_kinetics()
         self.assertAlmostEqual(ctArrhenius.pre_exponential_factor, 1e9, 6)
@@ -402,6 +406,129 @@ class TestArrheniusEP(unittest.TestCase):
         for T, kexp in zip(Tlist, k0list):
             kact = self.arrhenius.get_rate_coefficient(T)
             self.assertAlmostEqual(2 * kexp, kact, delta=1e-6 * kexp)
+
+
+################################################################################
+
+class TestArrheniusBM(unittest.TestCase):
+    """
+    Contains unit tests of the :class:`ArrheniusBM` class.
+    """
+
+    def setUp(self):
+        """
+        A function run before each unit test in this class.
+        """
+        self.A = 8.00037e+12
+        self.n = 0.391734
+        self.w0 = 798000
+        self.E0 = 115905
+        self.Tmin = 300.
+        self.Tmax = 2000.
+        self.comment = 'rxn001084'
+        self.arrhenius_bm = ArrheniusBM(
+            A=(self.A, "s^-1"),
+            n=self.n,
+            w0=(self.w0, 'J/mol'),
+            E0=(self.E0, "J/mol"),
+            Tmin=(self.Tmin, "K"),
+            Tmax=(self.Tmax, "K"),
+            comment=self.comment,
+        )
+
+        self.rsmi = 'NC(=NC=O)O'
+        self.psmi = 'O=CNC(=O)N'
+        self.arrhenius = Arrhenius(A=(8.00037e+12,'s^-1'), 
+                                   n=0.391734,
+                                   Ea=(94.5149,'kJ/mol'),
+                                   T0=(1,'K'),
+                                   Tmin=(300,'K'),
+                                   Tmax=(2000,'K'),
+                                   comment="""Fitted to 50 data points; dA = *|/ 1.18377, dn = +|- 0.0223855, dEa = +|- 0.115431 kJ/mol"""
+                                   )
+
+        self.r_thermo = NASA(polynomials=[
+            NASAPolynomial(coeffs=[3.90453,0.0068491,0.000125755,-2.92973e-07,2.12971e-10,-45444.2,10.0669], Tmin=(10,'K'), Tmax=(433.425,'K')), 
+            NASAPolynomial(coeffs=[2.09778,0.0367646,-2.36023e-05,7.24527e-09,-8.51275e-13,-45412,15.8381], Tmin=(433.425,'K'), Tmax=(3000,'K'))], 
+            Tmin=(10,'K'), Tmax=(3000,'K'), E0=(-377.851,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(232.805,'J/(mol*K)'), 
+            comment="""Thermo library: Spiekermann_refining_elementary_reactions"""
+            )
+        self.p_thermo = NASA(polynomials=[
+            NASAPolynomial(coeffs=[3.88423,0.00825528,0.000133399,-3.31802e-07,2.52823e-10,-51045.1,10.3937], Tmin=(10,'K'), Tmax=(428.701,'K')), 
+            NASAPolynomial(coeffs=[2.89294,0.0351772,-2.26349e-05,7.00331e-09,-8.2982e-13,-51122.5,12.4424], Tmin=(428.701,'K'), Tmax=(3000,'K'))], 
+            Tmin=(10,'K'), Tmax=(3000,'K'), E0=(-424.419,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(232.805,'J/(mol*K)'), 
+            comment="""Thermo library: Spiekermann_refining_elementary_reactions"""
+            )
+
+    def test_a_factor(self):
+        """
+        Test that the ArrheniusBM A property was properly set.
+        """
+        self.assertAlmostEqual(self.arrhenius_bm.A.value_si, self.A, delta=1e0)
+
+    def test_n(self):
+        """
+        Test that the ArrheniusBM n property was properly set.
+        """
+        self.assertAlmostEqual(self.arrhenius_bm.n.value_si, self.n, 6)
+
+    def test_w0(self):
+        """
+        Test that the ArrheniusBM w0 property was properly set.
+        """
+        self.assertAlmostEqual(self.arrhenius_bm.w0.value_si, self.w0, 6)
+
+    def test_e0(self):
+        """
+        Test that the ArrheniusBM E0 property was properly set.
+        """
+        self.assertAlmostEqual(self.arrhenius_bm.E0.value_si, self.E0, 6)
+
+    def test_temperature_min(self):
+        """
+        Test that the ArrheniusBM Tmin property was properly set.
+        """
+        self.assertAlmostEqual(self.arrhenius_bm.Tmin.value_si, self.Tmin, 6)
+
+    def test_temperature_max(self):
+        """
+        Test that the ArrheniusBM Tmax property was properly set.
+        """
+        self.assertAlmostEqual(self.arrhenius_bm.Tmax.value_si, self.Tmax, 6)
+
+    def test_is_temperature_valid(self):
+        """
+        Test the ArrheniusBM.is_temperature_valid() method.
+        """
+        Tdata = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
+        validdata = np.array([False, True, True, True, True, True, True, True, True, True], np.bool)
+        for T, valid in zip(Tdata, validdata):
+            valid0 = self.arrhenius_bm.is_temperature_valid(T)
+            self.assertEqual(valid0, valid)
+
+    def test_fit_to_data(self):
+        """
+        Test the ArrheniusBM.fit_to_data() method.
+        """
+        reactant = Molecule(smiles=self.rsmi)
+        product = Molecule(smiles=self.psmi)
+        reaction = Reaction(reactants=[Species(molecule=[reactant], thermo=self.r_thermo,)],
+                            products=[Species(molecule=[product], thermo=self.p_thermo)],
+                            kinetics=self.arrhenius,
+                            )
+        
+        arrhenius_bm = ArrheniusBM().fit_to_reactions([reaction], w0=self.w0)
+        self.assertAlmostEqual(arrhenius_bm.A.value_si, self.arrhenius_bm.A.value_si, delta=1.5e1)
+        self.assertAlmostEqual(arrhenius_bm.n.value_si, self.arrhenius_bm.n.value_si, 1, 4)
+        self.assertAlmostEqual(arrhenius_bm.E0.value_si, self.arrhenius_bm.E0.value_si, 1)
+
+    def test_get_activation_energy(self):
+        """
+        Test the ArrheniusBM.get_activation_energy() method.
+        """
+        Hrxn = -44000  # J/mol
+        Ea = self.arrhenius_bm.get_activation_energy(Hrxn)
+        self.assertAlmostEqual(Ea, 95074, delta=1e1)
 
 
 ################################################################################

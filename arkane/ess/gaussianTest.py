@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -57,6 +57,18 @@ class GaussianLogTest(unittest.TestCase):
         """
         cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'gaussian')
 
+    def test_check_for_errors(self):
+        """
+        Uses Gaussian log files that had various errors
+        to test if errors are properly parsed.
+        """
+        with self.assertRaises(LogError):
+            GaussianLog(os.path.join(self.data_path, 'l913.out'))
+        with self.assertRaises(LogError):
+            GaussianLog(os.path.join(self.data_path, 'l9999.out'))
+        with self.assertRaises(LogError):
+            GaussianLog(os.path.join(self.data_path, 'error_termination.out'))
+
     @work_in_progress
     def test_load_ethylene_from_gaussian_log_cbsqb3(self):
         """
@@ -87,7 +99,7 @@ class GaussianLogTest(unittest.TestCase):
 
     def test_gaussian_energies(self):
         """
-        test parsing double hydride, MP2, CCSD, CCSD(T) form Gaussian log
+        test parsing double hydride, MP2, CCSD, CCSD(T), cbs-qb3, cbs-4m, g4, g4mp2 form Gaussian log
         """
         log_doublehybrid = GaussianLog(os.path.join(self.data_path, 'B2PLYP.LOG'))
         log_mp2 = GaussianLog(os.path.join(self.data_path, 'UMP2_C_ATOM.LOG'))
@@ -95,6 +107,11 @@ class GaussianLogTest(unittest.TestCase):
         log_ccsdt = GaussianLog(os.path.join(self.data_path, 'UCCSDT_C_ATOM.LOG'))
         log_qb3 = GaussianLog(os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                            '../examples/arkane/species/C2H5/', 'ethyl_cbsqb3.log'))
+        log_cbs4m = GaussianLog(os.path.join(self.data_path, 'cbs-4m_85_methanol.out'))
+        log_g4 = GaussianLog(os.path.join(self.data_path, 'g4_85_methanol.out'))
+        log_g4mp2 = GaussianLog(os.path.join(self.data_path, 'g4mp2_85_methanol.out'))
+        log_rocbsqb3 = GaussianLog(os.path.join(self.data_path, 'rocbs-qb3_85_methanol.out'))
+
 
         self.assertAlmostEqual(log_doublehybrid.load_energy() / constants.Na / constants.E_h, -0.40217794572194e+02,
                                delta=1e-6)
@@ -105,6 +122,14 @@ class GaussianLogTest(unittest.TestCase):
         self.assertAlmostEqual(log_ccsdt.load_energy() / constants.Na / constants.E_h, -0.37517454469e+02,
                                delta=1e-6)
         self.assertAlmostEqual(log_qb3.load_energy() / constants.Na / constants.E_h, -79.029798,
+                               delta=1e-6)
+        self.assertAlmostEqual(log_cbs4m.load_energy() / constants.Na / constants.E_h, -115.613180,
+                               delta=1e-6)
+        self.assertAlmostEqual(log_g4.load_energy() / constants.Na / constants.E_h, -115.698896,
+                               delta=1e-6)
+        self.assertAlmostEqual(log_g4mp2.load_energy() / constants.Na / constants.E_h, -115.617241,
+                               delta=1e-6)
+        self.assertAlmostEqual(log_rocbsqb3.load_energy() / constants.Na / constants.E_h, -115.590540,
                                delta=1e-6)
 
     def test_load_oxygen_from_gaussian_log(self):
@@ -197,16 +222,6 @@ class GaussianLogTest(unittest.TestCase):
         log = GaussianLog(os.path.join(self.data_path, 'isobutanolQOOH_scan.log'))
         self.assertAlmostEqual(log._load_number_scans(), 36)
 
-    def test_gaussian_log_error_termination(self):
-        """
-        Ensures that error termination gaussian log file raises an logError
-        """
-        file_path = os.path.join(self.data_path, 'error_termination.out')
-        log = GaussianLog(file_path)
-        with self.assertRaises(LogError) as log_error:
-            log.load_conformer()
-        self.assertTrue(f'The Gaussian job in {file_path} did not converge.' in str(log_error.exception))
-
     def test_load_scan_with_freq(self):
         """
         Ensures that the length of enegies with hr scans and freq calc is correct
@@ -216,6 +231,20 @@ class GaussianLogTest(unittest.TestCase):
         self.assertAlmostEqual(log._load_scan_angle(), 10.0)
         vlist, _ = log.load_scan_energies()
         self.assertEqual(len(vlist), 37)
+
+    def test_load_negative_frequency(self):
+        """
+        Load an imaginary frequency from a Gaussian output file.
+        """
+        log = GaussianLog(os.path.join(self.data_path, 'hr_scan_with_freq.log'))
+        imaginary_freq = log.load_negative_frequency()
+        self.assertEqual(imaginary_freq, -556.0124)
+
+        # verify that an error is raised if there are no negative frequencies
+        with self.assertRaises(LogError):
+            log = GaussianLog(os.path.join(self.data_path, 'rocbs-qb3_85_methanol.out'))
+            imaginary_freq = log.load_negative_frequency()
+
 
 ################################################################################
 

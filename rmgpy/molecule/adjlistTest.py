@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -171,6 +171,58 @@ class TestGroupAdjLists(unittest.TestCase):
         adjlist2 = group.to_adjacency_list()
 
         self.assertEqual(adjlist.strip(), adjlist2.strip())
+        
+    def test_metal_facet_site_morphology(self):
+        adjlist1 = """metal Cu
+facet 111
+1 *3 X u0 p0 c0 s"atop" m"terrace"  {2,S} {4,S}
+2 *1 O u0 p2 c0 {1,S} {3,R}
+3 *2 H u0 p0 c0 {2,R} {4,R}
+4 *4 X u0 p0 c0 s"hcp" m"terrace" {3,R} {1,S}"""
+        
+        adjlist2 = """multiplicity [1]
+metal [Cu, Fe, CuO2 ]
+facet [111, 211, 1101, 110, ]
+1 *3 X u0 p0 c0 s["atop","fcc"] m"terrace"  {2,S} {4,S}
+2 *1 O u0 p2 c0 {1,S} {3,R}
+3 *2 H u0 p0 c0 {2,R} {4,R}
+4 *4 X u0 p0 c0 s"hcp" m["terrace","sc"] {3,R} {1,S}"""
+        
+        adjlist1test = """metal Cu
+facet 111
+1 *3 X u0 p0 c0 s"atop" m"terrace" {2,S} {4,S}
+2 *1 O u0 p2 c0 {1,S} {3,R}
+3 *2 H u0 p0 c0 {2,R} {4,R}
+4 *4 X u0 p0 c0 s"hcp" m"terrace" {1,S} {3,R}"""
+        
+        adjlist2test = """multiplicity [1]
+metal [Cu,Fe,CuO2]
+facet [111,211,1101,110]
+1 *3 X u0 p0 c0 s["atop","fcc"] m"terrace" {2,S} {4,S}
+2 *1 O u0 p2 c0 {1,S} {3,R}
+3 *2 H u0 p0 c0 {2,R} {4,R}
+4 *4 X u0 p0 c0 s"hcp" m["terrace","sc"] {1,S} {3,R}"""
+        mol = Molecule().from_adjacency_list(adjlist1,check_consistency=False)
+        group = Group().from_adjacency_list(adjlist2)
+        
+        self.assertEqual(mol.metal,"Cu")
+        self.assertEqual(mol.facet,"111")
+        self.assertEqual(group.metal,["Cu","Fe","CuO2"])
+        self.assertEqual(group.facet,["111","211","1101","110"])
+        
+        self.assertEqual(mol.atoms[0].site,"atop")
+        self.assertEqual(mol.atoms[3].site,"hcp")
+        self.assertEqual(mol.atoms[0].morphology, "terrace")
+        self.assertEqual(mol.atoms[3].morphology, "terrace")
+        
+        self.assertEqual(group.atoms[0].site,["atop","fcc"])
+        self.assertEqual(group.atoms[3].site,["hcp"])
+        self.assertEqual(group.atoms[0].morphology, ["terrace"])
+        self.assertEqual(group.atoms[3].morphology,["terrace","sc"])
+        
+        self.assertEqual(mol.to_adjacency_list().strip(),adjlist1test.strip())
+        self.assertEqual(group.to_adjacency_list().strip(), adjlist2test.strip())
+
 
 
 class TestMoleculeAdjLists(unittest.TestCase):

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -46,8 +46,13 @@ from rmgpy.species import Species, TransitionState
 from rmgpy.thermo import NASA, ThermoData
 
 from arkane import Arkane, input
-from arkane.common import ArkaneSpecies, get_element_mass, get_center_of_mass, \
-    get_moment_of_inertia_tensor, get_principal_moments_of_inertia
+from arkane.common import (ArkaneSpecies,
+                           convert_imaginary_freq_to_negative_float,
+                           get_element_mass,
+                           get_center_of_mass,
+                           get_moment_of_inertia_tensor,
+                           get_principal_moments_of_inertia,
+                           )
 from arkane.input import job_list
 from arkane.modelchem import LevelOfTheory
 from arkane.statmech import InputError, StatMechJob
@@ -454,6 +459,7 @@ class TestMomentOfInertia(unittest.TestCase):
         """Test that the correct mass/number/isotope is returned from get_element_mass"""
         self.assertEqual(get_element_mass(1), (1.00782503224, 1))  # test input by integer
         self.assertEqual(get_element_mass('Si'), (27.97692653465, 14))  # test string input and most common isotope
+        self.assertEqual(get_element_mass('SI'), (27.97692653465, 14))  # test string in all caps
         self.assertEqual(get_element_mass('C', 13), (13.00335483507, 6))  # test specific isotope
         self.assertEqual(get_element_mass('Bk'), (247.0703073, 97))  # test a two-element array (no isotope data)
 
@@ -550,6 +556,14 @@ class TestMomentOfInertia(unittest.TestCase):
                 self.assertAlmostEqual(entry, expected_entry)
         self.assertIsInstance(principal_moments_of_inertia, tuple)
         self.assertIsInstance(axes, tuple)
+
+    def test_convert_imaginary_freq_to_negative_float(self):
+        self.assertEqual(convert_imaginary_freq_to_negative_float(1), 1)
+        self.assertEqual(convert_imaginary_freq_to_negative_float(-5.2), -5.2)
+        self.assertEqual(convert_imaginary_freq_to_negative_float('-5.2'), -5.2)
+        self.assertEqual(convert_imaginary_freq_to_negative_float('5.2'), 5.2)
+        self.assertEqual(convert_imaginary_freq_to_negative_float('5.2i'), -5.2)
+        self.assertEqual(convert_imaginary_freq_to_negative_float('635.8i'), -635.8)
 
 ################################################################################
 

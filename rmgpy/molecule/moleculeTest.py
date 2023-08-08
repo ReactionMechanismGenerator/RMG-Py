@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -120,6 +120,17 @@ class TestAtom(unittest.TestCase):
             else:
                 self.assertTrue(atom.is_non_hydrogen(), "Atom {0!r} isn't reporting is_non_hydrogen()".format(atom))
 
+    def test_is_halogen(self):
+        """
+        Test the Atom.is_halogen() method.
+        """
+        for element in element_list:
+            atom = Atom(element=element, radical_electrons=1, charge=0, label='*1', lone_pairs=3)
+            if element.symbol in ['F', 'Cl', 'Br', 'I']:
+                self.assertTrue(atom.is_halogen())
+            else:
+                self.assertFalse(atom.is_halogen(), "Atom {0!r} is reporting is_halogen(), but it shouldn't be".format(atom))
+
     def test_is_carbon(self):
         """
         Test the Atom.is_carbon() method.
@@ -208,6 +219,17 @@ class TestAtom(unittest.TestCase):
             else:
                 self.assertFalse(atom.is_chlorine())
 
+    def test_is_bromine(self):
+        """
+        Test the Atom.is_bromine() method.
+        """
+        for element in element_list:
+            atom = Atom(element=element, radical_electrons=1, charge=0, label='*1', lone_pairs=3)
+            if element.symbol == 'Br':
+                self.assertTrue(atom.is_bromine())
+            else:
+                self.assertFalse(atom.is_bromine())
+
     def test_is_iodine(self):
         """
         Test the Atom.is_iodine() method.
@@ -240,6 +262,35 @@ class TestAtom(unittest.TestCase):
                 self.assertTrue(atom.is_surface_site())
             else:
                 self.assertFalse(atom.is_surface_site())
+
+    def test_is_bonded_to_surface(self):
+        """
+        Test the Atom.is_bonded_to_surface_site() method.
+        """
+
+        adsorbate = Molecule(smiles='*=O') # X=O
+        for atom in adsorbate.atoms:
+            if atom.is_surface_site():
+                self.assertFalse(atom.is_bonded_to_surface())
+            else:
+                self.assertTrue(atom.is_bonded_to_surface())
+
+    def test_is_bonded_to_halogen(self):
+        """
+        Test the Atom.is_bonded_to_halogen() method.
+        """
+
+        cf4 = Molecule(smiles='FC(F)(F)F') # CF4
+        ch4 = Molecule(smiles='C')         # CH4
+
+        for atom in cf4.atoms:
+            if atom.is_halogen():
+                self.assertFalse(atom.is_bonded_to_halogen())
+            else:
+                self.assertTrue(atom.is_bonded_to_halogen())
+
+        for atom in ch4.atoms:
+            self.assertFalse(atom.is_bonded_to_halogen())
 
     def test_increment_radical(self):
         """
@@ -1369,7 +1420,7 @@ multiplicity 2
 
     def test_is_in_cycle_ethane(self):
         """
-        Test the Molecule.isInCycle() method with ethane.
+        Test the Molecule is_atom_in_cycle() and is_bond_in_cycle() methods with ethane.
         """
         molecule = Molecule().from_smiles('CC')
         for atom in molecule.atoms:
@@ -1380,7 +1431,7 @@ multiplicity 2
 
     def test_is_in_cycle_cyclohexane(self):
         """
-        Test the Molecule.isInCycle() method with ethane.
+        Test the Molecule is_atom_in_cycle() and is_bond_in_cycle() methods with cyclohexane.
         """
         molecule = Molecule().from_inchi('InChI=1/C6H12/c1-2-4-6-5-3-1/h1-6H2')
         for atom in molecule.atoms:
@@ -1855,6 +1906,26 @@ multiplicity 2
         saturated_molecule.saturate_radicals()
         self.assertTrue(saturated_molecule.is_isomorphic(indene))
 
+    def test_replace_halogen_with_hydrogen(self):
+        """
+        Test that the Molecule.replace_halogen_with_hydrogen() method works properly for various halogenated molecules
+        """
+        testCases = [
+            # halogenated molecule SMILES, hydrogenated (halogens replaced with hydrogens) molecule SMILES
+            ['[F]', '[H]'],
+            ['Cl', '[H][H]'],
+            ['[Br][Br]', '[H][H]'],
+            ['Fc1c(Cl)c(Br)c(I)cc1', 'c1ccccc1'],
+            ['F[CH]COC(Cl)(Cl)', '[CH2]COC']
+        ]
+
+        for smiles1, smiles2 in testCases:
+            mol_halogenated = Molecule().from_smiles(smiles1)
+            mol_replaced = mol_halogenated.copy(deep=True)
+            mol_replaced.replace_halogen_with_hydrogen()
+            mol_replaced_check = Molecule().from_smiles(smiles2)
+            self.assertTrue(mol_replaced.is_isomorphic(mol_replaced_check))
+
     def test_surface_molecules(self):
         """
         Test that we can identify surface molecules.
@@ -2260,6 +2331,8 @@ multiplicity 2
         Test if we can convert a Molecule object into a Group object.
         """
         mol = Molecule().from_smiles('CC(C)CCCC(C)C1CCC2C3CC=C4CC(O)CCC4(C)C3CCC12C')  # cholesterol
+        mol.atoms[0].label = '*1'
+        mol.atoms[1].label = '*2'
         group = mol.to_group()
 
         self.assertTrue(isinstance(group, Group))
@@ -2272,6 +2345,7 @@ multiplicity 2
 
         for i, molAt in enumerate(mol.atoms):
             group_atom = group.atoms[i]
+            self.assertEqual(group_atom.label, molAt.label)
             atom_types = [groupAtomType.equivalent(molAt.atomtype) for groupAtomType in group_atom.atomtype]
             self.assertTrue(any(atom_types))
 
@@ -2427,10 +2501,48 @@ multiplicity 2
         self.assertEqual(len(aromatic_atoms), 0)
         self.assertEqual(len(aromatic_bonds), 0)
 
+    def test_aromaticity_perception_benzonaphthalene(self):
+        """Test aromaticity perception via get_aromatic_rings for benzonaphthalene with multiple fused bonds."""
+        mol = Molecule(smiles='c1cc2ccc3ccc(c1)c2c3')
+        aromatic_atoms, aromatic_bonds = mol.get_aromatic_rings()
+        self.assertEqual(len(aromatic_atoms), 1)
+        self.assertEqual(len(aromatic_bonds), 1)
+
+    def test_aromaticity_perception_save_order(self):
+        """Test aromaticity perception via get_aromatic_rings for phenyl radical without changing atom order."""
+        mol = Molecule().from_adjacency_list("""multiplicity 2
+1  C u0 p0 c0 {2,S} {3,S} {7,D}
+2  O u1 p2 c0 {1,S}
+3  C u0 p0 c0 {1,S} {4,D} {8,S}
+4  C u0 p0 c0 {3,D} {5,S} {9,S}
+5  C u0 p0 c0 {4,S} {6,D} {10,S}
+6  C u0 p0 c0 {5,D} {7,S} {11,S}
+7  C u0 p0 c0 {1,D} {6,S} {12,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {5,S}
+11 H u0 p0 c0 {6,S}
+12 H u0 p0 c0 {7,S}
+"""
+        )
+        aromatic_atoms, aromatic_bonds = mol.get_aromatic_rings(save_order=True)
+        self.assertEqual(len(aromatic_atoms), 1)
+        self.assertEqual(len(aromatic_bonds), 1)
+        # A quick check for non-changed atom order is to check
+        # if the first atom becomes the oxygen atom after calling `get_aromatic_rings`
+        self.assertFalse(mol.atoms[0].is_oxygen())
+
     def test_aryl_radical_true(self):
         """Test aryl radical perception for phenyl radical."""
         mol = Molecule(smiles='[c]1ccccc1')
         self.assertTrue(mol.is_aryl_radical())
+
+    def test_has_halogen(self):
+        """Test Molecule.has_halogen() method."""
+        mol1 = Molecule(smiles='CCCCl')
+        mol2 = Molecule(smiles='CCCCC')
+        self.assertTrue(mol1.has_halogen())
+        self.assertFalse(mol2.has_halogen())
 
     def test_aryl_radical_false(self):
         """Test aryl radical perception for benzyl radical."""

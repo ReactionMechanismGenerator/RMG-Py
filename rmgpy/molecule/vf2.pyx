@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -27,7 +27,7 @@
 
 """
 This module contains graph ismorphism functions that implement the VF2
-algorithm of Vento and Foggia.  http://dx.doi.org/10.1109/TPAMI.2004.75
+algorithm of Vento and Foggia.  https://doi.org/10.1109/TPAMI.2004.75
 """
 
 from rmgpy.exceptions import VF2Error

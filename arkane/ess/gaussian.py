@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -57,8 +57,50 @@ class GaussianLog(ESSAdapter):
     arrays. GaussianLog is an adapter for the abstract class ESSAdapter.
     """
 
-    def __init__(self, path):
-        self.path = path
+    def check_for_errors(self):
+        """
+        Checks for common errors in a Gaussian log file.
+        If any are found, this method will raise an error and crash.
+        """
+        with open(self.path, 'r') as f:
+            lines = f.readlines()[-100:]
+            error = None
+            terminated = False
+            for line in reversed(lines):
+                # check for common error messages
+                if 'termination' in line:
+                    terminated = True
+                    if 'l9999.exe' in line or 'link 9999' in line:
+                        error = 'Unconverged'
+                    elif 'l101.exe' in line:
+                        error = 'The blank line after the coordinate section is missing, ' \
+                                'or charge/multiplicity was not specified correctly.'
+                    elif 'l103.exe' in line:
+                        error = 'Internal coordinate error'
+                    elif 'l108.exe' in line:
+                        error = 'There are two blank lines between z-matrix and ' \
+                                'the variables, expected only one.'
+                    elif 'l202.exe' in line:
+                        error = 'During the optimization process, either the standard ' \
+                                'orientation or the point group of the molecule has changed.'
+                    elif 'l502.exe' in line:
+                        error = 'Unconverged SCF.'
+                    elif 'l716.exe' in line:
+                        error = 'Angle in z-matrix outside the allowed range 0 < x < 180.'
+                    elif 'l906.exe' in line:
+                        error = 'The MP2 calculation has failed. It may be related to pseudopotential. ' \
+                                'Basis sets (CEP-121G*) that are used with polarization functions, ' \
+                                'where no polarization functions actually exist.'
+                    elif 'l913.exe' in line:
+                        error = 'Maximum optimization cycles reached.'
+                    if error:
+                        raise LogError(f'There was an error ({error}) with Gaussian output file {self.path} '
+                                       f'due to line:\n{line}')
+                    else:
+                        # no need to continue parsing if terminated without errors
+                        break
+            if not terminated:
+                raise LogError(f'Gaussian output file {self.path} did not terminate')
 
     def get_number_of_atoms(self):
         """
@@ -248,9 +290,6 @@ class GaussianLog(ESSAdapter):
                         # Read the next line in the file
                         line = f.readline()
 
-                if 'Error termination' in line:
-                    raise LogError(f'The Gaussian job in {self.path} did not converge.')
-
                 # Read the next line in the file
                 line = f.readline()
 
@@ -288,8 +327,30 @@ class GaussianLog(ESSAdapter):
                     elect_energy_source = 'CCSD(T)'
                 elif 'CBS-QB3 (0 K)' in line:
                     e0_composite = float(line.split()[3]) * constants.E_h * constants.Na
+                elif 'E(CBS-QB3)=' in line:
+                    # CBS-QB3 calculation without opt and freq calculation
+                    # Keyword in Gaussian CBS-QB3(SP), No zero-point or thermal energies are included.
+                    e_elect = float(line.split()[1]) * constants.E_h * constants.Na
+                elif 'CBS-4 (0 K)=' in line:
+                    e0_composite = float(line.split()[3]) * constants.E_h * constants.Na
                 elif 'G3(0 K)' in line:
                     e0_composite = float(line.split()[2]) * constants.E_h * constants.Na
+                elif 'G3 Energy=' in line:
+                    # G3 calculation without opt and freq calculation
+                    # Keyword in Gaussian G3(SP), No zero-point or thermal energies are included.
+                    e_elect = float(line.split()[2]) * constants.E_h * constants.Na
+                elif 'G4(0 K)' in line:
+                    e0_composite = float(line.split()[2]) * constants.E_h * constants.Na
+                elif 'G4 Energy=' in line:
+                    # G4 calculation without opt and freq calculation
+                    # Keyword in Gaussian G4(SP), No zero-point or thermal energies are included.
+                    e_elect = float(line.split()[2]) * constants.E_h * constants.Na
+                elif 'G4MP2(0 K)' in line:
+                    e0_composite = float(line.split()[2]) * constants.E_h * constants.Na
+                elif 'G4MP2 Energy=' in line:
+                    # G4MP2 calculation without opt and freq calculation
+                    # Keyword in Gaussian G4MP2(SP), No zero-point or thermal energies are included.
+                    e_elect = float(line.split()[2]) * constants.E_h * constants.Na
 
                 # Read the ZPE from the "E(ZPE)=" line, as this is the scaled version.
                 # Gaussian defines the following as
@@ -353,7 +414,10 @@ class GaussianLog(ESSAdapter):
         rigid_scan = False
 
         vlist = []  # The array of potentials at each scan angle
+        non_optimized = []  # The array of indexes of non-optimized point
 
+        internal_coord = 'D(' + ','.join(self.load_scan_pivot_atoms()) + ')'
+        angle = []
         # Parse the Gaussian log file, extracting the energies of each
         # optimized conformer in the scan
         with open(self.path, 'r') as f:
@@ -378,11 +442,33 @@ class GaussianLog(ESSAdapter):
                 # to the optimized geometry
                 if 'Optimization completed' in line:
                     vlist.append(energy)
+                # In some cases, the optimization cannot converge within the given steps.
+                # Then, the geometry is not optimized. we need to exclude these values.
+                if 'Optimization stopped' in line:
+                    non_optimized.append(len(vlist))
+                    vlist.append(energy)
+                # Read the optimized angle from optimized parameters
+                if internal_coord in line and 'Scan' not in line:
+                    # EXAMPLE:
+                    # ! D9    D(1,2,3,15)            42.4441         -DE/DX =    0.0                 !
+                    angle.append(float(line.strip().split()[3]))
+
                 line = f.readline()
 
         # give warning in case this assumption is not true
         if rigid_scan:
-            print('   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...')
+            print(f'   Assuming {os.path.basename(self.path)} is the output from a rigid scan...')
+            # For rigid scans, all of the angles are evenly spaced with a constant step size
+            scan_res = math.pi / 180 * self._load_scan_angle()
+            angle = np.arange(0.0, scan_res * (len(vlist) - 1) + 0.00001, scan_res, np.float64)
+        else:
+            angle = np.array(angle, np.float64)
+            # Convert -180 ~ 180 degrees to 0 ~ 2pi rads
+            angle = (angle - angle[0])
+            angle[angle < 0] += 360.0
+            # Adjust angle[-1] to make it close to 360 degrees
+            angle[-1] = angle[-1] if angle[-1] > 2 * self._load_scan_angle() else angle[-1] + 360.0
+            angle = angle * math.pi / 180
 
         vlist = np.array(vlist, np.float64)
         # check to see if the scanlog indicates that a one of your reacting species may not be
@@ -396,11 +482,13 @@ class GaussianLog(ESSAdapter):
 
         if opt_freq:
             vlist = vlist[:-1]
+            angle = angle[:-1]
 
-        # Determine the set of dihedral angles corresponding to the loaded energies
-        # This assumes that you start at 0.0, finish at 360.0, and take
-        # constant step sizes in between
-        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(vlist) - 1), np.float64)
+        if non_optimized:
+            logging.warning(f'Scan results for angles at {angle[non_optimized]} are discarded '
+                            f'due to non-converged optimization.')
+            vlist = np.delete(vlist, non_optimized)
+            angle = np.delete(angle, non_optimized)
 
         return vlist, angle
 
@@ -435,6 +523,13 @@ class GaussianLog(ESSAdapter):
                         action_index = 4  # valance angle with three terms
                     elif terms[0] == 'B':
                         action_index = 3  # bond length with 2 terms
+                    elif terms[0] == 'L':
+                        # Can be either L 1 2 3 B or L 1 2 3 -1 B
+                        # It defines a linear bend which is helpful in calculating
+                        # molecules with ~180 degree bond angles. As no other module
+                        # now depends on this information, simply skipping this line.
+                        line = f.readline()
+                        continue
                     else:
                         raise LogError('This file has an option not supported by Arkane. '
                                        'Unable to read scan specs for line: {0}'.format(line))
@@ -492,7 +587,6 @@ class GaussianLog(ESSAdapter):
         Return the negative frequency from a transition state frequency
         calculation in cm^-1.
         """
-        frequency = None
         frequencies = []
         with open(self.path, 'r') as f:
             line = f.readline()
@@ -504,10 +598,14 @@ class GaussianLog(ESSAdapter):
 
         frequencies = [float(freq) for freq in frequencies]
         frequencies.sort()
-        try:
-            frequency = [freq for freq in frequencies if freq < 0][0]
-        except IndexError:
+        neg_idx = np.where(np.array(frequencies) < 0)[0]
+        if len(neg_idx) == 1:
+            return frequencies[neg_idx[0]]
+        elif len(neg_idx) > 1:
+            logging.info('More than one imaginary frequency in Gaussian output file {0}.'.format(self.path))
+            return frequencies[neg_idx[0]]
+        else:
             raise LogError(f'Unable to find imaginary frequency in Gaussian output file {self.path}')
-        return frequency
+
 
 register_ess_adapter("GaussianLog", GaussianLog)

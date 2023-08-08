@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -71,6 +71,8 @@ class Network(object):
     `grain_size`            Maximum size of separation between energies
     `grain_count`           Minimum number of descrete energies separated
     `E0`                    A list of ground state energies of isomers, reactants, and products (J/mol)
+    `Emax`                  Highest energy level considered in graining before padding
+    `Emin`                  Minimum energy levell considered in graining
     `active_k_rotor`        ``True`` if the K-rotor is treated as active, ``False`` if treated as adiabatic
     `active_j_rotor`        ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
     `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
@@ -86,13 +88,15 @@ class Network(object):
     ----------------------- ----------------------------------------------------
     `K`                     2D Array of phenomenological rates at the specified T and P
     `p0`                    Pseudo-steady state population distributions
+    `U`                     2D Array of estimated uncorrelated uncertainties in K matrix
     ======================= ====================================================
     """
 
     def __init__(self, label='', isomers=None, reactants=None, products=None,
                  path_reactions=None, bath_gas=None, net_reactions=None, T=0.0, P=0.0,
                  e_list=None, j_list=None, n_grains=0, n_j=0, active_k_rotor=True,
-                 active_j_rotor=True, grain_size=0.0, grain_count=0, E0=None):
+                 active_j_rotor=True, grain_size=0.0, grain_count=0, E0=None,
+                 Emax=None, Emin=None):
         """
         To initialize a Network object for running a pressure dependent job,
         only label, isomers, reactants, products path_reactions and bath_gas are useful,
@@ -126,7 +130,9 @@ class Network(object):
         self.grain_size = grain_size
         self.grain_count = grain_count
         self.E0 = E0
-
+        self.Emin = Emin
+        self.Emax = Emax
+        
         self.valid = False
 
     def __repr__(self):
@@ -241,7 +247,7 @@ class Network(object):
         logging.debug('Finished initialization for network {0}.'.format(self.label))
         logging.debug('The network now has values of {0}'.format(repr(self)))
 
-    def calculate_rate_coefficients(self, Tlist, Plist, method, error_check=True):
+    def calculate_rate_coefficients(self, Tlist, Plist, method, error_check=True, neglect_high_energy_collisions=False, high_energy_rate_tol=0.01):
 
         n_isom = len(self.isomers)
         n_reac = len(self.reactants)
@@ -267,10 +273,28 @@ class Network(object):
                 elif method.lower() == 'reservoir state':
                     self.apply_reservoir_state_method()
                 elif method.lower() == 'chemically-significant eigenvalues':
-                    self.apply_chemically_significant_eigenvalues_method()
+                    self.apply_chemically_significant_eigenvalues_method(method="allen", neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
+                elif method.lower() == 'chemically-significant eigenvalues georgievskii':
+                    self.apply_chemically_significant_eigenvalues_method(method="georgievskii", neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
+                elif method.lower() == 'simulation least squares':
+                    self.apply_simulation_least_squares_method(method='mexp', neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
+                elif method.lower() == 'simulation least squares ode':
+                    self.apply_simulation_least_squares_method(method='ode', neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
+                elif method.lower() == 'simulation least squares matrix exponential':
+                    self.apply_simulation_least_squares_method(method='mexp', neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
+                elif method.lower() == 'simulation least squares eigen':
+                    self.apply_simulation_least_squares_method(method='eigen', neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
                 else:
                     raise NetworkError('Unknown method "{0}". Valid options are "modified strong collision", '
-                                       '"reservoir state", or "chemically-significant eigenvalues"'.format(method))
+                                       '"reservoir state", "chemically-significant eigenvalues", "simulation least squares", '
+                                       '"simulation least squares ode", "simulation least squares matrix exponential", or '
+                                       '"simulation least squares eigen"'.format(method))
 
                 K[t, p, :, :] = self.K
 
@@ -478,14 +502,19 @@ class Network(object):
             raise NetworkError('Must provide either grain_size or n_grains parameter to Network.determineEnergyGrains().')
 
         # The minimum energy is the lowest isomer or reactant or product energy on the PES
-        e_min = np.min(self.E0)
-        e_min = math.floor(e_min)  # Round to nearest whole number
-
+        if self.Emin is None:
+            e_min = np.min(self.E0)
+            e_min = math.floor(e_min)  # Round to nearest whole number
+        else:
+            e_min = self.Emin
         # Use the highest energy on the PES as the initial guess for Emax0
-        e_max = np.max(self.E0)
-        for rxn in self.path_reactions:
-            E0 = float(rxn.transition_state.conformer.E0.value_si)
-            if E0 > e_max: e_max = E0
+        if self.Emax is None:
+            e_max = np.max(self.E0)
+            for rxn in self.path_reactions:
+                E0 = float(rxn.transition_state.conformer.E0.value_si)
+                if E0 > e_max: e_max = E0
+        else:
+            e_max = self.Emax
 
         # Choose the actual e_max as many kB * T above the maximum energy on the PES
         # You should check that this is high enough so that the Boltzmann distributions have trailed off to negligible values
@@ -904,7 +933,7 @@ class Network(object):
         self.K, self.p0 = rs.apply_reservoir_state_method(self)
         return self.K, self.p0
 
-    def apply_chemically_significant_eigenvalues_method(self, lumping_order=None):
+    def apply_chemically_significant_eigenvalues_method(self, lumping_order=None, method='allen', neglect_high_energy_collisions=False, high_energy_rate_tol=0.01):
         """
         Compute the phenomenological rate coefficients :math:`k(T,P)` at the
         current conditions using the chemically-significant eigenvalues method.
@@ -915,12 +944,23 @@ class Network(object):
         import rmgpy.pdep.cse as cse
         logging.debug(
             'Applying chemically-significant eigenvalues method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
-        self.K, self.p0 = cse.apply_chemically_significant_eigenvalues_method(self, lumping_order)
-        return self.K, self.p0
+        if method == 'allen':
+            self.K, self.p0 = cse.apply_chemically_significant_eigenvalues_method(self, lumping_order, neglect_high_energy_collisions=neglect_high_energy_collisions, high_energy_rate_tol=high_energy_rate_tol)
+            return self.K, self.p0
+        elif method == "georgievskii":
+            self.K = cse.apply_chemically_significant_eigenvalues_method_georgievskii(self, neglect_high_energy_collisions=neglect_high_energy_collisions, high_energy_rate_tol=high_energy_rate_tol)
+            return self.K
 
-    def generate_full_me_matrix(self, products=True):
+    def apply_simulation_least_squares_method(self, method='mexp', neglect_high_energy_collisions=False, high_energy_rate_tol=0.01):
+        import rmgpy.pdep.sls as sls
+        logging.debug(
+            'Applying simulation least squares method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
+        self.K, self.U = sls.apply_simulation_least_squares_method(self, method=method, neglect_high_energy_collisions=neglect_high_energy_collisions, high_energy_rate_tol=high_energy_rate_tol)
+        return self.K, self.U
+
+    def generate_full_me_matrix(self, products=True, neglect_high_energy_collisions=False, high_energy_rate_tol=0.01):
         import rmgpy.pdep.me as me
-        return me.generate_full_me_matrix(self, products=products)
+        return me.generate_full_me_matrix(self, products=products, neglect_high_energy_collisions=neglect_high_energy_collisions, high_energy_rate_tol=high_energy_rate_tol)
 
     def solve_full_me(self, tlist, x0):
         """

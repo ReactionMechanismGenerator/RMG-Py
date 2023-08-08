@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -380,6 +380,27 @@ class TestFuncs(unittest.TestCase):
         """
         dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY)
         self.assertIsInstance(dataset, BACDataset)
+
+        # Test only retrieving specific indices
+        idxs = 211
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, idxs=idxs)
+        self.assertEqual(len(dataset), 1)
+        self.assertEqual(dataset[0].spc.index, idxs)
+        idxs = [211, 362]
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, idxs=idxs)
+        self.assertEqual(len(dataset), 2)
+        for d in dataset:
+            self.assertTrue(d.spc.index in {211, 362})
+
+        # Test excluding indices
+        idxs = 211
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, exclude_idxs=idxs)
+        for d in dataset:
+            self.assertNotEqual(d.spc.index, idxs)
+        idxs = [211, 362]
+        dataset = extract_dataset(DATABASE, LEVEL_OF_THEORY, exclude_idxs=idxs)
+        for d in dataset:
+            self.assertTrue(d.spc.index not in {211, 362})
 
         # Test excluding elements
         elements = 'N'

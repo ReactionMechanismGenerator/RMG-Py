@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -315,8 +315,9 @@ class Uncertainty(object):
 
         # Prepare the database by loading training reactions but not averaging the rate rules
         for familyLabel, family in self.database.kinetics.families.items():
-            family.add_rules_from_training(thermo_database=self.database.thermo)
-            family.fill_rules_by_averaging_up(verbose=True)
+            if not family.auto_generated:
+                family.add_rules_from_training(thermo_database=self.database.thermo)
+                family.fill_rules_by_averaging_up(verbose=True)
 
     def load_model(self, chemkin_path, dictionary_path, transport_path=None):
         """

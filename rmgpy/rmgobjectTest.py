@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -255,6 +255,23 @@ class TestRMGObject(unittest.TestCase):
         self.assertIsInstance(obj.a[1], PseudoRMGObject)
         self.assertEqual(obj.a[1].c, 5.0)
         self.assertEqual(obj.b, [])
+
+    def test_ignore_aux_and_mol(self):
+        """Test ignoring specific keys"""
+        data = {'a': [{'class': 'PseudoRMGObject', 'b': 'foobar'},
+                      {'class': 'PseudoRMGObject', 'c': 5.0}],
+                'mol': 7.0,
+                'aux': 2.5}
+        obj = PseudoRMGObject()
+        obj.make_object(data, class_dict={'PseudoRMGObject': PseudoRMGObject})
+        self.assertIsInstance(obj.a, list)
+
+        with self.assertRaises(TypeError):
+            data = {'a': [{'class': 'PseudoRMGObject', 'b': 'foobar'},
+                          {'class': 'PseudoRMGObject', 'c': 5.0}],
+                    'new_key': 2.5}
+            obj = PseudoRMGObject()
+            obj.make_object(data, class_dict={'PseudoRMGObject': PseudoRMGObject})
 
 
 class TestExpandAndMakeFromDictionaries(unittest.TestCase):

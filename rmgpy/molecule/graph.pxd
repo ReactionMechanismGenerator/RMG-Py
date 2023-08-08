@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -110,7 +110,7 @@ cdef class Graph(object):
     
     cpdef restore_vertex_order(self)
 
-    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?) except -2
+    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint strict=?) except -2
 
     cpdef list find_isomorphism(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?)
 

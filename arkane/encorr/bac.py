@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -49,6 +49,8 @@ from typing import Dict, Iterable, List, Sequence, Set, Tuple, Union
 
 import numpy as np
 import scipy.optimize as optimize
+from scipy.stats import distributions
+from sklearn.model_selection import KFold
 
 from rmgpy.quantity import ScalarQuantity
 
@@ -68,6 +70,7 @@ class BACJob:
     def __init__(self,
                  level_of_theory: Union[LevelOfTheory, CompositeLevelOfTheory],
                  bac_type: str = 'p',
+                 crossval_n_folds: int = 1,
                  write_to_database: bool = False,
                  overwrite: bool = False,
                  **kwargs):
@@ -77,16 +80,26 @@ class BACJob:
         Args:
             level_of_theory: The level of theory that will be used to get training data from the RMG database.
             bac_type: 'p' for Petersson-style BACs, 'm' for Melius-style BACs.
-            write_to_database: Save the fitted BACs directly to the RMG database.
+            crossval_n_folds: Performs k-fold cross-validation.
+                              If k does not equal 1, the fitted BACs are not written to RMG database.
+                              1 indicates to not do cross-validation.
+                              -1 indicates to do leave-one-out cross-validation.
+                              Any other positive integer defines the number of folds.
+            write_to_database: Save the fitted BACs directly to the RMG database if `crossval_n_folds=1`
+                               i.e. BACs are only saved if fit to all training data.
             overwrite: Overwrite BACs in the RMG database if they already exist.
-            kwargs: Additional parameters passed to BAC.fit.
+            kwargs: Additional parameters passed to BAC.fit or CrossVal.fit.
         """
         self.level_of_theory = level_of_theory
         self.bac_type = bac_type
+        self.crossval_n_folds = crossval_n_folds
         self.write_to_database = write_to_database
         self.overwrite = overwrite
         self.kwargs = kwargs
-        self.bac = BAC(level_of_theory, bac_type=bac_type)
+        if self.crossval_n_folds != 1:
+            self.bac = CrossVal(level_of_theory, bac_type=bac_type, n_folds=crossval_n_folds)
+        else:
+            self.bac = BAC(level_of_theory, bac_type=bac_type)
 
     def execute(self, output_directory: str = None, plot: bool = False, jobnum: int = 1):
         """
@@ -100,14 +113,14 @@ class BACJob:
         logging.info(f'Running BAC job {jobnum}')
         self.bac.fit(**self.kwargs)
 
-        if output_directory is not None:
+        if output_directory is not None and self.crossval_n_folds == 1:
             os.makedirs(output_directory, exist_ok=True)
             self.write_output(output_directory, jobnum=jobnum)
 
             if plot:
                 self.plot(output_directory, jobnum=jobnum)
 
-        if self.write_to_database:
+        if self.write_to_database and self.crossval_n_folds == 1:
             try:
                 self.bac.write_to_database(overwrite=self.overwrite)
             except IOError as e:
@@ -131,15 +144,18 @@ class BACJob:
         with open(output_file1, 'a') as f:
             stats_before = self.bac.dataset.calculate_stats()
             stats_after = self.bac.dataset.calculate_stats(for_bac_data=True)
-            f.write(f'# BAC job {jobnum}: {"Melius" if self.bac.bac_type == "m" else "Petersson"}-type BACs:\n')
-            f.write(f'# RMSE/MAE before fitting: {stats_before.rmse:.2f}/{stats_before.mae:.2f} kcal/mol\n')
-            f.write(f'# RMSE/MAE after fitting: {stats_after.rmse:.2f}/{stats_after.mae:.2f} kcal/mol\n')
-            f.writelines(self.bac.format_bacs())
+            bac_type_str = f'{"Melius" if self.bac.bac_type == "m" else "Petersson"}-type BACs'
+            f.write(f'# Job {jobnum}: {bac_type_str}:\n')
+            f.write(f'# Training RMSE/MAE before fitting: {stats_before.rmse:.2f}/{stats_before.mae:.2f} kcal/mol\n')
+            f.write(f'# Training RMSE/MAE after fitting: {stats_after.rmse:.2f}/{stats_after.mae:.2f} kcal/mol\n')
+            f.writelines(self.bac.format_bacs(ci=True))
             f.write('\n')
 
         with open(output_file2, 'w') as f:
             writer = csv.writer(f)
             writer.writerow([
+                'Index',
+                'Label',
                 'Smiles',
                 'InChI',
                 'Formula',
@@ -152,6 +168,8 @@ class BACJob:
             ])
             for d in self.bac.dataset:
                 writer.writerow([
+                    d.spc.index,
+                    d.spc.label,
                     d.spc.smiles,
                     d.spc.inchi,
                     d.spc.formula,
@@ -178,8 +196,9 @@ class BACJob:
             return
 
         model_chemistry_formatted = self.level_of_theory.to_model_chem().replace('//', '__').replace('/', '_')
-        correlation_path = os.path.join(output_directory, f'{jobnum}_{model_chemistry_formatted}_correlation.pdf')
-        self.bac.save_correlation_mat(correlation_path)
+        if self.crossval_n_folds == 1:
+            correlation_path = os.path.join(output_directory, f'{jobnum}_{model_chemistry_formatted}_correlation.pdf')
+            self.bac.save_correlation_mat(correlation_path)
 
         plt.rcParams.update({'font.size': 16})
         fig_path = os.path.join(output_directory, f'{jobnum}_{model_chemistry_formatted}_errors.pdf')
@@ -242,6 +261,7 @@ class BAC:
         self.database_key = None  # Dictionary key to access reference database
         self.dataset = None  # Collection of BACDatapoints in BACDataset
         self.correlation = None  # Correlation matrix for BAC parameters
+        self.confidence_intervals = None  # 95% confidence intervals for BAC parameters
 
         # Define attributes for memoization during fitting
         self._reset_memoization()
@@ -389,7 +409,7 @@ class BAC:
             if symbol in self.bacs:
                 bac += count * self.bacs[symbol]
             else:
-                symbol_flipped = ''.join(re.findall('[a-zA-Z]+|[^a-zA-Z]+', symbol)[::-1])  # Check reversed symbol
+                symbol_flipped = ''.join(re.findall(r'[a-zA-Z]+|[^a-zA-Z]+', symbol)[::-1])  # Check reversed symbol
                 if symbol_flipped in self.bacs:
                     bac += count * self.bacs[symbol_flipped]
                 else:
@@ -584,6 +604,8 @@ class BAC:
     def fit(self,
             weighted: bool = False,
             db_names: Union[str, List[str]] = 'main',
+            idxs: Union[Sequence[int], Set[int], int] = None,
+            exclude_idxs: Union[Sequence[int], Set[int], int] = None,
             exclude_elements: Union[Sequence[str], Set[str], str] = None,
             charge: Union[Sequence[Union[str, int]], Set[Union[str, int]], str, int] = 'all',
             multiplicity: Union[Sequence[int], Set[int], int, str] = 'all',
@@ -596,15 +618,18 @@ class BAC:
         Args:
             weighted: Perform weighted least squares by balancing training data.
             db_names: Optionally specify database names to train on (defaults to main).
+            idxs: Only include reference species with these indices in the training data.
+            exclude_idxs: Exclude reference species with these indices from the training data.
             exclude_elements: Molecules with any of the elements in this sequence are excluded from training data.
             charge: Allowable charges for molecules in training data.
-            multiplicity: Allowable multiplicites for molecules in training data.
+            multiplicity: Allowable multiplicities for molecules in training data.
             kwargs: Keyword arguments for fitting Melius-type BACs (see self._fit_melius).
         """
         self._reset_memoization()
         self.database_key = self.load_database(names=db_names)
 
         self.dataset = extract_dataset(self.ref_databases[self.database_key], self.level_of_theory,
+                                       idxs=idxs, exclude_idxs=exclude_idxs,
                                        exclude_elements=exclude_elements, charge=charge, multiplicity=multiplicity)
         if len(self.dataset) == 0:
             raise BondAdditivityCorrectionError(f'No species available for {self.level_of_theory}')
@@ -621,8 +646,8 @@ class BAC:
 
         stats_before = self.dataset.calculate_stats()
         stats_after = self.dataset.calculate_stats(for_bac_data=True)
-        logging.info(f'RMSE/MAE before fitting: {stats_before.rmse:.2f}/{stats_before.mae:.2f} kcal/mol')
-        logging.info(f'RMSE/MAE after fitting: {stats_after.rmse:.2f}/{stats_after.mae:.2f} kcal/mol')
+        logging.info(f'Training RMSE/MAE before fitting: {stats_before.rmse:.2f}/{stats_before.mae:.2f} kcal/mol')
+        logging.info(f'Training RMSE/MAE after fitting: {stats_after.rmse:.2f}/{stats_after.mae:.2f} kcal/mol')
 
     def test(self,
              species: List[ReferenceSpecies] = None,
@@ -687,7 +712,8 @@ class BAC:
         w = np.linalg.solve(x.T @ weights @ x, x.T @ weights @ y)
         ypred = x @ w
 
-        covariance = np.linalg.inv(x.T @ weights @ x)
+        ci, covariance = get_confidence_intervals(x, y, ypred, weights=weights)
+        self.confidence_intervals = dict(zip(feature_keys, ci))  # Parameter estimates are w +/- ci
         self.correlation = _covariance_to_correlation(covariance)
 
         self.dataset.bac_data = self.dataset.calc_data + ypred
@@ -785,12 +811,14 @@ class BAC:
         res = min(results, key=lambda r: r.cost)
         w = res.x
 
-        # Estimate parameter covariance matrix using Jacobian
-        covariance = np.linalg.inv(res.jac.T @ weights @ res.jac)
-        self.correlation = _covariance_to_correlation(covariance)
-
         self.dataset.bac_data = get_bac_data(w)
         self.bacs = get_params(w)
+
+        # Estimate parameter covariance matrix using Jacobian
+        ci, covariance = get_confidence_intervals(res.jac, self.dataset.ref_data, self.dataset.bac_data,
+                                                  weights=weights)
+        self.confidence_intervals = get_params(ci)
+        self.correlation = _covariance_to_correlation(covariance)
 
     def write_to_database(self, overwrite: bool = False, alternate_path: str = None):
         """
@@ -814,35 +842,51 @@ class BAC:
         has_entries = bool(data.mbac) if self.bac_type == 'm' else bool(data.pbac)
 
         # Add new BACs to file without changing existing formatting
+        # First: find the BACs dict in the file
         for i, line in enumerate(lines):
             if keyword in line:
-                if has_entries:
-                    if self.level_of_theory in bac_dict:
-                        if overwrite:
-                            # Does not overwrite comments
-                            del_idx_start = del_idx_end = None
-                            for j, line2 in enumerate(lines[i:]):
-                                if repr(self.level_of_theory) in line2:
-                                    del_idx_start = i + j
-                                    del_idx_end = None
-                                elif line2.rstrip() == '    },':  # Can't have comment after final brace
-                                    del_idx_end = i + j + 1
-                                if del_idx_start is not None and del_idx_end is not None:
-                                    if (lines[del_idx_start - 1].lstrip().startswith('#')
-                                            or lines[del_idx_end + 1].lstrip().startswith('#')):
-                                        logging.warning('There may be left over comments from previous BACs')
-                                    lines[del_idx_start:del_idx_end] = bacs_formatted
-                                    break
-                        else:
-                            raise IOError(
-                                f'{self.level_of_theory} already exists. Set `overwrite` to True.'
-                            )
-                    else:
-                        lines[(i+1):(i+1)] = ['\n'] + bacs_formatted
-                else:
-                    lines[i] = f'{keyword} = {{\n'
-                    lines[(i+1):(i+1)] = ['\n'] + bacs_formatted + ['\n}\n']
                 break
+        else:
+            # 'pbac' and 'mbac' should both be found at `data_path`
+            raise RuntimeError(f'Keyword "{keyword} is not found in the data file. '
+                               f'Please check the database file at {data_path} and '
+                               f'make sure an up-to-date RMG-database branch is used.')
+
+        # Second: Write the BACs block into the BACs dict
+        # Does not overwrite comments
+        if self.level_of_theory in bac_dict and overwrite:
+            del_idx_start = del_idx_end = None
+            lot_repr = repr(self.level_of_theory)
+            for j, line2 in enumerate(lines[i:]):
+                if lot_repr in line2 and 'Composite' not in lot_repr and 'Composite' not in line2:
+                    del_idx_start = i + j
+                elif lot_repr in line2 and 'Composite' in lot_repr:
+                    del_idx_start = i + j
+
+                if del_idx_start is not None and line2.rstrip() == '    },':  # Can't have comment after final brace
+                    del_idx_end = i + j + 1
+                    if (lines[del_idx_start - 1].lstrip().startswith('#')
+                            or lines[del_idx_end + 1].lstrip().startswith('#')):
+                        logging.warning('There may be left over comments from previous BACs')
+                    lines[del_idx_start:del_idx_end] = bacs_formatted
+                    break
+
+            # Check if the entry is successfully inserted to the `lines`
+            if del_idx_start is None or del_idx_end is None:
+                raise RuntimeError(f'The script cannot identify the corresponding block for the given BACs. '
+                                   f'It is possible that the database file at {data_path} is not correctly '
+                                   f'formatted. Please check the file.')
+
+        elif self.level_of_theory in bac_dict and not overwrite:
+            raise IOError(
+                    f'{self.level_of_theory} already exists. Set `overwrite` to True.'
+                )
+        else:
+            # Either empty BACs dict or adding BACs for a new level of theory
+            if not has_entries and '}' in lines[i]:  # Empty BACs dict
+                lines[i] = f'{keyword} = {{\n'
+                lines[(i+1):(i+1)] = ['\n}\n']
+            lines[(i+1):(i+1)] = ['\n'] + bacs_formatted
 
         with open(data_path if alternate_path is None else alternate_path, 'w') as f:
             f.writelines(lines)
@@ -851,12 +895,13 @@ class BAC:
         if alternate_path is None:
             importlib.reload(data)
 
-    def format_bacs(self, indent: bool = False) -> List[str]:
+    def format_bacs(self, indent: bool = False, ci: bool = False) -> List[str]:
         """
         Obtain a list of nicely formatted BACs suitable for writelines.
 
         Args:
             indent: Indent each line for printing in database.
+            ci: Append confidence intervals.
 
         Returns:
             Formatted list of BACs.
@@ -867,6 +912,13 @@ class BAC:
         bacs_formatted = [e + '\n' for e in bacs_formatted]
         if indent:
             bacs_formatted = ['    ' + e for e in bacs_formatted]
+
+        if ci:
+            ci_formatted = ['95% Confidence interval half-widths:']
+            ci_formatted += json.dumps(self.confidence_intervals, indent=4).replace('"', "'").split('\n')
+            ci_formatted = ['# ' + e + '\n' for e in ci_formatted]
+            bacs_formatted.extend(ci_formatted)
+
         return bacs_formatted
 
     def save_correlation_mat(self, path: str, labels: List[str] = None):
@@ -919,6 +971,129 @@ class BAC:
         ax.tick_params(bottom=False, top=False, left=False, right=False)
 
         fig.savefig(path, dpi=600, bbox_inches='tight', pad_inches=0)
+
+
+class CrossVal:
+    """
+    A class for BAC fitting with cross-validation.
+    """
+
+    def __init__(self, level_of_theory: Union[LevelOfTheory, CompositeLevelOfTheory],
+                 bac_type: str = 'p',
+                 n_folds: int = -1):
+        """
+        Initialize a CrossVal instance.
+
+        Args:
+            level_of_theory: Level of theory for getting data from reference database.
+            bac_type: Type of BACs to fit ('p' for Petersson and 'm' for Melius).
+            n_folds: Number of folds to use during cross-validation.
+                     Default value is -1 i.e. use leave-one-out cross-validation.
+        """
+        self.level_of_theory = level_of_theory
+        self.bac_type = bac_type
+        self.n_folds = n_folds
+
+        self.dataset = None  # Complete dataset containing cross-validation estimates for each data point
+        self.bacs = None  # List of BAC instances, one for each fold
+
+
+    def fit(self,
+            db_names: Union[str, List[str]] = 'main',
+            idxs: Union[Sequence[int], Set[int], int] = None,
+            exclude_idxs: Union[Sequence[int], Set[int], int] = None,
+            exclude_elements: Union[Sequence[str], Set[str], str] = None,
+            charge: Union[Sequence[Union[str, int]], Set[Union[str, int]], str, int] = 'all',
+            multiplicity: Union[Sequence[int], Set[int], int, str] = 'all',
+            **kwargs):
+        """
+        Run cross-validation.
+
+        Args:
+            db_names: Optionally specify database names to train on (defaults to main).
+            idxs: Only include reference species with these indices in the training data.
+            exclude_idxs: Exclude reference species with these indices from the training data.
+            exclude_elements: Molecules with any of the elements in this sequence are excluded from training data.
+            charge: Allowable charges for molecules in training data.
+            multiplicity: Allowable multiplicities for molecules in training data.
+            kwargs: Parameters passed to BAC.fit.
+        """
+        database_key = BAC.load_database(names=db_names)
+        self.dataset = extract_dataset(BAC.ref_databases[database_key], self.level_of_theory,
+                                       idxs=idxs, exclude_idxs=exclude_idxs,
+                                       exclude_elements=exclude_elements, charge=charge, multiplicity=multiplicity)
+        self.bacs = []
+        test_data_results = []
+        if self.n_folds == -1:
+            logging.info(f'Starting leave-one-out cross-validation for {self.level_of_theory}')
+            folds = KFold(n_splits=len(self.dataset)).split(self.dataset)
+        else:
+            logging.info(f'Starting {self.n_folds}-fold cross-validation for {self.level_of_theory}')
+            folds = KFold(n_splits=self.n_folds).split(self.dataset)
+        for i, (train, test) in enumerate(folds):
+            logging.info(f'\nFold {i}')
+            train_idxs = [self.dataset[i].spc.index for i in train]
+            test_data = BACDataset([self.dataset[i] for i in test])
+            logging.info(f'Testing on species {", ".join(str(d.spc.index) for d in test_data)}')
+            bac = BAC(self.level_of_theory, self.bac_type)
+            bac.fit(db_names=db_names, idxs=train_idxs, **kwargs)
+            bac.test(dataset=test_data)  # Stores predictions in each BACDataset
+            self.bacs.append(bac)
+            test_data_results.append(test_data)
+
+            stats_before = test_data.calculate_stats()
+            stats_after = test_data.calculate_stats(for_bac_data=True)
+            logging.info('Testing results:')
+            logging.info(f'RMSE/MAE before fitting: {stats_before.rmse:.2f}/{stats_before.mae:.2f} kcal/mol')
+            logging.info(f'RMSE/MAE after fitting: {stats_after.rmse:.2f}/{stats_after.mae:.2f} kcal/mol')
+
+        rmse_before = [test_data.calculate_stats().rmse for test_data in test_data_results]
+        mae_before = [test_data.calculate_stats().mae for test_data in test_data_results]
+        rmse_after = [test_data.calculate_stats(for_bac_data=True).rmse for test_data in test_data_results]
+        mae_after = [test_data.calculate_stats(for_bac_data=True).mae for test_data in test_data_results]
+
+        logging.info('\nCross-validation results:')
+        logging.info(f'Testing RMSE before fitting (mean +- 1 std): '
+                     f'{np.average(rmse_before):.2f} +- {np.std(rmse_before):.2f} kcal/mol')
+        logging.info(f'Testing MAE before fitting (mean +- 1 std): '
+                     f'{np.average(mae_before):.2f} +- {np.std(mae_before):.2f} kcal/mol')
+        logging.info(f'Testing RMSE after fitting (mean +- 1 std): '
+                     f'{np.average(rmse_after):.2f} +- {np.std(rmse_after):.2f} kcal/mol')
+        logging.info(f'Testing MAE after fitting (mean +- 1 std): '
+                     f'{np.average(mae_after):.2f} +- {np.std(mae_after):.2f} kcal/mol')
+
+
+def get_confidence_intervals(x: np.ndarray,
+                             y: np.ndarray,
+                             ypred: np.ndarray,
+                             weights: np.ndarray = None,
+                             alpha: float = 0.05):
+    """
+    Compute confidence intervals with two-sided t-test.
+
+    Args:
+        x: Feature matrix.
+        y: Target vector.
+        ypred: Vector of predictions.
+        weights: Weight matrix.
+        alpha: Significance level (e.g., alpha=0.05 are 95% confidence intervals).
+
+    Returns:
+        Vector of confidence interval half-widths
+        and variance-covariance matrix.
+    """
+    n = len(y)  # Ndata
+    p = len(x.T)  # Nparam
+    if weights is None:
+        weights = np.eye(n)
+
+    e = y - ypred  # Residuals
+    sigma2 = e.T @ weights @ e / (n - p)  # MSE
+    cov = sigma2 * np.linalg.inv(x.T @ weights @ x)  # covariance matrix
+    se = np.sqrt(np.diag(cov))  # standard error
+    tdist = distributions.t.ppf(1 - alpha / 2, n - p)  # student-t
+    ci = tdist * se  # confidence interval half-width
+    return ci, cov
 
 
 def _covariance_to_correlation(cov: np.ndarray) -> np.ndarray:

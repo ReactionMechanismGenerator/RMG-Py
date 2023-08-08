@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -1183,7 +1183,7 @@ $(document).ready(function() {
 
 <P><b>Fitted Reverse Kinetics:</b>
 {% if not rxn2.kinetics.is_pressure_dependent() %}
-{{rxn2.generate_reverse_rate_coefficient().to_html() }}
+{{rxn2.generate_reverse_rate_coefficient(surface_site_density=2.483e-05).to_html() }}
 {% else %} Pressure dependent
 {% endif %}
 {% endif %}

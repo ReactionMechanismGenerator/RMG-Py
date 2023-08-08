@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -28,6 +28,7 @@
 cimport rmgpy.constants as constants
 from rmgpy.species cimport Species, TransitionState
 from rmgpy.molecule.molecule cimport Atom, Molecule
+from rmgpy.molecule.graph cimport Vertex, Graph
 from rmgpy.molecule.element cimport Element
 from rmgpy.kinetics.model cimport KineticsModel
 from rmgpy.kinetics.arrhenius cimport Arrhenius
@@ -125,7 +126,7 @@ cdef class Reaction:
 
     cpdef copy(self)
 
-    cpdef ensure_species(self, bint reactant_resonance=?, bint product_resonance=?)
+    cpdef ensure_species(self, bint reactant_resonance=?, bint product_resonance=?, bint save_order=?)
 
     cpdef list check_collision_limit_violation(self, float t_min, float t_max, float p_min, float p_max)
 

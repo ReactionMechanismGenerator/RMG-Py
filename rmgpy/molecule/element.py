@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2021 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -330,6 +330,8 @@ element_list = [
 # if a sourced value becomes available
 # (C,C,2.5) is C#C - (CbenzeneC - C-C)
 # P=P value is from: https://www2.chemistry.msu.edu/faculty/reusch/OrgPage/bndenrgy.htm
+# C#S is the value for [C+]#[S-] from 10.1002/chem.201002840 referenced relative to 0 K
+# X-O and X-X (X=F,Cl,Br) taken from https://labs.chem.ucsb.edu/zakarian/armen/11---bonddissociationenergy.pdf
 # The reference state is gaseous state at 298 K, but some of the values in the bde_dict might be coming from 0 K.
 # The bond dissociation energy at 298 K is greater than the bond dissociation energy at 0 K by 0.6 to 0.9 kcal/mol
 # (between RT and 3/2 RT), and this difference is usually much smaller than the uncertainty in the bond dissociation
@@ -348,7 +350,8 @@ bde_dict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol')
             ('C', 'N', 3): (887.0, 'kJ/mol'), ('C', 'O', 1): (358.0, 'kJ/mol'),
             ('C', 'O', 2): (799.0, 'kJ/mol'), ('C', 'O', 3): (1072.0, 'kJ/mol'),
             ('C', 'P', 1): (264.0, 'kJ/mol'), ('C', 'S', 1): (272.0, 'kJ/mol'),
-            ('C', 'S', 2): (573.0, 'kJ/mol'), ('C', 'F', 1): (485.0, 'kJ/mol'),
+            ('C', 'S', 2): (573.0, 'kJ/mol'), ('C', 'S', 3): (709.6, 'kJ/mol'),
+            ('C', 'F', 1): (485.0, 'kJ/mol'),
             ('C', 'Cl', 1): (327.0, 'kJ/mol'), ('C', 'Br', 1): (285.0, 'kJ/mol'),
             ('C', 'I', 1): (213.0, 'kJ/mol'),
             ('Si', 'Si', 1): (222.0, 'kJ/mol'), ('Si', 'N', 1): (355.0, 'kJ/mol'),
@@ -358,7 +361,7 @@ bde_dict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol')
             ('N', 'N', 1): (167.0, 'kJ/mol'), ('N', 'N', 2): (418.0, 'kJ/mol'),
             ('N', 'N', 3): (942.0, 'kJ/mol'), ('N', 'O', 1): (201.0, 'kJ/mol'),
             ('N', 'O', 2): (607.0, 'kJ/mol'), ('N', 'F', 1): (283.0, 'kJ/mol'),
-            ('N', 'Cl', 1): (313.0, 'kJ/mol'),
+            ('N', 'Cl', 1): (313.0, 'kJ/mol'), ('N', 'S', 1): (467.0, 'kJ/mol'),
             ('O', 'O', 1): (142.0, 'kJ/mol'), ('O', 'O', 2): (494.0, 'kJ/mol'),
             ('O', 'P', 1): (335.0, 'kJ/mol'), ('O', 'P', 2): (544.0, 'kJ/mol'),
             ('O', 'S', 1): (265.0, 'kJ/mol'), ('O', 'S', 2): (522.0, 'kJ/mol'),
@@ -369,7 +372,10 @@ bde_dict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol')
             ('S', 'S', 1): (226.0, 'kJ/mol'), ('S', 'S', 2): (425.0, 'kJ/mol'),
             ('S', 'Cl', 1): (255.0, 'kJ/mol'),
             ('F', 'F', 1): (155.0, 'kJ/mol'), ('Cl', 'Cl', 1): (240.0, 'kJ/mol'),
-            ('Br', 'Br', 1): (190.0, 'kJ/mol'), ('I', 'I', 1): (148.0, 'kJ/mol')}
+            ('Br', 'Br', 1): (190.0, 'kJ/mol'), ('I', 'I', 1): (148.0, 'kJ/mol'),
+            ('F', 'O', 1): (222.0, 'kJ/mol'), ('Cl', 'O', 1): (272.0, 'kJ/mol'),
+            ('Br', 'O', 1): (235.1, 'kJ/mol'), ('Cl', 'F', 1): (250.54, 'kJ/mol'),
+            ('Br', 'F', 1): (233.8, 'kJ/mol'), ('Br', 'Cl', 1): (218.84, 'kJ/mol')}
 
 bdes = {}
 for key, value in bde_dict.items():
