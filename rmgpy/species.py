@@ -365,8 +365,17 @@ class Species(object):
         list in the `molecule` attribute. Does not generate resonance isomers
         of the loaded molecule.
         """
+        lines = adjlist.splitlines()
+
+        if len(lines[0].split()) == 1:
+            label = lines.pop(0) # remove the first line if it is a label before detecting cutting label
+            adjlist_no_label = '\n'.join(lines)
+        else:
+            adjlist_no_label = adjlist
+
         # detect if it contains cutting label
-        _ , cutting_label_list = Fragment().detect_cutting_label(adjlist)
+        _ , cutting_label_list = Fragment().detect_cutting_label(adjlist_no_label)
+        
         if cutting_label_list == []:
             self.molecule = [Molecule().from_adjacency_list(adjlist, saturate_h=False,
                                                             raise_atomtype_exception=raise_atomtype_exception,
