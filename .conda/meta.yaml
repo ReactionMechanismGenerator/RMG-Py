@@ -1,7 +1,7 @@
 # For conda build
 package:
   name: rmg
-  version: 3.1.0
+  version: 3.2.0
 
 source:
   path: ../
@@ -64,7 +64,7 @@ requirements:
     - pyzmq
     - quantities
     - rdkit >=2018
-    - rmgdatabase >=3.1.0
+    - rmgdatabase >=3.2.0
     - scikit-learn
     - scipy
     - symmetry
