@@ -232,6 +232,8 @@ This configuration will allow you to use the debugger breakpoints inside unit te
             "env": {"PYTEST_ADDOPTS": "--no-cov",} // without disabling coverage VS Code doesn't stop at breakpoints while debugging because pytest-cov is using the same technique to access the source code being run
           }
 
+See more about testing in VSCode in the :ref:`Testing in VSCode <vscode_testing>` section below.
+
 Test Suite
 ==========
 
@@ -254,6 +256,44 @@ Make sure that the environment is active before running the tests: ``conda activ
     cd RMG-Py
     make test-database
     
+
+.. _vscode_testing:
+
+Testing in VSCode
+=================
+
+Once you have the Python extension installed and a Python file open within the editor, 
+a test beaker icon will be displayed on the VS Code Activity bar. 
+The beaker icon is for the Test Explorer view. When opening the Test Explorer, 
+you will see a Configure Tests button if you don't have a test framework enabled.
+Once you select Configure Tests, you will be prompted to select a test framework 
+(**select `pytest`**)
+and a folder containing the tests
+(**select `test`**).
+To configure the rest of the settings, find the ``settings.json`` file in your ``.vscode`` folder.
+You can use the following settings to configure the pytest framework::
+
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestPath": "python-jl -m pytest",
+    "python.testing.pytestArgs": [
+        "-p", "julia.pytestplugin",
+        "--julia-compiled-modules=no",
+        "--ignore", "test/regression",
+        "-m", "not functional",
+        // "-n", "auto", // number of parallel processes, if you install pytest-xdist
+        "test"
+    ],
+
+To run the tests, you can click the Run All Tests button in the Test Explorer view.
+Learn more at the `Python testing in Visual Studio Code <https://code.visualstudio.com/docs/python/testing>`_ documentation.
+
+Given the time taken for Julia to compile things every time it launches,
+you might find this to be painfully slow even for a simple test.
+It may be possible to use ``--julia-sysimage=JULIA_SYSIMAGE`` instead of ``--julia-compiled-modules=no``,
+or disable PyJulia entirely.
+If you find a better way to do this, or clearer instructions, 
+please `update this section <https://github.com/ReactionMechanismGenerator/RMG-Py/edit/main/documentation/source/users/rmg/installation/anacondaDeveloper.rst>`_.
+
 
 Running Examples
 ================
