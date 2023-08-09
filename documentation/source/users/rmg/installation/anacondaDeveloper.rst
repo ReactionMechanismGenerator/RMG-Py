@@ -152,8 +152,8 @@ Debugging
 =========
 
 If you wish to debug using the (very helpful) debugger in `VSCode <https://code.visualstudio.com>`_,
-here is an example launch configuration to put in your launch.json file,
-which can be found in the .vscode folder.
+here is an example launch configuration to put in your ``launch.json`` file,
+which can be found in the ``.vscode`` folder.
 You might have to edit them slightly to match your exact paths. Specifically, 
 you will need ``/opt/miniconda3/envs/rmg_env`` to point to where your conda environment is located.
 
@@ -178,7 +178,7 @@ python-jl. ::
         },
 
 This configuration will allow you to debug a subset of the unit tests.
-Open one of the many test files named `*Test.py` in `test/rmgpy` before you launch it::
+Open one of the many test files named ``*Test.py`` in ``test/rmgpy`` before you launch it::
 
         {
             "name": "Python: pytest Current File",
@@ -217,6 +217,20 @@ This configuration will allow you to debug running all the database tests.::
                 "PYTHONPATH": "${workspaceFolder}/",
             },
         },
+
+This configuration will allow you to use the debugger breakpoints inside unit tests being run by the pytest framework::
+
+        {
+            "name": "Python: Debug Tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "purpose": ["debug-test"],
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {"PYTEST_ADDOPTS": "--no-cov",} // without disabling coverage VS Code doesn't stop at breakpoints while debugging because pytest-cov is using the same technique to access the source code being run
+          }
 
 Test Suite
 ==========
