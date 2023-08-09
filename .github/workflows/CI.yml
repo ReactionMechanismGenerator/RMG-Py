@@ -154,7 +154,7 @@ jobs:
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         run: |
           python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" || true
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' || true 
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="for_rmg")); using ReactionMechanismSimulator' || true 
 
       # non-regression testing
       - name: Unit tests
