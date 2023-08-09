@@ -32,7 +32,7 @@ Briefly, RMG depends on the following packages, almost all of which can be found
 * **mpmath:** for arbitrary-precision arithmetic used in Arkane
 * **muq:** (optional) MIT Uncertainty Quantification library, used for global uncertainty analysis
 * **networkx:** (optional) network analysis for reaction-path analysis IPython notebook
-* **nose:** advanced unit test controls
+* **pytest:** advanced unit test controls
 * **numpy:** fast matrix operations
 * **openbabel:** chemical toolbox for speaking the many languages of chemical data
 * **psutil:** system utilization diagnostic tool
@@ -58,7 +58,7 @@ License Restrictions on Dependencies
 
 All of RMG's dependencies except the ones listed below are freely available and compatible with RMG's open source MIT license (though the specific nature of their licenses vary). 
 
-* **pydas**: The DAE solvers used in the simulations come from `Linda Petzold’s research group <https://cse.cs.ucsb.edu/software/>`_ at UCSB.  For running sensitivity analysis in RMG, the DASPK 3.1 solver is required, which "is subject to copyright restrictions” for non-academic use. Please visit their website for more details. To run RMG without this restriction, one may switch to compiling with the DASSL solver instead in RMG, which is "available in the public domain.”
+* **pydas**: The DAE solvers used in the simulations come from `Linda Petzold's research group <https://cse.cs.ucsb.edu/software/>`_ at UCSB.  For running sensitivity analysis in RMG, the DASPK 3.1 solver is required, which "is subject to copyright restrictions” for non-academic use. Please visit their website for more details. To run RMG without this restriction, one may switch to compiling with the DASSL solver instead in RMG, which is "available in the public domain.”
 
 If you wish to do on-the-fly quantum chemistry calculations of thermochemistry (advisable for fused cyclic species in particular, where the ring corrections to group additive estimates are lacking),
 the then you will need the third-party software for the QM calculations:

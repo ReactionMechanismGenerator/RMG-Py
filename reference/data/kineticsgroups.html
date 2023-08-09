@@ -96,25 +96,6 @@ not generally used in other GAVs due to species generally not being prelabeled.<
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsGroups.estimate_kinetics_using_group_additivity">
-<span class="sig-name descname"><span class="pre">estimate_kinetics_using_group_additivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_kinetics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsGroups.estimate_kinetics_using_group_additivity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine the appropriate kinetics for a reaction with the given
-<cite>template</cite> using group additivity.</p>
-<p>Returns just the kinetics.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsGroups.generate_group_additivity_values">
-<span class="sig-name descname"><span class="pre">generate_group_additivity_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kunits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Arrhenius'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsGroups.generate_group_additivity_values" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate the group additivity values using the given <cite>training_set</cite>,
-a list of 2-tuples of the form <code class="docutils literal notranslate"><span class="pre">(template,</span> <span class="pre">kinetics)</span></code>. You must also
-specify the <cite>kunits</cite> for the family and the <cite>method</cite> to use when
-generating the group values. Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the group values have
-changed significantly since the last time they were fitted, or <code class="docutils literal notranslate"><span class="pre">False</span></code>
-otherwise.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsGroups.generate_old_tree">
 <span class="sig-name descname"><span class="pre">generate_old_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsGroups.generate_old_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a multi-line string representation of the current tree using

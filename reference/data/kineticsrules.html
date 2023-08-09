@@ -181,8 +181,11 @@ Note that these argument names are retained for backward compatibility.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsRules.load_old">
-<span class="sig-name descname"><span class="pre">load_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_labels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsRules.load_old" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a set of old rate rules for kinetics groups into this depository.</p>
+<span class="sig-name descname"><span class="pre">load_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treestr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsRules.load_old" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a dictionary-tree-library based database. The database is stored
+in three files: <cite>dictstr</cite> is the path to the dictionary, <cite>treestr</cite> to
+the tree, and <cite>libstr</cite> to the library. The tree is optional, and should
+be set to ‘’ if not desired.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -270,13 +273,6 @@ not discard duplicate entries.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsRules.process_old_library_entry">
-<span class="sig-name descname"><span class="pre">process_old_library_entry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsRules.process_old_library_entry" title="Permalink to this definition">¶</a></dt>
-<dd><p>Process a list of parameters <cite>data</cite> as read from an old-style RMG
-thermo database, returning the corresponding kinetics object.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsRules.remove_group">
 <span class="sig-name descname"><span class="pre">remove_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group_to_remove</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsRules.remove_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes a group that is in a tree from the database. In addition to deleting from self.entries,
@@ -305,8 +301,9 @@ to the path given.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsRules.save_old">
-<span class="sig-name descname"><span class="pre">save_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsRules.save_old" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a set of old rate rules for kinetics groups from this depository.</p>
+<span class="sig-name descname"><span class="pre">save_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treestr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libstr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsRules.save_old" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database to a set of text files using the old-style
+syntax.</p>
 </dd></dl>
 
 <dl class="py method">

@@ -201,7 +201,7 @@ export PATH=YourFolder/RMG-Py/:$PATH
 <p>Be sure to either close and reopen your terminal to refresh your environment variables (<code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">~/.bashrc</span></code> or <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">~/.zshrc</span></code>).</p>
 </li>
 <li><p>Install and Link Julia dependencies:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">julia</span> <span class="o">-</span><span class="n">e</span> <span class="s1">&#39;using Pkg; Pkg.add(&quot;PyCall&quot;);Pkg.build(&quot;PyCall&quot;);Pkg.add(PackageSpec(name=&quot;ReactionMechanismSimulator&quot;,rev=&quot;main&quot;)); using ReactionMechanismSimulator;&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">julia</span> <span class="o">-</span><span class="n">e</span> <span class="s1">&#39;using Pkg; Pkg.add(&quot;PyCall&quot;);Pkg.build(&quot;PyCall&quot;);Pkg.add(PackageSpec(name=&quot;ReactionMechanismSimulator&quot;,rev=&quot;for_rmg&quot;)); using ReactionMechanismSimulator;&#39;</span>
 
 <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;import julia; julia.install(); import diffeqpy; diffeqpy.install()&quot;</span>
 </pre></div>
@@ -217,8 +217,8 @@ export PATH=YourFolder/RMG-Py/:$PATH
 <section id="debugging">
 <h2><span class="section-number">3.3.1.1. </span>Debugging<a class="headerlink" href="#debugging" title="Permalink to this heading">¶</a></h2>
 <p>If you wish to debug using the (very helpful) debugger in <a class="reference external" href="https://code.visualstudio.com">VSCode</a>,
-here is an example launch configuration to put in your launch.json file,
-which can be found in the .vscode folder.
+here is an example launch configuration to put in your <code class="docutils literal notranslate"><span class="pre">launch.json</span></code> file,
+which can be found in the <code class="docutils literal notranslate"><span class="pre">.vscode</span></code> folder.
 You might have to edit them slightly to match your exact paths. Specifically,
 you will need <code class="docutils literal notranslate"><span class="pre">/opt/miniconda3/envs/rmg_env</span></code> to point to where your conda environment is located.</p>
 <p>This configuration will allow you to debug the rms_constant_V example, running through
@@ -242,15 +242,15 @@ python-jl.</p>
 </pre></div>
 </div>
 <p>This configuration will allow you to debug a subset of the unit tests.
-Open one of the many test files named <cite>*Test.py</cite> before you launch it:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="p">{</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Python: nosetest Current File&quot;</span><span class="p">,</span>
+Open one of the many test files named <code class="docutils literal notranslate"><span class="pre">*Test.py</span></code> in <code class="docutils literal notranslate"><span class="pre">test/rmgpy</span></code> before you launch it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Python: pytest Current File&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
     <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/nosetests&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/pytest&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python-jl&quot;</span><span class="p">,</span>
     <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;--nologcapture&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--nocapture&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--capture=no&quot;</span><span class="p">,</span>
         <span class="s2">&quot;--verbose&quot;</span><span class="p">,</span>
         <span class="s2">&quot;$</span><span class="si">{file}</span><span class="s2">&quot;</span>
     <span class="p">],</span>
@@ -267,13 +267,12 @@ Open one of the many test files named <cite>*Test.py</cite> before you launch it
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Test RMG-database&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
     <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/nosetests&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/pytest&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python-jl&quot;</span><span class="p">,</span>
     <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;--nologcapture&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--nocapture&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--capture=no&quot;</span><span class="p">,</span>
         <span class="s2">&quot;--verbose&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--detailed-errors&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;$</span><span class="si">{workspaceFolder}</span><span class="s2">/testing/databaseTest.py&quot;</span>
+        <span class="s2">&quot;$</span><span class="si">{workspaceFolder}</span><span class="s2">/test/database/databaseTest.py&quot;</span>
     <span class="p">],</span>
     <span class="s2">&quot;console&quot;</span><span class="p">:</span> <span class="s2">&quot;integratedTerminal&quot;</span><span class="p">,</span>
     <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -283,6 +282,21 @@ Open one of the many test files named <cite>*Test.py</cite> before you launch it
 <span class="p">},</span>
 </pre></div>
 </div>
+<p>This configuration will allow you to use the debugger breakpoints inside unit tests being run by the pytest framework:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Python: Debug Tests&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{file}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;purpose&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;debug-test&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python-jl&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;console&quot;</span><span class="p">:</span> <span class="s2">&quot;integratedTerminal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;justMyCode&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;PYTEST_ADDOPTS&quot;</span><span class="p">:</span> <span class="s2">&quot;--no-cov&quot;</span><span class="p">,}</span> <span class="o">//</span> <span class="n">without</span> <span class="n">disabling</span> <span class="n">coverage</span> <span class="n">VS</span> <span class="n">Code</span> <span class="n">doesn</span><span class="s1">&#39;t stop at breakpoints while debugging because pytest-cov is using the same technique to access the source code being run</span>
+  <span class="p">}</span>
+</pre></div>
+</div>
+<p>See more about testing in VSCode in the <a class="reference internal" href="#vscode-testing"><span class="std std-ref">Testing in VSCode</span></a> section below.</p>
 </section>
 <section id="test-suite">
 <h2><span class="section-number">3.3.1.2. </span>Test Suite<a class="headerlink" href="#test-suite" title="Permalink to this heading">¶</a></h2>
@@ -309,8 +323,41 @@ Make sure that the environment is active before running the tests: <code class="
 </li>
 </ol>
 </section>
+<section id="testing-in-vscode">
+<span id="vscode-testing"></span><h2><span class="section-number">3.3.1.3. </span>Testing in VSCode<a class="headerlink" href="#testing-in-vscode" title="Permalink to this heading">¶</a></h2>
+<p>Once you have the Python extension installed and a Python file open within the editor,
+a test beaker icon will be displayed on the VS Code Activity bar.
+The beaker icon is for the Test Explorer view. When opening the Test Explorer,
+you will see a Configure Tests button if you don’t have a test framework enabled.
+Once you select Configure Tests, you will be prompted to select a test framework
+(<strong>select `pytest`</strong>)
+and a folder containing the tests
+(<strong>select `test`</strong>).
+To configure the rest of the settings, find the <code class="docutils literal notranslate"><span class="pre">settings.json</span></code> file in your <code class="docutils literal notranslate"><span class="pre">.vscode</span></code> folder.
+You can use the following settings to configure the pytest framework:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;python.testing.pytestEnabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+<span class="s2">&quot;python.testing.pytestPath&quot;</span><span class="p">:</span> <span class="s2">&quot;python-jl -m pytest&quot;</span><span class="p">,</span>
+<span class="s2">&quot;python.testing.pytestArgs&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;-p&quot;</span><span class="p">,</span> <span class="s2">&quot;julia.pytestplugin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;--julia-compiled-modules=no&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;--ignore&quot;</span><span class="p">,</span> <span class="s2">&quot;test/regression&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;not functional&quot;</span><span class="p">,</span>
+    <span class="o">//</span> <span class="s2">&quot;-n&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="o">//</span> <span class="n">number</span> <span class="n">of</span> <span class="n">parallel</span> <span class="n">processes</span><span class="p">,</span> <span class="k">if</span> <span class="n">you</span> <span class="n">install</span> <span class="n">pytest</span><span class="o">-</span><span class="n">xdist</span>
+    <span class="s2">&quot;test&quot;</span>
+<span class="p">],</span>
+</pre></div>
+</div>
+<p>To run the tests, you can click the Run All Tests button in the Test Explorer view.
+Learn more at the <a class="reference external" href="https://code.visualstudio.com/docs/python/testing">Python testing in Visual Studio Code</a> documentation.</p>
+<p>Given the time taken for Julia to compile things every time it launches,
+you might find this to be painfully slow even for a simple test.
+It may be possible to use <code class="docutils literal notranslate"><span class="pre">--julia-sysimage=JULIA_SYSIMAGE</span></code> instead of <code class="docutils literal notranslate"><span class="pre">--julia-compiled-modules=no</span></code>,
+or disable PyJulia entirely.
+If you find a better way to do this, or clearer instructions,
+please <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/edit/main/documentation/source/users/rmg/installation/anacondaDeveloper.rst">update this section</a>.</p>
+</section>
 <section id="running-examples">
-<h2><span class="section-number">3.3.1.3. </span>Running Examples<a class="headerlink" href="#running-examples" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">3.3.1.4. </span>Running Examples<a class="headerlink" href="#running-examples" title="Permalink to this heading">¶</a></h2>
 <p>A number of basic examples can be run immediately.  Additional example input files can be found in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/examples</span></code> folder.  Please read more on <a class="reference internal" href="../examples.html#examples"><span class="std std-ref">Example Input Files</span></a> in the documentation.</p>
 <ol class="arabic">
 <li><p><strong>Minimal Example</strong>: this will run an Ethane pyrolysis model.  It should take less than a minute to complete. The results will be in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/testing/minimal</span></code> folder:</p>
@@ -340,7 +387,7 @@ Make sure that the environment is active before running the tests: <code class="
 </ol>
 </section>
 <section id="building-documentation">
-<h2><span class="section-number">3.3.1.4. </span>Building Documentation<a class="headerlink" href="#building-documentation" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">3.3.1.5. </span>Building Documentation<a class="headerlink" href="#building-documentation" title="Permalink to this heading">¶</a></h2>
 <p>To build the documentation (to test that you have it right before pushing to GitHub) you will need to install sphinx:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">rmg_env</span>
 <span class="n">conda</span> <span class="n">install</span> <span class="n">sphinx</span>
@@ -387,8 +434,9 @@ Make sure that the environment is active before running the tests: <code class="
 <li><a class="reference internal" href="#">3.3.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX</a><ul>
 <li><a class="reference internal" href="#debugging">3.3.1.1. Debugging</a></li>
 <li><a class="reference internal" href="#test-suite">3.3.1.2. Test Suite</a></li>
-<li><a class="reference internal" href="#running-examples">3.3.1.3. Running Examples</a></li>
-<li><a class="reference internal" href="#building-documentation">3.3.1.4. Building Documentation</a></li>
+<li><a class="reference internal" href="#testing-in-vscode">3.3.1.3. Testing in VSCode</a></li>
+<li><a class="reference internal" href="#running-examples">3.3.1.4. Running Examples</a></li>
+<li><a class="reference internal" href="#building-documentation">3.3.1.5. Building Documentation</a></li>
 </ul>
 </li>
 </ul>

@@ -261,14 +261,6 @@ with the tree the entry comes from</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.estimate_kinetics_using_group_additivity">
-<span class="sig-name descname"><span class="pre">estimate_kinetics_using_group_additivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.estimate_kinetics_using_group_additivity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine the appropriate kinetics for a reaction with the given
-<cite>template</cite> using group additivity.</p>
-<p>Returns just the kinetics, or None.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.estimate_kinetics_using_rate_rules">
 <span class="sig-name descname"><span class="pre">estimate_kinetics_using_rate_rules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.estimate_kinetics_using_rate_rules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the appropriate kinetics for a reaction with the given
@@ -636,9 +628,11 @@ with loading database files.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.load_old">
-<span class="sig-name descname"><span class="pre">load_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load an old-style RMG kinetics group additivity database from the
-location <cite>path</cite>.</p>
+<span class="sig-name descname"><span class="pre">load_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treestr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a dictionary-tree-library based database. The database is stored
+in three files: <cite>dictstr</cite> is the path to the dictionary, <cite>treestr</cite> to
+the tree, and <cite>libstr</cite> to the library. The tree is optional, and should
+be set to ‘’ if not desired.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -656,12 +650,6 @@ value of <cite>pattern</cite>.</p>
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.load_old_library">
 <span class="sig-name descname"><span class="pre">load_old_library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse an RMG database library located at <cite>path</cite>.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.load_old_template">
-<span class="sig-name descname"><span class="pre">load_old_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.load_old_template" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load an old-style RMG reaction family template from the location <cite>path</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -833,8 +821,9 @@ current location in database</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.save_old">
-<span class="sig-name descname"><span class="pre">save_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the old RMG kinetics groups to the given <cite>path</cite> on disk.</p>
+<span class="sig-name descname"><span class="pre">save_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treestr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libstr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current database to a set of text files using the old-style
+syntax.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -849,12 +838,6 @@ syntax.</p>
 <span class="sig-name descname"><span class="pre">save_old_library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old_library" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the current database library to a text file using the old-style
 syntax.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.save_old_template">
-<span class="sig-name descname"><span class="pre">save_old_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.save_old_template" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save an old-style RMG reaction family template from the location <cite>path</cite>.</p>
 </dd></dl>
 
 <dl class="py method">

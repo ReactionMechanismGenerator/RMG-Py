@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>9.9. Database Scripts &#8212; RMG-Py 3.2.0 Documentation</title>
+    <title>9.8. Database Scripts &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
     
@@ -18,8 +18,8 @@
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="9.10. Standardize Model Species Names" href="standardizeModelSpeciesNames.html" />
-    <link rel="prev" title="9.8. Convert FAME to Arkane Input File" href="convertFAME.html" />
+    <link rel="next" title="9.9. Standardize Model Species Names" href="standardizeModelSpeciesNames.html" />
+    <link rel="prev" title="9.7. Thermo Estimation Module" href="thermoEstimation.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -39,10 +39,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="standardizeModelSpeciesNames.html" title="9.10. Standardize Model Species Names"
+          <a href="standardizeModelSpeciesNames.html" title="9.9. Standardize Model Species Names"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="convertFAME.html" title="9.8. Convert FAME to Arkane Input File"
+          <a href="thermoEstimation.html" title="9.7. Thermo Estimation Module"
              accesskey="P">previous</a> |</li>
   <li><a href="https://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../../index.html">3.2.0 Documentation</a> &raquo;</li>
@@ -50,7 +50,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="index.html" accesskey="U"><span class="section-number">9. </span>Standalone Modules</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">9.9. </span>Database Scripts</a></li> 
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">9.8. </span>Database Scripts</a></li> 
       </ul>
     </div>  
 
@@ -60,10 +60,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="database-scripts">
-<span id="databasescripts"></span><h1><span class="section-number">9.9. </span>Database Scripts<a class="headerlink" href="#database-scripts" title="Permalink to this heading">¶</a></h1>
+<span id="databasescripts"></span><h1><span class="section-number">9.8. </span>Database Scripts<a class="headerlink" href="#database-scripts" title="Permalink to this heading">¶</a></h1>
 <p>This section details usage for scripts available in <code class="docutils literal notranslate"><span class="pre">RMG-database/scripts</span></code> folder.</p>
 <section id="evanspolanyi-py">
-<h2><span class="section-number">9.9.1. </span>evansPolanyi.py<a class="headerlink" href="#evanspolanyi-py" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">9.8.1. </span>evansPolanyi.py<a class="headerlink" href="#evanspolanyi-py" title="Permalink to this heading">¶</a></h2>
 <p>This script will generate an Evans-Polanyi plot for a single kinetics
 depository.</p>
 <p>Usage:</p>
@@ -81,7 +81,7 @@ depository.</p>
 </div>
 </section>
 <section id="exportkineticslibrarytochemkin-py">
-<h2><span class="section-number">9.9.2. </span>exportKineticsLibraryToChemkin.py<a class="headerlink" href="#exportkineticslibrarytochemkin-py" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">9.8.2. </span>exportKineticsLibraryToChemkin.py<a class="headerlink" href="#exportkineticslibrarytochemkin-py" title="Permalink to this heading">¶</a></h2>
 <p>This script exports an individual RMG-Py kinetics library to a chemkin
 and dictionary file.  Thermo is taken from RMG’s estimates and libraries.
 In order to use more specific thermo, you must tweak the thermoLibraries and
@@ -101,7 +101,7 @@ chem.inp and species_dictionary.txt files in the local directory.</p>
 </div>
 </section>
 <section id="importchemkinlibrary-py">
-<h2><span class="section-number">9.9.3. </span>importChemkinLibrary.py<a class="headerlink" href="#importchemkinlibrary-py" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">9.8.3. </span>importChemkinLibrary.py<a class="headerlink" href="#importchemkinlibrary-py" title="Permalink to this heading">¶</a></h2>
 <p>This script imports a chemkin file (along with RMG dictionary) from a local directory and saves a set of
 RMG-Py kinetics library and thermo library files.  These py files are automatically added to the
 input/kinetics/libraries and input/thermo/libraries folder under the user-specified <cite>name</cite> for the chemkin library.</p>
@@ -121,7 +121,7 @@ input/kinetics/libraries and input/thermo/libraries folder under the user-specif
 </div>
 </section>
 <section id="process-family-images-py">
-<h2><span class="section-number">9.9.4. </span>process_family_images.py<a class="headerlink" href="#process-family-images-py" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">9.8.4. </span>process_family_images.py<a class="headerlink" href="#process-family-images-py" title="Permalink to this heading">¶</a></h2>
 <p>This script processes reaction family template images (saved as eps files) into user friendly files (pdf and pngs).
 This should typically be run whenever a new family is added or an existing family is updated.</p>
 <dl class="simple">
@@ -174,11 +174,11 @@ to <code class="docutils literal notranslate"><span class="pre">&lt;policy</span
   <div>
     <h3><a href="../../../contents.html">Table of Contents</a></h3>
     <ul>
-<li><a class="reference internal" href="#">9.9. Database Scripts</a><ul>
-<li><a class="reference internal" href="#evanspolanyi-py">9.9.1. evansPolanyi.py</a></li>
-<li><a class="reference internal" href="#exportkineticslibrarytochemkin-py">9.9.2. exportKineticsLibraryToChemkin.py</a></li>
-<li><a class="reference internal" href="#importchemkinlibrary-py">9.9.3. importChemkinLibrary.py</a></li>
-<li><a class="reference internal" href="#process-family-images-py">9.9.4. process_family_images.py</a></li>
+<li><a class="reference internal" href="#">9.8. Database Scripts</a><ul>
+<li><a class="reference internal" href="#evanspolanyi-py">9.8.1. evansPolanyi.py</a></li>
+<li><a class="reference internal" href="#exportkineticslibrarytochemkin-py">9.8.2. exportKineticsLibraryToChemkin.py</a></li>
+<li><a class="reference internal" href="#importchemkinlibrary-py">9.8.3. importChemkinLibrary.py</a></li>
+<li><a class="reference internal" href="#process-family-images-py">9.8.4. process_family_images.py</a></li>
 </ul>
 </li>
 </ul>
@@ -188,13 +188,13 @@ to <code class="docutils literal notranslate"><span class="pre">&lt;policy</span
         <div class="menuitem">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="convertFAME.html"
-                          title="previous chapter"><span class="section-number">9.8. </span>Convert FAME to Arkane Input File</a></p>
+    <p class="topless"><a href="thermoEstimation.html"
+                          title="previous chapter"><span class="section-number">9.7. </span>Thermo Estimation Module</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
     <p class="topless"><a href="standardizeModelSpeciesNames.html"
-                          title="next chapter"><span class="section-number">9.10. </span>Standardize Model Species Names</a></p>
+                          title="next chapter"><span class="section-number">9.9. </span>Standardize Model Species Names</a></p>
   </div>
         </div>
         <div class="menuitem">
@@ -235,10 +235,10 @@ to <code class="docutils literal notranslate"><span class="pre">&lt;policy</span
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="standardizeModelSpeciesNames.html" title="9.10. Standardize Model Species Names"
+          <a href="standardizeModelSpeciesNames.html" title="9.9. Standardize Model Species Names"
              >next</a> |</li>
         <li class="right" >
-          <a href="convertFAME.html" title="9.8. Convert FAME to Arkane Input File"
+          <a href="thermoEstimation.html" title="9.7. Thermo Estimation Module"
              >previous</a> |</li>
   <li><a href="https://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../../index.html">3.2.0 Documentation</a> &raquo;</li>
@@ -246,7 +246,7 @@ to <code class="docutils literal notranslate"><span class="pre">&lt;policy</span
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="index.html" ><span class="section-number">9. </span>Standalone Modules</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">9.9. </span>Database Scripts</a></li> 
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">9.8. </span>Database Scripts</a></li> 
       </ul>
     </div>
 
