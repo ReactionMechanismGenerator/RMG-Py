@@ -409,7 +409,7 @@ cdef class PDepKineticsModel(KineticsModel):
         cdef double eff
         cdef int i
 
-        all_efficiencies = np.ones(len(species), np.float64)
+        all_efficiencies = np.ones(len(species), float)
         for mol, eff in self.efficiencies.iteritems():
             for spec in species:
                 if spec.is_isomorphic(mol):

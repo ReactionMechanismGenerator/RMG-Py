@@ -116,7 +116,7 @@ class ThermoJob(object):
             logging.info("Thermo already generated for species {}. Skipping thermo generation.".format(species))
             return None
 
-        Tlist = np.arange(10.0, 3001.0, 10.0, np.float64)
+        Tlist = np.arange(10.0, 3001.0, 10.0, float)
         Cplist = np.zeros_like(Tlist)
         H298 = 0.0
         S298 = 0.0

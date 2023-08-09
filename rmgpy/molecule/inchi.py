@@ -367,44 +367,6 @@ def _get_unpaired_electrons(mol):
     return sorted(locations)
 
 
-def _generate_minimum_resonance_isomer(mol):
-    """
-    Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
-    electrons descriptor.
-
-    First, we generate all isomorphic resonance isomers.
-    Next, we return the candidate with the lowest unpaired electrons metric.
-
-    The metric is a sorted list with indices of the atoms that bear an unpaired electron
-
-    This function is currently deprecated since InChI effectively eliminates resonance,
-    see InChI, the IUPAC International Chemical Identifier, J. Cheminform 2015, 7, 23, doi: 10.1186/s13321-015-0068-4
-    """
-
-    cython.declare(
-        candidates=list,
-        sel=Molecule,
-        cand=Molecule,
-        metric_sel=list,
-        metric_cand=list,
-    )
-
-    warnings.warn("The _generate_minimum_resonance_isomer method is no longer used"
-                    " and may be removed in RMG version 2.3.", DeprecationWarning)
-
-    candidates = resonance.generate_isomorphic_resonance_structures(mol, saturate_h=True)
-
-    sel = candidates[0]
-    metric_sel = _get_unpaired_electrons(sel)
-    for cand in candidates[1:]:
-        metric_cand = _get_unpaired_electrons(cand)
-        if metric_cand < metric_sel:
-            sel = cand
-            metric_sel = metric_cand
-
-    return sel
-
-
 def _compute_agglomerate_distance(agglomerates, mol):
     """
     Iterates over a list of lists containing atom indices.

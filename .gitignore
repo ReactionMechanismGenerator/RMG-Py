@@ -27,10 +27,8 @@ documentation/build/*
 # (These will be unique to each developer's setup)
 make.inc
 
-# Example output files
-examples/*
-!examples/*/input.py
-!examples/**/*.ipynb
+# output files
+rmgpy/output/*
 
 # NetBeans project files
 nbproject/*
@@ -88,11 +86,34 @@ RMG_Py.egg-info/*
 # RMG configuration file
 rmgpy/rmgrc
 
+# treegen log files
 scripts/treegen.log
-
 scripts/treegen_backup.log
 
 # regression testing files - ignore everything but input and regression input
 test/regression/*
 !test/regression/*/input.py
 !test/regression/*/regression_input.py
+
+# testing files
+test/arkane/data/two_parameter_arrhenius_fit/arkane.log
+test/arkane/data/two_parameter_arrhenius_fit/output.py
+test/arkane/data/two_parameter_arrhenius_fit/chem.inp
+test/rmgpy/test_data/temp_dir_for_testing/cantera/chem001.yaml
+rmgpy/test_data/copied_kinetic_lib/
+testing/qm/*
+test_log.txt
+
+# example directory - save the inputs but not the outputs
+# cantera input files
+examples/**/chem.inp
+# log files from the runs
+examples/**/arkane.log
+# results from the runs
+examples/**/species_dictionary.txt
+examples/**/output*py
+examples/**/network*py
+examples/**/dictionary.txt
+examples/**/reactions.py
+examples/**/RMG_libraries
+examples/**/species

@@ -230,7 +230,7 @@ class Network(object):
         self.n_j = 0
 
         # Calculate ground-state energies
-        self.E0 = np.zeros((self.n_isom + self.n_reac + self.n_prod), np.float64)
+        self.E0 = np.zeros((self.n_isom + self.n_reac + self.n_prod), float)
         for i in range(self.n_isom):
             self.E0[i] = self.isomers[i].E0
         for n in range(self.n_reac):
@@ -261,7 +261,7 @@ class Network(object):
         logging.debug('')
 
         logging.info('Calculating phenomenological rate coefficients for {0}...'.format(rxn))
-        K = np.zeros((len(Tlist), len(Plist), n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float64)
+        K = np.zeros((len(Tlist), len(Plist), n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), float)
 
         for t, T in enumerate(Tlist):
             for p, P in enumerate(Plist):
@@ -381,10 +381,10 @@ class Network(object):
                 # Choose the angular momenta to use to compute k(T,P) values at this temperature
                 # (This only applies if the J-rotor is adiabatic
                 if not self.active_j_rotor:
-                    j_list = self.j_list = np.arange(0, 20, 1, np.int)
+                    j_list = self.j_list = np.arange(0, 20, 1, int)
                     n_j = self.n_j = len(j_list)
                 else:
-                    j_list = self.j_list = np.array([0], np.int)
+                    j_list = self.j_list = np.array([0], int)
                     n_j = self.n_j = 1
 
                 # Map the densities of states onto this set of energies
@@ -476,9 +476,9 @@ class Network(object):
 
         # Generate the array of energies
         if use_grain_size:
-            e_list = np.arange(Emin, Emax + grain_size, grain_size, dtype=np.float64)
+            e_list = np.arange(Emin, Emax + grain_size, grain_size, dtype=float)
         else:
-            e_list = np.linspace(Emin, Emax, grain_count, dtype=np.float64)
+            e_list = np.linspace(Emin, Emax, grain_count, dtype=float)
 
         return e_list
 
@@ -559,7 +559,7 @@ class Network(object):
         # Shift the energy grains so that the minimum grain is zero
         e_list -= e_list[0]
 
-        dens_states = np.zeros((n_isom + n_reac + n_prod, n_grains), np.float64)
+        dens_states = np.zeros((n_isom + n_reac + n_prod, n_grains), float)
 
         # Densities of states for isomers
         for i in range(n_isom):
@@ -652,9 +652,9 @@ class Network(object):
         n_prod = len(self.products)
         n_j = 1 if self.active_j_rotor else len(j_list)
 
-        self.Kij = np.zeros([n_isom, n_isom, n_grains, n_j], np.float64)
-        self.Gnj = np.zeros([n_reac + n_prod, n_isom, n_grains, n_j], np.float64)
-        self.Fim = np.zeros([n_isom, n_reac, n_grains, n_j], np.float64)
+        self.Kij = np.zeros([n_isom, n_isom, n_grains, n_j], float)
+        self.Gnj = np.zeros([n_reac + n_prod, n_isom, n_grains, n_j], float)
+        self.Fim = np.zeros([n_isom, n_reac, n_grains, n_j], float)
 
         isomers = [isomer.species[0] for isomer in self.isomers]
         reactants = [reactant.species for reactant in self.reactants]
@@ -867,7 +867,7 @@ class Network(object):
         n_isom = len(self.isomers)
         n_reac = len(self.reactants)
         n_prod = len(self.products)
-        eq_ratios = np.zeros(n_isom + n_reac + n_prod, np.float64)
+        eq_ratios = np.zeros(n_isom + n_reac + n_prod, float)
         conc = (1e5 / constants.R / temperature)  # [=] mol/m^3
         for i in range(n_isom):
             G = self.isomers[i].get_free_energy(temperature)
@@ -894,8 +894,8 @@ class Network(object):
         n_j = 1 if self.j_list is None else len(self.j_list)
 
         try:
-            coll_freq = np.zeros(n_isom, np.float64)
-            m_coll = np.zeros((n_isom, n_grains, n_j, n_grains, n_j), np.float64)
+            coll_freq = np.zeros(n_isom, float)
+            m_coll = np.zeros((n_isom, n_grains, n_j, n_grains, n_j), float)
         except MemoryError:
             logging.warning('Collision matrix too large to manage')
             new_n_grains = int(n_grains / 2.0)

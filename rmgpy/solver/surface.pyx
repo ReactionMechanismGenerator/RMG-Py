@@ -167,8 +167,8 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef np.ndarray[np.int_t, ndim=1] species_on_surface, reactions_on_surface
         cdef Py_ssize_t index
         #: 1 if it's on a surface, 0 if it's in the gas phase
-        reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), np.int)
-        species_on_surface = np.zeros((self.num_core_species), np.int)
+        reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), int)
+        species_on_surface = np.zeros((self.num_core_species), int)
         for spec, index in self.species_index.items():
             if index >= self.num_core_species:
                 continue
@@ -359,7 +359,7 @@ cdef class SurfaceReactor(ReactionSystem):
                  double t,
                  np.ndarray[np.float64_t, ndim=1] N,
                  np.ndarray[np.float64_t, ndim=1] dNdt,
-                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float64)
+                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, float)
                  ):
 
         """
@@ -397,7 +397,7 @@ cdef class SurfaceReactor(ReactionSystem):
         num_edge_reactions = len(self.edge_reaction_rates)
         num_pdep_networks = len(self.network_leak_rates)
 
-        res = np.zeros(num_core_species, np.float64)
+        res = np.zeros(num_core_species, float)
 
         core_species_concentrations = np.zeros_like(self.core_species_concentrations)
         core_species_rates = np.zeros_like(self.core_species_rates)
@@ -424,7 +424,7 @@ cdef class SurfaceReactor(ReactionSystem):
             core_species_concentrations[j] = C[j]
 
         # Coverage dependence
-        coverage_corrections = np.ones_like(kf, np.float64)
+        coverage_corrections = np.ones_like(kf, float)
         if self.coverage_dependence:
             """
             self.coverage_dependencies[2] = [(3, 0.1, -1.0, 12000.0),]
@@ -538,7 +538,7 @@ cdef class SurfaceReactor(ReactionSystem):
         # mol/s
 
         if self.sensitivity and False:
-            delta = np.zeros(len(N), np.float64)
+            delta = np.zeros(len(N), float)
             delta[:num_core_species] = res
             if self.jacobian_matrix is None:
                 jacobian = self.jacobian(t, N, dNdt, 0, senpar)

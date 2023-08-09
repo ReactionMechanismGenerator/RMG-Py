@@ -300,7 +300,7 @@ cdef class Conformer(RMGObject):
         mass = self._mass.value_si
         coordinates = self._coordinates.value_si
 
-        I = np.zeros((3, 3), np.float64)
+        I = np.zeros((3, 3), float)
         center_of_mass = self.get_center_of_mass()
 
         atoms = range(1, mass.shape[0] + 1)

@@ -314,7 +314,7 @@ def apply_inverse_laplace_transform_method(transition_state,
         elif n >= n_crit:
             import scipy.special
             # Evaluate the inverse Laplace transform of the T**n exp(-Ea/RT) piece, which only exists for n >= 0
-            phi0 = np.zeros(n_grains, np.float64)
+            phi0 = np.zeros(n_grains, float)
             for r in range(n_grains):
                 energy = e_list[r] - e_list[0] - e_a
                 if energy > 1:

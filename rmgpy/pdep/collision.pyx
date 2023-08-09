@@ -150,8 +150,8 @@ cdef class SingleExponentialDown(RMGObject):
 
         n_grains = e_list.shape[0]
         n_j = j_list.shape[0] if j_list is not None else 1
-        p = np.zeros((n_grains, n_j, n_grains, n_j), np.float64)
-        p0 = np.zeros((n_grains, n_grains), np.float64)
+        p = np.zeros((n_grains, n_j, n_grains, n_j), float)
+        p0 = np.zeros((n_grains, n_grains), float)
 
         alpha = 1.0 / self.get_alpha(T)
         beta = 1.0 / (constants.R * T)

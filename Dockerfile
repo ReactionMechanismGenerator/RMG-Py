@@ -62,7 +62,7 @@ ENV PATH="$RUNNER_CWD/RMG-Py:$PATH"
 # 1. Build RMG
 # 2. Install and link Julia dependencies for RMS
 RUN make && \
-    julia -e 'using Pkg; Pkg.add(PackageSpec(name="PyCall",rev="master")); Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' && \
+    julia -e 'using Pkg; Pkg.add(PackageSpec(name="PyCall",rev="master")); Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="for_rmg")); using ReactionMechanismSimulator' && \
     python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" 
 
 # RMG-Py should now be installed and ready - trigger precompilation and test run

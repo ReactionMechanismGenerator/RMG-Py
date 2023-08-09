@@ -602,7 +602,7 @@ class KineticsDrawer(object):
                 break
 
         # Determine naive position of each well (one per column)
-        coordinates = np.zeros((len(self.wells), 2), np.float64)
+        coordinates = np.zeros((len(self.wells), 2), float)
         x = padding
         for i in range(len(self.wells)):
             well = self.wells[i]

@@ -273,8 +273,8 @@ cdef class Wilhoit(HeatCapacityModel):
                 
             # What remains is to fit the polynomial coefficients (a0, a1, a2, a3)
             # This can be done directly - no iteration required
-            A = np.empty((Cpdata.shape[0],4), np.float64)
-            b = np.empty(Cpdata.shape[0], np.float64)
+            A = np.empty((Cpdata.shape[0],4), float)
+            b = np.empty(Cpdata.shape[0], float)
             for i in range(Cpdata.shape[0]):
                 y = Tdata[i] / (Tdata[i] + B)
                 for j in range(4):

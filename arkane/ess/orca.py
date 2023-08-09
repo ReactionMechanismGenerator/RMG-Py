@@ -134,7 +134,7 @@ class OrcaLog(ESSAdapter):
             while line != '':
                 if '$hessian' in line:
                     line = f.readline()
-                    force = np.zeros((n_rows, n_rows), np.float64)
+                    force = np.zeros((n_rows, n_rows), float)
                     for i in range(int(math.ceil(n_rows / 5.0))):
                         line = f.readline()
                         for j in range(n_rows):
@@ -180,9 +180,9 @@ class OrcaLog(ESSAdapter):
             mass1, num1 = get_element_mass(atom1)
             mass.append(mass1)
             numbers.append(num1)
-        coord = np.array(coords, np.float64)
-        number = np.array(numbers, np.int)
-        mass = np.array(mass, np.float64)
+        coord = np.array(coords, float)
+        number = np.array(numbers, int)
+        mass = np.array(mass, float)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise LogError(f'Unable to read atoms from orca geometry output file {self.path}.')
 

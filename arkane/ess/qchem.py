@@ -149,7 +149,7 @@ class QChemLog(ESSAdapter):
             while line != '':
                 # Read force constant matrix
                 if 'Final Hessian.' in line or 'Hessian of the SCF Energy' in line:
-                    force = np.zeros((n_rows, n_rows), np.float64)
+                    force = np.zeros((n_rows, n_rows), float)
                     for i in range(int(math.ceil(n_rows / 6.0))):
                         # Header row
                         line = f.readline()
@@ -199,9 +199,9 @@ class QChemLog(ESSAdapter):
             mass1, num1 = get_element_mass(atom1)
             mass.append(mass1)
             number.append(num1)
-        coord = np.array(coord, np.float64)
-        number = np.array(number, np.int)
-        mass = np.array(mass, np.float64)
+        coord = np.array(coord, float)
+        number = np.array(number, int)
+        mass = np.array(mass, float)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise LogError('Unable to read atoms from QChem geometry output file {0}.'.format(self.path))
 
@@ -364,7 +364,7 @@ class QChemLog(ESSAdapter):
                     read = True
         logging.info('   Assuming {0} is the output from a QChem PES scan...'.format(os.path.basename(self.path)))
 
-        v_list = np.array(v_list, np.float64)
+        v_list = np.array(v_list, float)
         # check to see if the scanlog indicates that one of your reacting species may not be the lowest energy conformer
         check_conformer_energy(v_list, self.path)
 
@@ -372,7 +372,7 @@ class QChemLog(ESSAdapter):
         # Also convert units from Hartree/particle to J/mol
         v_list -= np.min(v_list)
         v_list *= constants.E_h * constants.Na
-        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), np.float64)
+        angle = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), float)
         return v_list, angle
 
     def load_negative_frequency(self):

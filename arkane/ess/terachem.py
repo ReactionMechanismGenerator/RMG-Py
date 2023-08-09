@@ -118,7 +118,7 @@ class TeraChemLog(ESSAdapter):
             while line != '':
                 # Read force constant matrix
                 if '*** Hessian Matrix (Hartree/Bohr^2) ***' in line:
-                    force = np.zeros((n_rows, n_rows), np.float64)
+                    force = np.zeros((n_rows, n_rows), float)
                     for i in range(int(math.ceil(n_rows / 6.0))):
                         # Matrix element rows
                         for j in range(n_rows):
@@ -190,9 +190,9 @@ class TeraChemLog(ESSAdapter):
                         j += 1
                     break
 
-        coords = np.array(coords, np.float64)
-        numbers = np.array(numbers, np.int)
-        masses = np.array(masses, np.float64)
+        coords = np.array(coords, float)
+        numbers = np.array(numbers, int)
+        masses = np.array(masses, float)
         if len(coords) == 0 or len(numbers) == 0 or len(masses) == 0 \
                 or ((len(coords) != num_of_atoms or len(numbers) != num_of_atoms or len(masses) != num_of_atoms)
                     and num_of_atoms is not None):
@@ -319,7 +319,7 @@ class TeraChemLog(ESSAdapter):
                         raise LogError(f'Could not parse scan energies from {self.path}')
         logging.info('   Assuming {0} is the output from a TeraChem PES scan...'.format(os.path.basename(self.path)))
 
-        v_list = np.array(v_list, np.float64)
+        v_list = np.array(v_list, float)
 
         # check to see if the scanlog indicates that one of the reacting species may not be the lowest energy conformer
         check_conformer_energy(v_list, self.path)
@@ -328,7 +328,7 @@ class TeraChemLog(ESSAdapter):
         # Also convert units from Hartree/particle to J/mol
         v_list -= np.min(v_list)
         v_list *= constants.E_h * constants.Na
-        angles = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), np.float64)
+        angles = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), float)
 
         # remove None's:
         indices_to_pop = [v_list.index[entry] for entry in v_list if entry is None]

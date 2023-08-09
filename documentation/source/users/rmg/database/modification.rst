@@ -61,7 +61,6 @@ There are several places in the RMG-database and RMG-Py source code where reacti
 	* ``getReactionPairs``: figuring out which species becomes which for flux analyses
 	* ``__generateReactions``: correcting degeneracy eg. dividing by 2 for radical recombination
 * rmgpy.data.kinetics.rules
-	* ``processOldLibraryEntry``: determining units when importing RMG-Java database
 	* ``getAllRules``: for radical recombination add reverse templates
 * rmgpy.data.kinetics.groups
 	* ``getReactionTemplate``: for radical recombination duplicate the template

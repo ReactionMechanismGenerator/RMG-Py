@@ -379,6 +379,10 @@ class ErrorCancelingScheme:
                 except ValueError:
                     # This is not being run in the main thread, so we cannot reset signal
                     pass
+                except TypeError:
+                    print(
+                        "Failed to reset signal handling in LPSolve - are you running pytest?"
+                    )
 
                 # Return the solution if a valid reaction is found. Otherwise continue to next solver
                 if status == 0:

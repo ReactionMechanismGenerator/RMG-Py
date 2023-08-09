@@ -621,9 +621,9 @@ class Reaction:
             number_of_gas_reactants = len([spcs for spcs in self.reactants if not spcs.contains_surface_site()])
             number_of_gas_products = len([spcs for spcs in self.products if not spcs.contains_surface_site()])
         except IndexError:
-            logging.warning("Species do not have an rmgpy.molecule.Molecule "
-                            "Cannot determine phases of species. We will assume "
-                            "ideal gas mixture when calculating Kc and Kp.")
+            #logging.warning("Species do not have an rmgpy.molecule.Molecule "
+            #                "Cannot determine phases of species. We will assume "
+            #                "ideal gas mixture when calculating Kc and Kp.")
             number_of_gas_reactants = len(self.reactants)
             number_of_gas_products = len(self.products)
 
@@ -658,21 +658,21 @@ class Reaction:
         Return the enthalpies of reaction in J/mol evaluated at temperatures
         `Tlist` in K.
         """
-        return np.array([self.get_enthalpy_of_reaction(T) for T in Tlist], np.float64)
+        return np.array([self.get_enthalpy_of_reaction(T) for T in Tlist], float)
 
     def get_entropies_of_reaction(self, Tlist):
         """
         Return the entropies of reaction in J/mol*K evaluated at temperatures
         `Tlist` in K.
         """
-        return np.array([self.get_entropy_of_reaction(T) for T in Tlist], np.float64)
+        return np.array([self.get_entropy_of_reaction(T) for T in Tlist], float)
 
     def get_free_energies_of_reaction(self, Tlist):
         """
         Return the Gibbs free energies of reaction in J/mol evaluated at
         temperatures `Tlist` in K.
         """
-        return np.array([self.get_free_energy_of_reaction(T) for T in Tlist], np.float64)
+        return np.array([self.get_free_energy_of_reaction(T) for T in Tlist], float)
 
     def get_equilibrium_constants(self, Tlist, type='Kc'):
         """
@@ -682,7 +682,9 @@ class Reaction:
         ``Kc`` for concentrations (default), or ``Kp`` for pressures. Note that
         this function currently assumes an ideal gas mixture.
         """
-        return np.array([self.get_equilibrium_constant(T, type) for T in Tlist], np.float64)
+        return np.array(
+            [self.get_equilibrium_constant(T, type) for T in Tlist], float
+        )
 
     def get_stoichiometric_coefficient(self, spec):
         """
@@ -954,9 +956,9 @@ class Reaction:
             surf_prods = [spcs for spcs in self.products if spcs.contains_surface_site()]
         except IndexError:
             surf_prods = []
-            logging.warning(f"Species do not have an rmgpy.molecule.Molecule "  
-                            "Cannot determine phases of species. We will assume gas"
-                            )
+            # logging.warning(f"Species do not have an rmgpy.molecule.Molecule "
+            #                "Cannot determine phases of species. We will assume gas"
+            #                )
         n_surf = len(surf_prods)
         n_gas = len(self.products) - len(surf_prods)
         kunits = get_rate_coefficient_units_from_reaction_order(n_gas, n_surf)
@@ -993,7 +995,7 @@ class Reaction:
         elif isinstance(kf, Chebyshev):
             Tlist = 1.0 / np.linspace(1.0 / kf.Tmax.value, 1.0 / kf.Tmin.value, 50)
             Plist = np.linspace(kf.Pmin.value, kf.Pmax.value, 20)
-            K = np.zeros((len(Tlist), len(Plist)), np.float64)
+            K = np.zeros((len(Tlist), len(Plist)), float)
             for Tindex, T in enumerate(Tlist):
                 for Pindex, P in enumerate(Plist):
                     K[Tindex, Pindex] = kf.get_rate_coefficient(T, P) / self.get_equilibrium_constant(T)
@@ -1057,7 +1059,7 @@ class Reaction:
                                 "should be one of {1}".format(self.kinetics.__class__, supported_types))
 
     def calculate_tst_rate_coefficients(self, Tlist):
-        return np.array([self.calculate_tst_rate_coefficient(T) for T in Tlist], np.float64)
+        return np.array([self.calculate_tst_rate_coefficient(T) for T in Tlist], float)
 
     def calculate_tst_rate_coefficient(self, T):
         """

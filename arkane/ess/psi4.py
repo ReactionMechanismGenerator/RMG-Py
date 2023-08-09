@@ -159,9 +159,9 @@ class Psi4Log(ESSAdapter):
             mass_, num_ = get_element_mass(atom)
             mass.append(mass_)
             number.append(num_)
-        coord = np.array(coord, np.float64)
-        number = np.array(number, np.int)
-        mass = np.array(mass, np.float64)
+        coord = np.array(coord, float)
+        number = np.array(number, int)
+        mass = np.array(mass, float)
         if any(len(param) == 0 for param in [number, coord, mass]):
             raise LogError(f'Unable to read atoms from Psi4 geometry output file {self.path}.')
 

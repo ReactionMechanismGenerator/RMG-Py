@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-.PHONY : all minimal main solver check pycheck arkane clean install decython documentation mopac_travis test
+.PHONY : all minimal main solver check pycheck arkane clean install decython documentation test q2dtor
 
 all: pycheck main solver check
 
@@ -50,24 +50,25 @@ q2dtor:
  and HinderedRotor2D within Arkane please cite:  \n\nD. Ferro-Costas, M. N. D. S.Cordeiro, D. G. Truhlar, A.\
 		  Fernández-Ramos, Comput. Phys. Commun. 232, 190-205, 2018.\n"
 	@ read -p "Press ENTER to continue" dummy
-	@ git clone https://github.com/mjohnson541/Q2DTor.git external/Q2DTor --branch arkanepy3
-	
+	@ mkdir -p external
+	@ git clone https://github.com/cathedralpkg/Q2DTor external/Q2DTor
+
 decython:
 	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.
 	find . -name *.so ! \( -name _statmech.so -o -name quantity.so -o -regex '.*rmgpy/solver/.*' \) -exec rm -f '{}' \;
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test-all:
-	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
+	python-jl -m pytest
 
 test test-unittests:
-	nosetests --nocapture --nologcapture --all-modules -A 'not functional' --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
+	python-jl -m pytest -m "not functional and not database"
 
 test-functional:
-	nosetests --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy arkane
+	python-jl -m pytest -m "functional"
 
 test-database:
-	nosetests --nocapture --nologcapture --verbose --detailed-errors testing/databaseTest.py
+	python-jl -m pytest -m "database"
 
 eg0: all
 	mkdir -p testing/eg0
@@ -85,25 +86,22 @@ eg1: all
 	coverage run rmg.py -p testing/eg1/input.py
 	coverage report
 	coverage html
+
 eg2: all
 	mkdir -p testing/eg2
 	rm -rf testing/eg2/*
 	cp examples/rmg/1,3-hexadiene/input.py testing/eg2/input.py
 	coverage erase
-	@ echo "Running eg2: 1,3-hexadiene example with coverage tracking AND profiling"
-	coverage run rmg.py -p testing/eg2/input.py
-	coverage report
-	coverage html
+	@ echo "Running eg2: 1,3-hexadiene example with profiling"
+	python rmg.py -p testing/eg2/input.py
 
 eg3: all
 	mkdir -p testing/eg3
 	rm -rf testing/eg3/*
 	cp examples/rmg/liquid_phase/input.py testing/eg3/input.py
 	coverage erase
-	@ echo "Running eg3: liquid_phase example with coverage tracking AND profiling"
-	coverage run rmg.py -p testing/eg3/input.py
-	coverage report
-	coverage html
+	@ echo "Running eg3: liquid_phase example with profiling"
+	python rmg.py -p testing/eg3/input.py
 
 eg5: all
 	mkdir -p testing/eg5

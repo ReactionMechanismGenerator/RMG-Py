@@ -212,7 +212,7 @@ cdef class LiquidReactor(ReactionSystem):
 
     @cython.boundscheck(False)
     def residual(self, double t, np.ndarray[np.float64_t, ndim=1] y, np.ndarray[np.float64_t, ndim=1] dydt,
-                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float64)):
+                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, float)):
 
         """
         Return the residual function for the governing DAE system for the
@@ -245,7 +245,7 @@ cdef class LiquidReactor(ReactionSystem):
         num_edge_reactions = len(self.edge_reaction_rates)
         num_pdep_networks = len(self.network_leak_rates)
 
-        res = np.zeros(num_core_species, np.float64)
+        res = np.zeros(num_core_species, float)
 
         core_species_concentrations = np.zeros_like(self.core_species_concentrations)
         core_species_rates = np.zeros_like(self.core_species_rates)
@@ -377,7 +377,7 @@ cdef class LiquidReactor(ReactionSystem):
         res = core_species_rates * V
 
         if self.sensitivity:
-            delta = np.zeros(len(y), np.float64)
+            delta = np.zeros(len(y), float)
             delta[:num_core_species] = res
             if self.jacobian_matrix is None:
                 jacobian = self.jacobian(t, y, dydt, 0, senpar)
@@ -399,7 +399,7 @@ cdef class LiquidReactor(ReactionSystem):
 
     @cython.boundscheck(False)
     def jacobian(self, double t, np.ndarray[np.float64_t, ndim=1] y, np.ndarray[np.float64_t, ndim=1] dydt,
-                 double cj, np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float64)):
+                 double cj, np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, float)):
         """
         Return the analytical Jacobian for the reaction system.
         """
@@ -417,7 +417,7 @@ cdef class LiquidReactor(ReactionSystem):
         num_core_reactions = len(self.core_reaction_rates)
         num_core_species = len(self.core_species_concentrations)
 
-        pd = -cj * np.identity(num_core_species, np.float64)
+        pd = -cj * np.identity(num_core_species, float)
 
         V = self.V  # volume is constant
 
@@ -754,5 +754,5 @@ cdef class LiquidReactor(ReactionSystem):
                         if ir[j, 2] != -1:
                             pd[ir[j, 2], ip[j, 2]] += deriv
 
-        self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float64)
+        self.jacobian_matrix = pd + cj * np.identity(num_core_species, float)
         return pd

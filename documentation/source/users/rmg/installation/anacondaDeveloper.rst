@@ -136,7 +136,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
 #. Install and Link Julia dependencies: ::
 
-     julia -e 'using Pkg; Pkg.add("PyCall");Pkg.build("PyCall");Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator;'
+     julia -e 'using Pkg; Pkg.add("PyCall");Pkg.build("PyCall");Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="for_rmg")); using ReactionMechanismSimulator;'
 
      python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
@@ -152,8 +152,8 @@ Debugging
 =========
 
 If you wish to debug using the (very helpful) debugger in `VSCode <https://code.visualstudio.com>`_,
-here is an example launch configuration to put in your launch.json file,
-which can be found in the .vscode folder.
+here is an example launch configuration to put in your ``launch.json`` file,
+which can be found in the ``.vscode`` folder.
 You might have to edit them slightly to match your exact paths. Specifically, 
 you will need ``/opt/miniconda3/envs/rmg_env`` to point to where your conda environment is located.
 
@@ -178,16 +178,16 @@ python-jl. ::
         },
 
 This configuration will allow you to debug a subset of the unit tests.
-Open one of the many test files named `*Test.py` before you launch it::
+Open one of the many test files named ``*Test.py`` in ``test/rmgpy`` before you launch it::
 
-            {
-            "name": "Python: nosetest Current File",
+        {
+            "name": "Python: pytest Current File",
             "type": "python",
             "request": "launch",
-            "program": "/opt/miniconda3/envs/rmg_env/bin/nosetests",
+            "program": "/opt/miniconda3/envs/rmg_env/bin/pytest",
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
             "args": [
-                "--nologcapture",
-                "--nocapture",
+                "--capture=no",
                 "--verbose",
                 "${file}"
             ],
@@ -204,13 +204,12 @@ This configuration will allow you to debug running all the database tests.::
             "name": "Test RMG-database",
             "type": "python",
             "request": "launch",
-            "program": "/opt/miniconda3/envs/rmg_env/bin/nosetests",
+            "program": "/opt/miniconda3/envs/rmg_env/bin/pytest",
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
             "args": [
-                "--nologcapture",
-                "--nocapture",
+                "--capture=no",
                 "--verbose",
-                "--detailed-errors",
-                "${workspaceFolder}/testing/databaseTest.py"
+                "${workspaceFolder}/test/database/databaseTest.py"
             ],
             "console": "integratedTerminal",
             "env": {
@@ -218,6 +217,22 @@ This configuration will allow you to debug running all the database tests.::
                 "PYTHONPATH": "${workspaceFolder}/",
             },
         },
+
+This configuration will allow you to use the debugger breakpoints inside unit tests being run by the pytest framework::
+
+        {
+            "name": "Python: Debug Tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "purpose": ["debug-test"],
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {"PYTEST_ADDOPTS": "--no-cov",} // without disabling coverage VS Code doesn't stop at breakpoints while debugging because pytest-cov is using the same technique to access the source code being run
+          }
+
+See more about testing in VSCode in the :ref:`Testing in VSCode <vscode_testing>` section below.
 
 Test Suite
 ==========
@@ -241,6 +256,44 @@ Make sure that the environment is active before running the tests: ``conda activ
     cd RMG-Py
     make test-database
     
+
+.. _vscode_testing:
+
+Testing in VSCode
+=================
+
+Once you have the Python extension installed and a Python file open within the editor, 
+a test beaker icon will be displayed on the VS Code Activity bar. 
+The beaker icon is for the Test Explorer view. When opening the Test Explorer, 
+you will see a Configure Tests button if you don't have a test framework enabled.
+Once you select Configure Tests, you will be prompted to select a test framework 
+(**select `pytest`**)
+and a folder containing the tests
+(**select `test`**).
+To configure the rest of the settings, find the ``settings.json`` file in your ``.vscode`` folder.
+You can use the following settings to configure the pytest framework::
+
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestPath": "python-jl -m pytest",
+    "python.testing.pytestArgs": [
+        "-p", "julia.pytestplugin",
+        "--julia-compiled-modules=no",
+        "--ignore", "test/regression",
+        "-m", "not functional",
+        // "-n", "auto", // number of parallel processes, if you install pytest-xdist
+        "test"
+    ],
+
+To run the tests, you can click the Run All Tests button in the Test Explorer view.
+Learn more at the `Python testing in Visual Studio Code <https://code.visualstudio.com/docs/python/testing>`_ documentation.
+
+Given the time taken for Julia to compile things every time it launches,
+you might find this to be painfully slow even for a simple test.
+It may be possible to use ``--julia-sysimage=JULIA_SYSIMAGE`` instead of ``--julia-compiled-modules=no``,
+or disable PyJulia entirely.
+If you find a better way to do this, or clearer instructions, 
+please `update this section <https://github.com/ReactionMechanismGenerator/RMG-Py/edit/main/documentation/source/users/rmg/installation/anacondaDeveloper.rst>`_.
+
 
 Running Examples
 ================
