@@ -98,6 +98,7 @@ test/regression/*
 # testing files
 test/arkane/data/two_parameter_arrhenius_fit/arkane.log
 test/arkane/data/two_parameter_arrhenius_fit/output.py
+test/arkane/data/two_parameter_arrhenius_fit/chem.inp
 test/rmgpy/test_data/temp_dir_for_testing/cantera/chem001.yaml
 rmgpy/test_data/copied_kinetic_lib/
 testing/qm/*
