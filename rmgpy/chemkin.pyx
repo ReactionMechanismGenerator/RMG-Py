@@ -989,42 +989,58 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
         sp_list = []
         sp_aliases = {}
         rxn_list = []
-
+        done_with_rxns = False
         with open(path, 'r') as f:
             previous_line = f.tell()
+            # print(previous_line)
             line0 = f.readline()
             while line0 != '':
+                # print('L997')
                 line = remove_comment_from_line(line0)[0]
+                # print('L999')
                 line = line.strip()
+                # print('L1001')
 
                 if 'SPECIES' in line.upper():
+                    # print('in SPECIES', line, previous_line)
+                    # print([line, '       ', previous_line])
                     # Unread the line (we'll re-read it in readReactionBlock())
                     f.seek(previous_line)
                     read_species_block(f, species_dict, sp_aliases, sp_list)
                 
                 elif 'SITE' in line.upper():
+                    # print('in SITE', line, previous_line)
                     # Unread the line (we'll re-read it in readReactionBlock())
                     f.seek(previous_line)
                     read_species_block(f, species_dict, sp_aliases, sp_list)
 
                 elif 'THERM' in line.upper() and thermo_path is None:
+                    # print('in THERM', line, previous_line)
                     # Skip this if a thermo file is specified
                     # Unread the line (we'll re-read it in read_thermo_block())
                     f.seek(previous_line)
                     read_thermo_block(f, species_dict)
 
                 elif 'REACTIONS' in line.upper():
+                    # print('in REACTIONS', line, previous_line)
                     # Reactions section
                     # Unread the line (we'll re-read it in readReactionBlock())
-                    f.seek(previous_line)
+                    # f.seek(previous_line)
                     rxn_list = read_reactions_block(f, species_dict, read_comments=read_comments)
+                    done_with_rxns = True
+                    return sp_list, species_dict, sp_aliases, rxn_list
 
-                previous_line = f.tell()
-                line0 = f.readline()
+                if not done_with_rxns:
+                    previous_line = f.tell()
+                    # print('L1030', previous_line)
+                    line0 = f.readline()
+                    # print('L1032', line0)
+            print('returning!!!')
             return sp_list, species_dict, sp_aliases, rxn_list
 
 
     # gas
+    # print('L 1042')
     species_list, species_dict, species_aliases, reaction_list = parse_file(path)
     if surface_path:
         surfsp_list, surfsp_dict, surfsp_aliases, surfrxn_list = parse_file(surface_path)
@@ -1041,11 +1057,14 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
                 line = remove_comment_from_line(line0)[0]
                 line = line.strip()
                 if 'THERM' in line.upper():
-                    f.seek(-len(line0), 1)
+                    print(f'L 1059, {line0}')
+                    f.seek(0, 1)
+                    # print('L 1061')
                     read_thermo_block(f, species_dict)
                     break
                 line0 = f.readline()
     # Index the reactions now to have identical numbering as in Chemkin
+    # print('L 1064')
     index = 0
     for reaction in reaction_list:
         index += 1
@@ -1059,6 +1078,7 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
     # properties
     if transport_path:
         load_transport_file(transport_path, species_dict, skip_missing_species=True)
+    # print('L 1078')
 
     if not use_chemkin_names:
         # Apply species aliases if known
@@ -1069,12 +1089,14 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
                 pass
 
     # Attempt to extract index from species label
+    # print('L 1089')
     indexPattern = re.compile(r'\(\d+\)$')
     for spec in species_list:
         if indexPattern.search(spec.label):
             label, sep, index = spec.label[:-1].rpartition('(')
             spec.label = label
             spec.index = int(index)
+    print('L 1096 Done')
 
     reaction_list.sort(key=lambda reaction: reaction.index)
     return species_list, reaction_list
@@ -1277,7 +1299,7 @@ def read_thermo_block(f, species_dict):
             continue
 
         if line[79] not in ['1', '2', '3', '4']:
-            logging.warning("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
+            # logging.warning("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
             line = f.readline()
             continue
 
@@ -1348,31 +1370,31 @@ def read_reactions_block(f, species_dict, read_comments=True):
     area_units = 'cm2'
     time_units = 's'
 
-    line = f.readline()
-    found = False
-    while line != '' and not found:
-
-        line = remove_comment_from_line(line)[0]
-        line = line.strip()
-        tokens = line.split()
-
-        if len(tokens) > 0 and tokens[0].upper() == 'REACTIONS':
-            # Regular Chemkin file
-            found = True
-            for token in tokens[1:]:
-                unit = token.lower()
-                if unit in ['molecules', 'moles', 'mole', 'mol', 'molecule']:
-                    molecule_units = unit
-                elif unit in ['kcal/mole', 'kcal/mol', 'cal/mole', 'cal/mol', 'kj/mole', 'kj/mol', 'j/mole', 'j/mol',
-                              'kelvins']:
-                    energy_units = unit
-                else:
-                    raise ChemkinError('Unknown unit type "{0}"'.format(unit))
-        else:
-            line = f.readline()
-
-    if not found:
-        raise ChemkinError('Invalid reaction block.')
+    # line = f.readline()
+    # found = False
+    # while line != '' and not found:
+    #
+    #     line = remove_comment_from_line(line)[0]
+    #     line = line.strip()
+    #     tokens = line.split()
+    #
+    #     if True:
+    #         # Regular Chemkin file
+    #         found = True
+    #         for token in tokens[1:]:
+    #             unit = token.lower()
+    #             if unit in ['molecules', 'moles', 'mole', 'mol', 'molecule']:
+    #                 molecule_units = unit
+    #             elif unit in ['kcal/mole', 'kcal/mol', 'cal/mole', 'cal/mol', 'kj/mole', 'kj/mol', 'j/mole', 'j/mol',
+    #                           'kelvins']:
+    #                 energy_units = unit
+    #             else:
+    #                 raise ChemkinError('Unknown unit type "{0}"'.format(unit))
+    #     else:
+    #         line = f.readline()
+    #
+    # if not found:
+    #     raise ChemkinError('Invalid reaction block.')
 
     # Check that the units are valid
     assert molecule_units in ['molecules', 'moles', 'mole', 'mol', 'molecule']
@@ -1473,7 +1495,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
         if kinetics_list[0] == '':
             kinetics_list.pop(0)
         if len(kinetics_list) != len(comments_list):
-            logging.warning("Discarding comments from Chemkin file because not sure which reaction they apply to")
+            # logging.warning("Discarding comments from Chemkin file because not sure which reaction they apply to")
             comments_list = ['' for kinetics in kinetics_list]
 
     reaction_list = []
