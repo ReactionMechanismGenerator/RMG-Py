@@ -30,7 +30,6 @@
 import os
 
 from unittest import mock
-from external.wip import work_in_progress
 
 import rmgpy
 from rmgpy.chemkin import (
@@ -504,7 +503,7 @@ class ChemkinTest:
 
         assert duplicate_flags == expected_flags
 
-    @work_in_progress
+    @pytest.mark.skip(reason="WIP")
     def test_unmark_duplicate_reactions(self):
         """Test that we can properly REMOVE duplicate reaction flags for Chemkin."""
 
