@@ -58,7 +58,7 @@ class Psi4LogTest:
         """
         A method that is run before all unit tests in this class.
         """
-        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "psi4")
+        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "..", "arkane", "data", "psi4")
 
     def test_check_for_errors(self):
         """
