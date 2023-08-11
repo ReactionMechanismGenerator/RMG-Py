@@ -47,7 +47,7 @@ from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.exceptions import ChemkinError
 from rmgpy.molecule.element import get_element
 from rmgpy.molecule.util import get_element_count
-from rmgpy.quantity import Quantity
+from rmgpy.quantity import Quantity, QuantityError
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
 from rmgpy.species import Species
@@ -1485,6 +1485,9 @@ def read_reactions_block(f, species_dict, read_comments=True):
                 continue
             else:
                 raise
+        except QuantityError as e:
+            logging.warning(f"Skipping the reaction {kinetics!r} due to units error: {e}")
+            continue
         reaction_list.append(reaction)
 
     return reaction_list
