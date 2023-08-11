@@ -1403,6 +1403,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
         '{0}^3/({1}*{2})'.format(volume_units, molecule_units, time_units),  # Second-order
         '{0}^6/({1}^2*{2})'.format(volume_units, molecule_units, time_units),  # Third-order
         '{0}^9/({1}^3*{2})'.format(volume_units, molecule_units, time_units),  # Fourth-order
+        f"{volume_units}^12/({molecule_units}^4*{time_units})",  # Fifth-order
     ]
 
     Aunits_surf = [
@@ -1410,6 +1411,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
         's^-1'.format(time_units),  # First-order
         '{0}^2/({1}*{2})'.format(area_units, molecule_units, time_units),  # Second-order
         '{0}^4/({1}^2*{2})'.format(area_units, molecule_units, time_units),  # Third-order
+        '{0}^6/({1}^3*{2})'.format(area_units, molecule_units, time_units),  # Fourth-order
     ]
     Eunits = energy_units
 
