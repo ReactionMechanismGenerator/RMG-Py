@@ -397,7 +397,7 @@ def _read_kinetics_reaction(line, species_dict, Aunits, Aunits_surf, Eunits):
             # this identifies reactions like 'H+H+M=H2+M' as opposed to 'H+H(+M)=H2(+M)' as identified above
             third_body = True
         elif reactant not in species_dict:
-            raise ChemkinError('Unexpected reactant "{0}" in reaction {1}.'.format(reactant, reaction))
+            raise ChemkinError('Unexpected reactant "{0}" in reaction line {1}.'.format(reactant, line))
         else:
             reactant_species = species_dict[reactant]
             if not reactant_species.reactive:
