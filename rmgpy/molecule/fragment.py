@@ -42,8 +42,10 @@ from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.molecule.atomtype import get_atomtype, AtomTypeError
 from rmgpy.molecule.kekulize import kekulize
 from rdkit import Chem
-from rdkit.Chem import AllChem
-import numpy as np
+
+# this variable is used to name atom IDs so that there are as few conflicts by
+# using the entire space of integer objects
+ATOM_ID_COUNTER = -(2**15)
 
 
 class CuttingLabel(Vertex):
@@ -1638,14 +1640,11 @@ class Fragment(Graph):
         Assigns an index to every atom in the fragment for tracking purposes.
         Uses entire range of cython's integer values to reduce chance of duplicates
         """
-
-        global atom_id_counter
-
         for atom in self.atoms:
-            atom.id = atom_id_counter
-            atom_id_counter += 1
-            if atom_id_counter == 2**15:
-                atom_id_counter = -(2**15)
+            atom.id = ATOM_ID_COUNTER
+            ATOM_ID_COUNTER += 1
+            if ATOM_ID_COUNTER == 2**15:
+                ATOM_ID_COUNTER = -(2**15)
 
     def generate_resonance_structures(
         self, keep_isomorphic=False, filter_structures=True, save_order=False
@@ -2344,8 +2343,3 @@ class Fragment(Graph):
             if atom.IsInRing():
                 return True
         return False
-
-
-# this variable is used to name atom IDs so that there are as few conflicts by
-# using the entire space of integer objects
-ATOM_ID_COUNTER = -(2**15)
