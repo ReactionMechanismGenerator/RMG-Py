@@ -49,7 +49,17 @@ class ArkaneThermoTest:
     def setup_class(cls):
         """A method that is run before each unit test in this class"""
         spc = Species().from_smiles("CCO")
-        log = GaussianLog(os.path.join(os.path.dirname(__file__), "data", "gaussian", "ethylene.log"))
+        log = GaussianLog(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "..",
+                "arkane",
+                "data",
+                "gaussian",
+                "ethylene.log",
+            )
+        )
         spc.conformer = log.load_conformer()[0]
         coords, numbers, masses = log.load_geometry()
         spc.conformer.coordinates = coords, "angstroms"

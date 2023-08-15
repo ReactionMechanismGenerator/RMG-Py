@@ -132,9 +132,15 @@ class SurfaceReactorTest:
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            assert abs(reaction_rates[i, 0] - -1.0 * species_rates[i, 0]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - -0.5 * species_rates[i, 1]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - 0.5 * species_rates[i, 2]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - -1.0 * species_rates[i, 0]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - -0.5 * species_rates[i, 1]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - 0.5 * species_rates[i, 2]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
 
         # Check that we've reached equilibrium
         assert abs(reaction_rates[-1, 0] - 0.0) < 1e-2
@@ -345,9 +351,15 @@ class SurfaceReactorTest:
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            assert abs(reaction_rates[i, 0] - -species_rates[i, 0]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - species_rates[i, 2]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 0]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - species_rates[i, 2]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
 
         # Check that we've reached equilibrium by the end
         assert abs(reaction_rates[-1, 0] - 0.0) < 1e-2
@@ -468,7 +480,7 @@ class SurfaceReactorTest:
             reaction_rates.append(rxn_system.core_reaction_rates.copy())
             species_rates.append(rxn_system.core_species_rates.copy())
         run_time = time.time() - start_time
-        print(f"Simulation took {run_time:.3e} seconds in {self.id()}")
+        print(f"Simulation took {run_time:.3e} seconds")
 
         # Convert the solution vectors to np arrays
         t = np.array(t, float)
@@ -479,9 +491,15 @@ class SurfaceReactorTest:
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            assert abs(reaction_rates[i, 0] - -1.0 * species_rates[i, 0]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - -0.5 * species_rates[i, 1]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - 0.5 * species_rates[i, 2]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - -1.0 * species_rates[i, 0]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - -0.5 * species_rates[i, 1]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - 0.5 * species_rates[i, 2]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
 
         # Check that we've reached equilibrium
         assert abs(reaction_rates[-1, 0] - 0.0) < 1e-2
@@ -673,7 +691,7 @@ class SurfaceReactorTest:
             reaction_rates.append(rxn_system.core_reaction_rates.copy())
             species_rates.append(rxn_system.core_species_rates.copy())
         run_time = time.time() - start_time
-        print(f"Simulation took {run_time:.3e} seconds in {self.id()}")
+        print(f"Simulation took {run_time:.3e} seconds")
 
         # Convert the solution vectors to np arrays
         t = np.array(t, float)
@@ -684,9 +702,15 @@ class SurfaceReactorTest:
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            assert abs(reaction_rates[i, 0] - -species_rates[i, 0]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - species_rates[i, 2]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 0]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - species_rates[i, 2]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
 
         # Check that we've reached equilibrium by the end
         assert abs(reaction_rates[-1, 0] - 0.0) < 1e-2
@@ -725,7 +749,7 @@ class SurfaceReactorTest:
             y_off.append(rxn_system.y.copy())
             species_rates_off.append(rxn_system.core_species_rates.copy())
         run_time = time.time() - start_time
-        print(f"Simulation took {run_time:.3e} seconds in {self.id()}")
+        print(f"Simulation took {run_time:.3e} seconds")
 
         # Convert the solution vectors to np arrays
         t = np.array(t, float)
