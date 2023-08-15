@@ -92,7 +92,7 @@ class FiltrationTest:
                 for atom in mol.vertices:
                     assert atom.charge == 0
 
-    def penalty_birads_replacing_lone_pairs_test(self):
+    def test_penalty_birads_replacing_lone_pairs(self):
         """Test that birads on `S u2 p0` are penalized"""
         adj = """
         multiplicity 3
@@ -111,7 +111,7 @@ class FiltrationTest:
         assert len(mol_list) == 3
         assert sum([1 for mol in mol_list if mol.reactive]) == 2
 
-    def penalty_for_s_triple_s_test(self):
+    def test_penalty_for_s_triple_s(self):
         """Test that an S#S substructure in a molecule gets penalized in the octet deviation score"""
         adj = """
         1  C u0 p0 c0 {3,S} {5,S} {6,S} {7,S}
@@ -130,7 +130,7 @@ class FiltrationTest:
         octet_deviation = get_octet_deviation(mol)
         assert octet_deviation == 1.0
 
-    def radical_site_test(self):
+    def test_radical_site(self):
         """Test that a charged molecule isn't filtered if it introduces new radical site"""
         adj1 = """
         multiplicity 2
@@ -171,7 +171,7 @@ class FiltrationTest:
                     if atom.charge == 1:
                         assert atom.is_nitrogen()
 
-    def electronegativity_test(self):
+    def test_electronegativity(self):
         """Test that structures with charge separation are only kept if they obey the electronegativity rule
 
         (If a structure must have charge separation, negative charges will be assigned to more electronegative atoms,
@@ -258,7 +258,7 @@ class FiltrationTest:
                     if abs(atom.charge) == 1:
                         assert atom.is_nitrogen()
 
-    def aromaticity_test(self):
+    def test_aromaticity(self):
         """Test that aromatics are properly filtered."""
         adj1 = """multiplicity 2
 1  C u0 p0 c0 {2,D} {3,S} {7,S}

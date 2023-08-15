@@ -43,7 +43,7 @@ from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
 
 
-class LiquidReactorCheck:
+class LiquidReactorTest:
     @classmethod
     def setup_class(cls):
         """

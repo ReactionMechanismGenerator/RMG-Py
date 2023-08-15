@@ -44,7 +44,7 @@ from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
 
 
-class SimpleReactorCheck:
+class SimpleReactorTest:
     def test_solve(self):
         """
         Test the simple batch reactor with a simple kinetic model. Here we

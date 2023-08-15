@@ -40,7 +40,7 @@ from arkane.ess.gaussian import GaussianLog
 from arkane.thermo import ThermoJob
 
 
-class ArkaneTestThermo:
+class ArkaneThermoTest:
     """
     Contains unit tests of the ThermoJob class.
     """

@@ -41,7 +41,7 @@ from rmgpy.species import Species
 from rmgpy.thermo import ThermoData, NASA, NASAPolynomial
 
 
-class SurfaceReactorCheck:
+class SurfaceReactorTest:
     def test_solve_h2(self):
         """
         Test the surface batch reactor with a dissociative adsorption of H2
