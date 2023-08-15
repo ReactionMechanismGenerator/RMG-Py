@@ -449,8 +449,8 @@ class KineticsRules(Database):
         kinetics_list = remove_identical_kinetics(saved_kinetics)
 
         if len(kinetics_list) == 0:
-            raise KineticsError('Unable to determine kinetics for reaction with template {0} in family '
-                                '{1}.'.format(template, self.label))
+            raise KineticsError("Unable to determine kinetics for reaction "
+                                f"with template {template!r} in family {self.label!s}.")
 
         elif len(kinetics_list) == 1:
             kinetics, t = kinetics_list[0]
