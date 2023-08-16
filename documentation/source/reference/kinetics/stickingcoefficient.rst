@@ -4,7 +4,7 @@ rmgpy.kinetics.StickingCoefficient
 
 .. autoclass:: rmgpy.kinetics.StickingCoefficient
 
-    The Sticking coefficient class uses an arrhenius-like expression to determine
+    The Sticking coefficient class uses an Arrhenius-like expression to determine
     the sticking coefficient :math:`\gamma` of a species on a surface.
 
     .. math:: \gamma = A (T/T_0)^{n} \exp\left(-\frac{E_\mathrm{a}}{RT}\right)
