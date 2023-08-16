@@ -1,0 +1,415 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>rmgpy.kinetics.SurfaceArrhenius &#8212; RMG-Py 3.2.0 Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="rmgpy.kinetics.StickingCoefficient" href="stickingcoefficient.html" />
+    <link rel="prev" title="rmgpy.kinetics.Eckart" href="eckart.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="stickingcoefficient.html" title="rmgpy.kinetics.StickingCoefficient"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="eckart.html" title="rmgpy.kinetics.Eckart"
+             accesskey="P">previous</a> |</li>
+  <li><a href="https://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">3.2.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Kinetics (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">rmgpy.kinetics.SurfaceArrhenius</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="rmgpy-kinetics-surfacearrhenius">
+<h1>rmgpy.kinetics.SurfaceArrhenius<a class="headerlink" href="#rmgpy-kinetics-surfacearrhenius" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.kinetics.</span></span><span class="sig-name descname"><span class="pre">SurfaceArrhenius</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ea</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">'K')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius" title="Permalink to this definition">¶</a></dt>
+<dd><p>A kinetics model based on (modified) Arrhenius for surface reactions.</p>
+<p>It is very similar to the gas phase <a class="reference internal" href="arrhenius.html#rmgpy.kinetics.Arrhenius" title="rmgpy.kinetics.Arrhenius"><code class="xref py py-class docutils literal notranslate"><span class="pre">Arrhenius</span></code></a></p>
+<p>The attributes are:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>A</cite></p></td>
+<td><p>The preexponential factor</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>T0</cite></p></td>
+<td><p>The reference temperature</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>n</cite></p></td>
+<td><p>The temperature exponent</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>Ea</cite></p></td>
+<td><p>The activation energy</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>Tmin</cite></p></td>
+<td><p>The minimum temperature at which the model is valid, or zero if unknown or undefined</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>Tmax</cite></p></td>
+<td><p>The maximum temperature at which the model is valid, or zero if unknown or undefined</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>Pmin</cite></p></td>
+<td><p>The minimum pressure at which the model is valid, or zero if unknown or undefined</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>Pmax</cite></p></td>
+<td><p>The maximum pressure at which the model is valid, or zero if unknown or undefined</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>coverage_dependence</cite></p></td>
+<td><dl class="simple">
+<dt>A dictionary of coverage dependent parameters to a certain surface species with:</dt><dd><p><cite>a</cite>, the coefficient for exponential dependence on the coverage,
+<cite>m</cite>, the power-law exponent of coverage dependence, and
+<cite>E</cite>, the activation energy dependence on coverage.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-odd"><td><p><cite>uncertainty</cite></p></td>
+<td><p>Uncertainty information</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>comment</cite></p></td>
+<td><p>Information about the model (e.g. its source)</p></td>
+</tr>
+</tbody>
+</table>
+<p>The SurfaceArrhenius class uses a rate expression that is identical to the
+Arrhenius class:</p>
+<div class="math notranslate nohighlight">
+\[k(T) = A \left( \frac{T}{T_0} \right)^n \exp \left( -\frac{E_\mathrm{a}}{RT} \right)\]</div>
+<p>Above, <span class="math notranslate nohighlight">\(A\)</span> is the preexponential factor, <span class="math notranslate nohighlight">\(T_0\)</span> is the reference
+temperature, <span class="math notranslate nohighlight">\(n\)</span> is the temperature exponent, and <span class="math notranslate nohighlight">\(E_\mathrm{a}\)</span>
+is the activation energy.</p>
+<p>The only difference is the units for <span class="math notranslate nohighlight">\(A\)</span> are in terms of surface concentration
+(<span class="math notranslate nohighlight">\(\mathrm{mol/m^2}\)</span>) instead of volume concentration (<span class="math notranslate nohighlight">\(\mathrm{mol/m^3}\)</span>).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.A">
+<span class="sig-name descname"><span class="pre">A</span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.A" title="Permalink to this definition">¶</a></dt>
+<dd><p>The preexponential factor.</p>
+<p>This is the only thing different from a normal Arrhenius class.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.Ea">
+<span class="sig-name descname"><span class="pre">Ea</span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.Ea" title="Permalink to this definition">¶</a></dt>
+<dd><p>The activation energy.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.Pmax">
+<span class="sig-name descname"><span class="pre">Pmax</span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.Pmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.Pmin">
+<span class="sig-name descname"><span class="pre">Pmin</span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.Pmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.T0">
+<span class="sig-name descname"><span class="pre">T0</span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.T0" title="Permalink to this definition">¶</a></dt>
+<dd><p>The reference temperature.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.Tmax">
+<span class="sig-name descname"><span class="pre">Tmax</span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.Tmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.Tmin">
+<span class="sig-name descname"><span class="pre">Tmin</span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.Tmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.change_rate">
+<span class="sig-name descname"><span class="pre">change_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">factor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.change_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes A factor in Arrhenius expression by multiplying it by a <code class="docutils literal notranslate"><span class="pre">factor</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.change_t0">
+<span class="sig-name descname"><span class="pre">change_t0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.change_t0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes the reference temperature used in the exponent to <cite>T0</cite> in K,
+and adjusts the preexponential factor accordingly.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.comment">
+<span class="sig-name descname"><span class="pre">comment</span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.comment" title="Permalink to this definition">¶</a></dt>
+<dd><p>unicode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>comment</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.coverage_dependence">
+<span class="sig-name descname"><span class="pre">coverage_dependence</span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.coverage_dependence" title="Permalink to this definition">¶</a></dt>
+<dd><p>The coverage dependence parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.discrepancy">
+<span class="sig-name descname"><span class="pre">discrepancy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.discrepancy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns some measure of the discrepancy based on two different reaction models.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.fit_to_data">
+<span class="sig-name descname"><span class="pre">fit_to_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">Tlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">klist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unicode</span> <span class="pre">kunits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T0=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">weights=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">three_params=True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.fit_to_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the Arrhenius parameters to a set of rate coefficient data <cite>klist</cite>
+in units of <cite>kunits</cite> corresponding to a set of temperatures <cite>Tlist</cite> in
+K. A linear least-squares fit is used, which guarantees that the
+resulting parameters provide the best possible approximation to the
+data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.get_rate_coefficient">
+<span class="sig-name descname"><span class="pre">get_rate_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">P=0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the rate coefficient in the appropriate combination of m^3,
+mol, and s at temperature <cite>T</cite> in K.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.is_identical_to">
+<span class="sig-name descname"><span class="pre">is_identical_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.is_identical_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if kinetics matches that of another kinetics model.  Must match temperature
+and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn’t have pressure
+range if it’s Arrhenius.) Otherwise returns <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.is_pressure_dependent">
+<span class="sig-name descname"><span class="pre">is_pressure_dependent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.is_pressure_dependent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">False</span></code> since, by default, all objects derived from KineticsModel
+represent pressure-independent kinetics.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.is_similar_to">
+<span class="sig-name descname"><span class="pre">is_similar_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">KineticsModel</span> <span class="pre">other_kinetics</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.is_similar_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if rates of reaction at temperatures 500,1000,1500,2000 K
+and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.is_temperature_valid">
+<span class="sig-name descname"><span class="pre">is_temperature_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.is_temperature_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
+temperature range of the kinetic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
+the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
+returned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.n">
+<span class="sig-name descname"><span class="pre">n</span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.n" title="Permalink to this definition">¶</a></dt>
+<dd><p>The temperature exponent.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.set_cantera_kinetics">
+<span class="sig-name descname"><span class="pre">set_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ct_reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.set_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Passes in a cantera Reaction() object and sets its
+rate to a Cantera ArrheniusRate object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.to_arrhenius_ep">
+<span class="sig-name descname"><span class="pre">to_arrhenius_ep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">alpha=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">dHrxn=0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ArrheniusEP</span></span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.to_arrhenius_ep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts an Arrhenius object to ArrheniusEP</p>
+<p>If setting alpha, you need to also input dHrxn, which must be given
+in J/mol (and vise versa).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.to_cantera_kinetics">
+<span class="sig-name descname"><span class="pre">to_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrhenius_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.to_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the RMG Arrhenius object to a cantera ArrheniusRate or
+the auxiliary cantera Arrhenius class (used by falloff reactions).
+Inputs for both are (A,b,E)  where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol</p>
+<p>arrhenius_class: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, uses cantera.Arrhenius (for falloff reactions). If <code class="docutils literal notranslate"><span class="pre">False</span></code>, uses
+Cantera.ArrheniusRate</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.to_html">
+<span class="sig-name descname"><span class="pre">to_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.to_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an HTML rendering.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.uncertainty">
+<span class="sig-name descname"><span class="pre">uncertainty</span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.uncertainty" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.kinetics.uncertainties.RateUncertainty</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>uncertainty</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="https://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="eckart.html"
+                          title="previous chapter">rmgpy.kinetics.Eckart</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="stickingcoefficient.html"
+                          title="next chapter">rmgpy.kinetics.StickingCoefficient</a></p>
+  </div>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/documentation/source/reference/kinetics/surfacearrhenius.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="stickingcoefficient.html" title="rmgpy.kinetics.StickingCoefficient"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="eckart.html" title="rmgpy.kinetics.Eckart"
+             >previous</a> |</li>
+  <li><a href="https://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">3.2.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Kinetics (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">rmgpy.kinetics.SurfaceArrhenius</a></li> 
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2023, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    </div>
+<script type="text/javascript">
+  var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+  document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+  try {
+    var pageTracker = _gat._getTracker("UA-24556433-3");
+    pageTracker._trackPageview();
+  } catch(err) {}
+</script>
+
+  </body>
+</html>

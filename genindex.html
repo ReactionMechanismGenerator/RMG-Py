@@ -81,7 +81,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.A">A (rmgpy.kinetics.Arrhenius attribute)</a>
+
+      <ul>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.A">(rmgpy.kinetics.StickingCoefficient attribute)</a>
 </li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.A">(rmgpy.kinetics.SurfaceArrhenius attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.a0">a0 (rmgpy.thermo.Wilhoit attribute)</a>
 </li>
       <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.a1">a1 (rmgpy.thermo.Wilhoit attribute)</a>
@@ -260,6 +266,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/groupbond.html#rmgpy.molecule.GroupBond.apply_action">(rmgpy.molecule.GroupBond method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/pdep/methods.html#rmgpy.pdep.cse.apply_chemically_significant_eigenvalues_method">apply_chemically_significant_eigenvalues_method() (in module rmgpy.pdep.cse)</a>
 
       <ul>
@@ -268,8 +276,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork.apply_chemically_significant_eigenvalues_method">(rmgpy.rmg.pdep.PDepNetwork method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/data/reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe.apply_forward">apply_forward() (rmgpy.data.kinetics.ReactionRecipe method)</a>
 </li>
       <li><a href="reference/pdep/reaction.html#rmgpy.pdep.reaction.apply_inverse_laplace_transform_method">apply_inverse_laplace_transform_method() (in module rmgpy.pdep.reaction)</a>
@@ -721,13 +727,23 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
         <li><a href="reference/kinetics/pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius.change_rate">(rmgpy.kinetics.PDepArrhenius method)</a>
 </li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.change_rate">(rmgpy.kinetics.StickingCoefficient method)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.change_rate">(rmgpy.kinetics.SurfaceArrhenius method)</a>
+</li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.change_rate">(rmgpy.kinetics.ThirdBody method)</a>
 </li>
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.change_rate">(rmgpy.kinetics.Troe method)</a>
 </li>
       </ul></li>
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.change_t0">change_t0() (rmgpy.kinetics.Arrhenius method)</a>
+
+      <ul>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.change_t0">(rmgpy.kinetics.StickingCoefficient method)</a>
 </li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.change_t0">(rmgpy.kinetics.SurfaceArrhenius method)</a>
+</li>
+      </ul></li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.charge">charge (rmgpy.molecule.Atom attribute)</a>
 
       <ul>
@@ -900,6 +916,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius.comment">(rmgpy.kinetics.PDepArrhenius attribute)</a>
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.comment">(rmgpy.kinetics.PDepKineticsData attribute)</a>
+</li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.comment">(rmgpy.kinetics.StickingCoefficient attribute)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.comment">(rmgpy.kinetics.SurfaceArrhenius attribute)</a>
 </li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.comment">(rmgpy.kinetics.ThirdBody attribute)</a>
 </li>
@@ -1172,8 +1192,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/element.html#rmgpy.molecule.Element.cov_radius">cov_radius (rmgpy.molecule.Element attribute)</a>
 </li>
-      <li><a href="reference/solver/surfacereactor.html#rmgpy.solver.SurfaceReactor.coverage_dependence">coverage_dependence (rmgpy.solver.SurfaceReactor attribute)</a>
+      <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.coverage_dependence">coverage_dependence (rmgpy.kinetics.StickingCoefficient attribute)</a>
+
+      <ul>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.coverage_dependence">(rmgpy.kinetics.SurfaceArrhenius attribute)</a>
 </li>
+        <li><a href="reference/solver/surfacereactor.html#rmgpy.solver.SurfaceReactor.coverage_dependence">(rmgpy.solver.SurfaceReactor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/solver/surfacereactor.html#rmgpy.solver.SurfaceReactor.coverage_dependencies">coverage_dependencies (rmgpy.solver.SurfaceReactor attribute)</a>
 </li>
       <li><a href="reference/thermo/nasa.html#rmgpy.thermo.NASA.Cp0">Cp0 (rmgpy.thermo.NASA attribute)</a>
@@ -1367,6 +1393,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.discrepancy">(rmgpy.kinetics.PDepKineticsData method)</a>
 </li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.discrepancy">(rmgpy.kinetics.StickingCoefficient method)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.discrepancy">(rmgpy.kinetics.SurfaceArrhenius method)</a>
+</li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.discrepancy">(rmgpy.kinetics.ThirdBody method)</a>
 </li>
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.discrepancy">(rmgpy.kinetics.Troe method)</a>
@@ -1463,7 +1493,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/pdep/configuration.html#rmgpy.pdep.Configuration.e_list">e_list (rmgpy.pdep.Configuration attribute)</a>
 </li>
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.Ea">Ea (rmgpy.kinetics.Arrhenius attribute)</a>
+
+      <ul>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.Ea">(rmgpy.kinetics.StickingCoefficient attribute)</a>
 </li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.Ea">(rmgpy.kinetics.SurfaceArrhenius attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/kinetics/eckart.html#rmgpy.kinetics.Eckart">Eckart (class in rmgpy.kinetics)</a>
 </li>
       <li><a href="reference/molecule/edge.html#rmgpy.molecule.graph.Edge">Edge (class in rmgpy.molecule.graph)</a>
@@ -1544,10 +1580,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.endo_dof">(rmgpy.molecule.kekulize.AromaticRing attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/statmech/hinderedrotor.html#rmgpy.statmech.HinderedRotor.energies">energies (rmgpy.statmech.HinderedRotor attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/statmech/hinderedrotor.html#rmgpy.statmech.HinderedRotor.energies">energies (rmgpy.statmech.HinderedRotor attribute)</a>
+</li>
       <li><a href="reference/pdep/configuration.html#rmgpy.pdep.Configuration.energy_correction">energy_correction (rmgpy.pdep.Configuration attribute)</a>
 </li>
       <li><a href="reference/species/species.html#rmgpy.species.Species.energy_transfer_model">energy_transfer_model (rmgpy.species.Species attribute)</a>
@@ -1758,10 +1794,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/arkane/pdep.html#arkane.PressureDependenceJob.fit_interpolation_models">fit_interpolation_models() (arkane.PressureDependenceJob method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.fit_statmech_direct">fit_statmech_direct() (in module rmgpy.data.statmechfit)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.fit_statmech_pseudo">fit_statmech_pseudo() (in module rmgpy.data.statmechfit)</a>
 </li>
       <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.fit_statmech_pseudo_rotors">fit_statmech_pseudo_rotors() (in module rmgpy.data.statmechfit)</a>
@@ -1774,6 +1810,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/chebyshev.html#rmgpy.kinetics.Chebyshev.fit_to_data">(rmgpy.kinetics.Chebyshev method)</a>
 </li>
         <li><a href="reference/kinetics/pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius.fit_to_data">(rmgpy.kinetics.PDepArrhenius method)</a>
+</li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.fit_to_data">(rmgpy.kinetics.StickingCoefficient method)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.fit_to_data">(rmgpy.kinetics.SurfaceArrhenius method)</a>
 </li>
         <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.fit_to_data">(rmgpy.thermo.Wilhoit method)</a>
 </li>
@@ -2594,10 +2634,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.get_equilibrium_constants">(rmgpy.rmg.pdep.PDepReaction method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.get_extension_edge">get_extension_edge() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.get_extensions">get_extensions() (rmgpy.molecule.Group method)</a>
 </li>
       <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.get_features">get_features() (rmgpy.molecule.AtomType method)</a>
@@ -2971,6 +3011,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.get_rate_coefficient">(rmgpy.kinetics.PDepKineticsData method)</a>
 </li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.get_rate_coefficient">(rmgpy.kinetics.StickingCoefficient method)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.get_rate_coefficient">(rmgpy.kinetics.SurfaceArrhenius method)</a>
+</li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.get_rate_coefficient">(rmgpy.kinetics.ThirdBody method)</a>
 </li>
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.get_rate_coefficient">(rmgpy.kinetics.Troe method)</a>
@@ -3125,7 +3169,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/data/statmechdatabase.html#rmgpy.data.statmech.StatmechDatabase.get_statmech_data_from_library">get_statmech_data_from_library() (rmgpy.data.statmech.StatmechDatabase method)</a>
 </li>
       <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_sticking_coefficient">get_sticking_coefficient() (rmgpy.data.kinetics.LibraryReaction method)</a>
+
+      <ul>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.get_sticking_coefficient">(rmgpy.kinetics.StickingCoefficient method)</a>
 </li>
+      </ul></li>
       <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_stoichiometric_coefficient">get_stoichiometric_coefficient() (rmgpy.data.kinetics.DepositoryReaction method)</a>
 
       <ul>
@@ -3778,14 +3826,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.is_forward">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.is_halogen">is_halogen() (rmgpy.molecule.Atom method)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.is_heterocyclic">is_heterocyclic() (rmgpy.molecule.Molecule method)</a>
 </li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.is_hydrogen">is_hydrogen() (rmgpy.molecule.Atom method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond.is_hydrogen_bond">is_hydrogen_bond() (rmgpy.molecule.Bond method)</a>
 
       <ul>
@@ -3816,6 +3864,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius.is_identical_to">(rmgpy.kinetics.PDepArrhenius method)</a>
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.is_identical_to">(rmgpy.kinetics.PDepKineticsData method)</a>
+</li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.is_identical_to">(rmgpy.kinetics.StickingCoefficient method)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.is_identical_to">(rmgpy.kinetics.SurfaceArrhenius method)</a>
 </li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.is_identical_to">(rmgpy.kinetics.ThirdBody method)</a>
 </li>
@@ -3917,6 +3969,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.is_pressure_dependent">(rmgpy.kinetics.PDepKineticsData method)</a>
 </li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.is_pressure_dependent">(rmgpy.kinetics.StickingCoefficient method)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.is_pressure_dependent">(rmgpy.kinetics.SurfaceArrhenius method)</a>
+</li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.is_pressure_dependent">(rmgpy.kinetics.ThirdBody method)</a>
 </li>
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.is_pressure_dependent">(rmgpy.kinetics.Troe method)</a>
@@ -3970,6 +4026,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius.is_similar_to">(rmgpy.kinetics.PDepArrhenius method)</a>
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.is_similar_to">(rmgpy.kinetics.PDepKineticsData method)</a>
+</li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.is_similar_to">(rmgpy.kinetics.StickingCoefficient method)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.is_similar_to">(rmgpy.kinetics.SurfaceArrhenius method)</a>
 </li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.is_similar_to">(rmgpy.kinetics.ThirdBody method)</a>
 </li>
@@ -4066,6 +4126,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius.is_temperature_valid">(rmgpy.kinetics.PDepArrhenius method)</a>
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.is_temperature_valid">(rmgpy.kinetics.PDepKineticsData method)</a>
+</li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.is_temperature_valid">(rmgpy.kinetics.StickingCoefficient method)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.is_temperature_valid">(rmgpy.kinetics.SurfaceArrhenius method)</a>
 </li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.is_temperature_valid">(rmgpy.kinetics.ThirdBody method)</a>
 </li>
@@ -5110,6 +5174,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.n">n (rmgpy.kinetics.Arrhenius attribute)</a>
 
       <ul>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.n">(rmgpy.kinetics.StickingCoefficient attribute)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.n">(rmgpy.kinetics.SurfaceArrhenius attribute)</a>
+</li>
         <li><a href="reference/pdep/singleexponentialdown.html#rmgpy.pdep.SingleExponentialDown.n">(rmgpy.pdep.SingleExponentialDown attribute)</a>
 </li>
       </ul></li>
@@ -5470,6 +5538,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.Pmax">(rmgpy.kinetics.PDepKineticsData attribute)</a>
 </li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.Pmax">(rmgpy.kinetics.StickingCoefficient attribute)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.Pmax">(rmgpy.kinetics.SurfaceArrhenius attribute)</a>
+</li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.Pmax">(rmgpy.kinetics.ThirdBody attribute)</a>
 </li>
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.Pmax">(rmgpy.kinetics.Troe attribute)</a>
@@ -5493,6 +5565,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius.Pmin">(rmgpy.kinetics.PDepArrhenius attribute)</a>
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.Pmin">(rmgpy.kinetics.PDepKineticsData attribute)</a>
+</li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.Pmin">(rmgpy.kinetics.StickingCoefficient attribute)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.Pmin">(rmgpy.kinetics.SurfaceArrhenius attribute)</a>
 </li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.Pmin">(rmgpy.kinetics.ThirdBody attribute)</a>
 </li>
@@ -6603,6 +6679,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.set_cantera_kinetics">(rmgpy.kinetics.PDepKineticsData method)</a>
 </li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.set_cantera_kinetics">(rmgpy.kinetics.StickingCoefficient method)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.set_cantera_kinetics">(rmgpy.kinetics.SurfaceArrhenius method)</a>
+</li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.set_cantera_kinetics">(rmgpy.kinetics.ThirdBody method)</a>
 </li>
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.set_cantera_kinetics">(rmgpy.kinetics.Troe method)</a>
@@ -6902,6 +6982,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/solver/surfacereactor.html#rmgpy.solver.SurfaceReactor.step">(rmgpy.solver.SurfaceReactor method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient">StickingCoefficient (class in rmgpy.kinetics)</a>
+</li>
       <li><a href="reference/arkane/common.html#arkane.common.str_repr">str_repr() (in module arkane.common)</a>
 </li>
       <li><a href="reference/qm/qmverifier.html#rmgpy.qm.qmverifier.QMVerifier.succesful_job_exists">succesful_job_exists() (rmgpy.qm.qmverifier.QMVerifier method)</a>
@@ -6956,9 +7038,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/solver/surfacereactor.html#rmgpy.solver.SurfaceReactor.surface_volume_ratio">surface_volume_ratio (rmgpy.solver.SurfaceReactor attribute)</a>
 </li>
-      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.SurfaceArrhenius">SurfaceArrhenius (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+      <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius">SurfaceArrhenius (class in rmgpy.kinetics)</a>
 
       <ul>
+        <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.SurfaceArrhenius">(rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+</li>
         <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.SurfaceArrhenius">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
 </li>
         <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.SurfaceArrhenius">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
@@ -7011,6 +7095,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.T0">T0 (rmgpy.kinetics.Arrhenius attribute)</a>
 
       <ul>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.T0">(rmgpy.kinetics.StickingCoefficient attribute)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.T0">(rmgpy.kinetics.SurfaceArrhenius attribute)</a>
+</li>
         <li><a href="reference/pdep/singleexponentialdown.html#rmgpy.pdep.SingleExponentialDown.T0">(rmgpy.pdep.SingleExponentialDown attribute)</a>
 </li>
       </ul></li>
@@ -7117,6 +7205,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.Tmax">(rmgpy.kinetics.PDepKineticsData attribute)</a>
 </li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.Tmax">(rmgpy.kinetics.StickingCoefficient attribute)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.Tmax">(rmgpy.kinetics.SurfaceArrhenius attribute)</a>
+</li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.Tmax">(rmgpy.kinetics.ThirdBody attribute)</a>
 </li>
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.Tmax">(rmgpy.kinetics.Troe attribute)</a>
@@ -7151,6 +7243,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.Tmin">(rmgpy.kinetics.PDepKineticsData attribute)</a>
 </li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.Tmin">(rmgpy.kinetics.StickingCoefficient attribute)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.Tmin">(rmgpy.kinetics.SurfaceArrhenius attribute)</a>
+</li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.Tmin">(rmgpy.kinetics.ThirdBody attribute)</a>
 </li>
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.Tmin">(rmgpy.kinetics.Troe attribute)</a>
@@ -7179,7 +7275,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/kinetics/multiarrhenius.html#rmgpy.kinetics.MultiArrhenius.to_arrhenius">to_arrhenius() (rmgpy.kinetics.MultiArrhenius method)</a>
 </li>
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.to_arrhenius_ep">to_arrhenius_ep() (rmgpy.kinetics.Arrhenius method)</a>
+
+      <ul>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.to_arrhenius_ep">(rmgpy.kinetics.SurfaceArrhenius method)</a>
 </li>
+      </ul></li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.to_augmented_inchi">to_augmented_inchi() (rmgpy.molecule.Molecule method)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.to_augmented_inchi_key">to_augmented_inchi_key() (rmgpy.molecule.Molecule method)</a>
@@ -7204,6 +7304,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
       <ul>
         <li><a href="reference/kinetics/lindemann.html#rmgpy.kinetics.Lindemann.to_cantera_kinetics">(rmgpy.kinetics.Lindemann method)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.to_cantera_kinetics">(rmgpy.kinetics.SurfaceArrhenius method)</a>
 </li>
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.to_cantera_kinetics">(rmgpy.kinetics.Troe method)</a>
 </li>
@@ -7240,6 +7342,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius.to_html">(rmgpy.kinetics.PDepArrhenius method)</a>
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.to_html">(rmgpy.kinetics.PDepKineticsData method)</a>
+</li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.to_html">(rmgpy.kinetics.StickingCoefficient method)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.to_html">(rmgpy.kinetics.SurfaceArrhenius method)</a>
 </li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.to_html">(rmgpy.kinetics.ThirdBody method)</a>
 </li>
@@ -7386,6 +7492,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius.uncertainty">(rmgpy.kinetics.PDepArrhenius attribute)</a>
 </li>
         <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.uncertainty">(rmgpy.kinetics.PDepKineticsData attribute)</a>
+</li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.uncertainty">(rmgpy.kinetics.StickingCoefficient attribute)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.uncertainty">(rmgpy.kinetics.SurfaceArrhenius attribute)</a>
 </li>
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.uncertainty">(rmgpy.kinetics.ThirdBody attribute)</a>
 </li>
