@@ -35,6 +35,8 @@ from rmgpy.molecule.element import PeriodicSystem
 from rmgpy.molecule.group import Group
 from rmgpy.molecule.molecule import Molecule
 
+from pytest_check import check
+
 molecule_atom_types = ["C", "O", "N", "S", "P", "Si", "Cl", "Br", "I", "F"]
 group_atomtypes = {}
 
@@ -177,16 +179,7 @@ def group_atom_type_comparison(a1, a2, u1, u2, c1, c2):
     return a1.equivalent(a2) and (c1 == c2) and (u1 == u2)
 
 
-def run_parameter_tests():
-    def failed(*args):
-        raise AssertionError
-
-    def exception(exc):
-        raise exc
-
-    def success():
-        assert True == True
-
+def test_parameters():
     def is_isomorphic_mol_atom_types(e1, e2, u1, u2, c1, c2):
         """
         Check whether isomorphism between 2 molecules consisting of each 1 atom
@@ -196,11 +189,14 @@ def run_parameter_tests():
         mol2, adjlist2 = create_molecule(e2, u2, c2)
 
         exp = mol_atom_type_comparison(e1, e2, u1, u2, c1, c2)
-        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjlist1, adjlist2, exp)
+        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(
+            adjlist1, adjlist2, exp
+        )
 
         if mol1 is not None and mol2 is not None:
             calc = mol1.is_isomorphic(mol2)
-            assert calc == exp, err
+            with check:
+                assert calc == exp, err
 
     def find_isomorphisms_mol_atom_types(e1, e2, u1, u2, c1, c2):
         """
@@ -212,48 +208,54 @@ def run_parameter_tests():
         mol2, adjlist2 = create_molecule(e2, u2, c2)
 
         exp = mol_atom_type_comparison(e1, e2, u1, u2, c1, c2)
-        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjlist1, adjlist2, exp)
+        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(
+            adjlist1, adjlist2, exp
+        )
 
         if mol1 is not None and mol2 is not None:
             calc = len(mol1.find_isomorphism(mol2)) > 0
-            assert calc == exp, err
+            with check:
+                assert calc == exp, err
 
     def is_subgraph_isomorphic_mol_atom_types(e1, e2, u1, u2, c1, c2):
         mol1, adjlist1 = create_molecule(e1, u1, c1)
         group1, adjlist2 = create_group(e2, u2, c2)
 
-        exp = mol_atom_type_comparison(e1, e2, u1, u2, c1, c2)  # string comparison will give us expected value!
+        exp = mol_atom_type_comparison(
+            e1, e2, u1, u2, c1, c2
+        )  # string comparison will give us expected value!
 
-        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjlist1, adjlist2, exp)
+        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(
+            adjlist1, adjlist2, exp
+        )
 
         if mol1 is not None and group1 is not None:
             calc = mol1.is_subgraph_isomorphic(group1)
-            assert calc == exp, err
+            with check:
+                assert calc == exp, err
 
     def find_subgraph_isomorphisms_mol_atom_types(e1, e2, u1, u2, c1, c2):
         mol1, adjlist1 = create_molecule(e1, u1, c1)
         group1, adjlist2 = create_group(e2, u2, c2)
 
-        exp = mol_atom_type_comparison(e1, e2, u1, u2, c1, c2)  # string comparison will give us expected value!
+        exp = mol_atom_type_comparison(
+            e1, e2, u1, u2, c1, c2
+        )  # string comparison will give us expected value!
 
-        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjlist1, adjlist2, exp)
+        err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(
+            adjlist1, adjlist2, exp
+        )
 
         if mol1 is not None and group1 is not None:
             calc = len(mol1.find_subgraph_isomorphisms(group1)) > 0
-            assert calc == exp, err
+            with check:
+                assert calc == exp, err
 
     output = load_cases_molecule_atom_types()
     for args in output:
-        try:
-            is_isomorphic_mol_atom_types(*args)
-            find_isomorphisms_mol_atom_types(*args)
-            is_subgraph_isomorphic_mol_atom_types(*args)
-
-        except AssertionError:
-            yield (failed, args)
-
-        except Exception as e:
-            yield (exception, e)
+        is_isomorphic_mol_atom_types(*args)
+        find_isomorphisms_mol_atom_types(*args)
+        is_subgraph_isomorphic_mol_atom_types(*args)
 
     def is_isomorphic_mol_group_atom_types(e1, e2, u1, u2, c1, c2):
         """
@@ -265,11 +267,16 @@ def run_parameter_tests():
         if mol1 is not None and group1 is not None:
             a1 = mol1.atoms[0].atomtype
             a2 = group1.atoms[0].atomtype[0]
-            exp = group_atom_type_comparison(a1, a2, u1, u2, c1, c2)  # string comparison will give us expected value!
-            err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjlist1, adjlist2, exp)
+            exp = group_atom_type_comparison(
+                a1, a2, u1, u2, c1, c2
+            )  # string comparison will give us expected value!
+            err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(
+                adjlist1, adjlist2, exp
+            )
 
             calc = mol1.is_subgraph_isomorphic(group1)
-            assert calc == exp, err
+            with check:
+                assert calc == exp, err
 
     def find_subgraph_isomorphisms_mol_group_atom_types(e1, e2, u1, u2, c1, c2):
         mol1, adjlist1 = create_molecule(e1, u1, c1)
@@ -278,23 +285,18 @@ def run_parameter_tests():
             a1 = mol1.atoms[0].atomtype
             a2 = group1.atoms[0].atomtype[0]
             exp = group_atom_type_comparison(a1, a2, u1, u2, c1, c2)
-            err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(adjlist1, adjlist2, exp)
+            err = "\nGraph 1: {0},\nGraph 2: {1}. \nExpected: {2}".format(
+                adjlist1, adjlist2, exp
+            )
 
             calc = len(mol1.find_subgraph_isomorphisms(group1)) > 0
-            assert calc == exp, err
+            with check:
+                assert calc == exp, err
 
     output = load_cases_group_atom_types()
     for args in output:
-        try:
-            is_isomorphic_mol_group_atom_types(*args)
-            find_subgraph_isomorphisms_mol_group_atom_types(*args)
-        except AssertionError:
-            yield (failed, args)
-        except Exception as e:
-            yield (exception, e)
-
-    # Make sure that one test is always returned
-    yield (success,)
+        is_isomorphic_mol_group_atom_types(*args)
+        find_subgraph_isomorphisms_mol_group_atom_types(*args)
 
 
 def test_multiplicity_mol_mol_distinct_multiplicity():

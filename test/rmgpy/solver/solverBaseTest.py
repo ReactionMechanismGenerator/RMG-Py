@@ -49,7 +49,12 @@ class ReactionSystemTest:
     def setup_class(self):
         self.listener = ConcentrationPrinter()
 
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), "solver/files/listener/")
+        folder = os.path.join(
+            os.path.dirname(rmgpy.__file__),
+            "solver",
+            "files",
+            "listener",
+        )
         input_file = os.path.join(folder, "input.py")
         chemkin_file = os.path.join(folder, "chemkin/chem.inp")
         spc_dict = os.path.join(folder, "chemkin/species_dictionary.txt")

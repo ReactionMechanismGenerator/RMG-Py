@@ -60,7 +60,7 @@ class ArkaneGaussianLogTest:
         """
         A method that is run before all unit tests in this class.
         """
-        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "gaussian")
+        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "..", "arkane", "data", "gaussian")
 
     def test_check_for_errors(self):
         """
@@ -104,7 +104,7 @@ class ArkaneGaussianLogTest:
 
     def test_gaussian_energies(self):
         """
-        test parsing double hydride, MP2, CCSD, CCSD(T), cbs-qb3, cbs-4m, g4, g4mp2 form Gaussian log
+        test parsing double hydride, MP2, CCSD, CCSD(T), cbs-qb3, cbs-4m, g4, g4mp2 from Gaussian log
         """
         log_doublehybrid = GaussianLog(os.path.join(self.data_path, "B2PLYP.LOG"))
         log_mp2 = GaussianLog(os.path.join(self.data_path, "UMP2_C_ATOM.LOG"))
@@ -113,7 +113,7 @@ class ArkaneGaussianLogTest:
         log_qb3 = GaussianLog(
             os.path.join(
                 os.path.dirname(os.path.dirname(__file__)),
-                "../examples/arkane/species/C2H5/",
+                "../../examples/arkane/species/C2H5/",
                 "ethyl_cbsqb3.log",
             )
         )

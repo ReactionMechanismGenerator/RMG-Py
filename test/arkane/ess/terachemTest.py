@@ -53,7 +53,7 @@ class TeraChemLogTest:
         """
         A method that is run before all unit tests in this class.
         """
-        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "terachem")
+        cls.data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "..", "arkane", "data", "terachem")
 
     def test_get_number_of_atoms(self):
         """Uses various TeraChem log files to test that number of atoms can be properly read."""

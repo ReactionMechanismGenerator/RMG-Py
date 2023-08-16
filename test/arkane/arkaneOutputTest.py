@@ -109,7 +109,7 @@ class OutputUnitTest:
         """
         A method that is run before all unit tests in this class.
         """
-        cls.data_path = os.path.join(os.path.dirname(__file__), "data")
+        cls.data_path = os.path.join(os.path.dirname(__file__),"..","..","arkane", "data")
 
     def test_prettify(self):
         """Test that ``prettify`` returns the expected result"""

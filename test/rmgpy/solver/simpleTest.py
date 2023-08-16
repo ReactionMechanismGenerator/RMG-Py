@@ -32,6 +32,7 @@ import os
 
 import numpy as np
 
+import rmgpy
 import rmgpy.constants as constants
 from rmgpy.chemkin import load_chemkin_file
 from rmgpy.kinetics import Arrhenius
@@ -44,7 +45,7 @@ from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
 
 
-class SimpleReactorCheck:
+class SimpleReactorTest:
     def test_solve(self):
         """
         Test the simple batch reactor with a simple kinetic model. Here we
@@ -153,10 +154,18 @@ class SimpleReactorCheck:
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            assert abs(reaction_rates[i, 0] - species_rates[i, 0]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - -species_rates[i, 2]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - species_rates[i, 3]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - species_rates[i, 0]) <= abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) <= abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 2]) <= abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - species_rates[i, 3]) <= abs(
+                1e-6 * reaction_rates[i, 0]
+            )
 
         # Check that we've reached equilibrium
         assert abs(reaction_rates[-1, 0] - 0.0) < 1e-2
@@ -314,7 +323,9 @@ class SimpleReactorCheck:
             for i in range(num_core_species):
                 for j in range(num_core_species):
                     jacobian[i, j] = (dydt[j][i] - dydt0[i]) / dN
-                    assert abs(jacobian[i, j] - solver_jacobian[i, j]) < abs(1e-4 * jacobian[i, j])
+                    assert abs(jacobian[i, j] - solver_jacobian[i, j]) <= abs(
+                        1e-4 * jacobian[i, j]
+                    )
 
         # print 'Solver jacobian'
         # print solver_jacobian
@@ -439,7 +450,7 @@ class SimpleReactorCheck:
 
         for i in range(num_core_species):
             for j in range(len(rxn_list)):
-                assert abs(dfdk[i, j] - solver_dfdk[i, j]) < abs(1e-3 * dfdk[i, j])
+                assert abs(dfdk[i, j] - solver_dfdk[i, j]) <= abs(1e-3 * dfdk[i, j])
 
         # print 'Numerical d(dy/dt)/dk'
         # print dfdk
@@ -463,9 +474,16 @@ class SimpleReactorCheck:
         """
         Test the solver's ability to simulate a model with collision efficiencies.
         """
-        chem_file = os.path.join(os.path.dirname(__file__), "files", "collider_model", "chem.inp")
+        chem_file = os.path.join(
+            os.path.dirname(rmgpy.__file__),
+            "solver",
+            "files",
+            "collider_model",
+            "chem.inp",
+        )
         dictionary_file = os.path.join(
-            os.path.dirname(__file__),
+            os.path.dirname(rmgpy.__file__),
+            "solver",
             "files",
             "collider_model",
             "species_dictionary.txt",
@@ -610,9 +628,16 @@ class SimpleReactorCheck:
         """
         Test the solver's ability to simulate a model with specific third body species collision efficiencies.
         """
-        chem_file = os.path.join(os.path.dirname(__file__), "files", "specific_collider_model", "chem.inp")
+        chem_file = os.path.join(
+            os.path.dirname(rmgpy.__file__),
+            "solver",
+            "files",
+            "specific_collider_model",
+            "chem.inp",
+        )
         dictionary_file = os.path.join(
-            os.path.dirname(__file__),
+            os.path.dirname(rmgpy.__file__),
+            "solver",
             "files",
             "specific_collider_model",
             "species_dictionary.txt",

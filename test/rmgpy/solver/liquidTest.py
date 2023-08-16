@@ -43,7 +43,7 @@ from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
 
 
-class LiquidReactorCheck:
+class LiquidReactorTest:
     @classmethod
     def setup_class(cls):
         """
@@ -168,10 +168,18 @@ class LiquidReactorCheck:
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            assert abs(reaction_rates[i, 0] - species_rates[i, 0]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - -species_rates[i, 2]) < 1e-6 * reaction_rates[i, 0]
-            assert abs(reaction_rates[i, 0] - species_rates[i, 3]) < 1e-6 * reaction_rates[i, 0]
+            assert abs(reaction_rates[i, 0] - species_rates[i, 0]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 2]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
+            assert abs(reaction_rates[i, 0] - species_rates[i, 3]) < abs(
+                1e-6 * reaction_rates[i, 0]
+            )
 
         # Check that we've reached equilibrium
         assert abs(reaction_rates[-1, 0] - 0.0) < 1e-2
@@ -350,7 +358,9 @@ class LiquidReactorCheck:
                 for i in range(num_core_species):
                     for j in range(num_core_species):
                         jacobian[i, j] = (dydt[j][i] - dydt0[i]) / dN
-                        assert abs(jacobian[i, j] - solver_jacobian[i, j]) < abs(1e-4 * jacobian[i, j])
+                        assert abs(jacobian[i, j] - solver_jacobian[i, j]) <= abs(
+                            1e-4 * jacobian[i, j]
+                        )
             # The forward finite difference is very unstable for reactions
             # 6 and 7. Use Jacobians calculated by hand instead.
             elif rxn_num == 6:
@@ -359,14 +369,18 @@ class LiquidReactorCheck:
                 jacobian = jacobian_rxn6(c0, kforward, kreverse, core_species)
                 for i in range(num_core_species):
                     for j in range(num_core_species):
-                        assert abs(jacobian[i, j] - solver_jacobian[i, j]) < abs(1e-4 * jacobian[i, j])
+                        assert abs(jacobian[i, j] - solver_jacobian[i, j]) <= abs(
+                            1e-4 * jacobian[i, j]
+                        )
             elif rxn_num == 7:
                 kforward = rxn.get_rate_coefficient(self.T)
                 kreverse = kforward / rxn.get_equilibrium_constant(self.T)
                 jacobian = jacobian_rxn7(c0, kforward, kreverse, core_species)
                 for i in range(num_core_species):
                     for j in range(num_core_species):
-                        assert abs(jacobian[i, j] - solver_jacobian[i, j]) < abs(1e-4 * jacobian[i, j])
+                        assert abs(jacobian[i, j] - solver_jacobian[i, j]) <= abs(
+                            1e-4 * jacobian[i, j]
+                        )
 
     def test_compute_derivative(self):
         rxn_list = [
@@ -420,8 +434,6 @@ class LiquidReactorCheck:
         rxn_system0.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
         dfdt0 = rxn_system0.residual(0.0, rxn_system0.y, np.zeros(rxn_system0.y.shape))[0]
         solver_dfdk = rxn_system0.compute_rate_derivative()
-        # print 'Solver d(dy/dt)/dk'
-        # print solver_dfdk
 
         integration_time = 1e-8
 
@@ -482,7 +494,7 @@ class LiquidReactorCheck:
 
         for i in range(num_core_species):
             for j in range(len(rxn_list)):
-                assert abs(dfdk[i, j] - solver_dfdk[i, j]) < abs(1e-3 * dfdk[i, j])
+                assert abs(dfdk[i, j] - solver_dfdk[i, j]) <= abs(1e-3 * dfdk[i, j])
 
     def test_store_constant_species_names(self):
         """
