@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 
 ###############################################################################
 #                                                                             #
@@ -1699,9 +1699,9 @@ def save_input_file(path, rmg):
     f.write('    kineticsEstimator = {0!r},\n'.format(rmg.kinetics_estimator))
     f.write(')\n\n')
 
-    if rmg.surfaceSiteDenisty or rmg.binding_energies:
+    if rmg.surface_site_density or rmg.binding_energies:
         f.write('catalystProperties(\n')
-        if rmg.surfaceSiteDenisty:
+        if rmg.surface_site_density:
             f.write('    surface_site_density = {0!r},'.format(rmg.surface_site_density))
         if rmg.binding_energies:
             f.write('    binding_energies = {0!r},'.format(rmg.binding_energies))
