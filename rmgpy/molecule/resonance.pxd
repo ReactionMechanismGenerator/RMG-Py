@@ -68,8 +68,4 @@ cpdef list generate_adsorbate_shift_down_resonance_structures(Graph mol)
 
 cpdef list generate_adsorbate_shift_up_resonance_structures(Graph mol)
 
-cpdef list generate_adsorbate_double_shift_up_resonance_structures(Graph mol)
-
-cpdef list generate_adsorbate_double_shift_down_resonance_structures(Graph mol)
-
 cpdef list generate_adsorbate_conjugate_resonance_structures(Graph mol)

@@ -2864,7 +2864,7 @@ class Molecule(Graph):
         cython.declare(atom=Atom)
         return [atom for atom in self.atoms if atom.is_surface_site()]
 
-    def is_bidentate(self):
+    def is_multidentate(self):
         """
         Return ``True`` if the adsorbate contains at least two binding sites,
         or ``False`` otherwise.

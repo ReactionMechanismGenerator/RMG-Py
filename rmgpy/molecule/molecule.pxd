@@ -301,7 +301,7 @@ cdef class Molecule(Graph):
 
     cpdef list get_adatoms(self)
 
-    cpdef bint is_bidentate(self)
+    cpdef bint is_multidentate(self)
 
     cpdef list get_desorbed_molecules(self)
 
