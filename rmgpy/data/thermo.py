@@ -1560,77 +1560,96 @@ class ThermoDatabase(object):
         Returns a :class:`ThermoData` object, with no Cp0 or CpInf
         """
 
-        if species.is_surface_site():
-            raise DatabaseError("Can't estimate thermo of vacant site. Should be in library (and should be 0).")
-
-        logging.debug("Trying to generate thermo for surface species using first of %d resonance isomer(s):",
-                      len(species.molecule))
-        molecule = species.molecule[0]
-        # store any labeled atoms to reapply at the end
-        labeled_atoms = molecule.get_all_labeled_atoms()
-        molecule.clear_labeled_atoms()
-        logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())
-        # only want/need to do one resonance structure,
-        # because will need to regenerate others in gas phase
-        dummy_molecules = molecule.get_desorbed_molecules()
-        for mol in dummy_molecules:
-            mol.clear_labeled_atoms()
-        if len(dummy_molecules) == 0:
-            raise RuntimeError(f"Cannot get thermo for gas-phase molecule. No valid dummy molecules from original molecule:\n{molecule.to_adjacency_list()}")
-        
-        # if len(molecule) > 1, it will assume all resonance structures have already been generated when it tries to generate them, so evaluate each configuration separately and pick the lowest energy one by H298 value
-        gas_phase_species_from_libraries = []
-        gas_phase_species_estimates = []
-        for dummy_molecule in dummy_molecules:
-            dummy_species = Species()
-            dummy_species.molecule = [dummy_molecule]
-            dummy_species.generate_resonance_structures()
-            dummy_species.thermo = self.get_thermo_data(dummy_species)
-            if dummy_species.thermo.label:
-                gas_phase_species_from_libraries.append(dummy_species)
-            else:
-                gas_phase_species_estimates.append(dummy_species)
-
         # define the comparison function to find the lowest energy
+
         def lowest_energy(species):
             if hasattr(species.thermo, 'H298'):
                 return species.thermo.H298.value_si
             else:
                 return species.thermo.get_enthalpy(298.0)
 
-        if gas_phase_species_from_libraries:
-            species = min(gas_phase_species_from_libraries, key=lowest_energy)
-        else:
-            species = min(gas_phase_species_estimates, key=lowest_energy)
+        if species.is_surface_site():
+            raise DatabaseError("Can't estimate thermo of vacant site. Should be in library (and should be 0).")
 
-        thermo = species.thermo
-        thermo.comment = f"Gas phase thermo for {thermo.label or species.molecule[0].to_smiles()} from {thermo.comment}. Adsorption correction:"
-        logging.debug("Using thermo from gas phase for species {}\n".format(species.label) + repr(thermo))
+        logging.debug("Trying to generate thermo for surface species using first of %d resonance isomer(s):",
+                      len(species.molecule))
 
-        if not isinstance(thermo, ThermoData):
-            thermo = thermo.to_thermo_data()
-            find_cp0_and_cpinf(species, thermo)
+        resonance_data = []
 
-        # Get the adsorption energy
-        # Create the ThermoData object
-        adsorption_thermo = ThermoData(
-            Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
-            Cpdata=([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "J/(mol*K)"),
-            H298=(0.0, "kJ/mol"),
-            S298=(0.0, "J/(mol*K)"),
-        )
+        # iterate over all resonance structures of the species
 
-        surface_sites = molecule.get_surface_sites()
-        try:
-            self._add_adsorption_correction(adsorption_thermo, self.groups[self.adsorption_groups], molecule, surface_sites)
-        except (KeyError, DatabaseError):
-            logging.error("Couldn't find in adsorption thermo database:")
-            logging.error(molecule)
-            logging.error(molecule.to_adjacency_list())
-            raise
+        for i in range(len(species.molecule)):
+            molecule = species.molecule[i]
+            # store any labeled atoms to reapply at the end
+            labeled_atoms = molecule.get_all_labeled_atoms()
+            molecule.clear_labeled_atoms()
+            logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())
+            # get all desorbed molecules for a given adsorbate
+            dummy_molecules = molecule.get_desorbed_molecules()
+            for mol in dummy_molecules:
+                mol.clear_labeled_atoms()
+            if len(dummy_molecules) == 0:
+                raise RuntimeError(f"Cannot get thermo for gas-phase molecule. No valid dummy molecules from original molecule:\n{molecule.to_adjacency_list()}")
+        
+            # if len(molecule) > 1, it will assume all resonance structures have already been generated when it tries to generate them, so evaluate each configuration separately and pick the lowest energy one by H298 value
+            gas_phase_species_from_libraries = []
+            gas_phase_species_estimates = []
+            for dummy_molecule in dummy_molecules:
+                dummy_species = Species()
+                dummy_species.molecule = [dummy_molecule]
+                dummy_species.generate_resonance_structures()
+                dummy_species.thermo = self.get_thermo_data(dummy_species)
+                if dummy_species.thermo.label:
+                    gas_phase_species_from_libraries.append(dummy_species)
+                else:
+                    gas_phase_species_estimates.append(dummy_species)
 
-        # (group_additivity=True means it appends the comments)
-        add_thermo_data(thermo, adsorption_thermo, group_additivity=True)
+            if gas_phase_species_from_libraries:
+                gas_phase_species = min(gas_phase_species_from_libraries, key=lowest_energy)
+            else:
+                gas_phase_species = min(gas_phase_species_estimates, key=lowest_energy)
+
+            thermo = gas_phase_species.thermo
+            thermo.comment = f"Gas phase thermo for {thermo.label or gas_phase_species.molecule[0].to_smiles()} from {thermo.comment}. Adsorption correction:"
+            logging.debug("Using thermo from gas phase for species {}\n".format(gas_phase_species.label) + repr(thermo))
+
+            if not isinstance(thermo, ThermoData):
+                thermo = thermo.to_thermo_data()
+                find_cp0_and_cpinf(gas_phase_species, thermo)
+
+            # Get the adsorption energy
+            # Create the ThermoData object
+
+            adsorption_thermo = ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "J/(mol*K)"),
+                H298=(0.0, "kJ/mol"),
+                S298=(0.0, "J/(mol*K)"),
+            )
+
+            surface_sites = molecule.get_surface_sites()
+            try:
+                self._add_adsorption_correction(adsorption_thermo, self.groups['adsorptionPt111'], molecule, surface_sites)
+            except (KeyError, DatabaseError):
+                logging.error("Couldn't find in adsorption thermo database:")
+                logging.error(molecule)
+                logging.error(molecule.to_adjacency_list())
+                raise
+
+            # (group_additivity=True means it appends the comments)
+            add_thermo_data(thermo, adsorption_thermo, group_additivity=True)
+
+            resonance_data.append(thermo)
+
+        # Get the enthalpy of formation of every adsorbate at 298 K and determine the resonance structure with the lowest enthalpy of formation
+        # We assume that the lowest enthalpy of formation is the correct thermodynamic property for the adsorbate
+
+        enthalpy298 = []
+
+        for i in range(len(resonance_data)):
+            enthalpy298.append(resonance_data[i].get_enthalpy(298))
+
+        thermo = resonance_data[np.argmin(enthalpy298)]
 
         if thermo.label:
             thermo.label += 'X' * len(surface_sites)
@@ -2574,7 +2593,7 @@ class ThermoDatabase(object):
         node = node0
         while node is not None and node.data is None:
             node = node.parent
-        if node is None: 
+        if node is None:
             raise DatabaseError(f'Unable to determine thermo parameters for atom {atom} in molecule {molecule}: '
                                 f'no data for node {node0} or any of its ancestors in database {database.label}.\n' +
                                 molecule.to_adjacency_list())
@@ -2872,7 +2891,6 @@ class ThermoCentralDatabaseInterface(object):
         except ValueError:
             logging.info('Fail to generate inchi/smiles for species below:\n{0}'.format(species.to_adjacency_list()))
 
-
 def find_cp0_and_cpinf(species, heat_capacity):
     """
     Calculate the Cp0 and CpInf values, and add them to the HeatCapacityModel object.
@@ -2883,3 +2901,4 @@ def find_cp0_and_cpinf(species, heat_capacity):
     if heat_capacity.CpInf is None:
         cp_inf = species.calculate_cpinf()
         heat_capacity.CpInf = (cp_inf, "J/(mol*K)")
+
