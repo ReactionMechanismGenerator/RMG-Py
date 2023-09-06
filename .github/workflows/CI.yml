@@ -168,7 +168,7 @@ jobs:
         id: regression-execution
         timeout-minutes: 60
         run: |
-          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat;
+          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat fragment;
           do
             if python-jl rmg.py test/regression/"$regr_test"/input.py; then
               echo "$regr_test" "Executed Successfully"
