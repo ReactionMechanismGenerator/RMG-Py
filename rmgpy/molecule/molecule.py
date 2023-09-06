@@ -178,7 +178,7 @@ class Atom(Vertex):
 
     def __lt__(self, other):
         """Define less than comparison. For comparing against other Atom objects (e.g. when sorting)."""
-        if isinstance(other, Atom):
+        if issubclass(type(other), Vertex):
             return self.sorting_key < other.sorting_key
         else:
             raise NotImplementedError('Cannot perform less than comparison between Atom and '
@@ -186,7 +186,7 @@ class Atom(Vertex):
 
     def __gt__(self, other):
         """Define greater than comparison. For comparing against other Atom objects (e.g. when sorting)."""
-        if isinstance(other, Atom):
+        if issubclass(type(other), Vertex):
             return self.sorting_key > other.sorting_key
         else:
             raise NotImplementedError('Cannot perform greater than comparison between Atom and '
