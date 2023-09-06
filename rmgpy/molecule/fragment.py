@@ -112,6 +112,9 @@ class CuttingLabel(Vertex):
         c.lone_pairs = self.lone_pairs
         c.isotope = self.isotope
         c.id = self.id
+        c.mass = 0
+        c.site = ""
+        c.morphology = ""
         return c
 
     def is_carbon(self):
