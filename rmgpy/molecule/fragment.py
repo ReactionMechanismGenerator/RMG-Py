@@ -32,11 +32,12 @@ import logging
 
 import rmgpy.molecule.group as gr
 import rmgpy.molecule.element as elements
+from rmgpy.molecule.element import Element
 import rmgpy.molecule.converter as converter
 from rmgpy.molecule.element import get_element
 from rmgpy.molecule.graph import Graph, Vertex
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
-from rmgpy.molecule.atomtype import get_atomtype, AtomTypeError, ATOMTYPES
+from rmgpy.molecule.atomtype import get_atomtype, AtomTypeError, ATOMTYPES, AtomType
 from rdkit import Chem
 
 # this variable is used to name atom IDs so that there are as few conflicts by
@@ -44,20 +45,25 @@ from rdkit import Chem
 ATOM_ID_COUNTER = -(2**15)
 
 
-class CuttingLabel(Vertex):
+class CuttingLabel(Atom):
     def __init__(self, name="", label="", id=-1):
-        Vertex.__init__(self)
-        self.name = name  # equivalent to Atom element symbol
-        self.label = label  # equivalent to Atom label attribute
-        self.charge = 0
-        self.radical_electrons = 0
-        self.lone_pairs = 0
+        super().__init__(
+            element=Element(0, name, "cutting label", 0.0, -1),
+            radical_electrons=0,
+            charge=0,
+            label=label,
+            lone_pairs=0,
+            site="",
+            coords=None,
+            id=id,
+            props=None,
+        )
+        # define a new custom atom type
+        self.atomtype = AtomType(label=label, generic=[], specific=[])
+        # accessed by other methods in Fragment
+        self.name = name
         self.isotope = -1
-        self.id = id
-        self.mass = 0
-        self.site = ""
-        self.morphology = ""
-
+        
     def __str__(self):
         """
         Return a human-readable string representation of the object.
@@ -73,10 +79,6 @@ class CuttingLabel(Vertex):
     @property
     def symbol(self):
         return self.name
-
-    @property
-    def bonds(self):
-        return self.edges
 
     def is_specific_case_of(self, other):
         """
@@ -112,51 +114,10 @@ class CuttingLabel(Vertex):
         c.lone_pairs = self.lone_pairs
         c.isotope = self.isotope
         c.id = self.id
-        c.mass = 0
+        c.element = self.element
         c.site = ""
         c.morphology = ""
         return c
-
-    def is_carbon(self):
-        return False
-
-    def is_nitrogen(self):
-        return False
-
-    def is_oxygen(self):
-        return False
-
-    def is_fluorine(self):
-        return False
-
-    def is_surface_site(self):
-        return False
-
-    def is_silicon(self):
-        return False
-
-    def is_sulfur(self):
-        return False
-
-    def is_chlorine(self):
-        return False
-
-    def is_iodine(self):
-        return False
-
-    def is_nos(self):
-        """
-        Return ``True`` if the atom represent either nitrogen, sulfur, or oxygen
-        ``False`` if it does not.
-        """
-        return False
-
-    def is_non_hydrogen(self):
-        """
-        Return ``True`` if the atom does not represent a hydrogen atom or
-        ``False`` if it does.
-        """
-        return True
 
 
 class Fragment(Molecule):
@@ -237,7 +198,7 @@ class Fragment(Molecule):
     def is_surface_site(self):
         "Returns ``True`` iff the molecule is nothing but a surface site 'X'."
         return len(self.vertices) == 1 and self.vertices[0].is_surface_site()
-
+    
     def merge(self, other):
         """
         Merge two fragments so as to store them in a single :class:`Fragment`
@@ -367,8 +328,7 @@ class Fragment(Molecule):
         """
         mass = 0
         for vertex in self.vertices:
-            if isinstance(vertex, Atom):
-                mass += vertex.element.mass
+            mass += vertex.element.mass
         return mass
 
     def calculate_cp0(self):
@@ -440,7 +400,7 @@ class Fragment(Molecule):
     def update(self, sort_atoms=True):
         # currently sort_atoms does not work for fragments
         for v in self.vertices:
-            if isinstance(v, Atom):
+            if not isinstance(v, CuttingLabel):
                 v.update_charge()
 
         self.update_atomtypes()
@@ -462,7 +422,7 @@ class Fragment(Molecule):
         self.update_lone_pairs()
 
         for v in self.vertices:
-            if not isinstance(v, Atom):
+            if isinstance(v, CuttingLabel):
                 continue
             try:
                 v.atomtype = get_atomtype(v, v.edges)
@@ -483,7 +443,7 @@ class Fragment(Molecule):
         number of lone electron pairs, assuming a neutral molecule.
         """
         for v in self.vertices:
-            if not isinstance(v, Atom):
+            if isinstance(v, CuttingLabel):
                 continue
             if not v.is_hydrogen():
                 order = v.get_total_bond_order()
@@ -740,7 +700,7 @@ class Fragment(Molecule):
         """
         element_count = {}
         for atom in self.vertices:
-            if not isinstance(atom, Atom):
+            if isinstance(atom, CuttingLabel):
                 continue
             symbol = atom.element.symbol
             isotope = atom.element.isotope
@@ -805,11 +765,11 @@ class Fragment(Molecule):
         num_atoms = 0
         if element is None:
             for vertex in self.vertices:
-                if isinstance(vertex, Atom):
+                if not isinstance(vertex, CuttingLabel):
                     num_atoms += 1
         else:
             for vertex in self.vertices:
-                if isinstance(vertex, Atom):
+                if not isinstance(vertex, CuttingLabel):
                     if vertex.element.symbol == element:
                         num_atoms += 1
         return num_atoms

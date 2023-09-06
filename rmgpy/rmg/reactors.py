@@ -56,6 +56,7 @@ else:
     from julia import Main
 
 from rmgpy.species import Species
+from rmgpy.molecule.fragment import Fragment
 from rmgpy.reaction import Reaction
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.wilhoit import Wilhoit
@@ -690,6 +691,28 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
                 # means it is fragment's cutting label
                 pass
         bondnum = len(obj.molecule[0].get_all_edges())
+        
+        if isinstance(obj.molecule[0], Fragment):
+            th = obj.get_thermo_data()
+            thermo = to_rms(th)
+            return rms.Species(
+                name=obj.label,
+                index=obj.index,
+                inchi="",
+                smiles="",
+                adjlist="",
+                thermo=thermo,
+                atomnums=atomnums,
+                bondnum=bondnum,
+                diffusion=rms.EmptyDiffusivity(),
+                radius=0.0,
+                radicalelectrons=obj.molecule[0].multiplicity - 1,
+                molecularweight=0.0,
+                henrylawconstant=rms.EmptyHenryLawConstant(),
+                liquidvolumetricmasstransfercoefficient=rms.EmptyLiquidVolumetricMassTransferCoefficient(),
+                comment=obj.thermo.comment,
+            )
+        
         if not obj.molecule[0].contains_surface_site():
             rad = rms.getspeciesradius(atomnums, bondnum)
             diff = rms.StokesDiffusivity(rad)
