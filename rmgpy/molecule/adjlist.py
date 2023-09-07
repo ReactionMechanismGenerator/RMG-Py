@@ -58,7 +58,8 @@ class Saturator(object):
         """
         new_atoms = []
         for atom in atoms:
-            if not isinstance(atom, Atom): continue
+            if isinstance(atom, CuttingLabel):
+                continue
             try:
                 max_number_of_valence_electrons = PeriodicSystem.valence_electrons[atom.symbol]
             except KeyError:
