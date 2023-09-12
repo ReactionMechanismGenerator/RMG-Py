@@ -644,6 +644,11 @@ class RMG(util.Subject):
                 spec.get_henry_law_constant_data()
             self.reaction_model.add_species_to_edge(spec)
 
+        # Reaction libraries: add species and reactions from reaction library to the edge so
+        # that RMG can find them if their rates are large enough
+        for library, option in self.reaction_libraries:
+            self.reaction_model.add_reaction_library_to_edge(library)
+
         # Also always add in a few bath gases (since RMG-Java does)
         for label, smiles in [('Ar', '[Ar]'), ('He', '[He]'), ('Ne', '[Ne]'), ('N2', 'N#N')]:
             molecule = Molecule().from_smiles(smiles)
@@ -664,11 +669,6 @@ class RMG(util.Subject):
         # DON'T generate any more reactions for the seed species at this time
         for seed_mechanism in self.seed_mechanisms:
             self.reaction_model.add_seed_mechanism_to_core(seed_mechanism, react=False)
-
-        # Reaction libraries: add species and reactions from reaction library to the edge so
-        # that RMG can find them if their rates are large enough
-        for library, option in self.reaction_libraries:
-            self.reaction_model.add_reaction_library_to_edge(library)
 
         # Perform species constraints and forbidden species checks on input species
         for spec in self.initial_species:
