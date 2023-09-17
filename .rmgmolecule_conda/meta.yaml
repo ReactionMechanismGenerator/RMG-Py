@@ -1,0 +1,53 @@
+# meta.yaml - package specification for rmgmolecule subpackage
+package:
+  name: rmgmolecule
+  version: 1.0.0
+
+source:
+  path: ../
+
+build:
+  number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
+
+requirements:
+  build:
+    - {{ compiler('c') }} # [unix]
+  host:
+    - cython >=0.25.2
+    - lpsolve55
+    - numpy
+    - openbabel >=3
+    - pyrdl
+    - python==3.7
+    - quantities
+    - rdkit >=2018
+    - scipy
+    - scikit-learn
+    - setuptools
+  run:
+    - cairo
+    - cairocffi
+    - cython >=0.25.2
+    - gprof2dot
+    - graphviz
+    - jinja2
+    - jupyter
+    - lpsolve55
+    - {{ pin_compatible('numpy') }}
+    - openbabel >=3
+    - pydot
+    - pyrdl
+    - python==3.7
+    - quantities
+    - rdkit >=2018
+    - scikit-learn
+test:
+  imports:
+    - rmgpy.molecule
+  commands:
+    - python -c 'from rmgpy.molecule import Molecule; mol=Molecule().from_smiles("CC")'
+
+about:
+  home: https://github.com/ReactionMechanismGenerator/RMG-Py
+  license: MIT
+  summary: "The ReactionMechanismGenerator Molecule Subpackage"

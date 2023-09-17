@@ -702,7 +702,13 @@ def _convert_3_atom_2_bond_path(start, mol):
     with a number of actions that reflect the changes in bond orders and unpaired
     electrons that the molecule should undergo.
     """
-    from rmgpy.data.kinetics.family import ReactionRecipe
+    try:
+        from rmgpy.data.kinetics.family import ReactionRecipe
+    except ImportError as ie:
+        raise RuntimeError(
+            "Cannot call inchi._convert_3_atom_2_bond_path() in rmgmolecule installation."
+            " Please install the full version of RMG."
+            ) from ie 
 
     def is_valid(mol):
         """Check if total bond order of oxygen atoms is smaller than 4."""

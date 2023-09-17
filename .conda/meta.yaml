@@ -11,7 +11,7 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }} # [unix]
+    - {{ compiler('c') }}
   host:
     - cython >=0.25.2
     - lpsolve55
@@ -78,10 +78,8 @@ test:
     - rmgpy
     - arkane
   commands:
-    - rmg.py examples/rmg/superminimal/input.py # [unix]
-    - Arkane.py examples/arkane/networks/n-butanol/input.py # [unix]
-    - python %SCRIPTS%\rmg.py examples\rmg\superminimal\input.py # [win]
-    - python %SCRIPTS\Arkane.py examples\arkane\networks\n-butanol\input.py # [win]
+    - python-jl rmg.py examples/rmg/superminimal/input.py
+    - python arkane.py examples/arkane/networks/n-butanol
 
 about:
   home: https://github.com/ReactionMechanismGenerator/RMG-Py

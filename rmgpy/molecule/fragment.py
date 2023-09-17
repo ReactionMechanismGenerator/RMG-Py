@@ -1020,7 +1020,13 @@ class Fragment(Graph):
 
     def assign_representative_species(self):
 
-        from rmgpy.species import Species
+        try:
+            from rmgpy.species import Species
+        except ImportError as ie:
+            raise RuntimeError(
+                "Cannot call Fragment.assign_representative_species() in rmgmolecule installation."
+                " Please install the full version of RMG."
+                ) from ie
         self.assign_representative_molecule()
         self.species_repr = Species(molecule=[self.mol_repr])
         self.symmetry_number = self.get_symmetry_number()

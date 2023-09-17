@@ -61,7 +61,12 @@ import numpy as np
 from rdkit.Chem import AllChem
 
 from rmgpy.molecule.molecule import Atom, Molecule
-from rmgpy.qm.molecule import Geometry
+
+Geometry = None
+try:
+    from rmgpy.qm.molecule import Geometry
+except ImportError:
+    logging.info("Unable to import Geometry rmgpy.qm.molecule - feature disabled.")
 
 
 ################################################################################
@@ -437,6 +442,11 @@ class MoleculeDrawer(object):
             # Generate the RDkit molecule from the RDkit molecule, use geometry
             # in order to match the atoms in the rdmol with the atoms in the
             # RMG molecule (which is required to extract coordinates).
+            if Geometry is None:
+                raise RuntimeError("""
+Missing rmgpy.qm.molecule.Geometry required for 2D coordinate generation.
+Please install the full version of RMG to use this function.
+                    """)
             self.geometry = Geometry(None, None, self.molecule, None)
 
             rdmol, rd_atom_idx = self.geometry.rd_build()
