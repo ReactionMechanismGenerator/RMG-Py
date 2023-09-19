@@ -145,6 +145,7 @@ class ConverterTest:
             Molecule().from_smiles("S"),
             Molecule().from_smiles("[CH2]C"),
             Molecule().from_smiles("[CH]C"),
+            Molecule().from_smiles('[C][C]'),
             Molecule().from_smiles("C=CC=C"),
             Molecule().from_smiles("C#C[CH2]"),
             Molecule().from_smiles("c1ccccc1"),

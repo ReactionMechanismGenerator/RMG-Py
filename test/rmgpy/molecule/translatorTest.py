@@ -750,6 +750,47 @@ class SMILESGenerationTest:
         smiles = "[C]Br"
         self.compare(adjlist, smiles)
 
+        # Test CC-triplet-1
+        adjlist = '''
+        multiplicity 3
+        1 *3 C u1 p1 c0 {2,S}
+        2 *3 C u1 p1 c0 {1,S}
+        '''
+        smiles = '[C][C]'
+        self.compare(adjlist, smiles)
+
+        # Test CC-triplet-2
+        adjlist = '''
+        multiplicity 3
+        1 *3 C u1 p0 c0 {2,T}
+        2 *3 C u1 p0 c0 {1,T}
+        '''
+        smiles = '[C]#[C]'
+        self.compare(adjlist, smiles)
+
+        # todo: Test CC-singlet-1
+        # We couldn't test the case where C forms quadruple bond with C
+        # because `$ `is not added to rdkit until Jan 2022,
+        # and RMG environment usually has rdkit <= 2022.03
+        # as of Sep 2023.
+        # This test should be added after we update the rdkit dependency.
+
+        # adjlist = '''
+        # 1 *3 C u0 p0 c0 {2,Q}
+        # 2 *3 C u0 p0 c0 {1,Q}
+        # '''
+        # smiles = '[C]$[C]'
+        # self.compare(adjlist, smiles)
+
+        # Test CC-singlet-2
+        # We couldn't test the case where C forms quadruple bond with C
+        adjlist = '''
+        1 *3 C u0 p1 c0 {2,D}
+        2 *3 C u0 p1 c0 {1,D}
+        '''
+        smiles = '[C]=[C]'
+        self.compare(adjlist, smiles)
+
     def test_aromatics(self):
         """Test that different aromatics representations returns different SMILES."""
         mol1 = Molecule().from_adjacency_list(
