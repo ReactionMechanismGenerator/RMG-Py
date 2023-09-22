@@ -2445,7 +2445,7 @@ class ThermoDatabase(object):
             entry = ring_database.descend_tree(molecule, atoms)
             matched_ring_entries.append(entry)
 
-        if matched_ring_entries == []:
+        if not matched_ring_entries:
             raise KeyError('Node not found in database.')
         # Decide which group to keep
         is_partial_match = True
