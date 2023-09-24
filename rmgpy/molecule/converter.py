@@ -116,8 +116,9 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
         for label, ind_list in label_dict.items():
             for ind in ind_list:
                 Chem.SetSupplementalSmilesLabel(rdkitmol.GetAtomWithIdx(ind), label)
-    [atom.SetNoImplicit(True) for atom in rdkitmol.GetAtoms()
-     if atom.GetAtomicNum() > 1]
+    for atom in rdkitmol.GetAtoms():
+        if atom.GetAtomicNum() > 1:
+            atom.SetNoImplicit(True)
     if sanitize:
         Chem.SanitizeMol(rdkitmol)
     if remove_h:
