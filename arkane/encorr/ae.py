@@ -32,6 +32,7 @@ This module provides classes for fitting atom energies based on a very
 small, predetermined set of molecules.
 """
 
+import os
 import importlib
 import json
 import logging
@@ -47,6 +48,7 @@ from rmgpy.molecule import get_element, Molecule
 import arkane.encorr.data as data
 from arkane.encorr.reference import ReferenceDatabase
 from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory
+from arkane.encorr.bac import _covariance_to_correlation
 
 # List of species labels that will be used for fitting (labels should match reference database)
 SPECIES_LABELS = [
@@ -103,12 +105,13 @@ class AEJob:
         self.overwrite = overwrite
         self.ae = AE(species_energies)
 
-    def execute(self, output_file: str = None):
+    def execute(self, output_directory: str = None, plot: bool = False):
         """
         Execute the atom energy job.
 
         Args:
-            output_file: Write the fitted energies to this file.
+            output_directory: Write the fitted energies to this directory.
+            plot: Save plots of results.
         """
         if self.level_of_theory is None:
             logging.info('Fitting atom energies')
@@ -116,7 +119,10 @@ class AEJob:
             logging.info(f'Fitting atom energies for {self.level_of_theory}')
         self.ae.fit()
 
-        if output_file is not None:
+        if output_directory is not None:
+            model_chemistry_formatted = self.level_of_theory.to_model_chem().replace('//', '__').replace('/', '_')
+            output_file = os.path.join(output_directory, f'AEC_{model_chemistry_formatted}.out')
+
             with open(output_file, 'a') as f:
                 if self.level_of_theory is not None:
                     f.write(f'#  {self.level_of_theory}\n')
@@ -124,6 +130,10 @@ class AEJob:
                     f.write(f'# {element:2}: {energy:15.8f} +/- {self.ae.confidence_intervals[element]:.8f} Hartree\n')
                 f.writelines(self.ae.format_atom_energies(
                     'atom_energies' if self.level_of_theory is None else self.level_of_theory))
+
+            if plot:
+                correlation_path = os.path.join(output_directory, f'AEC_{model_chemistry_formatted}_correlation.pdf')
+                self.save_correlation_mat(correlation_path)
 
         if self.write_to_database:
             if self.level_of_theory is None:
@@ -133,6 +143,49 @@ class AEJob:
             except ValueError as e:
                 logging.warning('Could not write atom energies to database. Captured error:')
                 logging.warning(str(e))
+
+    def save_correlation_mat(self, path: str, labels: List[str] = None):
+        """
+        Save a visual representation of the parameter correlation matrix.
+
+        Args:
+            path: Path to save figure to.
+            labels: Parameter labels.
+        """
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError:
+            return
+
+        if self.ae.correlation is None:
+            raise Exception('Fit AECs before saving correlation matrix!')
+
+        if labels is None:
+            labels = list(self.ae.atom_energies.keys())
+
+        fig, ax = plt.subplots()
+        ax.matshow(self.ae.correlation, cmap=plt.cm.PiYG)
+
+        # Superimpose values as text
+        for i in range(len(self.ae.correlation)):
+            for j in range(len(self.ae.correlation)):
+                c = self.ae.correlation[j, i]
+                ax.text(i, j, f'{c: .2f}', va='center', ha='center', fontsize=8)
+
+        # Save lims because they get changed when modifying labels
+        xlim = ax.get_xlim()
+        ylim = ax.get_ylim()
+
+        ax.set_xticks(list(range(len(self.ae.correlation))))
+        ax.set_yticks(list(range(len(self.ae.correlation))))
+        ax.set_xticklabels(labels, fontsize=14)
+        ax.set_yticklabels(labels, fontsize=14)
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+        ax.tick_params(bottom=False, top=False, left=False, right=False)
+
+        fig.savefig(path, bbox_inches='tight', pad_inches=0)
+
 
 
 class AE:
@@ -146,6 +199,7 @@ class AE:
     def __init__(self, species_energies: Dict[str, float]):
         self.species_energies = species_energies  # Hartree
         self.atom_energies = None
+        self.correlation = None # correlation matrix
         self.confidence_intervals = None
 
         for lbl in SPECIES_LABELS:
@@ -198,6 +252,9 @@ class AE:
         ypred = x @ w
         sigma2 = np.sum((y - ypred)**2) / (n - k)  # MSE
         cov = sigma2 * np.linalg.inv(x.T @ x)  # covariance matrix
+
+        self.correlation = _covariance_to_correlation(cov)
+
         se = np.sqrt(np.diag(cov))  # standard error
         alpha = 0.05  # 95% confidence level
         tdist = distributions.t.ppf(1 - alpha/2, n - k)  # student-t
