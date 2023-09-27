@@ -13,64 +13,165 @@ requirements:
   build:
     - {{ compiler('c') }}
   host:
-    - cython >=0.25.2
-    - lpsolve55
-    - numpy
+    - cairo
+    - cairocffi
+    - ffmpeg
+    - xlrd
+    - xlwt
+    - h5py
+    - graphviz
+    - markupsafe
+    - psutil
+    - ncurses
+    - suitesparse
+
+  # external software tools for chemistry
+    - coolprop
+    - cantera=2.6
+    - mopac
+    - cclib >=1.6.3,!=1.8.0
     - openbabel >=3
-    - pydas >=1.0.2
-    - pydqed >=1.0.1
-    - pyrdl
-    - python
-    - quantities
-    - rdkit >=2018
+
+  # Python tools
+    - python >=3.7
+    - coverage
+    - cython >=0.25.2
+    - scikit-learn
     - scipy
-    - setuptools
+    - numpy >=1.10.0
+    - pydot
+    - jinja2
+    - jupyter
+    - pymongo
+    - pyparsing
+    - pyyaml
+    - networkx
+    - matplotlib >=1.5
+    - mpmath
+    - pandas
+
+  # packages we maintain
+    - rmgdatabase
+    - gprof2dot
+    - lpsolve55
+    - muq2
+    - numdifftools
+    - pydas >=1.0.3
+    - pydqed >=1.0.3
+    - pyrdl
+    - quantities
+    - symmetry
+    - chemprop==0.0.1
+    - rdkit >=2020.03.3.0
+
+    - liblapack =*=*mkl
   run:
     - cairo
     - cairocffi
-    - cantera >=2.3.0
-    - cclib >=1.6.3
-    - chemprop
-    - coolprop
-    - coverage
-    - cython >=0.25.2
     - ffmpeg
-    - gprof2dot
-    - graphviz
-    - h5py
-    - jinja2
-    - jupyter
-    - lpsolve55
-    - markupsafe
-    - matplotlib >=1.5
-    - mopac
-    - mpmath
-    - muq2
-    - networkx
-    - nose
-    - numdifftools
-    - {{ pin_compatible('numpy') }}
-    - openbabel >=3
-    - pandas
-    - psutil
-    - pydas >=1.0.2
-    - pydot
-    - pydqed >=1.0.1
-    - pymongo
-    - pyparsing
-    - pyrdl
-    - python
-    - pyyaml
-    - pyzmq
-    - quantities
-    - rdkit >=2018
-    - rmgdatabase >=3.2.0
-    - scikit-learn
-    - scipy
-    - symmetry
     - xlrd
     - xlwt
+    - h5py
+    - graphviz
+    - markupsafe
+    - psutil
+    - ncurses
+    - suitesparse
+
+  # external software tools for chemistry
+    - coolprop
+    - cantera=2.6
+    - mopac
+    - cclib >=1.6.3,!=1.8.0
+    - openbabel >=3
+
+  # Python tools
+    - python >=3.7
+    - coverage
+    - cython >=0.25.2
+    - scikit-learn
+    - scipy
+    - numpy >=1.10.0
+    - pydot
+    - jinja2
+    - jupyter
+    - pymongo
+    - pyparsing
+    - pyyaml
+    - networkx
+    - matplotlib >=1.5
+    - mpmath
+    - pandas
+
+  # packages we maintain
+    - rmgdatabase
+    - gprof2dot
+    - lpsolve55
+    - muq2
+    - numdifftools
+    - pydas >=1.0.3
+    - pydqed >=1.0.3
+    - pyrdl
+    - quantities
+    - symmetry
+    - chemprop==0.0.1
+    - rdkit >=2020.03.3.0
+
+    - liblapack =*=*mkl
 test:
+  requires:
+    - cairo
+    - cairocffi
+    - ffmpeg
+    - xlrd
+    - xlwt
+    - h5py
+    - graphviz
+    - markupsafe
+    - psutil
+    - ncurses
+    - suitesparse
+
+  # external software tools for chemistry
+    - coolprop
+    - cantera=2.6
+    - mopac
+    - cclib >=1.6.3,!=1.8.0
+    - openbabel >=3
+
+  # Python tools
+    - python >=3.7
+    - coverage
+    - cython >=0.25.2
+    - scikit-learn
+    - scipy
+    - numpy >=1.10.0
+    - pydot
+    - jinja2
+    - jupyter
+    - pymongo
+    - pyparsing
+    - pyyaml
+    - networkx
+    - matplotlib >=1.5
+    - mpmath
+    - pandas
+
+  # packages we maintain
+    - rmgdatabase
+    - gprof2dot
+    - lpsolve55
+    - muq2
+    - numdifftools
+    - pydas >=1.0.3
+    - pydqed >=1.0.3
+    - pyrdl
+    - quantities
+    - symmetry
+    - chemprop==0.0.1
+    - rdkit >=2020.03.3.0
+
+    - liblapack =*=*mkl
   source_files:
     - 'examples/rmg/superminimal'
     - 'examples/arkane/networks/n-butanol'
@@ -78,8 +179,8 @@ test:
     - rmgpy
     - arkane
   commands:
-    - python-jl rmg.py examples/rmg/superminimal/input.py
-    - python arkane.py examples/arkane/networks/n-butanol
+    - rmg.py examples/rmg/superminimal/input.py
+    - arkane.py examples/arkane/networks/n-butanol
 
 about:
   home: https://github.com/ReactionMechanismGenerator/RMG-Py

@@ -45,10 +45,6 @@ dependencies:
   - conda-forge::cclib >=1.6.3,!=1.8.0
   - conda-forge::openbabel >= 3
 
-# general-purpose external software tools
-  - conda-forge::julia>=1.8.5,!=1.9.0
-  - conda-forge::pyjulia >=0.6
-
 # Python tools
   - python >=3.7
   - coverage
@@ -75,21 +71,20 @@ dependencies:
   - matplotlib >=1.5
   - mpmath
   - pandas
+  - conda-forge::numdifftools
 
 # packages we maintain
   - rmg::gprof2dot
   - rmg::lpsolve55
   - rmg::muq2
-  - rmg::numdifftools
   - rmg::pydas >=1.0.3
   - rmg::pydqed >=1.0.3
   - rmg::pyrdl
-  - rmg::pyrms
   - rmg::quantities
   - rmg::symmetry
 
 # packages we would like to stop maintaining (and why)
-  - rmg::diffeqpy
+  #- rmg::diffeqpy
   # we should use the official verison https://github.com/SciML/diffeqpy),
   # rather than ours (which is only made so that we can get it from conda)
   # It is only on pip, so we will need to do something like:
@@ -103,8 +98,7 @@ dependencies:
   # We should use the official channel, not sure how difficult this
   # change will be.
 
-# conda mutex metapackage
-  - nomkl
+  - liblapack =*=*mkl
 
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)
