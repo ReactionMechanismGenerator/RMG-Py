@@ -11,36 +11,31 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }} # [unix]
+    - {{ compiler('c') }}
   host:
-    - cython >=0.25.2
-    - lpsolve55
-    - numpy
-    - openbabel >=3
-    - pyrdl
-    - python==3.7
-    - quantities
-    - rdkit >=2018
-    - scipy
-    - scikit-learn
-    - setuptools
-  run:
     - cairo
     - cairocffi
     - cython >=0.25.2
-    - gprof2dot
-    - graphviz
-    - jinja2
-    - jupyter
     - lpsolve55
-    - {{ pin_compatible('numpy') }}
+    - numpy
     - openbabel >=3
     - pydot
     - pyrdl
     - python==3.7
     - quantities
     - rdkit >=2018
-    - scikit-learn
+  run:
+    - cairo
+    - cairocffi
+    - cython >=0.25.2
+    - lpsolve55
+    - numpy
+    - openbabel >=3
+    - pydot
+    - pyrdl
+    - python==3.7
+    - quantities
+    - rdkit >=2018
 test:
   imports:
     - rmgpy.molecule
