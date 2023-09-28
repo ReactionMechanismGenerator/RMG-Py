@@ -63,8 +63,6 @@ requirements:
     - symmetry
     - chemprop==0.0.1
     - rdkit >=2020.03.3.0
-
-    - liblapack =*=*mkl
   run:
     - cairo
     - cairocffi
@@ -116,8 +114,6 @@ requirements:
     - symmetry
     - chemprop==0.0.1
     - rdkit >=2020.03.3.0
-
-    - liblapack =*=*mkl
 test:
   requires:
     - cairo
@@ -170,8 +166,6 @@ test:
     - symmetry
     - chemprop==0.0.1
     - rdkit >=2020.03.3.0
-
-    - liblapack =*=*mkl
   source_files:
     - 'examples/rmg/superminimal'
     - 'examples/arkane/networks/n-butanol'
