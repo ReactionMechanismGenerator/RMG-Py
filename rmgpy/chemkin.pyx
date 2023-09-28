@@ -1214,10 +1214,8 @@ def read_species_block(f, species_dict, species_aliases, species_list):
 
         processed_tokens.append(token)
         if token in species_dict:
-            logging.debug("Re-using species {0} already in species_dict".format(token))
             species = species_dict[token]
         elif site_token in species_dict:
-            logging.debug("Re-using species {0} already in species_dict".format(site_token))
             species = species_dict[site_token]
         else:
             species = Species(label=token)
