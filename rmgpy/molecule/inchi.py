@@ -602,12 +602,12 @@ def create_augmented_layers(mol):
     else:
         molcopy = mol.copy(deep=True)
 
+        rdkitmol = to_rdkit_mol(molcopy, remove_h=True)
+        _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')  # suppress stereo warnings
+
         hydrogens = [at for at in molcopy.atoms if at.number == 1]
         for h in hydrogens:
             molcopy.remove_atom(h)
-
-        rdkitmol = to_rdkit_mol(molcopy)
-        _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')  # suppress stereo warnings
 
         # extract the atom numbers from N-layer of auxiliary info:
         atom_indices = _parse_n_layer(auxinfo)
