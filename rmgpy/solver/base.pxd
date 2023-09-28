@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -43,12 +43,12 @@ cdef class ReactionSystem(DASx):
     cdef public np.ndarray dydt0
 
     #  variables that determine the dimensions of arrays and matrices:
-    cdef public int num_core_species
-    cdef public int num_core_reactions
-    cdef public int num_edge_species
-    cdef public int num_edge_reactions
-    cdef public int num_pdep_networks
-    cdef public int neq
+    cdef public Py_ssize_t num_core_species
+    cdef public Py_ssize_t num_core_reactions
+    cdef public Py_ssize_t num_edge_species
+    cdef public Py_ssize_t num_edge_reactions
+    cdef public Py_ssize_t num_pdep_networks
+    cdef public Py_ssize_t neq
 
     # variables that store stoichiometry data
     cdef public dict species_index

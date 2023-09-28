@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -41,10 +41,12 @@ import numpy as np
 
 import rmgpy.data.rmg
 from rmgpy import settings
-from rmgpy.constraints import fails_species_constraints
+from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
+from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
+from rmgpy.molecule.group import Group
 from rmgpy.data.rmg import get_db
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
@@ -55,9 +57,12 @@ from rmgpy.rmg.pdep import PDepReaction, PDepNetwork
 from rmgpy.rmg.react import react_all
 from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
-
+from rmgpy.rmg.decay import decay_species
+from rmgpy.rmg.reactors import PhaseSystem, Phase, Interface, Reactor
+from rmgpy.molecule.fragment import Fragment
 
 ################################################################################
+
 
 class ReactionModel:
     """
@@ -65,9 +70,13 @@ class ReactionModel:
     a list of species, and `reactions`, a list of reactions.
     """
 
-    def __init__(self, species=None, reactions=None):
+    def __init__(self, species=None, reactions=None, phases=None, interfaces={}):
         self.species = species or []
         self.reactions = reactions or []
+        if phases is None:
+            phases = {"Default": Phase(), "Surface": Phase()}
+            interfaces = {frozenset({"Default", "Surface"}): Interface(list(phases.values()))}
+        self.phase_system = PhaseSystem(phases, interfaces)
 
     def __reduce__(self):
         """
@@ -81,7 +90,7 @@ class ReactionModel:
         model and `other`.
         """
         if not isinstance(other, ReactionModel):
-            raise ValueError('Expected type ReactionModel for other parameter, got {0}'.format(other.__class__))
+            raise ValueError("Expected type ReactionModel for other parameter, got {0}".format(other.__class__))
 
         # Initialize the merged model
         final_model = ReactionModel()
@@ -103,7 +112,7 @@ class ReactionModel:
                     search_species[spec.molecular_weight.value].discard(spec0)
                     if spec0.label not in ['Ar', 'N2', 'Ne', 'He']:
                         if not spec0.thermo.is_identical_to(spec.thermo):
-                            print('Species {0} thermo from model 1 did not match that of model 2.'.format(spec.label))
+                            print("Species {0} thermo from model 1 did not match that of model 2.".format(spec.label))
 
                     break
             else:
@@ -127,7 +136,7 @@ class ReactionModel:
                     common_reactions[rxn] = rxn0
                     search_rxns[reactants_mw].discard(rxn0)
                     if not rxn0.kinetics.is_identical_to(rxn.kinetics):
-                        print('Reaction {0} kinetics from model 1 did not match that of model 2.'.format(str(rxn0)))
+                        print("Reaction {0} kinetics from model 1 did not match that of model 2.".format(str(rxn0)))
                     break
             else:
                 unique_reactions.append(rxn)
@@ -164,6 +173,7 @@ class ReactionModel:
 
 
 ################################################################################
+
 
 class CoreEdgeReactionModel:
     """
@@ -220,7 +230,7 @@ class CoreEdgeReactionModel:
         self.pressure_dependence = None
         self.quantum_mechanics = None
         self.verbose_comments = False
-        self.kinetics_estimator = 'rate rules'
+        self.kinetics_estimator = "rate rules"
         self.index_species_dict = {}
         self.save_edge_species = False
         self.iteration_num = 0
@@ -236,8 +246,18 @@ class CoreEdgeReactionModel:
         self.new_surface_rxns_add = set()
         self.new_surface_spcs_loss = set()
         self.new_surface_rxns_loss = set()
-        self.solvent_name = ''
+        self.solvent_name = ""
         self.surface_site_density = None
+        self.unrealgroups = [
+            Group().from_adjacency_list(
+                """
+            1  O u0 p2 c0 {2,S} {4,S}
+            2  O u0 p2 c0 {1,S} {3,S}
+            3  R!H u1 px c0 {2,S}
+            4  H u0 p0  c0 {1,S}
+            """
+            )
+        ]
 
     def check_for_existing_species(self, molecule):
         """
@@ -272,7 +292,7 @@ class CoreEdgeReactionModel:
         # At this point we can conclude that the species is new
         return None
 
-    def make_new_species(self, object, label='', reactive=True, check_existing=True, generate_thermo=True):
+    def make_new_species(self, object, label="", reactive=True, check_existing=True, generate_thermo=True, check_decay=False, check_cut=False):
         """
         Formally create a new species from the specified `object`, which can be
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
@@ -282,7 +302,7 @@ class CoreEdgeReactionModel:
 
         if isinstance(object, rmgpy.species.Species):
             molecule = object.molecule[0]
-            label = label if label != '' else object.label
+            label = label if label != "" else object.label
             reactive = object.reactive
         else:
             molecule = object
@@ -297,20 +317,40 @@ class CoreEdgeReactionModel:
                 return spec, False
 
         # If we're here then we're ready to make the new species
+        if check_cut:
+            try:
+                mols = molecule.cut_molecule(cut_through=False)
+            except AttributeError:
+                # it's Molecule object, change it to Fragment and then cut
+                molecule = Fragment().from_adjacency_list(molecule.to_adjacency_list())
+                mols = molecule.cut_molecule(cut_through=False)
+            if len(mols) == 1:
+                molecule = mols[0]
+            else:
+                return [self.make_new_species(mol, check_decay=check_decay) for mol in mols]
+
+        try:
+            spec = Species(label=label, molecule=[molecule], reactive=reactive, thermo=object.thermo, transport_data=object.transport_data)
+        except AttributeError:
+            spec = Species(label=label, molecule=[molecule], reactive=reactive)
+
+        spec.generate_resonance_structures()
+
+        if check_decay:
+            spcs = decay_species(spec)
+            if len(spcs) == 1:
+                spec = spcs[0]
+            else:
+                return [self.make_new_species(spc) for spc in spcs]
+
         if reactive:
             self.species_counter += 1  # count only reactive species
-            species_index = self.species_counter
+            spec.index = self.species_counter
         else:
-            species_index = -1
-        try:
-            spec = Species(index=species_index, label=label, molecule=[molecule], reactive=reactive,
-                           thermo=object.thermo, transport_data=object.transport_data)
-        except AttributeError:
-            spec = Species(index=species_index, label=label, molecule=[molecule], reactive=reactive)
+            spec.index = -1
 
         spec.creation_iteration = self.iteration_num
-        spec.generate_resonance_structures()
-        spec.molecular_weight = Quantity(spec.molecule[0].get_molecular_weight() * 1000., "amu")
+        spec.molecular_weight = Quantity(spec.molecule[0].get_molecular_weight() * 1000.0, "amu")
 
         if generate_thermo:
             self.generate_thermo(spec)
@@ -319,7 +359,17 @@ class CoreEdgeReactionModel:
         # This may change later after getting thermo in self.generate_thermo()
         if not spec.label:
             spec.label = spec.smiles
-        logging.debug('Creating new species {0}'.format(spec.label))
+
+        # ensure species labels are unique
+        orilabel = spec.label
+        label = orilabel
+        i = 2
+        while any([label in phase.names for phase in self.edge.phase_system.phases.values()]):
+            label = orilabel + "-" + str(i)
+            i += 1
+        spec.label = label
+
+        logging.debug("Creating new species %s", spec.label)
 
         formula = molecule.get_formula()
         if formula in self.species_dict:
@@ -346,7 +396,7 @@ class CoreEdgeReactionModel:
 
         Next, the reaction ID containing an identifier (e.g. label) of the reactants
         and products is compared between the parameter reaction and the each of the
-        reactions in the shortlist. If a match is found, the discovered reaction is 
+        reactions in the shortlist. If a match is found, the discovered reaction is
         returned.
 
         If a match is not yet found, the Library (seed mechs, reaction libs)
@@ -382,9 +432,7 @@ class CoreEdgeReactionModel:
                         return True, rxn0
                 else:
                     return True, rxn0
-            elif (isinstance(family_obj, KineticsFamily)
-                  and rxn_id == rxn_id0[::-1]
-                  and are_identical_species_references(rxn, rxn0)):
+            elif isinstance(family_obj, KineticsFamily) and rxn_id == rxn_id0[::-1] and are_identical_species_references(rxn, rxn0):
                 if not rxn.duplicate:
                     return True, rxn0
 
@@ -397,8 +445,7 @@ class CoreEdgeReactionModel:
         for library in self.reaction_dict:
             lib_obj = get_family_library_object(library)
             if isinstance(lib_obj, KineticsLibrary) and library != rxn.family:
-
-                # First check seed short-list in forward direction                
+                # First check seed short-list in forward direction
                 shortlist = self.retrieve(library, r1_fwd, r2_fwd)
 
                 for rxn0 in shortlist:
@@ -417,9 +464,9 @@ class CoreEdgeReactionModel:
 
         return False, None
 
-    def make_new_reaction(self, forward, check_existing=True, generate_thermo=True):
+    def make_new_reaction(self, forward, check_existing=True, generate_thermo=True, generate_kinetics=True, perform_cut=True):
         """
-        Make a new reaction given a :class:`Reaction` object `forward`. 
+        Make a new reaction given a :class:`Reaction` object `forward`.
         The reaction is added to the global list of reactions.
         Returns the reaction in the direction that corresponds to the
         estimated kinetics, along with whether or not the reaction is new to the
@@ -428,13 +475,44 @@ class CoreEdgeReactionModel:
         The forward direction is determined using the "is_reverse" attribute of the
         reaction's family.  If the reaction family is its own reverse, then it is
         made such that the forward reaction is exothermic at 298K.
-        
+
         The forward reaction is appended to self.new_reaction_list if it is new.
         """
 
         # Determine the proper species objects for all reactants and products
-        reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
-        products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
+        if forward.family and forward.is_forward:
+            reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
+            products = []
+            if perform_cut:
+                # check if the product is too large so that we can cut
+                # maybe species do not contain element C
+                try:
+                    if len(forward.reactants) > len(forward.products) and pass_cutting_threshold(forward.products[0]):
+                        # need to cut
+                        check_cut = True
+                    else:
+                        check_cut = False
+                except KeyError:
+                    check_cut = False
+            else:
+                check_cut = False
+            for product in forward.products:
+                spcs = self.make_new_species(product, generate_thermo=generate_thermo, check_decay=True, check_cut=check_cut)
+                if type(spcs) == tuple:
+                    products.append(spcs[0])
+                elif type(spcs) == list:
+                    products.extend([spc[0] for spc in spcs])
+            # change the reaction to irreversible if we cut the product into fragments
+            if len(products) != 1 and check_cut:
+                forward.reversible = False
+        else:
+            try:
+                reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
+                products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
+            except:
+                logging.error(f"Error when making species in reaction {forward:s} from {forward.family:s}")
+                raise
+
         if forward.specific_collider is not None:
             forward.specific_collider = self.make_new_species(forward.specific_collider)[0]
 
@@ -443,7 +521,7 @@ class CoreEdgeReactionModel:
                 reactant_index = forward.reactants.index(forward.pairs[pairIndex][0])
                 product_index = forward.products.index(forward.pairs[pairIndex][1])
                 forward.pairs[pairIndex] = (reactants[reactant_index], products[product_index])
-                if hasattr(forward, 'reverse'):
+                if hasattr(forward, "reverse"):
                     if forward.reverse:
                         forward.reverse.pairs[pairIndex] = (products[product_index], reactants[reactant_index])
         forward.reactants = reactants
@@ -455,19 +533,19 @@ class CoreEdgeReactionModel:
                 return rxn, False
 
         # Generate the reaction pairs if not yet defined
-        if forward.pairs is None:
+        if forward.pairs is None or len(forward.pairs) != max(len(forward.reactants), len(forward.products)):
             forward.generate_pairs()
-            if hasattr(forward, 'reverse'):
+            if hasattr(forward, "reverse"):
                 if forward.reverse:
                     forward.reverse.generate_pairs()
 
         # Note in the log
         if isinstance(forward, TemplateReaction):
-            logging.debug('Creating new {0} template reaction {1}'.format(forward.family, forward))
+            logging.debug("Creating new %s template reaction %s", forward.family, forward)
         elif isinstance(forward, DepositoryReaction):
-            logging.debug('Creating new {0} reaction {1}'.format(forward.get_source(), forward))
+            logging.debug("Creating new %s reaction %s", forward.get_source(), forward)
         elif isinstance(forward, LibraryReaction):
-            logging.debug('Creating new library reaction {0}'.format(forward))
+            logging.debug("Creating new library reaction %s", forward)
         else:
             raise Exception("Unrecognized reaction type {0!s}".format(forward.__class__))
 
@@ -475,6 +553,21 @@ class CoreEdgeReactionModel:
 
         forward.index = self.reaction_counter + 1
         self.reaction_counter += 1
+
+        if generate_kinetics:
+            if forward.kinetics is None:
+                self.apply_kinetics_to_reaction(forward)
+
+            if isinstance(forward.kinetics, KineticsData):
+                forward.kinetics = forward.kinetics.to_arrhenius()
+            #  correct barrier heights of estimated kinetics
+            if isinstance(forward, (TemplateReaction, DepositoryReaction)):  # i.e. not LibraryReaction
+                forward.fix_barrier_height()  # also converts ArrheniusEP to Arrhenius.
+
+            if self.pressure_dependence and forward.is_unimolecular():
+                # If this is going to be run through pressure dependence code,
+                # we need to make sure the barrier is positive.
+                forward.fix_barrier_height(force_positive=True)
 
         # Since the reaction is new, add it to the list of new reactions
         self.new_reaction_list.append(forward)
@@ -511,10 +604,9 @@ class CoreEdgeReactionModel:
 
         return forward
 
-    def enlarge(self, new_object=None, react_edge=False,
-                unimolecular_react=None, bimolecular_react=None, trimolecular_react=None):
+    def enlarge(self, new_object=None, react_edge=False, unimolecular_react=None, bimolecular_react=None, trimolecular_react=None):
         """
-        Enlarge a reaction model by processing the objects in the list `new_object`. 
+        Enlarge a reaction model by processing the objects in the list `new_object`.
         If `new_object` is a
         :class:`rmg.species.Species` object, then the species is moved from
         the edge to the core and reactions generated for that species, reacting
@@ -537,40 +629,40 @@ class CoreEdgeReactionModel:
 
         # Determine number of parallel processes.
         from rmgpy.rmg.main import determine_procnum_from_ram
+
         procnum = determine_procnum_from_ram()
 
         if react_edge is False:
-            # We are adding core species 
+            # We are adding core species
             new_reactions = []
             pdep_network = None
             object_was_in_edge = False
 
             if isinstance(new_object, Species):
-
                 new_species = new_object
 
                 object_was_in_edge = new_species in self.edge.species
 
                 if not new_species.reactive:
-                    logging.info('NOT generating reactions for unreactive species {0}'.format(new_species))
+                    logging.info("NOT generating reactions for unreactive species {0}".format(new_species))
                 else:
-                    logging.info('Adding species {0} to model core'.format(new_species))
+                    logging.info("Adding species {0} to model core".format(new_species))
                     display(new_species)  # if running in IPython --pylab mode, draws the picture!
 
                 # Add new species
                 reactions_moved_from_edge = self.add_species_to_core(new_species)
 
             elif isinstance(new_object, tuple) and isinstance(new_object[0], PDepNetwork) and self.pressure_dependence:
-
                 pdep_network, new_species = new_object
                 new_reactions.extend(pdep_network.explore_isomer(new_species))
 
-                self.process_new_reactions(new_reactions, new_species, pdep_network, generate_thermo=False)
+                self.process_new_reactions(new_reactions, new_species, pdep_network)
 
             else:
-                raise TypeError('Unable to use object {0} to enlarge reaction model; expecting an object of class '
-                                'rmg.model.Species or rmg.model.PDepNetwork, not {1}'.format(new_object,
-                                                                                             new_object.__class__))
+                raise TypeError(
+                    "Unable to use object {0} to enlarge reaction model; expecting an object of class "
+                    "rmg.model.Species or rmg.model.PDepNetwork, not {1}".format(new_object, new_object.__class__)
+                )
 
             # If there are any core species among the unimolecular product channels
             # of any existing network, they need to be made included
@@ -588,7 +680,7 @@ class CoreEdgeReactionModel:
                         if len(products) == 1 and products[0] == species:
                             new_reactions = network.explore_isomer(species)
 
-                            self.process_new_reactions(new_reactions, species, network, generate_thermo=False)
+                            self.process_new_reactions(new_reactions, species, network)
                             network.update_configurations(self)
                             index = 0
                             break
@@ -604,60 +696,34 @@ class CoreEdgeReactionModel:
         else:
             # Generate reactions between all core species which have not been
             # reacted yet and exceed the reaction filter thresholds
-            rxn_lists, spcs_tuples = react_all(self.core.species, num_old_core_species,
-                                             unimolecular_react, bimolecular_react,
-                                             trimolecular_react=trimolecular_react,
-                                             procnum=procnum)
+            rxn_lists, spcs_tuples = react_all(
+                self.core.species, num_old_core_species, unimolecular_react, bimolecular_react, trimolecular_react=trimolecular_react, procnum=procnum
+            )
 
             for rxnList, spcTuple in zip(rxn_lists, spcs_tuples):
                 if rxnList:
                     # Identify a core species which was used to generate the reaction
                     # This is only used to determine the reaction direction for processing
                     spc = spcTuple[0]
-                    self.process_new_reactions(rxnList, spc, generate_thermo=False)
+                    self.process_new_reactions(rxnList, spc)
 
         ################################################################
         # Begin processing the new species and reactions
 
         # Generate thermo for new species
         if self.new_species_list:
-            logging.info('Generating thermo for new species...')
+            logging.info("Generating thermo for new species...")
             self.apply_thermo_to_species(procnum)
 
         # Do thermodynamic filtering
         if not np.isinf(self.thermo_tol_keep_spc_in_edge) and self.new_species_list != []:
             self.thermo_filter_species(self.new_species_list)
 
-        # Generate kinetics of new reactions
-        if self.new_reaction_list:
-            logging.info('Generating kinetics for new reactions...')
-        for reaction in self.new_reaction_list:
-            # If the reaction already has kinetics (e.g. from a library),
-            # assume the kinetics are satisfactory
-            if reaction.kinetics is None:
-                self.apply_kinetics_to_reaction(reaction)
-
-        # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
-        # self.new_reaction_list only contains *actually* new reactions, all in the forward direction.
-        for reaction in self.new_reaction_list:
-            # convert KineticsData to Arrhenius forms
-            if isinstance(reaction.kinetics, KineticsData):
-                reaction.kinetics = reaction.kinetics.to_arrhenius()
-            #  correct barrier heights of estimated kinetics
-            if isinstance(reaction, TemplateReaction) or isinstance(reaction,
-                                                                    DepositoryReaction):  # i.e. not LibraryReaction
-                reaction.fix_barrier_height()  # also converts ArrheniusEP to Arrhenius.
-
-            if self.pressure_dependence and reaction.is_unimolecular():
-                # If this is going to be run through pressure dependence code,
-                # we need to make sure the barrier is positive.
-                reaction.fix_barrier_height(force_positive=True)
-
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressure_dependence:
             # Recalculate k(T,P) values for modified networks
             self.update_unimolecular_reaction_networks()
-            logging.info('')
+            logging.info("")
 
         # Check new core and edge reactions for Chemkin duplicates
         # The same duplicate reaction gets brought into the core
@@ -666,6 +732,7 @@ class CoreEdgeReactionModel:
         new_edge_reactions = self.edge.reactions[num_old_edge_reactions:]
         checked_reactions = self.core.reactions[:num_old_core_reactions] + self.edge.reactions[:num_old_edge_reactions]
         from rmgpy.chemkin import mark_duplicate_reaction
+
         for rxn in new_core_reactions:
             mark_duplicate_reaction(rxn, checked_reactions)
             checked_reactions.append(rxn)
@@ -682,7 +749,7 @@ class CoreEdgeReactionModel:
             react_edge=react_edge,
         )
 
-        logging.info('')
+        logging.info("")
 
     def add_new_surface_objects(self, obj, new_surface_species, new_surface_reactions, reaction_system):
         """
@@ -707,8 +774,8 @@ class CoreEdgeReactionModel:
         lost_surface_rxns = (surf_rxns - new_surface_reactions) | added_bulk_rxns
 
         added_spcs = {k for k in obj if isinstance(k, Species)} | {
-            k.get_maximum_leak_species(reaction_system.T.value_si, reaction_system.P.value_si) for k in obj if
-            isinstance(k, PDepNetwork)}
+            k.get_maximum_leak_species(reaction_system.T.value_si, reaction_system.P.value_si) for k in obj if isinstance(k, PDepNetwork)
+        }
         lost_surface_spcs = (surf_spcs - new_surface_species) | added_spcs
         added_surface_spcs = new_surface_species - surf_spcs
 
@@ -717,24 +784,25 @@ class CoreEdgeReactionModel:
         self.new_surface_spcs_loss = self.new_surface_spcs_loss | lost_surface_spcs
         self.new_surface_rxns_loss = self.new_surface_rxns_loss | lost_surface_rxns
 
-        return not (self.new_surface_rxns_add != set() or
-                    self.new_surface_rxns_loss != set() or
-                    self.new_surface_spcs_loss != set() or
-                    self.new_surface_spcs_add != set())
+        return not (
+            self.new_surface_rxns_add != set()
+            or self.new_surface_rxns_loss != set()
+            or self.new_surface_spcs_loss != set()
+            or self.new_surface_spcs_add != set()
+        )
 
     def adjust_surface(self):
         """
-        Here we add species intended to be added and remove any species that need to be moved out of the core.  
-        For now we remove reactions from the surface that have become part of a PDepNetwork by 
+        Here we add species intended to be added and remove any species that need to be moved out of the core.
+        For now we remove reactions from the surface that have become part of a PDepNetwork by
         intersecting the set of surface reactions with the core so that all surface reactions are in the core
         thus the surface algorithm currently (June 2017) is not implemented for pdep networks
         (however it will function fine for non-pdep reactions on a pdep run)
         """
-        self.surface.species = list(
-            ((set(self.surface.species) | self.new_surface_spcs_add) - self.new_surface_spcs_loss) & set(self.core.species))
+        self.surface.species = list(((set(self.surface.species) | self.new_surface_spcs_add) - self.new_surface_spcs_loss) & set(self.core.species))
         self.surface.reactions = list(
-            ((set(self.surface.reactions) | self.new_surface_rxns_add) - self.new_surface_rxns_loss) & set(
-                self.core.reactions))
+            ((set(self.surface.reactions) | self.new_surface_rxns_add) - self.new_surface_rxns_loss) & set(self.core.reactions)
+        )
         self.clear_surface_adjustments()
 
     def clear_surface_adjustments(self):
@@ -746,15 +814,15 @@ class CoreEdgeReactionModel:
         self.new_surface_spcs_loss = set()
         self.new_surface_rxns_loss = set()
 
-    def process_new_reactions(self, new_reactions, new_species, pdep_network=None, generate_thermo=True):
+    def process_new_reactions(self, new_reactions, new_species, pdep_network=None, generate_thermo=True, generate_kinetics=True):
         """
         Process a list of newly-generated reactions involving the new core
         species or explored isomer `new_species` in network `pdep_network`.
-        
+
         Makes a reaction and decides where to put it: core, edge, or PDepNetwork.
         """
         for rxn in new_reactions:
-            rxn, is_new = self.make_new_reaction(rxn, generate_thermo=generate_thermo)
+            rxn, is_new = self.make_new_reaction(rxn, generate_thermo=generate_thermo, generate_kinetics=generate_kinetics)
             if rxn is None:
                 # Skip this reaction because there was something wrong with it
                 continue
@@ -782,8 +850,7 @@ class CoreEdgeReactionModel:
             if not self.pressure_dependence:
                 # The pressure dependence option is turned off entirely
                 pdep = False
-            elif self.pressure_dependence.maximum_atoms is not None \
-                    and self.pressure_dependence.maximum_atoms < isomer_atoms:
+            elif self.pressure_dependence.maximum_atoms is not None and self.pressure_dependence.maximum_atoms < isomer_atoms:
                 # The reaction involves so many atoms that pressure-dependent effects are assumed to be negligible
                 pdep = False
             elif not (rxn.is_isomerization() or rxn.is_dissociation() or rxn.is_association()):
@@ -792,6 +859,8 @@ class CoreEdgeReactionModel:
             elif isinstance(rxn, LibraryReaction):
                 # Try generating the high pressure limit kinetics. If successful, set pdep to ``True``, and vice versa.
                 pdep = rxn.generate_high_p_limit_kinetics()
+            elif any([any([x.is_subgraph_isomorphic(q) for q in self.unrealgroups]) for y in rxn.reactants + rxn.products for x in y.molecule]):
+                pdep = False
 
             # If pressure dependence is on, we only add reactions that are not unimolecular;
             # unimolecular reactions will be added after processing the associated networks
@@ -812,9 +881,9 @@ class CoreEdgeReactionModel:
                 # Since PDepReactions are created as irreversible, not doing so
                 # would cause you to miss the reverse reactions!
                 self.add_reaction_to_unimolecular_networks(rxn, new_species=new_species, network=pdep_network)
-                if isinstance(rxn, LibraryReaction):
-                    # If reaction came from a reaction library, omit it from the core and edge so that it does 
-                    # not get double-counted with the pdep network
+                if isinstance(rxn, LibraryReaction) and not rxn.kinetics.is_pressure_dependent():
+                    # If the reaction came from a library, and it does not have PDep kinetics,
+                    # omit it from the core and edge so that it does not get double-counted with the pdep network
                     if rxn in self.core.reactions:
                         self.core.reactions.remove(rxn)
                     if rxn in self.edge.reactions:
@@ -825,7 +894,8 @@ class CoreEdgeReactionModel:
         Generate thermo for species. QM calculations are parallelized if requested.
         """
         from rmgpy.rmg.input import get_input
-        quantum_mechanics = get_input('quantum_mechanics')
+
+        quantum_mechanics = get_input("quantum_mechanics")
 
         if quantum_mechanics:
             quantum_mechanics.run_jobs(self.new_species_list, procnum=procnum)
@@ -841,26 +911,54 @@ class CoreEdgeReactionModel:
         if not spc.thermo:
             submit(spc, self.solvent_name)
 
-            if rename and spc.thermo and spc.thermo.label != '':  # check if thermo libraries have a name for it
-                logging.info('Species {0} renamed {1} based on thermo library name'.format(spc.label, spc.thermo.label))
-                spc.label = spc.thermo.label
+            if rename and spc.thermo and spc.thermo.label != "":  # check if thermo libraries have a name for it
+                if isinstance(spc.molecule[0], Fragment):
+                    logging.info("Species {0} NOT renamed {1} but get thermo based on thermo library".format(spc.label, spc.thermo.label))
+                    spc.label = spc.smiles
+                else:
+                    logging.info("Species {0} renamed {1} based on thermo library name".format(spc.label, spc.thermo.label))
+                    spc.label = spc.thermo.label
+
+        if vapor_liquid_mass_transfer.enabled:
+            spc.get_liquid_volumetric_mass_transfer_coefficient_data()
+            spc.get_henry_law_constant_data()
 
         spc.generate_energy_transfer_model()
 
+    def process_coverage_dependence(self, kinetics):
+        """Process the coverage dependence kinetics.
+
+        This ensures that species that are used in coverage-dependent kinetic
+        expressions exist in the model. (Before this is called, they may have
+        only existed in a reaction libary instance).
+
+        If <CoreEdgeReactionModel>self.coverage_dependence is False then
+        it instead removes any coverage_dependence from the kinetics.
+        """
+        if not self.coverage_dependence:
+            kinetics.coverage_dependence = None
+            return
+        cov_dep = {}
+        for species, values in kinetics.coverage_dependence.items():
+            species_in_model, is_new = self.make_new_species(species)
+            cov_dep[species_in_model] = values
+        kinetics.coverage_dependence = cov_dep
+
     def apply_kinetics_to_reaction(self, reaction):
         """
-        retrieve the best kinetics for the reaction and apply it towards the forward 
+        retrieve the best kinetics for the reaction and apply it towards the forward
         or reverse direction (if reverse, flip the direaction).
         """
         from rmgpy.data.rmg import get_db
+
         # Find the reaction kinetics
         kinetics, source, entry, is_forward = self.generate_kinetics(reaction)
         # Flip the reaction direction if the kinetics are defined in the reverse direction
         if not is_forward:
-            family = get_db('kinetics').families[reaction.family]
+            family = get_db("kinetics").families[reaction.family]
             reaction.reactants, reaction.products = reaction.products, reaction.reactants
             reaction.pairs = [(p, r) for r, p in reaction.pairs]
-            if family.own_reverse and hasattr(reaction, 'reverse'):
+            if family.own_reverse and hasattr(reaction, "reverse"):
                 if reaction.reverse:
                     reaction.template = reaction.reverse.template
                     # replace degeneracy
@@ -879,24 +977,25 @@ class CoreEdgeReactionModel:
         family = get_family_library_object(reaction.family)
 
         # Get the kinetics for the reaction
-        kinetics, source, entry, is_forward = family.get_kinetics(reaction, template_labels=reaction.template,
-                                                                  degeneracy=reaction.degeneracy,
-                                                                  estimator=self.kinetics_estimator,
-                                                                  return_all_kinetics=False)
+        kinetics, source, entry, is_forward = family.get_kinetics(
+            reaction, template_labels=reaction.template, degeneracy=reaction.degeneracy, estimator=self.kinetics_estimator, return_all_kinetics=False
+        )
         # Get the gibbs free energy of reaction at 298 K
         G298 = reaction.get_free_energy_of_reaction(298)
         gibbs_is_positive = G298 > -1e-8
 
-        if family.own_reverse and hasattr(reaction, 'reverse'):
+        if family.own_reverse and len(reaction.products) == len(reaction.reactants) and hasattr(reaction, "reverse"):
             if reaction.reverse:
                 # The kinetics family is its own reverse, so we could estimate kinetics in either direction
 
                 # First get the kinetics for the other direction
-                rev_kinetics, rev_source, rev_entry, rev_is_forward = family.get_kinetics(reaction.reverse,
-                                                                                          template_labels=reaction.reverse.template,
-                                                                                          degeneracy=reaction.reverse.degeneracy,
-                                                                                          estimator=self.kinetics_estimator,
-                                                                                          return_all_kinetics=False)
+                rev_kinetics, rev_source, rev_entry, rev_is_forward = family.get_kinetics(
+                    reaction.reverse,
+                    template_labels=reaction.reverse.template,
+                    degeneracy=reaction.reverse.degeneracy,
+                    estimator=self.kinetics_estimator,
+                    return_all_kinetics=False,
+                )
                 # Now decide which direction's kinetics to keep
                 keep_reverse = False
                 if entry is not None and rev_entry is None:
@@ -912,13 +1011,15 @@ class CoreEdgeReactionModel:
                     # Use the one for which the kinetics is the forward kinetics
                     keep_reverse = gibbs_is_positive and is_forward and rev_is_forward
                     reason = "Both directions matched the same entry in {0}, but this direction is exergonic.".format(reaction.family)
-                elif self.kinetics_estimator == 'group additivity' and (kinetics.comment.find("Fitted to 1 rate") > 0
-                                                                       and not rev_kinetics.comment.find("Fitted to 1 rate") > 0):
+                elif self.kinetics_estimator == "group additivity" and (
+                    kinetics.comment.find("Fitted to 1 rate") > 0 and not rev_kinetics.comment.find("Fitted to 1 rate") > 0
+                ):
                     # forward kinetics were fitted to only 1 rate, but reverse are hopefully better
                     keep_reverse = True
                     reason = "Other direction matched a group only fitted to 1 rate."
-                elif self.kinetics_estimator == 'group additivity' and (not kinetics.comment.find("Fitted to 1 rate") > 0
-                                                                       and rev_kinetics.comment.find("Fitted to 1 rate") > 0):
+                elif self.kinetics_estimator == "group additivity" and (
+                    not kinetics.comment.find("Fitted to 1 rate") > 0 and rev_kinetics.comment.find("Fitted to 1 rate") > 0
+                ):
                     # reverse kinetics were fitted to only 1 rate, but forward are hopefully better
                     keep_reverse = False
                     reason = "Other direction matched a group only fitted to 1 rate."
@@ -928,11 +1029,13 @@ class CoreEdgeReactionModel:
                     if entry.rank < rev_entry.rank and entry.rank != 0:
                         keep_reverse = False
                         reason = "Both directions matched explicit rate rules, but this direction has a rule with a lower rank ({0} vs {1}).".format(
-                            entry.rank, rev_entry.rank)
+                            entry.rank, rev_entry.rank
+                        )
                     elif rev_entry.rank < entry.rank and rev_entry.rank != 0:
                         keep_reverse = True
                         reason = "Both directions matched explicit rate rules, but this direction has a rule with a lower rank ({0} vs {1}).".format(
-                            rev_entry.rank, entry.rank)
+                            rev_entry.rank, entry.rank
+                        )
                     # Otherwise keep the direction that is exergonic at 298 K
                     else:
                         keep_reverse = gibbs_is_positive and is_forward and rev_is_forward
@@ -952,78 +1055,76 @@ class CoreEdgeReactionModel:
 
                 if self.verbose_comments:
                     kinetics.comment += "\nKinetics were estimated in this direction instead of the reverse because:\n{0}".format(reason)
-                    kinetics.comment += "\ndGrxn(298 K) = {0:.2f} kJ/mol".format(G298 / 1000.)
+                    kinetics.comment += "\ndGrxn(298 K) = {0:.2f} kJ/mol".format(G298 / 1000.0)
 
         # The comments generated by the database for estimated kinetics can
         # be quite long, and therefore not very useful
-        # We don't want to waste lots of memory storing these long, 
+        # We don't want to waste lots of memory storing these long,
         # uninformative strings, so here we replace them with much shorter ones
         if not self.verbose_comments:
             # Only keep a short comment (to save memory)
-            if 'Exact' in kinetics.comment:
+            if "Exact" in kinetics.comment:
                 # Exact match of rate rule
                 pass
-            elif 'Matched reaction' in kinetics.comment:
+            elif "Matched reaction" in kinetics.comment:
                 # Stems from matching a reaction from a depository
                 pass
             else:
                 # Estimated (averaged) rate rule
-                kinetics.comment = kinetics.comment[kinetics.comment.find('Estimated'):]
+                kinetics.comment = kinetics.comment[kinetics.comment.find("Estimated") :]
 
         return kinetics, source, entry, is_forward
 
-    def log_enlarge_summary(self, new_core_species, new_core_reactions, new_edge_species, new_edge_reactions,
-                            reactions_moved_from_edge=None, react_edge=False):
+    def log_enlarge_summary(
+        self, new_core_species, new_core_reactions, new_edge_species, new_edge_reactions, reactions_moved_from_edge=None, react_edge=False
+    ):
         """
         Output a summary of a model enlargement step to the log. The details of
         the enlargement are passed in the `new_core_species`, `new_core_reactions`,
-        `new_edge_species`, and `new_edge_reactions` objects. 
+        `new_edge_species`, and `new_edge_reactions` objects.
         """
 
-        logging.info('')
+        logging.info("")
         if react_edge:
-            logging.info('Summary of Secondary Model Edge Enlargement')
+            logging.info("Summary of Secondary Model Edge Enlargement")
         else:
-            logging.info('Summary of Model Enlargement')
-        logging.info('---------------------------------')
+            logging.info("Summary of Model Enlargement")
+        logging.info("---------------------------------")
 
-        logging.info('Added {0:d} new core species'.format(len(new_core_species)))
+        logging.info("Added {0:d} new core species".format(len(new_core_species)))
         for spec in new_core_species:
             display(spec)
-            logging.info('    {0}'.format(spec))
+            logging.info("    {0}".format(spec))
 
-        logging.info('Created {0:d} new edge species'.format(len(new_edge_species)))
+        logging.info("Created {0:d} new edge species".format(len(new_edge_species)))
         for spec in new_edge_species:
             display(spec)
-            logging.info('    {0}'.format(spec))
+            logging.info("    {0}".format(spec))
 
         if reactions_moved_from_edge:
-            logging.info('Moved {0:d} reactions from edge to core'.format(len(reactions_moved_from_edge)))
+            logging.info("Moved {0:d} reactions from edge to core".format(len(reactions_moved_from_edge)))
             for rxn in reactions_moved_from_edge:
                 for r in new_core_reactions:
-                    if ((r.reactants == rxn.reactants and r.products == rxn.products) or
-                            (r.products == rxn.reactants and r.reactants == rxn.products)):
-                        logging.info('    {0}'.format(r))
+                    if (r.reactants == rxn.reactants and r.products == rxn.products) or (r.products == rxn.reactants and r.reactants == rxn.products):
+                        logging.info("    {0}".format(r))
                         new_core_reactions.remove(r)
                         break
-        logging.info('Added {0:d} new core reactions'.format(len(new_core_reactions)))
+        logging.info("Added {0:d} new core reactions".format(len(new_core_reactions)))
         for rxn in new_core_reactions:
-            logging.info('    {0}'.format(rxn))
+            logging.info("    {0}".format(rxn))
 
-        logging.info('Created {0:d} new edge reactions'.format(len(new_edge_reactions)))
+        logging.info("Created {0:d} new edge reactions".format(len(new_edge_reactions)))
         for rxn in new_edge_reactions:
-            logging.info('    {0}'.format(rxn))
+            logging.info("    {0}".format(rxn))
 
         core_species_count, core_reaction_count, edge_species_count, edge_reaction_count = self.get_model_size()
 
         # Output current model size information after enlargement
-        logging.info('')
-        logging.info('After model enlargement:')
-        logging.info('    The model core has {0:d} species and {1:d} reactions'.format(core_species_count,
-                                                                                       core_reaction_count))
-        logging.info('    The model edge has {0:d} species and {1:d} reactions'.format(edge_species_count,
-                                                                                       edge_reaction_count))
-        logging.info('')
+        logging.info("")
+        logging.info("After model enlargement:")
+        logging.info("    The model core has {0:d} species and {1:d} reactions".format(core_species_count, core_reaction_count))
+        logging.info("    The model edge has {0:d} species and {1:d} reactions".format(edge_species_count, edge_reaction_count))
+        logging.info("")
 
     def add_species_to_core(self, spec):
         """
@@ -1035,16 +1136,18 @@ class CoreEdgeReactionModel:
 
         assert spec not in self.core.species, "Tried to add species {0} to core, but it's already there".format(spec.label)
 
-        forbidden_structures = get_db('forbidden')
+        forbidden_structures = get_db("forbidden")
 
         # check RMG globally forbidden structures
         if not spec.explicitly_allowed and forbidden_structures.is_molecule_forbidden(spec.molecule[0]):
-
             rxn_list = []
             if spec in self.edge.species:
                 # remove forbidden species from edge
                 logging.info("Species {0} was Forbidden and not added to Core...Removing from Edge.".format(spec))
                 self.remove_species_from_edge(self.reaction_systems, spec)
+                # remove any empty pdep networks as a result of species removal
+                if self.pressure_dependence:
+                    self.remove_empty_pdep_networks()
 
                 return []
 
@@ -1053,9 +1156,9 @@ class CoreEdgeReactionModel:
 
         rxn_list = []
         if spec in self.edge.species:
-
+            self.edge.phase_system.pass_species(spec.label, self.core.phase_system)
             # If species was in edge, remove it
-            logging.debug("Removing species {0} from edge.".format(spec))
+            logging.debug("Removing species %s from edge.", spec)
             self.edge.species.remove(spec)
 
             # Search edge for reactions that now contain only core species;
@@ -1074,7 +1177,17 @@ class CoreEdgeReactionModel:
             # Move any identified reactions to the core
             for rxn in rxn_list:
                 self.add_reaction_to_core(rxn)
-                logging.debug("Moving reaction from edge to core: {0}".format(rxn))
+                logging.debug("Moving reaction from edge to core: %s", rxn)
+        else:
+            if spec.molecule[0].contains_surface_site():
+                self.core.phase_system.phases["Surface"].add_species(spec, edge_phase=self.edge.phase_system.phases["Surface"])
+                self.edge.phase_system.species_dict[spec.label] = spec
+                self.core.phase_system.species_dict[spec.label] = spec
+            else:
+                self.core.phase_system.phases["Default"].add_species(spec, edge_phase=self.edge.phase_system.phases["Default"])
+                self.edge.phase_system.species_dict[spec.label] = spec
+                self.core.phase_system.species_dict[spec.label] = spec
+
         return rxn_list
 
     def add_species_to_edge(self, spec):
@@ -1082,9 +1195,16 @@ class CoreEdgeReactionModel:
         Add a species `spec` to the reaction model edge.
         """
         self.edge.species.append(spec)
+        if spec.molecule[0].contains_surface_site():
+            self.edge.phase_system.phases["Surface"].add_species(spec)
+            self.edge.phase_system.species_dict[spec.label] = spec
+        else:
+            self.edge.phase_system.phases["Default"].add_species(spec)
+            self.edge.phase_system.species_dict[spec.label] = spec
 
-    def set_thermodynamic_filtering_parameters(self, Tmax, thermo_tol_keep_spc_in_edge,
-                                               min_core_size_for_prune, maximum_edge_species, reaction_systems):
+    def set_thermodynamic_filtering_parameters(
+        self, Tmax, thermo_tol_keep_spc_in_edge, min_core_size_for_prune, maximum_edge_species, reaction_systems
+    ):
         """
         sets parameters for thermodynamic filtering based on the current core
         Tmax is the maximum reactor temperature in K
@@ -1114,9 +1234,11 @@ class CoreEdgeReactionModel:
             G = spc.thermo.get_free_energy(Tmax)
             if G > self.Gfmax:
                 Gn = (G - self.Gmax) / (self.Gmax - self.Gmin)
-                logging.info('Removing species {0} with Gibbs energy {1} from edge because it\'s Gibbs number {2} is '
-                             'greater than the thermo_tol_keep_spc_in_edge of '
-                             '{3} '.format(spc, G, Gn, self.thermo_tol_keep_spc_in_edge))
+                logging.info(
+                    "Removing species {0} with Gibbs energy {1} from edge because it's Gibbs number {2} is "
+                    "greater than the thermo_tol_keep_spc_in_edge of "
+                    "{3} ".format(spc, G, Gn, self.thermo_tol_keep_spc_in_edge)
+                )
                 self.remove_species_from_edge(self.reaction_systems, spc)
 
         # Delete any networks that became empty as a result of pruning
@@ -1134,12 +1256,12 @@ class CoreEdgeReactionModel:
         """
         Tmax = self.Tmax
         num_to_remove = len(self.edge.species) - maximum_edge_species
-        logging.debug('Planning to remove {0} species'.format(num_to_remove))
+        logging.debug("Planning to remove %d species", num_to_remove)
         iteration = self.iteration_num
 
         if num_to_remove > 0:  # implies flux pruning is off or did not trigger
-            logging.info('Reached maximum number of edge species')
-            logging.info('Attempting to remove excess edge species with Thermodynamic filtering')
+            logging.info("Reached maximum number of edge species")
+            logging.info("Attempting to remove excess edge species with Thermodynamic filtering")
             spcs = self.edge.species
             Gfs = np.array([spc.thermo.get_free_energy(Tmax) for spc in spcs])
             Gns = (Gfs - self.Gmax) / (self.Gmax - self.Gmin)
@@ -1150,8 +1272,7 @@ class CoreEdgeReactionModel:
             remove_spcs = []
 
             rInds = []
-            while ind < len(
-                    inds) and num_to_remove > 0:  # find the species we can remove and collect indices for removal
+            while ind < len(inds) and num_to_remove > 0:  # find the species we can remove and collect indices for removal
                 i = inds[ind]
                 spc = spcs[i]
                 if iteration - spc.creation_iteration >= min_species_exist_iterations_for_prune:
@@ -1160,11 +1281,12 @@ class CoreEdgeReactionModel:
                     num_to_remove -= 1
                 ind += 1
 
-            logging.debug('found {0} eligible species for filtering'.format(len(remove_spcs)))
+            logging.debug("Found %d eligible species for filtering", len(remove_spcs))
 
             for i, spc in enumerate(remove_spcs):
-                logging.info('Removing species {0} from edge to meet maximum number of edge species, Gibbs '
-                             'number is {1}'.format(spc, Gns[rInds[i]]))
+                logging.info(
+                    "Removing species {0} from edge to meet maximum number of edge species, Gibbs " "number is {1}".format(spc, Gns[rInds[i]])
+                )
                 self.remove_species_from_edge(self.reaction_systems, spc)
 
             # Delete any networks that became empty as a result of pruning
@@ -1173,7 +1295,7 @@ class CoreEdgeReactionModel:
 
             # call garbage collection
             collected = gc.collect()
-            logging.info('Garbage collector: collected %d objects.' % (collected))
+            logging.info("Garbage collector: collected %d objects." % (collected))
 
     def remove_empty_pdep_networks(self):
         """
@@ -1185,18 +1307,17 @@ class CoreEdgeReactionModel:
                 networks_to_delete.append(network)
 
         if len(networks_to_delete) > 0:
-            logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networks_to_delete)))
+            logging.info("Deleting {0:d} empty pressure-dependent reaction networks".format(len(networks_to_delete)))
             for network in networks_to_delete:
-                logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
+                logging.debug("    Deleting empty pressure dependent reaction network #%d", network.index)
                 source = tuple(network.source)
                 nets_with_this_source = self.network_dict[source]
                 nets_with_this_source.remove(network)
                 if not nets_with_this_source:
-                    del (self.network_dict[source])
+                    del self.network_dict[source]
                 self.network_list.remove(network)
 
-    def prune(self, reaction_systems, tol_keep_in_edge, tol_move_to_core, maximum_edge_species,
-              min_species_exist_iterations_for_prune):
+    def prune(self, reaction_systems, tol_keep_in_edge, tol_move_to_core, maximum_edge_species, min_species_exist_iterations_for_prune):
         """
         Remove species from the model edge based on the simulation results from
         the list of `reaction_systems`.
@@ -1216,7 +1337,7 @@ class CoreEdgeReactionModel:
 
         # Get the maximum species rates (and network leak rates)
         # across all reaction systems
-        max_edge_species_rate_ratios = np.zeros((num_prunable_species), np.float64)
+        max_edge_species_rate_ratios = np.zeros((num_prunable_species), float)
         for reaction_system in reaction_systems:
             for i in range(num_prunable_species):
                 rate_ratio = reaction_system.max_edge_species_rate_ratios[i]
@@ -1254,36 +1375,43 @@ class CoreEdgeReactionModel:
             # Keep removing species with the lowest rates until we are below the maximum edge species size
             elif num_prunable_species - len(species_to_prune) > maximum_edge_species:
                 if max_edge_species_rate_ratios[index] < tol_move_to_core:
-                    logging.info('Pruning species {0} to make num_edge_species smaller than maximum_edge_species'.format(spec))
+                    logging.info("Pruning species {0} to make num_edge_species smaller than maximum_edge_species".format(spec))
                     species_to_prune.append((index, spec))
                 else:
-                    logging.warning('Attempted to prune a species that exceeded tol_move_to_core, pruning settings '
-                                    'for this run are likely bad, either maximum_edge_species needs to be set higher '
-                                    '(~100000) or min_species_exist_iterations_for_prune should be reduced (~2)')
+                    logging.warning(
+                        "Attempted to prune a species that exceeded tol_move_to_core, pruning settings "
+                        "for this run are likely bad, either maximum_edge_species needs to be set higher "
+                        "(~100000) or min_species_exist_iterations_for_prune should be reduced (~2)"
+                    )
                     break
             else:
                 break
 
         # Actually do the pruning
         if prune_due_to_rate_counter > 0:
-            logging.info('Pruning {0:d} species whose rate ratios against characteristic rate did not exceed the '
-                         'minimum threshold of {1:g}'.format(prune_due_to_rate_counter, tol_keep_in_edge))
+            logging.info(
+                "Pruning %d species whose rate ratios against characteristic rate did not exceed the " "minimum threshold of %g",
+                prune_due_to_rate_counter,
+                tol_keep_in_edge,
+            )
             for index, spec in species_to_prune[0:prune_due_to_rate_counter]:
-                logging.info('Pruning species {0:<56}'.format(spec))
-                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, max_edge_species_rate_ratios[index]))
+                logging.info("Pruning species %s", spec)
+                logging.debug("    %-56s    %10.4e", spec, max_edge_species_rate_ratios[index])
                 self.remove_species_from_edge(reaction_systems, spec)
         if len(species_to_prune) - prune_due_to_rate_counter > 0:
-            logging.info('Pruning {0:d} species to obtain an edge size of {1:d} species'.format(len(species_to_prune) - prune_due_to_rate_counter, maximum_edge_species))
+            logging.info(
+                "Pruning %d species to obtain an edge size of %d species", len(species_to_prune) - prune_due_to_rate_counter, maximum_edge_species
+            )
             for index, spec in species_to_prune[prune_due_to_rate_counter:]:
-                logging.info('Pruning species {0:<56}'.format(spec))
-                logging.debug('    {0:<56}    {1:10.4e}'.format(spec, max_edge_species_rate_ratios[index]))
+                logging.info("Pruning species %s", spec)
+                logging.debug("    %-56s    %10.4e", spec, max_edge_species_rate_ratios[index])
                 self.remove_species_from_edge(reaction_systems, spec)
 
         # Delete any networks that became empty as a result of pruning
         if self.pressure_dependence:
             self.remove_empty_pdep_networks()
 
-        logging.info('')
+        logging.info("")
 
     def remove_species_from_edge(self, reaction_systems, spec):
         """
@@ -1293,22 +1421,24 @@ class CoreEdgeReactionModel:
         # remove the species
         self.edge.species.remove(spec)
         self.index_species_dict.pop(spec.index)
+        self.edge.phase_system.remove_species(spec)
 
         # clean up species references in reaction_systems
         for reaction_system in reaction_systems:
-            try:
-                reaction_system.species_index.pop(spec)
-            except KeyError:
-                pass
+            if not isinstance(reaction_system, Reactor):
+                try:
+                    reaction_system.species_index.pop(spec)
+                except KeyError:
+                    pass
 
-            # identify any reactions it's involved in
-            rxn_list = []
-            for rxn in reaction_system.reaction_index:
-                if spec in rxn.reactants or spec in rxn.products:
-                    rxn_list.append(rxn)
+                # identify any reactions it's involved in
+                rxn_list = []
+                for rxn in reaction_system.reaction_index:
+                    if spec in rxn.reactants or spec in rxn.products:
+                        rxn_list.append(rxn)
 
-            for rxn in rxn_list:
-                reaction_system.reaction_index.pop(rxn)
+                for rxn in rxn_list:
+                    reaction_system.reaction_index.pop(rxn)
 
         # identify any reactions it's involved in
         rxn_list = []
@@ -1327,19 +1457,21 @@ class CoreEdgeReactionModel:
                 for rxn in network.path_reactions:
                     if spec in rxn.reactants or spec in rxn.products:
                         rxn_list.append(rxn)
-                if len(rxn_list) > 0:
-                    for rxn in rxn_list:
-                        network.path_reactions.remove(rxn)
-                    # Delete all net reactions involving the species
-                    rxn_list = []
-                    for rxn in network.net_reactions:
-                        if spec in rxn.reactants or spec in rxn.products:
-                            rxn_list.append(rxn)
-                    for rxn in rxn_list:
-                        network.net_reactions.remove(rxn)
+                for rxn in rxn_list:
+                    network.path_reactions.remove(rxn)
+                # Delete all net reactions involving the species
+                rxn_list = []
+                for rxn in network.net_reactions:
+                    if spec in rxn.reactants or spec in rxn.products:
+                        rxn_list.append(rxn)
+                for rxn in rxn_list:
+                    network.net_reactions.remove(rxn)
+                # Remove the species from list of explored
+                if spec in network.explored:
+                    network.explored.remove(spec)
 
-                    # Recompute the isomers, reactants, and products for this network
-                    network.update_configurations(self)
+                # Recompute the isomers, reactants, and products for this network
+                network.update_configurations(self)
 
         # Remove from the global list of reactions
         # also remove it from the global list of reactions
@@ -1374,6 +1506,20 @@ class CoreEdgeReactionModel:
         """
         if rxn not in self.core.reactions:
             self.core.reactions.append(rxn)
+            if rxn not in self.edge.reactions:
+                # If a reaction is not in edge but is going to add to core, it is either a seed mechanism or a newly generated reaction where all reactants and products are already in core
+                # If the reaction is in edge, then the corresponding rms_rxn was moved from edge phase to core phase in pass_species already.
+                rms_species_list = self.core.phase_system.get_rms_species_list()
+                species_names = self.core.phase_system.get_species_names()
+                bits = np.array([spc.molecule[0].contains_surface_site() for spc in rxn.reactants + rxn.products])
+                if all(bits):
+                    self.core.phase_system.phases["Surface"].add_reaction(rxn, self.edge.phase_system.phases["Surface"])
+                elif all(bits == False):
+                    self.core.phase_system.phases["Default"].add_reaction(rxn, self.edge.phase_system.phases["Default"])
+                else:
+                    self.core.phase_system.interfaces[frozenset({"Default", "Surface"})].add_reaction(rxn, species_names, rms_species_list)
+                    self.edge.phase_system.interfaces[frozenset({"Default", "Surface"})].add_reaction(rxn, species_names, rms_species_list)
+
         if rxn in self.edge.reactions:
             self.edge.reactions.remove(rxn)
 
@@ -1386,6 +1532,15 @@ class CoreEdgeReactionModel:
         edge).
         """
         self.edge.reactions.append(rxn)
+        rms_species_list = self.edge.phase_system.get_rms_species_list()
+        species_names = self.edge.phase_system.get_species_names()
+        bits = np.array([spc.molecule[0].contains_surface_site() for spc in rxn.reactants + rxn.products])
+        if all(bits):
+            self.edge.phase_system.phases["Surface"].add_reaction(rxn)
+        elif all(bits == False):
+            self.edge.phase_system.phases["Default"].add_reaction(rxn)
+        else:
+            self.edge.phase_system.interfaces[frozenset(["Default", "Surface"])].add_reaction(rxn, species_names, rms_species_list)
 
     def get_model_size(self):
         """
@@ -1420,6 +1575,7 @@ class CoreEdgeReactionModel:
         """
         species_list, reaction_list = self.get_species_reaction_lists()
         from scipy import sparse
+
         stoichiometry = sparse.dok_matrix((self.species_counter, self.reaction_counter), float)
         for rxn in reaction_list:
             j = rxn.index - 1
@@ -1434,7 +1590,7 @@ class CoreEdgeReactionModel:
 
     def add_seed_mechanism_to_core(self, seed_mechanism, react=False):
         """
-        Add all species and reactions from `seed_mechanism`, a 
+        Add all species and reactions from `seed_mechanism`, a
         :class:`KineticsPrimaryDatabase` object, to the model core. If `react`
         is ``True``, then reactions will also be generated between the seed
         species. For large seed mechanisms this can be prohibitively expensive,
@@ -1448,7 +1604,7 @@ class CoreEdgeReactionModel:
         library_names = list(database.kinetics.libraries.keys())
         family_names = list(database.kinetics.families.keys())
 
-        path = os.path.join(settings['database.directory'], 'kinetics', 'libraries')
+        path = os.path.join(settings["database.directory"], "kinetics", "libraries")
         from rmgpy.rmg.input import rmg
 
         self.new_reaction_list = []
@@ -1457,32 +1613,46 @@ class CoreEdgeReactionModel:
         num_old_core_species = len(self.core.species)
         num_old_core_reactions = len(self.core.reactions)
 
-        logging.info('Adding seed mechanism {0} to model core...'.format(seed_mechanism))
+        logging.info("Adding seed mechanism {0} to model core...".format(seed_mechanism))
 
         seed_mechanism = database.kinetics.libraries[seed_mechanism]
 
         rxns = seed_mechanism.get_library_reactions()
 
         for rxn in rxns:
-            if isinstance(rxn, LibraryReaction) and not (rxn.library in library_names) and not (rxn.library == 'kineticsjobs'):  # if one of the reactions in the library is from another library load that library
-                database.kinetics.library_order.append((rxn.library, 'Internal'))
+            if (
+                isinstance(rxn, LibraryReaction) and not (rxn.library in library_names) and not (rxn.library == "kineticsjobs")
+            ):  # if one of the reactions in the library is from another library load that library
+                database.kinetics.library_order.append((rxn.library, "Internal"))
                 database.kinetics.load_libraries(path=path, libraries=[rxn.library])
                 library_names = list(database.kinetics.libraries.keys())
             if isinstance(rxn, TemplateReaction) and not (rxn.family in family_names):
-                logging.warning('loading reaction {0} originally from family {1} as a library reaction'.format(str(rxn),
-                                                                                                               rxn.family))
-                rxn = LibraryReaction(reactants=rxn.reactants[:], products=rxn.products[:],
-                                      library=seed_mechanism.name, specific_collider=rxn.specific_collider,
-                                      kinetics=rxn.kinetics, duplicate=rxn.duplicate,
-                                      reversible=rxn.reversible
-                                      )
-            r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.newReactionlist
+                logging.warning("loading reaction {0} originally from family {1} as a library reaction".format(str(rxn), rxn.family))
+                rxn = LibraryReaction(
+                    reactants=rxn.reactants[:],
+                    products=rxn.products[:],
+                    library=seed_mechanism.name,
+                    specific_collider=rxn.specific_collider,
+                    kinetics=rxn.kinetics,
+                    duplicate=rxn.duplicate,
+                    reversible=rxn.reversible,
+                )
+            r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.new_reaction_list
+            if getattr(r.kinetics, "coverage_dependence", None):
+                self.process_coverage_dependence(r.kinetics)
             if not isNew:
                 logging.info("This library reaction was not new: {0}".format(rxn))
-            elif self.pressure_dependence and rxn.elementary_high_p and rxn.is_unimolecular() \
-                    and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius) and \
-                    (self.pressure_dependence.maximum_atoms is None or self.pressure_dependence.maximum_atoms >= \
-                     sum([len(spec.molecule[0].atoms) for spec in r.reactants])):
+            elif (
+                self.pressure_dependence
+                and rxn.elementary_high_p
+                and rxn.is_unimolecular()
+                and isinstance(rxn, LibraryReaction)
+                and isinstance(rxn.kinetics, Arrhenius)
+                and (
+                    self.pressure_dependence.maximum_atoms is None
+                    or self.pressure_dependence.maximum_atoms >= sum([len(spec.molecule[0].atoms) for spec in r.reactants])
+                )
+            ):
                 # This unimolecular library reaction is flagged as `elementary_high_p` and has Arrhenius type kinetics.
                 # We should calculate a pressure-dependent rate for it
                 if len(rxn.reactants) == 1:
@@ -1494,27 +1664,36 @@ class CoreEdgeReactionModel:
 
         for spec in self.new_species_list:
             if database.forbidden_structures.is_molecule_forbidden(spec.molecule[0]):
-                if 'allowed' in rmg.species_constraints and 'seed mechanisms' in rmg.species_constraints['allowed']:
+                if "allowed" in rmg.species_constraints and "seed mechanisms" in rmg.species_constraints["allowed"]:
                     spec.explicitly_allowed = True
-                    logging.warning("Species {0} from seed mechanism {1} is globally forbidden.  "
-                                    "It will behave as an inert unless found in a seed mechanism "
-                                    "or reaction library.".format(spec.label, seed_mechanism.label))
+                    logging.warning(
+                        "Species {0} from seed mechanism {1} is globally forbidden.  "
+                        "It will behave as an inert unless found in a seed mechanism "
+                        "or reaction library.".format(spec.label, seed_mechanism.label)
+                    )
                 else:
-                    raise ForbiddenStructureException("Species {0} from seed mechanism {1} is globally forbidden. "
-                                                      "You may explicitly allow it, but it will remain inert unless "
-                                                      "found in a seed mechanism or reaction "
-                                                      "library.".format(spec.label, seed_mechanism.label))
+                    raise ForbiddenStructureException(
+                        "Species {0} from seed mechanism {1} is globally forbidden. "
+                        "You may explicitly allow it, but it will remain inert unless "
+                        "found in a seed mechanism or reaction "
+                        "library.".format(spec.label, seed_mechanism.label)
+                    )
             if fails_species_constraints(spec):
-                if 'allowed' in rmg.species_constraints and 'seed mechanisms' in rmg.species_constraints['allowed']:
-                    rmg.species_constraints['explicitlyAllowedMolecules'].extend(spec.molecule)
+                if "allowed" in rmg.species_constraints and "seed mechanisms" in rmg.species_constraints["allowed"]:
+                    rmg.species_constraints["explicitlyAllowedMolecules"].extend(spec.molecule)
                 else:
-                    raise ForbiddenStructureException("Species constraints forbids species {0} from seed mechanism {1}."
-                                                      " Please reformulate constraints, remove the species, or"
-                                                      " explicitly allow it.".format(spec.label, seed_mechanism.label))
+                    raise ForbiddenStructureException(
+                        "Species constraints forbids species {0} from seed mechanism {1}."
+                        " Please reformulate constraints, remove the species, or"
+                        " explicitly allow it.".format(spec.label, seed_mechanism.label)
+                    )
 
         for spec in self.new_species_list:
             if spec.reactive:
                 submit(spec, self.solvent_name)
+            if vapor_liquid_mass_transfer.enabled:
+                spec.get_liquid_volumetric_mass_transfer_coefficient_data()
+                spec.get_henry_law_constant_data()
 
             self.add_species_to_core(spec)
 
@@ -1548,7 +1727,7 @@ class CoreEdgeReactionModel:
         database = rmgpy.data.rmg.database
         library_names = list(database.kinetics.libraries.keys())
         family_names = list(database.kinetics.families.keys())
-        path = os.path.join(settings['database.directory'], 'kinetics', 'libraries')
+        path = os.path.join(settings["database.directory"], "kinetics", "libraries")
 
         from rmgpy.rmg.input import rmg
 
@@ -1558,30 +1737,44 @@ class CoreEdgeReactionModel:
         num_old_edge_species = len(self.edge.species)
         num_old_edge_reactions = len(self.edge.reactions)
 
-        logging.info('Adding reaction library {0} to model edge...'.format(reaction_library))
+        logging.info("Adding reaction library {0} to model edge...".format(reaction_library))
         reaction_library = database.kinetics.libraries[reaction_library]
 
         rxns = reaction_library.get_library_reactions()
         for rxn in rxns:
-            if isinstance(rxn, LibraryReaction) and not (rxn.library in library_names):  # if one of the reactions in the library is from another library load that library
-                database.kinetics.library_order.append((rxn.library, 'Internal'))
+            if isinstance(rxn, LibraryReaction) and not (
+                rxn.library in library_names
+            ):  # if one of the reactions in the library is from another library load that library
+                database.kinetics.library_order.append((rxn.library, "Internal"))
                 database.kinetics.load_libraries(path=path, libraries=[rxn.library])
                 library_names = list(database.kinetics.libraries.keys())
             if isinstance(rxn, TemplateReaction) and not (rxn.family in family_names):
-                logging.warning('loading reaction {0} originally from family {1} as a library reaction'.format(str(rxn),
-                                                                                                               rxn.family))
-                rxn = LibraryReaction(reactants=rxn.reactants[:], products=rxn.products[:],
-                                      library=reaction_library.name, specific_collider=rxn.specific_collider,
-                                      kinetics=rxn.kinetics, duplicate=rxn.duplicate,
-                                      reversible=rxn.reversible
-                                      )
-            r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.newReactionlist
+                logging.warning("loading reaction {0} originally from family {1} as a library reaction".format(str(rxn), rxn.family))
+                rxn = LibraryReaction(
+                    reactants=rxn.reactants[:],
+                    products=rxn.products[:],
+                    library=reaction_library.name,
+                    specific_collider=rxn.specific_collider,
+                    kinetics=rxn.kinetics,
+                    duplicate=rxn.duplicate,
+                    reversible=rxn.reversible,
+                )
+            r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.new_reaction_list
+            if r is not None and getattr(rxn.kinetics, "coverage_dependence", None):
+                self.process_coverage_dependence(r.kinetics)
             if not isNew:
                 logging.info("This library reaction was not new: {0}".format(rxn))
-            elif self.pressure_dependence and rxn.elementary_high_p and rxn.is_unimolecular() \
-                    and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius) and \
-                    (self.pressure_dependence.maximum_atoms is None or self.pressure_dependence.maximum_atoms >= \
-                     sum([len(spec.molecule[0].atoms) for spec in r.reactants])):
+            elif (
+                self.pressure_dependence
+                and rxn.elementary_high_p
+                and rxn.is_unimolecular()
+                and isinstance(rxn, LibraryReaction)
+                and isinstance(rxn.kinetics, Arrhenius)
+                and (
+                    self.pressure_dependence.maximum_atoms is None
+                    or self.pressure_dependence.maximum_atoms >= sum([len(spec.molecule[0].atoms) for spec in r.reactants])
+                )
+            ):
                 # This unimolecular library reaction is flagged as `elementary_high_p` and has Arrhenius type kinetics.
                 # We should calculate a pressure-dependent rate for it
                 if len(rxn.reactants) == 1:
@@ -1593,43 +1786,57 @@ class CoreEdgeReactionModel:
         for spec in self.new_species_list:
             if not reaction_library.auto_generated:  # No need to check for forbidden species otherwise
                 if database.forbidden_structures.is_molecule_forbidden(spec.molecule[0]):
-                    if 'allowed' in rmg.species_constraints and 'reaction libraries' in rmg.species_constraints['allowed']:
+                    if "allowed" in rmg.species_constraints and "reaction libraries" in rmg.species_constraints["allowed"]:
                         spec.explicitly_allowed = True
-                        logging.warning("Species {0} from reaction library {1} is globally forbidden.  It will behave "
-                                        "as an inert unless found in a seed mechanism or reaction "
-                                        "library.".format(spec.label, reaction_library.label))
+                        logging.warning(
+                            "Species {0} from reaction library {1} is globally forbidden.  It will behave "
+                            "as an inert unless found in a seed mechanism or reaction "
+                            "library.".format(spec.label, reaction_library.label)
+                        )
                     else:
-                        raise ForbiddenStructureException("Species {0} from reaction library {1} is globally "
-                                                          "forbidden. You may explicitly allow it, but it will remain "
-                                                          "inert unless found in a seed mechanism or reaction "
-                                                          "library.".format(spec.label, reaction_library.label))
+                        raise ForbiddenStructureException(
+                            "Species {0} from reaction library {1} is globally "
+                            "forbidden. You may explicitly allow it, but it will remain "
+                            "inert unless found in a seed mechanism or reaction "
+                            "library.".format(spec.label, reaction_library.label)
+                        )
             if fails_species_constraints(spec):
-                if 'allowed' in rmg.species_constraints and 'reaction libraries' in rmg.species_constraints['allowed']:
-                    rmg.species_constraints['explicitlyAllowedMolecules'].extend(spec.molecule)
+                if "allowed" in rmg.species_constraints and "reaction libraries" in rmg.species_constraints["allowed"]:
+                    rmg.species_constraints["explicitlyAllowedMolecules"].extend(spec.molecule)
                 else:
-                    raise ForbiddenStructureException("Species constraints forbids species {0} from reaction library "
-                                                      "{1}. Please reformulate constraints, remove the species, or "
-                                                      "explicitly allow it.".format(spec.label, reaction_library.label))
+                    raise ForbiddenStructureException(
+                        "Species constraints forbids species {0} from reaction library "
+                        "{1}. Please reformulate constraints, remove the species, or "
+                        "explicitly allow it.".format(spec.label, reaction_library.label)
+                    )
 
         for spec in self.new_species_list:
             if spec.reactive:
                 submit(spec, self.solvent_name)
+            if vapor_liquid_mass_transfer.enabled:
+                spec.get_liquid_volumetric_mass_transfer_coefficient_data()
+                spec.get_henry_law_constant_data()
 
             self.add_species_to_edge(spec)
 
         for rxn in self.new_reaction_list:
-            # Note that we haven't actually evaluated any fluxes at this point
-            # Instead, we remove the comment below if the reaction is moved to
-            # the core later in the mechanism generation
-            if not (self.pressure_dependence and rxn.elementary_high_p and rxn.is_unimolecular()
-                    and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius) and \
-                    (self.pressure_dependence.maximum_atoms is None or self.pressure_dependence.maximum_atoms >= \
-                     sum([len(spec.molecule[0].atoms) for spec in r.reactants]))):
+            if not (
+                self.pressure_dependence
+                and rxn.elementary_high_p
+                and rxn.is_unimolecular()
+                and isinstance(rxn, LibraryReaction)
+                and isinstance(rxn.kinetics, Arrhenius)
+                and (
+                    self.pressure_dependence.maximum_atoms is None
+                    or self.pressure_dependence.maximum_atoms >= sum([len(spec.molecule[0].atoms) for spec in r.reactants])
+                )
+            ):
                 # Don't add to the edge library reactions that were already processed
                 self.add_reaction_to_edge(rxn)
 
         if self.save_edge_species:
             from rmgpy.chemkin import mark_duplicate_reaction
+
             new_edge_reactions = self.edge.reactions[num_old_edge_reactions:]
             checked_reactions = self.core.reactions + self.edge.reactions[:num_old_edge_reactions]
             for rxn in new_edge_reactions:
@@ -1650,7 +1857,7 @@ class CoreEdgeReactionModel:
         This does not bring any of the reactions or species into the core itself.
         """
 
-        logging.info('Adding reaction library {0} to output file...'.format(reaction_library))
+        logging.info("Adding reaction library {0} to output file...".format(reaction_library))
 
         # Append the edge reactions that are from the selected reaction library to an output species and output reactions list
         for rxn in self.edge.reactions:
@@ -1754,8 +1961,7 @@ class CoreEdgeReactionModel:
                     if found:
                         # The networks contain the same source and one or more common included isomers
                         # Therefore they need to be merged together
-                        logging.info(
-                            'Merging PDepNetwork #{0:d} and PDepNetwork #{1:d}'.format(network0.index, network.index))
+                        logging.info("Merging PDepNetwork #{0:d} and PDepNetwork #{1:d}".format(network0.index, network.index))
                         network0.merge(network)
                         networks.remove(network)
                         self.network_list.remove(network)
@@ -1763,10 +1969,8 @@ class CoreEdgeReactionModel:
                     else:
                         index += 1
 
-        count = sum([1 for network in self.network_list if
-                     not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
-        logging.info('Updating {0:d} modified unimolecular reaction networks (out of {1:d})...'.format(count, len(
-            self.network_list)))
+        count = sum([1 for network in self.network_list if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
+        logging.info("Updating {0:d} modified unimolecular reaction networks (out of {1:d})...".format(count, len(self.network_list)))
 
         # Iterate over all the networks, updating the invalid ones as necessary
         # self = reaction_model object
@@ -1787,11 +1991,10 @@ class CoreEdgeReactionModel:
         while index < core_reaction_count:
             reaction = self.core.reactions[index]
             if isinstance(reaction, PDepReaction):
-                for reaction2 in self.core.reactions[index + 1:]:
-                    if isinstance(reaction2,
-                                  PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
+                for reaction2 in self.core.reactions[index + 1 :]:
+                    if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
                         # We've found the PDepReaction for the reverse direction
-                        dGrxn = reaction.get_free_energy_of_reaction(300.)
+                        dGrxn = reaction.get_free_energy_of_reaction(300.0)
                         kf = reaction.get_rate_coefficient(1000, 1e5)
                         kr = reaction.get_rate_coefficient(1000, 1e5) / reaction.get_equilibrium_constant(1000)
                         kf2 = reaction2.get_rate_coefficient(1000, 1e5) / reaction2.get_equilibrium_constant(1000)
@@ -1799,15 +2002,15 @@ class CoreEdgeReactionModel:
                         if kf / kf2 < 0.5 or kf / kf2 > 2.0:
                             # Most pairs of reactions should satisfy thermodynamic consistency (or at least be "close")
                             # Warn about the ones that aren't close (but don't abort)
-                            logging.warning('Forward and reverse PDepReactions for reaction {0!s} generated from '
-                                            'networks {1:d} and {2:d} do not satisfy thermodynamic '
-                                            'consistency.'.format(reaction,
-                                                                  reaction.network.index,
-                                                                  reaction2.network.index))
-                            logging.warning('{0!s}:'.format(reaction))
-                            logging.warning('{0:.2e} {1:.2e}:'.format(kf, kf2))
-                            logging.warning('{0!s}:'.format(reaction2))
-                            logging.warning('{0:.2e} {1:.2e}:'.format(kr, kr2))
+                            logging.warning(
+                                "Forward and reverse PDepReactions for reaction {0!s} generated from "
+                                "networks {1:d} and {2:d} do not satisfy thermodynamic "
+                                "consistency.".format(reaction, reaction.network.index, reaction2.network.index)
+                            )
+                            logging.warning("{0!s}:".format(reaction))
+                            logging.warning("{0:.2e} {1:.2e}:".format(kf, kf2))
+                            logging.warning("{0!s}:".format(reaction2))
+                            logging.warning("{0:.2e} {1:.2e}:".format(kr, kr2))
                         # Keep the exergonic direction
                         keep_first = dGrxn < 0
                         # Delete the PDepReaction that we aren't keeping
@@ -1830,7 +2033,7 @@ class CoreEdgeReactionModel:
     def mark_chemkin_duplicates(self):
         """
         Check that all reactions that will appear the chemkin output have been checked as duplicates.
-        
+
         Call this if you've done something that may have introduced undetected duplicate reactions,
         like add a reaction library or seed mechanism.
         Anything added via the :meth:`expand` method should already be detected.
@@ -1853,13 +2056,13 @@ class CoreEdgeReactionModel:
         - reactant(s) keys
 
         First, the keys are generated for the parameter reaction.
-        
-        Next, it is checked whether the reaction database already 
+
+        Next, it is checked whether the reaction database already
         contains similar keys. If not, a new container is created,
         either a dictionary for the family key and first reactant key,
         or a list for the second reactant key.
 
-        Finally, the reaction is inserted as the first element in the 
+        Finally, the reaction is inserted as the first element in the
         list.
         """
 
@@ -1880,8 +2083,8 @@ class CoreEdgeReactionModel:
 
     def search_retrieve_reactions(self, rxn):
         """
-        Searches through the reaction database for 
-        reactions with an identical reaction key as the key of the 
+        Searches through the reaction database for
+        reactions with an identical reaction key as the key of the
         parameter reaction.
 
         Both the reaction key based on the reactants as well as on the products
@@ -1910,7 +2113,7 @@ class CoreEdgeReactionModel:
     def initialize_index_species_dict(self):
         """
         Populates the core species dictionary
-        
+
         integer -> core Species
 
         with the species that are currently in the core.
@@ -1922,7 +2125,7 @@ class CoreEdgeReactionModel:
 
     def retrieve(self, family_label, key1, key2):
         """
-        Returns a list of reactions from the reaction database with the 
+        Returns a list of reactions from the reaction database with the
         same keys as the parameters.
 
         Returns an empty list when one of the keys could not be found.
@@ -1939,7 +2142,7 @@ def generate_reaction_key(rxn, useProducts=False):
     - the reaction family (or library) the reaction belongs to
     - the keys of the reactants.
 
-    None for the third element in the tuple if there is 
+    None for the third element in the tuple if there is
     only 1 reactant.
 
     The keys are sorted alphabetically.
@@ -1979,7 +2182,7 @@ def get_family_library_object(label):
     Returns the KineticsFamily or KineticsLibrary object associated with the
     parameter string.
 
-    First search through the reaction families, then 
+    First search through the reaction families, then
     through the libraries.
     """
 
@@ -1997,7 +2200,11 @@ def get_family_library_object(label):
     except KeyError:
         pass
 
-    raise Exception('Could not retrieve the family/library: {}'.format(label))
+    raise Exception(
+        f"Could not retrieve the family/library: {label} "
+        f"from families {list(kinetics.families.keys())} "
+        f"and libraries {list(kinetics.libraries.keys())}."
+    )
 
 
 def get_key(spc):

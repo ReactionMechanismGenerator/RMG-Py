@@ -5,7 +5,7 @@ Frequently Asked Questions
 **Are there other software packages for investigating pressure-dependent
 reaction networks?**
 
-Yes. The following is an illustrative list of such packages:
+Yes. The following is an (out of date, written in 2010) illustrative list of such packages:
 
 =============== =============== =============== ================================
 Name            Method(s)       Language        Author(s)
@@ -30,8 +30,8 @@ data and physical quantities.
 
 .. [#f2] No longer distributed
 
-.. _MultiWell: http://aoss-research.engin.umich.edu/multiwell/
+.. _MultiWell: https://clasp-research.engin.umich.edu/multiwell/
 .. _UNIMOL: http://www.ccl.net/cca/software/SOURCES/FORTRAN/unimol/index.shtml
-.. _ChemRate: http://www.mokrushin.com/ChemRate/chemrate.html
-.. _Variflex: http://ftp.tcg.anl.gov/pub/variflex/Summary.vrfx
-.. _MESMER: http://sourceforge.net/projects/mesmer
+.. _ChemRate: https://kinetics.nist.gov/ChemRate/
+.. _Variflex: http://web.archive.org/web/20181126234555/http://ftp.tcg.anl.gov/pub/variflex/Summary.vrfx
+.. _MESMER: https://sourceforge.net/projects/mesmer/

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -123,13 +123,13 @@ class PeriodicSystem(object):
     isotopes of the same element may have slight different electronegativities, which is not reflected below
     """
     valences = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'F': 1, 'Ne': 0,
-                'Si': 4, 'S': 2, 'Cl': 1, 'Br': 1, 'Ar': 0, 'I': 1, 'X': 4}
+                'Si': 4, 'P': 3, 'S': 2, 'Cl': 1, 'Br': 1, 'Ar': 0, 'I': 1, 'X': 4}
     valence_electrons = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'F': 7, 'Ne': 8,
-                         'Si': 4, 'S': 6, 'Cl': 7, 'Br': 7, 'Ar': 8, 'I': 7, 'X': 4}
+                         'Si': 4, 'P': 5, 'S': 6, 'Cl': 7, 'Br': 7, 'Ar': 8, 'I': 7, 'X': 4}
     lone_pairs = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'F': 3, 'Ne': 4,
-                  'Si': 0, 'S': 2, 'Cl': 3, 'Br': 3, 'Ar': 4, 'I': 3, 'X': 0}
+                  'Si': 0, 'P': 1, 'S': 2, 'Cl': 3, 'Br': 3, 'Ar': 4, 'I': 3, 'X': 0}
     electronegativity = {'H': 2.20, 'D': 2.20, 'T': 2.20, 'C': 2.55, 'C13': 2.55, 'N': 3.04, 'O': 3.44, 'O18': 3.44,
-                         'F': 3.98, 'Si': 1.90, 'S': 2.58, 'Cl': 3.16, 'Br': 2.96, 'I': 2.66, 'X': 0.0}
+                         'F': 3.98, 'Si': 1.90, 'P': 2.19, 'S': 2.58, 'Cl': 3.16, 'Br': 2.96, 'I': 2.66, 'X': 0.0}
 
 
 ################################################################################
@@ -179,32 +179,32 @@ X = Element(0,    'X', 'surface_site'   , 0.0)
 
 # Period 1
 # Hydrogen
-H  = Element(1,   'H' , 'hydrogen'      , 0.00100794)
-D  = Element(1,   'H' , 'deuterium'     , 0.002014101, 2, 'D')
+H  = Element(1,   'H' , 'hydrogen'      , 0.001007971)  # assuming 99.9855% 1_H, 0.0145% 2_H; see https://applets.kcvs.ca/IPTEI/pdf-elements/hydrogen.pdf
+D  = Element(1,   'H' , 'deuterium'     , 0.0020141017781, 2, 'D')  # see https://applets.kcvs.ca/IPTEI/pdf-elements/hydrogen.pdf
 T  = Element(1,   'H' , 'tritium'       , 0.003016049, 3, 'T')
-He = Element(2,   'He', 'helium'        , 0.004002602)
+He = Element(2,   'He', 'helium'        , 0.004002601)  # see  https://applets.kcvs.ca/IPTEI/pdf-elements/helium.pdf
 
 # Period 2
 Li = Element(3,   'Li', 'lithium'       , 0.006941)
 Be = Element(4,   'Be', 'beryllium'     , 0.009012182)
 B  = Element(5,   'B',  'boron'         , 0.010811)
-C  = Element(6,   'C' , 'carbon'        , 0.0120107)
-C13= Element(6,   'C' , 'carbon-13'     , 0.0130033, 13, 'CI')
-N  = Element(7,   'N' , 'nitrogen'      , 0.01400674)
-O  = Element(8,   'O' , 'oxygen'        , 0.0159994)
-O18= Element(8,   'O' , 'oxygen-18'     , 0.0179999, 18, 'OI')
-F  = Element(9,   'F' , 'fluorine'      , 0.018998403)
-Ne = Element(10,  'Ne', 'neon'          , 0.0201797)
+C  = Element(6,   'C' , 'carbon'        , 0.01201064)  # assuming 1.06% 13_C, 98.94% 12_C; see https://applets.kcvs.ca/IPTEI/pdf-elements/carbon.pdf
+C13= Element(6,   'C' , 'carbon-13'     , 0.013003354, 13, 'CI')  # see https://applets.kcvs.ca/IPTEI/pdf-elements/carbon.pdf
+N  = Element(7,   'N' , 'nitrogen'      , 0.01400686)  # assuming 0.3795% 15_N, 99.9855% 14_N; see https://applets.kcvs.ca/IPTEI/pdf-elements/nitrogen.pdf
+O  = Element(8,   'O' , 'oxygen'        , 0.0159994)  # assuming 99.7572% 16_O2, 0.2045% 18_O2, 0.0384% 17_O2; see https://applets.kcvs.ca/IPTEI/pdf-elements/oxygen.pdf
+O18= Element(8,   'O' , 'oxygen-18'     , 0.017999159613, 18, 'OI')  # see https://applets.kcvs.ca/IPTEI/pdf-elements/oxygen.pdf
+F  = Element(9,   'F' , 'fluorine'      , 0.018998403163)  # see https://applets.kcvs.ca/IPTEI/pdf-elements/fluorine.pdf
+Ne = Element(10,  'Ne', 'neon'          , 0.02018005)   # see https://applets.kcvs.ca/IPTEI/pdf-elements/neon.pdf
 
 # Period 3
 Na = Element(11,  'Na', 'sodium'        , 0.022989770)
 Mg = Element(12,  'Mg', 'magnesium'     , 0.0243050)
 Al = Element(13,  'Al', 'aluminium'     , 0.026981538)
 Si = Element(14,  'Si', 'silicon'       , 0.0280855)
-P  = Element(15,  'P' , 'phosphorus'    , 0.030973761)
-S  = Element(16,  'S' , 'sulfur'        , 0.032065)
-Cl = Element(17,  'Cl', 'chlorine'      , 0.035453)
-Ar = Element(18,  'Ar', 'argon'         , 0.039348)
+P  = Element(15,  'P' , 'phosphorus'    , 0.030973761998)  # see https://applets.kcvs.ca/IPTEI/pdf-elements/phosphorus.pdf
+S  = Element(16,  'S' , 'sulfur'        , 0.0320725)  # assuming 0.7630% 33_S, 4.3650% 34_S, 0.0158% 36_S, 94.8562% 32_S; see https://applets.kcvs.ca/IPTEI/pdf-elements/sulfur.pdf
+Cl = Element(17,  'Cl', 'chlorine'      , 0.03545214)  # assuming 24.2% 37_Cl, 75.8% 35_Cl; see https://applets.kcvs.ca/IPTEI/pdf-elements/chlorine.pdf
+Ar = Element(18,  'Ar', 'argon'         , 0.0398775)  # assuming 1.04% 36_Ar, 2.165% 38_Ar, 96.795% 40_Ar; see https://applets.kcvs.ca/IPTEI/pdf-elements/argon.pdf
 
 # Period 4
 K  = Element(19,  'K' , 'potassium'     , 0.0390983)
@@ -329,27 +329,53 @@ element_list = [
 # (C,C,1.5) was taken from an unsourced table that had similar values to those used below, should be replaced
 # if a sourced value becomes available
 # (C,C,2.5) is C#C - (CbenzeneC - C-C)
-bde_elements = ['C', 'N', 'H', 'O', 'S', 'Cl', 'Si']  # elements supported by BDE
+# P=P value is from: https://www2.chemistry.msu.edu/faculty/reusch/OrgPage/bndenrgy.htm
+# C#S is the value for [C+]#[S-] from 10.1002/chem.201002840 referenced relative to 0 K
+# X-O and X-X (X=F,Cl,Br) taken from https://labs.chem.ucsb.edu/zakarian/armen/11---bonddissociationenergy.pdf
+# The reference state is gaseous state at 298 K, but some of the values in the bde_dict might be coming from 0 K.
+# The bond dissociation energy at 298 K is greater than the bond dissociation energy at 0 K by 0.6 to 0.9 kcal/mol
+# (between RT and 3/2 RT), and this difference is usually much smaller than the uncertainty in the bond dissociation
+# energy itself. Therefore, the discrepancy between 0 K and 298 K shouldn't matter too much.
+# But for any new entries, try to use the consistent reference state of 298 K.
+bde_elements = ['C', 'N', 'H', 'O', 'S', 'Cl', 'Si', 'P', 'F', 'Br', 'I']  # elements supported by BDE
 bde_dict = {('H', 'H', 1.0): (432.0, 'kJ/mol'), ('H', 'C', 1): (411.0, 'kJ/mol'),
             ('H', 'N', 1): (386.0, 'kJ/mol'), ('H', 'O', 1.0): (459.0, 'kJ/mol'),
-            ('H', 'S', 1): (363.0, 'kJ/mol'), ('H', 'Cl', 1): (428.0, 'kJ/mol'),
+            ('H', 'P', 1): (322.0, 'kJ/mol'), ('H', 'S', 1): (363.0, 'kJ/mol'),
+            ('H', 'F', 1): (565.0, 'kJ/mol'), ('H', 'Cl', 1): (428.0, 'kJ/mol'),
+            ('H', 'Br', 1): (362.0, 'kJ/mol'), ('H', 'I', 1): (295.0, 'kJ/mol'),
             ('C', 'C', 1): (346.0, 'kJ/mol'), ('C', 'C', 2): (602.0, 'kJ/mol'),
-            ('C', 'C', 3): (835.0, 'kJ/mol'), ('C', 'Si', 1): (318.0, 'kJ/mol'),
+            ('C', 'C', 3): (835.0, 'kJ/mol'), ('C', 'C', 1.5): (518.0, 'kJ/mol'),
+            ('C', 'C', 2.5): (663.0, 'kJ/mol'), ('C', 'Si', 1): (318.0, 'kJ/mol'),
             ('C', 'N', 1): (305.0, 'kJ/mol'), ('C', 'N', 2): (615.0, 'kJ/mol'),
             ('C', 'N', 3): (887.0, 'kJ/mol'), ('C', 'O', 1): (358.0, 'kJ/mol'),
             ('C', 'O', 2): (799.0, 'kJ/mol'), ('C', 'O', 3): (1072.0, 'kJ/mol'),
-            ('C', 'S', 1): (272.0, 'kJ/mol'), ('C', 'S', 2): (573.0, 'kJ/mol'),
-            ('C', 'Cl', 1): (327.0, 'kJ/mol'), ('Si', 'Si', 1): (222.0, 'kJ/mol'),
-            ('Si', 'N', 1): (355.0, 'kJ/mol'), ('Si', 'O', 1): (452.0, 'kJ/mol'),
-            ('Si', 'S', 1): (293.0, 'kJ/mol'), ('Si', 'Cl', 1): (381.0, 'kJ/mol'),
+            ('C', 'P', 1): (264.0, 'kJ/mol'), ('C', 'S', 1): (272.0, 'kJ/mol'),
+            ('C', 'S', 2): (573.0, 'kJ/mol'), ('C', 'S', 3): (709.6, 'kJ/mol'),
+            ('C', 'F', 1): (485.0, 'kJ/mol'),
+            ('C', 'Cl', 1): (327.0, 'kJ/mol'), ('C', 'Br', 1): (285.0, 'kJ/mol'),
+            ('C', 'I', 1): (213.0, 'kJ/mol'),
+            ('Si', 'Si', 1): (222.0, 'kJ/mol'), ('Si', 'N', 1): (355.0, 'kJ/mol'),
+            ('Si', 'O', 1): (452.0, 'kJ/mol'), ('Si', 'S', 1): (293.0, 'kJ/mol'),
+            ('Si', 'F', 1): (565.0, 'kJ/mol'), ('Si', 'Cl', 1): (381.0, 'kJ/mol'),
+            ('Si', 'Br', 1): (310.0, 'kJ/mol'), ('Si', 'I', 1): (234.0, 'kJ/mol'),
             ('N', 'N', 1): (167.0, 'kJ/mol'), ('N', 'N', 2): (418.0, 'kJ/mol'),
             ('N', 'N', 3): (942.0, 'kJ/mol'), ('N', 'O', 1): (201.0, 'kJ/mol'),
-            ('N', 'O', 2): (607.0, 'kJ/mol'), ('N', 'Cl', 1): (313.0, 'kJ/mol'),
+            ('N', 'O', 2): (607.0, 'kJ/mol'), ('N', 'F', 1): (283.0, 'kJ/mol'),
+            ('N', 'Cl', 1): (313.0, 'kJ/mol'), ('N', 'S', 1): (467.0, 'kJ/mol'),
             ('O', 'O', 1): (142.0, 'kJ/mol'), ('O', 'O', 2): (494.0, 'kJ/mol'),
-            ('S', 'O', 2): (522.0, 'kJ/mol'), ('S', 'S', 1): (226.0, 'kJ/mol'),
-            ('S', 'S', 2): (425.0, 'kJ/mol'), ('S', 'Cl', 1): (255.0, 'kJ/mol'),
-            ('Cl', 'Cl', 1): (240.0, 'kJ/mol'), ('C', 'C', 1.5): (518.0, 'kJ/mol'),
-            ('O', 'S', 1): (265.0, 'kJ/mol'), ('C', 'C', 2.5): (663.0, 'kJ/mol')}
+            ('O', 'P', 1): (335.0, 'kJ/mol'), ('O', 'P', 2): (544.0, 'kJ/mol'),
+            ('O', 'S', 1): (265.0, 'kJ/mol'), ('O', 'S', 2): (522.0, 'kJ/mol'),
+            ('P', 'P', 1): (201.0, 'kJ/mol'), ('P', 'P', 2): (351.0, 'kJ/mol'),
+            ('P', 'P', 3): (489.0, 'kJ/mol'), ('P', 'S', 2): (335.0, 'kJ/mol'),
+            ('P', 'F', 1): (490.0, 'kJ/mol'), ('P', 'Cl', 1): (326.0, 'kJ/mol'),
+            ('P', 'Br', 1): (264.0, 'kJ/mol'), ('P', 'I', 2): (184.0, 'kJ/mol'),
+            ('S', 'S', 1): (226.0, 'kJ/mol'), ('S', 'S', 2): (425.0, 'kJ/mol'),
+            ('S', 'Cl', 1): (255.0, 'kJ/mol'),
+            ('F', 'F', 1): (155.0, 'kJ/mol'), ('Cl', 'Cl', 1): (240.0, 'kJ/mol'),
+            ('Br', 'Br', 1): (190.0, 'kJ/mol'), ('I', 'I', 1): (148.0, 'kJ/mol'),
+            ('F', 'O', 1): (222.0, 'kJ/mol'), ('Cl', 'O', 1): (272.0, 'kJ/mol'),
+            ('Br', 'O', 1): (235.1, 'kJ/mol'), ('Cl', 'F', 1): (250.54, 'kJ/mol'),
+            ('Br', 'F', 1): (233.8, 'kJ/mol'), ('Br', 'Cl', 1): (218.84, 'kJ/mol')}
 
 bdes = {}
 for key, value in bde_dict.items():

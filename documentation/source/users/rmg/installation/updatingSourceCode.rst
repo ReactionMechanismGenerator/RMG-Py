@@ -11,12 +11,29 @@ To update your source code, you can "pull" the latest changes from the official 
 Command Prompt ::
 
     cd RMG-Py
-    git pull https://github.com/ReactionMechanismGenerator/RMG-Py.git master
+    git pull git@github.com:ReactionMechanismGenerator/RMG-Py.git main
+
+If you are not using ``ssh`` (yet), it is still possible to pull the code using
+``https``::
+    
+    git pull https://github.com/ReactionMechanismGenerator/RMG-Py.git main
 
 We also recommend updating the RMG-database regularly.  The repo itself can be found at https://github.com/ReactionMechanismGenerator/RMG-database/ ::
 
     cd RMG-database
-    git pull https://github.com/ReactionMechanismGenerator/RMG-database.git master
+    git pull git@github.com:ReactionMechanismGenerator/RMG-database.git main
+
+Again, for those (still) using ``https``, the command is instead::
+
+    git pull https://github.com/ReactionMechanismGenerator/RMG-database.git main
+
+We also recommend that the RMS julia package is updated::
+
+    julia -e 'using Pkg; Pkg.update("ReactionMechanismSimulator")'
 
 For more information about how to use the Git workflow to make changes to the source code, please
 refer to the handy `Git Tutorial <http://git-scm.com/docs/gittutorial>`_
+
+For information on updating your local repository from ``https`` to ``ssh``,
+please see `Managing remote repositories
+<https://docs.github.com/en/get-started/getting-started-with-git/managing-remote-repositories>`_

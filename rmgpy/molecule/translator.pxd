@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -28,12 +28,12 @@
 cimport rmgpy.molecule.molecule as mm
 
 
-cpdef list BACKENDS
-cpdef dict INCHI_LOOKUPS
-cpdef dict SMILES_LOOKUPS
+cdef list BACKENDS
+cdef dict INCHI_LOOKUPS
+cdef dict SMILES_LOOKUPS
 
-cpdef dict MOLECULE_LOOKUPS
-cpdef dict RADICAL_LOOKUPS
+cdef dict MOLECULE_LOOKUPS
+cdef dict RADICAL_LOOKUPS
 
 cpdef str to_inchi(mm.Molecule mol, str backend=?, int aug_level=?)
 

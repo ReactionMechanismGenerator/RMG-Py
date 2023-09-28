@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -254,7 +254,6 @@ GLOBALS1 = {
     # rmgpy.tools.loader
     'loadRMGJob': 'load_rmg_job',
     'loadRMGPyJob': 'load_rmg_py_job',
-    'loadRMGJavaJob': 'load_rmg_java_job',
     # rmgpy.tools.plot
     'parseCSVData': 'parse_csv_data',
     'findNearest': 'find_nearest',

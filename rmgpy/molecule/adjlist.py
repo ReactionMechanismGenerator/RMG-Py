@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -40,6 +40,7 @@ from rmgpy.molecule.atomtype import get_atomtype
 from rmgpy.molecule.element import get_element, PeriodicSystem
 from rmgpy.molecule.group import GroupAtom, GroupBond
 from rmgpy.molecule.molecule import Atom, Bond
+from rmgpy.molecule.fragment import Fragment, CuttingLabel
 
 
 class Saturator(object):
@@ -57,6 +58,7 @@ class Saturator(object):
         """
         new_atoms = []
         for atom in atoms:
+            if not isinstance(atom, Atom): continue
             try:
                 max_number_of_valence_electrons = PeriodicSystem.valence_electrons[atom.symbol]
             except KeyError:
@@ -436,8 +438,10 @@ def from_old_adjacency_list(adjlist, group=False, saturate_h=False):
     except InvalidAdjacencyListError:
         logging.error("Troublesome adjacency list:\n" + adjlist)
         raise
-
-    return atoms, multiplicity
+    if group:
+        return atoms, multiplicity, [], []
+    else:
+        return atoms, multiplicity, '', ''
 
 
 ###############################
@@ -458,7 +462,7 @@ re_old_adjlist = re.compile(r'^\s*(\d*)\s+' +  # atom number digit
                             r'\s*$')  # the end!
 
 
-def from_adjacency_list(adjlist, group=False, saturate_h=False):
+def from_adjacency_list(adjlist, group=False, saturate_h=False, check_consistency=True):
     """
     Convert a string adjacency list `adjlist` into a set of :class:`Atom` and
     :class:`Bond` objects.
@@ -522,11 +526,17 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
             multiplicity = int(line.split()[1])
         if len(lines) == 0:
             raise InvalidAdjacencyListError('No atoms specified in adjacency list: \n{0}'.format(adjlist))
-
+        
     mistake1 = re.compile(r'\{[^}]*\s+[^}]*\}')
+    if group:
+        metal = []
+        facet = []
+    else:
+        metal = ''
+        facet = ''
     # Iterate over the remaining lines, generating Atom or GroupAtom objects
     for line in lines:
-
+            
         # Sometimes people put spaces after commas, which messes up the
         # parse-by-whitespace. Examples include '[Cd, Ct]'.
         if mistake1.search(line):
@@ -543,7 +553,49 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
         # Skip if blank line
         if len(data) == 0:
             continue
-
+        
+        if line.split()[0] == 'metal':
+            if group:
+                match = re.match(r'\s*metal\s+\[\s*[\w,\s]+\s*\]\s*$', line)
+                if not match:
+                    rematch = re.match(r'\s*metal\s+x\s*$', line)
+                    if not rematch:
+                        raise InvalidAdjacencyListError("Invalid metal line '{0}'. Should be a list like "
+                                                        "'metal [Cu,Fe,Ag]' or a wildcard 'metal x'".format(line))
+                else:
+                    out = line.split('[')[1][:-1]
+                    metal = [x.strip() for x in out.split(',') if x.strip() != '']
+        
+            else:
+                match = re.match(r'\s*metal\s+\w+\s*$', line)
+                if not match:
+                    raise InvalidAdjacencyListError("Invalid metal line '{0}'. Should be a string like "
+                                                "'metal Fe'".format(line))
+                metal = line.split()[1].strip()
+            
+            continue
+                
+        if line.split()[0] == 'facet':
+            if group:
+                match = re.match(r'\s*facet\s+\[\s*[\w,\s]+\s*\]\s*$', line)
+                if not match:
+                    rematch = re.match(r'\s*facet\s+x\s*$', line)
+                    if not rematch:
+                        raise InvalidAdjacencyListError("Invalid facet line '{0}'. Should be a list like "
+                                                        "'facet [111,211,110]' or a wildcard 'facet x'".format(line))
+                else:
+                    out = line.split('[')[1][:-1]
+                    facet = [x.strip() for x in out.split(',') if x.strip() != '']
+        
+            else:
+                match = re.match(r'\s*facet\s+\w+\s*$', line)
+                if not match:
+                    raise InvalidAdjacencyListError("Invalid facet line '{0}'. Should be a string like "
+                                                "'facet 111'".format(line))
+                facet = line.split()[1].strip()
+            
+            continue
+        
         # First item is index for atom
         # Sometimes these have a trailing period (as if in a numbered list),
         # so remove it just in case
@@ -675,6 +727,32 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
             if not group:
                 partial_charges.append(0)
 
+        # Next the sites (if provided)
+        sites = []
+        if len(data) > index:
+            s_state = data[index]
+            if s_state[0] == 's':
+                if s_state[1] == '[':
+                    s_state = s_state[2:-1].split(',')
+                else:
+                    s_state = [s_state[1:]]
+                for s in s_state:
+                    sites.append(s[1:-1])
+                index += 1
+            
+        # Next the morphologys (if provided)
+        morphologies = []
+        if len(data) > index:
+            m_state = data[index]
+            if m_state[0] == 'm':
+                if m_state[1] == '[':
+                    m_state = m_state[2:-1].split(',')
+                else:
+                    m_state = [m_state[1:]]
+                for m in m_state:
+                    morphologies.append(m[1:-1])
+                index += 1
+        
         # Next the isotope (if provided)
         isotope = -1
         if len(data) > index:
@@ -693,11 +771,24 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
 
         # Create a new atom based on the above information
         if group:
-            atom = GroupAtom(atom_type, unpaired_electrons, partial_charges, label, lone_pairs, props)
+            atom = GroupAtom(atom_type, unpaired_electrons, partial_charges, label, lone_pairs, sites, morphologies, props)
         else:
-            atom = Atom(atom_type[0], unpaired_electrons[0], partial_charges[0], label, lone_pairs[0])
-            if isotope != -1:
-                atom.element = get_element(atom.number, isotope)
+            # detect if this is cutting label or atom
+            _ , cutting_label_list = Fragment().detect_cutting_label(atom_type[0])
+            if cutting_label_list == []:
+                if sites == []:
+                    site = ''
+                else:
+                    site = sites[0]
+                if morphologies == []:
+                    morphology = ''
+                else:
+                    morphology = morphologies[0]
+                atom = Atom(atom_type[0], unpaired_electrons[0], partial_charges[0], label, lone_pairs[0], site, morphology)
+                if isotope != -1:
+                    atom.element = get_element(atom.number, isotope)
+            else:
+                atom = CuttingLabel(name=atom_type[0], label=label)
 
         # Add the atom to the list
         atoms.append(atom)
@@ -765,11 +856,12 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
             Saturator.saturate(atoms)
 
     # Consistency checks
-    if not group:
+    if not group and check_consistency:
         # Molecule consistency check
         # Electron and valency consistency check for each atom
         for atom in atoms:
-            ConsistencyChecker.check_partial_charge(atom)
+            if isinstance(atom, Atom):
+                ConsistencyChecker.check_partial_charge(atom)
 
         n_rad = sum([atom.radical_electrons for atom in atoms])
         absolute_spin_per_electron = 1 / 2.
@@ -779,23 +871,28 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
         ConsistencyChecker.check_multiplicity(n_rad, multiplicity)
         for atom in atoms:
             ConsistencyChecker.check_hund_rule(atom, multiplicity)
-        return atoms, multiplicity
+        return atoms, multiplicity, metal, facet
     else:
         # Currently no group consistency check
-        return atoms, multiplicity
+        if not group:
+            if multiplicity is None:
+                n_rad = sum([atom.radical_electrons for atom in atoms])
+                multiplicity = n_rad + 1
+
+        return atoms, multiplicity, metal, facet
 
 
-def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=False, remove_lone_pairs=False,
+
+def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group=False, remove_h=False, remove_lone_pairs=False,
                       old_style=False):
     """
     Convert a chemical graph defined by a list of `atoms` into a string
     adjacency list.
     """
+    if old_style:
+        warnings.warn("Support for writing old style adjacency lists has been removed in RMG-Py v3.", RuntimeWarning)
     if not atoms:
         return ''
-
-    if old_style:
-        return to_old_adjacency_list(atoms, multiplicity, label, group, remove_h)
 
     adjlist = ''
 
@@ -813,16 +910,24 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
             # Functional group should have a list of possible multiplicities.  
             # If the list is empty, then it does not need to be written
             adjlist += 'multiplicity [{0!s}]\n'.format(','.join(str(i) for i in multiplicity))
+        if metal:
+            adjlist += 'metal [{0!s}]\n'.format(','.join(i for i in metal))
+        if facet:
+            adjlist += 'facet [{0!s}]\n'.format(','.join(i for i in facet))
     else:
         assert isinstance(multiplicity, int), "Molecule should have an integer multiplicity"
         if multiplicity != 1 or any(atom.radical_electrons for atom in atoms):
             adjlist += 'multiplicity {0!r}\n'.format(multiplicity)
+        if metal:
+            adjlist += f"metal {metal}\n"
+        if facet:
+            adjlist += f"facet {facet}\n"
 
     # Determine the numbers to use for each atom
     atom_numbers = {}
     index = 0
     for atom in atoms:
-        if remove_h and atom.element.symbol == 'H' and atom.label == '':
+        if remove_h and atom.symbol == 'H' and atom.label == '':
             continue
         atom_numbers[atom] = '{0:d}'.format(index + 1)
         index += 1
@@ -835,6 +940,8 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
     atom_charge = {}
     atom_isotope = {}
     atom_props = {}
+    atom_site = {}
+    atom_morphology = {}
     if group:
         for atom in atom_numbers:
             # Atom type(s)
@@ -866,6 +973,22 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
             else:
                 atom_charge[atom] = '[{0}]'.format(','.join(['+'+str(charge) if charge > 0 else ''+str(charge) for charge in atom.charge]))
 
+            # Sites
+            if len(atom.site) == 1:
+                atom_site[atom] = "\"" + atom.site[0] + "\""
+            elif len(atom.site) == 0:
+                atom_site[atom] = None  # Empty list indicates wildcard
+            else:
+                atom_site[atom] = '["{0}"]'.format('","'.join(s for s in atom.site))
+            
+            # Morphologies
+            if len(atom.morphology) == 1:
+                atom_morphology[atom] = "\"" + atom.morphology[0] + "\""
+            elif len(atom.morphology) == 0:
+                atom_morphology[atom] = None  # Empty list indicates wildcard
+            else:
+                atom_morphology[atom] = '["{0}"]'.format('","'.join(s for s in atom.morphology))
+                
             # Isotopes
             atom_isotope[atom] = -1
 
@@ -877,15 +1000,29 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
     else:
         for atom in atom_numbers:
             # Atom type
-            atom_types[atom] = '{0}'.format(atom.element.symbol)
+            atom_types[atom] = '{0}'.format(atom.symbol)
             # Unpaired Electron(s)
             atom_unpaired_electrons[atom] = '{0}'.format(atom.radical_electrons)
             # Lone Electron Pair(s)
             atom_lone_pairs[atom] = str(atom.lone_pairs)
             # Partial Charge(s)
             atom_charge[atom] = '+' + str(atom.charge) if atom.charge > 0 else '' + str(atom.charge)
+            # Sites
+            if atom.site:
+                atom_site[atom] = "\"" + atom.site + "\""
+            else:
+                atom_site[atom] = None
+            # Morphology
+            if atom.morphology:
+                atom_morphology[atom] = "\"" + atom.morphology + "\""
+            else:
+                atom_morphology[atom] = None
             # Isotopes
-            atom_isotope[atom] = atom.element.isotope
+            if isinstance(atom, Atom):
+                atom_isotope[atom] = atom.element.isotope
+            else:
+                # cutting labels in fragment cases
+                atom_isotope[atom] = atom.isotope
 
     # Determine field widths
     atom_number_width = max([len(s) for s in atom_numbers.values()]) + 1
@@ -914,6 +1051,12 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
         # Partial charges
         if atom_charge[atom] is not None:
             adjlist += ' c{0}'.format(atom_charge[atom])
+        # Sites
+        if atom_site[atom]:
+            adjlist += ' s{0}'.format(atom_site[atom])
+        # Morphologies
+        if atom_morphology[atom]:
+            adjlist += ' m{0}'.format(atom_morphology[atom])
         # Isotopes
         if atom_isotope[atom] != -1:
             adjlist += ' i{0}'.format(atom_isotope[atom])
@@ -995,101 +1138,3 @@ def get_old_electron_state(atom):
     else:
         raise InvalidAdjacencyListError("Cannot find electron state of atom {0}".format(atom))
     return electron_state
-
-
-def to_old_adjacency_list(atoms, multiplicity=None, label=None, group=False, remove_h=False):
-    """
-    Convert a chemical graph defined by a list of `atoms` into a string old-style 
-    adjacency list that can be used in RMG-Java.  Currently not working for groups.
-    """
-    warnings.warn("The old adjacency lists are no longer supported and may be"
-                  " removed in version 2.3.", DeprecationWarning)
-    adjlist = ''
-
-    if group:
-        raise InvalidAdjacencyListError("Not yet implemented.")
-    # Filter out all non-valid atoms
-    if not group:
-        for atom in atoms:
-            if atom.element.symbol in ['He', 'Ne', 'Ar', 'N']:
-                raise InvalidAdjacencyListError("Old-style adjacency list does not accept He, Ne, Ar, N elements.")
-
-    # Don't remove hydrogen atoms if the molecule consists only of hydrogen atoms
-    try:
-        if remove_h and all([atom.element.symbol == 'H' for atom in atoms]):
-            remove_h = False
-    except AttributeError:
-        pass
-
-    if label:
-        adjlist += label + '\n'
-
-    # Determine the numbers to use for each atom
-    atom_numbers = {}
-    index = 0
-    for atom in atoms:
-        if remove_h and atom.element.symbol == 'H' and atom.label == '': continue
-        atom_numbers[atom] = '{0:d}'.format(index + 1)
-        index += 1
-
-    atom_labels = dict([(atom, '{0}'.format(atom.label)) for atom in atom_numbers])
-
-    atom_types = {}
-    atom_electron_states = {}
-    if group:
-        raise InvalidAdjacencyListError("Not yet implemented.")
-    else:
-        for atom in atom_numbers:
-            # Atom type
-            atom_types[atom] = '{0}'.format(atom.element.symbol)
-            # Electron state(s)
-            atom_electron_states[atom] = '{0}'.format(get_old_electron_state(atom))
-
-    # Determine field widths
-    atom_number_width = max([len(s) for s in atom_numbers.values()]) + 1
-    atom_label_width = max([len(s) for s in atom_labels.values()])
-    if atom_label_width > 0:
-        atom_label_width += 1
-    atom_type_width = max([len(s) for s in atom_types.values()]) + 1
-    atom_electron_state_width = max([len(s) for s in atom_electron_states.values()])
-
-    # Assemble the adjacency list
-    for atom in atoms:
-        if atom not in atom_numbers:
-            continue
-
-        # Atom number
-        adjlist += '{0:<{1:d}}'.format(atom_numbers[atom], atom_number_width)
-        # Atom label
-        adjlist += '{0:<{1:d}}'.format(atom_labels[atom], atom_label_width)
-        # Atom type(s)
-        adjlist += '{0:<{1:d}}'.format(atom_types[atom], atom_type_width)
-        # Electron state(s)
-        adjlist += '{0:<{1:d}}'.format(atom_electron_states[atom], atom_electron_state_width)
-
-        # Bonds list
-        atoms2 = list(atom.bonds.keys())
-        # sort them the same way as the atoms
-        atoms2.sort(key=atoms.index)
-
-        for atom2 in atoms2:
-            if atom2 not in atom_numbers:
-                continue
-
-            bond = atom.bonds[atom2]
-            adjlist += ' {{{0},'.format(atom_numbers[atom2])
-
-            # Bond type(s)
-            if group:
-                if len(bond.order) == 1:
-                    adjlist += bond.get_order_str()[0]
-                else:
-                    adjlist += '{{{0}}}'.format(','.join(bond.get_order_str()))
-            else:
-                adjlist += bond.get_order_str()
-            adjlist += '}'
-
-        # Each atom begins on a new line
-        adjlist += '\n'
-
-    return adjlist

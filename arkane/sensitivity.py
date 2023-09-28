@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -36,12 +36,13 @@ import logging
 import os
 import string
 import yaml
-
+from copy import deepcopy
 import numpy as np
 
 from rmgpy.pdep import Configuration
 import rmgpy.quantity as quantity
 from rmgpy.species import TransitionState
+from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongCollisionError, PressureDependenceError
 
 ################################################################################
 
@@ -260,11 +261,34 @@ class PDepSensitivity(object):
     =================== ================================================================================================
     """
 
-    def __init__(self, job, output_directory, perturbation):
+    def __init__(self, job, output_directory, perturbation, max_iters=5):
         self.job = job
         self.output_directory = output_directory
         self.sensitivity_path = os.path.join(output_directory, 'sensitivity')
         self.conditions = self.job.sensitivity_conditions
+        self.perturbation = perturbation
+        
+        base_wells = []
+        base_wells.extend(self.job.network.reactants)
+        base_wells.extend(self.job.network.isomers)
+        base_wells.extend(self.job.network.products)
+        Emin = min([x.E0 for x in base_wells])
+        
+        base_transition_states = []
+        Emax = Emin
+        for rxn in self.job.network.path_reactions:
+            base_transition_states.append(rxn.transition_state)
+            if rxn.transition_state.conformer.E0.value_si > Emax:
+                Emax = rxn.transition_state.conformer.E0.value_si
+        if self.perturbation.value_si > 0:
+            self.job.network.Emin = Emin
+            self.job.network.Emax = Emax + self.perturbation.value_si
+        else:
+            self.job.network.Emin = Emin + self.perturbation.value_si
+            self.job.network.Emax = Emax
+        
+        self.job.execute(output_file=None, plot=False, print_summary=False)
+        
         self.rates = {}
         for rxn in self.job.network.net_reactions:
             self.rates[str(rxn)] = []
@@ -276,39 +300,78 @@ class PDepSensitivity(object):
         for rxn in self.job.network.net_reactions:
             self.sa_rates[str(rxn)] = {}
             self.sa_coefficients[str(rxn)] = {}
-        self.perturbation = quantity.Quantity(perturbation, 'kcal/mol')
+        
+        self.max_iters = max_iters
         self.execute()
 
     def execute(self):
         """
         Execute the sensitivity analysis for a :class:PressureDependenceJob: object
         """
-        wells = []
-        wells.extend(self.job.network.reactants)
-        wells.extend(self.job.network.isomers)
-        wells.extend(self.job.network.products)
-        transition_states = []
+        base_wells = []
+        base_wells.extend(self.job.network.reactants)
+        base_wells.extend(self.job.network.isomers)
+        base_wells.extend(self.job.network.products)
+        base_transition_states = []
         for rxn in self.job.network.path_reactions:
             # if rxn.transition_state is not None:
-            transition_states.append(rxn.transition_state)
-
-        for entry in wells + transition_states:
-            if entry in wells:
-                logging.info("\n\nPerturbing well '{0}' by {1}:".format(entry, self.perturbation))
-            else:
-                logging.info("\n\nPerturbing TS '{0}' by {1}:".format(entry.label, self.perturbation))
-            self.perturb(entry)
-            self.job.execute(output_file=None, plot=False, print_summary=False)  # run the perturbed job
-            self.unperturb(entry)
+            base_transition_states.append(rxn.transition_state)
+        base_perturbation = deepcopy(self.perturbation)
+        base_job = self.job
+        for j in range(len(base_wells + base_transition_states)):
+            self.perturbation = base_perturbation
+            base_entry = (base_wells + base_transition_states)[j]
+            failed = False
+            c = 0
+            wells = []
+            transition_states = []
+            while c < self.max_iters:
+                self.job = deepcopy(base_job)
+                wells = []
+                wells.extend(self.job.network.reactants)
+                wells.extend(self.job.network.isomers)
+                wells.extend(self.job.network.products)
+                transition_states = []
+                for rxn in self.job.network.path_reactions:
+                    # if rxn.transition_state is not None:
+                    transition_states.append(rxn.transition_state)
+                entry = (wells+transition_states)[j]
+                if entry in wells:
+                    logging.info("\n\nPerturbing well '{0}' by {1}:".format(entry, self.perturbation))
+                else:
+                    logging.info("\n\nPerturbing TS '{0}' by {1}:".format(entry.label, self.perturbation))
+                self.perturb(entry)
+                try:
+                    self.job.execute(output_file=None, plot=False, print_summary=False)  # run the perturbed job
+                    self.unperturb(entry)
+                    break
+                except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError) as e:
+                    self.unperturb(entry)
+                    c += 1
+                    self.perturbation = quantity.Quantity(self.perturbation.value/2.0, self.perturbation.units)
+                    logging.error("Decreasing perturbation to {}".format(self.perturbation))
+                    
+            if c == self.max_iters:
+                if entry in wells:
+                    logging.error("Perturbation of well '{0}' has failed".format(entry))
+                else:
+                    logging.error("Perturbation of TS '{0}' has failed".format(entry.label))
+                failed = True
             for rxn in self.job.network.net_reactions:
-                self.sa_rates[str(rxn)][entry] = [rxn.kinetics.get_rate_coefficient(
-                    condition[0].value_si, condition[1].value_si) for condition in self.conditions]
-                self.sa_coefficients[str(rxn)][entry] = [((self.sa_rates[str(rxn)][entry][i]
-                                                           - self.rates[str(rxn)][i])) /
-                                                         (self.perturbation.value_si * self.rates[str(rxn)][i])
-                                                         for i in range(len(self.conditions))]
-        self.save(wells, transition_states)
-        self.plot(wells, transition_states)
+                if failed:
+                    self.sa_rates[str(rxn)][base_entry] = [np.NaN for condition in self.conditions]
+                    self.sa_coefficients[str(rxn)][base_entry] = [np.NaN for i in range(len(self.conditions))]
+                else:
+                    self.sa_rates[str(rxn)][base_entry] = [rxn.kinetics.get_rate_coefficient(
+                        condition[0].value_si, condition[1].value_si) for condition in self.conditions]
+                    self.sa_coefficients[str(rxn)][base_entry] = [((self.sa_rates[str(rxn)][base_entry][i]
+                                                               - self.rates[str(rxn)][i])) /
+                                                             (self.perturbation.value_si * self.rates[str(rxn)][i])
+                                                             for i in range(len(self.conditions))]
+        self.perturbation = base_perturbation
+        self.job = base_job
+        self.save(base_wells, base_transition_states)
+        self.plot(base_wells, base_transition_states)
 
     def perturb(self, entry, unperturb=False):
         """
@@ -414,7 +477,11 @@ class PDepSensitivity(object):
                 axis.set_xlabel(r'Sensitivity: $\frac{\partial\:\ln{k}}{\partial\:E0}$, ($\frac{J}{mol}$)')
                 # axis.ticklabel_format('sci')
                 axis.set_title('{0}, {1}'.format(condition[0], condition[1]))
-                axis.set_xlim([min_sa, max_sa])
+                try:
+                    axis.set_xlim([min_sa, max_sa])
+                except:
+                    logging.error("Could not set sensitivity plotting limits may be NaNs.")
+                    pass
                 axis.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
 
             if not os.path.exists(self.sensitivity_path):

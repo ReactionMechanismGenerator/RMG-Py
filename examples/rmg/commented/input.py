@@ -32,7 +32,7 @@ database(
     # in addition to species listed in this input file.
     # This is helpful for reducing run time for species you know will appear in
     # the mechanism.
-    seedMechanisms=['BurkeH2O2inN2', 'ERC-FoundationFuelv0.9'],
+    seedMechanisms=['primaryH2O2', 'ERC-FoundationFuelv0.9'],
     # lists specific families used to generate the model. 'default' uses a list of
     # families from RMG-Database/input/kinetics/families/recommended.py
     # a visual list of families is available in PDF form at RMG-database/families
@@ -77,6 +77,35 @@ species(
     reactive=True,
     structure=SMILES("O=C=O")
 )
+
+# You can also list forbidden structures to forbid a certain molecule or set of molecules from your model
+# To prevent a single molecule from your model, use SMILES or adjacencyList to define the strucutre 
+# For example, if you do not want cyclopropyne in your model, you can forbid it using SMILES
+# forbidden(
+#     label='cyclopropyne',
+#     structure=SMILES("C1#CC1")
+# )
+# or adjacencyList
+# forbidden(
+#     label='cyclopropyne',
+#     structure=adjacencyList("""
+#     1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+#     2 C u0 p0 c0 {1,S} {3,T}
+#     3 C u0 p0 c0 {1,S} {2,T}
+#     4 H u0 p0 c0 {1,S}
+#     5 H u0 p0 c0 {1,S}
+#     """),
+# )
+# If you want to exclude not just cyclopropyne but all three member rings, use `adjacencyListGroup` 
+# to define the forbidden group structure
+# forbidden(
+#     label='Three-member Ring',
+#     structure=adjacencyListGroup("""
+#     1 R ux {2,[S,D,T]} {3,[S,D,T]}
+#     2 R ux {1,[S,D,T]} {3,[S,D,T]}
+#     3 R ux {1,[S,D,T]} {2,[S,D,T]}
+#     """),
+# )
 
 # Reaction systems
 # currently RMG models only constant temperature and pressure as homogeneous batch reactors.
@@ -242,6 +271,8 @@ generatedSpeciesConstraints(
     maximumNitrogenAtoms=0,
     maximumSiliconAtoms=0,
     maximumSulfurAtoms=0,
+    maximumSurfaceSites=2, # maximum number of surface sites (for heterogeneous catalysis)
+    maximumSurfaceBondOrder=2, # maximum bond order of each surface sites (for heterogeneous catalysis)
     # max number of non-hydrogen atoms
     # maximumHeavyAtoms=20,
     # maximum radicals on a molecule

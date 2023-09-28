@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -31,6 +31,7 @@ import itertools
 import re
 
 from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.fragment import Fragment
 
 
 def get_element_count(obj):
@@ -40,7 +41,7 @@ def get_element_count(obj):
     if isinstance(obj, str):
         assert 'InChI=1' in obj
         mf = obj.split('/')[1]
-        pieces = re.findall('[A-Z][^A-Z]*', mf)  # split on capital letters
+        pieces = re.findall(r'[A-Z][^A-Z]*', mf)  # split on capital letters
 
         for piece in pieces:
             match = re.match(r"([a-z]+)([0-9]*)", piece, re.I)
@@ -60,7 +61,7 @@ def get_element_count(obj):
 
         return element_count
 
-    elif isinstance(obj, Molecule):
+    elif isinstance(obj, Molecule) or isinstance(obj, Fragment):
         return obj.get_element_count()
 
     else:

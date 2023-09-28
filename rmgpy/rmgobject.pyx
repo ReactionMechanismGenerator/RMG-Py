@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -75,6 +75,9 @@ cdef class RMGObject(object):
             None
         """
         kwargs = recursive_make_object(data, class_dict, make_final_object=False)
+        for key in ['aux', 'mol']:
+            if key in kwargs.keys():
+                del kwargs[key]
         self.__init__(**kwargs)
 
 cpdef expand_to_dict(obj):
@@ -129,15 +132,14 @@ cpdef recursive_make_object(obj, class_dictionary, make_final_object=True):
     return the recreated final object.
 
     Args:
-        obj (Any): dictionary representation of an object to be recreated
-        class_dictionary (dict): a dictionary mapping of class strings to classes
+        obj (Any): A dictionary representation of an object to be recreated
+        class_dictionary (dict): A dictionary mapping of class strings to classes
         make_final_object (bool): If True (default) the topmost object will be created and returned. Else, all nested
                                   objects will be recreated but only the keyword arguments needed to recreate the
                                   topmost object will be returned.
 
     Returns: 
         Any: recreated object (default) or dictionary of keyword arguments to recreate the final (topmost) object
-
     """
     if isinstance(obj, dict):
 

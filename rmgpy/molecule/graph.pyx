@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -45,7 +45,7 @@ cdef class Vertex(object):
     """
     A base class for vertices in a graph. Contains several connectivity values
     useful for accelerating isomorphism searches, as proposed by
-    `Morgan (1965) <http://dx.doi.org/10.1021/c160017a018>`_.
+    `Morgan (1965) <https://doi.org/10.1021/c160017a018>`_.
 
     =================== =============== ========================================
     Attribute           Type            Description
@@ -501,16 +501,30 @@ cdef class Graph(object):
         else:
             self.vertices = self.ordered_vertices
 
-    cpdef bint is_isomorphic(self, Graph other, dict initial_map=None, bint save_order=False, bint strict=True) except -2:
+    cpdef bint is_isomorphic(self, Graph other, dict initial_map=None, bint generate_initial_map=False, bint save_order=False, bint strict=True) except -2:
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
 
         Args:
             initial_map (dict, optional): initial atom mapping to use
+            generate_initial_map (bool, optional): if ``True``, initialize map by pairing atoms with same labels
             save_order (bool, optional):  if ``True``, reset atom order after performing atom isomorphism
             strict (bool, optional):     if ``False``, perform isomorphism ignoring electrons
         """
+        if generate_initial_map:
+            initial_map = dict()
+            for atom in self.vertices:
+                if atom.label and atom.label != '':
+                    for a in other.vertices:
+                        if a.label == atom.label:
+                            initial_map[atom] = a
+                            break
+                    else:
+                        return False
+            if not self.is_mapping_valid(other, initial_map, equivalent=True):
+                return False
+
         return vf2.is_isomorphic(self, other, initial_map, save_order=save_order, strict=strict)
 
     cpdef list find_isomorphism(self, Graph other, dict initial_map=None, bint save_order=False, bint strict=True):

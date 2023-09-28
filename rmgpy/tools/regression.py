@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -32,15 +32,16 @@
 This module contains classes and functions for comparing observables between
 two RMG generated models.
 """
+import argparse
 import logging
 import os.path
-import argparse
+import sys
 
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
-from rmgpy.tools.observablesregression import ObservablesTestCase
 from rmgpy.tools.canteramodel import CanteraCondition
+from rmgpy.tools.observablesregression import ObservablesTestCase
 
 observables = []
 setups = None
@@ -154,7 +155,8 @@ def run(benchmarkDir, testDir, title, observables, setups, tol):
         title=title,
         old_dir=benchmarkDir,
         new_dir=testDir,
-        observables={'species': observables}
+        observables={'species': observables},
+        ck2cti=False,
     )
 
     reactor_types, temperatures, pressures, initial_mole_fractions_list, termination_times = setups
@@ -166,7 +168,8 @@ def run(benchmarkDir, testDir, title, observables, setups, tol):
         Plist=pressures
     )
 
-    case.compare(tol)
+    variables_failed = case.compare(tol)
+    return variables_failed  # will be None if no failures
 
 
 def parse_command_line_arguments():
@@ -188,12 +191,14 @@ def parse_command_line_arguments():
 
 
 def main():
+    "Returns the list of variables that failed the regression."
     input_file, benchmark, tested = parse_command_line_arguments()
 
-    args = read_input_file(input_file)
+    args = read_input_file(input_file)  # casetitle, observables, setups, tol
 
-    run(benchmark, tested, *args)
+    return run(benchmark, tested, *args)
 
 
 if __name__ == '__main__':
-    main()
+    variables_failed = main()
+    sys.exit(1 if variables_failed else 0)

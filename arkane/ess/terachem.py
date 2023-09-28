@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -57,8 +57,26 @@ class TeraChemLog(ESSAdapter):
     TeraChemLog is an adapter for the abstract class ESSAdapter.
     """
 
-    def __init__(self, path):
-        self.path = path
+    def check_for_errors(self):
+        """
+        Checks for common errors in a TeraChem log file.
+        If any are found, this method will raise an error and crash.
+        """
+        with open(os.path.join(self.path), 'r') as f:
+            lines = f.readlines()
+            error = None
+            for line in reversed(lines):
+                # check for common error messages
+                if 'incorrect method' in line.lower():
+                    error = 'incorrect method'
+                    break
+                elif 'error: ' in line.lower():
+                    # e.g.: "ERROR: Closed shell calculations can't have spin multiplicity 0."
+                    error = 'multiplicity'
+                    break
+            if error:
+                raise LogError(f'There was an error ({error}) with TeraChem output file {self.path} '
+                               f'due to line:\n{line}')
 
     def get_number_of_atoms(self):
         """
@@ -100,7 +118,7 @@ class TeraChemLog(ESSAdapter):
             while line != '':
                 # Read force constant matrix
                 if '*** Hessian Matrix (Hartree/Bohr^2) ***' in line:
-                    force = np.zeros((n_rows, n_rows), np.float64)
+                    force = np.zeros((n_rows, n_rows), float)
                     for i in range(int(math.ceil(n_rows / 6.0))):
                         # Matrix element rows
                         for j in range(n_rows):
@@ -172,9 +190,9 @@ class TeraChemLog(ESSAdapter):
                         j += 1
                     break
 
-        coords = np.array(coords, np.float64)
-        numbers = np.array(numbers, np.int)
-        masses = np.array(masses, np.float64)
+        coords = np.array(coords, float)
+        numbers = np.array(numbers, int)
+        masses = np.array(masses, float)
         if len(coords) == 0 or len(numbers) == 0 or len(masses) == 0 \
                 or ((len(coords) != num_of_atoms or len(numbers) != num_of_atoms or len(masses) != num_of_atoms)
                     and num_of_atoms is not None):
@@ -301,7 +319,7 @@ class TeraChemLog(ESSAdapter):
                         raise LogError(f'Could not parse scan energies from {self.path}')
         logging.info('   Assuming {0} is the output from a TeraChem PES scan...'.format(os.path.basename(self.path)))
 
-        v_list = np.array(v_list, np.float64)
+        v_list = np.array(v_list, float)
 
         # check to see if the scanlog indicates that one of the reacting species may not be the lowest energy conformer
         check_conformer_energy(v_list, self.path)
@@ -310,7 +328,7 @@ class TeraChemLog(ESSAdapter):
         # Also convert units from Hartree/particle to J/mol
         v_list -= np.min(v_list)
         v_list *= constants.E_h * constants.Na
-        angles = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), np.float64)
+        angles = np.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(v_list) - 1), float)
 
         # remove None's:
         indices_to_pop = [v_list.index[entry] for entry in v_list if entry is None]
@@ -328,7 +346,7 @@ class TeraChemLog(ESSAdapter):
         Return the imaginary frequency from a transition state frequency
         calculation in cm^-1.
         """
-        frequency = None
+        frequencies = []
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
@@ -338,12 +356,18 @@ class TeraChemLog(ESSAdapter):
                     # example:
                     # 'Mode  Eigenvalue(AU)  Frequency(cm-1)  Intensity(km/mol)   Vib.Temp(K)      ZPE(AU) ...'
                     # '  1     0.0331810528   170.5666870932i     52.2294230772  245.3982965841   0.0003885795 ...'
-                    frequency = -1 * float(line.split()[2][:-1])  # remove 'i'
+                    while 'i' in line:
+                        frequencies.append(-1 * float(line.split()[2][:-1]))  # remove 'i'
+                        line = f.readline()
                     break
                 f.readline()
-        if frequency is None:
+        if len(frequencies) == 1:
+            return frequencies[0]
+        elif len(frequencies) > 1:
+            logging.info('More than one imaginary frequency in TeraChem output file {0}.'.format(self.path))
+            return frequencies[0]
+        else:
             raise LogError(f'Unable to find imaginary frequency in TeraChem output file {self.path}.')
-        return frequency
 
     def load_scan_pivot_atoms(self):
         """Not implemented for TeraChem"""
@@ -352,5 +376,6 @@ class TeraChemLog(ESSAdapter):
     def load_scan_frozen_atoms(self):
         """Not implemented for TeraChem"""
         raise NotImplementedError('The load_scan_frozen_atoms method is not implemented for TeraChem Logs')
+
 
 register_ess_adapter("TeraChemLog", TeraChemLog)

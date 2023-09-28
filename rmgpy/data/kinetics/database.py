@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -230,17 +230,20 @@ class KineticsDatabase(object):
         if libraries is not None:
             for library_name in libraries:
                 library_file = os.path.join(path, library_name, 'reactions.py')
-                if os.path.exists(library_file):
-                    logging.info('Loading kinetics library {0} from {1}...'.format(library_name, library_file))
+                if os.path.exists(library_name):
+                    library_file = os.path.join(library_name, 'reactions.py')
+                    short_library_name = os.path.split(library_name)[-1]
+                    logging.info(f'Loading kinetics library {short_library_name} from {library_name}...')
+                    library = KineticsLibrary(label=short_library_name)
+                    library.load(library_file, self.local_context, self.global_context)
+                    self.libraries[library.label] = library
+                elif os.path.exists(library_file):
+                    logging.info(f'Loading kinetics library {library_name} from {library_file}...')
                     library = KineticsLibrary(label=library_name)
                     library.load(library_file, self.local_context, self.global_context)
                     self.libraries[library.label] = library
                 else:
-                    if library_name == "KlippensteinH2O2":
-                        logging.info("""\n** Note: The KlippensteinH2O2 library was replaced and is no longer available in RMG.
-For H2 combustion chemistry consider using either the BurkeH2inN2 or BurkeH2inArHe
-library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n""")
-                    raise IOError("Couldn't find kinetics library {0}".format(library_file))
+                    raise IOError(f"Couldn't find kinetics library {library_file}")
 
         else:
             # load all the libraries you can find
@@ -248,11 +251,10 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
             self.library_order = []
             for (root, dirs, files) in os.walk(os.path.join(path)):
                 for f in files:
-                    name, ext = os.path.splitext(f)
-                    if ext.lower() == '.py':
+                    if f.lower() == 'reactions.py':
                         library_file = os.path.join(root, f)
                         label = os.path.dirname(library_file)[len(path) + 1:]
-                        logging.info('Loading kinetics library {0} from {1}...'.format(label, library_file))
+                        logging.info(f'Loading kinetics library {label} from {library_file}...')
                         library = KineticsLibrary(label=label)
                         try:
                             library.load(library_file, self.local_context, self.global_context)
@@ -562,6 +564,8 @@ and immediately used in input files without any additional changes.
                 except:
                     logging.error("Problem family: {}".format(label))
                     logging.error("Problem reactants: {}".format(molecules))
+                    for m in molecules:
+                        logging.error(f"{m}\n{m.to_adjacency_list()}")
                     raise
 
         for reactant in molecules:
@@ -653,7 +657,7 @@ and immediately used in input files without any additional changes.
             elif len(reverse) == 1 and len(forward) == 0:
                 # The reaction is in the reverse direction
                 # First fit Arrhenius kinetics in that direction
-                T_data = 1000.0 / np.arange(0.5, 3.301, 0.1, np.float64)
+                T_data = 1000.0 / np.arange(0.5, 3.301, 0.1, float)
                 k_data = np.zeros_like(T_data)
                 for i in range(T_data.shape[0]):
                     k_data[i] = entry.data.get_rate_coefficient(T_data[i]) / reaction.get_equilibrium_constant(T_data[i])

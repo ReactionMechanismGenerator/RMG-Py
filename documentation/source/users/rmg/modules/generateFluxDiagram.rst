@@ -10,7 +10,7 @@ that shows interconnected arrows between species that represent fluxes.
 To use this method, you just need a Chemkin input file and an RMG species dictionary.
 The syntax is as follows::
 
-    python generateFluxDiagram.py [-h] [--java] [--no-dlim] [-s SPECIES] [-f]
+    python generateFluxDiagram.py [-h] [--no-dlim] [-s SPECIES] [-f]
                                   [-n N] [-e N] [-c TOL] [-r TOL] [-t S]
                                   INPUT CHEMKIN DICTIONARY [CHEMKIN_OUTPUT]
 
@@ -24,7 +24,6 @@ Positional arguments::
 Optional arguments::
 
     -h, --help             show this help message and exit
-    --java                 process RMG-Java model
     --no-dlim              Turn off diffusion-limited rates
     -s DIR, --species DIR  Path to folder containing species images
     -f, --foreign          Not an RMG generated Chemkin file (will be checked for duplicates)
@@ -34,5 +33,5 @@ Optional arguments::
     -r TOL, --ratetol TOL  Lowest fractional species rate to show
     -t S, --tstep S        Multiplicative factor to use between consecutive time points
 
-This method is also available to use with a web browser from the RMG website: `Generate Flux Diagram <http://rmg.mit.edu/tools/flux>`_.
+This method is also available to use with a web browser from the RMG website: `Generate Flux Diagram <https://rmg.mit.edu/tools/flux>`_.
 

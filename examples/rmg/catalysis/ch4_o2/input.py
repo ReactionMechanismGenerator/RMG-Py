@@ -1,7 +1,7 @@
 # Data sources
 database(
-    thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'], # 'surfaceThermoPt' is the default. Thermo data is derived using bindingEnergies for other metals 
-    reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006', False)], # when Ni is used change the library to Surface/Deutschmann_Ni 
+    thermoLibraries=['surfaceThermoPt111', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'], # 'surfaceThermoPt' is the default. Thermo data is derived using bindingEnergies for other metals 
+    reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006_adjusted', False)], # when Ni is used change the library to Surface/Deutschmann_Ni 
     seedMechanisms = [],
     kineticsDepositories = ['training'],
     kineticsFamilies = ['surface','default'],
@@ -10,13 +10,7 @@ database(
 )
 
 catalystProperties(
-    bindingEnergies = {  # default values for Pt(111)    
-                          'H': (-2.479, 'eV/molecule'),
-                          'O': (-3.586, 'eV/molecule'),
-                          'C': (-6.750, 'eV/molecule'),
-                          'N': (-4.352, 'eV/molecule'),
-                      },
-    surfaceSiteDensity=(2.72e-9, 'mol/cm^2'), # Default for Pt(111)
+    metal = 'Pt111'
 )
 
 species(
@@ -46,6 +40,14 @@ species(
     reactive=True,
     structure=adjacencyList("1 X u0"),
 )
+
+# If you would like to forbid the bidentate form of absorbed CO2 from your model,
+# use the following `CO2_bidentate` forbidden structure
+# forbidden(
+#     label='CO2_bidentate',
+#     structure=SMILES("O=C(*)O*"),
+# )
+
 #----------
 # Reaction systems
 surfaceReactor(

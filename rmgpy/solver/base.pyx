@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -56,7 +56,7 @@ from rmgpy.chemkin import get_species_identifier
 from rmgpy.reaction import Reaction
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
-
+from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
 ################################################################################
 
 cdef class ReactionSystem(DASx):
@@ -236,7 +236,7 @@ cdef class ReactionSystem(DASx):
         pdep_networks = pdep_networks or []
         self.num_pdep_networks = len(pdep_networks)
 
-        self.kf = np.zeros((self.num_core_reactions + self.num_edge_reactions), np.float64)
+        self.kf = np.zeros((self.num_core_reactions + self.num_edge_reactions), float)
         self.kb = np.zeros_like(self.kf)
         self.Keq = np.zeros_like(self.kf)
 
@@ -244,16 +244,16 @@ cdef class ReactionSystem(DASx):
         self.generate_reaction_indices(core_reactions, edge_reactions)
         self.generate_reactant_product_indices(core_reactions, edge_reactions)
 
-        self.core_species_concentrations = np.zeros((self.num_core_species), np.float64)
-        self.core_species_production_rates = np.zeros((self.num_core_species), np.float64)
-        self.core_species_consumption_rates = np.zeros((self.num_core_species), np.float64)
-        self.core_reaction_rates = np.zeros((self.num_core_reactions), np.float64)
-        self.edge_reaction_rates = np.zeros((self.num_edge_reactions), np.float64)
-        self.core_species_rates = np.zeros((self.num_core_species), np.float64)
-        self.edge_species_rates = np.zeros((self.num_edge_species), np.float64)
-        self.network_leak_rates = np.zeros((self.num_pdep_networks), np.float64)
-        self.max_network_leak_rate_ratios = np.zeros((len(self.prunable_networks)), np.float64)
-        self.sensitivity_coefficients = np.zeros((self.num_core_species, self.num_core_reactions), np.float64)
+        self.core_species_concentrations = np.zeros((self.num_core_species), float)
+        self.core_species_production_rates = np.zeros((self.num_core_species), float)
+        self.core_species_consumption_rates = np.zeros((self.num_core_species), float)
+        self.core_reaction_rates = np.zeros((self.num_core_reactions), float)
+        self.edge_reaction_rates = np.zeros((self.num_edge_reactions), float)
+        self.core_species_rates = np.zeros((self.num_core_species), float)
+        self.edge_species_rates = np.zeros((self.num_edge_species), float)
+        self.network_leak_rates = np.zeros((self.num_pdep_networks), float)
+        self.max_network_leak_rate_ratios = np.zeros((len(self.prunable_networks)), float)
+        self.sensitivity_coefficients = np.zeros((self.num_core_species, self.num_core_reactions), float)
         self.unimolecular_threshold = np.zeros((self.num_core_species), bool)
         self.bimolecular_threshold = np.zeros((self.num_core_species, self.num_core_species), bool)
         if self.trimolecular:
@@ -274,7 +274,7 @@ cdef class ReactionSystem(DASx):
         for pruning of ranged reactors it is important to avoid doing this
         every initialization
         """
-        self.max_edge_species_rate_ratios = np.zeros((len(self.prunable_species)), np.float64)
+        self.max_edge_species_rate_ratios = np.zeros((len(self.prunable_species)), float)
 
     def set_prunable_indices(self, edge_species, pdep_networks):
         cdef object spc
@@ -353,8 +353,8 @@ cdef class ReactionSystem(DASx):
             surface_species.remove(core_species[i])
             surface_species_indices.remove(i)
 
-        self.surface_species_indices = np.array(surface_species_indices, dtype=np.int)
-        self.surface_reaction_indices = np.array(surface_reaction_indices, dtype=np.int)
+        self.surface_species_indices = np.array(surface_species_indices, dtype=int)
+        self.surface_reaction_indices = np.array(surface_reaction_indices, dtype=int)
 
         self.valid_layering_indices = self.get_layering_indices()
 
@@ -376,21 +376,21 @@ cdef class ReactionSystem(DASx):
             # Compute number of variables
             self.neq = self.num_core_species * (self.num_core_reactions + self.num_core_species + 1)
 
-            self.atol_array = np.ones(self.neq, np.float64) * sens_atol
+            self.atol_array = np.ones(self.neq, float) * sens_atol
             self.atol_array[:self.num_core_species] = atol
 
-            self.rtol_array = np.ones(self.neq, np.float64) * sens_rtol
+            self.rtol_array = np.ones(self.neq, float) * sens_rtol
             self.rtol_array[:self.num_core_species] = rtol
 
-            self.senpar = np.zeros(self.num_core_reactions + self.num_core_species, np.float64)
+            self.senpar = np.zeros(self.num_core_reactions + self.num_core_species, float)
 
         else:
             self.neq = self.num_core_species
 
-            self.atol_array = np.ones(self.neq, np.float64) * atol
-            self.rtol_array = np.ones(self.neq, np.float64) * rtol
+            self.atol_array = np.ones(self.neq, float) * atol
+            self.rtol_array = np.ones(self.neq, float) * rtol
 
-            self.senpar = np.zeros(self.num_core_reactions, np.float64)
+            self.senpar = np.zeros(self.num_core_reactions, float)
 
     def get_species_index(self, spc):
         """
@@ -404,7 +404,7 @@ cdef class ReactionSystem(DASx):
         Creates a matrix for the reactants and products.
         """
 
-        self.reactant_indices = -np.ones((self.num_core_reactions + self.num_edge_reactions, 3), np.int)
+        self.reactant_indices = -np.ones((self.num_core_reactions + self.num_edge_reactions, 3), int)
         self.product_indices = -np.ones_like(self.reactant_indices)
 
         for rxn in itertools.chain(core_reactions, edge_reactions):
@@ -445,7 +445,7 @@ cdef class ReactionSystem(DASx):
 
         self.t0 = 0.0
 
-        self.y0 = np.zeros(self.neq, np.float64)
+        self.y0 = np.zeros(self.neq, float)
 
     def set_initial_reaction_thresholds(self):
 
@@ -472,7 +472,7 @@ cdef class ReactionSystem(DASx):
         Sets the derivative of the species moles with respect to the independent variable (time)
         equal to the residual.
         """
-        self.dydt0 = - self.residual(self.t0, self.y0, np.zeros(self.neq, np.float64), self.senpar)[0]
+        self.dydt0 = - self.residual(self.t0, self.y0, np.zeros(self.neq, float), self.senpar)[0]
 
     def compute_network_variables(self, pdep_networks=None):
         """
@@ -488,8 +488,8 @@ cdef class ReactionSystem(DASx):
 
         pdep_networks = pdep_networks or []
 
-        self.network_indices = -np.ones((self.num_pdep_networks, 3), np.int)
-        self.network_leak_coefficients = np.zeros((self.num_pdep_networks), np.float64)
+        self.network_indices = -np.ones((self.num_pdep_networks, 3), int)
+        self.network_leak_coefficients = np.zeros((self.num_pdep_networks), float)
 
         for j, network in enumerate(pdep_networks):
             self.network_leak_coefficients[j] = network.get_leak_coefficient(self.T.value_si, self.P.value_si)
@@ -717,7 +717,7 @@ cdef class ReactionSystem(DASx):
             RTP = constants.R * self.T.value_si / self.P.value_si
             # identify sensitive species indices
             sens_species_indices = np.array([species_index[spec] for spec in self.sensitive_species],
-                                               np.int)  # index within core_species list of the sensitive species
+                                               int)  # index within core_species list of the sensitive species
 
         step_time = 1e-12
         prev_time = self.t
@@ -788,12 +788,12 @@ cdef class ReactionSystem(DASx):
                 mole_sens = self.y[num_core_species:]
                 volume = self.V
 
-                dVdk = np.zeros(num_core_reactions + num_core_species, np.float64)
+                dVdk = np.zeros(num_core_reactions + num_core_species, float)
                 if not self.constant_volume:
                     for j in range(num_core_reactions + num_core_species):
                         dVdk[j] = np.sum(mole_sens[j * num_core_species:(j + 1) * num_core_species]) * RTP  # Contains [ dV_dk and dV_dG ]
                 for i in range(len(self.sensitive_species)):
-                    norm_sens = np.zeros(num_core_reactions + num_core_species, np.float64)
+                    norm_sens = np.zeros(num_core_reactions + num_core_species, float)
                     c = self.core_species_concentrations[sens_species_indices[i]]
                     if c != 0:
                         for j in range(num_core_reactions):
@@ -1344,7 +1344,7 @@ cdef class ReactionSystem(DASx):
 
         C = self.core_species_concentrations
 
-        rate_deriv = np.zeros((num_core_species, num_core_reactions + num_core_species), np.float64)
+        rate_deriv = np.zeros((num_core_species, num_core_reactions + num_core_species), float)
 
         for j in range(num_core_reactions):
             if ir[j, 1] == -1:  # only one reactant
@@ -1364,7 +1364,7 @@ cdef class ReactionSystem(DASx):
             flux = fderiv - rderiv
             gderiv = rderiv * kf[j] * RT_inverse
 
-            deriv = np.zeros(num_core_species, np.float64)  # derivative for reaction j with respect to dG_species i
+            deriv = np.zeros(num_core_species, float)  # derivative for reaction j with respect to dG_species i
 
             deriv[ir[j, 0]] += gderiv
             if ir[j, 1] != -1:  # only two reactants
@@ -1399,41 +1399,3 @@ cdef class ReactionSystem(DASx):
         rate_deriv = V * rate_deriv
 
         return rate_deriv
-
-
-################################################################################
-
-class TerminationTime:
-    """
-    Represent a time at which the simulation should be terminated. This class
-    has one attribute: the termination `time` in seconds.
-    """
-
-    def __init__(self, time=(0.0, 's')):
-        self.time = Quantity(time)
-
-
-################################################################################
-
-class TerminationConversion:
-    """
-    Represent a conversion at which the simulation should be terminated. This
-    class has two attributes: the `species` to monitor and the fractional
-    `conversion` at which to terminate.
-    """
-
-    def __init__(self, spec=None, conv=0.0):
-        self.species = spec
-        self.conversion = conv
-
-
-class TerminationRateRatio:
-    """
-    Represent a fraction of the maximum characteristic rate of the simulation
-    at which the simulation should be terminated.  This class has one attribute
-    the ratio between the current and maximum characteristic rates at which
-    to terminate
-    """
-
-    def __init__(self, ratio=0.01):
-        self.ratio = ratio

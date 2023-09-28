@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -92,10 +92,13 @@ def parse_cclib_data(cclib_data, ground_state_degeneracy):
     """
     try:
         number_of_atoms = cclib_data.natom
-        molecular_mass = (cclib_data.molmass, 'amu')
+        if hasattr(cclib_data, 'molmass'):
+            molecular_mass = (cclib_data.molmass, 'amu')
+        else:
+            molecular_mass = None
         energy = (cclib_data.scfenergies[-1], 'eV/molecule')
         atomic_numbers = cclib_data.atomnos
-        rotational_constants = ([i * 1e9 for i in cclib_data.rotcons[-1]], 'hertz')
+        rotational_constants = (cclib_data.rotcons[-1], 'cm^-1')
         atom_coords = (cclib_data.atomcoords[-1], 'angstrom')
         frequencies = (cclib_data.vibfreqs, 'cm^-1')
 

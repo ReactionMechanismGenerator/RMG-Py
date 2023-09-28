@@ -5,8 +5,8 @@ Installation
 Installing Arkane
 =================
 
-Arkane can be obtained by installing the `RMG-Py <http://rmg.mit.edu/>`_ software, which
-includes all neccesary dependancies.
+Arkane can be obtained by installing the `RMG-Py <https://rmg.mit.edu/>`_ software, which
+includes all neccesary dependencies.
 
 Instructions to install RMG-Py can be found at the :ref:`RMG-Py Installation page <installation>`.
 
@@ -21,7 +21,8 @@ Installing Q2DTor
 Q2DTor is a software for calculating the partition functions and themodynamic properties of molecular systems with two or more
 torsional modes developed by David Ferro Costas (david.ferro@usc.es) and Antonio Fernandez Ramos (qf.ramos@usc.es) at
 the Universidade de Santiago de Compostela. Arkane can integrate Q2DTor to compute the quantum mechanical partition function 
-of 2D rotors.  
+of 2D rotors.
+Learn more at https://github.com/cathedralpkg/Q2DTor
 
 For use of Q2DTor and HinderedRotor2D within Arkane please cite:  
 D. Ferro-Costas, M. N. D. S. Cordeiro, D. G. Truhlar, A. Fernández-Ramos, Comput. Phys. Commun. 232, 190-205, 2018.

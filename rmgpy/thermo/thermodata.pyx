@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -261,7 +261,7 @@ cdef class ThermoData(HeatCapacityModel):
         S = self._S298.value_si
          
         # Correct the entropy from 298 K to the temperature of the lowest heat capacity point
-        assert Tdata[0] > 298
+        assert Tdata[0] >= 298
         Tlow = Tdata[0]; Thigh = Tdata[1]
         Cplow = Cpdata[0]; Cphigh = Cpdata[1]
         slope = (Cphigh - Cplow) / (Thigh - Tlow)
@@ -405,7 +405,9 @@ cdef class ThermoData(HeatCapacityModel):
 
     cpdef bint is_all_zeros(self):
         """
-        Check whether a ThermoData object has all zero values, e.g.: 
+        Check whether a ThermoData object has all zero values
+        
+        e.g.::
         
             ThermoData(
                 Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -413,7 +415,7 @@ cdef class ThermoData(HeatCapacityModel):
                 H298=(0.0, "kJ/mol"),
                 S298=(0.0, "J/(mol*K)"),
             )
-    
+        
         Returns:
             bool: Whether all values are zeroes or not.
         """

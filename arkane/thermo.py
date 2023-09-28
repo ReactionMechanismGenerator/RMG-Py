@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -116,7 +116,7 @@ class ThermoJob(object):
             logging.info("Thermo already generated for species {}. Skipping thermo generation.".format(species))
             return None
 
-        Tlist = np.arange(10.0, 3001.0, 10.0, np.float64)
+        Tlist = np.arange(10.0, 3001.0, 10.0, float)
         Cplist = np.zeros_like(Tlist)
         H298 = 0.0
         S298 = 0.0

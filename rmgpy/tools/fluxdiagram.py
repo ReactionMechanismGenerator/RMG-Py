@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -115,7 +115,7 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
                 raise Exception("Central species '{}' could not be found in species list.".format(centralSpecies))
 
     # Compute the rates between each pair of species (big matrix warning!)
-    species_rates = np.zeros((len(times), num_species, num_species), np.float64)
+    species_rates = np.zeros((len(times), num_species, num_species), float)
     for index, reaction in enumerate(reaction_list):
         rate = reaction_rates[:, index]
         if not reaction.pairs: reaction.generate_pairs()
@@ -538,10 +538,6 @@ def create_flux_diagram(input_file, chemkin_file, species_dict, save_path=None, 
     Generates the flux diagram based on a condition 'input_file', chemkin.inp chemkin_file,
     a species_dict txt file, plus an optional chemkin_output file.
     """
-
-    if java == True:
-        warnings.warn("RMG-Java loading is no longer supported and may be" \
-                      "removed in version 2.3.", DeprecationWarning)
     if species_path is None:
         species_path = os.path.join(os.path.dirname(input_file), 'species')
         generate_images = True

@@ -102,7 +102,7 @@ def _check_openbabel():
     missing = False
 
     try:
-        import openbabel
+        from openbabel import openbabel
     except ImportError:
         print('{0:<30}{1}'.format('OpenBabel',
                                   'Not found. Necessary for SMILES/InChI functionality for nitrogen compounds.'))
@@ -310,7 +310,7 @@ def update_headers():
     start of each file, be sure to double-check the results to make sure
     important lines aren't accidentally overwritten.
     """
-    shebang = """#!/usr/bin/env python3
+    shebang = """#!/usr/bin/env python-jl
 
 """
 

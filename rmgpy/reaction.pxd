@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -28,10 +28,11 @@
 cimport rmgpy.constants as constants
 from rmgpy.species cimport Species, TransitionState
 from rmgpy.molecule.molecule cimport Atom, Molecule
+from rmgpy.molecule.graph cimport Vertex, Graph
 from rmgpy.molecule.element cimport Element
 from rmgpy.kinetics.model cimport KineticsModel
 from rmgpy.kinetics.arrhenius cimport Arrhenius
-from rmgpy.kinetics.surface cimport SurfaceArrhenius
+from rmgpy.kinetics.surface cimport SurfaceArrhenius, StickingCoefficient
 
 cimport numpy as np
 
@@ -83,7 +84,7 @@ cdef class Reaction:
 
     cpdef double get_free_energy_of_reaction(self, double T)
 
-    cpdef double get_equilibrium_constant(self, double T, str type=?)
+    cpdef double get_equilibrium_constant(self, double T, str type=?, double surface_site_density=?)
 
     cpdef np.ndarray get_enthalpies_of_reaction(self, np.ndarray Tlist)
 
@@ -95,7 +96,7 @@ cdef class Reaction:
 
     cpdef int get_stoichiometric_coefficient(self, Species spec)
 
-    cpdef double get_rate_coefficient(self, double T, double P=?)
+    cpdef double get_rate_coefficient(self, double T, double P=?, double surface_site_density=?)
 
     cpdef double get_surface_rate_coefficient(self, double T, double surface_site_density) except -2
 
@@ -105,7 +106,9 @@ cdef class Reaction:
 
     cpdef reverse_surface_arrhenius_rate(self, SurfaceArrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)
 
-    cpdef generate_reverse_rate_coefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?)
+    cpdef reverse_sticking_coeff_rate(self, StickingCoefficient k_forward, str reverse_units, double surface_site_density, Tmin=?, Tmax=?)
+
+    cpdef generate_reverse_rate_coefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?, double surface_site_density=?)
 
     cpdef np.ndarray calculate_tst_rate_coefficients(self, np.ndarray Tlist)
 
@@ -123,7 +126,7 @@ cdef class Reaction:
 
     cpdef copy(self)
 
-    cpdef ensure_species(self, bint reactant_resonance=?, bint product_resonance=?)
+    cpdef ensure_species(self, bint reactant_resonance=?, bint product_resonance=?, bint save_order=?)
 
     cpdef list check_collision_limit_violation(self, float t_min, float t_max, float p_min, float p_max)
 

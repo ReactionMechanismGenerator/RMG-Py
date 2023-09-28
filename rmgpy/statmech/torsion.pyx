@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -285,7 +285,7 @@ cdef class HinderedRotor(Torsion):
             coeffs = self._fourier.value_si
             V0 = -np.sum(coeffs[0, :])
         else:
-            coeffs = np.zeros((2, self.symmetry), np.float64)
+            coeffs = np.zeros((2, self.symmetry), float)
             V0 = 0.5 * self._barrier.value_si
             coeffs[0, self.symmetry - 1] = -V0
 
@@ -328,9 +328,6 @@ cdef class HinderedRotor(Torsion):
         cdef double beta = 1. / (constants.R * T), V, phi, dphi
         cdef int k
 
-        frequency = self.get_frequency() * constants.c * 100
-        x = constants.h * frequency / (constants.kB * T)
-
         if self.quantum:
             if self.energies is None: self.solve_schrodinger_equation()
             return np.sum(np.exp(-self.energies / constants.R / T)) / self.symmetry
@@ -353,6 +350,7 @@ cdef class HinderedRotor(Torsion):
 
         # Semiclassical correction
         if self.semiclassical:
+            x = constants.h * self.get_frequency() * constants.c * 100 / (constants.kB * T)
             Q *= x / (1 - exp(-x))
 
         return Q
@@ -526,32 +524,30 @@ cdef class HinderedRotor(Torsion):
         numterms = 6
         cdef bint negative_barrier
         negative_barrier = True
-        # numterms is actually half the number of terms. It is called numterms 
+        # numterms is actually half the number of terms. It is called numterms
         # because it is the number of terms of either the cosine or sine fit
 
         maxterms = np.floor(len(angle) / 3.0)
-        while negative_barrier and numterms < maxterms:
+        while negative_barrier and numterms <= maxterms:
             # Fit Fourier series potential
             N = V.shape[0]
-            A = np.zeros((N + 1, 2 * numterms), np.float64)
-            b = np.zeros(N + 1, np.float64)
-            for i in range(N):
-                phi = angle[i]
-                for m in range(numterms):
-                    A[i, m] = cos(m * phi)
-                    A[i, numterms + m] = sin(m * phi)
-                    b[i] = V[i]
+            # A: [1, cos(phi), ..., cos(M * phi), sin(phi), ..., sin(M * phi)]
+            A = np.zeros((N + 1, 2 * numterms - 1), float)
+            A[:-1, 0] = 1
+            for m in range(1, numterms):
+                A[:-1, m] = np.cos(m * angle)
+                A[:-1, numterms + m - 1] = np.sin(m * angle)
             # This row forces dV/dangle = 0 at angle = 0
-            for m in range(numterms):
-                A[N, m + numterms] = 1
+            A[N, numterms:] = np.arange(1., numterms)
+            b = np.concatenate((V, np.array([0.])))
+
             x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
             fit = np.dot(A, x)
             x *= 0.001
-            # This checks if there are any negative values in the forier fit.
-            # This part of the algorithm is replicated from the fucntion HinderedRotor(Torsion)
+            # This checks if there are any negative values in the Fourier fit.
             negative_barrier = False
             V0 = 0.0
-            self.fourier = ([x[1:numterms], x[numterms + 1:2 * numterms]], "kJ/mol")
+            self.fourier = ([x[1:numterms], x[numterms:2 * numterms - 1]], "kJ/mol")
             fourier = self._fourier.value_si
             for k in range(fourier.shape[1]):
                 V0 -= fourier[0, k] * (k + 1) * (k + 1)

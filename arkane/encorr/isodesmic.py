@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -380,6 +379,10 @@ class ErrorCancelingScheme:
                 except ValueError:
                     # This is not being run in the main thread, so we cannot reset signal
                     pass
+                except TypeError:
+                    print(
+                        "Failed to reset signal handling in LPSolve - are you running pytest?"
+                    )
 
                 # Return the solution if a valid reaction is found. Otherwise continue to next solver
                 if status == 0:

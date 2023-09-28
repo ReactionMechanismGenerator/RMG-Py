@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -32,7 +32,7 @@ from rmgpy.kinetics.uncertainties cimport RateUncertainty
 
 ################################################################################
 
-cpdef str get_rate_coefficient_units_from_reaction_order(order)
+cpdef str get_rate_coefficient_units_from_reaction_order(n_gas, n_surf=?)
 
 cpdef int get_reaction_order_from_rate_coefficient_units(kunits) except -1
 

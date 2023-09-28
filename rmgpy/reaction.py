@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -31,7 +31,7 @@
 This module contains classes and functions for working with chemical reactions.
 
 From the `IUPAC Compendium of Chemical Terminology 
-<http://dx.doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that 
+<https://doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that 
 results in the interconversion of chemical species".
 
 In RMG Py, a chemical reaction is represented in memory as a :class:`Reaction`
@@ -53,9 +53,9 @@ import rmgpy.constants as constants
 from rmgpy.exceptions import ReactionError, KineticsError
 from rmgpy.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, \
     PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, get_rate_coefficient_units_from_reaction_order, \
-    StickingCoefficient, SurfaceArrheniusBEP, StickingCoefficientBEP
+    SurfaceArrheniusBEP, StickingCoefficientBEP
 from rmgpy.kinetics.arrhenius import Arrhenius  # Separate because we cimport from rmgpy.kinetics.arrhenius
-from rmgpy.kinetics.surface import SurfaceArrhenius  # Separate because we cimport from rmgpy.kinetics.surface
+from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient  # Separate because we cimport from rmgpy.kinetics.surface
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.molecule.element import Element, element_list
 from rmgpy.molecule.molecule import Molecule, Atom
@@ -281,39 +281,81 @@ class Reaction:
                 ct_products[product_name] += 1
             else:
                 ct_products[product_name] = 1
+
         if self.specific_collider:  # add a specific collider if exists
             ct_collider[self.specific_collider.to_chemkin() if use_chemkin_identifier else self.specific_collider.label] = 1
 
         if self.kinetics:
             if isinstance(self.kinetics, Arrhenius):
                 # Create an Elementary Reaction
-                ct_reaction = ct.ElementaryReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
             elif isinstance(self.kinetics, MultiArrhenius):
                 # Return a list of elementary reactions which are duplicates
-                ct_reaction = [ct.ElementaryReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
                                for arr in self.kinetics.arrhenius]
 
             elif isinstance(self.kinetics, PDepArrhenius):
-                ct_reaction = ct.PlogReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
 
             elif isinstance(self.kinetics, MultiPDepArrhenius):
-                ct_reaction = [ct.PlogReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
                                for arr in self.kinetics.arrhenius]
 
             elif isinstance(self.kinetics, Chebyshev):
-                ct_reaction = ct.ChebyshevReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ChebyshevRate())
 
             elif isinstance(self.kinetics, ThirdBody):
                 if ct_collider is not None:
-                    ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products, tbody=ct_collider)
+                    ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products, third_body=ct_collider)
                 else:
                     ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products)
 
-            elif isinstance(self.kinetics, Lindemann) or isinstance(self.kinetics, Troe):
-                if ct_collider is not None:
-                    ct_reaction = ct.FalloffReaction(reactants=ct_reactants, products=ct_products, tbody=ct_collider)
+            elif isinstance(self.kinetics, Troe):
+                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
+                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
+                A = self.kinetics.alpha
+                T3 = self.kinetics.T3.value_si
+                T1 = self.kinetics.T1.value_si
+
+                if self.kinetics.T2 is None:
+                    rate = ct.TroeRate(
+                        high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1]
+                    )
                 else:
-                    ct_reaction = ct.FalloffReaction(reactants=ct_reactants, products=ct_products)
+                    T2 = self.kinetics.T2.value_si
+                    rate = ct.TroeRate(
+                        high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1, T2]
+                    )
+
+                if ct_collider is not None:
+                    ct_reaction = ct.FalloffReaction(
+                        reactants=ct_reactants,
+                        products=ct_products,
+                        tbody=ct_collider,
+                        rate=rate,
+                    )
+                else:
+                    ct_reaction = ct.FalloffReaction(
+                        reactants=ct_reactants, products=ct_products, rate=rate
+                    )
+
+            elif isinstance(self.kinetics, Lindemann):
+                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
+                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
+                falloff = []
+                rate = ct.LindemannRate(low_rate, high_rate, falloff)
+                if ct_collider is not None:
+                    ct_reaction = ct.FalloffReaction(
+                        reactants=ct_reactants,
+                        products=ct_products,
+                        tbody=ct_collider,
+                        rate=rate,
+                    )
+                else:
+                    ct_reaction = ct.FalloffReaction(
+                        reactants=ct_reactants, products=ct_products, rate=rate
+                    )
+
             else:
                 raise NotImplementedError('Unable to set cantera kinetics for {0}'.format(self.kinetics))
 
@@ -343,7 +385,7 @@ class Reaction:
         """
         # eg. http://dev.rmg.mit.edu/database/kinetics/reaction/reactant1=1%20C%200%20%7B2,S%7D;2%20O%200%20%7B1,S%7D;__reactant2=1%20C%202T;__product1=1%20C%201;__product2=1%20C%200%20%7B2,S%7D;2%20O%201%20%7B1,S%7D;
 
-        base_url = "http://rmg.mit.edu/database/kinetics/reaction/"
+        base_url = "https://rmg.mit.edu/database/kinetics/reaction/"
 
         rxn_string = ''
         for i, species in enumerate(self.reactants):
@@ -555,27 +597,55 @@ class Reaction:
                 raise
         return dGrxn
 
-    def get_equilibrium_constant(self, T, type='Kc'):
+    def get_equilibrium_constant(self, T, type='Kc', surface_site_density=2.5e-05):
         """
         Return the equilibrium constant for the reaction at the specified
-        temperature `T` in K. The `type` parameter lets	you specify the
-        quantities used in the equilibrium constant: ``Ka`` for	activities,
-        ``Kc`` for concentrations (default), or ``Kp`` for pressures. Note that
-        this function currently assumes an ideal gas mixture.
+        temperature `T` in K and reference `surface_site_density`
+        in mol/m^2 (2.5e-05 default) The `type` parameter lets you specify
+        the quantities used in the equilibrium constant: ``Ka`` for activities,
+        ``Kc`` for concentrations (default), or ``Kp`` for pressures.  This
+        function assumes a reference pressure of 1e5 Pa for gas phases species
+        and uses the ideal gas law to determine reference concentrations. For
+        surface species, the `surface_site_density` is the assumed reference.
         """
         cython.declare(dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
         # Use free energy of reaction to calculate Ka
         dGrxn = self.get_free_energy_of_reaction(T)
         K = np.exp(-dGrxn / constants.R / T)
         # Convert Ka to Kc or Kp if specified
+        # Assume a pressure of 1e5 Pa for gas phase species
         P0 = 1e5
+        # Determine the number of gas phase reactants and products. For gas species,
+        # we will use 1e5 Pa and ideal gas law to determine reference concentration.
+        try:
+            number_of_gas_reactants = len([spcs for spcs in self.reactants if not spcs.contains_surface_site()])
+            number_of_gas_products = len([spcs for spcs in self.products if not spcs.contains_surface_site()])
+        except IndexError:
+            #logging.warning("Species do not have an rmgpy.molecule.Molecule "
+            #                "Cannot determine phases of species. We will assume "
+            #                "ideal gas mixture when calculating Kc and Kp.")
+            number_of_gas_reactants = len(self.reactants)
+            number_of_gas_products = len(self.products)
+
+        # Determine the number of surface reactants and products.  For surface species,
+        # we will use the provided `surface_site_density` as the reference
+        number_of_surface_reactants = len(self.reactants) - number_of_gas_reactants
+        number_of_surface_products = len(self.products) - number_of_gas_products
+
+        # Determine the change in the number of mols of gas and surface species in the reaction
+        dN_surf = number_of_surface_products - number_of_surface_reactants # change in mols of surface spcs
+        dN_gas = number_of_gas_products - number_of_gas_reactants # change in mols of gas spcs
+
         if type == 'Kc':
             # Convert from Ka to Kc; C0 is the reference concentration
-            C0 = P0 / constants.R / T
-            K *= C0 ** (len(self.products) - len(self.reactants))
+            if dN_gas:
+                C0 = P0 / constants.R / T
+                K *= C0 ** dN_gas
+            if dN_surf:
+                K *= surface_site_density ** dN_surf
         elif type == 'Kp':
             # Convert from Ka to Kp; P0 is the reference pressure
-            K *= P0 ** (len(self.products) - len(self.reactants))
+            K *= P0 ** dN_gas
         elif type != 'Ka' and type != '':
             raise ReactionError('Invalid type "{0}" passed to Reaction.get_equilibrium_constant(); '
                                 'should be "Ka", "Kc", or "Kp".'.format(type))
@@ -588,21 +658,21 @@ class Reaction:
         Return the enthalpies of reaction in J/mol evaluated at temperatures
         `Tlist` in K.
         """
-        return np.array([self.get_enthalpy_of_reaction(T) for T in Tlist], np.float64)
+        return np.array([self.get_enthalpy_of_reaction(T) for T in Tlist], float)
 
     def get_entropies_of_reaction(self, Tlist):
         """
         Return the entropies of reaction in J/mol*K evaluated at temperatures
         `Tlist` in K.
         """
-        return np.array([self.get_entropy_of_reaction(T) for T in Tlist], np.float64)
+        return np.array([self.get_entropy_of_reaction(T) for T in Tlist], float)
 
     def get_free_energies_of_reaction(self, Tlist):
         """
         Return the Gibbs free energies of reaction in J/mol evaluated at
         temperatures `Tlist` in K.
         """
-        return np.array([self.get_free_energy_of_reaction(T) for T in Tlist], np.float64)
+        return np.array([self.get_free_energy_of_reaction(T) for T in Tlist], float)
 
     def get_equilibrium_constants(self, Tlist, type='Kc'):
         """
@@ -612,7 +682,9 @@ class Reaction:
         ``Kc`` for concentrations (default), or ``Kp`` for pressures. Note that
         this function currently assumes an ideal gas mixture.
         """
-        return np.array([self.get_equilibrium_constant(T, type) for T in Tlist], np.float64)
+        return np.array(
+            [self.get_equilibrium_constant(T, type) for T in Tlist], float
+        )
 
     def get_stoichiometric_coefficient(self, spec):
         """
@@ -629,7 +701,7 @@ class Reaction:
             if product is spec: stoich += 1
         return stoich
 
-    def get_rate_coefficient(self, T, P=0):
+    def get_rate_coefficient(self, T, P=0, surface_site_density=0):
         """
         Return the overall rate coefficient for the forward reaction at
         temperature `T` in K and pressure `P` in Pa, including any reaction
@@ -638,8 +710,17 @@ class Reaction:
         If diffusion_limiter is enabled, the reaction is in the liquid phase and we use
         a diffusion limitation to correct the rate. If not, then use the intrinsic rate
         coefficient.
+
+        If the reaction has sticking coefficient kinetics, a nonzero surface site density
+        in `mol/m^2` must be provided
         """
-        if diffusion_limiter.enabled:
+        if isinstance(self.kinetics, StickingCoefficient):
+            if surface_site_density <= 0:
+                raise ValueError("Please provide a postive surface site density in mol/m^2 " 
+                                f"for calculating the rate coefficient of {StickingCoefficient.__name__} kinetics")
+            else:
+                return self.get_surface_rate_coefficient(T, surface_site_density)
+        elif diffusion_limiter.enabled:
             try:
                 k = self.k_effective_cache[T]
             except KeyError:
@@ -731,8 +812,8 @@ class Reaction:
             raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
 
         H298 = self.get_enthalpy_of_reaction(298)
-        H0 = sum([spec.get_thermo_data().E0.value_si for spec in self.products]) \
-             - sum([spec.get_thermo_data().E0.value_si for spec in self.reactants])
+        H0 = sum([spec.get_thermo_data().E0.value_si if spec.get_thermo_data().E0 is not None else spec.get_thermo_data().to_wilhoit().E0.value_si for spec in self.products]) \
+             - sum([spec.get_thermo_data().E0.value_si if spec.get_thermo_data().E0 is not None else spec.get_thermo_data().to_wilhoit().E0.value_si  for spec in self.reactants])
         if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusBM)):
             Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
             self.kinetics = self.kinetics.to_arrhenius(H298)
@@ -817,11 +898,40 @@ class Reaction:
         kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
         return kr
 
-    def generate_reverse_rate_coefficient(self, network_kinetics=False, Tmin=None, Tmax=None):
+    def reverse_sticking_coeff_rate(self, k_forward, reverse_units, surface_site_density, Tmin=None, Tmax=None):
+        """
+        Reverses the given k_forward, which must be a StickingCoefficient type.
+        You must supply the correct units for the reverse rate.
+        The equilibrium constant is evaluated from the current reaction instance (self).
+        The surface_site_density in `mol/m^2` is used to evalaute the forward rate constant.
+        """
+        cython.declare(kf=StickingCoefficient, kr=SurfaceArrhenius)
+        cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int)
+        if not isinstance(k_forward, StickingCoefficient): # Only reverse StickingCoefficient rates
+            raise TypeError(f'Expected a StickingCoefficient object for k_forward but received {k_forward}')
+        kf = k_forward
+        if Tmin is not None and Tmax is not None:
+            Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
+        else:
+            Tlist = 1.0 / np.arange(0.0005, 0.0034, 0.0001)
+        # Determine the values of the reverse rate coefficient k_r(T) at each temperature
+        klist = np.zeros_like(Tlist)
+        for i in range(len(Tlist)):
+            klist[i] = \
+                self.get_surface_rate_coefficient(Tlist[i], surface_site_density=surface_site_density) / \
+                self.get_equilibrium_constant(Tlist[i], surface_site_density=surface_site_density)
+        kr = SurfaceArrhenius()
+        kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
+        return kr
+
+    def generate_reverse_rate_coefficient(self, network_kinetics=False, Tmin=None, Tmax=None, surface_site_density=0):
         """
         Generate and return a rate coefficient model for the reverse reaction. 
         Currently this only works if the `kinetics` attribute is one of several
         (but not necessarily all) kinetics types.
+
+        If the reaction kinetics model is Sticking Coefficient, please provide a nonzero
+        surface site density in `mol/m^2` which is required to evaluate the rate coefficient.
         """
         cython.declare(Tlist=np.ndarray, Plist=np.ndarray, K=np.ndarray,
                        rxn=Reaction, klist=np.ndarray, i=cython.size_t,
@@ -838,10 +948,20 @@ class Reaction:
             ThirdBody.__name__,
             Lindemann.__name__,
             Troe.__name__,
+            StickingCoefficient.__name__,
         )
 
         # Get the units for the reverse rate coefficient
-        kunits = get_rate_coefficient_units_from_reaction_order(len(self.products))
+        try:
+            surf_prods = [spcs for spcs in self.products if spcs.contains_surface_site()]
+        except IndexError:
+            surf_prods = []
+            # logging.warning(f"Species do not have an rmgpy.molecule.Molecule "
+            #                "Cannot determine phases of species. We will assume gas"
+            #                )
+        n_surf = len(surf_prods)
+        n_gas = len(self.products) - len(surf_prods)
+        kunits = get_rate_coefficient_units_from_reaction_order(n_gas, n_surf)
 
         kf = self.kinetics
         if isinstance(kf, KineticsData):
@@ -861,6 +981,13 @@ class Reaction:
             else:
                 return self.reverse_arrhenius_rate(kf, kunits, Tmin, Tmax)
 
+        elif isinstance(kf, StickingCoefficient):
+            if surface_site_density <= 0:
+                raise ValueError("Please provide a postive surface site density in mol/m^2 " 
+                                f"for calculating the rate coefficient of {StickingCoefficient.__name__} kinetics")
+            else:
+                return self.reverse_sticking_coeff_rate(kf, kunits, surface_site_density, Tmin, Tmax)
+
         elif network_kinetics and self.network_kinetics is not None:
             kf = self.network_kinetics
             return self.reverse_arrhenius_rate(kf, kunits)
@@ -868,7 +995,7 @@ class Reaction:
         elif isinstance(kf, Chebyshev):
             Tlist = 1.0 / np.linspace(1.0 / kf.Tmax.value, 1.0 / kf.Tmin.value, 50)
             Plist = np.linspace(kf.Pmin.value, kf.Pmax.value, 20)
-            K = np.zeros((len(Tlist), len(Plist)), np.float64)
+            K = np.zeros((len(Tlist), len(Plist)), float)
             for Tindex, T in enumerate(Tlist):
                 for Pindex, P in enumerate(Plist):
                     K[Tindex, Pindex] = kf.get_rate_coefficient(T, P) / self.get_equilibrium_constant(T)
@@ -906,7 +1033,7 @@ class Reaction:
             return kr
 
         elif isinstance(kf, ThirdBody):
-            lowPkunits = get_rate_coefficient_units_from_reaction_order(len(self.products) + 1)
+            lowPkunits = get_rate_coefficient_units_from_reaction_order(n_gas + 1, n_surf)
             krLow = self.reverse_arrhenius_rate(kf.arrheniusLow, lowPkunits)
             parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
             kr = ThirdBody(krLow, *parameters[1:])
@@ -914,7 +1041,7 @@ class Reaction:
 
         elif isinstance(kf, Lindemann):
             krHigh = self.reverse_arrhenius_rate(kf.arrheniusHigh, kunits)
-            lowPkunits = get_rate_coefficient_units_from_reaction_order(len(self.products) + 1)
+            lowPkunits = get_rate_coefficient_units_from_reaction_order(n_gas + 1, n_surf)
             krLow = self.reverse_arrhenius_rate(kf.arrheniusLow, lowPkunits)
             parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
             kr = Lindemann(krHigh, krLow, *parameters[2:])
@@ -922,7 +1049,7 @@ class Reaction:
 
         elif isinstance(kf, Troe):
             krHigh = self.reverse_arrhenius_rate(kf.arrheniusHigh, kunits)
-            lowPkunits = get_rate_coefficient_units_from_reaction_order(len(self.products) + 1)
+            lowPkunits = get_rate_coefficient_units_from_reaction_order(n_gas + 1, n_surf)
             krLow = self.reverse_arrhenius_rate(kf.arrheniusLow, lowPkunits)
             parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
             kr = Troe(krHigh, krLow, *parameters[2:])
@@ -932,7 +1059,7 @@ class Reaction:
                                 "should be one of {1}".format(self.kinetics.__class__, supported_types))
 
     def calculate_tst_rate_coefficients(self, Tlist):
-        return np.array([self.calculate_tst_rate_coefficient(T) for T in Tlist], np.float64)
+        return np.array([self.calculate_tst_rate_coefficient(T) for T in Tlist], float)
 
     def calculate_tst_rate_coefficient(self, T):
         """
@@ -1007,7 +1134,10 @@ class Reaction:
         Return ``True`` if the reaction has the same number of each atom on
         each side of the reaction equation, or ``False`` if not.
         """
-        cython.declare(reactantElements=dict, productElements=dict, molecule=Molecule, atom=Atom, element=Element)
+        from rmgpy.molecule.element import element_list
+        from rmgpy.molecule.fragment import CuttingLabel, Fragment
+
+        cython.declare(reactant_elements=dict, product_elements=dict, molecule=Graph, atom=Vertex, element=Element)
 
         reactant_elements = {}
         product_elements = {}
@@ -1018,18 +1148,31 @@ class Reaction:
         for reactant in self.reactants:
             if isinstance(reactant, Species):
                 molecule = reactant.molecule[0]
+                for atom in molecule.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        reactant_elements[atom.element] += 1
             elif isinstance(reactant, Molecule):
                 molecule = reactant
-            for atom in molecule.atoms:
-                reactant_elements[atom.element] += 1
-
+                for atom in molecule.atoms:
+                    reactant_elements[atom.element] += 1
+            elif isinstance(reactant, Fragment):
+                for atom in reactant.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        reactant_elements[atom.element] += 1
         for product in self.products:
             if isinstance(product, Species):
                 molecule = product.molecule[0]
+                for atom in molecule.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        product_elements[atom.element] += 1
             elif isinstance(product, Molecule):
                 molecule = product
-            for atom in molecule.atoms:
-                product_elements[atom.element] += 1
+                for atom in molecule.atoms:
+                    product_elements[atom.element] += 1
+            elif isinstance(product, Fragment):
+                for atom in product.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        product_elements[atom.element] += 1
 
         for element in element_list:
             if reactant_elements[element] != product_elements[element]:
@@ -1071,9 +1214,12 @@ class Reaction:
 
             def get_sorting_key(spc):
                 # List of elements to sort by, order is intentional
-                numbers = [6, 8, 7, 14, 16, 17, 53, 9, 35]  # C, O, N, Si, S, Cl, I, F, Br
-                return tuple(sum([1 for atom in spc.molecule[0].atoms if atom.element.number == n]) for n in numbers)
-
+                numbers = [6, 8, 7, 14, 16, 15, 17, 53, 9, 35]  # C, O, N, Si, S, P, Cl, I, F, Br
+                ele_count = dict([(n,0) for n in numbers])
+                for atom in spc.molecule[0].atoms:
+                    if isinstance(atom, Atom) and atom.element.number in numbers:
+                        ele_count[atom.element.number] += 1
+                return tuple(ele_count[n] for n in numbers)
             # Sort the reactants and products by element counts
             reactants.sort(key=get_sorting_key)
             products.sort(key=get_sorting_key)
@@ -1203,7 +1349,7 @@ class Reaction:
 
         return other
 
-    def ensure_species(self, reactant_resonance=False, product_resonance=False):
+    def ensure_species(self, reactant_resonance=False, product_resonance=False, save_order=False):
         """
         Ensure the reaction contains species objects in its reactant and product
         attributes. If the reaction is found to hold molecule objects, it
@@ -1213,6 +1359,7 @@ class Reaction:
         Generates resonance structures for Molecules if the corresponding options,
         reactant_resonance and/or product_resonance, are True. Does not generate
         resonance for reactants or products that start as Species objects.
+        If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
         """
         from rmgpy.data.kinetics.common import ensure_species
         # if already species' objects, return none
@@ -1232,11 +1379,11 @@ class Reaction:
             for reactant, product in self.pairs:
                 new_pair = []
                 for reactant0 in self.reactants:
-                    if reactant0.is_isomorphic(reactant):
+                    if reactant0.is_isomorphic(reactant, save_order=save_order):
                         new_pair.append(reactant0)
                         break
                 for product0 in self.products:
-                    if product0.is_isomorphic(product):
+                    if product0.is_isomorphic(product, save_order=save_order):
                         new_pair.append(product0)
                         break
                 new_pairs.append(new_pair)
@@ -1376,14 +1523,14 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
     """
 
     def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label,
-             _generate_initial_map=generate_initial_map, _strict=strict, save_order=save_order):
+             _generate_initial_map=generate_initial_map, _strict=strict, _save_order=save_order):
         if _only_check_label:
             return str(object1) == str(object2)
         elif _check_identical:
             return object1.is_identical(object2, strict=_strict)
         else:
             return object1.is_isomorphic(object2, generate_initial_map=_generate_initial_map,
-                                         strict=_strict, save_order=save_order)
+                                         strict=_strict, save_order=_save_order)
 
     if len(list1) == len(list2) == 1:
         if same(list1[0], list2[0]):

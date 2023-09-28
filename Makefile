@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-.PHONY : all minimal main solver check pycheck arkane clean install decython documentation mopac_travis
+.PHONY : all minimal main solver check pycheck arkane clean install decython documentation test q2dtor
 
 all: pycheck main solver check
 
@@ -42,44 +42,33 @@ install:
 	python setup.py install
 
 q2dtor:
-	@ echo "\nInstalling Q2DTor...\n"
-	@ echo "Q2DTor is a software for calculating the partition functions and themodynamic properties\
+	@ echo -e "\nInstalling Q2DTor...\n"
+	@ echo -e "Q2DTor is a software for calculating the partition functions and themodynamic properties\
 	of molecular systems with two or more torsional modes developed by David Ferro Costas (david.ferro@usc.es)\
 	 and Antonio Fernandez Ramos (qf.ramos@usc.es) at the Universidade de Santiago de Compostela. Arkane can\
 	  integrate Q2DTor to compute the quantum mechanical partition function of 2D rotors.  \n\nFor use of Q2DTor\
  and HinderedRotor2D within Arkane please cite:  \n\nD. Ferro-Costas, M. N. D. S.Cordeiro, D. G. Truhlar, A.\
 		  Fernández-Ramos, Comput. Phys. Commun. 232, 190-205, 2018.\n"
 	@ read -p "Press ENTER to continue" dummy
-	@ git clone https://github.com/mjohnson541/Q2DTor.git external/Q2DTor --branch arkanepy3
-	
+	@ mkdir -p external
+	@ git clone https://github.com/cathedralpkg/Q2DTor external/Q2DTor
+
 decython:
 	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.
 	find . -name *.so ! \( -name _statmech.so -o -name quantity.so -o -regex '.*rmgpy/solver/.*' \) -exec rm -f '{}' \;
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test-all:
-ifneq ($(OS),Windows_NT)
-	mkdir -p testing/coverage
-	rm -rf testing/coverage/*
-endif
-	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
+	python-jl -m pytest
 
 test test-unittests:
-ifneq ($(OS),Windows_NT)
-	mkdir -p testing/coverage
-	rm -rf testing/coverage/*
-endif
-	nosetests --nocapture --nologcapture --all-modules -A 'not functional' --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
+	python-jl -m pytest -m "not functional and not database"
 
 test-functional:
-ifneq ($(OS),Windows_NT)
-	mkdir -p testing/coverage
-	rm -rf testing/coverage/*
-endif
-	nosetests --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy arkane
+	python-jl -m pytest -m "functional"
 
 test-database:
-	nosetests --nocapture --nologcapture --verbose --detailed-errors testing/databaseTest.py
+	python-jl -m pytest -m "database"
 
 eg0: all
 	mkdir -p testing/eg0
@@ -87,6 +76,7 @@ eg0: all
 	cp examples/rmg/superminimal/input.py testing/eg0/input.py
 	@ echo "Running eg0: superminimal (H2 oxidation) example"
 	python rmg.py testing/eg0/input.py
+
 eg1: all
 	mkdir -p testing/eg1
 	rm -rf testing/eg1/*
@@ -96,25 +86,22 @@ eg1: all
 	coverage run rmg.py -p testing/eg1/input.py
 	coverage report
 	coverage html
+
 eg2: all
 	mkdir -p testing/eg2
 	rm -rf testing/eg2/*
 	cp examples/rmg/1,3-hexadiene/input.py testing/eg2/input.py
 	coverage erase
-	@ echo "Running eg2: 1,3-hexadiene example with coverage tracking AND profiling"
-	coverage run rmg.py -p testing/eg2/input.py
-	coverage report
-	coverage html
+	@ echo "Running eg2: 1,3-hexadiene example with profiling"
+	python rmg.py -p testing/eg2/input.py
 
 eg3: all
 	mkdir -p testing/eg3
 	rm -rf testing/eg3/*
 	cp examples/rmg/liquid_phase/input.py testing/eg3/input.py
 	coverage erase
-	@ echo "Running eg3: liquid_phase example with coverage tracking AND profiling"
-	coverage run rmg.py -p testing/eg3/input.py
-	coverage report
-	coverage html
+	@ echo "Running eg3: liquid_phase example with profiling"
+	python rmg.py -p testing/eg3/input.py
 
 eg5: all
 	mkdir -p testing/eg5
@@ -145,34 +132,9 @@ scoop: all
 	@ echo "Running minimal example with SCOOP"
 	python -m scoop -n 2 rmg.py -v testing/scoop/input.py
 
-######### 
-# Section for setting up MOPAC calculations on the Travis-CI.org server
-ifeq ($(TRAVIS),true)
-ifneq ($(TRAVIS_SECURE_ENV_VARS),true)
-SKIP_MOPAC=true
-endif
-endif
-mopac_travis:
-ifeq ($(TRAVIS),true)
-ifneq ($(TRAVIS_SECURE_ENV_VARS),true)
-	@echo "Don't have MOPAC licence key on this Travis build so can't test QM"
-else
-	@echo "Installing MOPAC key"
-	@yes Yes | mopac $(MOPACKEY)
-endif
-else
-	@#echo "Not in Travis build, no need to run this target"
-endif
-# End of MOPAC / TRAVIS stuff
-#######
-
-eg4: all mopac_travis
-ifeq ($(SKIP_MOPAC),true)
-	@echo "Skipping eg4 (without failing) because can't run MOPAC"
-else
+eg4: all
 	mkdir -p testing/eg4
 	rm -rf testing/eg4/*
 	cp examples/thermoEstimator/input.py testing/eg4/input.py
 	@ echo "Running thermo data estimator example. This tests QM."
 	python scripts/thermoEstimator.py testing/eg4/input.py
-endif

@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -39,11 +39,11 @@ cdef class Chebyshev(PDepKineticsModel):
     cdef public int degreeP
     cdef public str kunits
     
-    cdef double chebyshev(self, int n, double x)
+    cpdef double chebyshev(self, int n, double x)
     
-    cdef double get_reduced_temperature(self, double T) except -1000
+    cpdef double get_reduced_temperature(self, double T) except -1000
     
-    cdef double get_reduced_pressure(self, double P) except -1000
+    cpdef double get_reduced_pressure(self, double P) except -1000
     
     cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 

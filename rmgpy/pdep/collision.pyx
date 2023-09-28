@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -150,8 +150,8 @@ cdef class SingleExponentialDown(RMGObject):
 
         n_grains = e_list.shape[0]
         n_j = j_list.shape[0] if j_list is not None else 1
-        p = np.zeros((n_grains, n_j, n_grains, n_j), np.float64)
-        p0 = np.zeros((n_grains, n_grains), np.float64)
+        p = np.zeros((n_grains, n_j, n_grains, n_j), float)
+        p0 = np.zeros((n_grains, n_grains), float)
 
         alpha = 1.0 / self.get_alpha(T)
         beta = 1.0 / (constants.R * T)
@@ -246,11 +246,9 @@ cdef class SingleExponentialDown(RMGObject):
         reactive energy `e_reac` in kJ/mol. The collisions occur at temperature `T`
         in K and are described by the average energy transferred in a deactivating
         collision `d_e_down` in kJ/mol. The algorithm here is implemented as
-        described by Chang, Bozzelli, and Dean [Chang2000]_.
-    
-        .. [Chang2000] A. Y. Chang, J. W. Bozzelli, and A. M. Dean.
-           *Z. Phys. Chem.* **214**, p. 1533-1568 (2000).
-           `doi: 10.1524/zpch.2000.214.11.1533 <http://dx.doi.org/10.1524/zpch.2000.214.11.1533>`_
+        described by A. Y. Chang, J. W. Bozzelli, and A. M. Dean.
+        *Z. Phys. Chem.* **214**, p. 1533-1568 (2000).
+        `doi: 10.1524/zpch.2000.214.11.1533 <https://doi.org/10.1524/zpch.2000.214.11.1533>`_
     
         """
     

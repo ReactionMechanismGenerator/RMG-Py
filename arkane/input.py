@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -124,9 +124,7 @@ def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=No
     for family in rmg_database.kinetics.families.values():  # load training
         if not family.auto_generated:
             family.add_rules_from_training(thermo_database=rmg_database.thermo)
-
-    for family in rmg_database.kinetics.families.values():
-        family.fill_rules_by_averaging_up(verbose=True)
+            family.fill_rules_by_averaging_up(verbose=True)
 
 
 def species(label, *args, **kwargs):
@@ -472,7 +470,7 @@ def thermo(label, thermoClass):
 
 def pressureDependence(label, Tmin=None, Tmax=None, Tcount=0, Tlist=None, Pmin=None, Pmax=None, Pcount=0, Plist=None,
                        maximumGrainSize=None, minimumGrainCount=0, method=None, interpolationModel=None,
-                       activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None):
+                       activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None, sensitivity_perturbation=(2.0,'kcal/mol')):
     """Generate a pressure dependent job"""
     global job_list, network_dict
 
@@ -488,7 +486,8 @@ def pressureDependence(label, Tmin=None, Tmax=None, Tcount=0, Tlist=None, Pmin=N
                                 maximumGrainSize=maximumGrainSize, minimumGrainCount=minimumGrainCount,
                                 method=method, interpolationModel=interpolationModel,
                                 activeKRotor=activeKRotor, activeJRotor=activeJRotor,
-                                rmgmode=rmgmode, sensitivity_conditions=sensitivity_conditions)
+                                rmgmode=rmgmode, sensitivity_conditions=sensitivity_conditions,
+                                sensitivity_perturbation=sensitivity_perturbation)
     job_list.append(job)
 
 
@@ -524,7 +523,8 @@ def ae(species_energies, level_of_theory=None, write_to_database=False, overwrit
     job_list.append(job)
 
 
-def bac(level_of_theory, bac_type='p', train_names='main',
+def bac(level_of_theory, bac_type='p', train_names='main', crossval_n_folds=1,
+        idxs=None, exclude_idxs=None,
         exclude_elements=None, charge='all', multiplicity='all',
         weighted=False, write_to_database=False, overwrite=False,
         fit_mol_corr=True, global_opt=True, global_opt_iter=10):
@@ -534,6 +534,9 @@ def bac(level_of_theory, bac_type='p', train_names='main',
         level_of_theory,
         bac_type=bac_type,
         db_names=train_names,
+        crossval_n_folds=crossval_n_folds,
+        idxs=idxs,
+        exclude_idxs=exclude_idxs,
         exclude_elements=exclude_elements,
         charge=charge,
         multiplicity=multiplicity,

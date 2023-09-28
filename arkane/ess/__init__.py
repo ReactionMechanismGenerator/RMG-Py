@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -37,5 +36,6 @@ from arkane.ess.factory import ess_factory, _registered_ess_adapters
 from arkane.ess.gaussian import GaussianLog
 from arkane.ess.molpro import MolproLog
 from arkane.ess.orca import OrcaLog
+from arkane.ess.psi4 import Psi4Log
 from arkane.ess.qchem import QChemLog
 from arkane.ess.terachem import TeraChemLog

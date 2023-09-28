@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -38,11 +38,11 @@ import math
 import os.path
 
 import numpy as np
-
+from copy import deepcopy
 import rmgpy.quantity as quantity
 from rmgpy.chemkin import write_kinetics_entry
 from rmgpy.data.kinetics.library import LibraryReaction
-from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongCollisionError, PressureDependenceError
+from rmgpy.exceptions import InputError, InvalidMicrocanonicalRateError, ModifiedStrongCollisionError, PressureDependenceError
 from rmgpy.kinetics import Chebyshev, PDepArrhenius
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics.tunneling import Wigner, Eckart
@@ -56,7 +56,7 @@ from arkane.sensitivity import PDepSensitivity as SensAnalysis
 class PressureDependenceJob(object):
     """
     A representation of a pressure dependence job. The attributes are:
-    
+
     ======================= ====================================================
     Attribute               Description
     ======================= ====================================================
@@ -82,23 +82,23 @@ class PressureDependenceJob(object):
     `Plist`                 An array of pressures at which to compute :math:`k(T,P)` values
     `Elist`                 An array of energies to use to compute :math:`k(T,P)` values
     ======================= ====================================================
-    
+
     In RMG mode, several alterations to the k(T,P) algorithm are made both for
     speed and due to the nature of the approximations used:
-    
+
     * Densities of states are not computed for product channels
-    
+
     * Arbitrary rigid rotor moments of inertia are included in the active modes;
       these cancel in the ILT and equilibrium expressions
-    
+
     * k(E) for each path reaction is computed in the direction A -> products,
       where A is always an explored isomer; the high-P kinetics are reversed
       if necessary for this purpose
-    
+
     * Thermodynamic parameters are always used to compute the reverse k(E)
       from the forward k(E) for each path reaction
-    
-    RMG mode should be turned off by default except in RMG jobs.    
+
+    RMG mode should be turned off by default except in RMG jobs.
     """
 
     def __init__(self, network,
@@ -106,12 +106,30 @@ class PressureDependenceJob(object):
                  Pmin=None, Pmax=None, Pcount=0, Plist=None,
                  maximumGrainSize=None, minimumGrainCount=0,
                  method=None, interpolationModel=None, maximumAtoms=None,
-                 activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None):
+                 activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None,
+                 sensitivity_perturbation=0):
+
+        if network and network.products and len(network.products) > 0:
+            if "simulation least squares" in method:
+                raise InputError("""The current simulation least squares implementation should not be
+                              used with product channels. Please specify all bimolecular channels as
+                              reactant channels.""")
+            elif method == "chemically-significant eigenvalues georgievskii":
+                raise InputError("""The chemically-significant eigenvalues georgievskii method cannot be
+                              used with product channels. Please specify all bimolecular channels as
+                              reactant channels.""")
+
+
         self.network = network
 
         self.Tmin = Tmin
         self.Tmax = Tmax
         self.Tcount = Tcount
+        if sensitivity_perturbation == 0:
+            self.sensitivity_perturbation = quantity.Quantity(2.0,'kcal/mol')
+        else:
+            self.sensitivity_perturbation = quantity.Quantity(sensitivity_perturbation)
+
         if Tlist is not None:
             self.Tlist = Tlist
             self.Tmin = (np.min(self.Tlist.value_si), "K")
@@ -278,24 +296,8 @@ class PressureDependenceJob(object):
             if plot:
                 self.plot(os.path.dirname(output_file))
             if self.sensitivity_conditions is not None:
-                perturbation = 0.1  # kcal/mol
                 logging.info('\n\nRunning sensitivity analysis...')
-                for i in range(3):
-                    try:
-                        SensAnalysis(self, os.path.dirname(output_file), perturbation=perturbation)
-                    except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError) as e:
-                        logging.warning('Could not complete the sensitivity analysis with a perturbation of {0} '
-                                        'kcal/mol, trying {1} kcal/mol instead.'.format(
-                                         perturbation, perturbation / 2.0))
-                        perturbation /= 2.0
-                    else:
-                        break
-                else:
-                    logging.error("Could not complete the sensitivity analysis even with a perturbation of {0}"
-                                  " kcal/mol".format(perturbation))
-                    raise e
-                logging.info("Completed the sensitivity analysis using a perturbation of {0} kcal/mol".format(
-                    perturbation))
+                SensAnalysis(deepcopy(self), os.path.dirname(output_file), perturbation=self.sensitivity_perturbation)
         logging.debug('Finished pdep job for reaction {0}.'.format(self.network.label))
         logging.debug(repr(self.network))
 
@@ -315,7 +317,7 @@ class PressureDependenceJob(object):
         if self.Tlist is None:
             if self.interpolation_model[0].lower() == 'chebyshev':
                 # Distribute temperatures on a Gauss-Chebyshev grid
-                Tlist = np.zeros(Tcount, np.float64)
+                Tlist = np.zeros(Tcount, float)
                 for i in range(Tcount):
                     T = -math.cos((2 * i + 1) * math.pi / (2 * self.Tcount))
                     T = 2.0 / ((1.0 / Tmax - 1.0 / Tmin) * T + 1.0 / Tmax + 1.0 / Tmin)
@@ -387,7 +389,7 @@ class PressureDependenceJob(object):
             pass
         elif self.interpolation_model[0].lower() == 'chebyshev':
             # Distribute pressures on a Gauss-Chebyshev grid
-            Plist = np.zeros(Pcount, np.float64)
+            Plist = np.zeros(Pcount, float)
             for i in range(Pcount):
                 P = -math.cos((2 * i + 1) * math.pi / (2 * self.Pcount))
                 P = 10 ** (0.5 * ((math.log10(Pmax) - math.log10(Pmin)) * P + math.log10(Pmax) + math.log10(Pmin)))
@@ -621,8 +623,8 @@ class PressureDependenceJob(object):
         Generate a PDF drawing of the pressure-dependent reaction network.
         This requires that Cairo and its Python wrapper be available; if not,
         the drawing is not generated.
-        
-        You may also generate different formats of drawings, by changing format to 
+
+        You may also generate different formats of drawings, by changing format to
         one of the following: `pdf`, `svg`, `png`.
         """
 
@@ -665,7 +667,7 @@ class PressureDependenceJob(object):
                 f.write('species(\n')
                 f.write('    label = {0!r},\n'.format(str(spec)))
                 if len(spec.molecule) > 0:
-                    f.write('    structure = SMILES({0!r}),\n'.format(spec.molecule[0].to_smiles()))
+                    f.write(f'    structure = adjacencyList("""{spec.molecule[0].to_adjacency_list()}"""),\n')
                 if spec.conformer is not None:
                     if spec.conformer.E0 is not None:
                         f.write('    E0 = {0!r},\n'.format(spec.conformer.E0))

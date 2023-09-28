@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -71,6 +71,8 @@ class Network(object):
     `grain_size`            Maximum size of separation between energies
     `grain_count`           Minimum number of descrete energies separated
     `E0`                    A list of ground state energies of isomers, reactants, and products (J/mol)
+    `Emax`                  Highest energy level considered in graining before padding
+    `Emin`                  Minimum energy levell considered in graining
     `active_k_rotor`        ``True`` if the K-rotor is treated as active, ``False`` if treated as adiabatic
     `active_j_rotor`        ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
     `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
@@ -86,13 +88,15 @@ class Network(object):
     ----------------------- ----------------------------------------------------
     `K`                     2D Array of phenomenological rates at the specified T and P
     `p0`                    Pseudo-steady state population distributions
+    `U`                     2D Array of estimated uncorrelated uncertainties in K matrix
     ======================= ====================================================
     """
 
     def __init__(self, label='', isomers=None, reactants=None, products=None,
                  path_reactions=None, bath_gas=None, net_reactions=None, T=0.0, P=0.0,
                  e_list=None, j_list=None, n_grains=0, n_j=0, active_k_rotor=True,
-                 active_j_rotor=True, grain_size=0.0, grain_count=0, E0=None):
+                 active_j_rotor=True, grain_size=0.0, grain_count=0, E0=None,
+                 Emax=None, Emin=None):
         """
         To initialize a Network object for running a pressure dependent job,
         only label, isomers, reactants, products path_reactions and bath_gas are useful,
@@ -126,7 +130,9 @@ class Network(object):
         self.grain_size = grain_size
         self.grain_count = grain_count
         self.E0 = E0
-
+        self.Emin = Emin
+        self.Emax = Emax
+        
         self.valid = False
 
     def __repr__(self):
@@ -224,7 +230,7 @@ class Network(object):
         self.n_j = 0
 
         # Calculate ground-state energies
-        self.E0 = np.zeros((self.n_isom + self.n_reac + self.n_prod), np.float64)
+        self.E0 = np.zeros((self.n_isom + self.n_reac + self.n_prod), float)
         for i in range(self.n_isom):
             self.E0[i] = self.isomers[i].E0
         for n in range(self.n_reac):
@@ -241,7 +247,7 @@ class Network(object):
         logging.debug('Finished initialization for network {0}.'.format(self.label))
         logging.debug('The network now has values of {0}'.format(repr(self)))
 
-    def calculate_rate_coefficients(self, Tlist, Plist, method, error_check=True):
+    def calculate_rate_coefficients(self, Tlist, Plist, method, error_check=True, neglect_high_energy_collisions=False, high_energy_rate_tol=0.01):
 
         n_isom = len(self.isomers)
         n_reac = len(self.reactants)
@@ -255,7 +261,7 @@ class Network(object):
         logging.debug('')
 
         logging.info('Calculating phenomenological rate coefficients for {0}...'.format(rxn))
-        K = np.zeros((len(Tlist), len(Plist), n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float64)
+        K = np.zeros((len(Tlist), len(Plist), n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), float)
 
         for t, T in enumerate(Tlist):
             for p, P in enumerate(Plist):
@@ -267,10 +273,28 @@ class Network(object):
                 elif method.lower() == 'reservoir state':
                     self.apply_reservoir_state_method()
                 elif method.lower() == 'chemically-significant eigenvalues':
-                    self.apply_chemically_significant_eigenvalues_method()
+                    self.apply_chemically_significant_eigenvalues_method(method="allen", neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
+                elif method.lower() == 'chemically-significant eigenvalues georgievskii':
+                    self.apply_chemically_significant_eigenvalues_method(method="georgievskii", neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
+                elif method.lower() == 'simulation least squares':
+                    self.apply_simulation_least_squares_method(method='mexp', neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
+                elif method.lower() == 'simulation least squares ode':
+                    self.apply_simulation_least_squares_method(method='ode', neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
+                elif method.lower() == 'simulation least squares matrix exponential':
+                    self.apply_simulation_least_squares_method(method='mexp', neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
+                elif method.lower() == 'simulation least squares eigen':
+                    self.apply_simulation_least_squares_method(method='eigen', neglect_high_energy_collisions=neglect_high_energy_collisions,
+                                              high_energy_rate_tol=high_energy_rate_tol)
                 else:
                     raise NetworkError('Unknown method "{0}". Valid options are "modified strong collision", '
-                                       '"reservoir state", or "chemically-significant eigenvalues"'.format(method))
+                                       '"reservoir state", "chemically-significant eigenvalues", "simulation least squares", '
+                                       '"simulation least squares ode", "simulation least squares matrix exponential", or '
+                                       '"simulation least squares eigen"'.format(method))
 
                 K[t, p, :, :] = self.K
 
@@ -357,10 +381,10 @@ class Network(object):
                 # Choose the angular momenta to use to compute k(T,P) values at this temperature
                 # (This only applies if the J-rotor is adiabatic
                 if not self.active_j_rotor:
-                    j_list = self.j_list = np.arange(0, 20, 1, np.int)
+                    j_list = self.j_list = np.arange(0, 20, 1, int)
                     n_j = self.n_j = len(j_list)
                 else:
-                    j_list = self.j_list = np.array([0], np.int)
+                    j_list = self.j_list = np.array([0], int)
                     n_j = self.n_j = 1
 
                 # Map the densities of states onto this set of energies
@@ -452,9 +476,9 @@ class Network(object):
 
         # Generate the array of energies
         if use_grain_size:
-            e_list = np.arange(Emin, Emax + grain_size, grain_size, dtype=np.float64)
+            e_list = np.arange(Emin, Emax + grain_size, grain_size, dtype=float)
         else:
-            e_list = np.linspace(Emin, Emax, grain_count, dtype=np.float64)
+            e_list = np.linspace(Emin, Emax, grain_count, dtype=float)
 
         return e_list
 
@@ -478,14 +502,19 @@ class Network(object):
             raise NetworkError('Must provide either grain_size or n_grains parameter to Network.determineEnergyGrains().')
 
         # The minimum energy is the lowest isomer or reactant or product energy on the PES
-        e_min = np.min(self.E0)
-        e_min = math.floor(e_min)  # Round to nearest whole number
-
+        if self.Emin is None:
+            e_min = np.min(self.E0)
+            e_min = math.floor(e_min)  # Round to nearest whole number
+        else:
+            e_min = self.Emin
         # Use the highest energy on the PES as the initial guess for Emax0
-        e_max = np.max(self.E0)
-        for rxn in self.path_reactions:
-            E0 = float(rxn.transition_state.conformer.E0.value_si)
-            if E0 > e_max: e_max = E0
+        if self.Emax is None:
+            e_max = np.max(self.E0)
+            for rxn in self.path_reactions:
+                E0 = float(rxn.transition_state.conformer.E0.value_si)
+                if E0 > e_max: e_max = E0
+        else:
+            e_max = self.Emax
 
         # Choose the actual e_max as many kB * T above the maximum energy on the PES
         # You should check that this is high enough so that the Boltzmann distributions have trailed off to negligible values
@@ -530,7 +559,7 @@ class Network(object):
         # Shift the energy grains so that the minimum grain is zero
         e_list -= e_list[0]
 
-        dens_states = np.zeros((n_isom + n_reac + n_prod, n_grains), np.float64)
+        dens_states = np.zeros((n_isom + n_reac + n_prod, n_grains), float)
 
         # Densities of states for isomers
         for i in range(n_isom):
@@ -623,9 +652,9 @@ class Network(object):
         n_prod = len(self.products)
         n_j = 1 if self.active_j_rotor else len(j_list)
 
-        self.Kij = np.zeros([n_isom, n_isom, n_grains, n_j], np.float64)
-        self.Gnj = np.zeros([n_reac + n_prod, n_isom, n_grains, n_j], np.float64)
-        self.Fim = np.zeros([n_isom, n_reac, n_grains, n_j], np.float64)
+        self.Kij = np.zeros([n_isom, n_isom, n_grains, n_j], float)
+        self.Gnj = np.zeros([n_reac + n_prod, n_isom, n_grains, n_j], float)
+        self.Fim = np.zeros([n_isom, n_reac, n_grains, n_j], float)
 
         isomers = [isomer.species[0] for isomer in self.isomers]
         reactants = [reactant.species for reactant in self.reactants]
@@ -838,7 +867,7 @@ class Network(object):
         n_isom = len(self.isomers)
         n_reac = len(self.reactants)
         n_prod = len(self.products)
-        eq_ratios = np.zeros(n_isom + n_reac + n_prod, np.float64)
+        eq_ratios = np.zeros(n_isom + n_reac + n_prod, float)
         conc = (1e5 / constants.R / temperature)  # [=] mol/m^3
         for i in range(n_isom):
             G = self.isomers[i].get_free_energy(temperature)
@@ -865,8 +894,8 @@ class Network(object):
         n_j = 1 if self.j_list is None else len(self.j_list)
 
         try:
-            coll_freq = np.zeros(n_isom, np.float64)
-            m_coll = np.zeros((n_isom, n_grains, n_j, n_grains, n_j), np.float64)
+            coll_freq = np.zeros(n_isom, float)
+            m_coll = np.zeros((n_isom, n_grains, n_j, n_grains, n_j), float)
         except MemoryError:
             logging.warning('Collision matrix too large to manage')
             new_n_grains = int(n_grains / 2.0)
@@ -904,7 +933,7 @@ class Network(object):
         self.K, self.p0 = rs.apply_reservoir_state_method(self)
         return self.K, self.p0
 
-    def apply_chemically_significant_eigenvalues_method(self, lumping_order=None):
+    def apply_chemically_significant_eigenvalues_method(self, lumping_order=None, method='allen', neglect_high_energy_collisions=False, high_energy_rate_tol=0.01):
         """
         Compute the phenomenological rate coefficients :math:`k(T,P)` at the
         current conditions using the chemically-significant eigenvalues method.
@@ -915,12 +944,23 @@ class Network(object):
         import rmgpy.pdep.cse as cse
         logging.debug(
             'Applying chemically-significant eigenvalues method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
-        self.K, self.p0 = cse.apply_chemically_significant_eigenvalues_method(self, lumping_order)
-        return self.K, self.p0
+        if method == 'allen':
+            self.K, self.p0 = cse.apply_chemically_significant_eigenvalues_method(self, lumping_order, neglect_high_energy_collisions=neglect_high_energy_collisions, high_energy_rate_tol=high_energy_rate_tol)
+            return self.K, self.p0
+        elif method == "georgievskii":
+            self.K = cse.apply_chemically_significant_eigenvalues_method_georgievskii(self, neglect_high_energy_collisions=neglect_high_energy_collisions, high_energy_rate_tol=high_energy_rate_tol)
+            return self.K
 
-    def generate_full_me_matrix(self, products=True):
+    def apply_simulation_least_squares_method(self, method='mexp', neglect_high_energy_collisions=False, high_energy_rate_tol=0.01):
+        import rmgpy.pdep.sls as sls
+        logging.debug(
+            'Applying simulation least squares method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
+        self.K, self.U = sls.apply_simulation_least_squares_method(self, method=method, neglect_high_energy_collisions=neglect_high_energy_collisions, high_energy_rate_tol=high_energy_rate_tol)
+        return self.K, self.U
+
+    def generate_full_me_matrix(self, products=True, neglect_high_energy_collisions=False, high_energy_rate_tol=0.01):
         import rmgpy.pdep.me as me
-        return me.generate_full_me_matrix(self, products=products)
+        return me.generate_full_me_matrix(self, products=products, neglect_high_energy_collisions=neglect_high_energy_collisions, high_energy_rate_tol=high_energy_rate_tol)
 
     def solve_full_me(self, tlist, x0):
         """

@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -268,6 +268,9 @@ cdef class SimpleReactor(ReactionSystem):
             if rxn.reversible:
                 self.Keq[j] = rxn.get_equilibrium_constant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]
+            else:
+                self.kb[j] = 0.0
+                self.Keq[j] = np.inf
 
     def get_threshold_rate_constants(self, model_settings):
         """
@@ -310,9 +313,9 @@ cdef class SimpleReactor(ReactionSystem):
                     self.pdep_specific_collider_kinetics.append(rxn.kinetics)
                     self.specific_collider_species.append(rxn.specific_collider)
 
-        self.pdep_collision_reaction_indices = np.array(pdep_collider_reaction_indices, np.int)
-        self.collider_efficiencies = np.array(collider_efficiencies, np.float64)
-        self.pdep_specific_collider_reaction_indices = np.array(pdep_specific_collider_reaction_indices, np.int)
+        self.pdep_collision_reaction_indices = np.array(pdep_collider_reaction_indices, int)
+        self.collider_efficiencies = np.array(collider_efficiencies, float)
+        self.pdep_specific_collider_reaction_indices = np.array(pdep_specific_collider_reaction_indices, int)
 
     def set_initial_conditions(self):
         """
@@ -343,7 +346,7 @@ cdef class SimpleReactor(ReactionSystem):
 
     @cython.boundscheck(False)
     def residual(self, double t, np.ndarray[np.float64_t, ndim=1] y, np.ndarray[np.float64_t, ndim=1] dydt,
-                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float64)):
+                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, float)):
 
         """
         Return the residual function for the governing DAE system for the
@@ -351,8 +354,8 @@ cdef class SimpleReactor(ReactionSystem):
         """
         cdef np.ndarray[np.int_t, ndim=2] ir, ip, inet
         cdef np.ndarray[np.float64_t, ndim=1] res, kf, kr, knet, delta, equilibrium_constants
-        cdef int num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
-        cdef int i, j, z, first, second, third
+        cdef Py_ssize_t num_core_species, num_core_reactions, num_edge_species, num_edge_reactions, num_pdep_networks
+        cdef Py_ssize_t i, j, z, first, second, third
         cdef double k, V, reaction_rate, rev_reaction_rate, T, P, Peff
         cdef np.ndarray[np.float64_t, ndim=1] core_species_concentrations, core_species_rates, core_reaction_rates
         cdef np.ndarray[np.float64_t, ndim=1] edge_species_rates, edge_reaction_rates, network_leak_rates
@@ -397,16 +400,19 @@ cdef class SimpleReactor(ReactionSystem):
             pdep_specific_collider_kinetics = self.pdep_specific_collider_kinetics
             specific_collider_species = self.specific_collider_species
             for i in range(pdep_specific_collider_reaction_indices.shape[0]):
-                # Calculate effective pressure
-                Peff = P * y[self.species_index[specific_collider_species[i]]] / np.sum(y_core_species)
-                j = pdep_specific_collider_reaction_indices[i]
-                kf[j] = pdep_specific_collider_kinetics[i].get_rate_coefficient(T, Peff)
-                kr[j] = kf[j] / equilibrium_constants[j]
+                if len(y) > self.species_index[specific_collider_species[i]]:
+                    # Calculate the effective pressure
+                    Peff = P * y[self.species_index[specific_collider_species[i]]] / np.sum(y_core_species)
+                    j = pdep_specific_collider_reaction_indices[i]
+                    kf[j] = pdep_specific_collider_kinetics[i].get_rate_coefficient(T, Peff)
+                else:
+                    kf[j] = 0
+            kr[j] = kf[j] / equilibrium_constants[j]
 
         inet = self.network_indices
         knet = self.network_leak_coefficients
 
-        res = np.zeros(num_core_species, np.float64)
+        res = np.zeros(num_core_species, float)
 
         core_species_concentrations = np.zeros_like(self.core_species_concentrations)
         core_species_rates = np.zeros_like(self.core_species_rates)
@@ -540,7 +546,7 @@ cdef class SimpleReactor(ReactionSystem):
         res = core_species_rates * V
 
         if self.sensitivity:
-            delta = np.zeros(len(y), np.float64)
+            delta = np.zeros(len(y), float)
             delta[:num_core_species] = res
             if self.jacobian_matrix is None:
                 jacobian = self.jacobian(t, y, dydt, 0, senpar)
@@ -562,7 +568,7 @@ cdef class SimpleReactor(ReactionSystem):
 
     @cython.boundscheck(False)
     def jacobian(self, double t, np.ndarray[np.float64_t, ndim=1] y, np.ndarray[np.float64_t, ndim=1] dydt,
-                 double cj, np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float64)):
+                 double cj, np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, float)):
         """
         Return the analytical Jacobian for the reaction system.
         """
@@ -580,7 +586,7 @@ cdef class SimpleReactor(ReactionSystem):
         num_core_reactions = len(self.core_reaction_rates)
         num_core_species = len(self.core_species_concentrations)
 
-        pd = -cj * np.identity(num_core_species, np.float64)
+        pd = -cj * np.identity(num_core_species, float)
 
         V = constants.R * self.T.value_si * np.sum(y[:num_core_species]) / self.P.value_si
 
@@ -1046,5 +1052,5 @@ cdef class SimpleReactor(ReactionSystem):
                             for i in range(num_core_species):
                                 pd[ir[j, 2], i] += corr
 
-        self.jacobian_matrix = pd + cj * np.identity(num_core_species, np.float64)
+        self.jacobian_matrix = pd + cj * np.identity(num_core_species, float)
         return pd
