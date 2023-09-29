@@ -57,7 +57,7 @@ from rmgpy.rmg.react import react_all
 from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.rmg.decay import decay_species
-from rmgpy.rmg.reactors import PhaseSystem, Phase, Interface, Reactor
+from rmgpy.rmg.reactionmechanismsimulator_reactors import PhaseSystem, Phase, Interface, Reactor, NO_JULIA
 from rmgpy.molecule.fragment import Fragment
 
 ################################################################################
@@ -75,7 +75,7 @@ class ReactionModel:
         if phases is None:
             phases = {"Default": Phase(), "Surface": Phase()}
             interfaces = {frozenset({"Default", "Surface"}): Interface(list(phases.values()))}
-        self.phase_system = PhaseSystem(phases, interfaces)
+        self.phase_system = None if NO_JULIA else PhaseSystem(phases, interfaces)
 
     def __reduce__(self):
         """
@@ -589,7 +589,7 @@ class CoreEdgeReactionModel:
 
         return forward
 
-    def enlarge(self, new_object=None, react_edge=False, unimolecular_react=None, bimolecular_react=None, trimolecular_react=None):
+    def enlarge(self, new_object=None, react_edge=False, unimolecular_react=None, bimolecular_react=None, trimolecular_react=None, requires_rms=False):
         """
         Enlarge a reaction model by processing the objects in the list `new_object`.
         If `new_object` is a
@@ -635,7 +635,7 @@ class CoreEdgeReactionModel:
                     display(new_species)  # if running in IPython --pylab mode, draws the picture!
 
                 # Add new species
-                reactions_moved_from_edge = self.add_species_to_core(new_species)
+                reactions_moved_from_edge = self.add_species_to_core(new_species, requires_rms=requires_rms)
 
             elif isinstance(new_object, tuple) and isinstance(new_object[0], PDepNetwork) and self.pressure_dependence:
                 pdep_network, new_species = new_object
@@ -799,7 +799,7 @@ class CoreEdgeReactionModel:
         self.new_surface_spcs_loss = set()
         self.new_surface_rxns_loss = set()
 
-    def process_new_reactions(self, new_reactions, new_species, pdep_network=None, generate_thermo=True, generate_kinetics=True):
+    def process_new_reactions(self, new_reactions, new_species, pdep_network=None, generate_thermo=True, generate_kinetics=True, requires_rms=False):
         """
         Process a list of newly-generated reactions involving the new core
         species or explored isomer `new_species` in network `pdep_network`.
@@ -821,12 +821,12 @@ class CoreEdgeReactionModel:
                     if spec not in self.core.species:
                         all_species_in_core = False
                         if spec not in self.edge.species:
-                            self.add_species_to_edge(spec)
+                            self.add_species_to_edge(spec, requires_rms=requires_rms)
                 for spec in rxn.products:
                     if spec not in self.core.species:
                         all_species_in_core = False
                         if spec not in self.edge.species:
-                            self.add_species_to_edge(spec)
+                            self.add_species_to_edge(spec, requires_rms=requires_rms)
 
             isomer_atoms = sum([len(spec.molecule[0].atoms) for spec in rxn.reactants])
 
@@ -854,9 +854,9 @@ class CoreEdgeReactionModel:
                     # The reaction is not new, so it should already be in the core or edge
                     continue
                 if all_species_in_core:
-                    self.add_reaction_to_core(rxn)
+                    self.add_reaction_to_core(rxn, requires_rms=requires_rms)
                 else:
-                    self.add_reaction_to_edge(rxn)
+                    self.add_reaction_to_edge(rxn, requires_rms=requires_rms)
             else:
                 # Add the reaction to the appropriate unimolecular reaction network
                 # If pdep_network is not None then that will be the network the
@@ -1111,7 +1111,7 @@ class CoreEdgeReactionModel:
         logging.info("    The model edge has {0:d} species and {1:d} reactions".format(edge_species_count, edge_reaction_count))
         logging.info("")
 
-    def add_species_to_core(self, spec):
+    def add_species_to_core(self, spec, requires_rms=False):
         """
         Add a species `spec` to the reaction model core (and remove from edge if
         necessary). This function also moves any reactions in the edge that gain
@@ -1141,7 +1141,8 @@ class CoreEdgeReactionModel:
 
         rxn_list = []
         if spec in self.edge.species:
-            self.edge.phase_system.pass_species(spec.label, self.core.phase_system)
+            if not NO_JULIA and requires_rms:
+                self.edge.phase_system.pass_species(spec.label, self.core.phase_system)
             # If species was in edge, remove it
             logging.debug("Removing species %s from edge.", spec)
             self.edge.species.remove(spec)
@@ -1163,29 +1164,24 @@ class CoreEdgeReactionModel:
             for rxn in rxn_list:
                 self.add_reaction_to_core(rxn)
                 logging.debug("Moving reaction from edge to core: %s", rxn)
-        else:
-            if spec.molecule[0].contains_surface_site():
-                self.core.phase_system.phases["Surface"].add_species(spec, edge_phase=self.edge.phase_system.phases["Surface"])
-                self.edge.phase_system.species_dict[spec.label] = spec
-                self.core.phase_system.species_dict[spec.label] = spec
-            else:
-                self.core.phase_system.phases["Default"].add_species(spec, edge_phase=self.edge.phase_system.phases["Default"])
-                self.edge.phase_system.species_dict[spec.label] = spec
-                self.core.phase_system.species_dict[spec.label] = spec
+        elif not NO_JULIA and requires_rms:
+            destination_phase = "Surface" if spec.molecule[0].contains_surface_site() else "Default"
+            self.core.phase_system.phases[destination_phase].add_species(spec, edge_phase=self.edge.phase_system.phases[destination_phase])
+            self.edge.phase_system.species_dict[spec.label] = spec
+            self.core.phase_system.species_dict[spec.label] = spec
 
         return rxn_list
 
-    def add_species_to_edge(self, spec):
+    def add_species_to_edge(self, spec, requires_rms=False):
         """
-        Add a species `spec` to the reaction model edge.
+        Add a species `spec` to the reaction model edge and optionally the RMS phase.
         """
         self.edge.species.append(spec)
-        if spec.molecule[0].contains_surface_site():
-            self.edge.phase_system.phases["Surface"].add_species(spec)
-            self.edge.phase_system.species_dict[spec.label] = spec
-        else:
-            self.edge.phase_system.phases["Default"].add_species(spec)
-            self.edge.phase_system.species_dict[spec.label] = spec
+        if NO_JULIA or not requires_rms:
+            return
+        destination_phase = "Surface" if spec.molecule[0].contains_surface_site() else "Default"
+        self.edge.phase_system.phases[destination_phase].add_species(spec)
+        self.edge.phase_system.species_dict[spec.label] = spec
 
     def set_thermodynamic_filtering_parameters(
         self, Tmax, thermo_tol_keep_spc_in_edge, min_core_size_for_prune, maximum_edge_species, reaction_systems
@@ -1302,7 +1298,7 @@ class CoreEdgeReactionModel:
                     del self.network_dict[source]
                 self.network_list.remove(network)
 
-    def prune(self, reaction_systems, tol_keep_in_edge, tol_move_to_core, maximum_edge_species, min_species_exist_iterations_for_prune):
+    def prune(self, reaction_systems, tol_keep_in_edge, tol_move_to_core, maximum_edge_species, min_species_exist_iterations_for_prune, requires_rms=False):
         """
         Remove species from the model edge based on the simulation results from
         the list of `reaction_systems`.
@@ -1382,7 +1378,7 @@ class CoreEdgeReactionModel:
             for index, spec in species_to_prune[0:prune_due_to_rate_counter]:
                 logging.info("Pruning species %s", spec)
                 logging.debug("    %-56s    %10.4e", spec, max_edge_species_rate_ratios[index])
-                self.remove_species_from_edge(reaction_systems, spec)
+                self.remove_species_from_edge(reaction_systems, spec, requires_rms=requires_rms)
         if len(species_to_prune) - prune_due_to_rate_counter > 0:
             logging.info(
                 "Pruning %d species to obtain an edge size of %d species", len(species_to_prune) - prune_due_to_rate_counter, maximum_edge_species
@@ -1390,7 +1386,7 @@ class CoreEdgeReactionModel:
             for index, spec in species_to_prune[prune_due_to_rate_counter:]:
                 logging.info("Pruning species %s", spec)
                 logging.debug("    %-56s    %10.4e", spec, max_edge_species_rate_ratios[index])
-                self.remove_species_from_edge(reaction_systems, spec)
+                self.remove_species_from_edge(reaction_systems, spec, requires_rms=requires_rms)
 
         # Delete any networks that became empty as a result of pruning
         if self.pressure_dependence:
@@ -1398,7 +1394,7 @@ class CoreEdgeReactionModel:
 
         logging.info("")
 
-    def remove_species_from_edge(self, reaction_systems, spec):
+    def remove_species_from_edge(self, reaction_systems, spec, requires_rms=False):
         """
         Remove species `spec` from the reaction model edge.
         """
@@ -1410,7 +1406,7 @@ class CoreEdgeReactionModel:
 
         # clean up species references in reaction_systems
         for reaction_system in reaction_systems:
-            if not isinstance(reaction_system, Reactor):
+            if NO_JULIA or not requires_rms or not isinstance(reaction_system, Reactor):
                 try:
                     reaction_system.species_index.pop(spec)
                 except KeyError:
@@ -1482,7 +1478,7 @@ class CoreEdgeReactionModel:
             self.species_cache.remove(spec)
             self.species_cache.append(None)
 
-    def add_reaction_to_core(self, rxn):
+    def add_reaction_to_core(self, rxn, requires_rms=False):
         """
         Add a reaction `rxn` to the reaction model core (and remove from edge if
         necessary). This function assumes `rxn` has already been checked to
@@ -1491,7 +1487,8 @@ class CoreEdgeReactionModel:
         """
         if rxn not in self.core.reactions:
             self.core.reactions.append(rxn)
-            if rxn not in self.edge.reactions:
+            
+            if not NO_JULIA and requires_rms and rxn not in self.edge.reactions:
                 # If a reaction is not in edge but is going to add to core, it is either a seed mechanism or a newly generated reaction where all reactants and products are already in core
                 # If the reaction is in edge, then the corresponding rms_rxn was moved from edge phase to core phase in pass_species already.
                 rms_species_list = self.core.phase_system.get_rms_species_list()
@@ -1508,7 +1505,7 @@ class CoreEdgeReactionModel:
         if rxn in self.edge.reactions:
             self.edge.reactions.remove(rxn)
 
-    def add_reaction_to_edge(self, rxn):
+    def add_reaction_to_edge(self, rxn, requires_rms=False):
         """
         Add a reaction `rxn` to the reaction model edge. This function assumes
         `rxn` has already been checked to ensure it is supposed to be an edge
@@ -1517,6 +1514,8 @@ class CoreEdgeReactionModel:
         edge).
         """
         self.edge.reactions.append(rxn)
+        if NO_JULIA or not requires_rms:
+            return
         rms_species_list = self.edge.phase_system.get_rms_species_list()
         species_names = self.edge.phase_system.get_species_names()
         bits = np.array([spc.molecule[0].contains_surface_site() for spc in rxn.reactants + rxn.products])
@@ -1573,7 +1572,7 @@ class CoreEdgeReactionModel:
                     stoichiometry[i, j] = nu
         return stoichiometry.tocsr()
 
-    def add_seed_mechanism_to_core(self, seed_mechanism, react=False):
+    def add_seed_mechanism_to_core(self, seed_mechanism, react=False, requires_rms=False):
         """
         Add all species and reactions from `seed_mechanism`, a
         :class:`KineticsPrimaryDatabase` object, to the model core. If `react`
@@ -1680,7 +1679,7 @@ class CoreEdgeReactionModel:
                 spec.get_liquid_volumetric_mass_transfer_coefficient_data()
                 spec.get_henry_law_constant_data()
 
-            self.add_species_to_core(spec)
+            self.add_species_to_core(spec, requires_rms=requires_rms)
 
         for rxn in self.new_reaction_list:
             if self.pressure_dependence and rxn.is_unimolecular():
@@ -1703,7 +1702,7 @@ class CoreEdgeReactionModel:
             new_edge_reactions=[],
         )
 
-    def add_reaction_library_to_edge(self, reaction_library):
+    def add_reaction_library_to_edge(self, reaction_library, requires_rms=False):
         """
         Add all species and reactions from `reaction_library`, a
         :class:`KineticsPrimaryDatabase` object, to the model edge.
@@ -1802,7 +1801,7 @@ class CoreEdgeReactionModel:
                 spec.get_liquid_volumetric_mass_transfer_coefficient_data()
                 spec.get_henry_law_constant_data()
 
-            self.add_species_to_edge(spec)
+            self.add_species_to_edge(spec, requires_rms=requires_rms)
 
         for rxn in self.new_reaction_list:
             if not (
@@ -1817,7 +1816,7 @@ class CoreEdgeReactionModel:
                 )
             ):
                 # Don't add to the edge library reactions that were already processed
-                self.add_reaction_to_edge(rxn)
+                self.add_reaction_to_edge(rxn, requires_rms=requires_rms)
 
         if self.save_edge_species:
             from rmgpy.chemkin import mark_duplicate_reaction

@@ -79,7 +79,8 @@ from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.plot import plot_sensitivity
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
 from rmgpy.yml import RMSWriter
-from rmgpy.rmg.reactors import Reactor
+from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
+from rmgpy.rmg.reactionmechanismsimulator_reactors import NO_JULIA
 
 ################################################################################
 
@@ -506,6 +507,12 @@ class RMG(util.Subject):
 
         # Read input file
         self.load_input(self.input_file)
+        
+        # Check if ReactionMechanismSimulator reactors are being used
+        # if RMS is not installed but the user attempted to use it, the load_input_file would have failed
+        # if RMS is installed but they did not use it, we can avoid extra work
+        # if RMS is not installed and they did not use it, we avoid calling certain functions that would raise an error
+        requires_rms = any(isinstance(RMSReactor, self.reaction_systems))
 
         if kwargs.get("restart", ""):
             import rmgpy.rmg.input
@@ -549,10 +556,10 @@ class RMG(util.Subject):
         self.load_database()
 
         for spec in self.initial_species:
-            self.reaction_model.add_species_to_edge(spec)
+            self.reaction_model.add_species_to_edge(spec, requires_rms=requires_rms)
 
         for reaction_system in self.reaction_systems:
-            if isinstance(reaction_system, Reactor):
+            if not NO_JULIA and isinstance(reaction_system, RMSReactor):
                 reaction_system.finish_termination_criteria()
 
         # Load restart seed mechanism (if specified)
@@ -617,12 +624,12 @@ class RMG(util.Subject):
         # Seed mechanisms: add species and reactions from seed mechanism
         # DON'T generate any more reactions for the seed species at this time
         for seed_mechanism in self.seed_mechanisms:
-            self.reaction_model.add_seed_mechanism_to_core(seed_mechanism, react=False)
+            self.reaction_model.add_seed_mechanism_to_core(seed_mechanism, react=False, requires_rms=requires_rms)
 
         # Reaction libraries: add species and reactions from reaction library to the edge so
         # that RMG can find them if their rates are large enough
         for library, option in self.reaction_libraries:
-            self.reaction_model.add_reaction_library_to_edge(library)
+            self.reaction_model.add_reaction_library_to_edge(library, requires_rms=requires_rms)
 
         # Also always add in a few bath gases (since RMG-Java does)
         for label, smiles in [("Ar", "[Ar]"), ("He", "[He]"), ("Ne", "[Ne]"), ("N2", "N#N")]:
@@ -703,9 +710,7 @@ class RMG(util.Subject):
         # advantages to write it here: this is run only once (as species indexes does not change over the generation)
         if self.solvent is not None:
             for index, reaction_system in enumerate(self.reaction_systems):
-                if (
-                    not isinstance(reaction_system, Reactor) and reaction_system.const_spc_names is not None
-                ):  # if no constant species provided do nothing
+                if ((NO_JULIA or not isinstance(reaction_system, RMSReactor)) and reaction_system.const_spc_names is not None):  # if no constant species provided do nothing
                     reaction_system.get_const_spc_indices(self.reaction_model.core.species)  # call the function to identify indices in the solver
 
         self.initialize_reaction_threshold_and_react_flags()
@@ -714,6 +719,7 @@ class RMG(util.Subject):
         self.reaction_model.initialize_index_species_dict()
 
         self.initialize_seed_mech()
+        return requires_rms
 
     def register_listeners(self):
         """
@@ -748,7 +754,7 @@ class RMG(util.Subject):
         """
 
         if initialize:
-            self.initialize(**kwargs)
+            requires_rms = self.initialize(**kwargs)
 
         # register listeners
         self.register_listeners()
@@ -778,7 +784,7 @@ class RMG(util.Subject):
             # Update react flags
             if self.filter_reactions:
                 # Run the reaction system to update threshold and react flags
-                if isinstance(reaction_system, Reactor):
+                if not NO_JULIA and requires_rms and isinstance(reaction_system, RMSReactor):
                     self.update_reaction_threshold_and_react_flags(
                         rxn_sys_unimol_threshold=np.zeros((len(self.reaction_model.core.species),), bool),
                         rxn_sys_bimol_threshold=np.zeros((len(self.reaction_model.core.species), len(self.reaction_model.core.species)), bool),
@@ -899,7 +905,7 @@ class RMG(util.Subject):
                             prune = False
 
                         try:
-                            if isinstance(reaction_system, Reactor):
+                            if not NO_JULIA and requires_rms and isinstance(reaction_system, RMSReactor):
                                 (
                                     terminated,
                                     resurrected,
@@ -992,7 +998,7 @@ class RMG(util.Subject):
 
                         # Add objects to enlarge to the core first
                         for objectToEnlarge in objects_to_enlarge:
-                            self.reaction_model.enlarge(objectToEnlarge)
+                            self.reaction_model.enlarge(objectToEnlarge, requires_rms=requires_rms)
 
                         if model_settings.filter_reactions:
                             # Run a raw simulation to get updated reaction system threshold values
@@ -1001,7 +1007,7 @@ class RMG(util.Subject):
                             temp_model_settings.tol_keep_in_edge = 0
                             if not resurrected:
                                 try:
-                                    if isinstance(reaction_system, Reactor):
+                                    if not NO_JULIA and requires_rms and isinstance(reaction_system, RMSReactor):
                                         (
                                             terminated,
                                             resurrected,
@@ -1070,7 +1076,7 @@ class RMG(util.Subject):
                                     skip_update=True,
                                 )
                                 logging.warning(
-                                    "Reaction thresholds/flags for Reaction System {0} was not updated due " "to resurrection".format(index + 1)
+                                    "Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection".format(index + 1)
                                 )
 
                             logging.info("")
@@ -1093,6 +1099,7 @@ class RMG(util.Subject):
                             unimolecular_react=self.unimolecular_react,
                             bimolecular_react=self.bimolecular_react,
                             trimolecular_react=self.trimolecular_react,
+                            requires_rms=requires_rms,
                         )
 
                         if old_edge_size != len(self.reaction_model.edge.reactions) or old_core_size != len(self.reaction_model.core.reactions):
@@ -1126,6 +1133,7 @@ class RMG(util.Subject):
                             model_settings.tol_move_to_core,
                             model_settings.maximum_edge_species,
                             model_settings.min_species_exist_iterations_for_prune,
+                            requires_rms=requires_rms,
                         )
                         # Perform garbage collection after pruning
                         collected = gc.collect()
