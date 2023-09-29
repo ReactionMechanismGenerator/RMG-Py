@@ -122,6 +122,12 @@ jobs:
           activate-environment: rmg_env
           use-mamba: true
 
+      # installs the extra RMS conda dependencies
+      - name: Add RMS dependencies
+        run: |
+          conda install -c conda-forge julia>=1.8.5,!=1.9.0 pyjulia>=0.6 
+          conda install -c rmg numdifftools pyrms diffeqpy
+
       # list the environment for debugging purposes
       - name: mamba info
         run: |
