@@ -349,9 +349,10 @@ class CoreEdgeReactionModel:
         orilabel = spec.label
         label = orilabel
         i = 2
-        while any([label in phase.names for phase in self.edge.phase_system.phases.values()]):
-            label = orilabel + "-" + str(i)
-            i += 1
+        if self.edge.phase_system:  # None when RMS not installed
+            while any([label in phase.names for phase in self.edge.phase_system.phases.values()]):
+                label = orilabel + "-" + str(i)
+                i += 1
         spec.label = label
 
         logging.debug("Creating new species %s", spec.label)
