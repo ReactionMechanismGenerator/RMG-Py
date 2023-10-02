@@ -125,8 +125,8 @@ jobs:
       # installs the extra RMS conda dependencies
       - name: Add RMS dependencies
         run: |
-          conda install -c conda-forge julia>=1.8.5,!=1.9.0 pyjulia>=0.6 
-          conda install -c rmg numdifftools pyrms diffeqpy
+          conda install -c conda-forge --override-channels julia>=1.8.5,!=1.9.0 pyjulia>=0.6 
+          conda install -c rmg --override-channels numdifftools pyrms diffeqpy
 
       # list the environment for debugging purposes
       - name: mamba info
