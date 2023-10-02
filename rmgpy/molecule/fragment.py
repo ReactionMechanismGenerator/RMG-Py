@@ -129,6 +129,9 @@ class CuttingLabel(Vertex):
     def is_surface_site(self):
         return False
 
+    def is_multidentate(self):
+        return False
+
     def is_silicon(self):
         return False
 
@@ -2076,6 +2079,22 @@ class Fragment(Graph):
             atom = rd_mol.GetAtomWithIdx(idx)
             if atom.IsInRing():
                 return True
+        return False
+
+    def is_multidentate(self):
+        """
+        Return ``True`` if the adsorbate contains at least two binding sites,
+        or ``False`` otherwise.
+        """
+
+        surface_sites = 0
+        for atom in self.vertices:
+            if atom.is_surface_site():
+                surface_sites+=1
+
+        if surface_sites>=2:
+            return True
+
         return False
 
 # this variable is used to name atom IDs so that there are as few conflicts by 

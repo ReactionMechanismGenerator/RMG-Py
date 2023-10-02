@@ -1363,6 +1363,64 @@ multiplicity 2
                 atom2_nb = {nb.id for nb in list(atom2.bonds.keys())}
                 assert atom1_nb == atom2_nb
 
+    def test_adsorbate_resonance_cc1(self):
+        """Test if all three resonance structures for X#CC#X are generated"""
+        adjlist = """
+1 X u0 p0 c0 {3,T}
+2 X u0 p0 c0 {4,T}
+3 C u0 p0 c0 {1,T} {4,S}
+4 C u0 p0 c0 {2,T} {3,S}
+        """
+
+        mol = Molecule().from_adjacency_list(adjlist)
+
+        mol_list = generate_resonance_structures(mol)
+        assert len(mol_list) == 3
+
+    def test_adsorbate_resonance_cc2(self):
+        """Test if all three resonance structures for X=C=C=X are generated"""
+        adjlist = """
+1 X u0 p0 c0 {3,D}
+2 X u0 p0 c0 {4,D}
+3 C u0 p0 c0 {1,D} {4,D}
+4 C u0 p0 c0 {2,D} {3,D}
+        """
+
+        mol = Molecule().from_adjacency_list(adjlist)
+
+        mol_list = generate_resonance_structures(mol)
+        assert len(mol_list) == 3
+
+    def test_adsorbate_resonance_cc3(self):
+        """Test if all three resonance structures for XC#CX are generated"""
+        adjlist = """
+1 X u0 p0 c0 {3,S}
+2 X u0 p0 c0 {4,S}
+3 C u0 p0 c0 {1,S} {4,T}
+4 C u0 p0 c0 {2,S} {3,T}
+        """
+
+        mol = Molecule().from_adjacency_list(adjlist)
+
+        mol_list = generate_resonance_structures(mol)
+        assert len(mol_list) == 3
+
+    def test_adsorbate_resonance_chchc(self):
+        """Test if both resonance structures for XCHCHXC are generated"""
+        adjlist = """
+1 X u0 p0 c0 {3,T}
+2 X u0 p0 c0 {5,S}
+3 C u0 p0 c0 {1,T} {4,S}
+4 C u0 p0 c0 {3,S} {5,D} {6,S}
+5 C u0 p0 c0 {2,S} {4,D} {7,S}
+6 H u0 p0 c0 {4,S}
+7 H u0 p0 c0 {5,S}
+        """
+
+        mol = Molecule().from_adjacency_list(adjlist)
+
+        mol_list = generate_resonance_structures(mol)
+        assert len(mol_list) == 2
 
 class ClarTest:
     """

@@ -2056,6 +2056,29 @@ multiplicity 2
         assert not (adsorbed.is_surface_site())
         assert not (gas.is_surface_site())
 
+    def test_is_multidentate(self):
+        """
+        Test that we can identify a multidentate adsorbate
+        """
+        monodentate = Molecule().from_adjacency_list(
+            """
+                                                1 H u0 p0 c0 {2,S}
+                                                2 X u0 p0 c0 {1,S}
+                                                """
+        )
+
+
+        adjlist = """
+1 X u0 p0 c0 {3,S}
+2 X u0 p0 c0 {4,S}
+3 C u0 p0 c0 {1,S} {4,T}
+4 C u0 p0 c0 {2,S} {3,T}
+            """
+
+        bidentate = Molecule().from_adjacency_list(adjlist)
+        assert not monodentate.is_multidentate()
+        assert bidentate.is_multidentate()
+
     def test_malformed_augmented_inchi(self):
         """Test that augmented inchi without InChI layer raises Exception."""
         malform_aug_inchi = "foo"
