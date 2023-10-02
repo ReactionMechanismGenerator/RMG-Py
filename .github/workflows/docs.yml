@@ -31,11 +31,6 @@ jobs:
         run: |
           mamba info
           mamba list
-      - name: Install and link Julia dependencies 
-        run: |
-          julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"))"
-          julia -e "using Pkg; Pkg.add(\"PyCall\"); Pkg.add(\"DifferentialEquations\")"
-          python -c "import julia; julia.install()"
       - name: Install and compile RMG
         run: |
           cd ..
