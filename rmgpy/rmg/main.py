@@ -512,7 +512,7 @@ class RMG(util.Subject):
         # if RMS is not installed but the user attempted to use it, the load_input_file would have failed
         # if RMS is installed but they did not use it, we can avoid extra work
         # if RMS is not installed and they did not use it, we avoid calling certain functions that would raise an error
-        requires_rms = any(isinstance(RMSReactor, self.reaction_systems))
+        requires_rms = any(isinstance(reactor_system, RMSReactor) for reactor_system in self.reaction_systems)
 
         if kwargs.get("restart", ""):
             import rmgpy.rmg.input
@@ -721,14 +721,15 @@ class RMG(util.Subject):
         self.initialize_seed_mech()
         return requires_rms
 
-    def register_listeners(self):
+    def register_listeners(self, requires_rms=False):
         """
         Attaches listener classes depending on the options
         found in the RMG input file.
         """
 
         self.attach(ChemkinWriter(self.output_directory))
-        self.attach(RMSWriter(self.output_directory))
+        if not NO_JULIA and requires_rms:
+            self.attach(RMSWriter(self.output_directory))
 
         if self.generate_output_html:
             self.attach(OutputHTMLWriter(self.output_directory))
@@ -740,7 +741,7 @@ class RMG(util.Subject):
 
         if self.save_simulation_profiles:
             for index, reaction_system in enumerate(self.reaction_systems):
-                if isinstance(reaction_system, Reactor):
+                if not NO_JULIA and requires_rms and isinstance(reaction_system, RMSReactor):
                     typ = type(reaction_system)
                     raise InputError(f"save_simulation_profiles=True not compatible with reactor of type {typ}")
                 reaction_system.attach(SimulationProfileWriter(self.output_directory, index, self.reaction_model.core.species))
@@ -757,7 +758,7 @@ class RMG(util.Subject):
             requires_rms = self.initialize(**kwargs)
 
         # register listeners
-        self.register_listeners()
+        self.register_listeners(requires_rms=requires_rms)
 
         self.done = False
 
@@ -2225,7 +2226,7 @@ class RMG_Memory(object):
                 if isinstance(value, list):
                     self.Ranges[key] = [v.value_si for v in value]
 
-        if isinstance(reaction_system, Reactor):
+        if not NO_JULIA and isinstance(reaction_system, RMSReactor):
             self.tmax = reaction_system.tf
         else:
             for term in reaction_system.termination:
