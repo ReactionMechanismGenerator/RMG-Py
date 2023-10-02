@@ -174,7 +174,7 @@ test:
     - arkane
   commands:
     - rmg.py examples/rmg/superminimal/input.py
-    - Arkane.py examples/arkane/networks/n-butanol
+    - Arkane.py examples/arkane/networks/n-butanol/input.py
 
 about:
   home: https://github.com/ReactionMechanismGenerator/RMG-Py
