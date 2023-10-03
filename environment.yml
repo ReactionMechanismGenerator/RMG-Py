@@ -98,7 +98,8 @@ dependencies:
   # We should use the official channel, not sure how difficult this
   # change will be.
 
-  - liblapack =*=*mkl
+# conda mutex metapackage
+  - nomkl
 
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)
