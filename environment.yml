@@ -44,6 +44,7 @@ dependencies:
   - conda-forge::mopac
   - conda-forge::cclib >=1.6.3,!=1.8.0
   - conda-forge::openbabel >= 3
+  - conda-forge::rdkit >=2020.03.3.0
 
 # general-purpose external software tools
   - conda-forge::julia>=1.8.5,!=1.9.0
@@ -98,10 +99,6 @@ dependencies:
   - rmg::chemprop
   # Our build of this is version 0.0.1 (!!) and we are using parts
   # of the API that are now gone. Need a serious PR to fix this.
-
-  - rmg::rdkit >=2020.03.3.0
-  # We should use the official channel, not sure how difficult this
-  # change will be.
 
 # conda mutex metapackage
   - nomkl
