@@ -701,10 +701,10 @@ class RMG(util.Subject):
         # This is necessary so that the PDep algorithm can identify the bath gas
         for spec in self.initial_species:
             if not spec.reactive:
-                self.reaction_model.enlarge(spec)
+                self.reaction_model.enlarge(spec, requires_rms=requires_rms)
         for spec in self.initial_species:
             if spec.reactive:
-                self.reaction_model.enlarge(spec)
+                self.reaction_model.enlarge(spec, requires_rms=requires_rms)
 
         # chatelak: store constant SPC indices in the reactor attributes if any constant SPC provided in the input file
         # advantages to write it here: this is run only once (as species indexes does not change over the generation)
@@ -715,7 +715,7 @@ class RMG(util.Subject):
 
         self.initialize_reaction_threshold_and_react_flags()
         if self.filter_reactions and self.init_react_tuples:
-            self.react_init_tuples()
+            self.react_init_tuples(requires_rms=requires_rms)
         self.reaction_model.initialize_index_species_dict()
 
         self.initialize_seed_mech()
@@ -828,6 +828,7 @@ class RMG(util.Subject):
                 unimolecular_react=self.unimolecular_react,
                 bimolecular_react=self.bimolecular_react,
                 trimolecular_react=self.trimolecular_react,
+                requires_rms=requires_rms,
             )
 
         if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
@@ -1899,7 +1900,7 @@ class RMG(util.Subject):
                         if self.trimolecular:
                             self.trimolecular_react[:num_restart_spcs, :num_restart_spcs, :num_restart_spcs] = False
 
-    def react_init_tuples(self):
+    def react_init_tuples(self, requires_rms=False):
         """
         Reacts tuples given in the react block
         """
@@ -1932,6 +1933,7 @@ class RMG(util.Subject):
             unimolecular_react=self.unimolecular_react,
             bimolecular_react=self.bimolecular_react,
             trimolecular_react=self.trimolecular_react,
+            requires_rms=requires_rms,
         )
 
     def update_reaction_threshold_and_react_flags(
