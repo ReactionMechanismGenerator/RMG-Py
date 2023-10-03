@@ -57,7 +57,8 @@ from rmgpy.rmg.react import react_all
 from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.rmg.decay import decay_species
-from rmgpy.rmg.reactionmechanismsimulator_reactors import PhaseSystem, Phase, Interface, Reactor, NO_JULIA
+from rmgpy.rmg.reactionmechanismsimulator_reactors import PhaseSystem, Phase, Interface, NO_JULIA
+from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
 from rmgpy.molecule.fragment import Fragment
 
 ################################################################################
@@ -1408,7 +1409,7 @@ class CoreEdgeReactionModel:
 
         # clean up species references in reaction_systems
         for reaction_system in reaction_systems:
-            if NO_JULIA or not requires_rms or not isinstance(reaction_system, Reactor):
+            if NO_JULIA or not requires_rms or not isinstance(reaction_system, RMSReactor):
                 try:
                     reaction_system.species_index.pop(spec)
                 except KeyError:
