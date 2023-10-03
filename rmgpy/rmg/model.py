@@ -1163,7 +1163,7 @@ class CoreEdgeReactionModel:
 
             # Move any identified reactions to the core
             for rxn in rxn_list:
-                self.add_reaction_to_core(rxn)
+                self.add_reaction_to_core(rxn, requires_rms=requires_rms)
                 logging.debug("Moving reaction from edge to core: %s", rxn)
         elif not NO_JULIA and requires_rms:
             destination_phase = "Surface" if spec.molecule[0].contains_surface_site() else "Default"
