@@ -1863,62 +1863,74 @@ class Molecule(Graph):
         new_mol.update_atomtypes(raise_exception=raise_atomtype_exception)
         return new_mol
 
-    def to_inchi(self):
+    def to_inchi(self, backend='rdkit-first'):
         """
         Convert a molecular structure to an InChI string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity.
-        
+
         or
-        
+
         Convert a molecular structure to an InChI string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+
+        Available options for InChI backend: 'rdkit-first' (default),
+        'try-all', 'rdkit', or 'openbabel'.
         """
         try:
-            return translator.to_inchi(self)
+            return translator.to_inchi(self, backend=backend)
         except:
             logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
             raise
 
-    def to_augmented_inchi(self):
+    def to_augmented_inchi(self, backend='rdkit-first'):
         """
         Adds an extra layer to the InChI denoting the multiplicity
         of the molecule.
-        
+
         Separate layer with a forward slash character.
+
+        Available options for InChI backend: 'rdkit-first' (default),
+        'try-all', 'rdkit', or 'openbabel'.
         """
         try:
-            return translator.to_inchi(self, aug_level=2)
+            return translator.to_inchi(self, backend=backend, aug_level=2)
         except:
             logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
             raise
 
-    def to_inchi_key(self):
+    def to_inchi_key(self, backend='rdkit-first'):
         """
         Convert a molecular structure to an InChI Key string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
-        
-        or 
-        
+
+        or
+
         Convert a molecular structure to an InChI Key string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
+
+        Available options for InChI backend: 'rdkit-first' (default),
+        'try-all', 'rdkit', or 'openbabel'.
         """
         try:
-            return translator.to_inchi_key(self)
+            return translator.to_inchi_key(self, backend=backend)
         except:
             logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
             raise
 
-    def to_augmented_inchi_key(self):
+    def to_augmented_inchi_key(self, backend='rdkit-first'):
         """
         Adds an extra layer to the InChIKey denoting the multiplicity
         of the molecule.
 
         Simply append the multiplicity string, do not separate by a
         character like forward slash.
+
+        Available options for InChI backend: 'rdkit-first' (default),
+        'try-all', 'rdkit', or 'openbabel'.
         """
         try:
-            return translator.to_inchi_key(self, aug_level=2)
+            return translator.to_inchi_key(self, backend=backend, aug_level=2)
         except:
             logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
             raise
