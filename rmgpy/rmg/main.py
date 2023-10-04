@@ -841,7 +841,7 @@ class RMG(util.Subject):
             )
 
         if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
-            self.reaction_model.thermo_filter_down(maximum_edge_species=self.model_settings_list[0].maximum_edge_species)
+            self.reaction_model.thermo_filter_down(maximum_edge_species=self.model_settings_list[0].maximum_edge_species, requires_rms=requires_rms)
 
         logging.info("Completed initial enlarge edge step.\n")
 
@@ -1108,7 +1108,7 @@ class RMG(util.Subject):
                             reactor_done = False
 
                         if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
-                            self.reaction_model.thermo_filter_down(maximum_edge_species=model_settings.maximum_edge_species)
+                            self.reaction_model.thermo_filter_down(maximum_edge_species=model_settings.maximum_edge_species, requires_rms=requires_rms)
 
                         max_num_spcs_hit = len(self.reaction_model.core.species) >= model_settings.max_num_species
 

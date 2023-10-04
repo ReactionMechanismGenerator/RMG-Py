@@ -643,7 +643,7 @@ class CoreEdgeReactionModel:
                 pdep_network, new_species = new_object
                 new_reactions.extend(pdep_network.explore_isomer(new_species))
 
-                self.process_new_reactions(new_reactions, new_species, pdep_network)
+                self.process_new_reactions(new_reactions, new_species, pdep_network, requires_rms=requires_rms)
 
             else:
                 raise TypeError(
@@ -667,7 +667,7 @@ class CoreEdgeReactionModel:
                         if len(products) == 1 and products[0] == species:
                             new_reactions = network.explore_isomer(species)
 
-                            self.process_new_reactions(new_reactions, species, network)
+                            self.process_new_reactions(new_reactions, species, network, requires_rms=requires_rms)
                             network.update_configurations(self)
                             index = 0
                             break
@@ -692,7 +692,7 @@ class CoreEdgeReactionModel:
                     # Identify a core species which was used to generate the reaction
                     # This is only used to determine the reaction direction for processing
                     spc = spcTuple[0]
-                    self.process_new_reactions(rxnList, spc)
+                    self.process_new_reactions(rxnList, spc, requires_rms=requires_rms)
 
         ################################################################
         # Begin processing the new species and reactions
@@ -704,7 +704,7 @@ class CoreEdgeReactionModel:
 
         # Do thermodynamic filtering
         if not np.isinf(self.thermo_tol_keep_spc_in_edge) and self.new_species_list != []:
-            self.thermo_filter_species(self.new_species_list)
+            self.thermo_filter_species(self.new_species_list, requires_rms=requires_rms)
 
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressure_dependence:
@@ -1131,7 +1131,7 @@ class CoreEdgeReactionModel:
             if spec in self.edge.species:
                 # remove forbidden species from edge
                 logging.info("Species {0} was Forbidden and not added to Core...Removing from Edge.".format(spec))
-                self.remove_species_from_edge(self.reaction_systems, spec)
+                self.remove_species_from_edge(self.reaction_systems, spec, requires_rms=requires_rms)
                 # remove any empty pdep networks as a result of species removal
                 if self.pressure_dependence:
                     self.remove_empty_pdep_networks()
@@ -1207,7 +1207,7 @@ class CoreEdgeReactionModel:
         self.reaction_systems = reaction_systems
         self.maximum_edge_species = maximum_edge_species
 
-    def thermo_filter_species(self, spcs):
+    def thermo_filter_species(self, spcs, requires_rms=False):
         """
         checks Gibbs energy of the species in species against the
         maximum allowed Gibbs energy
@@ -1222,13 +1222,13 @@ class CoreEdgeReactionModel:
                     "greater than the thermo_tol_keep_spc_in_edge of "
                     "{3} ".format(spc, G, Gn, self.thermo_tol_keep_spc_in_edge)
                 )
-                self.remove_species_from_edge(self.reaction_systems, spc)
+                self.remove_species_from_edge(self.reaction_systems, spc, requires_rms=requires_rms)
 
         # Delete any networks that became empty as a result of pruning
         if self.pressure_dependence:
             self.remove_empty_pdep_networks()
 
-    def thermo_filter_down(self, maximum_edge_species, min_species_exist_iterations_for_prune=0):
+    def thermo_filter_down(self, maximum_edge_species, min_species_exist_iterations_for_prune=0, requires_rms=False):
         """
         removes species from the edge based on their Gibbs energy until maximum_edge_species
         is reached under the constraint that all removed species are older than
@@ -1270,7 +1270,7 @@ class CoreEdgeReactionModel:
                 logging.info(
                     "Removing species {0} from edge to meet maximum number of edge species, Gibbs " "number is {1}".format(spc, Gns[rInds[i]])
                 )
-                self.remove_species_from_edge(self.reaction_systems, spc)
+                self.remove_species_from_edge(self.reaction_systems, spc, requires_rms=requires_rms)
 
             # Delete any networks that became empty as a result of pruning
             if self.pressure_dependence:
@@ -1643,9 +1643,9 @@ class CoreEdgeReactionModel:
                 # This unimolecular library reaction is flagged as `elementary_high_p` and has Arrhenius type kinetics.
                 # We should calculate a pressure-dependent rate for it
                 if len(rxn.reactants) == 1:
-                    self.process_new_reactions(new_reactions=[rxn], new_species=rxn.reactants[0])
+                    self.process_new_reactions(new_reactions=[rxn], new_species=rxn.reactants[0], requires_rms=requires_rms)
                 else:
-                    self.process_new_reactions(new_reactions=[rxn], new_species=rxn.products[0])
+                    self.process_new_reactions(new_reactions=[rxn], new_species=rxn.products[0], requires_rms=requires_rms)
 
         # Perform species constraints and forbidden species checks
 
@@ -1693,7 +1693,7 @@ class CoreEdgeReactionModel:
                     submit(spec, self.solvent_name)
 
                 rxn.fix_barrier_height(force_positive=True)
-            self.add_reaction_to_core(rxn)
+            self.add_reaction_to_core(rxn, requires_rms=requires_rms)
 
         # Check we didn't introduce unmarked duplicates
         self.mark_chemkin_duplicates()
@@ -1765,9 +1765,9 @@ class CoreEdgeReactionModel:
                 # This unimolecular library reaction is flagged as `elementary_high_p` and has Arrhenius type kinetics.
                 # We should calculate a pressure-dependent rate for it
                 if len(rxn.reactants) == 1:
-                    self.process_new_reactions(new_reactions=[rxn], new_species=rxn.reactants[0])
+                    self.process_new_reactions(new_reactions=[rxn], new_species=rxn.reactants[0], requires_rms=requires_rms)
                 else:
-                    self.process_new_reactions(new_reactions=[rxn], new_species=rxn.products[0])
+                    self.process_new_reactions(new_reactions=[rxn], new_species=rxn.products[0], requires_rms=requires_rms)
 
         # Perform species constraints and forbidden species checks
         for spec in self.new_species_list:
