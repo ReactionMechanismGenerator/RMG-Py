@@ -488,6 +488,16 @@ class Species(object):
         """Return ``True`` if the species is a vacant surface site."""
         return self.molecule[0].is_surface_site()
 
+    def get_binding_sites(self):
+        """
+        Return the number of binding sites for a species.
+        """
+        surface_sites = 0
+        for atom in self.molecule[0].vertices:
+            if atom.is_surface_site():
+                surface_sites += 1
+        return surface_sites
+
     def get_partition_function(self, T):
         """
         Return the partition function for the species at the specified

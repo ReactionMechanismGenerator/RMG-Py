@@ -636,6 +636,20 @@ class Reaction:
         dN_surf = number_of_surface_products - number_of_surface_reactants # change in mols of surface spcs
         dN_gas = number_of_gas_products - number_of_gas_reactants # change in mols of gas spcs
 
+        # Determine the multiplication factor of the binding site^(-stoichiometric coefficient)
+        # (only relevant for reactions involving multidentate adsorbates)
+        unique_species = []
+        sigma_nu = 1
+        for product in self.products:
+            if product.contains_surface_site() and product not in unique_species:
+                unique_species.append(product)
+                sigma_nu *= product.get_binding_sites() ** (-self.get_stoichiometric_coefficient(product))
+
+        for reactant in self.reactants:
+            if reactant.contains_surface_site() and reactant not in unique_species:
+                unique_species.append(reactant)
+                sigma_nu *= reactant.get_binding_sites() ** (-self.get_stoichiometric_coefficient(reactant))
+
         if type == 'Kc':
             # Convert from Ka to Kc; C0 is the reference concentration
             if dN_gas:
@@ -643,6 +657,8 @@ class Reaction:
                 K *= C0 ** dN_gas
             if dN_surf:
                 K *= surface_site_density ** dN_surf
+            if sigma_nu != 1:
+                K *= sigma_nu
         elif type == 'Kp':
             # Convert from Ka to Kp; P0 is the reference pressure
             K *= P0 ** dN_gas
