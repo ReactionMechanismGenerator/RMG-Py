@@ -238,7 +238,7 @@ multiplicity 2
 3 O 1 {1,S}
 """
 
-        aug_inchi = "InChI=1/CH2O2/c2-1-3/h1H,(H,2,3)/u1,2"
+        aug_inchi = "InChI=1/CH2O2/c2-1-3/h1-2H/u1,3"
         self.compare(adjlist, aug_inchi)
 
     def test_c7h10(self):
@@ -1411,8 +1411,8 @@ class InChIParsingTest:
         self.compare(inchi, u_indices)
 
     def test_ch2o2(self):
-        inchi = "CH2O2/c2-1-3/h1H,(H,2,3)"
-        u_indices = [1, 2]
+        inchi = "CH2O2/c2-1-3/h1-2H"
+        u_indices = [1, 3]
         self.compare(inchi, u_indices)
 
     def test_c2h2o3(self):
