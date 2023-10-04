@@ -57,7 +57,8 @@ class TranslatorTest:
         assert mol.to_smiles() == ""
         assert mol.to_inchi() == ""
 
-    @patch("rmgpy.molecule.translator.logging")
+    @pytest.mark.skip(reason='This unit test checks for a bug which has been '
+                             'patched in version of RDKit >= 2022.9.1.')
     def test_failure_message(self, mock_logging):
         """Test that we log the molecule adjlist upon failure."""
         mol = Molecule(smiles="[CH2-][N+]#N")
