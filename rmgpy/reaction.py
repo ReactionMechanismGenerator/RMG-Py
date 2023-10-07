@@ -613,6 +613,7 @@ class Reaction:
         cython.declare(number_of_surface_reactants=cython.int, number_of_surface_products=cython.int)
         cython.declare(dN_surf=cython.int, dN_gas=cython.int, sites=cython.int)
         cython.declare(sigma_nu=cython.double)
+        cython.declare(rectant=Species, product=Species, spcs=Species)
         # Use free energy of reaction to calculate Ka
         dGrxn = self.get_free_energy_of_reaction(T)
         K = np.exp(-dGrxn / constants.R / T)
