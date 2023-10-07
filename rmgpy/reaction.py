@@ -638,25 +638,24 @@ class Reaction:
 
         # Determine the multiplication factor of the binding site^(-stoichiometric coefficient)
         # (only relevant for reactions involving multidentate adsorbates)
-        unique_species = []
         sigma_nu = 1
+        # if there was a species with no molecule[0], then we would have presumed (above)
+        # that everything is gas phase, and this bit will skip.
+        if number_of_surface_products > 0:
+            for product in self.products:
+                sites = product.number_of_surface_sites()
+                if sites > 1:
+                    # product has stoichiometric_coefficient > 0
+                    # so we need to divide by the number of surface sites
+                    sigma_nu /= sites
+        if number_of_surface_reactants > 0:
+            for reactant in self.reactants:
+                sites = reactant.number_of_surface_sites()
+                if sites > 1:
+                    # reactant has stoichiometric_coefficient < 0
+                    # so we need to multiply by the number of surface sites
+                    sigma_nu *= sites
 
-        try:
-            if number_of_surface_products > 0:
-                for product in self.products:
-                    if product.contains_surface_site() and product not in unique_species:
-                        unique_species.append(product)
-                        sigma_nu *= product.number_of_surface_sites() ** (-self.get_stoichiometric_coefficient(product))
-            if number_of_surface_reactants > 0:
-                for reactant in self.reactants:
-                    if reactant.contains_surface_site() and reactant not in unique_species:
-                        unique_species.append(reactant)
-                        sigma_nu *= reactant.number_of_surface_sites() ** (-self.get_stoichiometric_coefficient(reactant))
-        except IndexError:
-            #logging.warning("Species do not have an rmgpy.molecule.Molecule "
-            #                "Cannot determine phases of species. We will assume "
-            #                "ideal gas mixture when calculating Kc and Kp.")
-            sigma_nu = 1
         if type == 'Kc':
             # Convert from Ka to Kc; C0 is the reference concentration
             if dN_gas:
