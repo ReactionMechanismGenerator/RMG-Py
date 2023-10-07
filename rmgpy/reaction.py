@@ -640,18 +640,23 @@ class Reaction:
         # (only relevant for reactions involving multidentate adsorbates)
         unique_species = []
         sigma_nu = 1
-        for product in self.products:
-            if len(product.molecule) != 0:
-                if product.contains_surface_site() and product not in unique_species:
-                    unique_species.append(product)
-                    sigma_nu *= product.number_of_surface_sites() ** (-self.get_stoichiometric_coefficient(product))
 
-        for reactant in self.reactants:
-            if len(reactant.molecule) != 0:
-                if reactant.contains_surface_site() and reactant not in unique_species:
-                    unique_species.append(reactant)
-                    sigma_nu *= reactant.number_of_surface_sites() ** (-self.get_stoichiometric_coefficient(reactant))
-
+        try:
+            if number_of_surface_products > 0:
+                for product in self.products:
+                    if product.contains_surface_site() and product not in unique_species:
+                        unique_species.append(product)
+                        sigma_nu *= product.number_of_surface_sites() ** (-self.get_stoichiometric_coefficient(product))
+            if number_of_surface_reactants > 0:
+                for reactant in self.reactants:
+                    if reactant.contains_surface_site() and reactant not in unique_species:
+                        unique_species.append(reactant)
+                        sigma_nu *= reactant.number_of_surface_sites() ** (-self.get_stoichiometric_coefficient(reactant))
+        except IndexError:
+            #logging.warning("Species do not have an rmgpy.molecule.Molecule "
+            #                "Cannot determine phases of species. We will assume "
+            #                "ideal gas mixture when calculating Kc and Kp.")
+            sigma_nu = 1
         if type == 'Kc':
             # Convert from Ka to Kc; C0 is the reference concentration
             if dN_gas:
