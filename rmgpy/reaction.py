@@ -640,27 +640,27 @@ class Reaction:
         dN_surf = number_of_surface_products - number_of_surface_reactants # change in mols of surface spcs
         dN_gas = number_of_gas_products - number_of_gas_reactants # change in mols of gas spcs
 
-        # Determine the multiplication factor of the binding site^(-stoichiometric coefficient)
-        # (only relevant for reactions involving multidentate adsorbates)
-        sigma_nu = 1
-        # if there was a species with no molecule[0], then we would have presumed (above)
-        # that everything is gas phase, and this bit will skip.
-        if number_of_surface_products > 0:
-            for product in self.products:
-                sites = product.number_of_surface_sites()
-                if sites > 1:
-                    # product has stoichiometric_coefficient > 0
-                    # so we need to divide by the number of surface sites
-                    sigma_nu /= sites
-        if number_of_surface_reactants > 0:
-            for reactant in self.reactants:
-                sites = reactant.number_of_surface_sites()
-                if sites > 1:
-                    # reactant has stoichiometric_coefficient < 0
-                    # so we need to multiply by the number of surface sites
-                    sigma_nu *= sites
-
         if type == 'Kc':
+            # Determine the multiplication factor of the binding site^(-stoichiometric coefficient)
+            # (only relevant for reactions involving multidentate adsorbates)
+            sigma_nu = 1
+            # if there was a species with no molecule[0], then we would have presumed (above)
+            # that everything is gas phase, and this bit will skip.
+            if number_of_surface_products > 0:
+                for product in self.products:
+                    sites = product.number_of_surface_sites()
+                    if sites > 1:
+                        # product has stoichiometric_coefficient > 0
+                        # so we need to divide by the number of surface sites
+                        sigma_nu /= sites
+            if number_of_surface_reactants > 0:
+                for reactant in self.reactants:
+                    sites = reactant.number_of_surface_sites()
+                    if sites > 1:
+                        # reactant has stoichiometric_coefficient < 0
+                        # so we need to multiply by the number of surface sites
+                        sigma_nu *= sites
+
             # Convert from Ka to Kc; C0 is the reference concentration
             if dN_gas:
                 C0 = P0 / constants.R / T
