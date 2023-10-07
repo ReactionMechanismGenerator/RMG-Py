@@ -644,13 +644,13 @@ class Reaction:
             if len(product.molecule) != 0:
                 if product.contains_surface_site() and product not in unique_species:
                     unique_species.append(product)
-                    sigma_nu *= product.get_binding_sites() ** (-self.get_stoichiometric_coefficient(product))
+                    sigma_nu *= product.number_of_surface_sites() ** (-self.get_stoichiometric_coefficient(product))
 
         for reactant in self.reactants:
             if len(reactant.molecule) != 0:
                 if reactant.contains_surface_site() and reactant not in unique_species:
                     unique_species.append(reactant)
-                    sigma_nu *= reactant.get_binding_sites() ** (-self.get_stoichiometric_coefficient(reactant))
+                    sigma_nu *= reactant.number_of_surface_sites() ** (-self.get_stoichiometric_coefficient(reactant))
 
         if type == 'Kc':
             # Convert from Ka to Kc; C0 is the reference concentration
