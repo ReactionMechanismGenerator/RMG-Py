@@ -1155,6 +1155,19 @@ class Molecule(Graph):
                 return True
         return False
 
+    def number_of_surface_sites(self):
+        """
+        Returns the number of surface sites in the molecule.
+        e.g. 2 for a bidentate adsorbate
+        """
+        cython.declare(atom=Atom)
+        cython.declare(count=cython.int)
+        count = 0
+        for atom in self.atoms:
+            if atom.symbol == 'X':
+                count += 1
+        return count
+
     def is_surface_site(self):
         """Returns ``True`` iff the molecule is nothing but a surface site 'X'."""
         return len(self.atoms) == 1 and self.atoms[0].is_surface_site()
