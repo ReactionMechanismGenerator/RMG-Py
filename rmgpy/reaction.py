@@ -793,13 +793,11 @@ class Reaction:
             rate_coefficient *= math.sqrt(constants.kB * T / (2 * math.pi * molecular_weight_kg))
 
             # Multidentate adsorption requires multiplication of the sticking coefficient
-            # with the number of binding sites**stoichiometric coefficient of the product (it is 1 for monodentates)
-
+            # with the number of binding sites**stoichiometric coefficients (it is 1 for monodentates)
             for p in self.products:
-                if p.contains_surface_site():
-                    sigma_nu = len(p.molecule[0].get_surface_sites())**self.get_stoichiometric_coefficient(p)
-
-            rate_coefficient *= sigma_nu
+                sites = p.number_of_surface_sites()
+                if sites > 1:
+                    rate_coefficient *= sites
 
             return rate_coefficient
 
