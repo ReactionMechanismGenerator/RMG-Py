@@ -609,6 +609,11 @@ class Reaction:
         surface species, the `surface_site_density` is the assumed reference.
         """
         cython.declare(dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
+        cython.declare(number_of_gas_reactants=cython.int, number_of_gas_products=cython.int)
+        cython.declare(number_of_surface_reactants=cython.int, number_of_surface_products=cython.int)
+        cython.declare(dN_surf=cython.int, dN_gas=cython.int, sites=cython.int)
+        cython.declare(sigma_nu=cython.double)
+        cython.declare(rectant=Species, product=Species, spcs=Species)
         # Use free energy of reaction to calculate Ka
         dGrxn = self.get_free_energy_of_reaction(T)
         K = np.exp(-dGrxn / constants.R / T)
@@ -637,12 +642,34 @@ class Reaction:
         dN_gas = number_of_gas_products - number_of_gas_reactants # change in mols of gas spcs
 
         if type == 'Kc':
+            # Determine the multiplication factor of the binding site^(-stoichiometric coefficient)
+            # (only relevant for reactions involving multidentate adsorbates)
+            sigma_nu = 1
+            # if there was a species with no molecule[0], then we would have presumed (above)
+            # that everything is gas phase, and this bit will skip.
+            if number_of_surface_products > 0:
+                for product in self.products:
+                    sites = product.number_of_surface_sites()
+                    if sites > 1:
+                        # product has stoichiometric_coefficient > 0
+                        # so we need to divide by the number of surface sites
+                        sigma_nu /= sites
+            if number_of_surface_reactants > 0:
+                for reactant in self.reactants:
+                    sites = reactant.number_of_surface_sites()
+                    if sites > 1:
+                        # reactant has stoichiometric_coefficient < 0
+                        # so we need to multiply by the number of surface sites
+                        sigma_nu *= sites
+
             # Convert from Ka to Kc; C0 is the reference concentration
             if dN_gas:
                 C0 = P0 / constants.R / T
                 K *= C0 ** dN_gas
             if dN_surf:
                 K *= surface_site_density ** dN_surf
+            if sigma_nu != 1:
+                K *= sigma_nu
         elif type == 'Kp':
             # Convert from Ka to Kp; P0 is the reference pressure
             K *= P0 ** dN_gas

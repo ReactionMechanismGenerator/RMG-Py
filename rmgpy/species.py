@@ -488,6 +488,13 @@ class Species(object):
         """Return ``True`` if the species is a vacant surface site."""
         return self.molecule[0].is_surface_site()
 
+    def number_of_surface_sites(self):
+        """
+        Return the number of surface sites for a species.
+        eg. 2 for bidentate.
+        """
+        return self.molecule[0].number_of_surface_sites()
+
     def get_partition_function(self, T):
         """
         Return the partition function for the species at the specified
