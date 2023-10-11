@@ -1164,7 +1164,7 @@ class Molecule(Graph):
         cython.declare(count=cython.int)
         count = 0
         for atom in self.atoms:
-            if atom.symbol == 'X':
+            if atom.is_surface_site():
                 count += 1
         return count
 
