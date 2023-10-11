@@ -794,6 +794,11 @@ class Reaction:
 
             # Multidentate adsorption requires multiplication of the sticking coefficient
             # with the number of binding sites**stoichiometric coefficients (it is 1 for monodentates)
+            for r in self.reactants:
+                sites = r.number_of_surface_sites()
+                if sites > 1:
+                    rate_coefficient /= sites
+                    
             for p in self.products:
                 sites = p.number_of_surface_sites()
                 if sites > 1:
