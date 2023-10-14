@@ -26,7 +26,8 @@
 # DEALINGS IN THE SOFTWARE.                                                   #
 #                                                                             #
 ###############################################################################
-
+from rdkit import rdBase
+rdBase.LogToCppStreams()
 import argparse
 import logging
 import math
