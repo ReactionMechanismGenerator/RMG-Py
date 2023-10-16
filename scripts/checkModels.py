@@ -26,8 +26,8 @@
 # DEALINGS IN THE SOFTWARE.                                                   #
 #                                                                             #
 ###############################################################################
-from rdkit import rdBase
-rdBase.LogToCppStreams()
+# from rdkit import rdBase
+# rdBase.LogToCppStreams()
 import argparse
 import logging
 import math
@@ -285,6 +285,11 @@ def initialize_log(verbose, log_file_name='checkModels.log'):
     `verbose` parameter is an integer specifying the amount of log text seen
     at the console; the levels correspond to those of the :data:`logging` module.
     """
+    # delete existing loggers *cough, cough* rdkit
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
+    # once moved to a more recen tpython, just add force=true to this
     logging.basicConfig(
         filename=log_file_name,
         filemode='w',
