@@ -284,6 +284,18 @@ def initialize_log(verbose, log_file_name='checkModels.log'):
     `verbose` parameter is an integer specifying the amount of log text seen
     at the console; the levels correspond to those of the :data:`logging` module.
     """
+    # since RDKit 2022.03.1, logging is done using the Python logger instead of the
+    # Cout streams. This does not affect running RMG normally, but this testing file
+    # only works properly if it is the only logger
+    # see https://github.com/rdkit/rdkit/pull/4846 for the changes in RDKit
+
+    # clear all other existing loggers
+    # https://stackoverflow.com/a/12158233
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
+    # once moved to a more recent python (at least 3.8), just add force=true to this statement
+    # and remove the above
     logging.basicConfig(
         filename=log_file_name,
         filemode='w',
