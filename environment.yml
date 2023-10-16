@@ -45,6 +45,7 @@ dependencies:
   - conda-forge::cclib >=1.6.3,!=1.8.0
   - conda-forge::openbabel >= 3
   - conda-forge::rdkit >=2022.09.1
+  - conda-forge::descriptastorus  # requirement of chemprop
 
 # general-purpose external software tools
   - conda-forge::julia=1.9.1
