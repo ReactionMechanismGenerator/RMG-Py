@@ -14,6 +14,7 @@
 # Changelog:
 # - May 15, 2023 Added this changelog, added inline documentation,
 #   made dependency list more explicit (@JacksonBurns).
+# - October 16, 2023 Switched RDKit and descripatastorus to conda-forge
 #
 name: rmg_env
 channels:
@@ -45,7 +46,12 @@ dependencies:
   - conda-forge::cclib >=1.6.3,!=1.8.0
   - conda-forge::openbabel >= 3
   - conda-forge::rdkit >=2022.09.1
-  - conda-forge::descriptastorus  # requirement of chemprop
+  # requirement of chemprop
+  # change this to >=2.6.1 upon moving to Python 3.11+, see
+  # https://github.com/chemprop/chemprop/issues/428 for why
+  # TL;DR: scipy introduced incompatible API changes with 2.6.1+ of
+  # descriptastorus
+  - conda-forge::descriptastorus <2.6.1  
 
 # general-purpose external software tools
   - conda-forge::julia=1.9.1
@@ -56,7 +62,7 @@ dependencies:
   - coverage
   - cython >=0.25.2
   - scikit-learn
-  - scipy
+  - scipy <1.11
   - numpy >=1.10.0
   - pydot
   - jinja2
