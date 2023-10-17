@@ -14,7 +14,8 @@
 # Changelog:
 # - May 15, 2023 Added this changelog, added inline documentation,
 #   made dependency list more explicit (@JacksonBurns).
-# - October 16, 2023 Switched RDKit and descripatastorus to conda-forge
+# - October 16, 2023 Switched RDKit and descripatastorus to conda-forge,
+#   moved diffeqpy to pip and (temporarily) removed chemprop
 #
 name: rmg_env
 channels:
@@ -102,10 +103,6 @@ dependencies:
   # rather than ours (which is only made so that we can get it from conda)
   # It is only on pip, so we will need to do something like:
   # https://stackoverflow.com/a/35245610
-
-  - rmg::chemprop
-  # Our build of this is version 0.0.1 (!!) and we are using parts
-  # of the API that are now gone. Need a serious PR to fix this.
 
 # conda mutex metapackage
   - nomkl

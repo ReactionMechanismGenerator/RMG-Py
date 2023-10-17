@@ -30,7 +30,6 @@ requirements:
     - cairocffi
     - cantera >=2.3.0
     - cclib >=1.6.3
-    - chemprop
     - coolprop
     - coverage
     - cython >=0.25.2
