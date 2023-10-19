@@ -98,6 +98,15 @@ def read_input_file(path):
         new_imfs.append(new_dict)
     setups[3] = new_imfs
 
+    # TODO repeat this for surface species, make sure it's happening for them too
+    if setups[5][0]:
+        ismfs = setups[5]
+        new_ismfs = []
+        for ismf in ismfs:
+            new_dict = convert(ismf, initialSpecies)
+            new_ismfs.append(new_dict)
+        setups[5] = new_ismfs
+
     return casetitle, observables, setups, tol
 
 
@@ -112,14 +121,16 @@ def species(label, structure):
     return spc
 
 
-def reactorSetups(reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes):
+def reactorSetups(reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes, initialSurfaceMoleFractionsList=[None]):
     global setups
+
+    # TODO add initialsufrace
 
     terminationTimes = Quantity(terminationTimes)
     temperatures = Quantity(temperatures)
     pressures = Quantity(pressures)
 
-    setups = [reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes]
+    setups = [reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes, initialSurfaceMoleFractionsList]
 
 
 def SMILES(string):
@@ -159,11 +170,12 @@ def run(benchmarkDir, testDir, title, observables, setups, tol):
         ck2cti=False,
     )
 
-    reactor_types, temperatures, pressures, initial_mole_fractions_list, termination_times = setups
+    reactor_types, temperatures, pressures, initial_mole_fractions_list, termination_times, initial_surface_mole_fractions_list = setups
     case.generate_conditions(
         reactor_type_list=reactor_types,
         reaction_time_list=termination_times,
         mol_frac_list=initial_mole_fractions_list,
+        surface_mol_frac_list=initial_surface_mole_fractions_list,
         Tlist=temperatures,
         Plist=pressures
     )

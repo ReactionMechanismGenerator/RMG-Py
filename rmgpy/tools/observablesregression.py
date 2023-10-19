@@ -112,32 +112,74 @@ class ObservablesTestCase(object):
         if os.path.exists(os.path.join(new_dir, 'tran.dat')):
             new_transport_path = os.path.join(new_dir, 'tran.dat')
 
-        # load the species and reactions from each model
-        old_species_list, old_reaction_list = load_chemkin_file(os.path.join(old_dir, 'chem_annotated.inp'),
-                                                                os.path.join(old_dir, 'species_dictionary.txt'),
-                                                                old_transport_path)
+        # define chemkin file path for old and new models
+        old_chemkin_path = os.path.join(old_dir, 'chem_annotated.inp')
+        new_chemkin_path = os.path.join(new_dir, 'chem_annotated.inp')
+        old_species_dict_path = os.path.join(old_dir, 'species_dictionary.txt')
+        new_species_dict_path = os.path.join(new_dir, 'species_dictionary.txt')
 
-        new_species_list, new_reaction_list = load_chemkin_file(os.path.join(new_dir, 'chem_annotated.inp'),
-                                                                os.path.join(new_dir, 'species_dictionary.txt'),
-                                                                new_transport_path)
+        surface = False
+        if os.path.exists(os.path.join(old_dir, 'chem_annotated-surface.inp')) and \
+            os.path.exists(os.path.join(old_dir, 'chem_annotated-gas.inp')):
+            surface = True
+            old_chemkin_path = os.path.join(old_dir, 'chem_annotated-gas.inp')
+            new_chemkin_path = os.path.join(new_dir, 'chem_annotated-gas.inp')
+            old_surface_chemkin_path = os.path.join(old_dir, 'chem_annotated-surface.inp')
+            new_surface_chemkin_path = os.path.join(new_dir, 'chem_annotated-surface.inp')
+            ck2cti = True  # can't create a surface model from memory yet, must load from yaml
+
+        old_species_list, old_reaction_list = load_chemkin_file(
+            old_chemkin_path,
+            old_species_dict_path,
+            old_transport_path
+        )
+        new_species_list, new_reaction_list = load_chemkin_file(
+            new_chemkin_path,
+            new_species_dict_path,
+            new_transport_path
+        )
+
+        old_surface_species_list = None
+        new_surface_species_list = None
+        new_surface_reaction_list = None
+        old_surface_reaction_list = None
+        if surface:
+            old_surface_species_list, old_surface_reaction_list = load_chemkin_file(
+                old_surface_chemkin_path,
+                old_species_dict_path,
+                old_transport_path
+            )
+            new_surface_species_list, new_surface_reaction_list = load_chemkin_file(
+                new_surface_chemkin_path,
+                new_species_dict_path,
+                new_transport_path
+            )
 
         self.old_sim = Cantera(species_list=old_species_list,
-                               reaction_list=old_reaction_list,
-                               output_directory=old_dir)
+                            reaction_list=old_reaction_list,
+                            output_directory=old_dir,
+                            surface=surface,
+                            surface_species_list=old_surface_species_list,
+                            )
         self.new_sim = Cantera(species_list=new_species_list,
-                               reaction_list=new_reaction_list,
-                               output_directory=new_dir)
+                            reaction_list=new_reaction_list,
+                            output_directory=new_dir,
+                            surface=surface,
+                            surface_species_list=new_surface_species_list,
+                            )
 
         # load each chemkin file into the cantera model
-        if not ck2cti:
+        if not ck2cti:  # TODO make this work for surfaces
             self.old_sim.load_model()
             self.new_sim.load_model()
         else:
-            self.old_sim.load_chemkin_model(os.path.join(old_dir, 'chem_annotated.inp'),
+            self.old_sim.load_chemkin_model(old_chemkin_path,
                                             transport_file=old_transport_path,
+                                            surface_file=old_surface_chemkin_path,
                                             quiet=True)
-            self.new_sim.load_chemkin_model(os.path.join(new_dir, 'chem_annotated.inp'),
+            self.new_sim.load_chemkin_model(new_chemkin_path,
                                             transport_file=new_transport_path,
+                                            surface_file=new_surface_chemkin_path,
                                             quiet=True)
 
     def __str__(self):
@@ -146,7 +188,7 @@ class ObservablesTestCase(object):
         """
         return 'Observables Test Case: {0}'.format(self.title)
 
-    def generate_conditions(self, reactor_type_list, reaction_time_list, mol_frac_list,
+    def generate_conditions(self, reactor_type_list, reaction_time_list, mol_frac_list, surface_mol_frac_list=[None],
                             Tlist=None, Plist=None, Vlist=None):
         """
         Creates a list of conditions from from the lists provided. 
@@ -170,6 +212,7 @@ class ObservablesTestCase(object):
         """
         # Store the conditions in the observables test case, for bookkeeping
         self.conditions = generate_cantera_conditions(reactor_type_list, reaction_time_list, mol_frac_list,
+                                                      surface_mol_frac_list=surface_mol_frac_list,
                                                       Tlist=Tlist, Plist=Plist, Vlist=Vlist)
 
         # Map the mole fractions dictionaries to species objects from the old and new models
@@ -192,10 +235,14 @@ class ObservablesTestCase(object):
             old_mol_frac_list.append(old_condition)
             new_mol_frac_list.append(new_condition)
 
+        # TODO have to do the same for surface species
+
         # Generate the conditions in each simulation
         self.old_sim.generate_conditions(reactor_type_list, reaction_time_list, old_mol_frac_list,
+                                         surface_mol_frac_list=surface_mol_frac_list,
                                          Tlist=Tlist, Plist=Plist, Vlist=Vlist)
         self.new_sim.generate_conditions(reactor_type_list, reaction_time_list, new_mol_frac_list,
+                                         surface_mol_frac_list=surface_mol_frac_list,
                                          Tlist=Tlist, Plist=Plist, Vlist=Vlist)
 
     def compare(self, tol, plot=False):
@@ -205,7 +252,7 @@ class ObservablesTestCase(object):
         `plot`: if set to True, it will comparison plots of the two models comparing their species.
 
         Returns a list of variables failed in a list of tuples in the format:
-        
+
         (CanteraCondition, variable label, variable_old, variable_new)
 
         """
@@ -220,10 +267,14 @@ class ObservablesTestCase(object):
         print('{0} Comparison'.format(self))
         # Check the species profile observables
         if 'species' in self.observables:
-            old_species_dict = get_rmg_species_from_user_species(self.observables['species'], self.old_sim.species_list)
-            new_species_dict = get_rmg_species_from_user_species(self.observables['species'], self.new_sim.species_list)
+            if self.old_sim.surface_species_list:
+                old_species_dict = get_rmg_species_from_user_species(self.observables['species'], self.old_sim.species_list + self.old_sim.surface_species_list)
+                new_species_dict = get_rmg_species_from_user_species(self.observables['species'], self.new_sim.species_list + self.new_sim.surface_species_list)
+            else:
+                old_species_dict = get_rmg_species_from_user_species(self.observables['species'], self.old_sim.species_list)
+                new_species_dict = get_rmg_species_from_user_species(self.observables['species'], self.new_sim.species_list)
 
-        # Check state variable observables 
+        # Check state variable observables
         implemented_variables = ['temperature', 'pressure']
         if 'variable' in self.observables:
             for item in self.observables['variable']:
