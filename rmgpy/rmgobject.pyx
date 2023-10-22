@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -24,6 +24,8 @@
 # DEALINGS IN THE SOFTWARE.                                                   #
 #                                                                             #
 ###############################################################################
+
+import collections
 
 import numpy as np
 
@@ -73,6 +75,9 @@ cdef class RMGObject(object):
             None
         """
         kwargs = recursive_make_object(data, class_dict, make_final_object=False)
+        for key in ['aux', 'mol']:
+            if key in kwargs.keys():
+                del kwargs[key]
         self.__init__(**kwargs)
 
 cpdef expand_to_dict(obj):
@@ -88,7 +93,7 @@ cpdef expand_to_dict(obj):
         Any: dictionary representation of the object (dict, unless str, int, or float, which are returned as themselves)
 
     """
-    if isinstance(obj, list):
+    if isinstance(obj, (list, tuple)):
         return [expand_to_dict(x) for x in obj]
 
     elif isinstance(obj, dict):
@@ -101,8 +106,12 @@ cpdef expand_to_dict(obj):
             try:
                 new_obj[new_key] = new_value
             except TypeError:
-                raise NotImplementedError('Cannot expand objects that are serving as dictionary keys ({0} is serving as'
-                                          'a key). The returned dictionary would not be hashable'.format(key))
+                # Check if the key is a hashable object and use its string representation if so
+                if isinstance(key, collections.Hashable):
+                    new_obj[repr(key)] = new_value
+                else:
+                    raise NotImplementedError(f'Cannot expand objects that are serving as dictionary keys ({key} is'
+                                              'serving as a key). The returned dictionary would not be hashable')
         return new_obj
 
     elif isinstance(obj, np.ndarray):
@@ -123,15 +132,14 @@ cpdef recursive_make_object(obj, class_dictionary, make_final_object=True):
     return the recreated final object.
 
     Args:
-        obj (Any): dictionary representation of an object to be recreated
-        class_dictionary (dict): a dictionary mapping of class strings to classes
+        obj (Any): A dictionary representation of an object to be recreated
+        class_dictionary (dict): A dictionary mapping of class strings to classes
         make_final_object (bool): If True (default) the topmost object will be created and returned. Else, all nested
                                   objects will be recreated but only the keyword arguments needed to recreate the
                                   topmost object will be returned.
 
     Returns: 
         Any: recreated object (default) or dictionary of keyword arguments to recreate the final (topmost) object
-
     """
     if isinstance(obj, dict):
 
@@ -184,8 +192,16 @@ cpdef recursive_make_object(obj, class_dictionary, make_final_object=True):
                 else:
                     return int(obj)
 
-            except (ValueError, TypeError):  # If we made it here then obj must be just a string
-                return obj
+            except (ValueError, TypeError):
+                # Next, check if the string is a representation of a class instance,
+                # which can occur if hashable classes are used as keys
+                for class_name in class_dictionary.keys():
+                    if class_name in obj:
+                        try:
+                            return eval(obj, {'__builtins__': None}, class_dictionary)
+                        except NameError:  # Probably just included the class name as a comment
+                            pass
+                return obj  # If we made it here then obj must be just a string
 
     else:
         return obj

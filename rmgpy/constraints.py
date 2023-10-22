@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -31,6 +31,32 @@ import logging
 
 from rmgpy.species import Species
 
+def pass_cutting_threshold(species):
+    """
+    Pass in either a `Species` or `Molecule` object and checks whether it passes 
+    the speciesCuttingThreshold set by the user. The default value is 20. If yes,
+    returns `True` for passing cutting threshold.
+    """
+
+    from rmgpy.rmg.input import get_input
+
+    try:
+        species_constraints = get_input('species_constraints')
+    except Exception:
+        logging.debug('Species constraints could not be found.')
+        species_constraints = {}
+
+    if isinstance(species, Species):
+        struct = species.molecule[0]
+    else:
+        # expects a molecule here
+        struct = species
+
+    min_cutting_size = species_constraints.get('speciesCuttingThreshold', 20)
+    if struct.get_element_count()['C'] >= min_cutting_size:
+        return True
+
+    return False
 
 def fails_species_constraints(species):
     """
@@ -86,6 +112,17 @@ def fails_species_constraints(species):
     if max_heavy_atoms != -1:
         if struct.get_num_atoms() - struct.get_num_atoms('H') > max_heavy_atoms:
             return True
+
+    max_surface_sites = species_constraints.get('maximumSurfaceSites', -1)
+    if max_surface_sites != -1:
+        if struct.get_num_atoms('X') > max_surface_sites:
+            return True
+
+    max_surface_bond_order = species_constraints.get('maximumSurfaceBondOrder', -1)
+    if max_surface_bond_order != -1:
+        for site in struct.get_surface_sites():
+            if site.get_total_bond_order() > max_surface_bond_order:
+                return True
 
     max_radicals = species_constraints.get('maximumRadicalElectrons', -1)
     if max_radicals != -1:

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -109,7 +109,7 @@ cdef class Chebyshev(PDepKineticsModel):
         def __set__(self, value):
             self._coeffs = quantity.Dimensionless(value)
 
-    cdef double chebyshev(self, int n, double x):
+    cpdef double chebyshev(self, int n, double x):
         """
         Return the value of the nth-order Chebyshev polynomial at the given
         value of `x`.
@@ -129,7 +129,7 @@ cdef class Chebyshev(PDepKineticsModel):
                 T1 = T
             return T
 
-    cdef double get_reduced_temperature(self, double T) except -1000:
+    cpdef double get_reduced_temperature(self, double T) except -1000:
         """
         Return the reduced temperature corresponding to the given temperature
         `T` in K. This maps the inverse of the temperature onto the domain 
@@ -140,7 +140,7 @@ cdef class Chebyshev(PDepKineticsModel):
         Tmax = self._Tmax.value_si
         return (2.0 / T - 1.0 / Tmin - 1.0 / Tmax) / (1.0 / Tmax - 1.0 / Tmin)
 
-    cdef double get_reduced_pressure(self, double P) except -1000:
+    cpdef double get_reduced_pressure(self, double P) except -1000:
         """
         Return the reduced pressure corresponding to the given pressure
         `P` in Pa. This maps the logarithm of the pressure onto the domain 
@@ -212,8 +212,8 @@ cdef class Chebyshev(PDepKineticsModel):
         K = quantity.RateCoefficient(K, kunits).value_si
 
         # Create matrix and vector for coefficient fit (linear least-squares)
-        A = np.zeros((nT * nP, degreeT * degreeP), np.float64)
-        b = np.zeros((nT * nP), np.float64)
+        A = np.zeros((nT * nP, degreeT * degreeP), float)
+        b = np.zeros((nT * nP), float)
         for t1, T in enumerate(Tred):
             for p1, P in enumerate(Pred):
                 for t2 in range(degreeT):
@@ -225,7 +225,7 @@ cdef class Chebyshev(PDepKineticsModel):
         x, residues, rank, s = np.linalg.lstsq(A, b, rcond=RCOND)
 
         # Extract coefficients
-        coeffs = np.zeros((degreeT, degreeP), np.float64)
+        coeffs = np.zeros((degreeT, degreeP), float)
         for t2 in range(degreeT):
             for p2 in range(degreeP):
                 coeffs[t2, p2] = x[p2 * degreeT + t2]
@@ -268,7 +268,7 @@ cdef class Chebyshev(PDepKineticsModel):
         """
         import cantera as ct
         import copy
-        assert isinstance(ct_reaction, ct.ChebyshevReaction), "Must be a Cantera ChebyshevReaction object"
+        assert isinstance(ct_reaction.rate, ct.ChebyshevRate), "Must have a Cantera Chebychev rate attribute"
 
         Tmin = self.Tmin.value_si
         Tmax = self.Tmax.value_si
@@ -294,4 +294,6 @@ cdef class Chebyshev(PDepKineticsModel):
         except:
             raise Exception('Chebyshev units {0} not found among accepted units for converting to '
                             'Cantera Chebyshev object.'.format(self.kunits))
-        ct_reaction.set_parameters(Tmin, Tmax, Pmin, Pmax, coeffs)
+
+        new_chebyshev = ct.ChebyshevRate(temperature_range=(Tmin, Tmax), pressure_range=(Pmin, Pmax), data=coeffs)
+        ct_reaction.rate = new_chebyshev

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -39,7 +39,7 @@ import cython
 from rdkit import Chem
 # Test if openbabel is installed
 try:
-    import openbabel
+    from openbabel import openbabel
 except ImportError:
     BACKENDS = ['rdkit']
 else:
@@ -80,6 +80,24 @@ SMILES_LOOKUPS = {
         multiplicity 2
         1 C u1 p1 c0 {2,S}
         2 H u0 p0 c0 {1,S}
+        """,
+    '[C]F':  # We'd return the quartet without this
+        """
+        multiplicity 2
+        1 C u1 p1 c0 {2,S}
+        2 F u0 p3 c0 {1,S}
+        """,
+    '[C]Cl':  # We'd return the quartet without this
+        """
+        multiplicity 2
+        1 C u1 p1 c0 {2,S}
+        2 Cl u0 p3 c0 {1,S}
+        """,
+    '[C]Br':  # We'd return the quartet without this
+        """
+        multiplicity 2
+        1 C u1 p1 c0 {2,S}
+        2 Br u0 p3 c0 {1,S}
         """,
     '[X]':  # Surface site
         """
@@ -131,8 +149,13 @@ RADICAL_LOOKUPS = {
     'H2N': '[NH2]',
     'HN': '[NH]',
     'NO': '[N]=O',
+    'F' : '[F]',
     'Cl': '[Cl]',
+    'Br': '[Br]',
     'I': '[I]',
+    'CF': '[C]F',
+    'CCl': '[C]Cl',
+    'CBr': '[C]Br'
 }
 
 
@@ -394,7 +417,10 @@ def _openbabel_translator(input_object, identifier_type, mol=None):
         obmol = openbabel.OBMol()
         ob_conversion.ReadString(obmol, input_object)
         obmol.AddHydrogens()
-        obmol.AssignSpinMultiplicity(True)
+        # In OpenBabel 3+ the function obmol.AssignSpinMultiplicity(True) does nothing.
+        # We could write our own method here and call obatom.SetSpinMultiplicity on
+        # each atom, but instead we will leave them blank for now and fix them 
+        # in the from_ob_mol() method.
         if mol is None:
             mol = mm.Molecule()
         output = from_ob_mol(mol, obmol)

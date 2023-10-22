@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -71,19 +71,25 @@ class HinderedRotor2D(Mode):
     ======================== ===================================================
     """
 
-    rmg_path = os.path.abspath(os.path.dirname(os.path.dirname(rmgpy.__file__)))
-    q2dtor_path = os.path.join(rmg_path, 'external', 'Q2DTor', 'src', 'Q2DTor.py')
+    RMG_PATH = os.path.abspath(os.path.dirname(os.path.dirname(rmgpy.__file__)))
+    Q2DTOR_PATH = os.path.join(RMG_PATH, 'external', 'Q2DTor', 'src', 'q2dtor.py')
 
     q2dtor_message = """\nUsing Q2DTor...
 Q2DTor is a software for calculating the partition functions and themodynamic properties of molecular systems with two or more
 torsional modes developed by David Ferro Costas (david.ferro@usc.es) and Antonio Fernandez Ramos (qf.ramos@usc.es) at
 the Universidade de Santiago de Compostela. Arkane can integrate Q2DTor to compute the quantum mechanical partition function 
 of 2D rotors.  
+For more information visit https://github.com/cathedralpkg/Q2DTor
 
 For use of HinderedRotor2D within Arkane please cite:  
 D. Ferro-Costas, M. N. D. S. Cordeiro, D. G. Truhlar, A. Fernández-Ramos, Comput. Phys. Commun. 232, 190-205, 2018.
 """
     q2dtor_message_used = False
+
+    def check_q2dtor_install(self):
+        """Check's the Q2DTor installation"""
+        if not os.path.isfile(self.Q2DTOR_PATH):
+            raise FileNotFoundError(f"Q2DTor not found at {self.Q2DTOR_PATH}. Please check a recent version is installed correctly.")
 
     def __init__(self, name, torsigma1, torsigma2, calc_path, symmetry='none', pivots1=None, pivots2=None, top1=None,
                  top2=None):
@@ -335,7 +341,8 @@ end_temperatures                   #
         use Q2DTor to generate a .ics file the Q2DTor file that
         has torsional information
         """
-        out = subprocess.check_call(['python', self.q2dtor_path, self.name, '--init'],
+        self.check_q2dtor_install()
+        out = subprocess.check_call(['python3', self.Q2DTOR_PATH, self.name, '--init'],
                                     cwd=self.q2dtor_dir)
 
     def fit_fourier(self):
@@ -343,14 +350,16 @@ end_temperatures                   #
         use Q2DTor to fit fourier coefficients
         to the potential
         """
-        out = subprocess.check_call(['python', self.q2dtor_path, self.name, '--fourier'],
+        self.check_q2dtor_install()
+        out = subprocess.check_call(['python3', self.Q2DTOR_PATH, self.name, '--fourier'],
                                     cwd=self.q2dtor_dir)
 
     def get_splist_file(self):
         """
         use Q2DTor to generate a .splist file
         """
-        out = subprocess.check_call(['python', self.q2dtor_path, self.name, '--findsp'],
+        self.check_q2dtor_install()
+        out = subprocess.check_call(['python3', self.Q2DTOR_PATH, self.name, '--findsp'],
                                     cwd=self.q2dtor_dir)
 
     def get_eigvals(self):
@@ -359,7 +368,8 @@ end_temperatures                   #
         rotors
         writes a .evals file and reads it to fill self.evals and self.energy
         """
-        out = subprocess.check_call(['python', self.q2dtor_path, self.name, '--tor2dns'],
+        self.check_q2dtor_install()
+        out = subprocess.check_call(['python3', self.Q2DTOR_PATH, self.name, '--tor2dns'],
                                     cwd=self.q2dtor_dir)
         self.read_eigvals()
 
@@ -550,18 +560,12 @@ class HinderedRotorClassicalND(Mode):
             self.atnums = self.conformer.number
             rootD = self.conformer.get_internal_reduced_moment_of_inertia(self.pivots[0], self.tops[0]) ** 0.5
             self.rootDs = [rootD for i in range(len(self.Es))]
-
-            phis = self.phis.tolist()
-
-            for j, phi in enumerate(self.phis):  # add the negative values to improve fit near 0.0
-                if phi != 2.0 * np.pi:
-                    phis.append(phi - 2.0 * np.pi)
-
-            phis = np.array(phis)
+            # add the negative values to improve fit near 0.0
+            phis = np.concatenate((self.phis, self.phis[:-1] - 2.0 * np.pi), axis=0)
             inds = np.argsort(phis)
             self.phis = phis[inds]
             Es = self.Es.tolist()
-            Es.extend(Es[1:])
+            Es.extend(Es[:-1])
             self.Es = np.array(Es)[inds]
             self.rootDs.extend(self.rootDs[1:])
             self.rootDs = np.array(self.rootDs)[inds].tolist()
@@ -584,7 +588,7 @@ class HinderedRotorClassicalND(Mode):
             self.V = interpolate.CubicSpline(self.phis, self.Es)
             self.rootD = interpolate.CubicSpline(self.phis, self.rootDs)
 
-        Tlist = np.linspace(10.0, 3001.0, num=20, dtype=np.float64)
+        Tlist = np.linspace(10.0, 3001.0, num=20, dtype=float)
 
         Qs = []
         for T in Tlist:

@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -38,13 +38,16 @@ cdef class GroupAtom(Vertex):
     cdef public list charge
     cdef public str label
     cdef public list lone_pairs
-
+    cdef public list site 
+    cdef public list morphology
     cdef public dict props
 
     cdef public list reg_dim_atm
     cdef public list reg_dim_u
     cdef public list reg_dim_r
-
+    cdef public list reg_dim_site
+    cdef public list reg_dim_morphology
+    
     cpdef Vertex copy(self)
 
     cpdef _change_bond(self, short order)
@@ -68,6 +71,8 @@ cdef class GroupAtom(Vertex):
     cpdef bint is_specific_case_of(self, Vertex other) except -2
 
     cpdef bint is_surface_site(self) except -2
+
+    cpdef bint is_bonded_to_surface(self) except -2
 
     cpdef bint is_oxygen(self)
 
@@ -124,7 +129,8 @@ cdef class Group(Graph):
 
     cdef public dict props
     cdef public list multiplicity
-
+    cdef public list metal 
+    cdef public list facet
     # These read-only attribues act as a "fingerprint" for accelerating
     # subgraph isomorphism checks
     cdef public dict elementCount
@@ -164,7 +170,7 @@ cdef class Group(Graph):
 
     cpdef dict get_element_count(self)
 
-    cpdef from_adjacency_list(self, str adjlist)
+    cpdef from_adjacency_list(self, str adjlist, bint check_consistency=?)
 
     cpdef to_adjacency_list(self, str label=?)
     
@@ -172,7 +178,7 @@ cdef class Group(Graph):
 
     cpdef update_charge(self)
 
-    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?) except -2
+    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint strict=?) except -2
 
     cpdef list find_isomorphism(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?)
 
@@ -183,10 +189,14 @@ cdef class Group(Graph):
     cpdef bint is_identical(self, Graph other, bint save_order=?)
 
     cpdef bint is_surface_site(self) except -2
-    
+
     cpdef bint contains_surface_site(self) except -2
 
+    cpdef list get_surface_sites(self)
+
     cpdef bint is_aromatic_ring(self)
+
+    cpdef bint has_wildcards(self)
 
     cpdef bint standardize_atomtype(self)
 

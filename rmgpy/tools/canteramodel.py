@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -35,7 +35,7 @@ import numpy as np
 from rmgpy.chemkin import get_species_identifier
 from rmgpy.quantity import Quantity
 from rmgpy.tools.data import GenericData
-from rmgpy.tools.plot import GenericPlot, SimulationPlot, ReactionSensitivityPlot
+from rmgpy.tools.plot import GenericPlot, SimulationPlot, ReactionSensitivityPlot, ThermoSensitivityPlot
 
 
 class CanteraCondition(object):
@@ -198,14 +198,16 @@ class Cantera(object):
     """
 
     def __init__(self, species_list=None, reaction_list=None, canteraFile='', output_directory='', conditions=None,
-                 sensitive_species=None):
+                 sensitive_species=None, thermo_SA=False):
         """
         `species_list`: list of RMG species objects
         `reaction_list`: list of RMG reaction objects
         `reaction_map`: dict mapping the RMG reaction index within the `reaction_list` to cantera model reaction(s) indices
-        `canteraFile` path of the chem.cti file associated with this job
+        `canteraFile` path of the chem.yaml file associated with this job
         `conditions`: a list of `CanteraCondition` objects
         `sensitive_species`: a list of RMG species objects for conductng sensitivity analysis on
+        `thermo_SA`: a boolean indicating whether or not to run thermo SA. By default, if sensitive_species is given,
+                      only kinetic_SA will be calculated and it must be additionally specified to perform thermo SA.
         """
         self.species_list = species_list
         self.reaction_list = reaction_list
@@ -214,6 +216,7 @@ class Cantera(object):
         self.output_directory = output_directory if output_directory else os.getcwd()
         self.conditions = conditions if conditions else []
         self.sensitive_species = sensitive_species if sensitive_species else []
+        self.thermo_SA = thermo_SA
 
         # Make output directory if it does not yet exist:
         if not os.path.exists(self.output_directory):
@@ -286,19 +289,19 @@ class Cantera(object):
 
     def load_chemkin_model(self, chemkin_file, transport_file=None, **kwargs):
         """
-        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti 
+        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.yaml 
         and save it in the output_directory
         Then load it into self.model
         """
-        from cantera import ck2cti
+        from cantera import ck2yaml
 
         base = os.path.basename(chemkin_file)
         base_name = os.path.splitext(base)[0]
-        out_name = os.path.join(self.output_directory, base_name + ".cti")
+        out_name = os.path.join(self.output_directory, base_name + ".yaml")
         if os.path.exists(out_name):
             os.remove(out_name)
-        parser = ck2cti.Parser()
-        parser.convertMech(chemkin_file, transportFile=transport_file, outName=out_name, **kwargs)
+        parser = ck2yaml.Parser()
+        parser.convert_mech(chemkin_file, transport_file=transport_file, out_name=out_name, **kwargs)
         self.model = ct.Solution(out_name)
 
     def modify_reaction_kinetics(self, rmg_reaction_index, rmg_reaction):
@@ -327,7 +330,7 @@ class Cantera(object):
         ct_species = self.model.species(rmg_species_index)
         ct_species.thermo = modified_ct_species.thermo
 
-    def plot(self, data, top_species=10, top_sensitive_reactions=10):
+    def plot(self, data, top_species=10, top_sensitive_reactions=10, top_sensitive_species=10):
         """
         Plots data from the simulations from this cantera job.
         Takes data in the format of a list of tuples containing (time, [list of temperature, pressure, and species data]) 
@@ -342,8 +345,9 @@ class Cantera(object):
         
         """
         num_ct_reactions = len(self.model.reactions())
+        num_ct_species = len(self.model.species())
         for i, condition_data in enumerate(data):
-            time, data_list, reaction_sensitivity_data = condition_data
+            time, data_list, reaction_sensitivity_data, thermodynamic_sensitivity_data = condition_data
             # In RMG, any species with an index of -1 is an inert and should not be plotted
             inert_list = [species for species in self.species_list if species.index == -1]
 
@@ -363,7 +367,13 @@ class Cantera(object):
                 ReactionSensitivityPlot(x_var=time,
                                         y_var=reaction_sensitivity_data[j * num_ct_reactions:(j + 1) * num_ct_reactions],
                                         num_reactions=top_sensitive_reactions).barplot(
-                    os.path.join(self.output_directory, '{0}_{1}_sensitivity.png'.format(i + 1, species.to_chemkin())))
+                    os.path.join(self.output_directory, '{0}_{1}_reaction_sensitivity.png'.format(i + 1, species.to_chemkin())))
+                if self.thermo_SA:
+                    ThermoSensitivityPlot(x_var=time,
+                                          y_var=thermodynamic_sensitivity_data[j * num_ct_species:(j + 1) * num_ct_species]*4184000,
+                                          xlabel='dln(c)/d(H_i) [(kcal/mol)^-1]',
+                                          num_species=top_sensitive_species).barplot(
+                        os.path.join(self.output_directory, '{0}_{1}_thermo_sensitivity.png'.format(i + 1, species.to_chemkin())))
 
     def simulate(self):
         """
@@ -407,6 +417,7 @@ class Cantera(object):
             cantera_simulation = ct.ReactorNet([cantera_reactor])
 
             num_ct_reactions = len(self.model.reactions())
+            num_ct_species = len(self.model.species())
             if self.sensitive_species:
                 if ct.__version__ == '2.2.1':
                     print('Warning: Cantera version 2.2.1 may not support sensitivity analysis unless SUNDIALS was used during compilation.')
@@ -414,6 +425,10 @@ class Cantera(object):
                 # Add all the reactions as part of the analysis
                 for i in range(num_ct_reactions):
                     cantera_reactor.add_sensitivity_reaction(i)
+                # if thermo SA is requested, add all species enthalpies
+                if self.thermo_SA:
+                    for i in range(num_ct_species):
+                        cantera_reactor.add_sensitivity_species_enthalpy(i)
                 # Set the tolerances for the sensitivity coefficients
                 cantera_simulation.rtol_sensitivity = 1e-4
                 cantera_simulation.atol_sensitivity = 1e-6
@@ -423,7 +438,8 @@ class Cantera(object):
             temperature = []
             pressure = []
             species_data = []
-            sensitivity_data = []
+            kinetic_sensitivity_data = []
+            thermo_sensitivity_data = []
 
             # Begin integration
             time = 0.0
@@ -458,21 +474,40 @@ class Cantera(object):
                     for i in range(len(mass_frac_sensitivity_array)):
                         mass_frac_sensitivity_array[i] *= species_data[-1][i]
 
+                    # extract kinetics SA
+                    kinetics_mass_frac_sa = mass_frac_sensitivity_array[:, 0:num_ct_reactions]
                     sensitivity_array = np.zeros(len(self.sensitive_species) * len(self.model.reactions()))
                     for index, species in enumerate(self.sensitive_species):
                         for j in range(num_ct_reactions):
                             sensitivity_array[num_ct_reactions * index + j] = cantera_simulation.sensitivity(
                                 species.to_chemkin(), j)
 
-                            for i in range(len(mass_frac_sensitivity_array)):
+                            for i in range(len(kinetics_mass_frac_sa)):
                                 if i not in inert_index_list:
-                                    # massFracSensitivity for inerts are returned as nan in Cantera, so we must not include them here
-                                    sensitivity_array[num_ct_reactions * index + j] -= mass_frac_sensitivity_array[i][j]
-                    sensitivity_data.append(sensitivity_array)
+                                    # massFracSensitivity for inerts are returned as 0.0 in Cantera, so we do not include them here
+                                    sensitivity_array[num_ct_reactions * index + j] -= kinetics_mass_frac_sa[i][j]
+                    kinetic_sensitivity_data.append(sensitivity_array)
 
-            # Convert species_data and sensitivity_data to a numpy array
+                    # extract thermo SA if requested
+                    if self.thermo_SA:
+                        # extract thermo SA
+                        thermo_mass_frac_sa = mass_frac_sensitivity_array[:, num_ct_reactions:]
+                        sensitivity_array = np.zeros(len(self.sensitive_species) * num_ct_species)
+                        for index, species in enumerate(self.sensitive_species):
+                            for j in range(num_ct_species):
+                                sensitivity_array[num_ct_species * index + j] = cantera_simulation.sensitivity(
+                                    species.to_chemkin(), j + num_ct_reactions)
+
+                                for i in range(len(mass_frac_sensitivity_array)):
+                                    if i not in inert_index_list:
+                                        # massFracSensitivity for inerts are returned as 0.0 in Cantera, so we must not include them here
+                                        sensitivity_array[num_ct_species * index + j] -= thermo_mass_frac_sa[i][j]
+                        thermo_sensitivity_data.append(sensitivity_array)
+
+            # Convert species_data and sensitivity data to numpy arrays
             species_data = np.array(species_data)
-            sensitivity_data = np.array(sensitivity_data)
+            kinetic_sensitivity_data = np.array(kinetic_sensitivity_data)
+            thermo_sensitivity_data = np.array(thermo_sensitivity_data)
 
             # Resave data into generic data objects
             time = GenericData(label='Time',
@@ -497,6 +532,7 @@ class Cantera(object):
                                                    )
                 condition_data.append(species_generic_data)
 
+            # save kinetic data as generic data object
             reaction_sensitivity_data = []
             for index, species in enumerate(self.sensitive_species):
                 for j in range(num_ct_reactions):
@@ -504,12 +540,25 @@ class Cantera(object):
                         label='dln[{0}]/dln[k{1}]: {2}'.format(species.to_chemkin(), j + 1, self.model.reactions()[j]),
                         species=species,
                         reaction=self.model.reactions()[j],
-                        data=sensitivity_data[:, num_ct_reactions * index + j],
+                        data=kinetic_sensitivity_data[:, num_ct_reactions * index + j],
                         index=j + 1,
                         )
                     reaction_sensitivity_data.append(reaction_sensitivity_generic_data)
 
-            all_data.append((time, condition_data, reaction_sensitivity_data))
+            # save thermo data as generic data object
+            thermodynamic_sensitivity_data = []
+            if self.thermo_SA:
+                for index, species in enumerate(self.sensitive_species):
+                    for j in range(num_ct_species):
+                        thermo_sensitivity_generic_data = GenericData(
+                            label='dln[{0}]/dH[{1}]'.format(species, self.model.species()[j].name),
+                            species=species,
+                            data=thermo_sensitivity_data[:, num_ct_species * index + j],
+                            index=j + 1,
+                            )
+                        thermodynamic_sensitivity_data.append(thermo_sensitivity_generic_data)
+
+            all_data.append((time, condition_data, reaction_sensitivity_data, thermodynamic_sensitivity_data))
 
         return all_data
 
@@ -685,41 +734,40 @@ def check_equivalent_cantera_reaction(ct_rxn1, ct_rxn2, check_id=False, dE=1e-5)
         assert ct_rxn1.reactants == ct_rxn2.reactants, "Same reactants"
         assert ct_rxn1.products == ct_rxn2.products, "Same products"
 
-        if isinstance(ct_rxn1, ct.ElementaryReaction):
-            assert ct_rxn1.allow_negative_pre_exponential_factor == ct_rxn2.allow_negative_pre_exponential_factor, \
-                "Same allow_negative_pre_exponential_factor attribute"
-            if ct_rxn1.rate or ct_rxn2.rate:
-                check_equivalent_arrhenius(ct_rxn1.rate, ct_rxn2.rate)
+        if isinstance(ct_rxn1, ct.Reaction):
+            # may not mean it is arrhenius, need to check if it is troe, 
+            if isinstance(ct_rxn1.rate, ct.ArrheniusRate):
+                assert ct_rxn1.allow_negative_pre_exponential_factor == ct_rxn2.allow_negative_pre_exponential_factor, \
+                    "Same allow_negative_pre_exponential_factor attribute"
+                if ct_rxn1.rate or ct_rxn2.rate:
+                    check_equivalent_arrhenius(ct_rxn1.rate, ct_rxn2.rate)
+            elif isinstance(ct_rxn1.rate, ct.PlogRate):
+                if ct_rxn1.rate.rates or ct_rxn2.rate.rates:
+                    assert len(ct_rxn1.rates) == len(ct_rxn2.rates), "Same number of rates in PLOG reaction"
 
-        elif isinstance(ct_rxn1, ct.PlogReaction):
-            if ct_rxn1.rates or ct_rxn2.rates:
-                assert len(ct_rxn1.rates) == len(ct_rxn2.rates), "Same number of rates in PLOG reaction"
+                    for i in range(len(ct_rxn1.rate.rates)):
+                        P1, arr1 = ct_rxn1.rate.rates[i]
+                        P2, arr2 = ct_rxn2.rate.rates[i]
+                        assert check_nearly_equal(P1, P2, dE), "Similar pressures for PLOG rates"
+                        check_equivalent_arrhenius(arr1, arr2)
 
-                for i in range(len(ct_rxn1.rates)):
-                    P1, arr1 = ct_rxn1.rates[i]
-                    P2, arr2 = ct_rxn2.rates[i]
-                    assert check_nearly_equal(P1, P2, dE), "Similar pressures for PLOG rates"
-                    check_equivalent_arrhenius(arr1, arr2)
-
-        elif isinstance(ct_rxn1, ct.ChebyshevReaction):
-            assert ct_rxn1.Pmax == ct_rxn2.Pmax, "Same Pmax for Chebyshev reaction"
-            assert ct_rxn1.Pmin == ct_rxn2.Pmin, "Same Pmin for Chebyshev reaction"
-            assert ct_rxn1.Tmax == ct_rxn2.Tmax, "Same Tmax for Chebyshev reaction"
-            assert ct_rxn1.Tmin == ct_rxn2.Tmin, "Same Tmin for Chebyshev reaction"
-            assert ct_rxn1.nPressure == ct_rxn2.nPressure, "Same number of pressure interpolations"
-            assert ct_rxn1.nTemperature == ct_rxn2.nTemperature, "Same number of temperature interpolations"
-            for i in range(ct_rxn1.coeffs.shape[0]):
-                for j in range(ct_rxn1.coeffs.shape[1]):
-                    assert check_nearly_equal(ct_rxn1.coeffs[i, j], ct_rxn2.coeffs[i, j], dE), \
-                        "Similar Chebyshev coefficients"
+            elif isinstance(ct_rxn1.rate, ct.ChebyshevRate):
+                assert ct_rxn1.rate.pressure_range == ct_rxn2.rate.pressure_range, "Same Prange for Chebyshev reaction"
+                assert ct_rxn1.rate.temperature_range == ct_rxn2.rate.temperature_range, "Same Trange for Chebyshev reaction"
+                assert ct_rxn1.rate.n_pressure == ct_rxn2.rate.n_pressure, "Same number of pressure interpolations"
+                assert ct_rxn1.rate.n_temperature == ct_rxn2.rate.n_temperature , "Same number of temperature interpolations"
+                for i in range(ct_rxn1.rate.data.shape[0]):
+                    for j in range(ct_rxn1.rate.data.shape[1]):
+                        assert check_nearly_equal(ct_rxn1.rate.data[i, j], ct_rxn2.rate.data[i, j], dE), \
+                            "Similar Chebyshev coefficients"
 
         elif isinstance(ct_rxn1, ct.ThreeBodyReaction):
             assert ct_rxn1.default_efficiency == ct_rxn2.default_efficiency, "Same default efficiency"
-            assert ct_rxn1.efficiencies == ct_rxn2.efficiencies, "Same efficienciess"
+            assert ct_rxn1.efficiencies == ct_rxn2.efficiencies, "Same efficiencies"
 
         elif isinstance(ct_rxn1, ct.FalloffReaction):
             assert ct_rxn1.default_efficiency == ct_rxn2.default_efficiency, "Same default efficiency"
-            assert ct_rxn1.efficiencies == ct_rxn2.efficiencies, "Same efficienciess"
+            assert ct_rxn1.efficiencies == ct_rxn2.efficiencies, "Same efficiencies"
             if ct_rxn1.falloff or ct_rxn2.falloff:
                 check_equivalent_falloff(ct_rxn1.falloff, ct_rxn2.falloff)
             if ct_rxn1.high_rate or ct_rxn2.high_rate:

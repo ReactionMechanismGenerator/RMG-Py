@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-# encoding: utf-8
 
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -45,6 +44,19 @@ class ESSAdapter(ABC):
     """
     An abstract ESS Adapter class
     """
+
+    def __init__(self, path, check_for_errors=True):
+        self.path = path
+        if check_for_errors:
+            self.check_for_errors()
+
+    @abstractmethod
+    def check_for_errors(self):
+        """
+        Checks the log file for common errors.
+        Optionally runs when the class is initialized to catch errors before parsing relevant information.
+        """
+        pass
 
     @abstractmethod
     def get_number_of_atoms(self):
@@ -126,6 +138,13 @@ class ESSAdapter(ABC):
         Inner lists with length 4 represent frozen dihedral angles.
         """
         pass
+
+    def get_software(self):
+        """
+        Return the name of the software. Should correspond to the class
+        name without 'Log'.
+        """
+        return self.__class__.__name__.replace('Log', '')
 
     def get_D1_diagnostic(self):
         """

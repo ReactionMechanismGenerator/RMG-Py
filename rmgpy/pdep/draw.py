@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -303,7 +303,7 @@ class NetworkDrawer(object):
                 break
 
         # Determine naive position of each well (one per column)
-        coordinates = np.zeros((len(wells), 2), np.float64)
+        coordinates = np.zeros((len(wells), 2), float)
         x = padding
         for i in range(len(wells)):
             well = wells[i]

@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -33,6 +33,7 @@ from rmgpy.thermo.model cimport HeatCapacityModel
 from rmgpy.statmech.conformer cimport Conformer
 from rmgpy.kinetics.model cimport TunnelingModel
 from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
+from rmgpy.molecule.graph cimport Graph
 
 ################################################################################
 
@@ -53,13 +54,15 @@ cdef class Species:
     cdef public bint is_solvent
     cdef public int creation_iteration
     cdef public bint explicitly_allowed
+    cdef public object liquid_volumetric_mass_transfer_coefficient_data
+    cdef public object henry_law_constant_data
     cdef str _fingerprint
     cdef str _inchi
     cdef str _smiles
 
-    cpdef generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
+    cpdef generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?, bint save_order=?)
     
-    cpdef bint is_isomorphic(self, other, bint generate_initial_map=?, bint strict=?) except -2
+    cpdef bint is_isomorphic(self, other, bint generate_initial_map=?, bint save_order=?, bint strict=?) except -2
 
     cpdef bint is_identical(self, other, bint strict=?) except -2
 
@@ -102,6 +105,10 @@ cdef class Species:
     cpdef Species copy(self, bint deep=?)
 
     cpdef set_structure(self, str structure)
+
+    cpdef object get_henry_law_constant_data(self, list Ts=?)
+
+    cpdef object get_liquid_volumetric_mass_transfer_coefficient_data(self, list Ts=?)
     
 ################################################################################
 

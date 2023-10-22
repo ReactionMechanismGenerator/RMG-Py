@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -36,6 +36,7 @@ import csv
 import logging
 import os
 import os.path
+import subprocess
 import sys
 import time
 
@@ -47,7 +48,7 @@ try:
 except ImportError:
     pass
 
-from rmgpy import __version__
+from rmgpy import __version__, get_path, settings
 from rmgpy.chemkin import write_elements_section
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.data.base import Entry
@@ -55,6 +56,8 @@ from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.exceptions import InputError
 
 from arkane.common import is_pdep
+from arkane.encorr.ae import AEJob
+from arkane.encorr.bac import BACJob
 from arkane.explorer import ExplorerJob
 from arkane.input import load_input_file
 from arkane.kinetics import KineticsJob
@@ -156,7 +159,7 @@ class Arkane(object):
         """
         self.input_file = input_file
         self.job_list, self.reaction_dict, self.species_dict, self.transition_state_dict, self.network_dict, \
-            self.model_chemistry = load_input_file(self.input_file)
+            self.level_of_theory = load_input_file(self.input_file)
         logging.info('')
         return self.job_list
 
@@ -204,6 +207,7 @@ class Arkane(object):
         # run thermo and statmech jobs (also writes thermo blocks to Chemkin file)
         supporting_info = []
         hindered_rotor_info = []
+        bacjob_num = 1
         for job in self.job_list:
             if isinstance(job, ThermoJob):
                 job.execute(output_directory=self.output_directory, plot=self.plot)
@@ -214,6 +218,11 @@ class Arkane(object):
                 if hasattr(job, 'raw_hindered_rotor_data'):
                     for hr_info in job.raw_hindered_rotor_data:
                         hindered_rotor_info.append(hr_info)
+            if isinstance(job, BACJob):
+                job.execute(output_directory=self.output_directory, plot=self.plot, jobnum=bacjob_num)
+                bacjob_num += 1
+            if isinstance(job, AEJob):
+                job.execute(output_file=output_file)
 
         with open(chemkin_file, 'a') as f:
             f.write('\n')
@@ -298,8 +307,8 @@ class Arkane(object):
                         if all([len(species.molecule) for species in reaction.reactants + reaction.products]):
                             reactions.append(reaction)
             lib_path = os.path.join(self.output_directory, 'RMG_libraries')
-            model_chemistry = f' at the {self.model_chemistry} level of theory' if self.model_chemistry else ''
-            lib_long_desc = f'Calculated using Arkane v{__version__}{model_chemistry}.'
+            level_of_theory = f' using {self.level_of_theory}' if self.level_of_theory is not None else ''
+            lib_long_desc = f'Calculated using Arkane v{__version__}{level_of_theory}.'
             save_thermo_lib(species_list=species, path=lib_path, name='thermo', lib_long_desc=lib_long_desc)
             save_kinetics_lib(rxn_list=reactions, path=lib_path, name='kinetics', lib_long_desc=lib_long_desc)
 
@@ -407,11 +416,44 @@ def initialize_log(verbose=logging.INFO, log_file=None):
         logger.addHandler(fh)
 
 
+def get_git_commit(path):
+    """
+    Get the recent git commit to be logged.
+    """
+    head, date = '', ''
+    if os.path.exists(os.path.join(path, '..', '.git')):
+        try:
+            head, date = subprocess.check_output(['git', 'log', '--format=%H%n%cd', '-1'], cwd=path).splitlines()
+            head, date = head.decode(), date.decode()
+        except (subprocess.CalledProcessError, OSError):
+            return head, date
+    return head, date
+
+
+def get_conda_package(module):
+    """
+    Check the version of any conda package.
+    """
+    try:
+        lines = subprocess.check_output(['conda', 'list', '-f', module]).splitlines()
+
+        packages = []
+        # Strip comments
+        for line in lines:
+            if line[:1] == '#':
+                pass
+            else:
+                packages.append(line)
+
+        return '\n'.join(packages)
+    except:
+        return ''
+
+
 def log_header(level=logging.INFO):
     """
     Output a header containing identifying information about Arkane to the log.
     """
-    from rmgpy import __version__
     logging.log(level, 'Arkane execution initiated at {0}'.format(time.asctime()))
     logging.log(level, '')
 
@@ -427,6 +469,35 @@ def log_header(level=logging.INFO):
     logging.log(level, '#                                                              #')
     logging.log(level, '################################################################')
     logging.log(level, '')
+
+    # Extract git commit from RMG-Py
+    head, date = get_git_commit(get_path())
+    if head != '' and date != '':
+        logging.log(level, 'The current git HEAD for RMG-Py is:')
+        logging.log(level, '\t%s' % head)
+        logging.log(level, '\t%s' % date)
+        logging.log(level, '')
+    else:
+        # If we cannot get git info, try checking if it is a conda package instead:
+        conda_package = get_conda_package('rmg')
+        if conda_package != '':
+            logging.log(level, 'The current anaconda package for RMG-Py is:')
+            logging.log(level, conda_package)
+            logging.log(level, '')
+
+    # Extract git commit from RMG-database
+    database_head, database_date = get_git_commit(settings['database.directory'])
+    if database_head != '' and database_date != '':
+        logging.log(level, 'The current git HEAD for RMG-database is:')
+        logging.log(level, '\t%s' % database_head)
+        logging.log(level, '\t%s' % database_date)
+        logging.log(level, '')
+    else:
+        database_conda_package = get_conda_package('rmgdatabase')
+        if database_conda_package != '':
+            logging.log(level, 'The current anaconda package for RMG-database is:')
+            logging.log(level, database_conda_package)
+            logging.log(level, '')
 
 
 def log_footer(level=logging.INFO):

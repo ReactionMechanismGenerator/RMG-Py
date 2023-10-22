@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -51,6 +50,8 @@ import numpy as np
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import ScalarQuantity
 
+from arkane.modelchem import LOT
+
 # Optional Imports
 try:
     import pyomo.environ as pyo
@@ -61,13 +62,13 @@ except ImportError:
 class ErrorCancelingSpecies:
     """Class for target and known (reference) species participating in an error canceling reaction"""
 
-    def __init__(self, molecule, low_level_hf298, model_chemistry, high_level_hf298=None, source=None):
+    def __init__(self, molecule, low_level_hf298, level_of_theory, high_level_hf298=None, source=None):
         """
 
         Args:
             molecule (Molecule): The RMG Molecule object with connectivity information
             low_level_hf298 (ScalarQuantity): evaluated using a lower level of theory (e.g. DFT)
-            model_chemistry (str): Level of theory used to calculate the low level thermo
+            level_of_theory ((Composite)LevelOfTheory): Level of theory used to calculate the low level thermo
             high_level_hf298 (ScalarQuantity, optional): evaluated using experimental data
                 or a high level of theory that is serving as the "reference" for the isodesmic calculation
             source (str): Literature source from which the high level data was taken
@@ -78,11 +79,11 @@ class ErrorCancelingSpecies:
             raise ValueError(f'ErrorCancelingSpecies molecule attribute must be an rmgpy Molecule object. Instead a '
                              f'{type(molecule)} object was given')
 
-        if isinstance(model_chemistry, str):
-            self.model_chemistry = model_chemistry
+        if isinstance(level_of_theory, LOT):
+            self.level_of_theory = level_of_theory
         else:
-            raise ValueError(f'The model chemistry string used to calculate the low level Hf298 must be provided '
-                             f'consistency checks. Instead, a {type(model_chemistry)} object was given')
+            raise ValueError(f'The level of theory used to calculate the low level Hf298 must be provided '
+                             f'for consistency checks. Instead, a {type(level_of_theory)} object was given')
 
         if not isinstance(low_level_hf298, ScalarQuantity):
             if isinstance(low_level_hf298, tuple):
@@ -125,13 +126,13 @@ class ErrorCancelingReaction:
         """
 
         self.target = target
-        self.model_chemistry = self.target.model_chemistry
+        self.level_of_theory = self.target.level_of_theory
 
-        # Perform a consistency check that all species are using the same model chemistry
+        # Perform a consistency check that all species are using the same level of theory
         for spcs in species.keys():
-            if spcs.model_chemistry != self.model_chemistry:
-                raise ValueError(f'Species {spcs} has model chemistry {spcs.model_chemistry}, which does not match the '
-                                 f'model chemistry of the reaction of {self.model_chemistry}')
+            if spcs.level_of_theory != self.level_of_theory:
+                raise ValueError(f'Species {spcs} has level of theory {spcs.level_of_theory}, which does not match the '
+                                 f'level of theory of the reaction of {self.level_of_theory}')
 
         # Does not include the target, which is handled separately.
         self.species = species
@@ -378,6 +379,10 @@ class ErrorCancelingScheme:
                 except ValueError:
                     # This is not being run in the main thread, so we cannot reset signal
                     pass
+                except TypeError:
+                    print(
+                        "Failed to reset signal handling in LPSolve - are you running pytest?"
+                    )
 
                 # Return the solution if a valid reaction is found. Otherwise continue to next solver
                 if status == 0:

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -115,8 +115,9 @@ class KineticsDepository(Database):
     real reactant and product species (as in a kinetics library).
     """
 
-    def __init__(self, label='', name='', short_desc='', long_desc=''):
-        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
+    def __init__(self, label='', name='', short_desc='', long_desc='', metal=None, site=None, facet=None):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc,
+                          metal=metal, site=site, facet=facet)
 
     def __str__(self):
         return 'Kinetics Depository {0}'.format(self.label)
@@ -210,6 +211,9 @@ class KineticsDepository(Database):
                    shortDesc='',
                    longDesc='',
                    rank=None,
+                   metal=None,
+                   site=None,
+                   facet=None
                    ):
         """
         Method for parsing entries in database files.
@@ -229,6 +233,9 @@ class KineticsDepository(Database):
             short_desc=shortDesc,
             long_desc=longDesc.strip(),
             rank=rank,
+            metal=metal,
+            site=site,
+            facet=facet
         )
         assert index not in self.entries
         self.entries[index] = entry

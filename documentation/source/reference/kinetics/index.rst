@@ -57,6 +57,19 @@ Class                   Description
 ======================= ========================================================
 
 
+
+Heterogenous catalysis kinetics models
+======================================
+
+.. currentmodule:: rmgpy.kinetics
+
+============================ ========================================================
+Class                        Description
+============================ ========================================================
+:class:`StickingCoefficient` A kinetics model to give Sticking Coefficients for surface adsorption, following Arrhenius form.
+:class:`SurfaceArrhenius`    A kinetics model based on (modified) Arrhenius for surface reactions.
+============================ ========================================================
+
 .. toctree::
     :hidden:
     
@@ -72,3 +85,5 @@ Class                   Description
     troe
     wigner
     eckart
+    surfacearrhenius
+    stickingcoefficient

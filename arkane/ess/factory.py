@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-# encoding: utf-8
 
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -49,8 +48,8 @@ def register_ess_adapter(ess: str,
     A register for the ESS adapters.
 
     Args:
-        ess: A string representation for an ESS adapter
-        ess_class: The ESS adapter class
+        ess: A string representation for an ESS adapter.
+        ess_class: The ESS adapter class.
 
     Raises:
         TypeError: If ``ess_class`` is not an ``ESSAdapter`` instance.
@@ -60,14 +59,18 @@ def register_ess_adapter(ess: str,
     _registered_ess_adapters[ess] = ess_class
 
 
-def ess_factory(fullpath: str) -> Type[ESSAdapter]:
+def ess_factory(fullpath: str,
+                check_for_errors: bool = True,
+                ) -> Type[ESSAdapter]:
     """
     A factory generating the ESS adapter corresponding to ``ess_adapter``.
     Given a path to the log file of a QM software, determine whether it is
-    Gaussian, Molpro, QChem, Orca, or TeraChem
+    Gaussian, Molpro, Orca, Psi4, QChem, or TeraChem.
 
     Args:
         fullpath (str): The disk location of the output file of interest.
+        check_for_errors (bool): Boolean indicating whether to check the QM log for common errors
+                                 before parsing relevant information.
 
     Returns:
         Type[ESSAdapter]: The requested ESSAdapter child, initialized with the respective arguments.
@@ -78,26 +81,29 @@ def ess_factory(fullpath: str) -> Type[ESSAdapter]:
         ess_name = 'TeraChemLog'
     else:
         with open(fullpath, 'r') as f:
-            line = f.readline()
+            line = f.readline().lower()
             while ess_name is None and line != '':
-                if 'gaussian' in line.lower():
+                if 'gaussian' in line:
                     ess_name = 'GaussianLog'
                     break
-                elif 'molpro' in line.lower():
+                elif 'molpro' in line:
                     ess_name = 'MolproLog'
                     break
-                elif 'O   R   C   A' in line or 'orca' in line.lower():
+                elif 'o   r   c   a' in line or 'orca' in line:
                     ess_name = 'OrcaLog'
                     break
-                elif 'qchem' in line.lower():
+                elif 'psi4' in line or 'rob parrish' in line:
+                    ess_name = 'Psi4Log'
+                    break
+                elif 'qchem' in line:
                     ess_name = 'QChemLog'
                     break
-                elif 'terachem' in line.lower():
+                elif 'terachem' in line:
                     ess_name = 'TeraChemLog'
                     break
-                line = f.readline()
+                line = f.readline().lower()
     if ess_name is None:
         raise InputError(f'The file at {fullpath} could not be identified as a '
-                         f'Gaussian, Molpro, Orca, QChem, or TeraChem log file.')
+                         f'Gaussian, Molpro, Orca, Psi4, QChem, or TeraChem log file.')
 
-    return _registered_ess_adapters[ess_name](path=fullpath)
+    return _registered_ess_adapters[ess_name](path=fullpath, check_for_errors=check_for_errors)

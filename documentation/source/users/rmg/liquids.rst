@@ -124,12 +124,12 @@ The Abraham LSER provides an estimate of the the partition coefficient (:math:`K
 between the vapor phase and a particular solvent (component 1) at 298 K:
 
 .. math:: \log_{10} K = c + eE + sS + aA + bB + lL
-	:label: AbModelEqn
+	:label: AbModelEqn1
 
 where the partition coefficient is the ratio of the equilibrium concentrations of the solute in liquid and vapor phases
 
 .. math:: K = \frac{c_{\rm 2, liquid}}{c_{\rm 2, gas}}
-	:label: AbModelEqn
+	:label: AbModelEqn2
 
 The Abraham model is used in RMG to estimate :math:`\Delta G_{\rm solv}^{*}` which is related to the :math:`K` of a solute according to the following expression:
 
@@ -162,34 +162,25 @@ where `A, B, E, S` and `L` are the same solute descriptors used in the Abraham m
 :math:`\Delta G_{\rm solv}^{*}`. The lowercase coefficients `c', a', b', e', s'` and `l'` depend only on the solvent and were obtained
 by fitting to experimental data.
 
-The solvent descriptors (`c, e, s, a, b, l, c', a', b', e', s', l'`) are largely treated as regressed empirical coefficients.
-Parameters are provided in RMG's database for the following solvents:
+RMG's database has a solute library that contains the solute descriptors of around 300 compounds and it is located at
+``RMG-database/input/solvation/libraries/solute.py`` in RMG-database. For the compounds that are not found in the
+solute library, the group additivity method is used to estimate the solute descriptors as described below under
+`Group additivity method for solute descriptor estimation`.
 
-#. acetonitrile
-#. benzene
-#. butanol
-#. carbontet
-#. chloroform
-#. cyclohexane
-#. decane
-#. dibutylether
-#. dichloroethane
-#. dimethylformamide
-#. dimethylsulfoxide
-#. dodecane
-#. ethanol
-#. ethylacetate
-#. heptane
-#. hexadecane
-#. hexane
-#. isooctane
-#. nonane
-#. octane
-#. octanol
-#. pentane
-#. toluene
-#. undecane
-#. water
+The solvent descriptors (`c, e, s, a, b, l, c', a', b', e', s', l'`) are largely treated as regressed empirical coefficients.
+The solvent descriptors are fitted by Chung et al. ([Chung2021]_) using experimental solute parameter, solvation free energy,
+and solvation enthalpy data collected from various sources. The Abraham solvent parameters (`c, e, s, a, b, v, l`) are provided
+in RMG's database for 196 pure solvents and 3 binary mixture solvents for solvation free energy calculations. The Mintz
+solvent parameters (`c', a', b', e', s'`) are provided for 69 pure solvents in RMG's database for solvation enthalpy calculations.
+A full list of solvents and their solvent parameters can be found on (1) `the RMG-database git repository <https://github.com/ReactionMechanismGenerator/RMG-database/blob/master/input/solvation/libraries/solvent.py>`_
+or (2) `the RMG website <https://rmg.mit.edu/database/solvation/libraries/solvent/>`_. If RMG-database is installed,
+these solvent information can be found found in ``RMG-database/input/solvation/libraries/solvent.py``.
+
+You can also search for a solvent by SMILES string using a sample ipython notebook located at
+``RMG-Py/ipython/estimate_solvation_thermo_and_search_available_solvents.ipynb``. This ipython notebook takes a
+SMILES string as an input and checks whether the given compound is found in RMG's database. It also returns the
+Abraham and Mintz solvent parameters for the matched solvent. In addition, the ipython notebook shows sample solvation free
+energy and enthalpy calculations for solute-solvent pairs.
 
 Estimation of :math:`\Delta G_{\rm solv}^{*}` at other temperatures: linear extrapolation
 ------------------------------------------------------------------------------------------
@@ -220,7 +211,6 @@ defined as the ratio of the equilibrium mole fractions of the solute (component 
 of the solvent (component 1):
 
 .. math:: K_{2,1}^{\infty} = \frac{y_{2}}{x_{2}}
-	:label: linear_extrapolation
 
 Recently, Chung et al. ([Chung2020]_) has shown that the following piecewise function combining two separate correlations
 ([Japas1989]_, [Harvey1996]_) can accurately predict the K-factor from room temperature up to the critical temperature
@@ -308,13 +298,93 @@ The work is in progress to implement the temperature dependent solvation free en
 Group additivity method for solute descriptor estimation
 --------------------------------------------------------
 
-Group additivity is a convenient way of estimating the thermochemistry for thousands of species sampled 
+Group additivity or group contribution is a convenient way of estimating the thermochemistry for thousands of species sampled
 in a typical mechanism generation job. Use of the Abraham Model in RMG requires a similar approach 
-to estimate the solute descriptors (`A, B, E, L,` and `S`). Platts et al. ([Platts1999]_) proposed such a scheme 
-employing a set of 81 molecular fragments for estimating `B, E, L, V` and `S` and another set of 51 fragments for 
-the estimation of `A`. These fragments are implemented in RMG but are limited to the compounds containing H, C,
-O, N, and S. The value of a given descriptor for a molecule is obtained by summing the contributions from each
-fragment found in the molecule and the intercept associated with that descriptor.
+to estimate the solute descriptors (`A, B, E, L,` and `S`). RMG uses the group additivity method devised by Chung et al. [Chung2021]_
+for solute descriptor estimation. The solute descriptor group additivity follows the same scheme as the RMG's group
+additivity method for gas phase thermochemistry estimation, which is explained in :ref:`thermo` and :ref:`thermoDatabase`.
+It estimates the solute descriptors by dividing a molecule into atom-centered (AC) functional groups and summing
+the contribution from all groups. Additionally, RMG implements ring strain correction (RSC) and long distance
+interaction (LDI) groups to account for more advanced structural effects that cannot be captured by the atom-based approach. E.g.:
+
+.. math::
+
+	E, S, A, B,\ \mathrm{or}\ L = \sum_{i=1}^{N_{\mathrm{atom}}} \mathrm{AC}_{i} + \sum_{j=1} \mathrm{RSC}_{j} + \sum_{k=1} \mathrm{LDI}_{k}
+
+where :math:`N_{\mathrm{atom}}` is the number of heavy atoms in a molecule and RSC and LDI corrections are applied for
+each ring cluster and long distance interaction group found in a molecule, respectively.
+
+While most molecules follow the equation above, halogenated molecules are treated differently in RMG for solute descriptor
+estimation: all halogen atoms are first replaced by hydrogen atoms, then the group additivity estimate is made on the
+replaced structure, and halogen corrections are lastly added for each halogen atom to get the final prediction as shown below:
+
+.. math::
+
+	E, S, A, B,\ \mathrm{or}\ L = \sum_{i=1}^{N_{\mathrm{atom*}}} \mathrm{AC}_{i} + \sum_{j=1} \mathrm{RSC}_{j} + \sum_{k=1} \mathrm{LDI}_{k} + \sum_{l=1}^{N_{\mathrm{halogen}}} \mathrm{Halogen}_{l}
+
+    = (E, S, A, B,\ \mathrm{or}\ L)_{\mathrm{replaced\ compound}} + \sum_{l=1}^{N_{\mathrm{halogen}}} \mathrm{Halogen}_{l}
+
+where the subscript 'replaced compound' denotes the compound whose halogen atoms are replaced by hydrogen atoms,
+and :math:`N_{\mathrm{atom*}}` and :math:`N_{\mathrm{halogen}}` represent the number of non-halogen heavy atoms and
+the number of halogen atoms in a molecule, respectively. We take this unique approach because it allows one to use the
+experimental solute parameter data of a replaced compound and simply apply halogen corrections to get more accurate
+estimates for a halogenated compound.
+
+For radical species, RMG uses the hydrogen bond increment (HBI) method developed by Lay et al. [Lay]_ to estimate the
+solute descriptors. The HBI method first saturates the compound, gets the estimate using the saturated structure, and
+applies the radical corrections for each radical site using the original structure as shown below:
+
+.. math::
+
+	E, S, A, B,\ \mathrm{or}\ L = (E, S, A, B,\ \mathrm{or}\ L)_{\mathrm{saturated}} + \sum_{m=1}^{N_{\mathrm{radical}}} \mathrm{radical}_{m}
+
+where the subscript 'saturated' denotes the compound whose radical sites are saturated and :math:`N_{\mathrm{radical}}`
+is the number of radical sites in a molecule. If the solute descriptors for the saturated structure are available in the
+RMG-database solute library, the group additivity approach will use the library data and apply the HBI corrections to
+get the estimates for the radical. If the solute descriptors for the saturated structure are not available in the solute
+library, RMG will use the group additivity approach to estimate the solute descriptors for the saturated structure
+and apply the HBI corrections.
+
+If a species is a radical and contains any halogen atoms, RMG's solute descriptor group additivity method will first saturate
+the compound and check whether the saturated form can be found in the solute libraries. If yes, it uses the
+solute data of the saturated form and applies the HBI corrections on the original molecule.
+If the saturated form cannot be found in the solute libraries, it then replaces the halogen atoms with hydrogen atoms
+and checks whether the saturated, replaced form can be found in the solute libraries. If yes, it uses the solute data
+of the saturated, replaced form, applies a halogen correction for each halogenated site on the saturated from, and
+finally performs the HBI corrections on the original molecule.
+If the saturated, replaced form cannot be found in the solute libraries, it computes the solute data for the saturated,
+replaced form using group additivity, applies a halogen correction for each halogenated site on the saturated form,
+and finally performs the HBI corrections on the original molecule.
+
+A sample ipython script that shows the solute parameter group additivity calculations, solvation free energy and
+enthalpy calculations can be found at ``RMG-Py/ipython/estimate_solvation_thermo_and_search_available_solvents.ipynb``.
+
+The group contribution databases for the solute descriptors can be found under ``RMG-database/input/solvation/groups/``
+in RMG-database. Each particular type of group contribution is stored in a file with the extension .py, e.g. 'groups.py':
+
+.. table::
+
+    ======================================= ======================================================
+    file		                            Type of group contribution
+    ======================================= ======================================================
+    group.py		              			group additive values (ACs)
+    ring.py					                monocyclic ring corrections (RSCs)
+    polycyclic.py		              		polycyclic ring corrections (RSCs)
+    longDistanceInteraction_cyclic.py       aromatic ortho, meta, para correction (LDIs)
+    longDistanceInteraction_noncyclic.py    gauche interaction correction (LDIs)
+    halogen.py			                	halogen corrections (halogens)
+    radical.py			                	hydrogen bond increments (HBIs)
+    ======================================= ======================================================
+
+
+Like many other entities in RMG, the database of each type of group contribution
+is organized in a hierarchical tree, and is defined at the bottom of the database file.
+
+More information on hierarchical tree structures in RMG can be found here:
+:ref:`introDatabase`.
+
+For information on the estimated prediction errors of the group additivity method, please refer to the work by
+Chung et al. [Chung2021]_
 
 .. _diffusionLimited:
 
@@ -372,6 +442,14 @@ and a correlation for the viscosity using parameters :math:`A, B, C, D, E`:
 .. math:: \ln \eta = A + \frac{B}{T} + C\log T + DT^E
     :label: viscosity
        
+The viscosity parameters (`A, B, C, D, E`) are provided for 150 pure solvents in RMG's database, which can be found under
+(1) `the RMG-database git repository <https://github.com/ReactionMechanismGenerator/RMG-database/blob/master/input/solvation/libraries/solvent.py>`_
+or (2) `the RMG website <https://rmg.mit.edu/database/solvation/libraries/solvent/>`_. If RMG-database is installed,
+these viscosity parameters can be found found in ``RMG-database/input/solvation/libraries/solvent.py``.
+
+You can also check whether a compound of interest has viscosity parameters in RMG-database by using a
+SMILES string and a sample ipython notebook located at ``RMG-Py/ipython/estimate_solvation_thermo_and_search_available_solvents.ipynb``.
+
 To build accurate models of liquid phase chemical reactions you will also want to modify your kinetics libraries or correct gas-phase rates for intrinsic barrier solvation corrections (coming soon).
 
 .. _exampleLiquidPhase:
@@ -507,7 +585,7 @@ This is an example of an input file for a liquid-phase system with constant spec
 
 .. [Poole2009] \ C.F. Poole et al. "Determination of solute descriptors by chromatographic methods." *Anal. Chim. Acta* **652(1-2)** p. 32-53 (2009).
 
-.. [Platts1999] \ J. Platts and D. Butina. "Estimation of molecular linear free energy relation descriptorsusing a group contribution approach." *J. Chem. Inf. Comput. Sci.* **39**, p. 835-845 (1999).
+.. [Lay] Lay, T.; Bozzelli, J.; Dean, A.; Ritter, E. J. Phys. Chem. 1995, 99,14514-14527
 
 .. [Mintz2007] \ C. Mintz et al. "Enthalpy of solvation correlations for gaseous solutes dissolved inwater and in 1-octanol based on the Abraham model." *J. Chem. Inf. Model.* **47(1)**, p. 115-121 (2007).
 
@@ -525,11 +603,13 @@ This is an example of an input file for a liquid-phase system with constant spec
 
 .. [Mintz2009] \ C. Mintz et al. "Enthalpy of solvation correlations for organic solutes and gasesdissolved in acetonitrile and acetone." *Thermochim. Acta* **484(1-2)**, p. 65-69 (2009).
 
-.. [Chung2020] \ Y. Chung et al. "Temperature dependent vapor-liquid equilibrium and solvation free energy estimation from minimal data." Manuscript submitted for publication (2009).
+.. [Chung2020] \ Y. Chung et al. "Temperature dependent vapor-liquid equilibrium and solvation free energy estimation from minimal data." *AIChE Journal* **66(6)**, e16976 (2020).
 
-.. [Japas1989] \ M.L. Japas and J.M.H. Levelt Sengers. "Gas solubility and Henry's law near the solvent's critical point." *AICHE Journal* **35(5)**, p. 705-713 (1989).
+.. [Chung2021] \ Y. Chung et al. "Group contribution and machine learning approaches to predict Abraham solute parameters, solvation free energy, and solvation enthalpy." *Manuscript in Preparation*
 
-.. [Harvey1996] \ A.H. Harvey. "Semiempirical correlation for Henry's constants over large temperature ranges." *AICHE Journal* **42(5)**, p. 1491-1494 (1996).
+.. [Japas1989] \ M.L. Japas and J.M.H. Levelt Sengers. "Gas solubility and Henry's law near the solvent's critical point." *AIChE Journal* **35(5)**, p. 705-713 (1989).
+
+.. [Harvey1996] \ A.H. Harvey. "Semiempirical correlation for Henry's constants over large temperature ranges." *AIChE Journal* **42(5)**, p. 1491-1494 (1996).
 
 .. [Bell2014] \ I.H. Bell et al. "Pure and pseudo-pure fluid thermophysical property evaluation and the open source thermophysical property library CoolProp." *Industrial & Engineering Chemistry Research* **53(6)**, p. 2498-2508 (2014).
 

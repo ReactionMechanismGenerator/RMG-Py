@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -36,9 +36,12 @@ information for a single species or transition state.
 import logging
 import math
 import os
+import pathlib
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import yaml
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import InputError, ElementError, StatmechError
@@ -55,6 +58,7 @@ from arkane.common import ArkaneSpecies, symbol_by_number, get_principal_moments
 from arkane.encorr.corr import get_atom_correction, get_bac
 from arkane.ess import ESSAdapter, ess_factory, _registered_ess_adapters, GaussianLog, QChemLog
 from arkane.encorr.isodesmic import ErrorCancelingSpecies, IsodesmicRingScheme
+from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory, standardize_name
 from arkane.output import prettify
 from arkane.encorr.reference import ReferenceDatabase
 from arkane.thermo import ThermoJob
@@ -68,13 +72,13 @@ class ScanLog(object):
     scan energies.
     """
 
-    angleFactors = {
+    angle_factors = {
         'radians': 1.0,
         'rad': 1.0,
         'degrees': 180.0 / math.pi,
         'deg': 180.0 / math.pi,
     }
-    energyFactors = {
+    energy_factors = {
         'J/mol': 1.0,
         'kJ/mol': 1.0 / 1000.,
         'cal/mol': 1.0 / 4.184,
@@ -91,38 +95,115 @@ class ScanLog(object):
         Load the scan energies from the file. Returns arrays containing the
         angles (in radians) and energies (in J/mol).
         """
-        angles, energies = [], []
-        angle_units, energy_units, angle_factor, energy_factor = None, None, None, None
+        file_ext = pathlib.Path(self.path).suffix
+        if file_ext.lower() == '.csv':
+            angle_unit, energy_unit, angles, energies = self.load_csv()
+        elif file_ext.lower() in ['.yml', '.yaml']:
+            angle_unit, energy_unit, angles, energies = self.load_yaml()
+        else:
+            angle_unit, energy_unit, angles, energies = self.load_text()
 
+        try:
+            angle_factor = self.angle_factors[angle_unit]
+        except KeyError:
+            raise ValueError(f'Invalid angle unit {angle_unit}.')
+        try:
+            energy_factor = self.energy_factors[energy_unit]
+        except KeyError:
+            raise ValueError(f'Invalid energy units {energy_unit}.')
+
+        angles = np.array(angles) / angle_factor
+        energies = np.array(energies) / energy_factor
+        energies -= energies[0]
+
+        return angles, energies
+
+    def load_csv(self):
+        """
+        Load scan energies from a CSV file. The CSV file should at least contain
+        two columns `'Angle (angle unit)'` and `'Energy (energy unit)'` with
+        corresponding values. For the headers, both 'units' should be replaced
+        by the units supported in `ScanLog.angle_factors` and `ScanLog.energy_factors`.
+        """
+        # Example format
+        # Angle (radians),Energy (kJ/mol)
+        # 0.000000,0.014725
+        # 0.174533,0.722311
+        df = pd.read_csv(self.path, header='infer')
+        # In case, the user's csv file has no header. Use the default header and units.
+        if df.columns[0][0].isnumeric():
+            df = pd.read_csv(self.path, names=['Angle (radians)', 'Energy (J/mol)'])
+        for column in df.columns:
+            if 'angle' in column.lower():
+                try:
+                    angle_unit = column.split()[1][1:-1]
+                except IndexError:
+                    raise ValueError(f'Invalid headers ({column}) in the csv file.')
+                angles = df[column]
+            elif 'energy' in column.lower():
+                try:
+                    energy_unit = column.split()[1][1:-1]
+                except IndexError:
+                    raise ValueError(f'Invalid headers ({column}) in the csv file.')
+                energies = df[column]
+        return angle_unit, energy_unit, angles, energies
+
+    def load_yaml(self):
+        """
+        Load scan energies from a YAML file. The YAML file should at least two fields
+        `angles` and `energies`. If `angle_unit` or `energy_unit` is not provided, 'rad'
+        and 'J/mol' will be used by default.
+        """
+        # Example format
+        # angle_unit: 'radians'
+        # energy_unit: 'J/mol'
+        # angles:
+        # - 0.000000
+        # - 0.174533
+        # ...
+        # energies:
+        # - 0.014725
+        # - 0.722311
+        with open(self.path, 'r') as f:
+            content = yaml.load(stream=f, Loader=yaml.FullLoader)
+            angle_unit = content.get('angle_unit', 'radians')
+            energy_unit = content.get('energy_unit', 'J/mol')
+            angles = content.get('angles', [])
+            energies = content.get('energies', [])
+        return angle_unit, energy_unit, angles, energies
+
+    def load_text(self):
+        """
+        Load scan energies from a text file. The text file should contain
+        two columns `'Angle (angle unit)'` and `'Energy (energy unit)'` with
+        corresponding values. For the headers, both 'units' should be replaced
+        by the units supported in `ScanLog.angle_factors` and `ScanLog.energy_factors`.
+        """
+        # Example format
+        #    Angle (radians)  Energy (kJ/mol)
+        #        0.000000         0.014725
+        #        0.174533         0.722311
+        angles, energies = [], []
+        angle_unit, energy_unit = None, None
         with open(self.path, 'r') as stream:
             for line in stream:
                 line = line.strip()
                 if line == '':
                     continue
-
                 tokens = line.split()
-                if angle_units is None or energy_units is None:
-                    angle_units = tokens[1][1:-1]
-                    energy_units = tokens[3][1:-1]
-
+                if angle_unit is None or energy_unit is None:
                     try:
-                        angle_factor = ScanLog.angleFactors[angle_units]
-                    except KeyError:
-                        raise ValueError('Invalid angle units {0!r}.'.format(angle_units))
-                    try:
-                        energy_factor = ScanLog.energyFactors[energy_units]
-                    except KeyError:
-                        raise ValueError('Invalid energy units {0!r}.'.format(energy_units))
-
-                else:
-                    angles.append(float(tokens[0]) / angle_factor)
-                    energies.append(float(tokens[1]) / energy_factor)
-
-        angles = np.array(angles)
-        energies = np.array(energies)
-        energies -= energies[0]
-
-        return angles, energies
+                        angle_unit = tokens[1][1:-1]
+                        energy_unit = tokens[3][1:-1]
+                    except IndexError:
+                        # It is possible that the user doesn't put a header there
+                        angle_unit = 'radians'
+                        energy_unit = 'J/mol'
+                    else:
+                        continue
+                angles.append(float(tokens[0]))
+                energies.append(float(tokens[1]))
+        return angle_unit, energy_unit, angles, energies
 
     def save(self, angles, energies, angle_units='radians', energy_units='kJ/mol'):
         """
@@ -157,6 +238,9 @@ def hinderedRotor(scanLog, pivots, top, symmetry=None, fit='best'):
     """Read a hindered rotor directive, and return the attributes in a list"""
     return [scanLog, pivots, top, symmetry, fit]
 
+def hinderedRotor1DArray(angles, energies, pivots, top, symmetry=None, fit='best'):
+    """Read a hindered rotor PES profile, and return the attributes in a list"""
+    return [angles, energies, pivots, top, symmetry, fit]
 
 def freeRotor(pivots, top, symmetry):
     """Read a free rotor directive, and return the attributes in a list"""
@@ -168,9 +252,9 @@ def hinderedRotor2D(scandir, pivots1, top1, symmetry1, pivots2, top2, symmetry2,
     return [scandir, pivots1, top1, symmetry1, pivots2, top2, symmetry2, symmetry]
 
 
-def hinderedRotorClassicalND(calcPath, pivots, tops, sigmas, semiclassical):
+def hinderedRotorClassicalND(calc_path, pivots, tops, sigmas, semiclassical):
     """Read an N dimensional hindered rotor directive, and return the attributes in a list"""
-    return [calcPath, pivots, tops, sigmas, semiclassical]
+    return [calc_path, pivots, tops, sigmas, semiclassical]
 
 
 class StatMechJob(object):
@@ -183,7 +267,7 @@ class StatMechJob(object):
     def __init__(self, species, path):
         self.species = species
         self.path = path
-        self.modelChemistry = ''
+        self.level_of_theory = None
         self.frequencyScaleFactor = 1.0
         self.includeHinderedRotors = True
         self.useIsodesmicReactions = False
@@ -233,7 +317,7 @@ class StatMechJob(object):
         path = self.path
         directory = os.path.abspath(os.path.dirname(path))
 
-        def create_log(log_path):
+        def create_log(log_path, check_for_errors=True):
             if not os.path.isfile(log_path):
                 modified_log_path = os.path.join(directory, log_path)
                 if not os.path.isfile(modified_log_path):
@@ -242,7 +326,7 @@ class StatMechJob(object):
                 else:
                     log_path = modified_log_path
 
-            return ess_factory(log_path)
+            return ess_factory(log_path, check_for_errors=check_for_errors)
 
         is_ts = isinstance(self.species, TransitionState)
         file_extension = os.path.splitext(path)[-1]
@@ -272,11 +356,14 @@ class StatMechJob(object):
             'True': True,
             'False': False,
             'HinderedRotor': hinderedRotor,
+            'HinderedRotor1DArray': hinderedRotor1DArray,
             'FreeRotor': freeRotor,
             'HinderedRotor2D': hinderedRotor2D,
             'HinderedRotorClassicalND': hinderedRotorClassicalND,
             'ScanLog': ScanLog,
-            'Log': create_log  # The Log class no longer exists, so route the path to ess_factory instead
+            'Log': create_log,  # The Log class no longer exists, so route the path to ess_factory instead
+            'LevelOfTheory': LevelOfTheory,
+            'CompositeLevelOfTheory': CompositeLevelOfTheory,
         }
 
         local_context.update({ess_adapter_name: create_log for ess_adapter_name in _registered_ess_adapters.keys()})
@@ -320,17 +407,31 @@ class StatMechJob(object):
         except KeyError:
             raise InputError('Required attribute "energy" not found in species file {0!r}.'.format(path))
         if isinstance(energy, dict):
-            energy = {k.lower(): v for k, v in energy.items()}  # Make model chemistries lower-case
+            # Standardize model chemistry names
+            energy = {standardize_name(k) if isinstance(k, str) else k: v for k, v in energy.items()}
+            freq_level = getattr(self.level_of_theory, 'freq', self.level_of_theory)
+            energy_level = getattr(self.level_of_theory, 'energy', self.level_of_theory)
             try:
-                energy = energy[self.modelChemistry]
+                energy = energy[energy_level.to_model_chem()]
             except KeyError:
-                raise InputError('Model chemistry {0!r} not found in from dictionary of energy values in species file '
-                                 '{1!r}.'.format(self.modelChemistry, path))
+                try:
+                    energy = energy[energy_level]
+                except KeyError:
+                    raise InputError(f'{energy_level} not found in dictionary of energy values in species file {path}.')
+        else:
+            freq_level = energy_level = None
 
         e0, e_electronic = None, None  # E0 = e_electronic + ZPE
         energy_log = None
         if isinstance(energy, ESSAdapter):
             energy_log = energy
+            # Update energy level of theory with software
+            if energy_level is not None:
+                energy_software = energy_log.get_software()
+                if energy_level.software is not None and energy_level.software != energy_software:
+                    logging.warning(f'{energy_level.software} was specified as energy software but does not match'
+                                    f' detected software. Software will be updated to {energy_software}.')
+                energy_level = energy_level.update(software=energy_software)
         elif isinstance(energy, float):
             e_electronic = energy
         elif isinstance(energy, tuple) and len(energy) == 2:
@@ -357,6 +458,19 @@ class StatMechJob(object):
         except KeyError:
             geom_log = statmech_log
             logging.debug("Reading geometry from the specified frequencies file.")
+
+        # Update frequency level of theory with software and set new composite level of theory
+        if freq_level is not None:
+            freq_software = statmech_log.get_software()
+            if freq_level.software is not None and freq_level.software != freq_software:
+                logging.warning(f'{freq_level.software} was specified as frequency software but does not match detected'
+                                f' software. Software will be updated to {freq_software}.')
+            freq_level = freq_level.update(software=freq_software)
+        if freq_level is not None and energy_level is not None:
+            if energy_level == freq_level:
+                self.level_of_theory = energy_level
+            else:
+                self.level_of_theory = CompositeLevelOfTheory(freq=freq_level, energy=energy_level)
 
         if 'frequencyScaleFactor' in local_context:
             logging.warning('Ignoring frequency scale factor in species file {0!r}.'.format(path))
@@ -482,7 +596,7 @@ class StatMechJob(object):
 
             # Apply atom corrections
             if self.applyAtomEnergyCorrections:
-                atom_corrections = get_atom_correction(self.modelChemistry,
+                atom_corrections = get_atom_correction(self.level_of_theory,
                                                        atoms, self.atomEnergies)
 
             else:
@@ -493,7 +607,7 @@ class StatMechJob(object):
             if self.applyBondEnergyCorrections:
                 if not self.bonds and hasattr(self.species, 'molecule') and self.species.molecule:
                     self.bonds = self.species.molecule[0].enumerate_bonds()
-                bond_corrections = get_bac(self.modelChemistry, self.bonds, coordinates, number,
+                bond_corrections = get_bac(self.level_of_theory, self.bonds, coordinates, number,
                                            bac_type=self.bondEnergyCorrectionType,
                                            multiplicity=conformer.spin_multiplicity)
             else:
@@ -565,8 +679,8 @@ class StatMechJob(object):
 
             scheme = IsodesmicRingScheme(target=ErrorCancelingSpecies(self.species.molecule[0],
                                                                       (uncorrected_thermo, 'J/mol'),
-                                                                      self.modelChemistry),
-                                         reference_set=reference_db.extract_model_chemistry(self.modelChemistry))
+                                                                      self.level_of_theory),
+                                         reference_set=reference_db.extract_level_of_theory(self.level_of_theory))
             isodesmic_thermo, self.isodesmicReactionList = scheme.calculate_target_enthalpy()
 
             # Set the difference as the isodesmic EO correction
@@ -643,13 +757,24 @@ class StatMechJob(object):
                 rotor.run()
                 conformer.modes.append(rotor)
                 rotor_count += len(pivots)
-            elif len(q) in [4, 5]:
+            elif len(q) in [4, 5, 6]:
                 # This is a hindered rotor
-                if len(q) == 5:
+                if len(q) == 5 and isinstance(q[0], (ESSAdapter, ScanLog)):
+                    # A hindered rotor PES from a log file with symmetry assigned
                     scan_log, pivots, top, symmetry, fit = q
+                elif len(q) == 5:
+                    # A hindered rotor PES from user input arrays with symmetry not assigned
+                    # the symmetry number will be derived from the scan
+                    angle, v_list, pivots, top, fit = q
+                    scan_log = -1
                 elif len(q) == 4:
+                    # A hindered rotor PES from a log file without symmetry assigned
                     # the symmetry number will be derived from the scan
                     scan_log, pivots, top, fit = q
+                elif len(q) == 6:
+                    # A hindered rotor PES from user input arrays with symmetry assigned
+                    angle, v_list, pivots, top, symmetry, fit = q
+                    scan_log = -1
                 # Load the hindered rotor scan energies
                 if isinstance(scan_log, ScanLog):
                     if not os.path.isfile(scan_log.path):
@@ -675,6 +800,12 @@ class StatMechJob(object):
                     angle, v_list = scan_log.load()
                     # no way to find pivot atoms or frozen atoms from ScanLog
                     pivot_atoms = 'N/A'
+                    frozen_atoms = 'N/A'
+                elif scan_log == -1:
+                    # Assuming no user may input -1 in the input file. None and '' are not used since they are more likely
+                    # to be some input generated from a failure of automatic scripts
+                    angle, v_list = np.array(angle), np.array(v_list)
+                    pivot_atoms = 'N/A',
                     frozen_atoms = 'N/A'
                 else:
                     raise InputError('Invalid log file type {0} for scan log.'.format(scan_log.__class__))
@@ -792,7 +923,7 @@ class StatMechJob(object):
         Plot the potential for the rotor, along with its cosine and Fourier
         series potential fits, and save it in the `hindered_rotor_plots` attribute.
         """
-        phi = np.arange(0, 6.3, 0.02, np.float64)
+        phi = np.arange(0, 6.3, 0.02, float)
         Vlist_cosine = np.zeros_like(phi)
         Vlist_fourier = np.zeros_like(phi)
         for i in range(phi.shape[0]):
@@ -919,7 +1050,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
     if linear:
         external = 5
 
-    d = np.zeros((n_atoms * 3, external), np.float64)
+    d = np.zeros((n_atoms * 3, external), float)
 
     # Transform the coordinates to the principal axes
     p = np.dot(coordinates, inertia_xyz)
@@ -945,9 +1076,9 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
 
     # Make sure projection matrix is orthonormal
 
-    inertia = np.identity(n_atoms * 3, np.float64)
+    inertia = np.identity(n_atoms * 3, float)
 
-    p = np.zeros((n_atoms * 3, 3 * n_atoms + external), np.float64)
+    p = np.zeros((n_atoms * 3, 3 * n_atoms + external), float)
 
     p[:, 0:external] = d[:, 0:external]
     p[:, external:external + 3 * n_atoms] = inertia[:, 0:3 * n_atoms]
@@ -980,7 +1111,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             i += 1
 
     # T is the transformation vector from cartesian to internal coordinates
-    T = np.zeros((n_atoms * 3, 3 * n_atoms - external), np.float64)
+    T = np.zeros((n_atoms * 3, 3 * n_atoms - external), float)
 
     T[:, 0:3 * n_atoms - external] = p[:, external:3 * n_atoms]
 
@@ -1006,16 +1137,18 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             logging.debug(np.sqrt(eig[i]) / (2 * math.pi * constants.c * 100))
 
     # Now we can start thinking about projecting out the internal rotations
-    d_int = np.zeros((3 * n_atoms, n_rotors), np.float64)
+    d_int = np.zeros((3 * n_atoms, n_rotors), float)
 
     counter = 0
     for i, rotor in enumerate(rotors):
         if len(rotor) == 5 and isinstance(rotor[1][0], list):
             scan_dir, pivots_list, tops, sigmas, semiclassical = rotor
-        elif len(rotor) == 5:
+        elif len(rotor) == 5 and isinstance(rotor[0], (ESSAdapter, ScanLog)):
             scanLog, pivots, top, symmetry, fit = rotor
-            pivots_list = [pivots]
-            tops = [top]
+            pivots_list, tops = [pivots], [top]
+        elif len(rotor) == 5:
+            _, _, pivots, top, _ = rotor
+            pivots_list, tops = [pivots], [top]
         elif len(rotor) == 3:
             pivots, top, symmetry = rotor
             pivots_list = [pivots]
@@ -1024,6 +1157,9 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             scan_dir, pivots1, top1, symmetry1, pivots2, top2, symmetry2, symmetry = rotor
             pivots_list = [pivots1, pivots2]
             tops = [top1, top2]
+        elif len(rotor) == 6:
+            _, _, pivots, top, _, _ = rotor
+            pivots_list, tops = [pivots], [top]
         else:
             raise ValueError("{} not a proper rotor format".format(rotor))
         for k in range(len(tops)):
@@ -1052,7 +1188,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
 
     # Normal modes in mass weighted cartesian coordinates
     vmw = np.dot(T, v)
-    eigm = np.zeros((3 * n_atoms - external, 3 * n_atoms - external), np.float64)
+    eigm = np.zeros((3 * n_atoms - external, 3 * n_atoms - external), float)
 
     for i in range(3 * n_atoms - external):
         eigm[i, i] = eig[i]
@@ -1095,7 +1231,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
     # Do the projection
     d_int_proj = np.dot(vmw.T, d_int)
     proj = np.dot(d_int, d_int.T)
-    inertia = np.identity(n_atoms * 3, np.float64)
+    inertia = np.identity(n_atoms * 3, float)
     proj = inertia - proj
     fm = np.dot(proj, np.dot(fm, proj))
     # Get eigenvalues of mass-weighted force constant matrix
@@ -1112,86 +1248,6 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             logging.debug(np.sqrt(eig[i]) / (2 * math.pi * constants.c * 100))
 
     return np.sqrt(eig[-n_vib:]) / (2 * math.pi * constants.c * 100)
-
-
-def assign_frequency_scale_factor(freq_level):
-    """
-    Assign the frequency scaling factor according to the model chemistry.
-    Refer to https://comp.chem.umn.edu/freqscale/index.html for future updates of these factors
-
-    Sources:
-        [1] I.M. Alecu, J. Zheng, Y. Zhao, D.G. Truhlar, J. Chem. Theory Comput. 2010, 6, 2872, DOI: 10.1021/ct100326h
-        [2] http://cccbdb.nist.gov/vibscalejust.asp
-        [3] http://comp.chem.umn.edu/freqscale/190107_Database_of_Freq_Scale_Factors_v4.pdf
-        [4] Calculated as described in 10.1021/ct100326h
-        [5] J.A. Montgomery, M.J. Frisch, J. Chem. Phys. 1999, 110, 2822–2827, DOI: 10.1063/1.477924
-
-    Args:
-        freq_level (str, unicode): The frequency level of theory.
-
-    Returns:
-        float: The frequency scaling factor (1 by default).
-    """
-    freq_dict = {'hf/sto-3g': 0.817,  # [2]
-                 'hf/6-31g': 0.903,  # [2]
-                 'hf/6-31g(d)': 0.899,  # [2]
-                 'hf/6-31g(d,p)': 0.903,  # [2]
-                 'hf/6-31g+(d,p)': 0.904,  # [2]
-                 'hf/6-31+g(d,p)': 0.915 * 1.014,  # [1] Table 7
-                 'pm3': 0.940 * 1.014,  # [1] Table 7, the 0.940 value is the ZPE scale factor
-                 'pm6': 1.078 * 1.014,  # [1] Table 7, the 1.078 value is the ZPE scale factor
-                 'b3lyp/6-31g(d,p)': 0.961,  # [2]
-                 'b3lyp/6-311g(d,p)': 0.967,  # [2]
-                 'b3lyp/6-311+g(3df,2p)': 0.967,  # [2]
-                 'b3lyp/6-311+g(3df,2pd)': 0.970,  # [2]
-                 'm06-2x/6-31g(d,p)': 0.952,  # [2]
-                 'm06-2x/6-31+g(d,p)': 0.979,  # [3]
-                 'm06-2x/6-311+g(d,p)': 0.983,  # [3]
-                 'm06-2x/6-311++g(d,p)': 0.983,  # [3]
-                 'm06-2x/cc-pvtz': 0.955,  # [2]
-                 'm06-2x/aug-cc-pvdz': 0.993,  # [3]
-                 'm06-2x/aug-cc-pvtz': 0.985,  # [1] Table 3, [3]
-                 'm06-2x/def2-tzvp': 0.984,  # [3]
-                 'm06-2x/def2-qzvp': 0.983,  # [3]
-                 'm06-2x/def2-tzvpp': 0.983,  # [1] Table 3, [3]
-                 'm08so/mg3s*': 0.995,  # [1] Table 3, taken as 'M08-SO/MG3S'
-                 'wb97x-d/aug-cc-pvtz': 0.988,  # [3], taken as 'ωB97X-D/maug-cc-pVTZ'
-                 'wb97xd/6-311++g(d,p)': 0.988,  # [4]
-                 'wb97xd/def2tzvp': 0.988,  # [4]
-                 'wb97xd/def2svp': 0.986,  # [4]
-                 'apfd/def2tzvp': 0.993,  # [4]
-                 'apfd/def2tzvpp': 0.992,  # [4]
-                 'mp2_rmp2_pvdz': 0.953,  # [2], taken as 'MP2/cc-pVDZ'
-                 'mp2_rmp2_pvtz': 0.950,  # [2], taken as 'MP2/cc-pVTZ'
-                 'mp2_rmp2_pvqz': 0.962,  # [2], taken as 'MP2/cc-pVQZ'
-                 'cbs-qb3': 0.99 * 1.014,  # [5], the 0.99 value is the ZPE scale factor of CBS-QB3
-                 'cbs-qb3-paraskevas': 0.99 * 1.014,  # [5], the 0.99 value is the ZPE scale factor of CBS-QB3
-                 'ccsd-f12/cc-pvdz-f12': 0.947,  # [2], taken as 'CCSD/cc-pVDZ'
-                 'ccsd(t)/cc-pvdz': 0.979,  # [2]
-                 'ccsd(t)/cc-pvtz': 0.975,  # [2]
-                 'ccsd(t)/cc-pvqz': 0.970,  # [2]
-                 'ccsd(t)/aug-cc-pvdz': 0.963,  # [2]
-                 'ccsd(t)/aug-cc-pvtz': 1.001,  # [3]
-                 'ccsd(t)/aug-cc-pvqz': 0.975,  # [2]
-                 'ccsd(t)/cc-pv(t+d)z': 0.965,  # [2]
-                 'ccsd(t)-f12/cc-pvdz-f12': 0.997,  # [3], taken as 'CCSD(T)-F12a/cc-pVDZ-F12'
-                 'ccsd(t)-f12/cc-pvtz-f12': 0.998,  # [3], taken as 'CCSD(T)-F12a/cc-pVTZ-F12'
-                 'ccsd(t)-f12/cc-pvqz-f12': 0.998,  # [3], taken as 'CCSD(T)-F12b/VQZF12//CCSD(T)-F12a/TZF'
-                 'ccsd(t)-f12/cc-pcvdz-f12': 0.997,  # [3], taken as 'CCSD(T)-F12a/cc-pVDZ-F12'
-                 'ccsd(t)-f12/cc-pcvtz-f12': 0.998,  # [3], taken as 'CCSD(T)-F12a/cc-pVTZ-F12'
-                 'ccsd(t)-f12/aug-cc-pvdz': 0.997,  # [3], taken as 'CCSD(T)/cc-pVDZ'
-                 'ccsd(t)-f12/aug-cc-pvtz': 0.998,  # [3], taken as CCSD(T)-F12a/cc-pVTZ-F12
-                 'ccsd(t)-f12/aug-cc-pvqz': 0.998,  # [3], taken as 'CCSD(T)-F12b/VQZF12//CCSD(T)-F12a/TZF'
-                 }
-    scaling_factor = freq_dict.get(freq_level.lower(), 1)
-    if scaling_factor == 1:
-        logging.warning('No frequency scaling factor found for model chemistry {0}. Assuming a value of unity. '
-                        'This will affect the partition function and all quantities derived from it '
-                        '(thermo quantities and rate coefficients).'.format(freq_level))
-    else:
-        logging.info('Assigned a frequency scale factor of {0} for the frequency level of theory {1}'.format(
-            scaling_factor, freq_level))
-    return scaling_factor
 
 
 def determine_rotor_symmetry(energies, label, pivots):

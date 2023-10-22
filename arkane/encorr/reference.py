@@ -1,11 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -42,6 +41,7 @@ import yaml
 
 from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT, symbol_by_number
 from arkane.encorr.isodesmic import ErrorCancelingSpecies
+from arkane.modelchem import LOT
 from rmgpy import settings
 from rmgpy.exceptions import AtomTypeError
 from rmgpy.molecule import Molecule
@@ -61,7 +61,7 @@ class ReferenceSpecies(ArkaneSpecies):
     selections for use in isodesmic reaction calculations
     """
 
-    def __init__(self, species=None, smiles=None, adjacency_list=None, inchi=None, reference_data=None,
+    def __init__(self, species=None, smiles=None, adjacency_list=None, inchi=None, inchi_key=None, reference_data=None,
                  calculated_data=None, preferred_reference=None, index=None, label=None, cas_number=None,
                  symmetry_number=None, default_xyz_chemistry=None, **kwargs):
         """
@@ -72,6 +72,7 @@ class ReferenceSpecies(ArkaneSpecies):
             smiles (str): SMILES string representing the reference species
             adjacency_list (str): An RMG adjacency list representation of the reference species
             inchi (str): InChI string representing the reference species
+            inchi_key (str): InChI key hash of the InChI string
             reference_data (dict): Formatted as {'source_string': ReferenceDataEntry, ...}
             calculated_data (dict): Formatted as {'model_chemistry': CalculatedDataEntry, ...}
             preferred_reference (str): The source string key for the reference data to use for isodesmic reactions
@@ -118,6 +119,11 @@ class ReferenceSpecies(ArkaneSpecies):
             self.species.generate_resonance_structures()
         except (AtomTypeError, ValueError):  # Move on for now
             pass
+        # Reset to the provided identifiers to avoid translation errors. Note that `''` should not be a valid identifier
+        self.smiles = smiles or self.smiles
+        self.adjacency_list = adjacency_list or self.adjacency_list
+        self.inchi = inchi or self.inchi
+        self.inchi_key = inchi_key or self.inchi_key
 
     def __repr__(self):
         if self.index:
@@ -152,7 +158,7 @@ class ReferenceSpecies(ArkaneSpecies):
         elif isinstance(value, dict) and _is_valid_calculated_data(value):
             self._calculated_data = value
         else:
-            raise ValueError('Calculated data must be given as a dictionary of the model chemistry (string) and '
+            raise ValueError('Calculated data must be given as a dictionary of the level of theory and '
                              'associated CalculatedDataEntry object')
 
     def as_dict(self):
@@ -276,32 +282,32 @@ class ReferenceSpecies(ArkaneSpecies):
             model_chemistry = arkane_species.level_of_theory
         self.calculated_data[model_chemistry] = calc_data
 
-    def to_error_canceling_spcs(self, model_chemistry, source=None):
+    def to_error_canceling_spcs(self, level_of_theory, source=None):
         """
         Extract calculated and reference data from a specified model chemistry and source and return as a new
         ErrorCancelingSpecies object
 
         Args:
-            model_chemistry (str): Model chemistry (level of theory) to use as the low level data
+            level_of_theory ((Composite)LevelOfTheory): Level of theory to use as the low level data
             source (str): Reference data source to take the high level data from
 
         Raises:
-            KeyError: If ``model_chemistry`` is not available for this reference species
+            KeyError: If ``level_of_theory`` is not available for this reference species
 
         Returns:
             ErrorCancelingSpecies
         """
-        if model_chemistry not in self.calculated_data:
-            raise KeyError(f'Model chemistry `{model_chemistry}` not available for species {self}')
+        if level_of_theory not in self.calculated_data:
+            raise KeyError(f'Level of theory `{level_of_theory}` not available for species {self}')
 
         molecule = Molecule().from_adjacency_list(self.adjacency_list, raise_atomtype_exception=False,
                                                   raise_charge_exception=False)
 
         reference_enthalpy = self.get_reference_enthalpy(source=source)
-        low_level_h298 = self.calculated_data[model_chemistry].thermo_data.H298
+        low_level_h298 = self.calculated_data[level_of_theory].thermo_data.H298
 
         return ErrorCancelingSpecies(
-            molecule, low_level_h298, model_chemistry,
+            molecule, low_level_h298, level_of_theory,
             high_level_hf298=reference_enthalpy.h298,
             source=reference_enthalpy.source
         )
@@ -350,15 +356,16 @@ class ReferenceSpecies(ArkaneSpecies):
         """
         if self.preferred_reference is not None:
             preferred_source = self.preferred_reference
-        else:  # Choose the source that has the smallest uncertainty
-            sources = list(self.reference_data.keys())
-            data = list(self.reference_data.values())
-            preferred_source = sources[0]  # If all else fails, use the first source as the preferred one
-            uncertainty = data[0].thermo_data.H298.uncertainty_si
-            for i, entry in enumerate(data):
-                if 0 < entry.thermo_data.H298.uncertainty_si < uncertainty:
-                    uncertainty = entry.thermo_data.H298.uncertainty_si
-                    preferred_source = sources[i]
+        else:
+            data_w_thermo = {s: d for s, d in self.reference_data.items() if d.thermo_data is not None}
+            data_w_thermo_unc = {s: d for s, d in data_w_thermo.items() if d.thermo_data.H298.uncertainty_si > 0}
+            if data_w_thermo_unc:  # Use source with smallest uncertainty
+                preferred_source = min(data_w_thermo_unc,
+                                       key=lambda s: data_w_thermo_unc[s].thermo_data.H298.uncertainty_si)
+            elif data_w_thermo:  # Use first source with thermo data
+                preferred_source = list(data_w_thermo.keys())[0]
+            else:  # If all else fails, use the first source, even if it doesn't have thermo
+                preferred_source = list(self.reference_data.keys())[0]
 
         return preferred_source
 
@@ -385,16 +392,22 @@ class ReferenceDataEntry(RMGObject):
     """
     A class for storing reference data for a specific species from a single source
     """
-    def __init__(self, thermo_data, atct_id=None):
+    def __init__(self, thermo_data=None, atct_id=None, atomization_energy=None, xyz_dict=None, zpe=None):
         """
 
         Args:
             thermo_data (rmgpy.thermo.ThermoData): Thermochemistry (Hf298, Cp, ...) from the reference for a species
             atct_id (str): ID number in the Active Thermochemical Tables if the source is ATcT
+            atomization_energy (rmgpy.quantity.ScalarQuantity): Atomization energy at zero Kelvin
+            xyz_dict (dict): An ARC style xyz dictionary for the cartesian coordinates
+            zpe (rmgpy.quantity.ScalarQuantity): Zero-point energy
         """
         super().__init__()
         self.thermo_data = thermo_data
         self.atct_id = atct_id
+        self.atomization_energy = atomization_energy
+        self.xyz_dict = xyz_dict
+        self.zpe = zpe
 
     def __repr__(self):
         return str(self.as_dict())
@@ -465,7 +478,35 @@ class ReferenceDatabase(object):
         """
         self.reference_sets = {}
 
-    def load(self, paths=None, ignore_incomplete=True):
+    @staticmethod
+    def get_database_paths(paths=None, names=None):
+        """
+        Get the full paths to the reference databases
+
+        Args:
+            paths (list): A single path string, or a list of path strings pointing to a set of reference
+                species to be loaded into the database. The string should point to the folder that has the name of the
+                reference set. The name of sub-folders in a reference set directory should be indices starting from 0
+                and should contain a YAML file that defines the ReferenceSpecies object of that index, named {index}.yml
+            names (list): Same functionality as `paths` but using names of the folders in the database.
+
+        Returns:
+            list of paths
+        """
+        if paths is None and names is None:  # Default to the main reference set in RMG-database
+            return [MAIN_REFERENCE_PATH]
+        elif names is not None:
+            if paths is not None:
+                raise ValueError('Cannot specify both `paths` and `names`')
+            if isinstance(names, str):
+                names = [names]
+            return [os.path.join(REFERENCE_DB_PATH, name) for name in names]
+        elif paths is not None:
+            if isinstance(paths, str):  # Convert to a list with one element
+                paths = [paths]
+            return paths
+
+    def load(self, paths=None, names=None, ignore_incomplete=True):
         """
         Load one or more set of reference species and append it on to the database
 
@@ -474,13 +515,10 @@ class ReferenceDatabase(object):
                 species to be loaded into the database. The string should point to the folder that has the name of the
                 reference set. The name of sub-folders in a reference set directory should be indices starting from 0
                 and should contain a YAML file that defines the ReferenceSpecies object of that index, named {index}.yml
+            names (list): Same functionality as `paths` but using names of the folders in the database.
             ignore_incomplete (bool): If ``True`` only species with both reference and calculated data will be added.
         """
-        if paths is None:  # Default to the main reference set in RMG-database
-            paths = [MAIN_REFERENCE_PATH]
-
-        if isinstance(paths, str):  # Convert to a list with one element
-            paths = [paths]
+        paths = self.get_database_paths(paths=paths, names=names)
 
         all_ref_spcs = []
         for path in paths:
@@ -527,13 +565,13 @@ class ReferenceDatabase(object):
             for spcs in reference_set:
                 spcs.save_yaml(path=set_path)
 
-    def extract_model_chemistry(self, model_chemistry, sets=None, as_error_canceling_species=True):
+    def extract_level_of_theory(self, level_of_theory, sets=None, as_error_canceling_species=True):
         """
         Return a list of ErrorCancelingSpecies or ReferenceSpecies objects from the reference species in the database
-        that have entries for the requested model chemistry
+        that have entries for the requested level of theory
 
         Args:
-            model_chemistry (str): String that describes the level of chemistry used to calculate the low level data
+            level_of_theory ((Composite)LevelOfTheory): Level of theory used to calculate the data
             sets (list): A list of the names of the reference sets to include (all sets in the database will be used if
                 not specified or ``None``)
             as_error_canceling_species (bool): Return ErrorCancelingSpecies objects if True
@@ -549,20 +587,20 @@ class ReferenceDatabase(object):
         for set_name in sets:
             current_set = self.reference_sets[set_name]
             for ref_spcs in current_set:
-                if model_chemistry not in ref_spcs.calculated_data:  # Move on to the next reference species
+                if level_of_theory not in ref_spcs.calculated_data:  # Move on to the next reference species
                     continue
                 if not ref_spcs.reference_data:  # This reference species does not have any sources, continue on
                     continue
                 reference_list.append(ref_spcs)
 
         if as_error_canceling_species:
-            reference_list = [s.to_error_canceling_spcs(model_chemistry) for s in reference_list]
+            reference_list = [s.to_error_canceling_spcs(level_of_theory) for s in reference_list]
 
         return reference_list
 
     def list_available_chemistry(self, sets=None):
         """
-        List the set of available model chemistries present in at least one reference species in the database
+        List the set of available levels of theory present in at least one reference species in the database
 
         Args:
             sets (list): A list of the names of the reference sets to include (all sets in the database will be used if
@@ -571,16 +609,16 @@ class ReferenceDatabase(object):
         Returns:
             list
         """
-        model_chemistry_set = set()
+        level_of_theory_set = set()
         if sets is None:  # Load in all of the sets
             sets = self.reference_sets.keys()
 
         for set_name in sets:
             current_set = self.reference_sets[set_name]
             for ref_spcs in current_set:
-                model_chemistry_set.update(ref_spcs.calculated_data.keys())
+                level_of_theory_set.update(ref_spcs.calculated_data.keys())
 
-        return list(model_chemistry_set)
+        return list(level_of_theory_set)
 
     def get_species_from_index(self, indices, set_name='main'):
         """
@@ -663,7 +701,7 @@ def _is_valid_calculated_data(data_dictionary):
     Returns:
         bool
     """
-    if all(isinstance(source, str) for source in data_dictionary.keys()):
+    if all(isinstance(source, LOT) for source in data_dictionary.keys()):
         if all(isinstance(data_entry, CalculatedDataEntry) for data_entry in data_dictionary.values()):
             return True
     return False

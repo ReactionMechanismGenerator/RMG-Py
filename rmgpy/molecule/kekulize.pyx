@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -52,12 +52,13 @@ and the process continues until the entire molecule can be solved.
 
 import logging
 
+from rmgpy.molecule.graph cimport Graph, Vertex, Edge
 from rmgpy.exceptions import KekulizationError, AtomTypeError
 from rmgpy.molecule.element import PeriodicSystem
-from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
+from rmgpy.molecule.molecule cimport Atom, Bond
 
 
-cpdef kekulize(Molecule mol):
+cpdef kekulize(Graph mol):
     """
     Kekulize an aromatic molecule in place. If the molecule cannot be kekulized,
     a KekulizationError will be raised. However, the molecule will be left in
@@ -68,8 +69,8 @@ cpdef kekulize(Molecule mol):
     """
     cdef list ring, rings, aromatic_rings, resolved_rings
     cdef set endo_bonds, exo_bonds
-    cdef Atom atom1, atom2, atom
-    cdef Bond bond
+    cdef Vertex atom1, atom2, atom
+    cdef Edge bond
     cdef bint aromatic, successful, bridged
     cdef int itercount, maxiter
     cdef AromaticRing aromatic_ring

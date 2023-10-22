@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -300,7 +300,7 @@ cdef class Conformer(RMGObject):
         mass = self._mass.value_si
         coordinates = self._coordinates.value_si
 
-        I = np.zeros((3, 3), np.float64)
+        I = np.zeros((3, 3), float)
         center_of_mass = self.get_center_of_mass()
 
         atoms = range(1, mass.shape[0] + 1)

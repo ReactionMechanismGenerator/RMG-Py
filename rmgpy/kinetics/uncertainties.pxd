@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -35,6 +35,7 @@ cdef class RateUncertainty(object):
     cdef public double mu
     cdef public double var
     cdef public int N
+    cdef public double data_mean
     cdef public str correlation
 
     cpdef double get_expected_log_uncertainty(self)

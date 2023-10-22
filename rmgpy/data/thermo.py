@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -48,6 +48,11 @@ from rmgpy.ml.estimator import MLEstimator
 from rmgpy.molecule import Molecule, Bond, Group
 from rmgpy.species import Species
 from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
+from rmgpy.data.surface import MetalDatabase
+from rmgpy import settings
+from rmgpy.molecule.fragment import Fragment
+from rmgpy.data.surface import MetalDatabase
+from rmgpy import settings
 
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1: 'S', 2: 'D', 3: 'T', 4: 'Q', 5: 'V'}
@@ -133,6 +138,13 @@ def save_entry(f, entry):
     f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')
     if entry.rank:
         f.write("    rank = {0},\n".format(entry.rank))
+
+    if entry.metal:
+        f.write('    metal = "{0}",\n'.format(entry.metal))
+    if entry.facet:
+        f.write('    facet = "{0}",\n'.format(entry.facet))
+    if entry.site:
+        f.write('    site = "{0}",\n'.format(entry.site))
 
     f.write(')\n\n')
 
@@ -587,11 +599,11 @@ class ThermoDepository(Database):
     A class for working with the RMG thermodynamics depository.
     """
 
-    def __init__(self, label='', name='', short_desc='', long_desc=''):
-        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
+    def __init__(self, label='', name='', short_desc='', long_desc='', metal=None, site=None, facet=None):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc, metal=metal, site=site, facet=facet)
 
     def load_entry(self, index, label, molecule, thermo, reference=None, referenceType='', shortDesc='', longDesc='',
-                   rank=None):
+                   rank=None, metal=None, site=None, facet=None):
         """
         Method for parsing entries in database files.
         Note that these argument names are retained for backward compatibility.
@@ -606,6 +618,9 @@ class ThermoDepository(Database):
             short_desc=shortDesc,
             long_desc=longDesc.strip(),
             rank=rank,
+            metal=metal,
+            site=site,
+            facet=facet,
         )
         self.entries[label] = entry
         return entry
@@ -624,8 +639,9 @@ class ThermoLibrary(Database):
     A class for working with a RMG thermodynamics library.
     """
 
-    def __init__(self, label='', name='', solvent=None, short_desc='', long_desc=''):
-        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
+    def __init__(self, label='', name='', solvent=None, short_desc='', long_desc='', metal=None, site=None, facet=None):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc,
+                          metal=metal, site=site, facet=facet)
 
     def load_entry(self,
                    index,
@@ -637,13 +653,19 @@ class ThermoLibrary(Database):
                    shortDesc='',
                    longDesc='',
                    rank=None,
+                   metal=None,
+                   facet=None,
+                   site=None,
                    ):
         """
         Method for parsing entries in database files.
         Note that these argument names are retained for backward compatibility.
         """
 
-        molecule = Molecule().from_adjacency_list(molecule)
+        try:
+            molecule = Molecule().from_adjacency_list(molecule)
+        except TypeError:
+            molecule = Fragment().from_adjacency_list(molecule)
 
         # Internal checks for adding entry to the thermo library
         if label in list(self.entries.keys()):
@@ -667,6 +689,9 @@ class ThermoLibrary(Database):
             short_desc=shortDesc,
             long_desc=longDesc.strip(),
             rank=rank,
+            metal=metal,
+            facet=facet,
+            site=site,
         )
 
     def save_entry(self, f, entry):
@@ -697,8 +722,9 @@ class ThermoGroups(Database):
     A class for working with an RMG thermodynamics group additivity database.
     """
 
-    def __init__(self, label='', name='', short_desc='', long_desc=''):
-        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
+    def __init__(self, label='', name='', short_desc='', long_desc='', metal=None, site=None, facet=None):
+        Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc,
+                          metal=metal, site=site, facet=facet)
 
     def load_entry(self,
                    index,
@@ -710,6 +736,9 @@ class ThermoGroups(Database):
                    shortDesc='',
                    longDesc='',
                    rank=None,
+                   metal=None,
+                   facet=None,
+                   site=None,
                    ):
         """
         Method for parsing entries in database files.
@@ -733,6 +762,9 @@ class ThermoGroups(Database):
             short_desc=shortDesc,
             long_desc=longDesc.strip(),
             rank=rank,
+            metal=metal,
+            facet=facet,
+            site=site,
         )
 
     def save_entry(self, f, entry):
@@ -771,6 +803,9 @@ class ThermoGroups(Database):
         destination.long_desc = source.long_desc
         destination.rank = source.rank
         destination.reference_type = source.reference_type
+        destination.metal = source.metal
+        destination.facet = source.facet
+        destination.site = source.site
 
     def remove_group(self, group_to_remove):
         """
@@ -814,6 +849,7 @@ class ThermoDatabase(object):
     def __init__(self):
         self.depository = {}
         self.libraries = {}
+        self.surface = {}
         self.groups = {}
         self.library_order = []
         self.local_context = {
@@ -824,8 +860,13 @@ class ThermoDatabase(object):
         }
         self.global_context = {}
 
-        # Catalyst properties
-        self.set_delta_atomic_adsorption_energies()
+        # Use Pt111 binding energies as default
+        self.binding_energies = {
+            'H': rmgpy.quantity.Energy(-2.75368,'eV/molecule'),
+            'C': rmgpy.quantity.Energy(-7.02516,'eV/molecule'),
+            'N': rmgpy.quantity.Energy(-4.63225,'eV/molecule'),
+            'O': rmgpy.quantity.Energy(-3.81153,'eV/molecule'),
+        }
 
     def __reduce__(self):
         """
@@ -836,6 +877,7 @@ class ThermoDatabase(object):
             'libraries': self.libraries,
             'groups': self.groups,
             'library_order': self.library_order,
+            'surface' : self.surface,
         }
         return ThermoDatabase, (), d
 
@@ -847,8 +889,9 @@ class ThermoDatabase(object):
         self.libraries = d['libraries']
         self.groups = d['groups']
         self.library_order = d['library_order']
+        self.surface = d['surface']
 
-    def load(self, path, libraries=None, depository=True):
+    def load(self, path, libraries=None, depository=True, surface=False):
         """
         Load the thermo database from the given `path` on disk, where `path`
         points to the top-level folder of the thermo database.
@@ -859,6 +902,8 @@ class ThermoDatabase(object):
             self.depository = {}
         self.load_libraries(os.path.join(path, 'libraries'), libraries)
         self.load_groups(os.path.join(path, 'groups'))
+        if surface:
+            self.load_surface()
 
     def load_depository(self, path):
         """
@@ -895,21 +940,36 @@ class ThermoDatabase(object):
 
         else:
             for libraryName in libraries:
-                f = libraryName + '.py'
-                if os.path.exists(os.path.join(path, f)):
-                    logging.info('Loading thermodynamics library from {0} in {1}...'.format(f, path))
+                f = f'{libraryName}.py'
+                if os.path.isfile(libraryName):
+                    logging.info(f'Loading thermodynamics library from an external location: {libraryName}..')
+                    library = ThermoLibrary()
+                    library.load(libraryName, self.local_context, self.global_context)
+                    library.label = os.path.splitext(os.path.split(libraryName)[-1])[0]
+                    self.libraries[library.label] = library
+                    self.library_order.append(library.label)
+                elif os.path.exists(os.path.join(path, f)):
+                    logging.info(f'Loading thermodynamics library from {f} in {path}...')
                     library = ThermoLibrary()
                     library.load(os.path.join(path, f), self.local_context, self.global_context)
                     library.label = os.path.splitext(f)[0]
                     self.libraries[library.label] = library
                     self.library_order.append(library.label)
                 else:
-                    if libraryName == "KlippensteinH2O2":
-                        logging.info(
-                            '\n** Note: The thermo library KlippensteinH2O2 was replaced and is no longer available '
-                            'in RMG. For H2 combustion chemistry consider using the BurkeH2O2 library instead\n')
                     raise DatabaseError('Library {} not found in {}... Please check if your library is '
                                         'correctly placed'.format(libraryName, path))
+
+    def load_surface(self):
+        """
+        Load the metal database from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
+        MetalDB = MetalDatabase()
+        MetalDB.load(os.path.join(settings['database.directory'], 'surface'))
+
+        self.surface = {
+            'metal': MetalDB
+        }
 
     def load_groups(self, path):
         """
@@ -925,7 +985,7 @@ class ThermoDatabase(object):
             'other',
             'longDistanceInteraction_cyclic',
             'longDistanceInteraction_noncyclic',
-            'adsorptionPt',
+            'adsorptionPt111',
         ]
         self.groups = {
             category: ThermoGroups(label=category).load(os.path.join(path, category + '.py'),
@@ -947,6 +1007,7 @@ class ThermoDatabase(object):
         self.save_depository(os.path.join(path, 'depository'))
         self.save_libraries(os.path.join(path, 'libraries'))
         self.save_groups(os.path.join(path, 'groups'))
+        self.save_surface(os.path.join(path, 'surface'))
 
     def save_depository(self, path):
         """
@@ -977,6 +1038,17 @@ class ThermoDatabase(object):
             os.mkdir(path)
         for group in self.groups.keys():
             self.groups[group].save(os.path.join(path, group + '.py'))
+
+    def save_surface(self, path):
+        """
+        Save the metal library to the given `path` on disk, where `path`
+        points to the top-level folder of the metal library.
+        """
+
+        if not os.path.exists(path):
+            os.mkdir(path)
+        for library in self.surface.keys():
+            self.surface[library].save(os.path.join(path, library + '.py'))
 
     def load_old(self, path):
         """
@@ -1172,7 +1244,7 @@ class ThermoDatabase(object):
                 continue
             self.groups['ring'].generic_nodes.append(label)
 
-    def get_thermo_data(self, species, training_set=None):
+    def get_thermo_data(self, species, metal_to_scale_to=None, training_set=None):
         """
         Return the thermodynamic parameters for a given :class:`Species`
         object `species`. This function first searches the loaded libraries
@@ -1182,6 +1254,8 @@ class ThermoDatabase(object):
         The method corrects for symmetry when the molecule uses machine
         learning or group additivity. Libraries and direct QM calculations
         are already corrected.
+
+        If either metal to scale to or from is not specified, assume the binding energies given in the input file
         
         Returns: ThermoData
         """
@@ -1189,19 +1263,33 @@ class ThermoDatabase(object):
 
         thermo0 = self.get_thermo_data_from_libraries(species)
 
-        if thermo0 is not None:
+        if thermo0 is not None:  # was able to find thermodata in the loaded libraries
             if len(thermo0) != 3:
                 raise RuntimeError("thermo0 should be a tuple (thermo_data, library, entry), not {0}".format(thermo0))
+            entry = thermo0[2]
             thermo0 = thermo0[0]
 
             if species.contains_surface_site():
-                thermo0 = self.correct_binding_energy(thermo0, species)
+                if entry.metal is not None:
+                    if entry.facet is not None:
+                        db_label = entry.metal + entry.facet
+                        thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from=db_label,
+                                                              metal_to_scale_to=metal_to_scale_to)
+                    else:  # no facet was given
+                        thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from=entry.metal, metal_to_scale_to=metal_to_scale_to)
+                else:  # assume the thermo came from pt 111
+                    thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from=None, metal_to_scale_to=metal_to_scale_to)
             return thermo0
 
         if species.contains_surface_site():
-            thermo0 = self.get_thermo_data_for_surface_species(species)
-            thermo0 = self.correct_binding_energy(thermo0, species)
-            return thermo0
+            try:
+                thermo0 = self.get_thermo_data_for_surface_species(species)
+                thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from="Pt111", metal_to_scale_to=metal_to_scale_to)  # group adsorption values come from Pt111
+                return thermo0
+            except:
+                logging.error("Error attempting to get thermo for species %s with structure \n%s", 
+                    species, species.molecule[0].to_adjacency_list())
+                raise
 
         try:
             quantum_mechanics = get_input('quantum_mechanics')
@@ -1216,53 +1304,57 @@ class ThermoDatabase(object):
             ml_estimator, ml_settings = None, None
 
         if quantum_mechanics:
-            original_molecule = species.molecule[0]
-            if quantum_mechanics.settings.onlyCyclics and not original_molecule.is_cyclic():
-                pass
-            else:  # try a QM calculation
-                if original_molecule.get_radical_count() > quantum_mechanics.settings.maxRadicalNumber:
-                    # Too many radicals for direct calculation: use HBI.
-                    logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
-                        original_molecule.get_radical_count(),
-                        species.label,
-                        quantum_mechanics.settings.maxRadicalNumber,
-                    ))
+            try:
+                original_molecule = species.molecule[0]
+                if quantum_mechanics.settings.onlyCyclics and not original_molecule.is_cyclic():
+                    pass
+                else:  # try a QM calculation
+                    if original_molecule.get_radical_count() > quantum_mechanics.settings.maxRadicalNumber:
+                        # Too many radicals for direct calculation: use HBI.
+                        logging.info("{0} radicals on {1} exceeds limit of {2}. Using HBI method.".format(
+                            original_molecule.get_radical_count(),
+                            species.label,
+                            quantum_mechanics.settings.maxRadicalNumber,
+                        ))
 
-                    # Need to estimate thermo via each resonance isomer
-                    thermo = []
-                    for molecule in species.molecule:
-                        molecule.clear_labeled_atoms()
-                        # Try to see if the saturated molecule can be found in the libraries
-                        tdata = self.estimate_radical_thermo_via_hbi(molecule, self.get_thermo_data_from_libraries)
-                        priority = 1
-                        if tdata is None:
-                            # Then attempt quantum mechanics job on the saturated molecule
-                            tdata = self.estimate_radical_thermo_via_hbi(molecule, quantum_mechanics.get_thermo_data)
-                            priority = 2
-                        if tdata is None:
-                            # Fall back to group additivity
-                            tdata = self.estimate_thermo_via_group_additivity(molecule)
-                            priority = 3
+                        # Need to estimate thermo via each resonance isomer
+                        thermo = []
+                        for molecule in species.molecule:
+                            molecule.clear_labeled_atoms()
+                            # Try to see if the saturated molecule can be found in the libraries
+                            tdata = self.estimate_radical_thermo_via_hbi(molecule, self.get_thermo_data_from_libraries)
+                            priority = 1
+                            if tdata is None:
+                                # Then attempt quantum mechanics job on the saturated molecule
+                                tdata = self.estimate_radical_thermo_via_hbi(molecule, quantum_mechanics.get_thermo_data)
+                                priority = 2
+                            if tdata is None:
+                                # Fall back to group additivity
+                                tdata = self.estimate_thermo_via_group_additivity(molecule)
+                                priority = 3
 
-                        thermo.append((priority, tdata.get_enthalpy(298.), molecule, tdata))
+                            thermo.append((priority, tdata.get_enthalpy(298.), molecule, tdata))
 
-                    if len(thermo) > 1:
-                        # Sort thermo first by the priority, then by the most stable H298 value
-                        thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
-                        for i, therm in enumerate(thermo):
-                            logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol"
-                                          "".format(i + 1, therm[2].to_smiles(), therm[1]))
-                        # Save resonance isomers reordered by their thermo
-                        species.molecule = [item[2] for item in thermo]
-                        original_molecule = species.molecule[0]
-                    thermo0 = thermo[0][3]
+                        if len(thermo) > 1:
+                            # Sort thermo first by the priority, then by the most stable H298 value
+                            thermo = sorted(thermo, key=lambda x: (x[0], x[1]))
+                            for i, therm in enumerate(thermo):
+                                logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol"
+                                              "".format(i + 1, therm[2].to_smiles(), therm[1]))
+                            # Save resonance isomers reordered by their thermo
+                            species.molecule = [item[2] for item in thermo]
+                            original_molecule = species.molecule[0]
+                        thermo0 = thermo[0][3]
 
-                    # update entropy by symmetry correction
-                    thermo0.S298.value_si -= constants.R * math.log(species.get_symmetry_number())
+                        # update entropy by symmetry correction
+                        thermo0.S298.value_si -= constants.R * math.log(species.get_symmetry_number())
 
-                else:  # Not too many radicals: do a direct calculation.
-                    thermo0 = quantum_mechanics.get_thermo_data(original_molecule)  # returns None if it fails
-
+                    else:  # Not too many radicals: do a direct calculation.
+                        thermo0 = quantum_mechanics.get_thermo_data(original_molecule)  # returns None if it fails
+            except ValueError as e: #rdkit fails to generate conformers 
+                logging.error("Quantum Mechanics calculation failed for species: %s with ValueError: %s", species.label, e.args[0])
+                logging.error("Falling back to ML (If turned on) or GAV (If not)")
+                    
         if thermo0 is None:
             # First try finding stable species in libraries and using HBI
             for mol in species.molecule:
@@ -1331,54 +1423,69 @@ class ThermoDatabase(object):
         # Return the resulting thermo parameters
         return thermo0
 
-    def set_delta_atomic_adsorption_energies(self, binding_energies=None):
+    def set_binding_energies(self, binding_energies='Pt111'):
         """
-        Sets and stores the change in atomic binding energy between
-        the desired and the Pt(111) default.
+        Sets and stores the atomic binding energies specified in the input file.
 
-        This depends on the two metal surfaces: the reference one used in
-        the database of adsorption energies, and the desired surface.
-
-        If binding_energies are not provided, resets the values to those
-        of the Pt(111) default.
+        All adsorbates will be scaled to use these elemental binding energies.
 
         Args:
             binding_energies (dict, optional): the desired binding energies with
-                elements as keys and binding energy/unit tuples as values
+                elements as keys and binding energy/unit tuples (or Energy 
+                quantities) as values
 
         Returns:
-            None, stores result in self.delta_atomic_adsorption_energy
+            None, stores result in self.binding_energies
         """
-        reference_binding_energies = {
-            'C': rmgpy.quantity.Energy(-6.750, 'eV/molecule'),
-            'H': rmgpy.quantity.Energy(-2.479, 'eV/molecule'),
-            'O': rmgpy.quantity.Energy(-3.586, 'eV/molecule'),
-            'N': rmgpy.quantity.Energy(-4.352, 'eV/molecule'),
-        }
+        
+        if isinstance(binding_energies, str):
+            if not self.surface:
+                self.load_surface()
+            binding_energies = self.surface['metal'].find_binding_energies(binding_energies)
 
-        # Use Pt(111) reference if no binding energies are provided
-        if binding_energies is None:
-            binding_energies = reference_binding_energies
+        for element, energy in binding_energies.items():
+            binding_energies[element] = rmgpy.quantity.Energy(energy)
 
-        self.delta_atomic_adsorption_energy = {
-            'C': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
-            'H': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
-            'O': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
-            'N': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
-        }
+        self.binding_energies = binding_energies
 
-        for element, deltaEnergy in self.delta_atomic_adsorption_energy.items():
-            deltaEnergy.value_si = binding_energies[element].value_si - reference_binding_energies[element].value_si
-
-    def correct_binding_energy(self, thermo, species):
+    def correct_binding_energy(self, thermo, species, metal_to_scale_from=None, metal_to_scale_to=None):
         """
         Changes the provided thermo, by applying a linear scaling relation
         to correct the adsorption energy.
 
         :param thermo: starting thermo data
         :param species: the species (which is an adsorbate)
+        :param metal_to_scale_from: the metal you want to scale from (string eg. 'Pt111' or None)
+        :param metal_to_scale_to: the metal you want to scale to (string e.g 'Pt111' or None)
         :return: corrected thermo
         """
+
+        if metal_to_scale_from == metal_to_scale_to:
+            return thermo
+
+        if metal_to_scale_to is None:
+            metal_to_scale_to_binding_energies = self.binding_energies
+        else:
+            metal_to_scale_to_binding_energies = self.surface['metal'].find_binding_energies(metal_to_scale_to)
+
+        if metal_to_scale_from is None:
+            metal_to_scale_from_binding_energies = self.binding_energies
+        else:
+            metal_to_scale_from_binding_energies = self.surface['metal'].find_binding_energies(metal_to_scale_from)
+
+        delta_atomic_adsorption_energy = {
+            'C': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
+            'H': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
+            'O': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
+            'N': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
+        }
+
+        for element, delta_energy in delta_atomic_adsorption_energy.items():
+            delta_energy.value_si = metal_to_scale_to_binding_energies[element].value_si - metal_to_scale_from_binding_energies[element].value_si
+
+        if all(-0.01 < v.value_si < 0.01 for v in delta_atomic_adsorption_energy.values()):
+            return thermo
+
         molecule = species.molecule[0]
         # only want/need to do one resonance structure
         surface_sites = []
@@ -1415,10 +1522,13 @@ class ThermoDatabase(object):
             find_cp0_and_cpinf(species, thermo)
 
         # now edit the adsorptionThermo using LSR
+        comments = []
         for element in 'CHON':
-            change_in_binding_energy = self.delta_atomic_adsorption_energy[element].value_si * normalized_bonds[element]
-            thermo.H298.value_si += change_in_binding_energy
-        thermo.comment += " Binding energy corrected by LSR."
+            if normalized_bonds[element]:
+                change_in_binding_energy = delta_atomic_adsorption_energy[element].value_si * normalized_bonds[element]
+                thermo.H298.value_si += change_in_binding_energy
+                comments.append(f'{normalized_bonds[element]:.2f}{element}')
+        thermo.comment += " Binding energy corrected by LSR ({}) from {}".format('+'.join(comments), metal_to_scale_from)
         return thermo
 
     def get_thermo_data_for_surface_species(self, species):
@@ -1435,53 +1545,48 @@ class ThermoDatabase(object):
         if species.is_surface_site():
             raise DatabaseError("Can't estimate thermo of vacant site. Should be in library (and should be 0).")
 
-        logging.debug(("Trying to generate thermo for surface species"
-                       " with these {} resonance isomer(s):").format(len(species.molecule)))
+        logging.debug("Trying to generate thermo for surface species using first of %d resonance isomer(s):",
+                      len(species.molecule))
         molecule = species.molecule[0]
+        # store any labeled atoms to reapply at the end
+        labeled_atoms = molecule.get_all_labeled_atoms()
+        molecule.clear_labeled_atoms()
+        logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())
         # only want/need to do one resonance structure,
         # because will need to regenerate others in gas phase
-        dummy_molecule = molecule.copy(deep=True)
-        sites_to_remove = []
-        for atom in dummy_molecule.atoms:
-            if atom.is_surface_site():
-                sites_to_remove.append(atom)
-        for site in sites_to_remove:
-            numbonds = len(site.bonds)
-            if numbonds == 0:
-                # vanDerWaals
-                pass
+        dummy_molecules = molecule.get_desorbed_molecules()
+        for mol in dummy_molecules:
+            mol.clear_labeled_atoms()
+        if len(dummy_molecules) == 0:
+            raise RuntimeError(f"Cannot get thermo for gas-phase molecule. No valid dummy molecules from original molecule:\n{molecule.to_adjacency_list()}")
+        
+        # if len(molecule) > 1, it will assume all resonance structures have already been generated when it tries to generate them, so evaluate each configuration separately and pick the lowest energy one by H298 value
+        gas_phase_species_from_libraries = []
+        gas_phase_species_estimates = []
+        for dummy_molecule in dummy_molecules:
+            dummy_species = Species()
+            dummy_species.molecule = [dummy_molecule]
+            dummy_species.generate_resonance_structures()
+            dummy_species.thermo = self.get_thermo_data(dummy_species)
+            if dummy_species.thermo.label:
+                gas_phase_species_from_libraries.append(dummy_species)
             else:
-                assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
-                bonded_atom = list(site.bonds.keys())[0]
-                bond = site.bonds[bonded_atom]
-                dummy_molecule.remove_bond(bond)
-                if bond.is_single():
-                    bonded_atom.increment_radical()
-                elif bond.is_double():
-                    bonded_atom.increment_radical()
-                    bonded_atom.increment_radical()
-                elif bond.is_triple():
-                    bonded_atom.increment_radical()
-                    bonded_atom.increment_lone_pairs()
-                elif bond.is_quadruple():
-                    bonded_atom.increment_radical()
-                    bonded_atom.increment_radical()
-                    bonded_atom.increment_lone_pairs()
-                else:
-                    raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
+                gas_phase_species_estimates.append(dummy_species)
 
-            dummy_molecule.remove_atom(site)
-        dummy_molecule.update()
+        # define the comparison function to find the lowest energy
+        def lowest_energy(species):
+            if hasattr(species.thermo, 'H298'):
+                return species.thermo.H298.value_si
+            else:
+                return species.thermo.get_enthalpy(298.0)
 
-        logging.debug("Before removing from surface:\n" + molecule.to_adjacency_list())
-        logging.debug("After removing from surface:\n" + dummy_molecule.to_adjacency_list())
+        if gas_phase_species_from_libraries:
+            species = min(gas_phase_species_from_libraries, key=lowest_energy)
+        else:
+            species = min(gas_phase_species_estimates, key=lowest_energy)
 
-        dummy_species = Species()
-        dummy_species.molecule.append(dummy_molecule)
-        dummy_species.generate_resonance_structures()
-        thermo = self.get_thermo_data(dummy_species)
-
-        thermo.comment = "Gas phase thermo from {0}. Adsorption correction:".format(thermo.comment)
+        thermo = species.thermo
+        thermo.comment = f"Gas phase thermo for {thermo.label or species.molecule[0].to_smiles()} from {thermo.comment}. Adsorption correction:"
         logging.debug("Using thermo from gas phase for species {}\n".format(species.label) + repr(thermo))
 
         if not isinstance(thermo, ThermoData):
@@ -1496,9 +1601,11 @@ class ThermoDatabase(object):
             H298=(0.0, "kJ/mol"),
             S298=(0.0, "J/(mol*K)"),
         )
+
+        surface_sites = molecule.get_surface_sites()
         try:
-            self._add_group_thermo_data(adsorption_thermo, self.groups['adsorptionPt'], molecule, {})
-        except KeyError:
+            self._add_adsorption_correction(adsorption_thermo, self.groups['adsorptionPt111'], molecule, surface_sites)
+        except (KeyError, DatabaseError):
             logging.error("Couldn't find in adsorption thermo database:")
             logging.error(molecule)
             logging.error(molecule.to_adjacency_list())
@@ -1508,10 +1615,108 @@ class ThermoDatabase(object):
         add_thermo_data(thermo, adsorption_thermo, group_additivity=True)
 
         if thermo.label:
-            thermo.label += 'X'
+            thermo.label += 'X' * len(surface_sites)
 
         find_cp0_and_cpinf(species, thermo)
+
+        # if the molecule had labels, reapply them 
+        for label,atom in labeled_atoms.items():
+            if isinstance(atom,list):
+                for a in atom:
+                    a.label = label
+            else:
+                atom.label = label
+
         return thermo
+
+    def _add_adsorption_correction(self, adsorption_thermo, adsorption_groups, molecule, surface_sites):
+        """Add thermo adsorption correction(s) to estimate adsorbate thermo from gas phase.
+        If the molecule is multidentate, multiple adsoption corrections may be applied if 
+        there does not exist a multidentate adsorption group with the same number of sites.
+        In this case, only the enthalpy correction (H298) will be used for subsequent groups
+        to avoid over-correcting the entropy and heat capacity due to the loss of translational 
+        and rotational degrees of freedom from the gas phase.
+
+        Args:
+            adsorption_thermo ([ThermoData]): the ThermoData object to add the correction(s)
+            adsorption_groups ([database]): the groups database (adsorptionPt111)
+            molecule ([Molecule]): the molecule to apply the thermo correction
+            surface_sites ([list([Atom])]): a list of the surface site atoms in the molecule
+        """
+
+        number_of_surface_sites = len(surface_sites)
+
+        matches = []
+        for atom in surface_sites:
+            labeled_atoms = {'*': atom}
+            node = adsorption_groups.descend_tree(molecule, labeled_atoms)
+            if node is None: 
+                # no match, so try the next surface site
+                continue
+            while node is not None and node.data is None:
+                node = node.parent
+            if node is None:
+                # no data, so try the next surface site
+                continue
+            data = node.data
+            comment = node.label
+            loop_count = 0
+            while isinstance(data, str):
+                loop_count += 1
+                if loop_count > 100:
+                    raise DatabaseError("Maximum iterations reached while following thermo group data pointers. A circular"
+                                    f" reference may exist. Last node was {node.label} pointing to group called {data} in "
+                                    f"database {adsorption_groups.label}")
+
+                for entry in adsorption_groups.entries.values():
+                    if entry.label == data:
+                        data = entry.data
+                        comment = entry.label
+                        break
+                else:
+                    raise DatabaseError(f"Node {node.label} points to a non-existing group called {data} "
+                                    f"in database {adsorption_groups.label}")
+            data.comment = f'{adsorption_groups.label}({comment})'
+            group_surface_sites = node.item.get_surface_sites()
+            if len(group_surface_sites) == number_of_surface_sites:
+                # all the surface sites are accounted for so add the adsorption group and return
+                add_thermo_data(adsorption_thermo, data, group_additivity=True)
+                return True
+            else:
+                # we have not found a full match yet, so append and keep looking
+                matches.append((len(group_surface_sites),data))
+        
+        if len(matches) == 0:
+            raise DatabaseError(f"Could not find an adsorption correction in {adsorption_groups.label} for {molecule}")
+        matches.sort(key = lambda x: -x[0])
+        # sort the matches by descending number of surface sites
+        corrections_applied = 0
+        # start a counter for the number of corrections applied
+        for number_of_group_sites, data in matches:
+            if number_of_surface_sites - number_of_group_sites < 0:
+                # too many sites in this group, skip to the next one
+                continue
+            if not corrections_applied:
+                # this is the first correction, so add H298, S298, and Cp
+                add_thermo_data(adsorption_thermo, data, group_additivity=True)
+            else:
+                # We have already corrected S298 and Cp, so we only want to correct H298
+                adsorption_thermo.H298.value_si += data.H298.value_si
+                adsorption_thermo.comment += ' + H298({0})'.format(data.comment)
+            corrections_applied += 1
+            number_of_surface_sites -= number_of_group_sites
+            if number_of_surface_sites <= 0:
+                # we have corrected for all the sites
+                if number_of_surface_sites < 0:
+                    adsorption_thermo.comment += ' WARNING(Too many adsorption corrections were added to the thermo!'
+                    adsorption_thermo.comment += 'The H298 is very likely understimated as a result!)'
+                break
+        
+        if number_of_surface_sites > 0:
+            adsorption_thermo.comment += ' WARNING({} surface sites were unaccounted for with adsorption corrections!'.format(number_of_surface_sites)
+            adsorption_thermo.comment += 'The H298 is very likely overestimated as a result!)'
+
+        return True
 
     def get_thermo_data_from_libraries(self, species, training_set=None):
         """
@@ -1963,8 +2168,8 @@ class ThermoDatabase(object):
         cyclic = molecule.is_cyclic()
         # Generate estimates of the thermodynamics parameters
         for atom in molecule.atoms:
-            # Iterate over heavy (non-hydrogen) atoms
-            if atom.is_non_hydrogen():
+            # Iterate over atoms and skip hydogens and halogens (since there are no groups centered on these atomtypes)
+            if atom.is_non_hydrogen() and not atom.is_halogen():
                 # Get initial thermo estimate from main group database
                 data_added = False
                 try:
@@ -1975,12 +2180,17 @@ class ThermoDatabase(object):
                     logging.error(molecule.to_adjacency_list())
                     raise
                 if not data_added:
-                    neighbors = ''.join(sorted([atom2.atomtype.label for atom2 in atom.edges.keys()]))
-                    if thermo_data.comment:
-                        thermo_data.comment += f' + missing({atom.atomtype.label}-{neighbors})'
-                    else:
-                        thermo_data.comment = f'Thermo group additivity estimation: ' \
-                                              f'missing({atom.atomtype.label}-{neighbors})'
+                    neighbors = ''.join(sorted([atom2.atomtype.label for atom2 in atom.edges.keys()
+                                                if atom2.atomtype.label != 'H']))
+                    neighbors += 'H' * len(['H' for atom2 in atom.edges.keys() if atom2.atomtype.label == 'H'])
+                    if atom.atomtype.label == 'Cb':
+                        neighbors = neighbors.replace('Cb', '')
+                    group_str = f'{atom.atomtype.label}-{neighbors}'
+                    if group_str not in ['O2d-CO', 'S2d-CS']:
+                        if thermo_data.comment:
+                            thermo_data.comment += f' + missing({group_str})'
+                        else:
+                            thermo_data.comment = f'Thermo group additivity estimation: missing({group_str})'
                 # Correct for gauche and 1,5- interactions
                 # Pair atom with its 1st and 2nd nonHydrogen neighbors, 
                 # Then match the pair with the entries in the database longDistanceInteraction_noncyclic.py
@@ -1989,14 +2199,17 @@ class ThermoDatabase(object):
                 # Potentially we could include other.py in this database, but it's a little confusing how to label atoms for the entries in other.py
                 if not molecule.is_atom_in_cycle(atom):
                     for atom_2 in molecule.get_nth_neighbor([atom], [1, 2]):
-                        if not molecule.is_atom_in_cycle(atom_2):
-                            # This is the correction for noncyclic structure. If `atom` or `atom_2` is in a cycle, do not apply this correction.
-                            # Note that previously we do not do gauche for cyclic molecule, which is unreasonable for cyclic molecule with a long tail.
-                            try:
-                                self._add_group_thermo_data(thermo_data, self.groups['longDistanceInteraction_noncyclic'],
-                                                            molecule, {'*1': atom, '*2': atom_2})
-                            except KeyError:
-                                pass
+                        if molecule.is_atom_in_cycle(atom_2) and not atom_2.is_bonded_to_halogen():
+                            continue
+                        # This is the correction for noncyclic structure. 
+                        # If `atom_2` is bonded to a halogen, we apply noncyclic corrections regardless if `atom_2` is in a cycle or not.
+                        # If `atom_2` is not bonded to a halogen, and `atom` or `atom_2` is in a cycle, do not apply this correction.
+                        # Note that previously we do not do gauche for cyclic molecule, which is unreasonable for cyclic molecule with a long tail.
+                        try:
+                            self._add_group_thermo_data(thermo_data, self.groups['longDistanceInteraction_noncyclic'],
+                                                        molecule, {'*1': atom, '*2': atom_2})
+                        except KeyError:
+                            pass
                 try:
                     self._add_group_thermo_data(thermo_data, self.groups['other'], molecule, {'*': atom})
                 except KeyError:
@@ -2232,7 +2445,7 @@ class ThermoDatabase(object):
             entry = ring_database.descend_tree(molecule, atoms)
             matched_ring_entries.append(entry)
 
-        if matched_ring_entries is []:
+        if not matched_ring_entries:
             raise KeyError('Node not found in database.')
         # Decide which group to keep
         is_partial_match = True
@@ -2264,7 +2477,7 @@ class ThermoDatabase(object):
 
         while node is not None and node.data is None:
             # do average of its children
-            success, averaged_thermo_data = self._average_children_thermo(node)
+            success, averaged_thermo_data = self._average_children_thermo(node, ring_database)
             if success:
                 node.data = averaged_thermo_data
             else:
@@ -2288,7 +2501,7 @@ class ThermoDatabase(object):
             # By setting verbose=True, we turn on the comments of ring correction to pass the unittest.
             # Typically this comment is very short and also very helpful to check if the ring correction is calculated correctly.
 
-    def _average_children_thermo(self, node):
+    def _average_children_thermo(self, node, database):
         """
         Use children's thermo data to guess thermo data of parent `node` 
         that doesn't have thermo data built-in in tree yet. 
@@ -2306,11 +2519,14 @@ class ThermoDatabase(object):
             children_thermo_data_list = []
             for child in node.children:
                 if child.data is None:
-                    success, child_thermo_data_average = self._average_children_thermo(child)
+                    success, child_thermo_data_average = self._average_children_thermo(child, database)
                     if success:
                         children_thermo_data_list.append(child_thermo_data_average)
                 else:
-                    children_thermo_data_list.append(child.data)
+                    data = child.data
+                    while isinstance(data, str):
+                        data = database.entries[data].data
+                    children_thermo_data_list.append(data)
             if children_thermo_data_list:
                 return True, average_thermo_data(children_thermo_data_list)
             else:
@@ -2328,7 +2544,7 @@ class ThermoDatabase(object):
         """
         node0 = database.descend_tree(molecule, atom, None)
         if node0 is None:
-            raise KeyError('Node not found in thermo database for atom {0} in molecule {1}.'.format(atom, molecule))
+            raise KeyError(f'Node not found for atom {atom} in molecule {molecule} in thermo database {database.label}.')
 
         # It's possible (and allowed) that items in the tree may not be in the
         # library, in which case we need to fall up the tree until we find an
@@ -2337,8 +2553,8 @@ class ThermoDatabase(object):
         while node is not None and node.data is None:
             node = node.parent
         if node is None:
-            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or '
-                                'any of its ancestors.'.format(molecule, node0))
+            raise DatabaseError(f'Unable to determine thermo parameters for atom {atom} in molecule {molecule}: '
+                                f'no data for node {node0} or any of its ancestors in database {database.label}.')
 
         data = node.data
         comment = node.label
@@ -2347,8 +2563,8 @@ class ThermoDatabase(object):
             loop_count += 1
             if loop_count > 100:
                 raise DatabaseError("Maximum iterations reached while following thermo group data pointers. A circular"
-                                    " reference may exist. Last node was {0} pointing to group called {1} in "
-                                    "database {2}".format(node.label, data, database.label))
+                                    f" reference may exist. Last node was {node.label} pointing to group called {data} in "
+                                    f"database {database.label}")
 
             for entry in database.entries.values():
                 if entry.label == data:
@@ -2356,9 +2572,9 @@ class ThermoDatabase(object):
                     comment = entry.label
                     break
             else:
-                raise DatabaseError("Node {0} points to a non-existing group called {1} in database: "
-                                    "{2}".format(node.label, data, database.label))
-        data.comment = '{0}({1})'.format(database.label, comment)
+                raise DatabaseError(f"Node {node.label} points to a non-existing group called {data} "
+                                    f"in database {database.label}")
+        data.comment = f'{database.label}({comment})'
 
         # This code prints the hierarchy of the found node; useful for debugging
         # result = ''
@@ -2382,7 +2598,7 @@ class ThermoDatabase(object):
         """
         node0 = database.descend_tree(molecule, atom, None)
         if node0 is None:
-            raise KeyError('Node not found in database.')
+            raise KeyError(f'Node not found for atom {atom} in molecule {molecule} in thermo database {database.label}.')
 
         # It's possible (and allowed) that items in the tree may not be in the
         # library, in which case we need to fall up the tree until we find an
@@ -2391,8 +2607,8 @@ class ThermoDatabase(object):
         while node.data is None and node is not None:
             node = node.parent
         if node is None:
-            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or any of'
-                                ' its ancestors.'.format(molecule, node0))
+            raise DatabaseError(f'Unable to determine thermo parameters for atom {atom} in molecule {molecule}: '
+                                f'no data for node {node0} or any of its ancestors in database {database.label}.')
 
         data = node.data
         comment = node.label
@@ -2400,19 +2616,18 @@ class ThermoDatabase(object):
         while isinstance(data, str):
             loop_count += 1
             if loop_count > 100:
-                raise DatabaseError(
-                    "Maximum iterations reached while following thermo group data pointers. A circular"
-                    " reference may exist. Last node was {0} pointing to group called {1} in"
-                    " database {2}".format(node.label, data, database.label))
+                raise DatabaseError("Maximum iterations reached while following thermo group data pointers. A circular"
+                                    f" reference may exist. Last node was {node.label} pointing to group called {data} in "
+                                    f"database {database.label}")
             for entry in database.entries.values():
                 if entry.label == data:
                     data = entry.data
                     comment = entry.label
                     break
             else:
-                raise DatabaseError("Node {0} points to a non-existant group called {1} in database: "
-                                    "{2}".format(node.label, data, database.label))
-        data.comment = '{0}({1})'.format(database.label, comment)
+                raise DatabaseError(f"Node {node.label} points to a non-existing group called {data} "
+                                    f"in database {database.label}")
+        data.comment = f'{database.label}({comment})'
 
         # This code prints the hierarchy of the found node; useful for debugging
         # result = ''

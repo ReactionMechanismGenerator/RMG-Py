@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -56,23 +56,29 @@ class Entry(object):
 
     The attributes are:
 
-    =================== ========================================================
-    Attribute           Description
-    =================== ========================================================
-    `index`             A unique nonnegative integer index for the entry
-    `label`             A unique string identifier for the entry (or '' if not used)
-    `item`              The item that this entry represents
-    `parent`            The parent of the entry in the hierarchy (or ``None`` if not used)
-    `children`          A list of the children of the entry in the hierarchy (or ``None`` if not used)
-    `data`              The data to associate with the item
-    `reference`         A :class:`Reference` object containing bibliographic reference information to the source of the data
-    `reference_type`     The way the data was determined: ``'theoretical'``, ``'experimental'``, or ``'review'``
-    `short_desc`         A brief (one-line) description of the data
-    `long_desc`          A long, verbose description of the data
-    `rank`              An integer indicating the degree of confidence in the entry data, or ``None`` if not used
-    `nodal_distance`     A float representing the distance of a given entry from it's parent entry
-    =================== ========================================================
-
+    ====================== ========================================================
+    Attribute              Description
+    ====================== ========================================================
+    `index`                A unique nonnegative integer index for the entry
+    `label`                A unique string identifier for the entry (or '' if not used)
+    `item`                 The item that this entry represents
+    `parent`               The parent of the entry in the hierarchy (or ``None`` if not used)
+    `children`             A list of the children of the entry in the hierarchy (or ``None`` if not used)
+    `data`                 The data to associate with the item
+    `data_count`           The number of data used to fit the group values in the group additivity method
+    `reference`            A :class:`Reference` object containing bibliographic reference information to the source of the data
+    `reference_type`       The way the data was determined: ``'theoretical'``, ``'experimental'``, or ``'review'``
+    `short_desc`           A brief (one-line) description of the data
+    `long_desc`            A long, verbose description of the data
+    `rank`                 An integer indicating the degree of confidence in the entry data, or ``None`` if not used
+    `nodal_distance`       A float representing the distance of a given entry from it's parent entry
+     --                    For surface species thermo calculations:
+    `metal`                Which metal the thermo calculation was done on (``None`` if not used)
+    `facet`                Which facet the thermo calculation was done on (``None`` if not used)
+    `site`                 Which surface site the molecule prefers (``None`` if not used)
+    `binding_energies`     The surface binding energies for C,H,O, and N
+    `surface_site_density` The surface site density
+    ====================== ========================================================
     """
 
     def __init__(self,
@@ -82,12 +88,18 @@ class Entry(object):
                  parent=None,
                  children=None,
                  data=None,
+                 data_count=None,
                  reference=None,
                  reference_type='',
                  short_desc='',
                  long_desc='',
                  rank=None,
                  nodal_distance=None,
+                 metal=None,
+                 facet=None,
+                 site=None,
+                 binding_energies=None,
+                 surface_site_density=None,
                  ):
         self.index = index
         self.label = label
@@ -95,12 +107,18 @@ class Entry(object):
         self.parent = parent
         self.children = children or []
         self.data = data
+        self.data_count = data_count
         self.reference = reference
         self.reference_type = reference_type
         self.short_desc = short_desc
         self.long_desc = long_desc
         self.rank = rank
         self.nodal_distance = nodal_distance
+        self.metal = metal
+        self.facet = facet
+        self.site = site
+        self.binding_energies = binding_energies
+        self.surface_site_density = surface_site_density
 
     def __str__(self):
         return self.label
@@ -167,6 +185,9 @@ class Database(object):
                  solvent=None,
                  short_desc='',
                  long_desc='',
+                 metal=None,
+                 site=None,
+                 facet=None,
                  ):
         self.entries = OrderedDict(entries or {})
         self.top = top or []
@@ -175,6 +196,9 @@ class Database(object):
         self.solvent = solvent
         self.short_desc = short_desc
         self.long_desc = long_desc
+        self.metal = metal
+        self.site = site
+        self.facet = facet
 
     def load(self, path, local_context=None, global_context=None):
         """
@@ -204,6 +228,9 @@ class Database(object):
         local_context['shortDesc'] = self.short_desc
         local_context['longDesc'] = self.long_desc
         local_context['RateUncertainty'] = RateUncertainty
+        local_context['metal'] = self.metal
+        local_context['site'] = self.site
+        local_context['facet'] = self.facet
         # add in anything from the Class level dictionary.
         for key, value in Database.local_context.items():
             local_context[key] = value
@@ -222,6 +249,9 @@ class Database(object):
         self.solvent = local_context['solvent']
         self.short_desc = local_context['shortDesc']
         self.long_desc = local_context['longDesc'].strip()
+        self.metal = local_context['metal']
+        self.site = local_context['site']
+        self.facet = local_context['facet']
 
         # Return the loaded database (to allow for Database().load() syntax)
         return self
@@ -322,7 +352,7 @@ class Database(object):
                 f.write(species_dict[label].molecule[0].to_adjacency_list(label=label, remove_h=False))
                 f.write('\n')
 
-    def save(self, path):
+    def save(self, path, reindex=True):
         """
         Save the current database to the file at location `path` on disk. 
         """
@@ -330,7 +360,11 @@ class Database(object):
             os.makedirs(os.path.dirname(path))
         except OSError:
             pass
-        entries = self.get_entries_to_save()
+        
+        if reindex:
+            entries = self.get_entries_to_save()
+        else: 
+            entries = self.entries.values()
 
         f = codecs.open(path, 'w', 'utf-8')
         f.write('#!/usr/bin/env python\n')
@@ -441,7 +475,7 @@ class Database(object):
                 record = self.entries[label].item
                 lines = record.splitlines()
                 # If record is a logical node, make it into one.
-                if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", lines[1]):
+                if re.match(r"(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", lines[1]):
                     self.entries[label].item = make_logic_node(' '.join(lines[1:]))
                 # Otherwise convert adjacency list to molecule or pattern
                 elif pattern:
@@ -463,7 +497,7 @@ class Database(object):
             raise DatabaseError("Load the dictionary before you load the tree.")
 
         # should match '  L3 : foo_bar '  and 'L3:foo_bar'
-        parser = re.compile('^\s*L(?P<level>\d+)\s*:\s*(?P<label>\S+)')
+        parser = re.compile(r'^\s*L(?P<level>\d+)\s*:\s*(?P<label>\S+)')
 
         parents = [None]
         for line in tree.splitlines():
@@ -1086,7 +1120,7 @@ class LogicNode(object):
     def __init__(self, items, invert):
         self.components = []
         for item in items:
-            if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", item):
+            if re.match(r"(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", item):
                 component = make_logic_node(item)
             else:
                 component = item
@@ -1334,7 +1368,8 @@ class ForbiddenStructures(Database):
         """
         self.save_old_dictionary(path)
 
-    def load_entry(self, label, group=None, molecule=None, species=None, shortDesc='', longDesc=''):
+    def load_entry(self, label, group=None, molecule=None, species=None, shortDesc='', longDesc='',
+                   metal=None, facet=None, site=None):
         """
         Load an entry from the forbidden structures database. This method is
         automatically called during loading of the forbidden structures 
@@ -1363,6 +1398,9 @@ class ForbiddenStructures(Database):
             item=item,
             short_desc=shortDesc,
             long_desc=longDesc.strip(),
+            metal=metal,
+            facet=facet,
+            site=site,
         )
 
     def save_entry(self, f, entry, name='entry'):
@@ -1386,6 +1424,13 @@ class ForbiddenStructures(Database):
             f.write('""",\n')
         else:
             f.write('    group = "{0}",\n'.format(entry.item))
+
+        if entry.metal:
+            f.write('    metal = "{0}",\n'.format(entry.metal))
+        if entry.facet:
+            f.write('    facet = "{0}",\n'.format(entry.facet))
+        if entry.site:
+            f.write('    site = "{0}",\n'.format(entry.site))
 
         f.write(f'    shortDesc = """{entry.short_desc.strip()}""",\n')
         f.write(f'    longDesc = \n"""\n{entry.long_desc.strip()}\n""",\n')

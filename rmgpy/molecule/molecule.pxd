@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -45,6 +45,8 @@ cdef class Atom(Vertex):
     cdef public AtomType atomtype
     cdef public np.ndarray coords
     cdef public short lone_pairs
+    cdef public str site 
+    cdef public str morphology
     cdef public int id
     cdef public dict props
     
@@ -58,6 +60,8 @@ cdef class Atom(Vertex):
 
     cpdef bint is_non_hydrogen(self)
 
+    cpdef bint is_halogen(self)
+
     cpdef bint is_carbon(self)
 
     cpdef bint is_oxygen(self)
@@ -66,6 +70,8 @@ cdef class Atom(Vertex):
 
     cpdef bint is_silicon(self)
 
+    cpdef bint is_phosphorus(self)
+
     cpdef bint is_sulfur(self)
 
     cpdef bint is_chlorine(self)
@@ -73,9 +79,13 @@ cdef class Atom(Vertex):
     cpdef bint is_iodine(self)
 
     cpdef bint is_nos(self)
-    
+
     cpdef bint is_surface_site(self)
-    
+
+    cpdef bint is_bonded_to_surface(self)
+
+    cpdef bint is_bonded_to_halogen(self)
+
     cpdef increment_radical(self)
 
     cpdef decrement_radical(self)
@@ -138,6 +148,8 @@ cdef class Molecule(Graph):
     cdef public int multiplicity
     cdef public bint reactive
     cdef public dict props
+    cdef public str metal
+    cdef public str facet
     cdef str _fingerprint
     cdef str _inchi
     cdef str _smiles
@@ -209,9 +221,9 @@ cdef class Molecule(Graph):
     cpdef from_smiles(self, str smilesstr, backend=?, bint raise_atomtype_exception=?)
 
     cpdef from_adjacency_list(self, str adjlist, bint saturate_h=?, bint raise_atomtype_exception=?,
-                              bint raise_charge_exception=?)
+                              bint raise_charge_exception=?, bint check_consistency=?)
 
-    cpdef from_xyz(self, np.ndarray atomic_nums, np.ndarray coordinates, bint raise_atomtype_exception=?)
+    cpdef from_xyz(self, np.ndarray atomic_nums, np.ndarray coordinates, float critical_distance_factor=?, bint raise_atomtype_exception=?)
     
     cpdef str to_inchi(self)
 
@@ -234,24 +246,32 @@ cdef class Molecule(Graph):
     cpdef double calculate_cp0(self) except -1
 
     cpdef double calculate_cpinf(self) except -1
-    
+
     cpdef update_atomtypes(self, bint log_species=?, bint raise_exception=?)
-    
+
     cpdef bint is_radical(self) except -2
 
     cpdef bint has_lone_pairs(self) except -2
 
-    cpdef bint is_aryl_radical(self, list aromatic_rings=?) except -2
+    cpdef bint has_halogen(self) except -2
+
+    cpdef bint is_aryl_radical(self, list aromatic_rings=?, bint save_order=?) except -2
 
     cpdef float calculate_symmetry_number(self) except -1
 
-    cpdef list generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
+    cpdef list generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?, bint save_order=?)
+
+    cpdef update_lone_pairs(self)
+
+    cpdef dict saturate_radicals(self, bint raise_atomtype_exception=?)
+
+    cpdef replace_halogen_with_hydrogen(self, bint raise_atomtype_exception=?)
 
     cpdef identify_ring_membership(self)
 
     cpdef int count_aromatic_rings(self)
 
-    cpdef tuple get_aromatic_rings(self, list rings=?)
+    cpdef tuple get_aromatic_rings(self, list rings=?, bint save_order=?)
 
     cpdef list get_deterministic_sssr(self)
 
@@ -261,8 +281,14 @@ cdef class Molecule(Graph):
 
     cpdef bint atom_ids_valid(self)
 
-    cpdef bint is_identical(self, Molecule other, bint strict=?) except -2
+    cpdef bint is_identical(self, Graph other, bint strict=?) except -2
 
     cpdef dict enumerate_bonds(self)
+
+    cpdef list get_surface_sites(self)
+
+    cpdef list get_adatoms(self)
+
+    cpdef list get_desorbed_molecules(self)
 
 cdef atom_id_counter

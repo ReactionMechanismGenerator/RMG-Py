@@ -19,7 +19,7 @@ Adjacency Lists
 .. note::
     To quickly visualize any adjacency list, or to generate an adjacency list from
     other types of molecular representations such as SMILES, InChI, or even common
-    species names, use the Molecule Search tool found here: http://rmg.mit.edu/molecule_search
+    species names, use the Molecule Search tool found here: https://rmg.mit.edu/molecule_search
 
 
 An adjacency list is the most general way of specifying a chemical molecule or
@@ -34,8 +34,8 @@ alphanumeric characters and the underscore, as if an identifier in many popular
 programming languages. However, strictly speaking any non-space ASCII character
 is allowed.
 
-The subsequent lines may contain keyword-value pairs. Currently there is only
-one keyword, ``multiplicity``.
+The subsequent lines may contain keyword-value pairs. Currently there can be: 
+``multiplicity``, ``metal`` and ``facet``.
 
 For species or molecule declarations, the value after ``multiplicity`` defines 
 the spin multiplicity of the molecule. E.g. ``multiplicity 1`` for most ground state 
@@ -44,7 +44,7 @@ and ``multiplicity 3`` for a triplet biradical.
 If the ``multiplicity`` line is not present then a value of 
 (1 + number of unpaired electrons) is assumed. 
 Thus, it can usually be omitted, but if present can be used to distinguish,
-for example, singlet CH2 from triplet CH2.
+for example, singlet CH2 from triplet CH2. 
 
 If defining a Functional :class:`~rmgpy.molecule.Group`, then the value must be a list,
 which defines the multiplicities that will be matched by the group, eg. 
@@ -52,6 +52,9 @@ which defines the multiplicities that will be matched by the group, eg.
 If a wildcard is desired, the line ``'multiplicity x`` can be used instead to accept
 all multiplicities.  If the multiplicity line is omitted altogether, then a wildcard 
 is assumed.
+
+``metal`` and ``facet`` work similarly and will correspond to lines like ``metal Fe``, 
+``metal [Fe,Cu,Ag]``, ``facet 111``, ``facet [111,211,110]``. 
 
 e.g. the following two group adjlists represent identical groups. ::
 
@@ -69,7 +72,7 @@ each subsequent line describes a single atom and its
 local bond structure. The format of these lines is a whitespace-delimited list
 with tokens ::
 
-    <number> [<label>] <element> u<unpaired> [p<pairs>] [c<charge>] <bondlist>
+    <number> [<label>] <element> u<unpaired> [p<pairs>] [c<charge>] [s<site>] [m<morphology>] <bondlist>
 
 The first item is the number used to identify that atom. Any number may be used,
 though it is recommended to number the atoms sequentially starting from one.
@@ -86,6 +89,8 @@ a sequence of tokens describing the electronic state of the atom:
 * ``p0`` number of lone **pairs** of electrons, common on oxygen and nitrogen.
 * ``c0`` formal **charge** on the atom, e.g. ``c-1`` (negatively charged),
   ``c0``, ``c+1`` (positively charged)
+* ``s`` the site type a site atom is e.g. ``s"fcc"``
+* ``m`` the morphology of a site atom e.g. ``m"terrace"``
 
 For :class:`~rmgpy.molecule.Molecule` definitions:
 The value must be a single integer (and for charge must have a + or - sign if not equal to 0)
@@ -94,7 +99,7 @@ The number of lone pairs and the formal charge are assumed to be zero if omitted
 
 For :class:`~rmgpy.molecule.Group` definitions:
 The value can be an integer or a list of integers (with signs, for charges),
-eg. ``u[0,1,2]`` or ``c[0,+1,+2,+3,+4]``, or may be a wildcard ``x`` 
+eg. ``u[0,1,2]``, ``c[0,+1,+2,+3,+4]``, or ``s["hcp","fcc"] or may be a wildcard ``x`` 
 which matches any valid value, 
 eg. ``px`` is the same as ``p[0,1,2,3,4, ...]`` and ``cx`` is the same as
 ``c[...,-4,-3,-2,-1,0,+1,+2,+3,+4,...]``. Lists must be enclosed is square brackets,
@@ -169,6 +174,12 @@ The allowed element types, radicals, and bonds are listed in the following table
  |                      | T        | Triple bond         |
  |                      +----------+---------------------+
  |                      | B        | Benzene bond        |
+ |                      +--------------------------------+
+ |                      | vdW      | Van der Waals bond  |
+ |                      +--------------------------------+
+ |                      | H        | Hydrogen bond       |
+ |                      +--------------------------------+
+ |                      | R        | Reaction bond       |
  +----------------------+----------+---------------------+
 
 

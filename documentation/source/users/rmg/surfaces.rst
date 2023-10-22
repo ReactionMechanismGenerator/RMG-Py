@@ -22,16 +22,27 @@ It varies depending on the catalyst in question, but is held constant across sim
 This block should also contain the reference adatom binding energies 
 (see linear scaling section below).
 
+One can also specify a specific metal of interest, and RMG will load corresponding binding energies from the
+metal database by using ``metal``.
+The full database of available metals can be found in ``input/surface/libraries/metal.py``.
+
+
 Here is an example catalyst properties block for Pt(111)::
 
     catalystProperties(
-        bindingEnergies = { 
-                            'H': (-2.479, 'eV/molecule'),
-                            'O': (-3.586, 'eV/molecule'),
-                            'C': (-6.750, 'eV/molecule'),
-                            'N': (-4.352, 'eV/molecule'),
+        metal = "Pt111"
+    )
+
+Here is an example custom catalyst properties block for Pt(111)::
+
+    catalystProperties(
+        bindingEnergies = {
+                            'H': (-2.754, 'eV/molecule'),
+                            'O': (-3.811, 'eV/molecule'),
+                            'C': (-7.025, 'eV/molecule'),
+                            'N': (-4.632, 'eV/molecule'),
                         },
-        surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
+        surfaceSiteDensity=(2.483e-9, 'mol/cm^2'),
     )
 
 
@@ -140,7 +151,7 @@ of the gas-phase precursor ([Goldsmith2017]_).
 Following is an example for how a thermo library for species adsorbed on platinum 
 is provided in the input file database module::
 
-    thermoLibraries=['surfaceThermoPt']
+    thermoLibraries=['surfaceThermoPt111']
     
 This can be added along with other gas-phase reaction libraries for coupling 
 of gas-phase and surface reactions.  
@@ -257,10 +268,10 @@ Deviating from these values will result in adsorption energies being modified,
 even for species taken from the thermochemistry libraries::
 
     bindingEnergies = { # default values for Pt(111)
-                       'H':(-2.479, 'eV/molecule'),
-                       'O':(-3.586, 'eV/molecule'),
-                       'C':(-6.750, 'eV/molecule'),
-                       'N':(-4.352, 'eV/molecule'),
+                        'H': (-2.754, 'eV/molecule'),
+                        'O': (-3.811, 'eV/molecule'),
+                        'C': (-7.025, 'eV/molecule'),
+                        'N': (-4.632, 'eV/molecule'),
                        }
 
 
@@ -314,6 +325,61 @@ The following is a list of the current pre-packaged surface reaction libraries i
 
 
 
+Coverage Dependence
+===================
+
+An Arrhenius-like expression can be used to describe the effect of the coverage (:math:`\theta_{k}`) of species k on the forward rate constant for a given surface reaction. RMG has the capability to account for such coverage dependent kinetics, as specified in the following equation:
+
+.. math:: k_f = A T^b \exp \left( - \frac{E_a}{RT} \right)\prod_k 10^{a_k \theta_k} \theta_k^{m_k}\exp \left( \frac{- E_k \theta_k}{RT} \right)
+    :label: covdepeqn
+
+where the parameters :math:`a_k`, :math:`m_k`, and :math:`E_k` are the modifiers for the pre-exponential, temperature exponent, and activation energy from species k. 
+
+input file specifications
+-------------------------
+Coverage dependent parameters are applied if the "coverage_dependence" attribute is set to "True" in the catalyst properties block::
+
+    catalystProperties(
+        metal = "Pt111"
+        coverageDependence=True,
+    )
+
+By default, this field is false. 
+
+
+Coverage block in families and libraries
+----------------------------------------
+Coverage dependent parameters can be added to a family or library reaction by specifying a dictionary in the "coverage_dependence" field, with the names of the species serving as the keys. Nested within that dictionary is a dictionary of the coverage dependent parameters for each species. For example::
+
+    entry(
+        index = 5,
+        label = "NH_X + X <=> N_X + H_X",
+        kinetics = SurfaceArrhenius(
+            A = (7.22E20, 'cm^2/(mol*s)'), 
+            n = 0.0,
+            Ea = (5.3, 'kcal/mol'),
+            Tmin = (200, 'K'),
+            Tmax = (3000, 'K'),
+            coverage_dependence = {'N_X': {'a':0.0, 'm':0.0, 'E':(15.5, 'kcal/mol')},
+                                   'H_X': {'a':0.0, 'm':0.0, 'E':(1.0, 'kcal/mol')}},
+        ),
+        shortDesc = u"""Surface_Dissociation""",
+        longDesc = u"""
+    "The role of adsorbate–adsorbate interactions in the rate controlling step 
+    and the most abundant reaction intermediate of NH3 decomposition on Ru"
+    D.G. Vlachos et al. (2004). Catalysis Letters 96, 13–22. 
+    https://doi.org/10.1023/B:CATL.0000029523.22277.e1
+    This reaction used RMG's surface site density of Ru0001 = 2.630E-9(mol/cm^2) to calculate the A factor.
+    A = 1.9E12(1/s)/2.630E-9(mol/cm^2) = 7.22E20 cm^2/(mol*s)
+    This is R5 in Table 2 (set A)
+    """,
+        metal = "Ru",
+        facet = "0001",
+    )
+
+The species "N_X" and "H_X" are the coverage dependent species in this example, and they also happen to be species partaking in this reaction. However, any species that are listed in the species dictionary can also be used. 
+
+
 Examples
 =========
 
@@ -346,4 +412,3 @@ Other things to update:
 .. [Mazeau2019] \ E.J. Mazeau, P. Satupte, K. Blondal, C.F. Goldsmith and R.H. West. "Linear Scaling Relationships and Sensitivity Analyses in RMG-Cat." *Unpublished*.
 
 .. [Abild2007] \ F. Abild-Pedersen, J. Greeley, F. Studt, J. Rossmeisl, T.R. Munter, P.G. Moses, E. Skúlason, T. Bligaard, and J.K. Nørskov. "Scaling Properties of Adsorption Energies for Hydrogen-Containing Molecules on Transition-Metal Surfaces." *Phys. Rev. Lett.* **99(1)**, p. 4-7 (2007).
-

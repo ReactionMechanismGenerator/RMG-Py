@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -31,7 +31,7 @@
 This module contains classes and functions for working with chemical species.
 
 From the `IUPAC Compendium of Chemical Terminology 
-<http://dx.doi.org/10.1351/goldbook>`_, a chemical species is "an 
+<https://doi.org/10.1351/goldbook>`_, a chemical species is "an 
 ensemble of chemically identical molecular entities that can explore the same 
 set of molecular energy levels on the time scale of the experiment". This
 definition is purposefully vague to allow the user flexibility in application.
@@ -51,10 +51,13 @@ import numpy as np
 
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import SpeciesError, StatmechError
+from rmgpy.molecule.graph import Graph
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
+from rmgpy.molecule.fragment import CuttingLabel, Fragment
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
+from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1: 'S', 2: 'D', 3: 'T', 4: 'Q', 5: 'V', }
@@ -92,7 +95,8 @@ class Species(object):
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, transport_data=None,
                  molecular_weight=None, energy_transfer_model=None, reactive=True, props=None, smiles='', inchi='',
-                 aug_inchi=None, symmetry_number=-1, creation_iteration=0, explicitly_allowed=False):
+                 aug_inchi=None, symmetry_number=-1, creation_iteration=0, explicitly_allowed=False,
+                 liquid_volumetric_mass_transfer_coefficient_data=None,henry_law_constant_data=None):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -111,6 +115,8 @@ class Species(object):
         self._fingerprint = None
         self._inchi = None
         self._smiles = None
+        self.liquid_volumetric_mass_transfer_coefficient_data = liquid_volumetric_mass_transfer_coefficient_data
+        self.henry_law_constant_data = henry_law_constant_data
 
         if inchi and smiles:
             logging.warning('Both InChI and SMILES provided for Species instantiation, '
@@ -119,7 +125,12 @@ class Species(object):
             self.molecule = [Molecule(inchi=inchi)]
             self._inchi = inchi
         elif smiles:
-            self.molecule = [Molecule(smiles=smiles)]
+            # check it is fragment or molecule
+            _ , cutting_label_list = Fragment().detect_cutting_label(smiles)
+            if cutting_label_list != []: # Fragment
+                self.molecule = [Fragment(smiles=smiles)]
+            else: # Molecule
+                self.molecule = [Molecule(smiles=smiles)]
             self._smiles = smiles
 
         # Check multiplicity of each molecule is the same
@@ -148,6 +159,10 @@ class Species(object):
             string += 'molecule={0!r}, '.format(self.molecule)
         if self.transport_data is not None:
             string += 'transport_data={0!r}, '.format(self.transport_data)
+        if self.liquid_volumetric_mass_transfer_coefficient_data is not None:
+            string += f'liquid_volumetric_mass_transfer_coefficient_data={self.liquid_volumetric_mass_transfer_coefficient_data}'
+        if self.henry_law_constant_data is not None:
+            string += f'henry_law_constant_data={self.henry_law_constant_data}'
         if not self.reactive:
             string += 'reactive={0}, '.format(self.reactive)
         if self.molecular_weight is not None:
@@ -263,37 +278,47 @@ class Species(object):
     def molecular_weight(self, value):
         self._molecular_weight = quantity.Mass(value)
 
-    def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True):
+    def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True, save_order=False):
         """
         Generate all of the resonance structures of this species. The isomers are
         stored as a list in the `molecule` attribute. If the length of
         `molecule` is already greater than one, it is assumed that all of the
         resonance structures have already been generated.
+        If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
         """
         if len(self.molecule) == 1 or not self.molecule[0].atom_ids_valid():
             if not self.molecule[0].atom_ids_valid():
                 self.molecule[0].assign_atom_ids()
             self.molecule = self.molecule[0].generate_resonance_structures(keep_isomorphic=keep_isomorphic,
-                                                                           filter_structures=filter_structures)
+                                                                           filter_structures=filter_structures,
+                                                                           save_order=save_order
+                                                                           )
 
-    def is_isomorphic(self, other, generate_initial_map=False, strict=True):
+    def is_isomorphic(self, other, generate_initial_map=False, save_order=False, strict=True):
         """
         Return ``True`` if the species is isomorphic to `other`, which can be
         either a :class:`Molecule` object or a :class:`Species` object.
 
         Args:
             generate_initial_map (bool, optional): If ``True``, make initial map by matching labeled atoms
-            strict (bool, optional):             If ``False``, perform isomorphism ignoring electrons.
+            save_order (bool, optional):           if ``True``, reset atom order after performing atom isomorphism
+            strict (bool, optional):               If ``False``, perform isomorphism ignoring electrons.
         """
-        if isinstance(other, Molecule):
+        if isinstance(other, Molecule) or isinstance(other, Fragment):
             for molecule in self.molecule:
-                if molecule.is_isomorphic(other, generate_initial_map=generate_initial_map, strict=strict):
+                if molecule.is_isomorphic(other, generate_initial_map=generate_initial_map,
+                                          save_order=save_order, strict=strict):
                     return True
+                elif not strict:
+                    return False
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
                 for molecule2 in other.molecule:
-                    if molecule1.is_isomorphic(molecule2, generate_initial_map=generate_initial_map, strict=strict):
+                    if molecule1.is_isomorphic(molecule2, generate_initial_map=generate_initial_map,
+                                               save_order=save_order, strict=strict):
                         return True
+                    elif not strict:
+                        return False
         else:
             raise ValueError('Unexpected value "{0!r}" for other parameter;'
                              ' should be a Molecule or Species object.'.format(other))
@@ -306,7 +331,7 @@ class Species(object):
 
         If ``strict=False``, performs the check ignoring electrons and resonance structures.
         """
-        if isinstance(other, Molecule):
+        if isinstance(other, Molecule) or isinstance(other, Fragment):
             for molecule in self.molecule:
                 if molecule.is_identical(other, strict=strict):
                     return True
@@ -340,16 +365,32 @@ class Species(object):
         list in the `molecule` attribute. Does not generate resonance isomers
         of the loaded molecule.
         """
-        self.molecule = [Molecule().from_adjacency_list(adjlist, saturate_h=False,
-                                                        raise_atomtype_exception=raise_atomtype_exception,
-                                                        raise_charge_exception=raise_charge_exception)]
+        lines = adjlist.splitlines()
+
+        if len(lines[0].split()) == 1:
+            label = lines.pop(0) # remove the first line if it is a label before detecting cutting label
+            adjlist_no_label = '\n'.join(lines)
+        else:
+            adjlist_no_label = adjlist
+
+        # detect if it contains cutting label
+        _ , cutting_label_list = Fragment().detect_cutting_label(adjlist_no_label)
+        
+        if cutting_label_list == []:
+            self.molecule = [Molecule().from_adjacency_list(adjlist, saturate_h=False,
+                                                            raise_atomtype_exception=raise_atomtype_exception,
+                                                            raise_charge_exception=raise_charge_exception)]
+        else:
+            self.molecule = [Fragment().from_adjacency_list(adjlist, saturate_h=False,
+                                                            raise_atomtype_exception=raise_atomtype_exception,
+                                                            raise_charge_exception=raise_charge_exception)]
         # If the first line is a label, then save it to the label attribute
         for label in adjlist.splitlines():
             if label.strip():
                 break
         else:
             label = ''
-        if len(label.split()) > 0 and not label.split()[0].isdigit():
+        if len(label.split()) > 0 and not label.split()[0].isdigit() and 'multiplicity' not in label:
             self.label = label.strip()
         # Return a reference to itself so we can use e.g. Species().from_adjacency_list()
         return self
@@ -391,9 +432,12 @@ class Species(object):
 
         # Determine the number of each type of element in the molecule
         element_dict = {}  # element_counts = [0,0,0,0]
-        for atom in self.molecule[0].atoms:
+        for vertex in self.molecule[0].vertices:
             # The atom itself
-            symbol = atom.element.symbol
+            if not isinstance(vertex, CuttingLabel):
+                symbol = vertex.element.symbol
+            else: # that means this vertex is CuttingLabel
+                continue
             if symbol not in element_dict:
                 element_dict[symbol] = 1
             else:
@@ -443,6 +487,13 @@ class Species(object):
     def is_surface_site(self):
         """Return ``True`` if the species is a vacant surface site."""
         return self.molecule[0].is_surface_site()
+
+    def number_of_surface_sites(self):
+        """
+        Return the number of surface sites for a species.
+        eg. 2 for bidentate.
+        """
+        return self.molecule[0].number_of_surface_sites()
 
     def get_partition_function(self, T):
         """
@@ -555,16 +606,19 @@ class Species(object):
         requires additional calculate_symmetry_number calls.
         """
         if self.symmetry_number < 1:
-            cython.declare(resonanceHybrid=Molecule, maxSymmetryNum=cython.short)
-            resonance_hybrid = self.get_resonance_hybrid()
-            try:
-                self.symmetry_number = resonance_hybrid.get_symmetry_number()
-            except KeyError:
-                logging.error('Wrong bond order generated by resonance hybrid.')
-                logging.error('Resonance Hybrid: {}'.format(resonance_hybrid.to_adjacency_list()))
-                for index, mol in enumerate(self.molecule):
-                    logging.error("Resonance Structure {}: {}".format(index, mol.to_adjacency_list()))
-                raise
+            if isinstance(self.molecule[0], Molecule):
+                cython.declare(resonanceHybrid=Molecule, maxSymmetryNum=cython.short)
+                resonance_hybrid = self.get_resonance_hybrid()
+                try:
+                    self.symmetry_number = resonance_hybrid.get_symmetry_number()
+                except KeyError:
+                    logging.error('Wrong bond order generated by resonance hybrid.')
+                    logging.error('Resonance Hybrid: {}'.format(resonance_hybrid.to_adjacency_list()))
+                    for index, mol in enumerate(self.molecule):
+                        logging.error("Resonance Structure {}: {}".format(index, mol.to_adjacency_list()))
+                    raise
+            else:
+                self.symmetry_number = self.molecule[0].get_symmetry_number()
         return self.symmetry_number
 
     def get_resonance_hybrid(self):
@@ -650,7 +704,7 @@ class Species(object):
         """
         `True` if the species has at least one reactive molecule, `False` otherwise
         """
-        cython.declare(molecule=Molecule)
+        cython.declare(molecule=Graph)
         return any([molecule.reactive for molecule in self.molecule])
 
     def copy(self, deep=False):
@@ -746,7 +800,12 @@ class Species(object):
             raise
 
         # count = sum([1 for atom in self.molecule[0].vertices if atom.is_non_hydrogen()])
-        self.transport_data = transport_db.get_transport_properties(self)[0]
+        if isinstance(self.molecule[0], Molecule):
+            self.transport_data = transport_db.get_transport_properties(self)[0]
+        else:
+            # assume it's a species for Fragment
+            self.molecule[0].assign_representative_species()
+            self.transport_data = transport_db.get_transport_properties(self.molecule[0].species_repr)[0]
 
     def get_transport_data(self):
         """
@@ -828,6 +887,31 @@ class Species(object):
                                   "interpret it as SMILES nor as adjacency list".format(structure, self.label))
                     raise
             self.generate_resonance_structures()
+
+    def get_henry_law_constant_data(self, Ts=[]):
+
+        if (not Ts) and self.henry_law_constant_data:
+            return self.henry_law_constant_data
+
+        if vapor_liquid_mass_transfer.enabled:
+            self.henry_law_constant_data = vapor_liquid_mass_transfer.get_henry_law_constant_data(self, Ts=Ts)
+            return self.henry_law_constant_data
+        else:
+            raise Exception('Unable to calculate Henry\'s law coefficients when the vapor liquid mass transfer is not enabled '
+                            'or liquid volumetric mass transfer coefficient power law is not provided.')
+        
+
+    def get_liquid_volumetric_mass_transfer_coefficient_data(self, Ts=[]):
+
+        if (not Ts) and self.liquid_volumetric_mass_transfer_coefficient_data:
+            return self.liquid_volumetric_mass_transfer_coefficient_data
+
+        if vapor_liquid_mass_transfer.enabled:
+            self.liquid_volumetric_mass_transfer_coefficient_data = vapor_liquid_mass_transfer.get_liquid_volumetric_mass_transfer_coefficient_data(self, Ts=Ts)
+            return self.liquid_volumetric_mass_transfer_coefficient_data
+        else:
+            raise Exception('Unable to calculate liquid volumetric mass transfer coefficient when the diffusion limiter is not enabled '
+                            'or liquid volumetric mass transfer coefficient power law is not provided.')
 
 
 ################################################################################

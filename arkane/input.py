@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -63,10 +63,14 @@ from rmgpy.transport import TransportData
 from rmgpy.util import as_list
 
 from arkane.common import is_pdep
+from arkane.encorr.ae import AEJob
+from arkane.encorr.bac import BACJob
+from arkane.encorr.corr import assign_frequency_scale_factor
 from arkane.explorer import ExplorerJob
 from arkane.kinetics import KineticsJob
+from arkane.modelchem import LOT, LevelOfTheory, CompositeLevelOfTheory, model_chem_to_lot
 from arkane.pdep import PressureDependenceJob
-from arkane.statmech import StatMechJob, assign_frequency_scale_factor
+from arkane.statmech import StatMechJob
 from arkane.thermo import ThermoJob
 
 ################################################################################
@@ -118,10 +122,9 @@ def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=No
     )
 
     for family in rmg_database.kinetics.families.values():  # load training
-        family.add_rules_from_training(thermo_database=rmg_database.thermo)
-
-    for family in rmg_database.kinetics.families.values():
-        family.fill_rules_by_averaging_up(verbose=True)
+        if not family.auto_generated:
+            family.add_rules_from_training(thermo_database=rmg_database.thermo)
+            family.fill_rules_by_averaging_up(verbose=True)
 
 
 def species(label, *args, **kwargs):
@@ -429,7 +432,7 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
     network_dict[label] = network
 
 
-def kinetics(label, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_conditions=None):
+def kinetics(label, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_conditions=None, three_params=True):
     """Generate a kinetics job"""
     global job_list, reaction_dict
     try:
@@ -437,7 +440,7 @@ def kinetics(label, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_cond
     except KeyError:
         raise ValueError('Unknown reaction label {0!r} for kinetics() job.'.format(label))
     job = KineticsJob(reaction=rxn, Tmin=Tmin, Tmax=Tmax, Tcount=Tcount, Tlist=Tlist,
-                      sensitivity_conditions=sensitivity_conditions)
+                      sensitivity_conditions=sensitivity_conditions, three_params=three_params)
     job_list.append(job)
 
 
@@ -467,7 +470,7 @@ def thermo(label, thermoClass):
 
 def pressureDependence(label, Tmin=None, Tmax=None, Tcount=0, Tlist=None, Pmin=None, Pmax=None, Pcount=0, Plist=None,
                        maximumGrainSize=None, minimumGrainCount=0, method=None, interpolationModel=None,
-                       activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None):
+                       activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None, sensitivity_perturbation=(2.0,'kcal/mol')):
     """Generate a pressure dependent job"""
     global job_list, network_dict
 
@@ -483,7 +486,8 @@ def pressureDependence(label, Tmin=None, Tmax=None, Tcount=0, Tlist=None, Pmin=N
                                 maximumGrainSize=maximumGrainSize, minimumGrainCount=minimumGrainCount,
                                 method=method, interpolationModel=interpolationModel,
                                 activeKRotor=activeKRotor, activeJRotor=activeJRotor,
-                                rmgmode=rmgmode, sensitivity_conditions=sensitivity_conditions)
+                                rmgmode=rmgmode, sensitivity_conditions=sensitivity_conditions,
+                                sensitivity_perturbation=sensitivity_perturbation)
     job_list.append(job)
 
 
@@ -507,6 +511,44 @@ def explorer(source, explore_tol=0.01, energy_tol=np.inf, flux_tol=0.0, bathGas=
     job_list.append(job)
 
 
+def ae(species_energies, level_of_theory=None, write_to_database=False, overwrite=False):
+    """Generate an atom energy job"""
+    global job_list
+    job = AEJob(
+        species_energies,
+        level_of_theory=level_of_theory,
+        write_to_database=write_to_database,
+        overwrite=overwrite
+    )
+    job_list.append(job)
+
+
+def bac(level_of_theory, bac_type='p', train_names='main', crossval_n_folds=1,
+        idxs=None, exclude_idxs=None,
+        exclude_elements=None, charge='all', multiplicity='all',
+        weighted=False, write_to_database=False, overwrite=False,
+        fit_mol_corr=True, global_opt=True, global_opt_iter=10):
+    """Generate a BAC job"""
+    global job_list
+    job = BACJob(
+        level_of_theory,
+        bac_type=bac_type,
+        db_names=train_names,
+        crossval_n_folds=crossval_n_folds,
+        idxs=idxs,
+        exclude_idxs=exclude_idxs,
+        exclude_elements=exclude_elements,
+        charge=charge,
+        multiplicity=multiplicity,
+        weighted=weighted,
+        write_to_database=write_to_database,
+        overwrite=overwrite,
+        fit_mol_corr=fit_mol_corr,
+        global_opt=global_opt,
+        global_opt_iter=global_opt_iter)
+    job_list.append(job)
+
+
 def SMILES(smiles):
     """Make a Molecule object from SMILES"""
     return Molecule().from_smiles(smiles)
@@ -514,7 +556,9 @@ def SMILES(smiles):
 
 def adjacencyList(adj):
     """Make a Molecule object from an adjacency list"""
-    return Molecule().from_adjacency_list(adj)
+    return Molecule().from_adjacency_list(adj,
+                                          raise_atomtype_exception=False,
+                                          raise_charge_exception=False)
 
 
 def InChI(inchi):
@@ -568,7 +612,7 @@ def load_input_file(path):
         'SingleExponentialDown': SingleExponentialDown,
         # Kinetics
         'Arrhenius': Arrhenius,
-        'RateUncertainty' : RateUncertainty,
+        'RateUncertainty': RateUncertainty,
         # Statistical mechanics
         'IdealGasTranslation': IdealGasTranslation,
         'LinearRotor': LinearRotor,
@@ -595,10 +639,14 @@ def load_input_file(path):
         'thermo': thermo,
         'pressureDependence': pressureDependence,
         'explorer': explorer,
+        'bac': bac,
+        'ae': ae,
         # Miscellaneous
         'SMILES': SMILES,
         'adjacencyList': adjacencyList,
         'InChI': InChI,
+        'LevelOfTheory': LevelOfTheory,
+        'CompositeLevelOfTheory': CompositeLevelOfTheory,
     }
 
     load_necessary_databases()
@@ -610,16 +658,18 @@ def load_input_file(path):
             logging.error('The input file {0!r} was invalid:'.format(path))
             raise
 
-    model_chemistry = local_context.get('modelChemistry', '').lower()
-    sp_level, freq_level = process_model_chemistry(model_chemistry)
+    model_chemistry = local_context.get('modelChemistry', None)
+    level_of_theory = process_model_chemistry(model_chemistry)
+    if isinstance(model_chemistry, LOT):
+        model_chemistry = model_chemistry.to_model_chem()
 
     author = local_context.get('author', '')
     if 'frequencyScaleFactor' in local_context:
         frequency_scale_factor = local_context.get('frequencyScaleFactor')
     else:
-        logging.debug('Tying to assign a frequencyScaleFactor according to the frequency '
-                      'level of theory {0}'.format(freq_level))
-        frequency_scale_factor = assign_frequency_scale_factor(freq_level)
+        logging.debug('Tying to assign a frequencyScaleFactor according to the '
+                      'level of theory {0}'.format(level_of_theory))
+        frequency_scale_factor = assign_frequency_scale_factor(level_of_theory)
     use_hindered_rotors = local_context.get('useHinderedRotors', True)
     use_atom_corrections = local_context.get('useAtomCorrections', True)
     use_bond_corrections = local_context.get('useBondCorrections', False)
@@ -636,7 +686,7 @@ def load_input_file(path):
     for job in job_list:
         if isinstance(job, StatMechJob):
             job.path = os.path.join(directory, job.path)
-            job.modelChemistry = sp_level
+            job.level_of_theory = level_of_theory
             job.frequencyScaleFactor = frequency_scale_factor
             job.includeHinderedRotors = use_hindered_rotors
             job.applyAtomEnergyCorrections = use_atom_corrections
@@ -647,14 +697,15 @@ def load_input_file(path):
             job.referenceSets = reference_sets
         if isinstance(job, ThermoJob):
             job.arkane_species.author = author
-            job.arkane_species.level_of_theory = model_chemistry
+            job.arkane_species.level_of_theory = level_of_theory
+            job.arkane_species.model_chemistry = model_chemistry
             job.arkane_species.frequency_scale_factor = frequency_scale_factor
             job.arkane_species.use_hindered_rotors = use_hindered_rotors
             job.arkane_species.use_bond_corrections = use_bond_corrections
             if atom_energies is not None:
                 job.arkane_species.atom_energies = atom_energies
 
-    return job_list, reaction_dict, species_dict, transition_state_dict, network_dict, model_chemistry
+    return job_list, reaction_dict, species_dict, transition_state_dict, network_dict, level_of_theory
 
 
 def process_model_chemistry(model_chemistry):
@@ -666,19 +717,15 @@ def process_model_chemistry(model_chemistry):
                                         or a composite method, e.g. 'CBS-QB3'.
 
     Returns:
-        str, unicode: The single point energy level of theory
-        str, unicode: The frequency level of theory
+        LevelOfTheory, CompositeLevelOfTheory: The level of theory
     """
+    if not model_chemistry:
+        return model_chemistry
+    if isinstance(model_chemistry, LOT):
+        return model_chemistry
     if model_chemistry.count('//') > 1:
         raise InputError('The model chemistry seems wrong. It should either be a composite method (like CBS-QB3) '
                          'or of the form sp//geometry, e.g., CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd), '
                          'and should not contain more than one appearance of "//".\n'
                          'Got: {0}'.format(model_chemistry))
-    elif '//' in model_chemistry:
-        # assume this is an sp//freq format, split
-        sp_level, freq_level = model_chemistry.split('//')
-    else:
-        # assume the sp and freq levels are the same, assign the model chemistry to both
-        # (this could also be a composite method, and we'll expect the same behavior)
-        sp_level = freq_level = model_chemistry
-    return sp_level, freq_level
+    return model_chem_to_lot(model_chemistry)

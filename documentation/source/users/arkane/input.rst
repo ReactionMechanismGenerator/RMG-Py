@@ -20,8 +20,6 @@ computations:
 Component                   Description
 =========================== ============================================================================================
 ``modelChemistry``          Level of theory from quantum chemical calculations, see ``Model Chemistry`` table below
-``levelOfTheory``           Level of theory, free text format (only used for archiving). Suggested format:
-                            ``energy_method/basis_set//geometry_method/basis_set, rotors at rotor_method/basis_set``
 ``author``                  Author's name. Used when saving statistical mechanics properties as a .yml file.
 ``atomEnergies``            Dictionary of atomic energies at ``modelChemistry`` level
 ``frequencyScaleFactor``    A factor by which to scale all frequencies
@@ -54,11 +52,37 @@ Component                   Description
 
 Model Chemistry
 ===============
-
 The first item in the input file should be a ``modelChemistry`` assignment with a string describing the model
 chemistry. The ``modelChemistry`` could either be in a `single point // frequency` format, e.g.,
 `CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd)`, just the `single point`, e.g., `CCSD(T)-F12a/aug-cc-pVTZ`,
 or a composite method, e.g., `CBS-QB3`.
+
+Alternatively, ``modelChemistry`` can be specified using a ``LevelOfTheory`` or ``CompositeLevelOfTheory`` object. The
+basic syntax for ``LevelOfTheory`` is::
+
+    LevelOfTheory(
+        method='B3LYP',
+        basis='6-311++G(3df,3pd)'
+    )
+
+See ``arkane/modelchem.py`` for additional options (e.g., software, solvent). Note that the software generally does not
+have to be specified because it is inferred from the provided quantum chemistry logs. An example
+``CompositeLevelOfTheory`` is given by::
+
+    CompositeLevelOfTheory(
+        freq=LevelOfTheory(
+            method='B3LYP',
+            basis='6-311++G(3df,3pd)'
+        )
+        energy=LevelOfTheory(
+            method='CCSD(T)-F12',
+            basis='aug-cc-pVTZ'
+        )
+    )
+
+There are some methods that require the software to be specified. Currently, it is not possible to infer the software
+for such methods directly from the log files because Arkane requires the software prior to reading the log files. The
+methods for which this is the case are listed in the RMG-database in ``input/quantum_corrections/lot_constraints.yml``.
 
 Arkane uses the single point level to adjust the computed energies to the usual gas-phase reference
 states by applying atom and spin-orbit coupling energy corrections. Additionally, bond additivity corrections OR
@@ -86,9 +110,9 @@ The table below shows which model chemistries have atomization energy correction
 corrections (BC), and spin orbit corrections (SOC). It also lists which elements are available
 for a given model chemistry.
 
-================================================ ===== ==== ==== ========== ====================
+================================================ ===== ==== ==== ========== =========================
 Model Chemistry                                  AEC   BC   SOC  Freq Scale Supported Elements
-================================================ ===== ==== ==== ========== ====================
+================================================ ===== ==== ==== ========== =========================
 ``'CBS-QB3'``                                     v    v    v    v (0.990)  H, C, N, O, P, S
 ``'CBS-QB3-Paraskevas'``                          v    v    v    v (0.990)  H, C, N, O, P, S
 ``'G3'``                                          v         v               H, C, N, O, P, S
@@ -101,7 +125,8 @@ Model Chemistry                                  AEC   BC   SOC  Freq Scale Supp
 ``'CCSD-F12/cc-pVDZ-F12'``                        v         v    v (0.947)  H, C, N, O
 ``'CCSD(T)-F12/cc-pVDZ-F12_H-TZ'``                v         v               H, C, N, O
 ``'CCSD(T)-F12/cc-pVDZ-F12_H-QZ'``                v         v               H, C, N, O
-``'CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*        v    v    v    v          H, C, N, O, S
+``'CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T*          v    v    v    v          H, C, N, O, F, S, Cl
+``'CCSD(T)-F12/cc-pVQZ-F12'``                     v    v    v    v          H, C, N, O, S
 ``'CCSD(T)-F12/cc-pVDZ-F12_noscale'``             v         v               H, C, N, O
 ``'CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*       v         v    v          H, C, N, O
 ``'CCSD(T)-F12/aug-cc-pVnZ'``, *n = D,T,Q*        v         v    v          H, C, N, O, S
@@ -119,7 +144,10 @@ Model Chemistry                                  AEC   BC   SOC  Freq Scale Supp
 ``'B3LYP/6-31G(d,p)'``                            v    v         v (0.961)  H, C, O, S
 ``'MRCI+Davidson/aug-cc-pV(T+d)Z'``               v         v               H, C, N, O, S
 ``'wb97x-d/aug-cc-pvtz'``                         v         v               H, C, N, O
-================================================ ===== ==== ==== ========== ====================
+``'wb97x-d3/def2-tzvp'``                          v    v    v    v (0.984)  H, C, N, O, F, S, Cl, Br
+``'wb97m-v/def2-tzvpd'``                          v         v    v (1.002)  H, C, N, O, F, S, Cl, Br
+``'b97d-3/def2-msvp'``                            v    v    v    v (1.014)  H, C, N, O, F, S, Cl, Br
+================================================ ===== ==== ==== ========== =========================
 
 Notes:
 
@@ -251,7 +279,10 @@ they can specify the path to a quantum chemistry calculation output file that co
 
 In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified
 directly. The energy used will depend on what ``modelChemistry`` was specified in the input file. Arkane can parse the
-energy from a Gaussian, Molpro, or QChem log file, all using the same ``Log`` class, as shown below.
+energy from a Gaussian, Molpro, or QChem log file, all using the same ``Log`` class, as shown below. The first
+(and required) argument for the ``Log`` class is the path to the log file. Optionally, a second keyword argument
+``check_for_errors=False`` can be provided that will prevent Arkane from raising an exception if it finds an error
+in the QM job based on common phrases from the log file.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free
 rotors are included. If ``geometry`` is not set, then Arkane will read the geometry from the ``frequencies`` file.
@@ -322,21 +353,53 @@ Therefore, the proper workflow for generating the ``geometry/frequencies`` log f
 
 The output of step 2 is the correct log file to use for ``geometry/frequencies``.
 
-``rotors`` is a list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects. Each :class:`HinderedRotor()`
+``rotors`` is a list of :class:`HinderedRotor()` and/or :class:`HinderedRotor1DArray()` and/or :class:`FreeRotor()` objects. Each :class:`HinderedRotor()`
 object requires the following parameters:
 
 ======================= =========================== ====================================
 Parameter               Required?                   Description
 ======================= =========================== ====================================
-``scanLog``             yes                         The path to the Gaussian/Qchem log file, or a text file containing the scan energies
+``scanLog``             yes                         The path to the Gaussian/Qchem log file, or a text/csv/yaml file containing the scan energies
 ``pivots``              yes                         The indices of the atoms in the hindered rotor torsional bond
 ``top``                 yes                         The indices of all atoms on one side of the torsional bond (including the pivot atom)
 ``symmetry``            optional                    The symmetry number for the torsional rotation (number of indistinguishable energy minima)
 ``fit``                 optional                    Fit to the scan data. Can be either ``fourier``, ``cosine`` or ``best`` (default).
 ======================= =========================== ====================================
 
-``scanLog`` can either point to a ``Log`` file, or simply a ``ScanLog``, with the path to a text file summarizing the
-scan in the following format::
+``scanLog`` can either point to a ``Log`` file from a QM calculation, or simply a ``ScanLog``, with the path to a file summarizing the
+scan. If a yaml file is feeded, it should satisfy the the following format::
+
+    angle_unit: radians
+    energy_unit: kJ/mol
+    angles:
+    - 0.0000000000
+    - 0.1745329252
+    - 0.3490658504
+            .
+            .
+            .
+    - 6.2831853072
+    energies:
+    - 0.0147251160
+    - 0.7223109804
+    - 2.6856059517
+            .
+            .
+            .
+    - 0.0000000000
+
+If a csv file is feeded, it should satisfy the following format::
+
+    Angle (radians),Energy (kJ/mol)
+    0.0000000000,0.0147251160
+    0.1745329252,0.7223109804
+    0.3490658504,2.6856059517
+        .       ,    .
+        .       ,    .
+        .       ,    .
+    6.2831853072,0.0000000000
+
+If a text file is feeded, it should satisfy the the following format::
 
           Angle (radians)          Energy (kJ/mol)
            0.0000000000            0.0147251160
@@ -347,11 +410,26 @@ scan in the following format::
                  .                       .
            6.2831853072            0.0000000000
 
-The ``Energy`` can be in units of ``kJ/mol``, ``J/mol`` (default), ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``,
-and the ``Angle`` can be either in ``radians`` (default) or in ``degrees``. Units must be specified in parenthesis
-if different than the default.
+For all above options, the ``Energy`` can be in units of ``kJ/mol``, ``J/mol`` (default), ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``,
+and the ``Angle`` can be either in ``radians`` (default) or in ``degrees``. If ``angle_unit`` or ``energy_unit`` is not provided in the yaml file,
+the default unit will be used. If a header is included in either the csv file or the text file, units must be specified in parenthesis; otherwise,
+the column sequence will be assumed to be [angles, energies], and the default units will be used.
 
-The ``symmetry`` parameter will usually equal either 1, 2 or 3. It could be determined automatically by Arkane
+:class:`HinderedRotor1DArray()` is an alternative way to define a hindered rotor without the need of a scan log file.
+The object requires the following parameters:
+
+======================= =========================== ====================================
+Parameter               Required?                   Description
+======================= =========================== ====================================
+``angles``              yes                         The angle values of the PES scan in unit of radians.
+``energies``            yes                         The energy values of the PES scan in unit of J/mol.
+``pivots``              yes                         The indices of the atoms in the hindered rotor torsional bond
+``top``                 yes                         The indices of all atoms on one side of the torsional bond (including the pivot atom)
+``symmetry``            optional                    The symmetry number for the torsional rotation (number of indistinguishable energy minima)
+``fit``                 optional                    Fit to the scan data. Can be either ``fourier``, ``cosine`` or ``best`` (default).
+======================= =========================== ====================================
+
+For the above two objects, ``symmetry`` parameter will usually equal either 1, 2 or 3. It could be determined automatically by Arkane
 (by simply not specifying it altogether), however it is always better to explicitly specify it if it is known. If it is
 determined by Arkane, the log file will specify the determined value and what it was based on. Below are examples of
 internal rotor scans with these commonly encountered symmetry numbers. First, ``symmetry = 3``:
@@ -517,7 +595,7 @@ The ``collisionModel`` is defined for unimolecular isomers with the transport da
     collisionModel = TransportData(sigma=(3.70,'angstrom'), epsilon=(94.9,'K'))
 
 ``sigma`` and ``epsilon`` are Lennard-Jones parameters, which can be estimated using the Joback method on the
-`RMG website <http://rmg.mit.edu/molecule_search>`_.
+`RMG website <https://rmg.mit.edu/molecule_search>`_.
 
 The ``energyTransferModel`` model available is a ``SingleExponentialDown``.
 
@@ -869,7 +947,23 @@ Use a ``kinetics()`` function to make Arkane execute the high-pressure limit kin
 parameters computation for a reaction. The ``'label'`` string must correspond to that of
 a defined ``reaction()`` function.
 
-You have three options for specifying the temperature to which a modified Arrhenius
+By default, Arkane outputs high pressure kinetic rate coefficients in the modified three-parameter Arrhenius equation
+format:
+
+  .. math :: k(T) = A \left( \frac{T}{T_0} \right)^n \exp \left( -\frac{E_a}{RT} \right)
+
+Alternatively, the user may request to output the rate in the classical two-parameter Arrhenius format:
+
+  .. math :: k(T) = A \exp \left( -\frac{E_a}{RT} \right)
+
+by passing ``three_params = False`` in the ``kinetics()`` function::
+
+    kinetics(
+    label = 'H + C2H4 <=> C2H5',
+    three_params = False,
+    )
+
+You have three options for specifying the temperature to which a modified/classical Arrhenius
 expression will be fit.
 
 Give an explicit list of temperatures to fit::
@@ -1035,6 +1129,55 @@ The output of a sensitivity analysis is saved into a ``sensitivity`` folder in t
 with the network label, delineates the semi-normalized sensitivity coefficients ``dln(k)/dE0`` in units of ``mol/J``
 for all network reactions (both directions if reversible) at all requested conditions. Horizontal bar figures are
 automatically generated per network reaction, showing the semi-normalized sensitivity coefficients at all conditions.
+
+
+Atom Energy Fitting
+==================================
+
+Atom energies can be fitted using a small selection of species (see ``SPECIES_LABELS`` in ``arkane/encorr/ae.py``). To
+do this, the single-point electronic energies calculated using the experimental geometries from the reference database
+of each of the species should be provided as a dictionary of the species labels and their energies in Hartree.
+Zero-point energies should not be included in the electronic energies. Each atom energy fitting calculation must be
+specified using a ``ae()`` function, which accepts the following parameters:
+
+====================== ==================== =========================================================================================
+Parameter              Required?            Description
+====================== ==================== =========================================================================================
+``species_energies``   Yes                  Dictionary of species labels and single-point energies
+``level_of_theory``    No                   Level of theory used as key if writing to the database dictionary
+``write_to_database``  No                   Write the atom energies to the database; requires ``level_of_theory`` (default: False)
+``overwrite``          No                   If atom energies already exist, overwrite them (default: False)
+====================== ==================== =========================================================================================
+
+
+Bond Additivity Correction Fitting
+==================================
+
+If calculated data is available in the reference database, Arkane can fit and save bond additivity corrections (BACs).
+There are two different types available: Petersson-type (Petersson et al., J. Chem. Phys. 1998, 109, 10570-10579), which
+fits one parameter for each bond type, and Melius-type (Anantharaman and Melius, J. Phys. Chem. A 2005, 109, 1734-1747),
+which fits three parameters per atom type and an optional molecular parameter. Each BAC fitting calculation must be
+specified using a ``bac()`` function, which accepts the following parameters:
+
+====================== ============ =============================================================================================================================
+Parameter              Required?    Description
+====================== ============ =============================================================================================================================
+``level_of_theory``    Yes          Calculated data will be extracted from the reference database using this level of theory
+``bac_type``           No           BAC type: 'p' for Petersson (default), 'm' for Melius
+``train_names``        No           Names of training data folders in the RMG database (default: 'main')
+``crossval_n_folds``   No           If 1, perform no cross-validation. If -1, perform leave-one-out cross-validation. If any other positive integer, perfrom k-fold cross-validation. (default: 1)
+``idxs``               No           Only include reference species with these indices in the training data (default: None)
+``exclude_idxs``       No           Exclude reference species with these indices from the training data (default: None)
+``exclude_elements``   No           Exclude molecules with the elements in this list from the training data (default: None)
+``charge``             No           Set the allowed charges ('neutral', 'positive', 'negative', or integers) for molecules in the training data (default: 'all')
+``multiplicity``       No           Set the allowed multiplicities for molecules in the training data (default: 'all')
+``weighted``           No           Weight the data to diversify substructures (default: False)
+``write_to_database``  No           Write the BACs to the database; has no effect if doing cross-validation (default: False)
+``overwrite``          No           If BACs already exist, overwrite them (default: False)
+``fit_mol_corr``       No           Fit the optional molecular correction term (Melius only, default: True)
+``global_opt``         No           Perform a global optimization (Melius only, default: True)
+``global_opt_iter``    No           Number of global optimization iterations (Melius only, default: 10)
+====================== ============ =============================================================================================================================
 
 
 Examples

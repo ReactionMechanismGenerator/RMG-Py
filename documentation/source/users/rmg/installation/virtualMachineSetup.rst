@@ -35,7 +35,7 @@ basic steps are as follows:
    changes and restart the PC.
 
 For more information, please see online tutorials like
-`this one here <https://support.bluestacks.com/hc/en-us/articles/115003910391-How-can-I-enable-virtualization-VT-on-my-PC->`_.
+`this one here <https://support.bluestacks.com/hc/en-us/articles/360043236951>`_.
 
 **Note that changing your BIOS settings can be risky, so follow online tutorials carefully**. If you are unsure of what
 to do even after looking for online tutorials, consider following the instructions for installing RMG inside the Linux
@@ -50,7 +50,7 @@ popular Linux distributions out there, with plenty of support available online. 
 any other Linux distribution you like (see `Linux DistroWatch`_).
 
 .. _Linux DistroWatch: https://distrowatch.com/
-.. _Ubuntu: https://www.ubuntu.com/#download
+.. _Ubuntu: https://ubuntu.com/#download
 
 1. Go to the Ubuntu_ website and click on the download link for 18.04 LTS (Desktop, not Server). Note that newer
    versions of Ubuntu might be available, but we recommend downloading only the LTS (long term support) versions. Note that

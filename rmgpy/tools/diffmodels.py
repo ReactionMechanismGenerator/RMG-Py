@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -62,6 +62,7 @@ import matplotlib.pyplot as plt
 from rmgpy.chemkin import load_chemkin_file
 from rmgpy.rmg.model import ReactionModel
 from rmgpy.rmg.output import save_diff_html
+from rmgpy.kinetics.surface import StickingCoefficient, StickingCoefficientBEP
 
 
 ################################################################################
@@ -97,11 +98,19 @@ def compare_model_kinetics(model1, model2):
     kinetics1 = []
     kinetics2 = []
     for rxn1, rxn2 in common_reactions.items():
-        kinetics1.append(rxn1.get_rate_coefficient(T, P))
+        stick = isinstance(rxn1.kinetics, StickingCoefficient)
+        if stick:
+            rate1 = rxn1.get_sticking_coefficient(T)
+            rate2 = rxn1.get_sticking_coefficient(T)
+        else: 
+            rate1 = rxn1.get_rate_coefficient(T, P)
+            rate2 = rxn1.get_rate_coefficient(T, P)
+
+        kinetics1.append(rate1)
         if rxn1.is_isomorphic(rxn2, either_direction=False):
-            kinetics2.append(rxn2.get_rate_coefficient(T, P))
+            kinetics2.append(rate2)
         else:
-            kinetics2.append(rxn2.get_rate_coefficient(T, P) / rxn2.get_equilibrium_constant(T))
+            kinetics2.append(rate2 / rxn2.get_equilibrium_constant(T))
     fig, ax = plt.subplots(1, 1, figsize=(8, 6))
     plt.loglog(kinetics1, kinetics2, 'o', picker=5)
     xlim = plt.xlim()
@@ -210,15 +219,29 @@ def compare_model_reactions(model1, model2):
 
 
 def save_compare_html(outputDir, chemkin_path1, species_dict_path1, chemkin_path2, species_dict_path2,
-                      read_comments1=True, read_comments2=True):
+                      read_comments1=True, read_comments2=True, surf_path1=False, surf_path2=False):
     """
     Saves a model comparison HTML file based on two sets of chemkin and species dictionary
     files.
     """
     model1 = ReactionModel()
-    model1.species, model1.reactions = load_chemkin_file(chemkin_path1, species_dict_path1, read_comments=read_comments1)
     model2 = ReactionModel()
-    model2.species, model2.reactions = load_chemkin_file(chemkin_path2, species_dict_path2, read_comments=read_comments2)
+
+    if surf_path1 and surf_path2:
+        model1.species, model1.reactions = load_chemkin_file(
+            chemkin_path1, species_dict_path1, read_comments=read_comments1,
+            surface_path=surf_path1)
+        model2.species, model2.reactions = load_chemkin_file(
+            chemkin_path2, species_dict_path2, read_comments=read_comments2,
+            surface_path=surf_path2)
+    else:
+        if surf_path1 or surf_path2:
+            logging.error("To compare gas+surface mechanism, both models need a surface chemkin file")
+        model1.species, model1.reactions = load_chemkin_file(
+            chemkin_path1, species_dict_path1, read_comments=read_comments1)
+        model2.species, model2.reactions = load_chemkin_file(
+            chemkin_path2, species_dict_path2, read_comments=read_comments2)
+    
     common_reactions, unique_reactions1, unique_reactions2 = compare_model_reactions(model1, model2)
     common_species, unique_species1, unique_species2 = compare_model_species(model1, model2)
 
@@ -317,10 +340,23 @@ def main():
 
 
 def execute(chemkin1, species_dict1, thermo1, chemkin2, species_dict2, thermo2, **kwargs):
+   
     model1 = ReactionModel()
-    model1.species, model1.reactions = load_chemkin_file(chemkin1, species_dict1, thermo_path=thermo1)
     model2 = ReactionModel()
-    model2.species, model2.reactions = load_chemkin_file(chemkin2, species_dict2, thermo_path=thermo2)
+
+    try:
+        surface_path1 = kwargs['surface_path1']
+        surface_path2 = kwargs['surface_path2']
+        model1.species, model1.reactions = load_chemkin_file(
+            chemkin1, species_dict1, thermo_path=thermo1, surface_path=surface_path1)
+        model2.species, model2.reactions = load_chemkin_file(
+            chemkin2, species_dict2, thermo_path=thermo2, surface_path=surface_path2)
+    except KeyError:
+        if 'surface_path1' in kwargs or 'surface_path2' in kwargs:
+            logging.warning('Please specify 2 surface input files if you are comparing a surface mechanism')
+
+        model1.species, model1.reactions = load_chemkin_file(chemkin1, species_dict1, thermo_path=thermo1)
+        model2.species, model2.reactions = load_chemkin_file(chemkin2, species_dict2, thermo_path=thermo2)
 
     common_species, unique_species1, unique_species2 = compare_model_species(model1, model2)
     common_reactions, unique_reactions1, unique_reactions2 = compare_model_reactions(model1, model2)
@@ -390,27 +426,54 @@ def execute(chemkin1, species_dict1, thermo1, chemkin2, species_dict2, thermo2, 
         logging.info('{0:d} reactions were found in both models:'.format(len(common_reactions)))
         for rxn1, rxn2 in common_reactions:
             logging.info('    {0!s}'.format(rxn1))
+            stick1 = isinstance(rxn1.kinetics, (StickingCoefficient, StickingCoefficientBEP))
+            stick2 = isinstance(rxn2.kinetics, (StickingCoefficient, StickingCoefficientBEP))
             if rxn1.kinetics and rxn2.kinetics:
-                logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
-                    math.log10(rxn1.kinetics.get_rate_coefficient(300, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(400, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(500, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(600, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(800, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(1000, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(1500, 1e5)),
-                    math.log10(rxn1.kinetics.get_rate_coefficient(2000, 1e5)),
-                ))
-                logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
-                    math.log10(rxn2.kinetics.get_rate_coefficient(300, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(400, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(500, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(600, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(800, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(1000, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(1500, 1e5)),
-                    math.log10(rxn2.kinetics.get_rate_coefficient(2000, 1e5)),
-                ))
+                if stick1:
+                    logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(300)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(400)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(500)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(600)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(800)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(1000)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(1500)),
+                        math.log10(rxn1.kinetics.get_sticking_coefficient(2000)),
+                    ))
+                else:
+                    logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                        math.log10(rxn1.kinetics.get_rate_coefficient(300, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(400, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(500, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(600, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(800, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(1000, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(1500, 1e5)),
+                        math.log10(rxn1.kinetics.get_rate_coefficient(2000, 1e5)),
+                    ))
+                if stick2: 
+                    logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(300)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(400)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(500)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(600)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(800)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(1000)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(1500)),
+                        math.log10(rxn2.kinetics.get_sticking_coefficient(2000)),
+                    ))
+                else:
+                    logging.info('        {0:7.2f} {1:7.2f} {2:7.2f} {3:7.2f} {4:7.2f} {5:7.2f} {6:7.2f} {7:7.2f}'.format(
+                        math.log10(rxn2.kinetics.get_rate_coefficient(300, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(400, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(500, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(600, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(800, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(1000, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(1500, 1e5)),
+                        math.log10(rxn2.kinetics.get_rate_coefficient(2000, 1e5)),
+                    ))
+
         logging.info('{0:d} reactions were only found in the first model:'.format(len(unique_reactions1)))
         for rxn in unique_reactions1:
             logging.info('    {0!s}'.format(rxn))

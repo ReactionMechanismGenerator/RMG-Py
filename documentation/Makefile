@@ -3,7 +3,7 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
+SPHINXBUILD   = python-jl $$(which sphinx-build)
 PAPER         =
 BUILDDIR      = build
 
@@ -50,8 +50,8 @@ else # Prompt for a commit message
 	cd $(BUILDDIR)/html; git add -A .; git commit; git push official gh-pages
 endif
 
-travis_setup:
-# This target is intended to be used when automatically compiling documentation with Travis
+continous_integration_setup:
+# This target is intended to be used when automatically compiling documentation with Continous Integration
 	@rm -rf $(BUILDDIR)/html
 	@git clone --single-branch --branch gh-pages --origin official https://${GH_TOKEN}@github.com/ReactionMechanismGenerator/RMG-Py.git $(BUILDDIR)/html
 
@@ -130,6 +130,8 @@ latexpdf:
 	@echo "Running LaTeX files through pdflatex..."
 	make -C $(BUILDDIR)/latex all-pdf
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
+	cp $(BUILDDIR)/latex/RMG-Py_API_Reference.pdf ./
+	cp $(BUILDDIR)/latex/RMG-Py_and_Arkane_Documentation.pdf ./
 
 text:
 	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) $(BUILDDIR)/text

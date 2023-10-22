@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2020 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -367,44 +367,6 @@ def _get_unpaired_electrons(mol):
     return sorted(locations)
 
 
-def _generate_minimum_resonance_isomer(mol):
-    """
-    Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
-    electrons descriptor.
-
-    First, we generate all isomorphic resonance isomers.
-    Next, we return the candidate with the lowest unpaired electrons metric.
-
-    The metric is a sorted list with indices of the atoms that bear an unpaired electron
-
-    This function is currently deprecated since InChI effectively eliminates resonance,
-    see InChI, the IUPAC International Chemical Identifier, J. Cheminform 2015, 7, 23, doi: 10.1186/s13321-015-0068-4
-    """
-
-    cython.declare(
-        candidates=list,
-        sel=Molecule,
-        cand=Molecule,
-        metric_sel=list,
-        metric_cand=list,
-    )
-
-    warnings.warn("The _generate_minimum_resonance_isomer method is no longer used"
-                    " and may be removed in RMG version 2.3.", DeprecationWarning)
-
-    candidates = resonance.generate_isomorphic_resonance_structures(mol, saturate_h=True)
-
-    sel = candidates[0]
-    metric_sel = _get_unpaired_electrons(sel)
-    for cand in candidates[1:]:
-        metric_cand = _get_unpaired_electrons(cand)
-        if metric_cand < metric_sel:
-            sel = cand
-            metric_sel = metric_cand
-
-    return sel
-
-
 def _compute_agglomerate_distance(agglomerates, mol):
     """
     Iterates over a list of lists containing atom indices.
@@ -640,12 +602,12 @@ def create_augmented_layers(mol):
     else:
         molcopy = mol.copy(deep=True)
 
+        rdkitmol = to_rdkit_mol(molcopy, remove_h=True)
+        _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')  # suppress stereo warnings
+
         hydrogens = [at for at in molcopy.atoms if at.number == 1]
         for h in hydrogens:
             molcopy.remove_atom(h)
-
-        rdkitmol = to_rdkit_mol(molcopy)
-        _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')  # suppress stereo warnings
 
         # extract the atom numbers from N-layer of auxiliary info:
         atom_indices = _parse_n_layer(auxinfo)
