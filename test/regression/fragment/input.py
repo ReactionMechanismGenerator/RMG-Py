@@ -77,7 +77,6 @@ simulator(
 )
 
 model(
-    #    toleranceKeepInEdge = 0.05,
     toleranceMoveToCore=0.01,
     toleranceInterruptSimulation=0.01,
     maxNumSpecies=10,
