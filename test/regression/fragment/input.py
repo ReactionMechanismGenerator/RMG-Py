@@ -1,5 +1,5 @@
 database(
-    thermoLibraries=["primaryThermoLibrary", "SulfurLibrary", "DFT_QCI_thermo"],
+    thermoLibraries=["primaryThermoLibrary", "DFT_QCI_thermo"],
     reactionLibraries=[],
     seedMechanisms=[],
     kineticsDepositories=["training"],
