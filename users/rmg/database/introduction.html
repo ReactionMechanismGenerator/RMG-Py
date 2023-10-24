@@ -569,10 +569,12 @@ specific kinetics family’s folder <code class="docutils literal notranslate"><
 alongside normal group entries. The starred atoms in the forbidden group
 ban the specified reaction recipe from occurring in matched products and reactants.</p>
 <p>In addition for forbidding groups, there is the option of forbidding specific
-molecules or species. Forbidding a molecule will prevent that exact structure
-from being generated, while forbidding a species will prevent any of its resonance
-structures from being generated. To specify a forbidden molecule or species, simply
-replace the <code class="docutils literal notranslate"><span class="pre">group</span></code> keyword with <code class="docutils literal notranslate"><span class="pre">molecule</span></code> or <code class="docutils literal notranslate"><span class="pre">species</span></code>:</p>
+molecules or species in <code class="docutils literal notranslate"><span class="pre">RMG-database/input/forbiddenStructures.py</span></code>.
+Forbidding a molecule will prevent that exact structure from being generated,
+while forbidding a species will prevent any of its resonance structures from being
+generated. Note that specific molecules or species can only be forbidden globally
+and should not be specified in the groups.py file. To specify a forbidden molecule
+or species, simply replace the <code class="docutils literal notranslate"><span class="pre">group</span></code> keyword with <code class="docutils literal notranslate"><span class="pre">molecule</span></code> or <code class="docutils literal notranslate"><span class="pre">species</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># This forbids a molecule</span>
 <span class="n">forbidden</span><span class="p">(</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_quintet&quot;</span><span class="p">,</span>
