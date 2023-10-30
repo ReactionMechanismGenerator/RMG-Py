@@ -25,6 +25,7 @@
 # 2023-07-17 - made it pass by default
 # 2023-07-21 - upload the regression results summary as artifact (for use as a comment on PRs)
 # 2023-07-31 - removed option to run from RMG-database with GitHub resuable workflows
+# 2023-10 - removed database tests, since they are now running on RMG-database
 
 name: Continuous Integration
 
@@ -159,9 +160,9 @@ jobs:
         run: echo "" | make q2dtor
 
       # non-regression testing
-      - name: Run Unit, Functional, and Database Tests
+      - name: Run Unit and Functional Tests
         # aggregate into one command so we only have to eat the collection time once
-        run: make test-all
+        run: make test-skip-database
 
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution

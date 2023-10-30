@@ -61,6 +61,9 @@ decython:
 test-all:
 	python-jl -m pytest
 
+test test-skip-database:
+	python-jl -m pytest -m "not database"
+
 test test-unittests:
 	python-jl -m pytest -m "not functional and not database"
 
