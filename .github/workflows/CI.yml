@@ -131,7 +131,6 @@ jobs:
 
       # Clone RMG-database
       - name: Clone RMG-database
-        if: github.repository != 'ReactionMechanismGenerator/RMG-database'
         run: |
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
