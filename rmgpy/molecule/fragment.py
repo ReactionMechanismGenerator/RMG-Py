@@ -322,15 +322,6 @@ class Fragment(Molecule):
         result = Graph.is_subgraph_isomorphic(self.mol_repr, other, new_initial_map)
         return result
 
-    def get_molecular_weight(self):
-        """
-        Return the fragmental weight of the fragment in kg/mol.
-        """
-        mass = 0
-        for vertex in self.vertices:
-            mass += vertex.element.mass
-        return mass
-
     def calculate_cp0(self):
         """
         Return the value of the heat capacity at zero temperature in J/mol*K.
