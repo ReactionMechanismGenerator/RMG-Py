@@ -680,38 +680,20 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     elif isinstance(obj, NASA):
         return rms.NASA([to_rms(poly) for poly in obj.polynomials], rms.EmptyThermoUncertainty())
     elif isinstance(obj, Species):
-        atomnums = dict()
-        for atm in obj.molecule[0].atoms:
-            try:
-                if atomnums.get(atm.element.symbol):
-                    atomnums[atm.element.symbol] += 1
-                else:
-                    atomnums[atm.element.symbol] = 1
-            except AttributeError:
-                # means it is fragment's cutting label
-                pass
-        bondnum = len(obj.molecule[0].get_all_edges())
-        
+
         if isinstance(obj.molecule[0], Fragment):
-            th = obj.get_thermo_data()
-            thermo = to_rms(th)
-            return rms.Species(
-                name=obj.label,
-                index=obj.index,
-                inchi="",
-                smiles="",
-                adjlist="",
-                thermo=thermo,
-                atomnums=atomnums,
-                bondnum=bondnum,
-                diffusion=rms.EmptyDiffusivity(),
-                radius=0.0,
-                radicalelectrons=obj.molecule[0].multiplicity - 1,
-                molecularweight=0.0,
-                henrylawconstant=rms.EmptyHenryLawConstant(),
-                liquidvolumetricmasstransfercoefficient=rms.EmptyLiquidVolumetricMassTransferCoefficient(),
-                comment=obj.thermo.comment,
-            )
+            obj.molecule[0].assign_representative_molecule()
+            mol = obj.molecule[0].mol_repr
+        else:
+            mol = obj.molecule[0]
+
+        atomnums = dict()
+        for atm in mol.atoms:
+            if atomnums.get(atm.element.symbol):
+                atomnums[atm.element.symbol] += 1
+            else:
+                atomnums[atm.element.symbol] = 1
+        bondnum = len(mol.get_all_edges())
         
         if not obj.molecule[0].contains_surface_site():
             rad = rms.getspeciesradius(atomnums, bondnum)
