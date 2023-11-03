@@ -61,11 +61,13 @@ species(
 )
 
 
-simpleReactor(
-    temperature=(1600, "K"),  # Temp referance to rmg example input file
+constantVIdealGasReactor(
+    temperature=(1600, "K"), 
     pressure=(40, "bar"),
-    initialMoleFractions={"LCCCC": 1, "RCCCC": 1},
-    terminationTime=(1e6, "s"),
+    initialMoleFractions={
+        "LCCCC": 1,
+        "RCCCC": 1,
+    },
     terminationConversion={
         "RCCCC": 0.99,
     },
