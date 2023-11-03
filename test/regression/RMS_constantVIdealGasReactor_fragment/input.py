@@ -86,11 +86,6 @@ model(
 )
 
 options(
-    units="si",
-    saveRestartPeriod=None,
-    generateOutputHTML=False,
-    generatePlots=False,
-    saveSimulationProfiles=False,
-    saveEdgeSpecies=False,
-    verboseComments=False,
+    units='si',
+    saveEdgeSpecies=True,
 )
