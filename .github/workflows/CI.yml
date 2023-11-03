@@ -243,7 +243,7 @@ jobs:
         run: |
           exec 2> >(tee -a regression.stderr >&2) 1> >(tee -a regression.stdout)
           mkdir -p "test/regression-diff"
-          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation;
+          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation fragment RMS_constantVIdealGasReactor_fragment;
           do
             echo ""
             echo "### Regression test $regr_test:"
