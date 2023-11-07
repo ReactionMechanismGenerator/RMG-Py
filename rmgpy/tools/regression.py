@@ -76,6 +76,8 @@ def read_input_file(path):
         'False': False,
         'observable': observable,
         'SMILES': smiles,
+        'fragment_adj': fragment_adj,
+        'fragment_SMILES': fragment_smiles,
         'species': species,
         'adjacencyList': adjacency_list,
         'reactorSetups': reactorSetups,
