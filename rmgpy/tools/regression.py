@@ -75,9 +75,9 @@ def read_input_file(path):
         'True': True,
         'False': False,
         'observable': observable,
-        'SMILES': SMILES,
+        'SMILES': smiles,
         'species': species,
-        'adjacencyList': adjacencyList,
+        'adjacencyList': adjacency_list,
         'reactorSetups': reactorSetups,
         'options': options,
     }
