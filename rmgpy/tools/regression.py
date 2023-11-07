@@ -122,14 +122,6 @@ def reactorSetups(reactorTypes, temperatures, pressures, initialMoleFractionsLis
     setups = [reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes]
 
 
-def SMILES(string):
-    return Molecule().from_smiles(string)
-
-
-def adjacencyList(string):
-    return Molecule().from_adjacency_list(string)
-
-
 def options(title='', tolerance=0.05):
     global casetitle, tol
     casetitle = title
