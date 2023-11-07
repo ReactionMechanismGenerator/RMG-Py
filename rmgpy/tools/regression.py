@@ -40,6 +40,7 @@ import sys
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
+from rmgpy.rmg.input import fragment_adj, fragment_smiles, smiles, adjacency_list
 from rmgpy.tools.canteramodel import CanteraCondition
 from rmgpy.tools.observablesregression import ObservablesTestCase
 
