@@ -40,6 +40,7 @@ import sys
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
+from rmgpy.rmg.input import fragment_adj, fragment_smiles, smiles, adjacency_list
 from rmgpy.tools.canteramodel import CanteraCondition
 from rmgpy.tools.observablesregression import ObservablesTestCase
 
@@ -74,9 +75,11 @@ def read_input_file(path):
         'True': True,
         'False': False,
         'observable': observable,
-        'SMILES': SMILES,
+        'SMILES': smiles,
+        'fragment_adj': fragment_adj,
+        'fragment_SMILES': fragment_smiles,
         'species': species,
-        'adjacencyList': adjacencyList,
+        'adjacencyList': adjacency_list,
         'reactorSetups': reactorSetups,
         'options': options,
     }
@@ -120,14 +123,6 @@ def reactorSetups(reactorTypes, temperatures, pressures, initialMoleFractionsLis
     pressures = Quantity(pressures)
 
     setups = [reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes]
-
-
-def SMILES(string):
-    return Molecule().from_smiles(string)
-
-
-def adjacencyList(string):
-    return Molecule().from_adjacency_list(string)
 
 
 def options(title='', tolerance=0.05):
