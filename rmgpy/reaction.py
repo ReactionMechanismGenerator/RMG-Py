@@ -312,7 +312,10 @@ class Reaction:
         if self.kinetics:
             if isinstance(self.kinetics, Arrhenius):
                 # Create an Elementary Reaction
-                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
+                if isinstance(self.kinetics, SurfaceArrhenius):  # SurfaceArrhenius inherits from Arrhenius
+                    ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.InterfaceArrheniusRate())
+                else:
+                    ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
             elif isinstance(self.kinetics, MultiArrhenius):
                 # Return a list of elementary reactions which are duplicates
                 ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
@@ -387,6 +390,9 @@ class Reaction:
                     ct_reaction = ct.FalloffReaction(
                         reactants=ct_reactants, products=ct_products, rate=rate
                     )
+
+            elif isinstance(self.kinetics, StickingCoefficient):
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.StickingArrheniusRate())
 
             else:
                 raise NotImplementedError('Unable to set cantera kinetics for {0}'.format(self.kinetics))

@@ -287,31 +287,31 @@ cdef class StickingCoefficient(KineticsModel):
 
     def to_cantera_kinetics(self):
         """
-        Converts the Arrhenius object to a cantera StickingArrheniusRate object
-
-        StickingArrheniusRate(A,b,E) where A is dimensionless, b is dimensionless, and E is in J/kmol
+        Converts the RMG StickingCoefficient object to a cantera StickingArrheniusRate
+        
+        StickingArrheniusRate(A,b,E)  where A is dimensionless, b is dimensionless, and E is in J/kmol
         """
-
         import cantera as ct
-
+        import rmgpy.quantity
+        if type(self._A) != rmgpy.quantity.ScalarQuantity:
+            raise TypeError("A factor must be a dimensionless ScalarQuantity")
         A = self._A.value_si
         b = self._n.value_si
-        Ea = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
+        E = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
 
-        return ct.StickingArrheniusRate(A, b, Ea)
+        return ct.StickingArrheniusRate(A, b, E)
 
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
-            """
-            Passes in a cantera Reaction() object and sets its
-            rate using to_cantera_kinetics().
-            """
-            import cantera as ct
+        """
+        Passes in a cantera Reaction() object and sets its
+        rate to a Cantera ArrheniusRate object.
+        """
+        import cantera as ct
+        assert isinstance(ct_reaction.rate, ct.StickingArrheniusRate), "Must have a Cantera StickingArrheniusRate attribute"
 
-            # Set the rate parameter to a cantera Arrhenius() object
-            ct_reaction.rate = self.to_cantera_kinetics()
-
-    
+        # Set the rate parameter to a cantera Arrhenius object
+        ct_reaction.rate = self.to_cantera_kinetics()
 
 ################################################################################
 cdef class StickingCoefficientBEP(KineticsModel):
@@ -620,29 +620,53 @@ cdef class SurfaceArrhenius(Arrhenius):
 
     def to_cantera_kinetics(self):
         """
-        Converts the Arrhenius object to a cantera Arrhenius object
+        Converts the RMG SurfaceArrhenius object to a cantera InterfaceArrheniusRate
 
-        Arrhenius(A,b,E) where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol
+        InterfaceArrheniusRate(A,b,E)  where A is in units like m^2/kmol/s (depending on dimensionality)
+        b is dimensionless, and E is in J/kmol
         """
-
         import cantera as ct
 
-        A = self._A.value_si
+        rate_units_conversion = {'1/s': 1,
+                                 's^-1': 1,
+                                 'm^2/(mol*s)': 1000,
+                                 'm^4/(mol^2*s)': 1000000,
+                                 'cm^2/(mol*s)': 1000,
+                                 'cm^4/(mol^2*s)': 1000000,
+                                 'm^2/(molecule*s)': 1000,
+                                 'm^4/(molecule^2*s)': 1000000,
+                                 'cm^2/(molecule*s)': 1000,
+                                 'cm^4/(molecule^2*s)': 1000000,
+                                 'cm^5/(mol^2*s)': 1000000,
+                                 'm^5/(mol^2*s)': 1000000,
+                                 }
+
+        if self._T0.value_si != 1:
+            A = self._A.value_si / (self._T0.value_si) ** self._n.value_si
+        else:
+            A = self._A.value_si
+
+        try:
+            A *= rate_units_conversion[self._A.units] # convert from /mol to /kmol
+        except KeyError:
+            raise ValueError('Arrhenius A-factor units {0} not found among accepted units for converting to '
+                             'Cantera Arrhenius object.'.format(self._A.units))
+
         b = self._n.value_si
-        Ea = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
-
-        return ct.Arrhenius(A, b, Ea)
-
+        E = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
+        return ct.InterfaceArrheniusRate(A, b, E)
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
-            """
-            Passes in a cantera Reaction() object and sets its
-            rate using to_cantera_kinetics().
-            """
-            import cantera as ct
+        """
+        Takes in a cantera Reaction object and sets its
+        rate to a cantera InterfaceArrheniusRate object.
+        """
+        import cantera as ct
+        if not isinstance(ct_reaction.rate, ct.InterfaceArrheniusRate):
+            raise TypeError("ct_reaction.rate must be an InterfaceArrheniusRate")
 
-            # Set the rate parameter to a cantera Arrhenius() object
-            ct_reaction.rate = self.to_cantera_kinetics()
+        # Set the rate parameter to a cantera Arrhenius object
+        ct_reaction.rate = self.to_cantera_kinetics()
 
 ################################################################################
 
