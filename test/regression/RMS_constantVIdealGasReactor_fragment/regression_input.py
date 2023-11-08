@@ -48,7 +48,6 @@ species(
 
 species(
     label="RCCCC",
-    reactive=True,
     structure=fragment_adj(
         """1  C u0 p0 c0 {2,S} {3,S} {5,S} {6,S}
 2  C u0 p0 c0 {1,S} {4,S} {7,S} {8,S}
