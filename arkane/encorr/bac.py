@@ -192,7 +192,8 @@ class BACJob:
         """
         try:
             import matplotlib.pyplot as plt
-        except ImportError:
+        except ImportError as e:
+            logging.error("Cannot import matplotlib, original error: " + str(e))
             return
 
         model_chemistry_formatted = self.level_of_theory.to_model_chem().replace('//', '__').replace('/', '_')

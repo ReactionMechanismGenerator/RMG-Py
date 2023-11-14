@@ -154,7 +154,8 @@ class AEJob:
         """
         try:
             import matplotlib.pyplot as plt
-        except ImportError:
+        except ImportError as e:
+            logging.error("Cannot import matplotlib, original error: " + str(e))
             return
 
         if self.ae.correlation is None:
