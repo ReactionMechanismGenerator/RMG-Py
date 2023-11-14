@@ -222,7 +222,7 @@ class Arkane(object):
                 job.execute(output_directory=self.output_directory, plot=self.plot, jobnum=bacjob_num)
                 bacjob_num += 1
             if isinstance(job, AEJob):
-                job.execute(output_file=output_file)
+                job.execute(output_directory=self.output_directory, plot=self.plot)
 
         with open(chemkin_file, 'a') as f:
             f.write('\n')
