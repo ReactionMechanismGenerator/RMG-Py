@@ -144,7 +144,7 @@ class AEJob:
                 logging.warning('Could not write atom energies to database. Captured error:')
                 logging.warning(str(e))
 
-    def save_correlation_mat(self, path: str, labels: List[str] = None):
+    def save_correlation_mat(self, path: str, labels: List[str] = None, **kwargs):
         """
         Save a visual representation of the parameter correlation matrix.
 
@@ -157,6 +157,8 @@ class AEJob:
         except ImportError as e:
             logging.error("Cannot import matplotlib, original error: " + str(e))
             return
+        default_kwargs = {"fontsize": 14}
+        kwargs = {**default_kwargs, **kwargs}
 
         if self.ae.correlation is None:
             raise Exception('Fit AECs before saving correlation matrix!')
@@ -179,7 +181,7 @@ class AEJob:
 
         ax.set_xticks(list(range(len(self.ae.correlation))))
         ax.set_yticks(list(range(len(self.ae.correlation))))
-        ax.set_xticklabels(labels, fontsize=14)
+        ax.set_xticklabels(labels, fontsize=kwargs["fontsize"])
         ax.set_yticklabels(labels, fontsize=14)
         ax.set_xlim(xlim)
         ax.set_ylim(ylim)
