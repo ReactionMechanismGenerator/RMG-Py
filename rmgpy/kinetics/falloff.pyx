@@ -418,7 +418,7 @@ cdef class Troe(PDepKineticsModel):
         
         ct_reaction.rate = self.to_cantera_kinetics(low_rate, high_rate, falloff)
         
-    def to_cantera_kinetics(self): 
+    def to_cantera_kinetics(self, low, high, falloff):
         """
         Converts the Troe object to a cantera Troe object
         """
