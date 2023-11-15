@@ -324,8 +324,6 @@ class Reaction:
                     ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products)
 
             elif isinstance(self.kinetics, Troe):
-                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
-                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
                 high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics()
                 low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics()
                 A = self.kinetics.alpha
@@ -371,9 +369,7 @@ class Reaction:
                 ct_reaction = ct.Reaction(equation=equation, rate=rate)
 
             elif isinstance(self.kinetics, Lindemann):
-                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
                 high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics()
-                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
                 low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics()
                 falloff = []
                 rate = ct.LindemannRate(low_rate, high_rate, falloff)
@@ -388,7 +384,6 @@ class Reaction:
                     ct_reaction = ct.FalloffReaction(
                         reactants=ct_reactants, products=ct_products, rate=rate
                     )
-
 
             else:
                 raise NotImplementedError('Unable to set cantera kinetics for {0}'.format(self.kinetics))
