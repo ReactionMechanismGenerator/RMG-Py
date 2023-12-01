@@ -777,6 +777,9 @@ class Reaction:
             for r in self.reactants:
                 if r.contains_surface_site():
                     rate_coefficient /= surface_site_density
+                    sites = r.number_of_surface_sites()
+                    if sites > 1:
+                        rate_coefficient /= sites
                 else:
                     if adsorbate is None:
                         adsorbate = r
@@ -792,7 +795,14 @@ class Reaction:
             # molecular_weight_kg in kg per molecule
             rate_coefficient *= math.sqrt(constants.kB * T / (2 * math.pi * molecular_weight_kg))
 
-            # ToDo: missing the sigma terms for bidentate species. only works for single site adsorption
+            # Multidentate adsorption requires multiplication of the sticking coefficient
+            # with the number of binding sites**stoichiometric coefficients (it is 1 for monodentates)
+            # Integrated in the loop above for reactants
+            for p in self.products:
+                sites = p.number_of_surface_sites()
+                if sites > 1:
+                    rate_coefficient *= sites
+
             return rate_coefficient
 
         if isinstance(self.kinetics, SurfaceArrhenius):
