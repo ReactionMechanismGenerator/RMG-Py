@@ -605,6 +605,14 @@ class GroupAtom(Vertex):
         all_bromine = [ATOMTYPES['Br']] + ATOMTYPES['Br'].specific
         check_list = [x in all_bromine for x in self.atomtype]
         return all(check_list)
+    
+    def is_boron(self):
+        """
+        Return ``True`` if the atom represents a boron atom or ``False`` if not.
+        """
+        all_boron = [ATOMTYPES['B']] + ATOMTYPES['B'].specific
+        check_list = [x in all_boron for x in self.atomtype]
+        return all(check_list)
 
     def has_wildcards(self):
         """
