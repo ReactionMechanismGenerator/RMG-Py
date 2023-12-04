@@ -256,6 +256,17 @@ class TestAtom:
             else:
                 assert not atom.is_nos()
 
+    def test_is_boron(self):
+        """
+        Test the Atom.is_boron() method.
+        """
+        for element in element_list:
+            atom = Atom(element=element, radical_electrons=1, charge=0, label="*1", lone_pairs=0)
+            if element.symbol == "B":
+                assert atom.is_boron()
+            else:
+                assert not atom.is_boron()
+
     def test_is_surface_site(self):
         """
         Test the Atom.is_surface_site() method.
