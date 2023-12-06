@@ -42,6 +42,12 @@ from typing import Dict, Hashable, List, Union
 import numpy as np
 from scipy.stats import distributions
 
+try:
+    import matplotlib.pyplot as plt
+except ImportError as e:
+    plt = None
+    matplotlib_exception = e
+
 from rmgpy import constants
 from rmgpy.molecule import get_element, Molecule
 
@@ -152,11 +158,10 @@ class AEJob:
             path: Path to save figure to.
             labels: Parameter labels.
         """
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError as e:
-            logging.error("Cannot import matplotlib, original error: " + str(e))
-            return
+
+        if plt is None:
+            raise matplotlib_exception
+        
         default_kwargs = {"fontsize": 14}
         kwargs = {**default_kwargs, **kwargs}
 
