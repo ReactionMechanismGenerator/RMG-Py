@@ -52,6 +52,12 @@ import scipy.optimize as optimize
 from scipy.stats import distributions
 from sklearn.model_selection import KFold
 
+try:
+    import matplotlib.pyplot as plt
+except ImportError as e:
+    plt = None
+    matplotlib_exception = e
+
 from rmgpy.quantity import ScalarQuantity
 
 import arkane.encorr.data as data
@@ -190,10 +196,8 @@ class BACJob:
             output_directory: Save the plots in this directory.
             jobnum: Job number
         """
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError:
-            return
+        if plt is None:
+            raise matplotlib_exception
 
         model_chemistry_formatted = self.level_of_theory.to_model_chem().replace('//', '__').replace('/', '_')
         if self.crossval_n_folds == 1:
@@ -929,10 +933,9 @@ class BAC:
             path: Path to save figure to.
             labels: Parameter labels.
         """
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError:
-            return
+
+        if plt is None:
+            raise matplotlib_exception
 
         if self.correlation is None:
             raise BondAdditivityCorrectionError('Fit BACs before saving correlation matrix!')

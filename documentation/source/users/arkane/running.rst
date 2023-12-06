@@ -34,8 +34,8 @@ to decrease; the latter two cause it to increase.
 Suppressing plot creation
 =========================
 
-Arkane by default will generate many plot files. By adding the ``-p``/``--no-plot``
-flag, Arkane will not generate any plots, reducing file size of output and
+Arkane by default will generate many plot files and the previous files will be overwritten on subsequent runs.
+By adding the ``-p``/``--no-plot`` flag, Arkane will not generate any plots, reducing file size of output and
 increasing the calculation speed.
 
 Help
