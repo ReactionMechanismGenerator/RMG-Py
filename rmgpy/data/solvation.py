@@ -362,7 +362,7 @@ class SolventData(object):
 
     def __init__(self, s_h=None, b_h=None, e_h=None, l_h=None, a_h=None,
                  c_h=None, s_g=None, b_g=None, e_g=None, l_g=None, a_g=None, c_g=None, A=None, B=None,
-                 C=None, D=None, E=None, alpha=None, beta=None, eps=None, n=None, name_in_coolprop=None):
+                 C=None, D=None, E=None, alpha=None, beta=None, eps=None, name_in_coolprop=None, n=None):
         self.s_h = s_h
         self.b_h = b_h
         self.e_h = e_h
