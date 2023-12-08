@@ -43,11 +43,12 @@ from rmgpy.data.base import DatabaseError, Database, Entry
 from rmgpy.data.kinetics.common import save_entry
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.kinetics import Arrhenius, ThirdBody, Lindemann, Troe, \
-                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, Chebyshev 
+                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, Chebyshev, KineticsModel
 from rmgpy.kinetics.surface import StickingCoefficient
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
+from rmgpy.data.solvation import to_soluteTSdata
 import rmgpy.constants as constants
 
 ################################################################################
