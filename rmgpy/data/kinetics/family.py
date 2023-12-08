@@ -220,7 +220,7 @@ class TemplateReaction(Reaction):
         from rmgpy.data.rmg import get_db
         solvation_database = get_db('solvation')
         solvent_data = solvation_database.get_solvent_data(solvent)
-        site_data = self.kinetics.solute
+        site_data = to_soluteTSdata(self.kinetics.solute)
 
         #compute x from gas phase
         GR = 0.0
@@ -246,14 +246,15 @@ class TemplateReaction(Reaction):
 
         dHR = 0.0
         dSR = 0.0
-        for spc in rxn.reactants:
-            spc_solute_data = to_soluteTSdata(solvation_database.get_solute_data(spc.copy(deep=True)))
-            site_data += spc_solute_data*(1.0-x)
+        for spc in self.reactants:
+            spc_solute_data = solvation_database.get_solute_data(spc.copy(deep=True))
+            spc_soluteTS_data = to_soluteTSdata(spc_solute_data)
+            site_data += spc_soluteTS_data*(1.0-x)
             spc_correction = solvation_database.get_solvation_correction(spc_solute_data, solvent_data)
             dHR += spc_correction.enthalpy
             dSR += spc_correction.entropy
 
-        for spc in rxn.products:
+        for spc in self.products:
             spc_solute_data = to_soluteTSdata(solvation_database.get_solute_data(spc.copy(deep=True)))
             site_data += spc_solute_data*x
 
