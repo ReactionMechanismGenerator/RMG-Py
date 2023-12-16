@@ -121,6 +121,7 @@ class ArkaneGaussianLogTest:
         log_g4 = GaussianLog(os.path.join(self.data_path, "g4_85_methanol.out"))
         log_g4mp2 = GaussianLog(os.path.join(self.data_path, "g4mp2_85_methanol.out"))
         log_rocbsqb3 = GaussianLog(os.path.join(self.data_path, "rocbs-qb3_85_methanol.out"))
+        log_uff = GaussianLog(os.path.join(self.data_path, "water.out"))
 
         assert abs(log_doublehybrid.load_energy() / constants.Na / constants.E_h - -0.40217794572194e02) < 1e-6
         assert abs(log_mp2.load_energy() / constants.Na / constants.E_h - -0.37504683723025e02) < 1e-6
@@ -131,6 +132,7 @@ class ArkaneGaussianLogTest:
         assert abs(log_g4.load_energy() / constants.Na / constants.E_h - -115.698896) < 1e-6
         assert abs(log_g4mp2.load_energy() / constants.Na / constants.E_h - -115.617241) < 1e-6
         assert abs(log_rocbsqb3.load_energy() / constants.Na / constants.E_h - -115.590540) < 1e-6
+        assert abs(log_uff.load_energy() / constants.Na / constants.E_h - 0.0023683) < 1e-6
 
     def test_load_oxygen_from_gaussian_log(self):
         """
