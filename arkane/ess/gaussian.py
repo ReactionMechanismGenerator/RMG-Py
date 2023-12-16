@@ -365,6 +365,17 @@ class GaussianLog(ESSAdapter):
                     start = line.find('\\ZeroPoint=') + 11
                     end = line.find('\\', start)
                     scaled_zpe = float(line[start:end]) * constants.E_h * constants.Na * zpe_scale_factor
+                
+                elif 'HF=' in line:
+                    line = line.strip() + f.readline().strip()
+                    start = line.find('HF=') + 3
+                    end = line.find('\\', start)
+                    try:
+                        if e_elect is None:
+                            e_elect = float(line[start:end]) * constants.E_h * constants.Na
+                            elect_energy_source = 'HF'
+                    except ValueError:
+                        pass
                 # Read the next line in the file
                 line = f.readline()
 
