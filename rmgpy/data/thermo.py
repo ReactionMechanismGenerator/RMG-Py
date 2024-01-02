@@ -292,7 +292,7 @@ def average_thermo_data(thermo_data_list=None):
                 averaged_thermo_data.Cpdata.value_si[i] /= num_values
 
                 cp_data = [thermo_data.Cpdata.value_si[i] for thermo_data in thermo_data_list]
-                averaged_thermo_data.Cpdata.uncertainty[i] = 2 * np.std(cp_data, ddof=1)
+                averaged_thermo_data.Cpdata.uncertainty_si[i] = 2 * np.std(cp_data, ddof=1)
 
             h_data = [thermo_data.H298.value_si for thermo_data in thermo_data_list]
             averaged_thermo_data.H298.value_si /= num_values
