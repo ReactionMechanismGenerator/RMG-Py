@@ -83,7 +83,19 @@ phases:
     #'species' section in phases section
 
     sorted_species = sorted(spcs, key=lambda spcs: spcs.index)
-    species_to_write = [get_species_identifier(spec) for spec in sorted_species]
+    
+    #make sure species with "[" or "]" is in quotes
+    species_list_to_write = []
+    for spc in sorted_species: 
+        if '[' or ']' in spc: 
+            edited_spc_name = "'" + spc + "'"
+        else: 
+            edited_spc_name = spc
+        species_list_to_write.append(edited_spc_name)
+            
+    
+    
+    species_to_write = [get_species_identifier(spec) for spec in species_list_to_write]
 
     block2 = f"""
   species: [{', '.join(species_to_write)}]
@@ -129,14 +141,34 @@ def write_surface_species(spcs, rxns, surface_site_density):
     sorted_surface_species = sorted(
         surface_species, key=lambda surface_species: surface_species.index
     )
+    
+    #make sure species with "[" or "]" is in quotes
+    surface_species_list_to_write = []
+    for spc in sorted_surface_species: 
+        if '[' or ']' in spc: 
+            edited_spc_name = "'" + spc + "'"
+        else: 
+            edited_spc_name = spc
+        surface_species_list_to_write.append(edited_spc_name)
+    
     surface_species_to_write = [
         get_species_identifier(surface_species)
-        for surface_species in sorted_surface_species
+        for surface_species in surface_species_list_to_write
     ]
 
     sorted_gas_species = sorted(gas_species, key=lambda gas_species: gas_species.index)
+    
+    #make sure species with "[" or "]" is in quotes
+    gas_species_list_to_write = []
+    for spc in sorted_gas_species: 
+        if '[' or ']' in spc: 
+            edited_spc_name = "'" + spc + "'"
+        else: 
+            edited_spc_name = spc
+        gas_species_list_to_write.append(edited_spc_name)
+    
     gas_species_to_write = [
-        get_species_identifier(gas_species) for gas_species in sorted_gas_species
+        get_species_identifier(gas_species) for gas_species in gas_species_list_to_write
     ]
 
     # gas part
