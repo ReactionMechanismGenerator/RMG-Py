@@ -83,22 +83,21 @@ phases:
     #'species' section in phases section
 
     sorted_species = sorted(spcs, key=lambda spcs: spcs.index)
+
+    species_to_write = [get_species_identifier(spec) for spec in sorted_species]    
     
     #make sure species with "[" or "]" is in quotes
     species_list_to_write = []
-    for spc in sorted_species: 
+    for spc in species_to_write: 
         if '[' or ']' in spc: 
             edited_spc_name = "'" + spc + "'"
         else: 
             edited_spc_name = spc
         species_list_to_write.append(edited_spc_name)
             
-    
-    
-    species_to_write = [get_species_identifier(spec) for spec in species_list_to_write]
 
     block2 = f"""
-  species: [{', '.join(species_to_write)}]
+  species: [{', '.join(species_list_to_write)}]
   kinetics: gas"""
 
     block3 = """
@@ -142,42 +141,44 @@ def write_surface_species(spcs, rxns, surface_site_density):
         surface_species, key=lambda surface_species: surface_species.index
     )
     
+    surface_species_to_write = [
+        get_species_identifier(surface_species)
+        for surface_species in sorted_surface_species
+    ]
+    
     #make sure species with "[" or "]" is in quotes
     surface_species_list_to_write = []
-    for spc in sorted_surface_species: 
+    for spc in surface_species_to_write: 
         if '[' or ']' in spc: 
             edited_spc_name = "'" + spc + "'"
         else: 
             edited_spc_name = spc
         surface_species_list_to_write.append(edited_spc_name)
-    
-    surface_species_to_write = [
-        get_species_identifier(surface_species)
-        for surface_species in surface_species_list_to_write
-    ]
+
 
     sorted_gas_species = sorted(gas_species, key=lambda gas_species: gas_species.index)
     
+        
+    gas_species_to_write = [
+        get_species_identifier(gas_species) for gas_species in sorted_gas_species
+    ]
+    
     #make sure species with "[" or "]" is in quotes
     gas_species_list_to_write = []
-    for spc in sorted_gas_species: 
+    for spc in gas_species_to_write: 
         if '[' or ']' in spc: 
             edited_spc_name = "'" + spc + "'"
         else: 
             edited_spc_name = spc
         gas_species_list_to_write.append(edited_spc_name)
     
-    gas_species_to_write = [
-        get_species_identifier(gas_species) for gas_species in gas_species_list_to_write
-    ]
-
     # gas part
     block1 = f"""
 phases:
 - name: gas
   thermo: ideal-gas
   elements: [H, D, T, C, Ci, O, Oi, N, Ne, Ar, He, Si, S, F, Cl, Br, I, X]
-  species: [{', '.join(gas_species_to_write)}]
+  species: [{', '.join(gas_species_list_to_write)}]
   kinetics: gas
   reactions: [gas_reactions]"""
 
@@ -190,7 +191,7 @@ phases:
   thermo: ideal-surface
   adjacent-phases: [gas]
   elements: [H, D, T, C, Ci, O, Oi, N, Ne, Ar, He, Si, S, F, Cl, Br, I, X]
-  species: [{', '.join(surface_species_to_write)}]
+  species: [{', '.join(surface_species_list_to_write)}]
   kinetics: surface
   reactions: [surface_reactions]     
   site-density: {surface_site_density * 1e-4 }
