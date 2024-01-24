@@ -41,16 +41,18 @@ corannulene and C60 by means of inexpensive theoretical procedures. Journal of P
 https://doi.org/10.1021/jp404158v
 """
 
+import logging
 import signal
-from collections import deque
+from copy import deepcopy
+from typing import List, Union
 
-from lpsolve55 import lpsolve, EQ, LE
 import numpy as np
-
-from rmgpy.molecule import Molecule
-from rmgpy.quantity import ScalarQuantity
+from lpsolve55 import EQ, LE, lpsolve
+from pyutilib.common import ApplicationError
 
 from arkane.modelchem import LOT
+from rmgpy.molecule import Bond, Molecule
+from rmgpy.quantity import ScalarQuantity
 
 # Optional Imports
 try:
