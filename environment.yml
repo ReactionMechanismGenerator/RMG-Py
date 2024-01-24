@@ -60,7 +60,7 @@ dependencies:
   - coverage
   - cython >=0.25.2
   - scikit-learn
-  - scipy
+  - scipy >=1.9
   - numpy >=1.10.0
   - pydot
   - jinja2
@@ -72,6 +72,7 @@ dependencies:
   - pytest
   - pytest-cov
   - conda-forge::pytest-check
+  - pyutilib
   - matplotlib >=1.5
   - mpmath
   - pandas
