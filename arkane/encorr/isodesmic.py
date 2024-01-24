@@ -436,6 +436,24 @@ class SpeciesConstraints:
             self.reference_species = allowed_reference_species
 
         return target_constraints, reference_constraints
+    
+    def _enumerate_element_constraints(self, target_constraints, reference_constraints):
+        all_elements = set()
+        for spc in self.reference_species:
+            all_elements.update(spc.molecule.get_element_count().keys())
+        all_elements.update(self.target.molecule.get_element_count().keys())
+        all_elements = sorted(list(all_elements))
+
+        element_count = self.target.molecule.get_element_count()
+        new_constraints = [element_count.get(element, 0) for element in all_elements]
+        target_constraints.extend(new_constraints)
+
+        for i, spc in enumerate(self.reference_species):
+            element_count = spc.molecule.get_element_count()
+            new_constraints = [element_count.get(element, 0) for element in all_elements]
+            reference_constraints[i].extend(new_constraints)
+
+        return target_constraints, reference_constraints
 
     def calculate_constraints(self):
         """
@@ -450,6 +468,7 @@ class SpeciesConstraints:
         target_constraints, reference_constraints = self._enumerate_constraints(full_constraint_list)
         target_constraints, reference_constraints = self._enumerate_charge_constraints(target_constraints,
                                                                                        reference_constraints)
+        target_constraints, reference_constraints = self._enumerate_element_constraints(target_constraints, reference_constraints)
 
         target_constraints = np.array(target_constraints, dtype=int)
         constraint_matrix = np.array(reference_constraints, dtype=int)
