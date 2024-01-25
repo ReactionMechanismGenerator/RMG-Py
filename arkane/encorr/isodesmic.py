@@ -64,7 +64,14 @@ except ImportError:
 class ErrorCancelingSpecies:
     """Class for target and known (reference) species participating in an error canceling reaction"""
 
-    def __init__(self, molecule, low_level_hf298, level_of_theory, high_level_hf298=None, source=None):
+    def __init__(
+        self,
+        molecule,
+        low_level_hf298,
+        level_of_theory,
+        high_level_hf298=None,
+        source=None,
+    ):
         """
 
         Args:
@@ -78,35 +85,45 @@ class ErrorCancelingSpecies:
         if isinstance(molecule, Molecule):
             self.molecule = molecule
         else:
-            raise ValueError(f'ErrorCancelingSpecies molecule attribute must be an rmgpy Molecule object. Instead a '
-                             f'{type(molecule)} object was given')
+            raise ValueError(
+                f"ErrorCancelingSpecies molecule attribute must be an rmgpy Molecule object. Instead a "
+                f"{type(molecule)} object was given"
+            )
 
         if isinstance(level_of_theory, LOT):
             self.level_of_theory = level_of_theory
         else:
-            raise ValueError(f'The level of theory used to calculate the low level Hf298 must be provided '
-                             f'for consistency checks. Instead, a {type(level_of_theory)} object was given')
+            raise ValueError(
+                f"The level of theory used to calculate the low level Hf298 must be provided "
+                f"for consistency checks. Instead, a {type(level_of_theory)} object was given"
+            )
 
         if not isinstance(low_level_hf298, ScalarQuantity):
             if isinstance(low_level_hf298, tuple):
                 low_level_hf298 = ScalarQuantity(*low_level_hf298)
             else:
-                raise TypeError(f'Low level Hf298 should be a ScalarQuantity object or its tuple representation, but '
-                                f'received {low_level_hf298} instead.')
+                raise TypeError(
+                    f"Low level Hf298 should be a ScalarQuantity object or its tuple representation, but "
+                    f"received {low_level_hf298} instead."
+                )
         self.low_level_hf298 = low_level_hf298
 
         # If the species is a reference species, then the high level data is already known
-        if high_level_hf298 is not None and not isinstance(high_level_hf298, ScalarQuantity):
+        if high_level_hf298 is not None and not isinstance(
+            high_level_hf298, ScalarQuantity
+        ):
             if isinstance(high_level_hf298, tuple):
                 high_level_hf298 = ScalarQuantity(*high_level_hf298)
             else:
-                raise TypeError(f'High level Hf298 should be a ScalarQuantity object or its tuple representation, but '
-                                f'received {high_level_hf298} instead.')
+                raise TypeError(
+                    f"High level Hf298 should be a ScalarQuantity object or its tuple representation, but "
+                    f"received {high_level_hf298} instead."
+                )
         self.high_level_hf298 = high_level_hf298
         self.source = source
 
     def __repr__(self):
-        return f'<ErrorCancelingSpecies {self.molecule.to_smiles()}>'
+        return f"<ErrorCancelingSpecies {self.molecule.to_smiles()}>"
 
 
 class ErrorCancelingReaction:
@@ -133,22 +150,24 @@ class ErrorCancelingReaction:
         # Perform a consistency check that all species are using the same level of theory
         for spcs in species.keys():
             if spcs.level_of_theory != self.level_of_theory:
-                raise ValueError(f'Species {spcs} has level of theory {spcs.level_of_theory}, which does not match the '
-                                 f'level of theory of the reaction of {self.level_of_theory}')
+                raise ValueError(
+                    f"Species {spcs} has level of theory {spcs.level_of_theory}, which does not match the "
+                    f"level of theory of the reaction of {self.level_of_theory}"
+                )
 
         # Does not include the target, which is handled separately.
         self.species = species
 
     def __repr__(self):
-        reactant_string = f'1*{self.target.molecule.to_smiles()}'
-        product_string = ''
+        reactant_string = f"1*{self.target.molecule.to_smiles()}"
+        product_string = ""
         for spcs, coeff in self.species.items():
             if coeff > 0:
-                product_string += f' + {int(coeff)}*{spcs.molecule.to_smiles()}'
+                product_string += f" + {int(coeff)}*{spcs.molecule.to_smiles()}"
             else:
-                reactant_string += f' + {-1*int(coeff)}*{spcs.molecule.to_smiles()}'
+                reactant_string += f" + {-1*int(coeff)}*{spcs.molecule.to_smiles()}"
 
-        return f'<ErrorCancelingReaction {reactant_string} <=> {product_string[3:]} >'
+        return f"<ErrorCancelingReaction {reactant_string} <=> {product_string[3:]} >"
 
     def calculate_target_thermo(self):
         """
@@ -157,16 +176,25 @@ class ErrorCancelingReaction:
         Returns:
             rmgpy.quantity.ScalarQuantity: Hf298 in 'J/mol' estimated for the target species
         """
-        low_level_h_rxn = sum(spec[0].low_level_hf298.value_si*spec[1] for spec in self.species.items()) - \
-            self.target.low_level_hf298.value_si
+        low_level_h_rxn = (
+            sum(
+                spec[0].low_level_hf298.value_si * spec[1]
+                for spec in self.species.items()
+            )
+            - self.target.low_level_hf298.value_si
+        )
 
-        target_thermo = sum(spec[0].high_level_hf298.value_si*spec[1] for spec in self.species.items()) - \
-            low_level_h_rxn
-        return ScalarQuantity(target_thermo, 'J/mol')
+        target_thermo = (
+            sum(
+                spec[0].high_level_hf298.value_si * spec[1]
+                for spec in self.species.items()
+            )
+            - low_level_h_rxn
+        )
+        return ScalarQuantity(target_thermo, "J/mol")
 
 
 class AtomConstraint:
-
     def __init__(self, label, connections=None):
         self.label = label
         self.connections = connections if connections is not None else []
@@ -189,15 +217,16 @@ class AtomConstraint:
             return False
 
         else:
-            raise NotImplementedError(f'AtomConstraint object has no __eq__ defined for other object of type '
-                                      f'{type(other)}')
+            raise NotImplementedError(
+                f"AtomConstraint object has no __eq__ defined for other object of type "
+                f"{type(other)}"
+            )
 
     def __repr__(self):
-        return f'{self.label}' + ''.join([f'({c})' for c in self.connections])
+        return f"{self.label}" + "".join([f"({c})" for c in self.connections])
 
 
 class BondConstraint:
-
     def __init__(self, atom1, atom2, bond_order):
         self.atom1 = atom1
         self.atom2 = atom2
@@ -206,8 +235,9 @@ class BondConstraint:
     def __eq__(self, other):
         if isinstance(other, BondConstraint):
             if self.bond_order == other.bond_order:
-                if ((self.atom1 == other.atom1 and self.atom2 == other.atom2) or
-                        (self.atom1 == other.atom2 and self.atom2 == other.atom1)):
+                if (self.atom1 == other.atom1 and self.atom2 == other.atom2) or (
+                    self.atom1 == other.atom2 and self.atom2 == other.atom1
+                ):
                     return True
             return False
 
@@ -215,16 +245,17 @@ class BondConstraint:
             return False
 
         else:
-            raise NotImplementedError(f'BondConstraint object has no __eq__ defined for other object of type '
-                                      f'{type(other)}')
+            raise NotImplementedError(
+                f"BondConstraint object has no __eq__ defined for other object of type "
+                f"{type(other)}"
+            )
 
     def __repr__(self):
-        symbols = ['', '-', '=', '#']
-        return f'{self.atom1}{symbols[self.bond_order]}{self.atom2}'
+        symbols = ["", "-", "=", "#"]
+        return f"{self.atom1}{symbols[self.bond_order]}{self.atom2}"
 
 
 class Connection:
-
     def __init__(self, atom, bond_order):
         self.atom = atom
         self.bond_order = bond_order
@@ -237,15 +268,16 @@ class Connection:
             return False
 
         else:
-            raise NotImplementedError(f'Connection object has no __eq__ defined for other object of type {type(other)}')
+            raise NotImplementedError(
+                f"Connection object has no __eq__ defined for other object of type {type(other)}"
+            )
 
     def __repr__(self):
-        symbols = ['', '-', '=', '#']
-        return f'{symbols[self.bond_order]}{self.atom}'
+        symbols = ["", "-", "=", "#"]
+        return f"{symbols[self.bond_order]}{self.atom}"
 
 
 class GenericConstraint:
-
     def __init__(self, constraint_str: str):
         self.constraint_str = constraint_str
 
@@ -255,11 +287,15 @@ class GenericConstraint:
         elif isinstance(other, GenericConstraint):
             return self.constraint_str == other.constraint_str
         else:
-            raise NotImplementedError(f'GenericConstraint object has no __eq__ defined for other object of '
-                                      f'type {type(other)}')
+            raise NotImplementedError(
+                f"GenericConstraint object has no __eq__ defined for other object of "
+                f"type {type(other)}"
+            )
 
 
-def bond_centric_constraints(species: ErrorCancelingSpecies, constraint_class: str) -> List[BondConstraint]:
+def bond_centric_constraints(
+    species: ErrorCancelingSpecies, constraint_class: str
+) -> List[BondConstraint]:
     constraints = []
     contraint_func = CONSTRAINT_CLASSES[constraint_class]
     molecule = species.molecule
@@ -281,8 +317,8 @@ def _buerger_rc3(bond: Bond) -> BondConstraint:
     atom1 = bond.atom1
     atom2 = bond.atom2
 
-    atom1 = AtomConstraint(label=f'{atom1.symbol}{atom1.connectivity1}')
-    atom2 = AtomConstraint(label=f'{atom2.symbol}{atom2.connectivity1}')
+    atom1 = AtomConstraint(label=f"{atom1.symbol}{atom1.connectivity1}")
+    atom2 = AtomConstraint(label=f"{atom2.symbol}{atom2.connectivity1}")
 
     return BondConstraint(atom1=atom1, atom2=atom2, bond_order=int(bond.order))
 
@@ -293,10 +329,14 @@ def _buerger_rc4(bond: Bond) -> BondConstraint:
     for atom in [bond.atom1, bond.atom2]:
         connections = []
         for a, b in atom.bonds.items():
-            ac = AtomConstraint(label=f'{a.symbol}{a.connectivity1}')
+            ac = AtomConstraint(label=f"{a.symbol}{a.connectivity1}")
             bond_order = b.order
             connections.append(Connection(atom=ac, bond_order=bond_order))
-        atoms.append(AtomConstraint(label=f'{atom.symbol}{atom.connectivity1}', connections=connections))
+        atoms.append(
+            AtomConstraint(
+                label=f"{atom.symbol}{atom.connectivity1}", connections=connections
+            )
+        )
 
     return BondConstraint(atom1=atoms[0], atom2=atoms[1], bond_order=int(bond.order))
 
@@ -306,8 +346,15 @@ class SpeciesConstraints:
     A class for defining and enumerating constraints to ReferenceSpecies objects for error canceling reactions
     """
 
-    def __init__(self, target, reference_list, isodesmic_class='rc2', conserve_ring_size=True, limit_charges=True,
-                 limit_scope=True):
+    def __init__(
+        self,
+        target,
+        reference_list,
+        isodesmic_class="rc2",
+        conserve_ring_size=True,
+        limit_charges=True,
+        limit_scope=True,
+    ):
         """
         Define the constraints that will be enforced, and determine the mapping of indices in the constraint vector to
         the labels for these constraints.
@@ -348,15 +395,19 @@ class SpeciesConstraints:
 
         return full_constraints_list
 
-    def _get_ring_constraints(self, species: ErrorCancelingSpecies) -> List[GenericConstraint]:
+    def _get_ring_constraints(
+        self, species: ErrorCancelingSpecies
+    ) -> List[GenericConstraint]:
         ring_features = []
         rings = species.molecule.get_smallest_set_of_smallest_rings()
         for ring in rings:
-            ring_features.append(GenericConstraint(constraint_str=f'{len(ring)}_ring'))
+            ring_features.append(GenericConstraint(constraint_str=f"{len(ring)}_ring"))
 
         return ring_features
 
-    def _get_all_constraints(self, species: ErrorCancelingSpecies) -> List[Union[BondConstraint, GenericConstraint]]:
+    def _get_all_constraints(
+        self, species: ErrorCancelingSpecies
+    ) -> List[Union[BondConstraint, GenericConstraint]]:
         features = bond_centric_constraints(species, self.isodesmic_class)
         if self.conserve_ring_size:
             features += self._get_ring_constraints(species)
@@ -372,7 +423,9 @@ class SpeciesConstraints:
 
         # Begin enumerating constraints
         while True:
-            if len(full_constraints_list[0]) == 0:  # We have exhausted target constraints
+            if (
+                len(full_constraints_list[0]) == 0
+            ):  # We have exhausted target constraints
                 if self.limit_scope:  # No need to enumerate any further
                     break  # Out of the while loop
 
@@ -398,13 +451,15 @@ class SpeciesConstraints:
 
         # Finalize list of reference species and corresponding constraints
         reference_constraints = []
-        target_constraints = enumerated_constraints [0]
+        target_constraints = enumerated_constraints[0]
         if self.limit_scope:
             for i, spcs in enumerate(self.all_reference_species):
                 # Add 1 to index to offset for the target
-                if len(full_constraints_list[i+1]) == 0:  # This species does not have extra constraints
+                if (
+                    len(full_constraints_list[i + 1]) == 0
+                ):  # This species does not have extra constraints
                     self.reference_species.append(spcs)
-                    reference_constraints.append(enumerated_constraints[i+1])
+                    reference_constraints.append(enumerated_constraints[i + 1])
 
         else:
             self.reference_species = self.all_reference_species
@@ -436,7 +491,7 @@ class SpeciesConstraints:
             self.reference_species = allowed_reference_species
 
         return target_constraints, reference_constraints
-    
+
     def _enumerate_element_constraints(self, target_constraints, reference_constraints):
         all_elements = set()
         for spc in self.reference_species:
@@ -450,7 +505,9 @@ class SpeciesConstraints:
 
         for i, spc in enumerate(self.reference_species):
             element_count = spc.molecule.get_element_count()
-            new_constraints = [element_count.get(element, 0) for element in all_elements]
+            new_constraints = [
+                element_count.get(element, 0) for element in all_elements
+            ]
             reference_constraints[i].extend(new_constraints)
 
         return target_constraints, reference_constraints
@@ -465,10 +522,15 @@ class SpeciesConstraints:
             - constraint matrix for allowable reference species (len(self.reference_species) x len(constraints))
         """
         full_constraint_list = self._get_constraint_lists()
-        target_constraints, reference_constraints = self._enumerate_constraints(full_constraint_list)
-        target_constraints, reference_constraints = self._enumerate_charge_constraints(target_constraints,
-                                                                                       reference_constraints)
-        target_constraints, reference_constraints = self._enumerate_element_constraints(target_constraints, reference_constraints)
+        target_constraints, reference_constraints = self._enumerate_constraints(
+            full_constraint_list
+        )
+        target_constraints, reference_constraints = self._enumerate_charge_constraints(
+            target_constraints, reference_constraints
+        )
+        target_constraints, reference_constraints = self._enumerate_element_constraints(
+            target_constraints, reference_constraints
+        )
 
         target_constraints = np.array(target_constraints, dtype=int)
         constraint_matrix = np.array(reference_constraints, dtype=int)
@@ -485,7 +547,9 @@ def _clean_up_constraints(target_constraints, constraint_matrix):
     zero_indices = np.where(~constraint_matrix.any(axis=0))[0]
     # Check that this wouldn't eliminate a non-zero target entry
     for z in zero_indices:
-        if target_constraints[z] != 0:  # This problem is not solvable. Return None to signal this
+        if (
+            target_constraints[z] != 0
+        ):  # This problem is not solvable. Return None to signal this
             return None, None
     indices = [i for i in range(constraint_matrix.shape[1]) if i not in zero_indices]
     constraint_matrix = np.take(constraint_matrix, indices=indices, axis=1)
@@ -499,7 +563,15 @@ class ErrorCancelingScheme:
     A Base class for calculating target species thermochemistry using error canceling reactions
     """
 
-    def __init__(self, target, reference_set, isodesmic_class, conserve_ring_size, limit_charges, limit_scope):
+    def __init__(
+        self,
+        target,
+        reference_set,
+        isodesmic_class,
+        conserve_ring_size,
+        limit_charges,
+        limit_scope,
+    ):
         """
 
         Args:
@@ -511,11 +583,19 @@ class ErrorCancelingScheme:
         """
 
         self.target = target
-        self.constraints = SpeciesConstraints(target, reference_set, isodesmic_class=isodesmic_class,
-                                              conserve_ring_size=conserve_ring_size, limit_charges=limit_charges,
-                                              limit_scope=limit_scope)
+        self.constraints = SpeciesConstraints(
+            target,
+            reference_set,
+            isodesmic_class=isodesmic_class,
+            conserve_ring_size=conserve_ring_size,
+            limit_charges=limit_charges,
+            limit_scope=limit_scope,
+        )
 
-        self.target_constraint, self.constraint_matrix = self.constraints.calculate_constraints()
+        (
+            self.target_constraint,
+            self.constraint_matrix,
+        ) = self.constraints.calculate_constraints()
         self.reference_species = self.constraints.reference_species
 
     def _find_error_canceling_reaction(self, reference_subset, milp_software=None):
@@ -535,32 +615,36 @@ class ErrorCancelingScheme:
             - Indices (of the subset) for the species that participated in the return reaction
         """
         if milp_software is None:
-            milp_software = ['lpsolve']
+            milp_software = ["lpsolve"]
             if pyo is not None:
-                milp_software.append('pyomo')
+                milp_software.append("pyomo")
 
         # Define the constraints based on the provided subset
         c_matrix = np.take(self.constraint_matrix, reference_subset, axis=0)
 
         # Remove unnecessary constraints
-        target_constraint, c_matrix = _clean_up_constraints(self.target_constraint, c_matrix)
+        target_constraint, c_matrix = _clean_up_constraints(
+            self.target_constraint, c_matrix
+        )
         if target_constraint is None or c_matrix is None:  # The problem is not solvable
             return None, None
 
         # Setup MILP problem
         c_matrix = np.tile(c_matrix, (2, 1))
         sum_constraints = np.sum(c_matrix, 1, dtype=int)
-        targets = -1*target_constraint
+        targets = -1 * target_constraint
         m = c_matrix.shape[0]
         n = c_matrix.shape[1]
-        split = int(m/2)
+        split = int(m / 2)
 
         for solver in milp_software:
-            if solver == 'pyomo':
+            if solver == "pyomo":
                 # Check that pyomo is available
                 if pyo is None:
-                    raise ImportError('Cannot import optional package pyomo. Either install this dependency with '
-                                      '`conda install -c conda-forge pyomo glpk` or set milp_software to `lpsolve`')
+                    raise ImportError(
+                        "Cannot import optional package pyomo. Either install this dependency with "
+                        "`conda install -c conda-forge pyomo glpk` or set milp_software to `lpsolve`"
+                    )
 
                 # Diable logging, pyomo outputs too often
                 logging.disable()
@@ -569,26 +653,44 @@ class ErrorCancelingScheme:
                 lp_model = pyo.ConcreteModel()
                 lp_model.i = pyo.RangeSet(0, m - 1)
                 lp_model.j = pyo.RangeSet(0, n - 1)
-                lp_model.r = pyo.RangeSet(0, split-1)  # indices before the split correspond to reactants
-                lp_model.p = pyo.RangeSet(split, m - 1)  # indices after the split correspond to products
-                lp_model.v = pyo.Var(lp_model.i, domain=pyo.NonNegativeIntegers)  # The stoich. coef. we are solving for
-                lp_model.c = pyo.Param(lp_model.i, lp_model.j, initialize=lambda _, i_ind, j_ind: c_matrix[i_ind,
-                                                                                                           j_ind])
-                lp_model.s = pyo.Param(lp_model.i, initialize=lambda _, i_ind: sum_constraints[i_ind])
-                lp_model.t = pyo.Param(lp_model.j, initialize=lambda _, j_ind: targets[j_ind])
+                lp_model.r = pyo.RangeSet(
+                    0, split - 1
+                )  # indices before the split correspond to reactants
+                lp_model.p = pyo.RangeSet(
+                    split, m - 1
+                )  # indices after the split correspond to products
+                lp_model.v = pyo.Var(
+                    lp_model.i, domain=pyo.NonNegativeIntegers
+                )  # The stoich. coef. we are solving for
+                lp_model.c = pyo.Param(
+                    lp_model.i,
+                    lp_model.j,
+                    initialize=lambda _, i_ind, j_ind: c_matrix[i_ind, j_ind],
+                )
+                lp_model.s = pyo.Param(
+                    lp_model.i, initialize=lambda _, i_ind: sum_constraints[i_ind]
+                )
+                lp_model.t = pyo.Param(
+                    lp_model.j, initialize=lambda _, j_ind: targets[j_ind]
+                )
 
                 lp_model.obj = pyo.Objective(rule=_pyo_obj_expression)
-                lp_model.constraints = pyo.Constraint(lp_model.j, rule=_pyo_constraint_rule)
+                lp_model.constraints = pyo.Constraint(
+                    lp_model.j, rule=_pyo_constraint_rule
+                )
 
                 # Solve the MILP problem using the GLPK MILP solver (https://www.gnu.org/software/glpk/)
-                opt = pyo.SolverFactory('glpk')
+                opt = pyo.SolverFactory("glpk")
                 try:
                     results = opt.solve(lp_model, timelimit=10)
                 except ApplicationError:
                     continue
 
                 # Return the solution if a valid reaction is found. Otherwise continue to next solver
-                if results.solver.termination_condition == pyo.TerminationCondition.optimal:
+                if (
+                    results.solver.termination_condition
+                    == pyo.TerminationCondition.optimal
+                ):
                     # Extract the solution and find the species with non-zero stoichiometric coefficients
                     solution = lp_model.v.extract_values().values()
                     break
@@ -596,26 +698,33 @@ class ErrorCancelingScheme:
                 # Re-enable logging
                 logging.disable(logging.NOTSET)
 
-            elif solver == 'lpsolve':
+            elif solver == "lpsolve":
                 # Save the current signal handler
                 sig = signal.getsignal(signal.SIGINT)
 
                 # Setup the MILP problem using lpsolve
-                lp = lpsolve('make_lp', 0, m)
-                lpsolve('set_verbose', lp, 2)  # Reduce the logging from lpsolve
-                lpsolve('set_obj_fn', lp, sum_constraints)
-                lpsolve('set_minim', lp)
+                lp = lpsolve("make_lp", 0, m)
+                lpsolve("set_verbose", lp, 2)  # Reduce the logging from lpsolve
+                lpsolve("set_obj_fn", lp, sum_constraints)
+                lpsolve("set_minim", lp)
 
                 for j in range(n):
-                    lpsolve('add_constraint', lp, np.concatenate((c_matrix[:split, j], -1*c_matrix[split:, j])), EQ,
-                            targets[j])
+                    lpsolve(
+                        "add_constraint",
+                        lp,
+                        np.concatenate((c_matrix[:split, j], -1 * c_matrix[split:, j])),
+                        EQ,
+                        targets[j],
+                    )
 
-                lpsolve('set_timeout', lp, 10)  # Move on if lpsolve can't find a solution quickly
+                lpsolve(
+                    "set_timeout", lp, 10
+                )  # Move on if lpsolve can't find a solution quickly
 
                 # All v_i must be integers
-                lpsolve('set_int', lp, [True]*m)
+                lpsolve("set_int", lp, [True] * m)
 
-                status = lpsolve('solve', lp)
+                status = lpsolve("solve", lp)
 
                 # Reset signal handling since lpsolve changed it
                 try:
@@ -626,11 +735,13 @@ class ErrorCancelingScheme:
 
                 # Return the solution if a valid reaction is found. Otherwise continue to next solver
                 if status == 0:
-                    _, solution = lpsolve('get_solution', lp)[:2]
+                    _, solution = lpsolve("get_solution", lp)[:2]
                     break
 
             else:
-                raise ValueError(f'Unrecognized MILP solver {solver} for isodesmic reaction generation')
+                raise ValueError(
+                    f"Unrecognized MILP solver {solver} for isodesmic reaction generation"
+                )
 
         else:
             return None, None
@@ -641,13 +752,19 @@ class ErrorCancelingScheme:
             if v > 0:
                 subset_indices.append(index % split)
                 if index < split:
-                    reaction.species.update({self.reference_species[reference_subset[index]]: -v})
+                    reaction.species.update(
+                        {self.reference_species[reference_subset[index]]: -v}
+                    )
                 else:
-                    reaction.species.update({self.reference_species[reference_subset[index % split]]: v})
+                    reaction.species.update(
+                        {self.reference_species[reference_subset[index % split]]: v}
+                    )
 
         return reaction, np.array(subset_indices)
 
-    def multiple_error_canceling_reaction_search(self, n_reactions_max=20, milp_software=None):
+    def multiple_error_canceling_reaction_search(
+        self, n_reactions_max=20, milp_software=None
+    ):
         """
         Generate multiple error canceling reactions involving the target and a subset of the reference species.
 
@@ -671,7 +788,9 @@ class ErrorCancelingScheme:
             subset = subset_queue.pop()
             if len(subset) == 0:
                 continue
-            reaction, subset_indices = self._find_error_canceling_reaction(subset, milp_software=milp_software)
+            reaction, subset_indices = self._find_error_canceling_reaction(
+                subset, milp_software=milp_software
+            )
             if reaction is None:
                 continue
             else:
@@ -707,7 +826,9 @@ class ErrorCancelingScheme:
             - Standard heat of formation at 298 K calculated for the target species
             - reaction list containing all error canceling reactions found
         """
-        reaction_list = self.multiple_error_canceling_reaction_search(n_reactions_max, milp_software)
+        reaction_list = self.multiple_error_canceling_reaction_search(
+            n_reactions_max, milp_software
+        )
         if len(reaction_list) == 0:  # No reactions found
             return None, reaction_list
         h298_list = np.zeros(len(reaction_list))
@@ -715,7 +836,7 @@ class ErrorCancelingScheme:
         for i, rxn in enumerate(reaction_list):
             h298_list[i] = rxn.calculate_target_thermo().value_si
 
-        return ScalarQuantity(np.median(h298_list), 'J/mol'), reaction_list
+        return ScalarQuantity(np.median(h298_list), "J/mol"), reaction_list
 
 
 def _pyo_obj_expression(model):
@@ -723,30 +844,47 @@ def _pyo_obj_expression(model):
 
 
 def _pyo_constraint_rule(model, col):
-    return sum(model.v[row] * model.c[row, col] for row in model.r) - \
-           sum(model.v[row] * model.c[row, col] for row in model.p) == model.t[col]
+    return (
+        sum(model.v[row] * model.c[row, col] for row in model.r)
+        - sum(model.v[row] * model.c[row, col] for row in model.p)
+        == model.t[col]
+    )
 
 
 class IsodesmicScheme(ErrorCancelingScheme):
     """
     An error canceling reaction where the number and type of both atoms and bonds are conserved
     """
+
     def __init__(self, target, reference_set):
-        super().__init__(target, reference_set, isodesmic_class='rc2', conserve_ring_size=False, limit_charges=True,
-                         limit_scope=True)
+        super().__init__(
+            target,
+            reference_set,
+            isodesmic_class="rc2",
+            conserve_ring_size=False,
+            limit_charges=True,
+            limit_scope=True,
+        )
 
 
 class IsodesmicRingScheme(ErrorCancelingScheme):
     """
     A stricter form of the traditional isodesmic reaction scheme where the number of each ring size is also conserved
     """
+
     def __init__(self, target, reference_set):
-        super().__init__(target, reference_set, isodesmic_class='rc2', conserve_ring_size=True, limit_charges=True,
-                         limit_scope=True)
+        super().__init__(
+            target,
+            reference_set,
+            isodesmic_class="rc2",
+            conserve_ring_size=True,
+            limit_charges=True,
+            limit_scope=True,
+        )
 
 
-CONSTRAINT_CLASSES = {'rc2': _buerger_rc2, 'rc3': _buerger_rc3, 'rc4': _buerger_rc4}
+CONSTRAINT_CLASSES = {"rc2": _buerger_rc2, "rc3": _buerger_rc3, "rc4": _buerger_rc4}
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
