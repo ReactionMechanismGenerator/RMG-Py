@@ -165,81 +165,277 @@ class ErrorCancelingReaction:
         return ScalarQuantity(target_thermo, 'J/mol')
 
 
+class AtomConstraint:
+
+    def __init__(self, label, connections=None):
+        self.label = label
+        self.connections = connections if connections is not None else []
+
+    def __eq__(self, other):
+        if isinstance(other, AtomConstraint):
+            if self.label == other.label:
+                if len(self.connections) == len(other.connections):
+                    connections = deepcopy(other.connections)
+                    for c in self.connections:
+                        for i, c_other in enumerate(connections):
+                            if c == c_other:
+                                break
+                        else:
+                            return False
+                        connections.pop(i)
+
+                    return True
+
+            return False
+
+        else:
+            raise NotImplementedError(f'AtomConstraint object has no __eq__ defined for other object of type '
+                                      f'{type(other)}')
+
+    def __repr__(self):
+        return f'{self.label}' + ''.join([f'({c})' for c in self.connections])
+
+
+class BondConstraint:
+
+    def __init__(self, atom1, atom2, bond_order):
+        self.atom1 = atom1
+        self.atom2 = atom2
+        self.bond_order = bond_order
+
+    def __eq__(self, other):
+        if isinstance(other, BondConstraint):
+            if self.bond_order == other.bond_order:
+                if ((self.atom1 == other.atom1 and self.atom2 == other.atom2) or
+                        (self.atom1 == other.atom2 and self.atom2 == other.atom1)):
+                    return True
+            return False
+
+        if isinstance(other, GenericConstraint):
+            return False
+
+        else:
+            raise NotImplementedError(f'BondConstraint object has no __eq__ defined for other object of type '
+                                      f'{type(other)}')
+
+    def __repr__(self):
+        symbols = ['', '-', '=', '#']
+        return f'{self.atom1}{symbols[self.bond_order]}{self.atom2}'
+
+
+class Connection:
+
+    def __init__(self, atom, bond_order):
+        self.atom = atom
+        self.bond_order = bond_order
+
+    def __eq__(self, other):
+        if isinstance(other, Connection):
+            if self.bond_order == other.bond_order:
+                if self.atom == other.atom:
+                    return True
+            return False
+
+        else:
+            raise NotImplementedError(f'Connection object has no __eq__ defined for other object of type {type(other)}')
+
+    def __repr__(self):
+        symbols = ['', '-', '=', '#']
+        return f'{symbols[self.bond_order]}{self.atom}'
+
+
+class GenericConstraint:
+
+    def __init__(self, constraint_str: str):
+        self.constraint_str = constraint_str
+
+    def __eq__(self, other):
+        if isinstance(other, BondConstraint):
+            return False
+        elif isinstance(other, GenericConstraint):
+            return self.constraint_str == other.constraint_str
+        else:
+            raise NotImplementedError(f'GenericConstraint object has no __eq__ defined for other object of '
+                                      f'type {type(other)}')
+
+
+def bond_centric_constraints(species: ErrorCancelingSpecies, constraint_class: str) -> List[BondConstraint]:
+    constraints = []
+    contraint_func = CONSTRAINT_CLASSES[constraint_class]
+    molecule = species.molecule
+
+    for bond in molecule.get_all_edges():
+        constraints.append(contraint_func(bond))
+
+    return constraints
+
+
+def _buerger_rc2(bond: Bond) -> BondConstraint:
+    atom1 = AtomConstraint(label=bond.atom1.symbol)
+    atom2 = AtomConstraint(label=bond.atom2.symbol)
+
+    return BondConstraint(atom1=atom1, atom2=atom2, bond_order=int(bond.order))
+
+
+def _buerger_rc3(bond: Bond) -> BondConstraint:
+    atom1 = bond.atom1
+    atom2 = bond.atom2
+
+    atom1 = AtomConstraint(label=f'{atom1.symbol}{atom1.connectivity1}')
+    atom2 = AtomConstraint(label=f'{atom2.symbol}{atom2.connectivity1}')
+
+    return BondConstraint(atom1=atom1, atom2=atom2, bond_order=int(bond.order))
+
+
+def _buerger_rc4(bond: Bond) -> BondConstraint:
+    atoms = []
+
+    for atom in [bond.atom1, bond.atom2]:
+        connections = []
+        for a, b in atom.bonds.items():
+            ac = AtomConstraint(label=f'{a.symbol}{a.connectivity1}')
+            bond_order = b.order
+            connections.append(Connection(atom=ac, bond_order=bond_order))
+        atoms.append(AtomConstraint(label=f'{atom.symbol}{atom.connectivity1}', connections=connections))
+
+    return BondConstraint(atom1=atoms[0], atom2=atoms[1], bond_order=int(bond.order))
+
+
 class SpeciesConstraints:
     """
     A class for defining and enumerating constraints to ReferenceSpecies objects for error canceling reactions
     """
 
-    def __init__(self, target, reference_list, conserve_bonds=True, conserve_ring_size=True):
+    def __init__(self, target, reference_list, isodesmic_class='rc2', conserve_ring_size=True, limit_charges=True,
+                 limit_scope=True):
         """
         Define the constraints that will be enforced, and determine the mapping of indices in the constraint vector to
         the labels for these constraints.
 
-        To reduce the size of the linear programming problem that will try to find error canceling reactions of the
-        target and subsets of the reference species, the `reference_species` list is automatically pruned to remove
-        species that have additional atom, bond, and/or ring attributes not found in the target molecule.
+        Notes:
+            To reduce the size of the linear programming problem that will try to find error canceling reactions of the
+            target and subsets of the reference species, the `reference_species` list is automatically pruned to remove
+            species that have additional atom, bond, and/or ring attributes not found in the target molecule.
+
+            Charge is also explicitly conserved, as there are charged species in the reference database
 
         Args:
             target (ErrorCancelingSpecies): The target species of the error canceling reaction scheme
             reference_list(list): A list of ErrorCancelingSpecies objects for the reference
                 species that can participate in the error canceling reaction scheme
-            conserve_bonds (bool, optional): Enforce the number of each bond type be conserved
-            conserve_ring_size (bool, optional): Enforce that the number of each ring size be conserved
+            isodesmic_class (str, optional): Reaction classes as defined by Buerger et al. that determine how specific
+                the constraints are.
+            conserve_ring_size (bool, optional): Enforce that the number of each ring size be conserved.
+            limit_charges (bool, optional): Only allow species in the reaction that are within the range [C, 0] for
+                anions or [0, C] for cations where "C" is the charge of the target
+            limit_scope (bool, optional): Exclude any molecules from the reference set that have features not contained
+                in the target molecule. This will reduce the size of the linear programing problem being solved to yield
+                faster, possibly more accurate results
         """
 
         self.target = target
         self.all_reference_species = reference_list
         self.reference_species = []
-        self.conserve_bonds = conserve_bonds
+        self.isodesmic_class = isodesmic_class
         self.conserve_ring_size = conserve_ring_size
-        self.constraint_map = self._get_constraint_map()
+        self.limit_charges = limit_charges
+        self.limit_scope = limit_scope
 
-    def _get_constraint_map(self):
-        # Enumerate all of the constraints in the target molecule to initialize the constraint mapping
-        constraint_map = {label: i for i, label in enumerate(self.target.molecule.get_element_count().keys())}
-        if self.conserve_bonds:
-            j = len(constraint_map)
-            constraint_map.update(
-                {label: j + i for i, label in enumerate(self.target.molecule.enumerate_bonds().keys())})
+    def _get_constraint_lists(self):
+        full_constraints_list = [self._get_all_constraints(self.target)]
+        for ref_spcs in self.all_reference_species:
+            full_constraints_list.append(self._get_all_constraints(ref_spcs))
+
+        return full_constraints_list
+
+    def _get_ring_constraints(self, species: ErrorCancelingSpecies) -> List[GenericConstraint]:
+        ring_features = []
+        rings = species.molecule.get_smallest_set_of_smallest_rings()
+        for ring in rings:
+            ring_features.append(GenericConstraint(constraint_str=f'{len(ring)}_ring'))
+
+        return ring_features
+
+    def _get_all_constraints(self, species: ErrorCancelingSpecies) -> List[Union[BondConstraint, GenericConstraint]]:
+        features = bond_centric_constraints(species, self.isodesmic_class)
         if self.conserve_ring_size:
-            j = len(constraint_map)
-            possible_rings_sizes = set(f'{len(sssr)}_ring' for sssr in
-                                       self.target.molecule.get_smallest_set_of_smallest_rings())
-            constraint_map.update({label: j + i for i, label in enumerate(possible_rings_sizes)})
+            features += self._get_ring_constraints(species)
 
-        return constraint_map
+        return features
 
-    def _enumerate_constraints(self, species):
-        """
-        Determine the constraint vector for a molecule given the enforced constraints
+    def _enumerate_constraints(self, full_constraints_list):
+        enumerated_constraints = []
 
-        Args:
-            species (ErrorCancelingSpecies): Species whose constraints are to be enumerated
+        # Initialize list of empty lists. Be careful to avoid making references to a singular empty list
+        for _ in range(len(full_constraints_list)):
+            enumerated_constraints.append([])
 
-        Returns:
-            np.ndarray: vector of the number of instances of each constraining feature e.g. number of carbon atoms
-        """
-        constraint_vector = np.zeros(len(self.constraint_map))
-        molecule = species.molecule
+        # Begin enumerating constraints
+        while True:
+            if len(full_constraints_list[0]) == 0:  # We have exhausted target constraints
+                if self.limit_scope:  # No need to enumerate any further
+                    break  # Out of the while loop
 
-        try:
-            atoms = molecule.get_element_count()
-            for atom_label, count in atoms.items():
-                constraint_vector[self.constraint_map[atom_label]] += count
+            # Find a constraint to search for next
+            for spcs_constraints in full_constraints_list:
+                if len(spcs_constraints) != 0:
+                    constraint = spcs_constraints[0]
+                    break  # Out of the for loop
 
-            if self.conserve_bonds:
-                bonds = molecule.enumerate_bonds()
-                for bond_label, count in bonds.items():
-                    constraint_vector[self.constraint_map[bond_label]] += count
+            else:
+                break  # No more constraints, so break out of the while loop
 
-            if self.conserve_ring_size:
-                rings = molecule.get_smallest_set_of_smallest_rings()
-                for ring in rings:
-                    constraint_vector[self.constraint_map[f'{len(ring)}_ring']] += 1
-        except KeyError:  # This molecule has a feature not found in the target molecule. Return None to exclude this
-            return None
+            # enumerate for each species
+            new_constraints_list = []
+            for i, spcs_constraints in enumerate(full_constraints_list):
+                new_spcs_constraints = [c for c in spcs_constraints if c != constraint]
+                matching_constraints = len(spcs_constraints) - len(new_spcs_constraints)
+                enumerated_constraints[i].append(matching_constraints)
+                new_constraints_list.append(new_spcs_constraints)
 
-        return constraint_vector
+            # Finally, update the new list
+            full_constraints_list = new_constraints_list
+
+        # Finalize list of reference species and corresponding constraints
+        reference_constraints = []
+        target_constraints = enumerated_constraints [0]
+        if self.limit_scope:
+            for i, spcs in enumerate(self.all_reference_species):
+                # Add 1 to index to offset for the target
+                if len(full_constraints_list[i+1]) == 0:  # This species does not have extra constraints
+                    self.reference_species.append(spcs)
+                    reference_constraints.append(enumerated_constraints[i+1])
+
+        else:
+            self.reference_species = self.all_reference_species
+            reference_constraints = enumerated_constraints[1:]
+
+        return target_constraints, reference_constraints
+
+    def _enumerate_charge_constraints(self, target_constraints, reference_constraints):
+        charge = self.target.molecule.get_net_charge()
+        target_constraints.append(charge)
+
+        for i, spcs in enumerate(self.reference_species):
+            reference_constraints[i].append(spcs.molecule.get_net_charge())
+
+        if self.limit_charges:
+            allowed_reference_species = []
+            new_constraints = []
+
+            if charge < 0:
+                allowable_charges = list(range(charge, 0))
+            else:
+                allowable_charges = list(range(0, charge + 1))
+            for i, spcs in enumerate(self.reference_species):
+                if reference_constraints[i][-1] in allowable_charges:
+                    allowed_reference_species.append(spcs)
+                    new_constraints.append(reference_constraints[i])
+
+            reference_constraints = new_constraints
+            self.reference_species = allowed_reference_species
+
+        return target_constraints, reference_constraints
 
     def calculate_constraints(self):
         """
@@ -250,16 +446,33 @@ class SpeciesConstraints:
             - target constraint vector (1 x len(constraints))
             - constraint matrix for allowable reference species (len(self.reference_species) x len(constraints))
         """
-        target_constraints = self._enumerate_constraints(self.target)
-        constraint_matrix = []
+        full_constraint_list = self._get_constraint_lists()
+        target_constraints, reference_constraints = self._enumerate_constraints(full_constraint_list)
+        target_constraints, reference_constraints = self._enumerate_charge_constraints(target_constraints,
+                                                                                       reference_constraints)
 
-        for spcs in self.all_reference_species:
-            spcs_constraints = self._enumerate_constraints(spcs)
-            if spcs_constraints is not None:  # This species is allowed
-                self.reference_species.append(spcs)
-                constraint_matrix.append(spcs_constraints)
+        target_constraints = np.array(target_constraints, dtype=int)
+        constraint_matrix = np.array(reference_constraints, dtype=int)
 
-        return target_constraints, np.array(constraint_matrix, dtype=int)
+        return target_constraints, constraint_matrix
+
+
+def _clean_up_constraints(target_constraints, constraint_matrix):
+    # make sure that the constraint matrix is 2d
+    if len(constraint_matrix.shape) == 1:
+        constraint_matrix = np.array([constraint_matrix], dtype=int)
+
+    # Remove any columns that are all zeros
+    zero_indices = np.where(~constraint_matrix.any(axis=0))[0]
+    # Check that this wouldn't eliminate a non-zero target entry
+    for z in zero_indices:
+        if target_constraints[z] != 0:  # This problem is not solvable. Return None to signal this
+            return None, None
+    indices = [i for i in range(constraint_matrix.shape[1]) if i not in zero_indices]
+    constraint_matrix = np.take(constraint_matrix, indices=indices, axis=1)
+    target_constraints = np.take(target_constraints, indices=indices)
+
+    return target_constraints, constraint_matrix
 
 
 class ErrorCancelingScheme:
@@ -267,22 +480,21 @@ class ErrorCancelingScheme:
     A Base class for calculating target species thermochemistry using error canceling reactions
     """
 
-    def __init__(self, target, reference_set, conserve_bonds, conserve_ring_size):
+    def __init__(self, target, reference_set, isodesmic_class, conserve_ring_size, limit_charges, limit_scope):
         """
 
         Args:
             target (ErrorCancelingSpecies): Species whose Hf298 will be calculated using error canceling reactions
             reference_set (list): list of reference species (as ErrorCancelingSpecies) that can participate
                 in error canceling reactions to help calculate the thermochemistry of the target
-            conserve_bonds (bool): Flag to determine if the number and type of each bond must be conserved in each error
-                canceling reaction
             conserve_ring_size (bool): Flag to determine if the number of each ring size must be conserved in each error
                 canceling reaction
         """
 
         self.target = target
-        self.constraints = SpeciesConstraints(target, reference_set, conserve_bonds=conserve_bonds,
-                                              conserve_ring_size=conserve_ring_size)
+        self.constraints = SpeciesConstraints(target, reference_set, isodesmic_class=isodesmic_class,
+                                              conserve_ring_size=conserve_ring_size, limit_charges=limit_charges,
+                                              limit_scope=limit_scope)
 
         self.target_constraint, self.constraint_matrix = self.constraints.calculate_constraints()
         self.reference_species = self.constraints.reference_species
@@ -310,9 +522,16 @@ class ErrorCancelingScheme:
 
         # Define the constraints based on the provided subset
         c_matrix = np.take(self.constraint_matrix, reference_subset, axis=0)
+
+        # Remove unnecessary constraints
+        target_constraint, c_matrix = _clean_up_constraints(self.target_constraint, c_matrix)
+        if target_constraint is None or c_matrix is None:  # The problem is not solvable
+            return None, None
+
+        # Setup MILP problem
         c_matrix = np.tile(c_matrix, (2, 1))
         sum_constraints = np.sum(c_matrix, 1, dtype=int)
-        targets = -1*self.target_constraint
+        targets = -1*target_constraint
         m = c_matrix.shape[0]
         n = c_matrix.shape[1]
         split = int(m/2)
@@ -323,6 +542,9 @@ class ErrorCancelingScheme:
                 if pyo is None:
                     raise ImportError('Cannot import optional package pyomo. Either install this dependency with '
                                       '`conda install -c conda-forge pyomo glpk` or set milp_software to `lpsolve`')
+
+                # Diable logging, pyomo outputs too often
+                logging.disable()
 
                 # Setup the MILP problem using pyomo
                 lp_model = pyo.ConcreteModel()
@@ -341,13 +563,19 @@ class ErrorCancelingScheme:
 
                 # Solve the MILP problem using the GLPK MILP solver (https://www.gnu.org/software/glpk/)
                 opt = pyo.SolverFactory('glpk')
-                results = opt.solve(lp_model, timelimit=1)
+                try:
+                    results = opt.solve(lp_model, timelimit=10)
+                except ApplicationError:
+                    continue
 
                 # Return the solution if a valid reaction is found. Otherwise continue to next solver
                 if results.solver.termination_condition == pyo.TerminationCondition.optimal:
                     # Extract the solution and find the species with non-zero stoichiometric coefficients
                     solution = lp_model.v.extract_values().values()
                     break
+
+                # Re-enable logging
+                logging.disable(logging.NOTSET)
 
             elif solver == 'lpsolve':
                 # Save the current signal handler
@@ -363,12 +591,7 @@ class ErrorCancelingScheme:
                     lpsolve('add_constraint', lp, np.concatenate((c_matrix[:split, j], -1*c_matrix[split:, j])), EQ,
                             targets[j])
 
-                lpsolve('add_constraint', lp, np.ones(m), LE, 20)  # Use at most 20 species (including replicates)
-                lpsolve('set_timeout', lp, 1)  # Move on if lpsolve can't find a solution quickly
-
-                # Constrain v_i to be 4 or less
-                for i in range(m):
-                    lpsolve('set_upbo', lp, i, 4)
+                lpsolve('set_timeout', lp, 10)  # Move on if lpsolve can't find a solution quickly
 
                 # All v_i must be integers
                 lpsolve('set_int', lp, [True]*m)
@@ -381,10 +604,6 @@ class ErrorCancelingScheme:
                 except ValueError:
                     # This is not being run in the main thread, so we cannot reset signal
                     pass
-                except TypeError:
-                    print(
-                        "Failed to reset signal handling in LPSolve - are you running pytest?"
-                    )
 
                 # Return the solution if a valid reaction is found. Otherwise continue to next solver
                 if status == 0:
@@ -426,12 +645,11 @@ class ErrorCancelingScheme:
         Returns:
             list: A list of the found error canceling reactions
         """
-        subset_queue = deque()
-        subset_queue.append(np.arange(0, len(self.reference_species)))
+        subset_queue = [np.arange(0, len(self.reference_species))]
         reaction_list = []
 
         while (len(subset_queue) != 0) and (len(reaction_list) < n_reactions_max):
-            subset = subset_queue.popleft()
+            subset = subset_queue.pop()
             if len(subset) == 0:
                 continue
             reaction, subset_indices = self._find_error_canceling_reaction(subset, milp_software=milp_software)
@@ -443,9 +661,18 @@ class ErrorCancelingScheme:
                 for index in subset_indices:
                     subset_queue.append(np.delete(subset, index))
 
+                # Clean up the queue to remove subsets that would allow for already found reactions
+                new_queue = []
+                reaction_indices = [subset[i] for i in subset_indices]
+                for s in subset_queue:
+                    if not all([i in s for i in reaction_indices]):
+                        new_queue.append(s)
+
+                subset_queue = new_queue
+
         return reaction_list
 
-    def calculate_target_enthalpy(self, n_reactions_max=20, milp_software=None):
+    def calculate_target_enthalpy(self, n_reactions_max=5, milp_software=None):
         """
         Perform a multiple error canceling reactions search and calculate hf298 for the target species by taking the
         median hf298 value from among the error canceling reactions found
@@ -462,6 +689,8 @@ class ErrorCancelingScheme:
             - reaction list containing all error canceling reactions found
         """
         reaction_list = self.multiple_error_canceling_reaction_search(n_reactions_max, milp_software)
+        if len(reaction_list) == 0:  # No reactions found
+            return None, reaction_list
         h298_list = np.zeros(len(reaction_list))
 
         for i, rxn in enumerate(reaction_list):
@@ -484,7 +713,8 @@ class IsodesmicScheme(ErrorCancelingScheme):
     An error canceling reaction where the number and type of both atoms and bonds are conserved
     """
     def __init__(self, target, reference_set):
-        super().__init__(target, reference_set, conserve_bonds=True, conserve_ring_size=False)
+        super().__init__(target, reference_set, isodesmic_class='rc2', conserve_ring_size=False, limit_charges=True,
+                         limit_scope=True)
 
 
 class IsodesmicRingScheme(ErrorCancelingScheme):
@@ -492,7 +722,11 @@ class IsodesmicRingScheme(ErrorCancelingScheme):
     A stricter form of the traditional isodesmic reaction scheme where the number of each ring size is also conserved
     """
     def __init__(self, target, reference_set):
-        super().__init__(target, reference_set, conserve_bonds=True, conserve_ring_size=True)
+        super().__init__(target, reference_set, isodesmic_class='rc2', conserve_ring_size=True, limit_charges=True,
+                         limit_scope=True)
+
+
+CONSTRAINT_CLASSES = {'rc2': _buerger_rc2, 'rc3': _buerger_rc3, 'rc4': _buerger_rc4}
 
 
 if __name__ == '__main__':
