@@ -70,6 +70,7 @@ dependencies:
   - pytest
   - pytest-cov
   - conda-forge::pytest-check
+  - pyutilib
   - matplotlib >=1.5
   - mpmath
   - pandas
