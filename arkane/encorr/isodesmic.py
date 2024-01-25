@@ -729,7 +729,7 @@ class ErrorCancelingScheme:
                 # Reset signal handling since lpsolve changed it
                 try:
                     signal.signal(signal.SIGINT, sig)
-                except ValueError:
+                except TypeError:
                     # This is not being run in the main thread, so we cannot reset signal
                     pass
 
