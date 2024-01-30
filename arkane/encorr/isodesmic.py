@@ -291,6 +291,8 @@ class GenericConstraint:
                 f"GenericConstraint object has no __eq__ defined for other object of "
                 f"type {type(other)}"
             )
+    def __repr__(self):
+        return self.constraint_str
 
 
 def bond_centric_constraints(
