@@ -137,12 +137,11 @@ class TestSpeciesConstraints:
         """
         Test that the constraint map is properly initialized when a SpeciesConstraints object is initialized
         """
-        caffeine_consts = SpeciesConstraints(self.caffeine, [self.butane, self.benzene])
-        assert set(caffeine_consts.constraint_map.keys()) == {
-            "H",
-            "C",
-            "O",
-            "N",
+        consts = SpeciesConstraints(self.caffeine, [self.butane, self.benzene])
+        caffeine_features = consts._get_all_constraints(self.caffeine)
+        caffeine_constraint_list = [feat.__repr__() for feat in caffeine_features]
+
+        assert set(caffeine_constraint_list) == {
             "C=O",
             "C-N",
             "C-H",
