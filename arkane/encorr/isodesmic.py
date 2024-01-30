@@ -309,8 +309,14 @@ def bond_centric_constraints(
 
 
 def _buerger_rc2(bond: Bond) -> BondConstraint:
-    atom1 = AtomConstraint(label=bond.atom1.symbol)
-    atom2 = AtomConstraint(label=bond.atom2.symbol)
+    atom1 = bond.atom1
+    atom2 = bond.atom2
+
+    if atom1.symbol > atom2.symbol:
+        atom1, atom2 = atom2, atom1
+
+    atom1 = AtomConstraint(label=atom1.symbol)
+    atom2 = AtomConstraint(label=atom2.symbol)
 
     return BondConstraint(atom1=atom1, atom2=atom2, bond_order=int(bond.order))
 
@@ -319,6 +325,9 @@ def _buerger_rc3(bond: Bond) -> BondConstraint:
     atom1 = bond.atom1
     atom2 = bond.atom2
 
+    if atom1.symbol > atom2.symbol:
+        atom1, atom2 = atom2, atom1
+
     atom1 = AtomConstraint(label=f"{atom1.symbol}{atom1.connectivity1}")
     atom2 = AtomConstraint(label=f"{atom2.symbol}{atom2.connectivity1}")
 
@@ -326,9 +335,15 @@ def _buerger_rc3(bond: Bond) -> BondConstraint:
 
 
 def _buerger_rc4(bond: Bond) -> BondConstraint:
+    atom1 = bond.atom1
+    atom2 = bond.atom2
+
+    if atom1.symbol > atom2.symbol:
+        atom1, atom2 = atom2, atom1
+
     atoms = []
 
-    for atom in [bond.atom1, bond.atom2]:
+    for atom in [atom1, atom2]:
         connections = []
         for a, b in atom.bonds.items():
             ac = AtomConstraint(label=f"{a.symbol}{a.connectivity1}")
