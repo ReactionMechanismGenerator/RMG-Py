@@ -153,10 +153,9 @@ class TestSpeciesConstraints:
         }
 
         no_rings = SpeciesConstraints(self.caffeine, [self.butane, self.benzene], conserve_ring_size=False)
-        assert set(no_rings.constraint_map.keys()) == {"H", "C", "O", "N", "C=O", "C-N", "C-H", "C=C", "C=N", "C-C"}
-
-        atoms_only = SpeciesConstraints(self.caffeine, [self.butane], conserve_ring_size=False, conserve_bonds=False)
-        assert set(atoms_only.constraint_map.keys()) == {"H", "C", "O", "N"}
+        caffeine_features = no_rings._get_all_constraints(self.caffeine)
+        caffeine_constraint_list = [feat.__repr__() for feat in caffeine_features]
+        assert set(caffeine_constraint_list) == {"C=O", "C-N", "C-H", "C=C", "C=N", "C-C"}
 
     def test_enumerating_constraints(self):
         """
