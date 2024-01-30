@@ -429,6 +429,7 @@ class SpeciesConstraints:
         if self.conserve_ring_size:
             features += self._get_ring_constraints(species)
 
+        features.sort(key=lambda x: x.__repr__())
         return features
 
     def _enumerate_constraints(self, full_constraints_list):
