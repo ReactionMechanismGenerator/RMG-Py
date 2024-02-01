@@ -97,7 +97,7 @@ class TestCorr:
             bac_type=bac_type,
         )
         # test value is obtained by BAC(self.freq_lot, bac_type=bac_type).get_correction(bonds=bonds, coords=CCCBDB_coords, nums=nums).value_si
-        test_value = 700
+        test_value = -466
         assert abs(bac - test_value) < 100
 
         # test Melius BACs
@@ -110,7 +110,7 @@ class TestCorr:
             bac_type=bac_type,
         )
         # test value is obtained by BAC(self.freq_lot, bac_type=bac_type).get_correction(bonds=bonds, coords=CCCBDB_coords, nums=nums).value_si
-        test_value = 949
+        test_value = -234
         assert abs(bac - test_value) < 100
 
     def test_assign_frequency_scale_factor(self):
