@@ -3175,7 +3175,7 @@ class TestChargeTransferReaction:
         assert abs(Kc_oxidation_equil - C0) < 0.0001
         assert abs(Kc_reduction_equil - 1/C0) < 0.0001
 
-    @pytest.skip("Work in progress")
+    @pytest.mark.skip("Work in progress")
     def test_reverse_surface_charge_transfer_rate(self):
         """
         Test the reverse_surface_charge_transfer_rate() method
