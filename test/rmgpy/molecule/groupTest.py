@@ -304,17 +304,16 @@ class TestGroupAtom:
             atom = atom0.copy()
             try:
                 atom.apply_action(action)
-                self.assertEqual(len(atom.atomtype), len(atomtype.increment_charge))
+                assert len(atom.atomtype) == len(atomtype.increment_charge)
                 for a in atomtype.increment_charge:
-                    self.assertTrue(a in atom.atomtype,
-                                    "GAIN_CHARGE on {0} gave {1} not {2}".format(atomtype, atom.atomtype,
-                                                                                  atomtype.increment_charge))
+                    assert a in atom.atomtype, "GAIN_CHARGE on {0} gave {1} not {2}".format(atomtype, atom.atomtype,
+                                                                                  atomtype.increment_charge)
                 # self.assertEqual(atom0.radical_electrons, [r + 1 for r in atom.radical_electrons])
-                self.assertEqual(atom0.charge, [c - 1 for c in atom.charge])
-                self.assertEqual(atom0.label, atom.label)
-                self.assertEqual(atom0.lone_pairs, atom.lone_pairs)
+                assert atom0.charge == [c - 1 for c in atom.charge]
+                assert atom0.label == atom.label
+                assert atom0.lone_pairs == atom.lone_pairs
             except ActionError:
-                self.assertEqual(len(atomtype.increment_charge), 0)
+                assert len(atomtype.increment_charge) == 0
 
         # test when radicals unspecified
         group = Group().from_adjacency_list("""
@@ -334,17 +333,16 @@ class TestGroupAtom:
             atom = atom0.copy()
             try:
                 atom.apply_action(action)
-                self.assertEqual(len(atom.atomtype), len(atomtype.decrement_charge))
+                assert len(atom.atomtype) == len(atomtype.decrement_charge)
                 for a in atomtype.decrement_charge:
-                    self.assertTrue(a in atom.atomtype,
-                                    "LOSE_CHARGE on {0} gave {1} not {2}".format(atomtype, atom.atomtype,
-                                                                                  atomtype.decrement_charge))
+                    assert a in atom.atomtype,"LOSE_CHARGE on {0} gave {1} not {2}".format(atomtype, atom.atomtype,
+                                                                                  atomtype.decrement_charge)
                 # self.assertEqual(atom0.radical_electrons, [r - 1 for r in atom.radical_electrons])
-                self.assertEqual(atom0.charge, [c + 1 for c in atom.charge])
-                self.assertEqual(atom0.label, atom.label)
-                self.assertEqual(atom0.lone_pairs, atom.lone_pairs)
+                assert atom0.charge == [c - 1 for c in atom.charge]
+                assert atom0.label == atom.label
+                assert atom0.lone_pairs == atom.lone_pairs
             except ActionError:
-                self.assertEqual(len(atomtype.decrement_charge), 0)
+                assert len(atomtype.decrement_charge) == 0
 
         # test when radicals unspecified
         group = Group().from_adjacency_list("""
@@ -457,34 +455,6 @@ class TestGroupAtom:
                 assert [1, 2, 3, 4] == [r + 1 for r in atom.lone_pairs]
             except ActionError:
                 assert len(atomtype.decrement_lone_pair) == 0
-
-    def test_apply_action_gain_charge(self):
-        """
-        Test the GroupBond.apply_action() method for a GAIN_RADICAL action.
-        """
-        action = ['GAIN_CHARGE', '*1', 1]
-        for order0 in self.orderList:
-            bond0 = GroupBond(None, None, order=order0)
-            bond = bond0.copy()
-            try:
-                bond.apply_action(action)
-                pytest.fail(reason='GroupBond.apply_action() unexpectedly processed a GAIN_CHARGE action.')
-            except ActionError:
-                pass
-
-    def test_apply_action_lose_charge(self):
-        """
-        Test the GroupBond.apply_action() method for a LOSE_CHARGE action.
-        """
-        action = ['LOSE_CHARGE', '*1', 1]
-        for order0 in self.orderList:
-            bond0 = GroupBond(None, None, order=order0)
-            bond = bond0.copy()
-            try:
-                bond.apply_action(action)
-                pytest.fail(reason='GroupBond.apply_action() unexpectedly processed a LOSE_CHARGE action.')
-            except ActionError:
-                pass
 
     def test_equivalent(self):
         """
@@ -671,14 +641,14 @@ class TestGroupAtom:
         Test the GroupAtom.is_electron() method.
         """
         electron = GroupAtom(atomtype=[ATOMTYPES['e']])
-        self.assertTrue(electron.is_electron())
+        assert electron.is_electron()
 
     def test_is_proton(self):
         """
         Test the GroupAtom.is_proton() method.
         """
         proton = GroupAtom(atomtype=[ATOMTYPES['H+']])
-        self.assertTrue(proton.is_proton())
+        assert proton.is_proton()
 
 class TestGroupBond:
     """
@@ -707,6 +677,35 @@ class TestGroupBond:
         """
         bond = GroupBond(None, None, order=[1, 2, 3, 1.5])
         assert bond.get_order_str() == ["S", "D", "T", "B"]
+    
+
+    def test_apply_action_gain_charge(self):
+        """
+        Test the GroupBond.apply_action() method for a GAIN_RADICAL action.
+        """
+        action = ['GAIN_CHARGE', '*1', 1]
+        for order0 in self.orderList:
+            bond0 = GroupBond(None, None, order=order0)
+            bond = bond0.copy()
+            try:
+                bond.apply_action(action)
+                pytest.fail(reason='GroupBond.apply_action() unexpectedly processed a GAIN_CHARGE action.')
+            except ActionError:
+                pass
+
+    def test_apply_action_lose_charge(self):
+        """
+        Test the GroupBond.apply_action() method for a LOSE_CHARGE action.
+        """
+        action = ['LOSE_CHARGE', '*1', 1]
+        for order0 in self.orderList:
+            bond0 = GroupBond(None, None, order=order0)
+            bond = bond0.copy()
+            try:
+                bond.apply_action(action)
+                pytest.fail(reason='GroupBond.apply_action() unexpectedly processed a LOSE_CHARGE action.')
+            except ActionError:
+                pass
 
     def test_set_order_str(self):
         """
@@ -1005,17 +1004,17 @@ class TestGroup:
         """
         Test the Group.is_electron() method.
         """
-        self.assertFalse(self.group.is_electron())
+        assert not self.group.is_electron()
         electron = Group().from_adjacency_list("""1 *1 e u1 p0 c-1""")
-        self.assertTrue(electron.is_electron())
+        assert electron.is_electron()
 
     def test_is_proton(self):
         """
         Test the Group.is_proton() method.
         """
-        self.assertFalse(self.group.is_proton())
+        assert not self.group.is_proton()
         proton = Group().from_adjacency_list("""1 *1 H+ u0 p0 c+1""")
-        self.assertTrue(proton.is_proton())
+        assert proton.is_proton()
 
     def test_get_labeled_atom(self):
         """
