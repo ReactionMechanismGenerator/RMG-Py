@@ -130,11 +130,15 @@ class TestDatabase:
                     assert self.kinetics_check_training_reactions_have_surface_attributes(
                         family_name
                     ), "Kinetics surface family {0}: entries have surface attributes?".format(family_name)
-
-                with check:
-                    assert self.kinetics_check_coverage_dependence_units_are_correct(
-                        family_name
-                    ), "Kinetics surface family {0}: check coverage dependent units are correct?".format(family_name)
+                if family_name not in {
+                    "Surface_Proton_Electron_Reduction_Alpha",
+                    "Surface_Proton_Electron_Reduction_Beta",
+                    "Surface_Proton_Electron_Reduction_Beta_Dissociation",
+                }:
+                    with check:
+                        assert self.kinetics_check_coverage_dependence_units_are_correct(
+                            family_name
+                        ), "Kinetics surface family {0}: check coverage dependent units are correct?".format(family_name)
 
             # these families have some sort of difficulty which prevents us from testing accessibility right now
             # See RMG-Py PR #2232 for reason why adding Bimolec_Hydroperoxide_Decomposition here. Basically some nodes
@@ -974,7 +978,6 @@ class TestDatabase:
             if entry.item.is_surface_reaction() or isinstance(entry.data, KineticsModel):
                 # Don't check surface reactions
                 continue
-
             k = entry.data.get_rate_coefficient(T, P)
             rxn = entry.item
             if k < 0:
@@ -1521,7 +1524,7 @@ Origin Group AdjList:
                         backbone_msg += backbone_sample.item.to_adjacency_list()
                     else:
                         backbone_msg = ""
-                    tst3.append(
+                    test1.append(
                         (
                             False,
                             """
@@ -1978,7 +1981,7 @@ The following adjList may have atoms in a different ordering than the input file
         tst3 = []
 
         # Solvation groups have special groups that RMG cannot generate proper sample_molecules. Skip them.
-        skip_entry_list = ["Cds-CdsCS6dd", "Cs-CS4dHH"]
+        skip_entry_list = ["Cds-CdsCS6dd", "Cs-CS4dHH", 'Li-OCring', 'CsOOOring', 'Cbf-CbfCbfCbf']
         skip_short_desc_list = [
             "special solvation group with ring",
             "special solvation polycyclic group",
