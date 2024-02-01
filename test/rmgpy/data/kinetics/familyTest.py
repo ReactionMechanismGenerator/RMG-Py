@@ -44,6 +44,7 @@ from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.thermo import ThermoDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
+from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius
 
 import pytest
@@ -70,6 +71,7 @@ class TestFamily:
                 "intra_substitutionS_isomerization",
                 "R_Addition_COm",
                 "R_Recombination",
+                'Surface_Proton_Electron_Reduction_Alpha',
             ],
         )
         cls.family = cls.database.families["intra_H_migration"]
@@ -701,6 +703,51 @@ multiplicity 2
         that the objects are the same in memory.
         """
         pass
+    
+    def test_surface_proton_electron_reduction_alpha(self):
+        """
+        Test that the Surface_Proton_Electron_Reduction_Alpha family can successfully match the reaction and returns properly product structures.
+        """
+        family = self.database.families['Surface_Proton_Electron_Reduction_Alpha']
+        m_proton = Molecule().from_smiles("[H+]")
+        m_x = Molecule().from_adjacency_list("1 X u0 p0")
+        m_ch2x = Molecule().from_adjacency_list(
+            """
+            1 C u0 p0 c0 {2,S} {3,S} {4,D}
+            2 H u0 p0 c0 {1,S}
+            3 H u0 p0 c0 {1,S}
+            4 X u0 p0 c0 {1,D}
+            """
+            )
+        m_ch3x = Molecule().from_adjacency_list(
+            """
+            1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+            2 H u0 p0 c0 {1,S}
+            3 H u0 p0 c0 {1,S}
+            4 H u0 p0 c0 {1,S}
+            5 X u0 p0 c0 {1,S}
+            """
+            )
+
+        reactants = [m_proton,m_ch2x]
+        expected_products = [m_ch3x]
+
+        labeled_rxn = Reaction(reactants=reactants, products=expected_products)
+        family.add_atom_labels_for_reaction(labeled_rxn)
+        prods = family.apply_recipe([m.molecule[0] for m in labeled_rxn.reactants])
+        assert expected_products[0].is_isomorphic(prods[0])
+
+        assert len(prods) == 1
+        assert expected_products[0].is_isomorphic(prods[0])
+        reacts = family.apply_recipe(prods, forward=False)
+        assert len(reacts) == 2
+
+        prods = [Species(molecule=[p]) for p in prods]
+        reacts = [Species(molecule=[r]) for r in reacts]
+
+        fam_rxn = Reaction(reactants=reacts,products=prods)
+
+        assert fam_rxn.is_isomorphic(labeled_rxn)
 
     def test_reactant_num_id(self):
         """
