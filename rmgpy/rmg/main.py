@@ -607,9 +607,8 @@ class RMG(util.Subject):
                                longDesc='',
                                )
                 solvent_mol = False
-            if not self.reaction_model.core.phase_system.in_nose:
-                self.reaction_model.core.phase_system.phases["Default"].set_solvent(solvent_data)
-                self.reaction_model.edge.phase_system.phases["Default"].set_solvent(solvent_data)
+            self.reaction_model.core.phase_system.phases["Default"].set_solvent(solvent_data)
+            self.reaction_model.edge.phase_system.phases["Default"].set_solvent(solvent_data)
 
             diffusion_limiter.enable(solvent_data, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent))
