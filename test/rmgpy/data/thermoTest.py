@@ -1632,8 +1632,8 @@ class TestCyclicThermo:
         """
         # load up test data designed for this test
         database2 = ThermoDatabase()
-        path = os.path.join(os.path.dirname(rmgpy.__file__), "data/test_data/")
-        database2.load(os.path.join(path, "thermo"), depository=False)
+        path = os.path.join(os.path.dirname(__file__),"..","test_data","testing_database","thermo")
+        database2.load(path, depository=False)
 
         # load up the thermo radical database as a test
         rad_group = database2.groups["radical"]
