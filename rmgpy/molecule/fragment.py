@@ -391,7 +391,7 @@ class Fragment(Molecule):
                 return True
         return False
 
-    def update(self, sort_atoms=True):
+    def update(self, log_species=True, sort_atoms=True):
         # currently sort_atoms does not work for fragments
         for v in self.vertices:
             if not isinstance(v, CuttingLabel):
