@@ -443,13 +443,13 @@ class TestSurfaceReaction:
     
     def test_electrons(self):
         """Test electrons property"""
-        self.assertEquals(self.rxn1s.electrons,0)
-        self.assertEquals(self.rxn1s.electrons,0)
+        assert self.rxn1s.electrons == 0
+        assert self.rxn1s.electrons == 0
 
     def test_protons(self):
         """Test protons property"""
-        self.assertEquals(self.rxn1s.protons,0)
-        self.assertEquals(self.rxn1s.protons,0)
+        assert self.rxn1s.protons == 0
+        assert self.rxn1s.protons == 0
 
     def test_is_surface_reaction_species(self):
         """Test is_surface_reaction for reaction based on Species"""
@@ -3106,37 +3106,37 @@ class TestChargeTransferReaction:
 
     def test_electrons(self):
         """Test electrons property"""
-        self.assertEquals(self.rxn_reduction.electrons,-1)
-        self.assertEquals(self.rxn_oxidation.electrons,1)
+        assert self.rxn_reduction.electrons == -1
+        assert self.rxn_oxidation.electrons == 1
 
     def test_protons(self):
         """Test n_protons property"""
-        self.assertEquals(self.rxn_reduction.protons,-1)
-        self.assertEquals(self.rxn_oxidation.protons,1)
+        assert self.rxn_reduction.protons == -1
+        assert self.rxn_oxidation.protons == 1
 
     def test_is_surface_reaction(self):
         """Test is_surface_reaction() method"""
-        self.assertTrue(self.rxn_reduction.is_surface_reaction())
-        self.assertTrue(self.rxn_oxidation.is_surface_reaction())
+        assert self.rxn_reduction.is_surface_reaction()
+        assert self.rxn_oxidation.is_surface_reaction()
 
     def test_is_charge_transfer_reaction(self):
         """Test is_charge_transfer_reaction() method"""
-        self.assertTrue(self.rxn_reduction.is_charge_transfer_reaction())
-        self.assertTrue(self.rxn_oxidation.is_charge_transfer_reaction())
+        assert self.rxn_reduction.is_charge_transfer_reaction()
+        assert self.rxn_oxidation.is_charge_transfer_reaction()
 
     def test_is_surface_charge_transfer(self):
         """Test is_surface_charge_transfer() method"""
-        self.assertTrue(self.rxn_reduction.is_surface_charge_transfer_reaction())
-        self.assertTrue(self.rxn_oxidation.is_surface_charge_transfer_reaction())
+        assert self.rxn_reduction.is_surface_charge_transfer_reaction()
+        assert self.rxn_oxidation.is_surface_charge_transfer_reaction()
 
     def test_get_reversible_potential(self):
         """Test get_reversible_potential() method"""
         V0_reduction = self.rxn_reduction.get_reversible_potential(298)
         V0_oxidation = self.rxn_oxidation.get_reversible_potential(298)
 
-        self.assertAlmostEqual(V0_reduction,V0_oxidation,6)
-        self.assertAlmostEqual(V0_reduction, 0.3967918, 6)
-        self.assertAlmostEqual(V0_oxidation, 0.3967918, 6)
+        assert abs(V0_reduction - V0_oxidation) < 0.000001
+        assert abs(V0_reduction - 0.3967918) < 0.000001
+        assert abs(V0_oxidation - 0.3967918) < 0.000001
 
     def test_get_rate_coeff(self):
         """Test get_rate_coefficient() method"""
@@ -3145,13 +3145,13 @@ class TestChargeTransferReaction:
         kf_1 = self.rxn_reduction.get_rate_coefficient(298,potential=0)
         kf_2 = self.rxn_reduction.kinetics.get_rate_coefficient(298,0)
 
-        self.assertAlmostEqual(kf_1, 43870506959779.0, 6)
-        self.assertAlmostEqual(kf_1, kf_2, 6)
+        assert abs(kf_1 - 43870506959779.0) < 0.000001
+        assert abs(kf_1 - kf_2) < 0.000001
 
         #kf_2 should be greater than kf_1
         kf_1 = self.rxn_oxidation.get_rate_coefficient(298,potential=0)
         kf_2 = self.rxn_oxidation.get_rate_coefficient(298,potential=0.1)
-        self.assertGreater(kf_2,kf_1)
+        assert kf_2>kf_1
 
     def test_equilibrium_constant_surface_charge_transfer_kc(self):
         """
@@ -3164,16 +3164,16 @@ class TestChargeTransferReaction:
         Kclist_oxidation = self.rxn_oxidation.get_equilibrium_constants(Tlist, type='Kc')
         # Test a range of temperatures
         for i in range(len(Tlist)):
-            self.assertAlmostEqual(Kclist_reduction[i] / Kclist0[i], 1.0, 6)
-            self.assertAlmostEqual(1 / Kclist_oxidation[i] / Kclist0[i], 1.0, 6)
+           assert abs(Kclist_reduction[i] / Kclist0[i] - 1.0) < 0.000001
+           assert abs(1 / Kclist_oxidation[i] / Kclist0[i] - 1.0) < 0.000001
 
         V0 = self.rxn_oxidation.get_reversible_potential(298)
         Kc_reduction_equil = self.rxn_reduction.get_equilibrium_constant(298, V0)
         Kc_oxidation_equil = self.rxn_oxidation.get_equilibrium_constant(298, V0)
-        self.assertAlmostEqual(Kc_oxidation_equil * Kc_reduction_equil, 1.0, 4)
+        assert abs(Kc_oxidation_equil * Kc_reduction_equil - 1.0) < 0.0001
         C0 =  1e5 / constants.R / 298
-        self.assertAlmostEqual(Kc_oxidation_equil, C0, 4)
-        self.assertAlmostEqual(Kc_reduction_equil, 1/C0, 4)
+        assert abs(Kc_oxidation_equil - C0) < 0.0001
+        assert abs(Kc_reduction_equil - 1/C0) < 0.0001
 
     @pytest.skip("Work in progress")
     def test_reverse_surface_charge_transfer_rate(self):
@@ -3184,8 +3184,8 @@ class TestChargeTransferReaction:
         kf_oxidation = self.rxn_oxidation.kinetics
         kr_oxidation = self.rxn_oxidation.generate_reverse_rate_coefficient()
         kr_reduction = self.rxn_reduction.generate_reverse_rate_coefficient()
-        self.assertEquals(kr_reduction.A.units, 's^-1')
-        self.assertEquals(kr_oxidation.A.units, 'm^3/(mol*s)')
+        assert kr_reduction.A.units == 's^-1'
+        assert kr_oxidation.A.units == 'm^3/(mol*s)'
 
         Tlist = numpy.linspace(298., 500., 30.,numpy.float64)
         for T in Tlist:
@@ -3193,8 +3193,8 @@ class TestChargeTransferReaction:
                 kf = kf_reduction.get_rate_coefficient(T,V)
                 kr = kr_reduction.get_rate_coefficient(T,V)
                 K = self.rxn_reduction.get_equilibrium_constant(T,V)
-                self.assertEquals(order_of_magnitude(kf/kr),order_of_magnitude(K))
+                assert order_of_magnitude(kf/kr) == order_of_magnitude(K)
                 kf = kf_oxidation.get_rate_coefficient(T,V)
                 kr = kr_oxidation.get_rate_coefficient(T,V)
                 K = self.rxn_oxidation.get_equilibrium_constant(T,V)
-                self.assertEquals(order_of_magnitude(kf/kr),order_of_magnitude(K))
+                assert order_of_magnitude(kf/kr) == order_of_magnitude(K)

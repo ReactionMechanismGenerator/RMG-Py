@@ -81,6 +81,11 @@ class TestAtomType:
         assert len(self.atomtype.decrement_radical) == len(atom_type.decrement_radical)
         for item1, item2 in zip(self.atomtype.decrement_radical, atom_type.decrement_radical):
             assert item1.label == item2.label
+        for item1, item2 in zip(self.atomtype.increment_charge, atom_type.increment_charge):
+            assert item1.label == item2.label
+        assert len(self.atomtype.decrement_charge) == len(atom_type.decrement_charge)
+        for item1, item2 in zip(self.atomtype.decrement_charge, atom_type.decrement_charge):
+            assert item1.label == item2.label
 
     def test_output(self):
         """
@@ -123,6 +128,8 @@ class TestAtomType:
             self.atomtype.decrement_radical,
             self.atomtype.increment_lone_pair,
             self.atomtype.decrement_lone_pair,
+            self.atomtype.increment_charge,
+            self.atomtype.decrement_charge,
         )
         assert self.atomtype.increment_bond == other.increment_bond
         assert self.atomtype.decrement_bond == other.decrement_bond
@@ -130,6 +137,8 @@ class TestAtomType:
         assert self.atomtype.break_bond == other.break_bond
         assert self.atomtype.increment_radical == other.increment_radical
         assert self.atomtype.decrement_radical == other.decrement_radical
+        assert self.atomtype.increment_charge == other.increment_charge
+        assert self.atomtype.decrement_charge == other.decrement_charge
 
     """
     Currently RMG doesn't even detect aromaticity of furan or thiophene, so making
@@ -815,6 +824,9 @@ class TestGetAtomType:
             """1 C u0 p0 c+1 {2,T}
                                                        2 C u0 p1 c-1 {1,T}"""
         )
+        
+        self.electron = Molecule().from_adjacency_list('''1 e u1 p0 c-1''')
+        self.proton = Molecule().from_adjacency_list('''1 H u0 p0 c+1''')
 
     def atom_type(self, mol, atom_id):
         atom = mol.atoms[atom_id]
@@ -828,7 +840,7 @@ class TestGetAtomType:
         """
         Test that get_atomtype() returns the hydrogen atom type.
         """
-        assert self.atom_type(self.mol3, 0) == "H"
+        assert self.atom_type(self.mol3, 0) == "H0"
 
     def test_carbon_types(self):
         """
@@ -992,7 +1004,7 @@ class TestGetAtomType:
         """
         Test that get_atomtype() works for occupied surface sites and for regular atoms in the complex.
         """
-        assert self.atom_type(self.mol76, 0) == "H"
+        assert self.atom_type(self.mol76, 0) == "H0"
         assert self.atom_type(self.mol76, 1) == "Xo"
 
     def test_vacant_surface_site_atom_type(self):
@@ -1000,6 +1012,18 @@ class TestGetAtomType:
         Test that get_atomtype() works for vacant surface sites and for regular atoms in the complex.
         """
         assert self.atom_type(self.mol77, 0) == "Cs"
-        assert self.atom_type(self.mol77, 1) == "H"
+        assert self.atom_type(self.mol77, 1) == "H0"
         assert self.atom_type(self.mol77, 3) == "Xv"
         assert self.atom_type(self.mol78, 0) == "Xv"
+
+    def test_electron(self):
+        """
+        Test that get_atomtype() returns the electron (e) atom type.
+        """
+        assert self.atom_type(self.electron, 0) == 'e'
+
+    def test_proton(self):
+        """
+        Test that get_atomtype() returns the proton (H+) atom type.
+        """
+        assert self.atom_type(self.proton, 0) == 'H+'
