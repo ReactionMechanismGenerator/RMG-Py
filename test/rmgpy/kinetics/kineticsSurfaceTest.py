@@ -756,7 +756,7 @@ class TestSurfaceChargeTransfer:
             Ea_i = self.surfchargerxn_oxidation.Ea.value_si
             self.surfchargerxn_oxidation.change_v0(V)
             assert self.surfchargerxn_oxidation.V0.value_si == V_i + delta
-            assert round(abs(self.surfchargerxn_oxidation.Ea.value_si-Ea_i - (alpha *electrons * constants.F * delta)), 6) == 0
+            assert round(abs(self.surfchargerxn_oxidation.Ea.value_si- (Ea_i - (alpha *electrons * constants.F * delta))), 6) == 0
 
         V0 = self.surfchargerxn_reduction.V0.value_si
         electrons = self.surfchargerxn_reduction.electrons.value
@@ -767,4 +767,4 @@ class TestSurfaceChargeTransfer:
             Ea_i = self.surfchargerxn_reduction.Ea.value_si
             self.surfchargerxn_reduction.change_v0(V)
             assert self.surfchargerxn_reduction.V0.value_si == V_i + delta
-            assert round(abs(self.surfchargerxn_reduction.Ea.value_si-Ea_i - (alpha *electrons * constants.F * delta)), 6) == 0
+            assert round(abs(self.surfchargerxn_reduction.Ea.value_si- (Ea_i - (alpha *electrons * constants.F * delta))), 6) == 0
