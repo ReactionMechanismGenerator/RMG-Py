@@ -731,13 +731,23 @@ class Reaction:
         surface species, the `surface_site_density` is the assumed reference. For protons (H+),
         a reference concentration of 1000 mol/m^3 (1 mol/L) is assumed
         """
-        cython.declare(dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
-        cython.declare(dN_gas=cython.int, dN_surf=cython.int, dGrxn=cython.double, K=cython.double, C0=cython.double, P0=cython.double)
-        cython.declare(number_of_gas_reactants=cython.int, number_of_gas_products=cython.int)
-        cython.declare(number_of_surface_reactants=cython.int, number_of_surface_products=cython.int)
-        cython.declare(dN_surf=cython.int, dN_gas=cython.int, sites=cython.int)
-        cython.declare(sigma_nu=cython.double)
-        cython.declare(rectant=Species, product=Species, spcs=Species)
+        cython.declare(
+            dGrxn=cython.double,
+            K=cython.double,
+            C0=cython.double,
+            P0=cython.double,
+            dN_gas=cython.int,
+            dN_surf=cython.int,
+            sites=cython.int,
+            number_of_gas_reactants=cython.int,
+            number_of_gas_products=cython.int,
+            number_of_surface_reactants=cython.int,
+            number_of_surface_products=cython.int,
+            sigma_nu=cython.double,
+            rectant=Species,
+            product=Species,
+            spcs=Species,
+        )
         # Use free energy of reaction to calculate Ka
         dGrxn = self.get_free_energy_of_reaction(T, potential)
         K = np.exp(-dGrxn / constants.R / T)
