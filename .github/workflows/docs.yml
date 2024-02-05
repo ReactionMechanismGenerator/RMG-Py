@@ -16,9 +16,6 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v2
-        with:
-          ref: gh-pages
-          path: build/html
       - name: Setup Mambaforge Python 3.7
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -46,6 +43,10 @@ jobs:
           cd RMG-Py
           sed -i '/embedsignature/s/# //g' setup.py
           make
+      - uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+          path: build/html
       - name: Make documentation - for testing
         if: ${{  github.event_name != 'push' || github.repository != 'ReactionMechanismGenerator/RMG-Py' }}
         run: |
