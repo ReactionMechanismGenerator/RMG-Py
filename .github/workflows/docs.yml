@@ -16,6 +16,9 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+          path: build/html
       - name: Setup Mambaforge Python 3.7
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -58,8 +61,6 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           cd documentation
-          rm -rf build/html
-          git clone --single-branch --branch gh-pages --origin official git@github.com:ReactionMechanismGenerator/RMG-Py.git build/html
           make html
       - name: Check documentation links
         continue-on-error: true
