@@ -45,18 +45,23 @@ def pass_cutting_threshold(species):
     except Exception:
         logging.debug('Species constraints could not be found.')
         species_constraints = {}
+        return False
 
     if isinstance(species, Species):
         struct = species.molecule[0]
     else:
         # expects a molecule here
         struct = species
-
+        
     min_cutting_size = species_constraints.get('speciesCuttingThreshold')
-    if struct.get_element_count()['C'] >= min_cutting_size:
-        return True
+    if min_cutting_size != None:
+        if struct.get_element_count()['C'] >= min_cutting_size:
+            return True
+        else:
+            return False
+    else:
+        return False
 
-    return False
 
 def fails_species_constraints(species):
     """
