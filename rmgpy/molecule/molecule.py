@@ -3002,6 +3002,25 @@ class Molecule(Graph):
 
         return desorbed_molecules
 
+    def get_ring_count_in_largest_fused_ring_system(self) -> int:
+        """
+        Get the number of rings in the largest fused ring system in the molecule.
+        """
+        cython.declare(ring_counts=list, rings=list, ring_count=int)
+        polycycles = self.get_polycycles()
+        ring_counts = list()
+        for polycycle in polycycles:
+            rings, ring_count = list(), 0
+            for atom in polycycle:
+                cycles = self.get_all_cycles(atom)
+                for cycle in cycles:
+                    if cycle not in rings:
+                        rings.append(cycle)
+                        ring_count += 1
+            ring_counts.append(ring_count)
+        return max(ring_counts) if len(ring_counts) else 0
+
+
 # this variable is used to name atom IDs so that there are as few conflicts by 
 # using the entire space of integer objects
 atom_id_counter = -2 ** 15
