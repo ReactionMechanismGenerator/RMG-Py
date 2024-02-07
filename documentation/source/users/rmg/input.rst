@@ -1010,6 +1010,7 @@ all of RMG's reaction families. ::
         maximumRadicalElectrons=2,
         maximumSingletCarbenes=1,
         maximumCarbeneRadicals=0,
+        maximumFusedRings=3,
         allowSingletO2 = False,
         speciesCuttingThreshold=20,
     )
@@ -1018,6 +1019,8 @@ An additional flag ``allowed`` can be set to allow species
 from either the input file, seed mechanisms, or reaction libraries to bypass these constraints.
 Note that this should be done with caution, since the constraints will still apply to subsequent
 products that form.
+
+``maximumFusedRings`` is the maximum number of rings in any fused ring system in the species.
 
 By default, the ``allowSingletO2`` flag is set to ``False``.  See :ref:`representing_oxygen` for more information.
 
