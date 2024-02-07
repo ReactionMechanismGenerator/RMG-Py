@@ -143,4 +143,10 @@ def fails_species_constraints(species):
         if struct.get_singlet_carbene_count() > 0 and struct.get_radical_count() > max_carbene_radicals:
             return f"Exceeded maximumCarbeneRadicals: {struct.get_radical_count()} > {max_carbene_radicals}"
 
+    max_fused_ring_system_size = species_constraints.get('maximumFusedRingSystemSize', -1)
+    if max_fused_ring_system_size != -1 and struct.is_cyclic():
+        if struct.get_ring_count_in_largest_fused_ring_system() > max_fused_ring_system_size:
+            return (f"Exceeded maximumFusedRingSystemSize: {struct.get_ring_count_in_largest_fused_ring_system()} > "
+                    f"{max_fused_ring_system_size}")
+
     return False
