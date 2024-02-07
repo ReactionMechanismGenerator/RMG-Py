@@ -31,6 +31,7 @@ import logging
 
 from rmgpy.species import Species
 
+
 def pass_cutting_threshold(species):
     """
     Pass in either a `Species` or `Molecule` object and checks whether it passes 
@@ -57,6 +58,7 @@ def pass_cutting_threshold(species):
         return True
 
     return False
+
 
 def fails_species_constraints(species):
     """
