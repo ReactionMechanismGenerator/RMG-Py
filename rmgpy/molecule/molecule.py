@@ -1036,7 +1036,20 @@ class Molecule(Graph):
             self.from_inchi(inchi)
             self._inchi = inchi
         elif smiles:
-            self.from_smiles(smiles)
+            if 'X' in smiles:
+                self.from_smiles(smiles.replace('X', 'Ar'))
+                lines = self.to_adjacency_list().split('\n')
+                for i, line in enumerate(lines):
+                    if 'Ar' in line:
+                        lines[i] = lines[i].replace('Ar', 'X')
+                        # remove any extra electron pairs
+                        lines[i] = lines[i].replace('p3', 'p0')
+                        lines[i] = lines[i].replace('p2', 'p0')
+                        lines[i] = lines[i].replace('p1', 'p0')
+                adj_list = '\n'.join(lines)
+                self = self.from_adjacency_list(adj_list)
+            else:
+                self.from_smiles(smiles)
             self._smiles = smiles
 
         if multiplicity != -187:  # it was set explicitly, so re-set it (from_smiles etc may have changed it)
