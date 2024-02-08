@@ -42,8 +42,10 @@ WORKDIR /rmg
 RUN git clone --single-branch --branch main --depth 1 https://github.com/ReactionMechanismGenerator/RMG-Py.git && \
     git clone --single-branch --branch main --depth 1 https://github.com/ReactionMechanismGenerator/RMG-database.git
 
-# build the conda environment
 WORKDIR /rmg/RMG-Py
+# patch the env file to a specific version of Julia that we know to be working on all platforms
+RUN sed -i 's/  - conda-forge::julia>=1.8.5,!=1.9.0/  - conda-forge::julia=1.9.4/' environment.yml
+# build the conda environment
 RUN conda env create --file environment.yml && \
     conda clean --all --yes
 
@@ -61,6 +63,8 @@ ENV PATH="$RUNNER_CWD/RMG-Py:$PATH"
 
 # 1. Build RMG
 # 2. Install and link Julia dependencies for RMS
+# setting this env variable fixes an issue with Julia precompilation on Windows
+ENV JULIA_CPU_TARGET="x86-64,haswell,skylake,broadwell,znver1,znver2,znver3,cascadelake,icelake-client,cooperlake,generic"
 RUN make && \
     julia -e 'using Pkg; Pkg.add(PackageSpec(name="PyCall",rev="master")); Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' && \
     python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" 
