@@ -16,6 +16,8 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v2
+      - name: Patch Environment File
+        run: sed -i 's/  - conda-forge::julia>=1.8.5,!=1.9.0/  - conda-forge::julia=1.9.1/' environment.yml
       - name: Setup Mambaforge Python 3.7
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -59,8 +61,8 @@ jobs:
       - name: Make documentation - to publish
         if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
           cd documentation
           make html
       - name: Check documentation links
@@ -72,4 +74,4 @@ jobs:
         if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
         run: |
           touch build/html/.nojekyll
-          cd build/html; git add -A .; git commit -m "Automated documentation rebuild"; git push official gh-pages
+          cd build/html; git add -A .; git commit -m "Automated documentation rebuild"; git push origin gh-pages
