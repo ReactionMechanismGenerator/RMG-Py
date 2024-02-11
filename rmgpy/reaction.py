@@ -877,8 +877,6 @@ class Reaction:
         kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
         return kr
 
-<<<<<<< HEAD
-=======
     def reverse_surface_charge_transfer_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
         """
         Reverses the given k_forward, which must be a SurfaceChargeTransfer type.
@@ -927,7 +925,6 @@ class Reaction:
         kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
         return kr
 
->>>>>>> 3afc9cc91 (handle ChargeTransfer kinetics with in reaction.py)
     def generate_reverse_rate_coefficient(self, network_kinetics=False, Tmin=None, Tmax=None, surface_site_density=0):
         """
         Generate and return a rate coefficient model for the reverse reaction.
