@@ -13,7 +13,7 @@ RUN ln -snf /bin/bash /bin/sh
 #  - libxrender1 required by RDKit
 RUN apt-get update && \
     apt-get install -y \
-    make \ 
+    make \
     gcc \
     wget \
     git \
@@ -43,8 +43,6 @@ RUN git clone --single-branch --branch main --depth 1 https://github.com/Reactio
     git clone --single-branch --branch main --depth 1 https://github.com/ReactionMechanismGenerator/RMG-database.git
 
 WORKDIR /rmg/RMG-Py
-# patch the env file to a specific version of Julia that we know to be working on all platforms
-RUN sed -i 's/  - conda-forge::julia>=1.8.5,!=1.9.0/  - conda-forge::julia=1.9.4/' environment.yml
 # build the conda environment
 RUN conda env create --file environment.yml && \
     conda clean --all --yes
@@ -67,7 +65,7 @@ ENV PATH="$RUNNER_CWD/RMG-Py:$PATH"
 ENV JULIA_CPU_TARGET="x86-64,haswell,skylake,broadwell,znver1,znver2,znver3,cascadelake,icelake-client,cooperlake,generic"
 RUN make && \
     julia -e 'using Pkg; Pkg.add(PackageSpec(name="PyCall",rev="master")); Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' && \
-    python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" 
+    python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
 # RMG-Py should now be installed and ready - trigger precompilation and test run
 RUN python-jl rmg.py examples/rmg/minimal/input.py
