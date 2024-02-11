@@ -966,9 +966,6 @@ class Reaction:
         kunits = get_rate_coefficient_units_from_reaction_order(n_gas, n_surf)
 
         kf = self.kinetics
-<<<<<<< HEAD
-        if isinstance(kf, KineticsData):
-=======
 
         if isinstance(kf, SurfaceChargeTransfer):
             return self.reverse_surface_charge_transfer_rate(kf, kunits, Tmin, Tmax)
@@ -977,7 +974,6 @@ class Reaction:
             return self.reverse_arrhenius_charge_transfer_rate(kf, kunits, Tmin, Tmax)
 
         elif isinstance(kf, KineticsData):
->>>>>>> 3afc9cc91 (handle ChargeTransfer kinetics with in reaction.py)
 
             Tlist = kf.Tdata.value_si
             klist = np.zeros_like(Tlist)
