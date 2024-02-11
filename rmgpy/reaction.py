@@ -879,16 +879,15 @@ class Reaction:
 
     def reverse_surface_charge_transfer_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
         """
-        Reverses the given k_forward, which must be a SurfaceChargeTransfer type.
+        Reverses the given k_forward, which must be a ArrheniusChargeTransfer type.
         You must supply the correct units for the reverse rate.
         The equilibrium constant is evaluated from the current reaction instance (self).
         """
-        cython.declare(kf=SurfaceChargeTransfer, kr=SurfaceChargeTransfer)
         cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int, V0=cython.double)
         kf = k_forward
         self.set_reference_potential(298)
-        if not isinstance(kf, SurfaceChargeTransfer): # Only reverse SurfaceChargeTransfer rates
-            raise TypeError(f'Expected a SurfaceChargeTransfer object for k_forward but received {kf}')
+        if not isinstance(kf, ArrheniusChargeTransfer): # Only reverse ArrheniusChargeTransfer rates
+            raise TypeError(f'Expected a ArrheniusChargeTransfer object for k_forward but received {kf}')
         if Tmin is not None and Tmax is not None:
             Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
         else:
@@ -898,19 +897,19 @@ class Reaction:
         klist = np.zeros_like(Tlist)
         for i in range(len(Tlist)):
             klist[i] = kf.get_rate_coefficient(Tlist[i],V0) / self.get_equilibrium_constant(Tlist[i],V0)
-        kr = SurfaceChargeTransfer(alpha=kf.alpha.value, electrons=-1*self.electrons, V0=(V0,'V'))
+        kr = ArrheniusChargeTransfer(alpha=kf.alpha.value, electrons=-1*self.electrons, V0=(V0,'V'))
         kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
         return kr
 
     def reverse_arrhenius_charge_transfer_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
         """
-        Reverses the given k_forward, which must be a SurfaceChargeTransfer type.
+        Reverses the given k_forward, which must be a ArrheniusChargeTransfer type.
         You must supply the correct units for the reverse rate.
         The equilibrium constant is evaluated from the current reaction instance (self).
         """
         cython.declare(Tlist=np.ndarray, klist=np.ndarray, i=cython.int, V0=cython.double)
         kf = k_forward
-        if not isinstance(kf, ArrheniusChargeTransfer): # Only reverse SurfaceChargeTransfer rates
+        if not isinstance(kf, ArrheniusChargeTransfer): # Only reverse ArrheniusChargeTransfer rates
             raise TypeError(f'Expected a ArrheniusChargeTransfer object for k_forward but received {kf}')
         if Tmin is not None and Tmax is not None:
             Tlist = 1.0 / np.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
@@ -967,10 +966,7 @@ class Reaction:
 
         kf = self.kinetics
 
-        if isinstance(kf, SurfaceChargeTransfer):
-            return self.reverse_surface_charge_transfer_rate(kf, kunits, Tmin, Tmax)
-
-        elif isinstance(kf, ArrheniusChargeTransfer):
+        if isinstance(kf, ArrheniusChargeTransfer):
             return self.reverse_arrhenius_charge_transfer_rate(kf, kunits, Tmin, Tmax)
 
         elif isinstance(kf, KineticsData):
@@ -1170,11 +1166,6 @@ class Reaction:
         for element in element_list:
             if reactant_elements[element] != product_elements[element]:
                 return False
-
-        if self.electrons < 0:
-            reactants_net_charge += self.electrons
-        elif self.electrons > 0:
-            products_net_charge -= self.electrons
 
         return True
 
