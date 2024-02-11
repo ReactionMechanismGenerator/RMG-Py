@@ -16,8 +16,6 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v2
-      - name: Patch Environment File
-        run: sed -i 's/  - conda-forge::julia>=1.8.5,!=1.9.0/  - conda-forge::julia=1.9.1/' environment.yml
       - name: Setup Mambaforge Python 3.7
         uses: conda-incubator/setup-miniconda@v2
         with:
