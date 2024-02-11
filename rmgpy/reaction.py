@@ -1171,14 +1171,11 @@ class Reaction:
             if reactant_elements[element] != product_elements[element]:
                 return False
 
-<<<<<<< HEAD
-=======
         if self.electrons < 0:
             reactants_net_charge += self.electrons
         elif self.electrons > 0:
             products_net_charge -= self.electrons
 
->>>>>>> 3afc9cc91 (handle ChargeTransfer kinetics with in reaction.py)
         return True
 
     def generate_pairs(self):
