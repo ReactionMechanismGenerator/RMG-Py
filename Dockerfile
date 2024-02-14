@@ -13,7 +13,7 @@ RUN ln -snf /bin/bash /bin/sh
 #  - libxrender1 required by RDKit
 RUN apt-get update && \
     apt-get install -y \
-    make \ 
+    make \
     gcc \
     wget \
     git \
@@ -42,8 +42,8 @@ WORKDIR /rmg
 RUN git clone --single-branch --branch main --depth 1 https://github.com/ReactionMechanismGenerator/RMG-Py.git && \
     git clone --single-branch --branch main --depth 1 https://github.com/ReactionMechanismGenerator/RMG-database.git
 
-# build the conda environment
 WORKDIR /rmg/RMG-Py
+# build the conda environment
 RUN conda env create --file environment.yml && \
     conda clean --all --yes
 
@@ -61,9 +61,11 @@ ENV PATH="$RUNNER_CWD/RMG-Py:$PATH"
 
 # 1. Build RMG
 # 2. Install and link Julia dependencies for RMS
+# setting this env variable fixes an issue with Julia precompilation on Windows
+ENV JULIA_CPU_TARGET="x86-64,haswell,skylake,broadwell,znver1,znver2,znver3,cascadelake,icelake-client,cooperlake,generic"
 RUN make && \
     julia -e 'using Pkg; Pkg.add(PackageSpec(name="PyCall",rev="master")); Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' && \
-    python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()" 
+    python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
 # RMG-Py should now be installed and ready - trigger precompilation and test run
 RUN python-jl rmg.py examples/rmg/minimal/input.py
