@@ -55,10 +55,7 @@ def pass_cutting_threshold(species):
         
     min_cutting_size = species_constraints.get('speciesCuttingThreshold')
     if min_cutting_size != None:
-        if struct.get_element_count()['C'] >= min_cutting_size:
-            return True
-        else:
-            return False
+        return struct.get_element_count()['C'] >= min_cutting_size
     else:
         return False
 
