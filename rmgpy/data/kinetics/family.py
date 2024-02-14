@@ -2402,6 +2402,8 @@ class KineticsFamily(Database):
         Returns a tuple (kinetics, entry):
         If it's estimated via 'rate rules' and an exact match is found in the tree,
         then the entry is returned as the second element of the tuple.
+        But if an average is used,then the tuple returned is (kinetics, None).
+
         """
         if method.lower() == 'rate rules':
             return self.estimate_kinetics_using_rate_rules(template, degeneracy)  # This returns kinetics and entry data
