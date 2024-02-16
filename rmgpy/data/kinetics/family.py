@@ -77,7 +77,7 @@ class TemplateReaction(Reaction):
     Attribute       Type                      Description
     =============== ========================= =====================================
     `family`        ``str``                   The kinetics family that the reaction was created from.
-    `estimator`     ``str``                   Whether the kinetics came from rate rules or group additivity.
+    `estimator`     ``str``                   The name of the kinetic estimator; currently only rate rules is supported.
     `reverse`       :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
     `is_forward`    ``bool``                  Whether the reaction was generated in the forward direction of the family.
     `labeled_atoms` ``dict``                  Keys are 'reactants' or 'products', values are dictionaries.
@@ -2396,23 +2396,20 @@ class KineticsFamily(Database):
     def get_kinetics_for_template(self, template, degeneracy=1, method='rate rules'):
         """
         Return an estimate of the kinetics for a reaction with the given
-        `template` and reaction-path `degeneracy`. There are two possible methods
-        to use: 'group additivity' (new possible RMG-Py behavior) and 'rate rules' (old
-        RMG-Java behavior, and default RMG-Py behavior).
+        `template` and reaction-path `degeneracy`. There is currently only one method to use:
+        'rate rules' (old RMG-Java behavior, and default RMG-Py behavior). Group additivity was removed in August 2023.
         
         Returns a tuple (kinetics, entry):
         If it's estimated via 'rate rules' and an exact match is found in the tree,
         then the entry is returned as the second element of the tuple.
-        But if an average is used, or the 'group additivity' method, then the tuple
-        returned is (kinetics, None).
+        But if an average is used, then the tuple returned is (kinetics, None).
+
         """
-        if method.lower() == 'group additivity':
-            return self.estimate_kinetics_using_group_additivity(template, degeneracy), None
-        elif method.lower() == 'rate rules':
+        if method.lower() == 'rate rules':
             return self.estimate_kinetics_using_rate_rules(template, degeneracy)  # This returns kinetics and entry data
         else:
             raise ValueError('Invalid value "{0}" for method parameter; '
-                             'should be "group additivity" or "rate rules".'.format(method))
+                             'currently only "rate rules" is supported.'.format(method))
 
     def get_kinetics_from_depository(self, depository, reaction, template, degeneracy):
         """
@@ -2458,8 +2455,8 @@ class KineticsFamily(Database):
     def get_kinetics(self, reaction, template_labels, degeneracy=1, estimator='', return_all_kinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
-        depositories as well as generating a result using the user-specified `estimator`
-        of either 'group additivity' or 'rate rules'.  Unlike
+        depositories as well as generating a result using the user-specified `estimator`.
+        Currently, only 'rate rules' is a supported estimator.  Unlike
         the regular :meth:`get_kinetics()` method, this returns a list of
         results, with each result comprising of
 
@@ -2468,7 +2465,7 @@ class KineticsFamily(Database):
         3. the entry  - this will be `None` if from a template estimate
         4. is_forward a boolean denoting whether the matched entry is in the same
            direction as the inputted reaction. This will always be True if using
-           rates rules or group additivity. This can be `True` or `False` if using
+           rates rules. This can be `True` or `False` if using
            a depository
 
         If return_all_kinetics==False, only the first (best?) matching kinetics is returned.
@@ -2489,7 +2486,9 @@ class KineticsFamily(Database):
                 for kinetics, entry, is_forward in kinetics_list0:
                     kinetics_list.append([kinetics, depository, entry, is_forward])
 
-        # If estimator type of rate rules or group additivity is given, retrieve the kinetics. 
+        # If estimator type of rate rules is given, retrieve the kinetics. 
+        # TODO: Since group additivity was removed, this logic can be condensed into just 1 branch.
+
         if estimator:
             try:
                 kinetics, entry = self.get_kinetics_for_template(template, degeneracy, method=estimator)
@@ -2502,7 +2501,6 @@ class KineticsFamily(Database):
                     return kinetics, estimator, entry, True
                 kinetics_list.append([kinetics, estimator, entry, True])
         # If no estimation method was given, prioritize rate rule estimation. 
-        # If returning all kinetics, add estimations from both rate rules and group additivity.
         else:
             try:
                 kinetics, entry = self.get_kinetics_for_template(template, degeneracy, method='rate rules')
@@ -2511,15 +2509,6 @@ class KineticsFamily(Database):
                 kinetics_list.append([kinetics, 'rate rules', entry, True])
             except KineticsError:
                 # If kinetics were undeterminable for rate rules estimation, do nothing.
-                pass
-
-            try:
-                kinetics2, entry2 = self.get_kinetics_for_template(template, degeneracy, method='group additivity')
-                if not return_all_kinetics:
-                    return kinetics2, 'group additivity', entry2, True
-                kinetics_list.append([kinetics2, 'group additivity', entry2, True])
-            except KineticsError:
-                # If kinetics were undeterminable for group additivity estimation, do nothing.
                 pass
 
         if not return_all_kinetics:
@@ -3599,8 +3588,6 @@ class KineticsFamily(Database):
                 template = self.retrieve_template(template_labels)
                 if estimator == 'rate rules':
                     kinetics, entry = self.estimate_kinetics_using_rate_rules(template, degeneracy=1)
-                elif estimator == 'group additivity':
-                    kinetics = self.estimate_kinetics_using_group_additivity(template, degeneracy=1)
                 else:
                     raise ValueError('{0} is not a valid value for input `estimator`'.format(estimator))
 
