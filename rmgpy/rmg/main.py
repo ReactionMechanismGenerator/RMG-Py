@@ -112,7 +112,7 @@ class RMG(util.Subject):
     `seed_mechanisms`                                          The seed mechanisms included in the model
     `kinetics_families`                                        The kinetics families to use for reaction generation
     `kinetics_depositories`                                    The kinetics depositories to use for looking up kinetics in each family
-    `kinetics_estimator`                                       The method to use to estimate kinetics: 'group additivity' or 'rate rules'
+    `kinetics_estimator`                                       The method to use to estimate kinetics: currently, only 'rate rules' is supported
     `solvent`                                                  If solvation estimates are required, the name of the solvent.
     `liquid_volumetric_mass_transfer_coefficient_power_law`    If kLA estimates are required, the coefficients for kLA power law
     ---------------------------------------------------------- ------------------------------------------------
@@ -183,7 +183,7 @@ class RMG(util.Subject):
         self.seed_mechanisms = None
         self.kinetics_families = None
         self.kinetics_depositories = None
-        self.kinetics_estimator = "group additivity"
+        self.kinetics_estimator = "rate rules"
         self.solvent = None
         self.diffusion_limiter = None
         self.surface_site_density = None

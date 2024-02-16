@@ -996,18 +996,6 @@ class CoreEdgeReactionModel:
                     # Use the one for which the kinetics is the forward kinetics
                     keep_reverse = gibbs_is_positive and is_forward and rev_is_forward
                     reason = "Both directions matched the same entry in {0}, but this direction is exergonic.".format(reaction.family)
-                elif self.kinetics_estimator == "group additivity" and (
-                    kinetics.comment.find("Fitted to 1 rate") > 0 and not rev_kinetics.comment.find("Fitted to 1 rate") > 0
-                ):
-                    # forward kinetics were fitted to only 1 rate, but reverse are hopefully better
-                    keep_reverse = True
-                    reason = "Other direction matched a group only fitted to 1 rate."
-                elif self.kinetics_estimator == "group additivity" and (
-                    not kinetics.comment.find("Fitted to 1 rate") > 0 and rev_kinetics.comment.find("Fitted to 1 rate") > 0
-                ):
-                    # reverse kinetics were fitted to only 1 rate, but forward are hopefully better
-                    keep_reverse = False
-                    reason = "Other direction matched a group only fitted to 1 rate."
                 elif entry is not None and rev_entry is not None:
                     # Both directions matched explicit rate rules
                     # Keep the direction with the lower (but nonzero) rank
