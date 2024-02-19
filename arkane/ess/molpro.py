@@ -458,6 +458,9 @@ class MolproLog(ESSAdapter):
             if 'T1 diagnostic:  ' in line:
                 items = line.split()
                 return float(items[-1])
+        if any(["mcri" in line.lower() for line in log]):
+            logging.info("MCRI calculation were used, so T1 parameter is not required")
+            return None
         raise LogError('Unable to find T1 diagnostic in energy file: {0}'.format(self.path))
 
     def get_D1_diagnostic(self):
@@ -472,6 +475,9 @@ class MolproLog(ESSAdapter):
             if 'D1 diagnostic:  ' in line:
                 items = line.split()
                 return float(items[-1])
+        if any(["mcri" in line.lower() for line in log]):
+            logging.info("MCRI calculation were used, so T1 parameter is not required")
+            return None
         raise LogError('Unable to find D1 diagnostic in energy file: {0}'.format(self.path))
 
     def load_scan_pivot_atoms(self):
