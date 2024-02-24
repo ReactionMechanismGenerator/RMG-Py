@@ -1021,7 +1021,6 @@ all of RMG's reaction families. ::
         maximumRadicalElectrons=2,
         maximumSingletCarbenes=1,
         maximumCarbeneRadicals=0,
-        maximumIsotopicAtoms=2,
         allowSingletO2 = False,
         speciesCuttingThreshold=20,
     )
