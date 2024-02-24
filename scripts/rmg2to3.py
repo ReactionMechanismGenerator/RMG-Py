@@ -1796,7 +1796,6 @@ ARGUMENTS2 = {
     # rmgpy.tools.isotopes
     'useOriginalReactions': 'use_original_reactions',
     'kineticIsotopeEffect': 'kinetic_isotope_effect',
-    'maximumIsotopicAtoms': 'maximum_isotopic_atoms',
     # rmgpy.tools.loader
     'generateImages': 'generate_images',
     'useJava': 'use_java',
