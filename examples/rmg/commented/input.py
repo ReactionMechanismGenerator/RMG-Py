@@ -292,8 +292,6 @@ generatedSpeciesConstraints(
     # If this is false or missing, RMG will throw an error if the more less-stable form of O2 is entered
     # which doesn't react in the RMG system. normally input O2 as triplet with SMILES [O][O]
     # allowSingletO2=False,
-    # maximum allowed number of non-normal isotope atoms:
-    # maximumIsotopicAtoms=2,
 )
 
 # optional block allows thermo to be estimated through quantum calculations
