@@ -65,6 +65,7 @@ from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreErr
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 from rmgpy.kinetics import ThirdBody
+from rmgpy.kinetics import Troe
 from rmgpy.molecule import Molecule
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.reaction import Reaction
@@ -1451,7 +1452,7 @@ class RMG(util.Subject):
                     " rate at the relevant conditions\n\n"
                 )
                 for violator in violators:
-                    if isinstance(violator[0].kinetics, ThirdBody):
+                    if isinstance(violator[0].kinetics, (ThirdBody,Troe)):
                         rxn_string = violator[0].to_chemkin(self.reaction_model.core.species)
                     else:
                         rxn_string = violator[0].to_chemkin()
