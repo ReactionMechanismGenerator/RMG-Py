@@ -1419,10 +1419,11 @@ class Group(Graph):
             r = [ATOMTYPES[x] for x in r]
 
         R = r[:]
-        R.remove(ATOMTYPES['X'])
+        if ATOMTYPES['X'] in R:
+            R.remove(ATOMTYPES['X'])
         RnH = R[:]
-
-        RnH.remove(ATOMTYPES['H'])
+        if ATOMTYPES['H'] in RnH:
+            RnH.remove(ATOMTYPES['H'])
 
         atoms = self.atoms
         if atm_ind is None:
