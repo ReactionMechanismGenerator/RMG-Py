@@ -1392,6 +1392,8 @@ class Group(Graph):
             atm.reg_dim_atm = [[], []]
             atm.reg_dim_u = [[], []]
             atm.reg_dim_r = [[], []]
+            atm.reg_dim_site = [[],[]]
+            atm.reg_dim_morphology = [[],[]]
         for bd in self.get_all_edges():
             bd.reg_dim = [[], []]
 
