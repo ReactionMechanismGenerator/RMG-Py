@@ -240,8 +240,26 @@ Some charged atom types were merged together, and are marked as '*Composite atom
 
 ATOMTYPES = {}
 
+ATOMTYPES['Rx']    = AtomType(label='Rx', generic=[], specific=[
+    'H',
+    'R',
+    'R!H',
+    'R!H!Val7',
+    'Val4','Val5','Val6','Val7',
+    'He','Ne','Ar',
+    'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ctc','Ct','Cb','Cbf','Cq','C2s','C2sc','C2d','C2dc','C2tc',
+    'N','N0sc','N1s','N1sc','N1dc','N3s','N3sc','N3d','N3t','N3b','N5sc','N5dc','N5ddc','N5dddc','N5tc','N5b','N5bd',
+    'O','Oa','O0sc','O2s','O2sc','O2d','O4sc','O4dc','O4tc','O4b',
+    'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf','Siq',
+    'P','P0sc','P1s','P1sc','P1dc','P3s','P3d','P3t','P3b','P5s','P5sc','P5d','P5dd','P5dc','P5ddc','P5t','P5td','P5tc','P5b','P5bd',
+    'S','Sa','S0sc','S2s','S2sc','S2d','S2dc','S2tc','S4s','S4sc','S4d','S4dd','S4dc','S4b','S4t','S4tdc','S6s','S6sc','S6d','S6dd','S6ddd','S6dc','S6t','S6td','S6tt','S6tdc',
+    'Cl','Cl1s',
+    'Br','Br1s',
+    'I','I1s',
+    'F','F1s','X','Xv','Xo'])
+
 # Surface sites:
-ATOMTYPES['X']   = AtomType(label='X', generic=[], specific=['Xv', 'Xo'])
+ATOMTYPES['X']   = AtomType(label='X', generic=['Rx'], specific=['Xv', 'Xo'])
 
 # Vacant surface site:
 ATOMTYPES['Xv']   = AtomType('Xv', generic=['X'], specific=[],
@@ -249,11 +267,12 @@ ATOMTYPES['Xv']   = AtomType('Xv', generic=['X'], specific=[],
                              benzene=[0], lone_pairs=[0])
 # Occupied surface site:
 ATOMTYPES['Xo']   = AtomType('Xo', generic=['X'], specific=[],
-                             single=[0, 1, 2, 3, 4, 5, 6, 7, 8], all_double=[0, 1, 2, 3, 4, 5, 6, 7, 8], r_double=[], o_double=[], s_double=[], triple=[0, 1, 2, 3, 4, 5, 6, 7, 8],
-                             quadruple=[0, 1, 2, 3, 4, 5, 6, 7, 8], benzene=[0], lone_pairs=[0])
+                             single=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], all_double=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], r_double=[], o_double=[], s_double=[], triple=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+                             quadruple=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], benzene=[0], lone_pairs=[0])
+
 
 # Non-surface atomTypes, R being the most generic:
-ATOMTYPES['R']    = AtomType(label='R', generic=[], specific=[
+ATOMTYPES['R']    = AtomType(label='R', generic=['Rx'], specific=[
     'H',
     'R!H',
     'R!H!Val7',
@@ -634,6 +653,7 @@ ATOMTYPES['F1s'] = AtomType('F1s', generic=['R', 'R!H', 'F', 'Val7'], specific=[
                             single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[3], charge=[0])
 # examples for F1s: HF, [F], FO, CH3F, F2
 
+ATOMTYPES['Rx'].set_actions(increment_bond=['Rx'], decrement_bond=['Rx'], form_bond=['Rx'], break_bond=['Rx'], increment_radical=['Rx'], decrement_radical=['Rx'], increment_lone_pair=['Rx'], decrement_lone_pair=['Rx'])
 ATOMTYPES['X'].set_actions(increment_bond=['X'], decrement_bond=['X'], form_bond=['X'], break_bond=['X'], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
 ATOMTYPES['Xv'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Xo'], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
 ATOMTYPES['Xo'].set_actions(increment_bond=['Xo'], decrement_bond=['Xo'], form_bond=[], break_bond=['Xv'], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
