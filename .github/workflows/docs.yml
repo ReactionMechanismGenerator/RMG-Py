@@ -50,8 +50,10 @@ jobs:
       - name: Make documentation - for testing
         if: ${{  github.event_name != 'push' || github.repository != 'ReactionMechanismGenerator/RMG-Py' }}
         run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
           cd documentation
-          sphinx-build -b html -d build/doctrees/ source/ build/html -w errors.log -W --keep-going
+          make html
       - name: Report documentation errors
         if: ${{ failure() }}
         run: |
@@ -59,10 +61,8 @@ jobs:
       - name: Make documentation - to publish
         if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
           cd documentation
-          make html
+          sphinx-build -b html -d build/doctrees/ source/ build/html -w errors.log -W --keep-going
       - name: Check documentation links
         continue-on-error: true
         run: |
@@ -72,4 +72,4 @@ jobs:
         if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
         run: |
           touch build/html/.nojekyll
-          cd build/html; git add -A .; git commit -m "Automated documentation rebuild"; git push origin gh-pages
+          cd build/html; git add -A .; git commit -m "Automated documentation rebuild"; git push --dry-run origin gh-pages
