@@ -2401,10 +2401,12 @@ class Molecule(Graph):
                                              charge=[atom.charge],
                                              lone_pairs=[atom.lone_pairs],
                                              label=atom.label,
+                                             site=[atom.site] if atom.site else [],
+                                             morphology=[atom.morphology] if atom.morphology else [],
                                              )
 
-        group = gr.Group(atoms=list(group_atoms.values()), multiplicity=[self.multiplicity], metal=[self.metal],
-                         facet=[self.facet])
+        group = gr.Group(atoms=list(group_atoms.values()), multiplicity=[self.multiplicity], metal=[self.metal] if self.metal else [],
+                         facet=[self.facet] if self.facet else [])
 
         # Create GroupBond for each bond between atoms in the molecule
         for atom in self.atoms:
