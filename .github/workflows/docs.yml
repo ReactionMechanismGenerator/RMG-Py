@@ -52,7 +52,10 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
+          ls -l
+          pwd
           cd documentation
+          ls -l
           make html
       - name: Report documentation errors
         if: ${{ failure() }}
@@ -72,4 +75,7 @@ jobs:
         if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
         run: |
           touch build/html/.nojekyll
+          ls -l
+          pwd
+          ls -l build/html/
           cd build/html; git add -A .; git commit -m "Automated documentation rebuild"; git push --dry-run origin gh-pages
