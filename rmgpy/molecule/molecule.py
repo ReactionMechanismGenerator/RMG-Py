@@ -230,7 +230,10 @@ class Atom(Vertex):
                         and self.radical_electrons == atom.radical_electrons
                         and self.lone_pairs == atom.lone_pairs
                         and self.charge == atom.charge
-                        and self.atomtype is atom.atomtype)
+                        and self.atomtype is atom.atomtype
+                        and self.site == atom.site
+                        and self.morphology == atom.morphology)
+
             else:
                 return self.element is atom.element
         elif isinstance(other, gr.GroupAtom):
