@@ -48,7 +48,7 @@ jobs:
           ref: gh-pages
           clean: false
           path: build/html
-          # fetch-depth: 0  # checkout the complete git history so upstream is seen as out of date when attempting to push these updates
+          fetch-depth: 0  # checkout the complete git history so upstream is seen as out of date when attempting to push these updates
       - name: Make documentation - for testing
         if: ${{  github.event_name != 'push' || github.repository != 'ReactionMechanismGenerator/RMG-Py' }}
         run: |
