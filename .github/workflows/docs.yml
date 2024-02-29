@@ -58,6 +58,8 @@ jobs:
           cd documentation
           ls -l
           make html
+          ls -l
+          ls -l build/html
       - name: Report documentation errors
         if: ${{ failure() }}
         run: |
