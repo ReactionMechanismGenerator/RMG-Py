@@ -79,4 +79,11 @@ jobs:
           ls -l
           pwd
           ls -l build/html/
-          cd build/html; git add -A .; git commit -m "Automated documentation rebuild"; git push --dry-run origin gh-pages
+          git status
+          cd build/html
+          git status
+          git add -A .
+          git status
+          git commit -m "Automated documentation rebuild"
+          git status
+          git push --dry-run origin gh-pages
