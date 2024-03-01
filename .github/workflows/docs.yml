@@ -49,7 +49,7 @@ jobs:
         with:
           ref: gh-pages
           clean: false
-          path: build/html
+          path: documentation/build/html
           fetch-depth: 0  # checkout the complete git history so upstream is seen as out of date when attempting to push these updates
       - name: Make documentation - for testing
         if: ${{  github.event_name != 'push' || github.repository != 'ReactionMechanismGenerator/RMG-Py' }}
@@ -80,6 +80,14 @@ jobs:
       - name: Publish documentation
         # if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
         run: |
+          cd documentation/build/html
+          git add -A .
+          git commit -m "Automated documentation rebuild"
+          echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          git status
+          echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          git push --dry-run origin gh-pages
+          echo "THIS NEXT ONE SHOULD FAIL BECAUSE THAT DIR SHOULD NOT EXIST ANYMORE SINCE WE AREN'T CLONING GH-PAGES INTO IT"  
           echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           touch build/html/.nojekyll
           echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
