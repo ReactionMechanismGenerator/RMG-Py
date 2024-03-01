@@ -26,7 +26,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
       Note that you should reinitialize or restart your terminal in order for the changes to take effect, as the installer will tell you.
 
 #. There are a few system-level dependencies which are required and should not be installed via Conda. These include
-   `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG.
+   `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG. For WSL users, `libxrender1 <https://packages.debian.org/sid/libxrender1>`_ may also need to be installed.
 
    For Linux users, you can check whether these are already installed by simply calling them via the command line, which
    will let you know if they are missing. To install any missing packages, you should use the appropriate package manager
@@ -34,21 +34,21 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    a. On Ubuntu and Debian the package manager is ``apt`` ::
 
-       sudo apt install git gcc g++ make
+       sudo apt install git gcc g++ make libxrender1
 
    b. On Fedora and Red Hat derivatives (RHEL 8+) the package manager is ``dnf`` ::
 
-       sudo dnf install git gcc gcc-c++ make
+       sudo dnf install git gcc gcc-c++ make libxrender1
 
    c. For Red Hat 7 and lower, replace ``dnf`` with ``yum`` in the preceding.
 
    d. On openSUSE the package manager is ``zypper``::
 
-       sudo zypper install git gcc gcc-c++ make
+       sudo zypper install git gcc gcc-c++ make libxrender1
 
    e. On Manjaro or Arch Linux the package manager is ``pacman`` ::
 
-       sudo pacman -S git gcc make
+       sudo pacman -S git gcc make libxrender1
 
    f. For MacOS users, the above packages can be easily obtained by installing the XCode Command Line Tools.
       These are a set of packages relevant for software development which have been bundled together by Apple.
