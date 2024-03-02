@@ -3043,3 +3043,14 @@ multiplicity 2
         assert len(mol.get_all_edges()) == 2
         mol.remove_van_der_waals_bonds()
         assert len(mol.get_all_edges()) == 1
+
+    def test_get_ring_count_in_largest_fused_ring_system(self):
+        """Test that we can count the rings in the largest fused ring system."""
+        mol = Molecule(smiles="CCCC")
+        assert mol.get_ring_count_in_largest_fused_ring_system() == 0
+        mol = Molecule(smiles="c1ccccc1")
+        assert mol.get_ring_count_in_largest_fused_ring_system() == 0
+        mol = Molecule(smiles="c12ccccc1cccc2")
+        assert mol.get_ring_count_in_largest_fused_ring_system() == 2
+        mol = Molecule(smiles="C[C]1C2C(=O)C3CC4C(=O)C=C2CC143")
+        assert mol.get_ring_count_in_largest_fused_ring_system() == 4
