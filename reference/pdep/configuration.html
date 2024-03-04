@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.pdep.Configuration<a class="headerlink" href="#rmgpy-pdep-configuration" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.pdep.</span></span><span class="sig-name descname"><span class="pre">Configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.pdep.</span></span><span class="sig-name descname"><span class="pre">Configuration</span></span><a class="headerlink" href="#rmgpy.pdep.Configuration" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a molecular configuration on a potential energy surface.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.E0">
@@ -70,31 +70,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dd><p>The ground-state energy of the configuration in J/mol.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.pdep.Configuration.active_j_rotor">
-<span class="sig-name descname"><span class="pre">active_j_rotor</span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.active_j_rotor" title="Permalink to this definition">¶</a></dt>
-<dd><p>‘bool’</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>active_j_rotor</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.pdep.Configuration.active_k_rotor">
-<span class="sig-name descname"><span class="pre">active_k_rotor</span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.active_k_rotor" title="Permalink to this definition">¶</a></dt>
-<dd><p>‘bool’</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>active_k_rotor</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.calculate_collision_frequency">
-<span class="sig-name descname"><span class="pre">calculate_collision_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict</span> <span class="pre">bath_gas</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.calculate_collision_frequency" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calculate_collision_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_gas</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.calculate_collision_frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the value of the collision frequency in Hz at the given
 temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa. If a dictionary <cite>bath_gas</cite>
 of bath gas species and corresponding mole fractions is given, the
@@ -105,7 +83,7 @@ of the species before computing the collision frequency.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.calculate_density_of_states">
-<span class="sig-name descname"><span class="pre">calculate_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">active_j_rotor=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">active_k_rotor=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bool</span> <span class="pre">rmgmode=False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.calculate_density_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calculate_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_j_rotor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_k_rotor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmgmode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.calculate_density_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the density (and sum) of states for the configuration at the
 given energies above the ground state <cite>e_list</cite> in J/mol. The
 <cite>active_j_rotor</cite> and <cite>active_k_rotor</cite> flags control whether the J-rotor
@@ -116,46 +94,13 @@ arrays are stored on the object for future use.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.cleanup">
-<span class="sig-name descname"><span class="pre">cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.cleanup" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">cleanup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.cleanup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete intermediate arrays used in computing k(T,P) values.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.pdep.Configuration.dens_states">
-<span class="sig-name descname"><span class="pre">dens_states</span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.dens_states" title="Permalink to this definition">¶</a></dt>
-<dd><p>numpy.ndarray</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dens_states</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.pdep.Configuration.e_list">
-<span class="sig-name descname"><span class="pre">e_list</span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.e_list" title="Permalink to this definition">¶</a></dt>
-<dd><p>numpy.ndarray</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>e_list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.pdep.Configuration.energy_correction">
-<span class="sig-name descname"><span class="pre">energy_correction</span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.energy_correction" title="Permalink to this definition">¶</a></dt>
-<dd><p>‘float’</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>energy_correction</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.generate_collision_matrix">
-<span class="sig-name descname"><span class="pre">generate_collision_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">dens_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">j_list=None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.generate_collision_matrix" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate_collision_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dens_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.generate_collision_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the collisional energy transfer probabilities matrix for the
 configuration at the given temperature <cite>T</cite> in K using the given
 energies <cite>e_list</cite> in kJ/mol and total angular momentum quantum numbers
@@ -165,75 +110,75 @@ mol/kJ is also required.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.get_enthalpy">
-<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_enthalpy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_enthalpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the enthalpy in kJ/mol at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.get_entropy">
-<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_entropy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the entropy in J/mol*K at the specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.get_free_energy">
-<span class="sig-name descname"><span class="pre">get_free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_free_energy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_free_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy in kJ/mol at the specified temperature
 <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.get_heat_capacity">
-<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_heat_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.get_heat_capacity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the constant-pressure heat capacity in J/mol*K at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.has_statmech">
-<span class="sig-name descname"><span class="pre">has_statmech</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.has_statmech" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">has_statmech</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.has_statmech" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if all species in the configuration have statistical
 mechanics parameters, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.has_thermo">
-<span class="sig-name descname"><span class="pre">has_thermo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.has_thermo" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">has_thermo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.has_thermo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if all species in the configuration have thermodynamics
 parameters, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.is_bimolecular">
-<span class="sig-name descname"><span class="pre">is_bimolecular</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.is_bimolecular" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_bimolecular</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.is_bimolecular" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the configuration represents a bimolecular reactant
 or product channel, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.is_termolecular">
-<span class="sig-name descname"><span class="pre">is_termolecular</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.is_termolecular" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_termolecular</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.is_termolecular" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the configuration represents a termolecular reactant
 or product channel, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.is_transition_state">
-<span class="sig-name descname"><span class="pre">is_transition_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.is_transition_state" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_transition_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.is_transition_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the configuration represents a transition state,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.is_unimolecular">
-<span class="sig-name descname"><span class="pre">is_unimolecular</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.is_unimolecular" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_unimolecular</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.is_unimolecular" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the configuration represents a unimolecular isomer,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.map_density_of_states">
-<span class="sig-name descname"><span class="pre">map_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">j_list=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.map_density_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">map_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.map_density_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a mapping of the density of states for the configuration to the
 given energies <cite>e_list</cite> in J/mol and, if the J-rotor is not active, the
 total angular momentum quantum numbers <cite>j_list</cite>.</p>
@@ -241,32 +186,10 @@ total angular momentum quantum numbers <cite>j_list</cite>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.map_sum_of_states">
-<span class="sig-name descname"><span class="pre">map_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndarray</span> <span class="pre">j_list=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.map_sum_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">map_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.map_sum_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a mapping of the density of states for the configuration to the
 given energies <cite>e_list</cite> in J/mol and, if the J-rotor is not active, the
 total angular momentum quantum numbers <cite>j_list</cite>.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.pdep.Configuration.species">
-<span class="sig-name descname"><span class="pre">species</span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.species" title="Permalink to this definition">¶</a></dt>
-<dd><p>list</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>species</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.pdep.Configuration.sum_states">
-<span class="sig-name descname"><span class="pre">sum_states</span></span><a class="headerlink" href="#rmgpy.pdep.Configuration.sum_states" title="Permalink to this definition">¶</a></dt>
-<dd><p>numpy.ndarray</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>sum_states</p>
-</dd>
-</dl>
 </dd></dl>
 
 </dd></dl>

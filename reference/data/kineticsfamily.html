@@ -432,8 +432,8 @@ split at least one of ext1 and ext2 must result in a split</p>
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.get_kinetics">
 <span class="sig-name descname"><span class="pre">get_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_all_kinetics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the kinetics for the given <cite>reaction</cite> by searching the various
-depositories as well as generating a result using the user-specified <cite>estimator</cite>
-of either ‘group additivity’ or ‘rate rules’.  Unlike
+depositories as well as generating a result using the user-specified <cite>estimator</cite>.
+Currently, only ‘rate rules’ is a supported estimator.  Unlike
 the regular <a class="reference internal" href="#rmgpy.data.kinetics.KineticsFamily.get_kinetics" title="rmgpy.data.kinetics.KineticsFamily.get_kinetics"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_kinetics()</span></code></a> method, this returns a list of
 results, with each result comprising of</p>
 <ol class="arabic simple">
@@ -442,7 +442,7 @@ results, with each result comprising of</p>
 <li><p>the entry  - this will be <cite>None</cite> if from a template estimate</p></li>
 <li><p>is_forward a boolean denoting whether the matched entry is in the same
 direction as the inputted reaction. This will always be True if using
-rates rules or group additivity. This can be <cite>True</cite> or <cite>False</cite> if using
+rates rules. This can be <cite>True</cite> or <cite>False</cite> if using
 a depository</p></li>
 </ol>
 <p>If return_all_kinetics==False, only the first (best?) matching kinetics is returned.</p>
@@ -452,14 +452,12 @@ a depository</p></li>
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.get_kinetics_for_template">
 <span class="sig-name descname"><span class="pre">get_kinetics_for_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rate</span> <span class="pre">rules'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.get_kinetics_for_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an estimate of the kinetics for a reaction with the given
-<cite>template</cite> and reaction-path <cite>degeneracy</cite>. There are two possible methods
-to use: ‘group additivity’ (new possible RMG-Py behavior) and ‘rate rules’ (old
-RMG-Java behavior, and default RMG-Py behavior).</p>
+<cite>template</cite> and reaction-path <cite>degeneracy</cite>. There is currently only one method to use:
+‘rate rules’ (old RMG-Java behavior, and default RMG-Py behavior). Group additivity was removed in August 2023.</p>
 <p>Returns a tuple (kinetics, entry):
 If it’s estimated via ‘rate rules’ and an exact match is found in the tree,
 then the entry is returned as the second element of the tuple.
-But if an average is used, or the ‘group additivity’ method, then the tuple
-returned is (kinetics, None).</p>
+But if an average is used, then the tuple returned is (kinetics, None).</p>
 </dd></dl>
 
 <dl class="py method">

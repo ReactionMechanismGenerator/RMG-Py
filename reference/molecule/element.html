@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.Element<a class="headerlink" href="#rmgpy-molecule-element" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.molecule.Element">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">Element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isotope</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chemkin_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Element" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">Element</span></span><a class="headerlink" href="#rmgpy.molecule.Element" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical element. The attributes are:</p>
 <table class="docutils align-default">
 <thead>
@@ -104,88 +104,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </table>
 <p>This class is specifically for properties that all atoms of the same element
 share. Ideally there is only one instance of this class for each element.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.molecule.Element.chemkin_name">
-<span class="sig-name descname"><span class="pre">chemkin_name</span></span><a class="headerlink" href="#rmgpy.molecule.Element.chemkin_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>unicode</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>chemkin_name</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.molecule.Element.cov_radius">
-<span class="sig-name descname"><span class="pre">cov_radius</span></span><a class="headerlink" href="#rmgpy.molecule.Element.cov_radius" title="Permalink to this definition">¶</a></dt>
-<dd><p>‘float’</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>cov_radius</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.molecule.Element.isotope">
-<span class="sig-name descname"><span class="pre">isotope</span></span><a class="headerlink" href="#rmgpy.molecule.Element.isotope" title="Permalink to this definition">¶</a></dt>
-<dd><p>‘int’</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>isotope</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.molecule.Element.mass">
-<span class="sig-name descname"><span class="pre">mass</span></span><a class="headerlink" href="#rmgpy.molecule.Element.mass" title="Permalink to this definition">¶</a></dt>
-<dd><p>‘float’</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>mass</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.molecule.Element.name">
-<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#rmgpy.molecule.Element.name" title="Permalink to this definition">¶</a></dt>
-<dd><p>unicode</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>name</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.molecule.Element.number">
-<span class="sig-name descname"><span class="pre">number</span></span><a class="headerlink" href="#rmgpy.molecule.Element.number" title="Permalink to this definition">¶</a></dt>
-<dd><p>‘int’</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>number</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="rmgpy.molecule.Element.symbol">
-<span class="sig-name descname"><span class="pre">symbol</span></span><a class="headerlink" href="#rmgpy.molecule.Element.symbol" title="Permalink to this definition">¶</a></dt>
-<dd><p>unicode</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>symbol</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.get_element">
-<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">get_element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">isotope=-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#rmgpy.molecule.Element" title="rmgpy.molecule.Element"><span class="pre">Element</span></a></span></span><a class="headerlink" href="#rmgpy.molecule.get_element" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">get_element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isotope</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.get_element" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the <a class="reference internal" href="#rmgpy.molecule.Element" title="rmgpy.molecule.Element"><code class="xref py py-class docutils literal notranslate"><span class="pre">Element</span></code></a> object corresponding to the given parameter
 <cite>value</cite>. If an integer is provided, the value is treated as the atomic
 number. If a string is provided, the value is treated as the symbol. An
