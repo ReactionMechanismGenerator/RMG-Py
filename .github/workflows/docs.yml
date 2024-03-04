@@ -5,17 +5,27 @@ on:
     branches:
       - main
   pull_request:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: "0 8 * * 1"
 
 jobs:
   build-documentation:
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 5
     defaults:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v2
+      - name: Sign into GitHub Actions Bot
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Clone RMG-Py
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
       - name: Setup Mambaforge Python 3.7
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -25,51 +35,68 @@ jobs:
           python-version: 3.7
           activate-environment: rmg_env
           use-mamba: true
+
       - name: Install sphinx
         run: mamba install -y sphinx
+
       - name: Mamba info
         run: |
           mamba info
           mamba list
-      - name: Install and link Julia dependencies 
-        run: |
-          julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"))"
-          julia -e "using Pkg; Pkg.add(\"PyCall\"); Pkg.add(\"DifferentialEquations\")"
-          python -c "import julia; julia.install()"
-      - name: Install and compile RMG
+
+      - name: Clone RMG-database
         run: |
           cd ..
           git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
-          cd RMG-Py
-          sed -i '/embedsignature/s/# //g' setup.py
+
+      - name: Set Environment Variables
+        run: |
+          RUNNER_CWD=$(pwd)
+          echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
+          echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
+
+      - name: make RMG
+        run: |
+          make clean
           make
-      - uses: actions/checkout@v2
+
+      - name: Install and link Julia dependencies
+        timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
+        run: |
+          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator'
+
+      - name: Checkout gh-pages Branch
+        uses: actions/checkout@v2
         with:
           ref: gh-pages
-          path: build/html
-      - name: Make documentation - for testing
-        if: ${{  github.event_name != 'push' || github.repository != 'ReactionMechanismGenerator/RMG-Py' }}
+          fetch-depth: 0
+          path: documentation/build/html
+          clean: false
+
+      - name: Build Documentation
         run: |
-          cd documentation
-          sphinx-build -b html -d build/doctrees/ source/ build/html -w errors.log -W --keep-going
-      - name: Report documentation errors
-        if: ${{ failure() }}
-        run: |
-          cat documentation/errors.log
-      - name: Make documentation - to publish
-        if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
           cd documentation
           make html
+          cd build/html
+          touch .nojekyll
+          git add -A --force .
+          git commit -m "Automated documentation rebuild"
+
       - name: Check documentation links
         continue-on-error: true
         run: |
           cd documentation
           sphinx-build -b linkcheck -d build/doctrees/ source/ build/linkcheck | grep -e broken -e redirect | grep -v -e 'redirect  https://doi.org/' -e 'broken    https://doi.org/.* 403 Client Error: Forbidden'
-      - name: Publish documentation
+
+      - name: Test Publish Documentation
+        if: ${{  github.event_name != 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
+        run: |
+          cd documentation/build/html
+          git push --dry-run origin gh-pages
+
+      - name: Publish Updated Documentation
         if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
         run: |
-          touch build/html/.nojekyll
-          cd build/html; git add -A .; git commit -m "Automated documentation rebuild"; git push origin gh-pages
+          cd documentation/build/html
+          git push origin gh-pages
