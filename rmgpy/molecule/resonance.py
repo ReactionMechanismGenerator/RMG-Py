@@ -1039,11 +1039,11 @@ def _clar_optimization(mol, save_order=False):
     # Variable bounds
     bounds = Bounds(
         lb=np.array(
-            [0] * n_ring + [1 if val == 1 else 0 for val in exo]
+            [0] * n_ring + [1 if val == 1 else 0 for val in exo],
             dtype=int,
         ),  # lower bounds: 0 except for exo double bonds
         ub=np.array(
-            [1] * n_ring + [0 if val == 0 else 1 for val in exo]
+            [1] * n_ring + [0 if val == 0 else 1 for val in exo],
             dtype=int,
         ),  # upper bounds: 1 except for exo single bonds
     )
