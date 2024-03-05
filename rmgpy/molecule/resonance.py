@@ -58,11 +58,14 @@ Currently supported resonance types:
 import logging
 from operator import attrgetter
 
+import numpy as np
+from scipy.optimize import Bounds, LinearConstraint, milp
+
 import cython
 
 import rmgpy.molecule.filtration as filtration
 import rmgpy.molecule.pathfinder as pathfinder
-from rmgpy.exceptions import ILPSolutionError, KekulizationError, AtomTypeError, ResonanceError
+from rmgpy.exceptions import KekulizationError, AtomTypeError, ResonanceError
 from rmgpy.molecule.adjlist import Saturator
 from rmgpy.molecule.graph import Vertex
 from rmgpy.molecule.kekulize import kekulize
@@ -917,8 +920,7 @@ def generate_clar_structures(mol, save_order=False):
 
     Returns a list of :class:`Molecule` objects corresponding to the Clar structures.
     """
-    cython.declare(output=list, mol_list=list, new_mol=Graph, aromatic_rings=list, bonds=list, solution=list,
-                   y=list, x=list, index=cython.int, bond=Edge, ring=list)
+    cython.declare(output=list, mol_list=list, new_mol=Graph, aromatic_rings=list, bonds=list, index=cython.int, bond=Edge, ring=list)
 
     if not mol.is_cyclic():
         return []
@@ -928,19 +930,20 @@ def generate_clar_structures(mol, save_order=False):
         mol.assign_atom_ids()
 
     try:
-        output = _clar_optimization(mol, save_order=save_order)
-    except ILPSolutionError:
+        aromatic_rings, bonds, solutions = _clar_optimization(mol, save_order=save_order)
+    except RuntimeError:
         # The optimization algorithm did not work on the first iteration
         return []
 
     mol_list = []
 
-    for new_mol, aromatic_rings, bonds, solution in output:
+    for solution in solutions:
 
+        new_mol = mol.copy(deep=True)
         # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using
         # nomenclature from the paper. In y, 1 means the ring as a sextet, 0 means it does not.
         # In x, 1 corresponds to a double bond, 0 either means a single bond or the bond is part of a sextet.
-        y = solution[0:len(aromatic_rings)]
+        y = solution[:len(aromatic_rings)]
         x = solution[len(aromatic_rings):]
 
         # Apply results to molecule - double bond locations first
@@ -950,7 +953,7 @@ def generate_clar_structures(mol, save_order=False):
             elif x[index] == 1:
                 bond.order = 2  # double
             else:
-                raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
+                raise ValueError(f'Unaccepted bond value {x[index]} obtained from optimization.')
 
         # Then apply locations of aromatic sextets by converting to benzene bonds
         for index, ring in enumerate(aromatic_rings):
@@ -974,28 +977,25 @@ def _tuplize_bond(bond):
     return (bond.atom1.id, bond.atom2.id)
 
 
-def _clar_optimization(mol, constraints=None, max_num=None, save_order=False):
+def _clar_optimization(mol, save_order=False):
     """
     Implements linear programming algorithm for finding Clar structures. This algorithm maximizes the number
     of Clar sextets within the constraints of molecular geometry and atom valency.
 
     Returns a list of valid Clar solutions in the form of a tuple, with the following entries:
-        [0] Molecule object
-        [1] List of aromatic rings
-        [2] List of bonds
-        [3] Optimization solution
+        [0] List of aromatic rings
+        [1] List of bonds
+        [2] Optimization solutions
 
-    The optimization solution is a list of boolean values with sextet assignments followed by double bond assignments,
-    with indices corresponding to the list of aromatic rings and list of bonds, respectively.
+    The optimization solutions may contain multiple valid solutions, each is an array of boolean values with sextet assignments
+    followed by double bond assignments, with indices corresponding to the list of aromatic rings and list of bonds, respectively.
 
     Method adapted from:
         Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
             J. Math. Chem. 1994, 15 (1), 93–107.
     """
-    cython.declare(molecule=Graph, aromatic_rings=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
-                   a=list, objective=list, status=cython.int, solution=list, innerSolutions=list)
-
-    from lpsolve55 import lpsolve
+    cython.declare(molecule=Graph, aromatic_rings=list, exo=list, n_rings=cython.int, n_atoms=cython.int, n_bonds=cython.int,
+                   A=list, solutions=tuple)
 
     # Make a copy of the molecule so we don't destroy the original
     molecule = mol.copy(deep=True)
@@ -1030,61 +1030,81 @@ def _clar_optimization(mol, constraints=None, max_num=None, save_order=False):
             exo.append(None)
 
     # Dimensions
-    l = len(aromatic_rings)
-    m = len(atoms)
-    n = l + len(bonds)
+    n_ring = len(aromatic_rings)
+    n_atom = len(atoms)
+    n_bond = len(bonds)
+
+    # The aromaticity assignment problem is formulated as an MILP problem
+    # minimize:
+    #       c @ x
+    # such that
+    #       b_l <= A @ x <= b_u
+    #       l <= x <= u
+    #       x are integers
 
     # Connectivity matrix which indicates which rings and bonds each atom is in
-    # Part of equality constraint Ax=b
-    a = []
+    # Part of equality constraint A_eq @ x = b_eq
+    A = []
     for atom in atoms:
         in_ring = [1 if atom in ring else 0 for ring in aromatic_rings]
         in_bond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
-        a.append(in_ring + in_bond)
+        A.append(in_ring + in_bond)
+    constraints = [LinearConstraint(
+        A=np.array(A, dtype=int), lb=np.ones(n_atom, dtype=int), ub=np.ones(n_atom, dtype=int)
+    )]
 
     # Objective vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
-    objective = [1] * l + [0] * len(bonds)
+    c = - np.array([1] * n_ring + [0] * n_bond, dtype=int)
 
-    # Solve LP problem using lpsolve
-    lp = lpsolve('make_lp', m, n)               # initialize lp with constraint matrix with m rows and n columns
-    lpsolve('set_verbose', lp, 2)               # reduce messages from lpsolve
-    lpsolve('set_obj_fn', lp, objective)        # set objective function
-    lpsolve('set_maxim', lp)                    # set solver to maximize objective
-    lpsolve('set_mat', lp, a)                   # set left hand side to constraint matrix
-    lpsolve('set_rh_vec', lp, [1] * m)          # set right hand side to 1 for all constraints
-    for i in range(m):                          # set all constraints as equality constraints
-        lpsolve('set_constr_type', lp, i + 1, '=')
-    lpsolve('set_binary', lp, [True] * n)       # set all variables to be binary
+    # Variable bounds
+    bounds = Bounds(
+        lb=np.array(
+            [0] * n_ring + [1 if val == 1 else 0 for val in exo],
+            dtype=int,
+        ),  # lower bounds: 0 except for exo double bonds
+        ub=np.array(
+            [1] * n_ring + [0 if val == 0 else 1 for val in exo],
+            dtype=int,
+        ),  # upper bounds: 1 except for exo single bonds
+    )
 
-    # Constrain values of exocyclic bonds, since we don't want to modify them
-    for i in range(l, n):
-        if exo[i - l] is not None:
-            # NOTE: lpsolve indexes from 1, so the variable we're changing should be i + 1
-            lpsolve('set_bounds', lp, i + 1, exo[i - l], exo[i - l])
+    solutions = _solve_clar_milp(c, bounds, constraints, n_ring)
 
-    # Add constraints to problem if provided
-    if constraints is not None:
-        for constraint in constraints:
-            try:
-                lpsolve('add_constraint', lp, constraint[0], '<=', constraint[1])
-            except Exception as e:
-                logging.debug('Unable to add constraint: {0} <= {1}'.format(constraint[0], constraint[1]))
-                logging.debug(mol.to_adjacency_list())
-                if str(e) == 'invalid vector.':
-                    raise ILPSolutionError('Unable to add constraint, likely due to '
-                                           'inconsistent aromatic ring perception.')
-                else:
-                    raise
+    return aromatic_rings, bonds, solutions
 
-    status = lpsolve('solve', lp)
-    obj_val, solution = lpsolve('get_solution', lp)[0:2]
-    lpsolve('delete_lp', lp)  # Delete the LP problem to clear up memory
 
-    # Check that optimization was successful
-    if status != 0:
-        raise ILPSolutionError('Optimization could not find a valid solution.')
+def _solve_clar_milp(
+    c,
+    bounds,
+    constraints,
+    n_ring,
+    max_num=None,
+):
+    """
+    A helpful function to solve the formulated clar optimization MILP problem. ``c``,
+    ``bounds``, and ``constraints`` are computed in _clar_optimization and follow the
+    definition of their corresponding kwargs in scipy.optimize.milp. ``n_ring`` is the
+    number of aromatic rings in the molecule. ``max_num`` is the maximum number of sextets
+    that can be found. If ``max_num`` is None for first run but will be updated during the
+    recursion and is used to check sub-optimal solution.
+    """
+    # To modify
+    cython.declare(inner_solutions=list)
 
-    # Check that we the result contains at least one aromatic sextet
+    result = milp(
+        c=-c,  # negative for maximization
+        integrality=1,
+        bounds=bounds,
+        constraints=constraints,
+        options={'time_limit': 10},
+    )
+
+    if result.status != 0:
+        raise RuntimeError("Optimization could not find a valid solution.")
+
+    obj_val, solution = -result.fun, result.x
+
+    # Check that the result contains at least one aromatic sextet
     if obj_val == 0:
         return []
 
@@ -1092,27 +1112,27 @@ def _clar_optimization(mol, constraints=None, max_num=None, save_order=False):
     if max_num is None:
         max_num = obj_val  # This is the first solution, so the result should be an upper limit
     elif obj_val < max_num:
-        raise ILPSolutionError('Optimization obtained a sub-optimal solution.')
+        raise RuntimeError("Optimization obtained a sub-optimal solution.")
 
     if any([x != 1 and x != 0 for x in solution]):
-        raise ILPSolutionError('Optimization obtained a non-integer solution.')
+        raise RuntimeError('Optimization obtained a non-integer solution.')
 
     # Generate constraints based on the solution obtained
-    y = solution[0:l]
-    new_a = y + [0] * len(bonds)
-    new_b = sum(y) - 1
-    if constraints is not None:
-        constraints.append((new_a, new_b))
-    else:
-        constraints = [(new_a, new_b)]
+    y = solution[:n_ring]
+    constraints.append(
+        LinearConstraint(
+            A=np.hstack([y, [0] * (solution.shape[0] - n_ring)]),
+            ub=sum(y) - 1,
+        ),
+    )
 
     # Run optimization with additional constraints
     try:
-        inner_solutions = _clar_optimization(mol, constraints=constraints, max_num=max_num, save_order=save_order)
-    except ILPSolutionError:
+        inner_solutions = _solve_clar_milp(c, bounds, constraints, n_ring, max_num)
+    except RuntimeError:
         inner_solutions = []
 
-    return inner_solutions + [(molecule, aromatic_rings, bonds, solution)]
+    return inner_solutions + [solution]
 
 
 def _clar_transformation(mol, aromatic_ring):
