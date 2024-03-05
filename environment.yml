@@ -75,7 +75,7 @@ dependencies:
   - matplotlib >=1.5
   - mpmath
   - pandas
-  - grof2dot
+  - gprof2dot
   - numdifftools
   - quantities
 
