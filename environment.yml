@@ -75,9 +75,9 @@ dependencies:
   - matplotlib >=1.5
   - mpmath
   - pandas
-  - gprof2dot
-  - numdifftools
-  - quantities
+  - conda-forge::gprof2dot
+  - conda-forge::numdifftools
+  - conda-forge::quantities
 
 # packages we maintain
   - rmg::lpsolve55
