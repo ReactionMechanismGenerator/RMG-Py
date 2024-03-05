@@ -1098,7 +1098,7 @@ def _solve_clar_milp(
         raise RuntimeError('Optimization obtained a non-integer solution.')
 
     # Generate constraints based on the solution obtained
-    y = solution[0: n_ring]
+    y = solution[:n_ring]
     constraints.append(
         LinearConstraint(
             A=np.hstack([y, [0] * (solution.shape[0] - n_ring)]),
