@@ -109,15 +109,6 @@ class ForbiddenStructureException(Exception):
     pass
 
 
-class ILPSolutionError(Exception):
-    """
-    An exception to be raised when solving an integer linear programming problem if a solution
-    could not be found or the solution is not valid. Can pass a string to indicate the reason
-    that the solution is invalid.
-    """
-    pass
-
-
 class ImplicitBenzeneError(Exception):
     """
     An exception class when encountering a group with too many implicit benzene
