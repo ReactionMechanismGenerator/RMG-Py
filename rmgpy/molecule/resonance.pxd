@@ -25,6 +25,8 @@
 #                                                                             #
 ###############################################################################
 
+cimport numpy as cnp
+
 from rmgpy.molecule.graph cimport Vertex, Edge, Graph
 from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
 
@@ -64,7 +66,9 @@ cpdef list generate_kekule_structure(Graph mol)
 
 cpdef list generate_clar_structures(Graph mol, bint save_order=?)
 
-cpdef list _clar_optimization(Graph mol, list constraints=?, max_num=?, save_order=?)
+cpdef list _clar_optimization(Graph mol, bint save_order=?)
+
+cpdef list _solve_clar_milp(cnp.ndarray[cnp.int_t, ndim=1] c, bounds, list constraints, int n_ring, max_num=?)
 
 cpdef list _clar_transformation(Graph mol, list aromatic_ring)
 
