@@ -31,6 +31,7 @@ from unittest.mock import patch
 
 import rmgpy.rmg.input as inp
 from rmgpy.rmg.main import RMG
+from rmgpy.ml.estimator import ADMONITION
 
 import pytest
 
@@ -92,7 +93,7 @@ class TestInputDatabase:
         assert isinstance(rmg.reaction_libraries[0], tuple)
         assert rmg.reaction_libraries[0][1]
 
-
+@pytest.mark.skip(reason=ADMONITION)
 class TestInputMLEstimator:
     """
     Contains unit tests rmgpy.rmg.input.mlEstimator
