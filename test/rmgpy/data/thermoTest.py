@@ -53,7 +53,7 @@ from rmgpy.data.thermo import (
     split_bicyclic_into_single_rings,
 )
 from rmgpy.exceptions import DatabaseError
-from rmgpy.ml.estimator import MLEstimator
+from rmgpy.ml.estimator import MLEstimator, ADMONITION
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
@@ -123,11 +123,11 @@ class TestThermoDatabase:
         )
         cls.databaseWithoutLibraries.set_binding_energies("Pt111")
 
-        # Set up ML estimator
-        models_path = os.path.join(settings["database.directory"], "thermo", "ml", "main")
-        hf298_path = os.path.join(models_path, "hf298")
-        s298_cp_path = os.path.join(models_path, "s298_cp")
-        cls.ml_estimator = MLEstimator(hf298_path, s298_cp_path)
+        # Set up ML estimator - temporarily removed, see rmgpy.ml.estimator
+        # models_path = os.path.join(settings["database.directory"], "thermo", "ml", "main")
+        # hf298_path = os.path.join(models_path, "hf298")
+        # s298_cp_path = os.path.join(models_path, "s298_cp")
+        # cls.ml_estimator = MLEstimator(hf298_path, s298_cp_path)
 
     def test_pickle(self):
         """
@@ -602,6 +602,7 @@ multiplicity 2
         assert arom.is_isomorphic(spec.molecule[0])  # The aromatic structure should now be the first one
         assert "library" in thermo.comment, "Thermo not found from library, test purpose not fulfilled."
 
+    @pytest.mark.skip(reason=ADMONITION)
     def test_species_thermo_generation_ml(self):
         """Test thermo generation for species objects based on ML estimation."""
 
@@ -652,6 +653,7 @@ multiplicity 2
         assert thermo1 is None
         assert thermo2 is None
 
+    @pytest.mark.skip(reason=ADMONITION)
     def test_thermo_generation_ml_settings(self):
         """Test that thermo generation with ML correctly respects settings"""
 
