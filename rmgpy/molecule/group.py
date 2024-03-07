@@ -681,6 +681,7 @@ class GroupAtom(Vertex):
                               'D': 0,
                               'T': 0,
                               'He': 1,
+                              'B': 0,
                               'C': 0,
                               'O': 2,
                               'N': 1,

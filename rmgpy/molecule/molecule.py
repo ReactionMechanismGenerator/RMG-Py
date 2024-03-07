@@ -485,7 +485,7 @@ class Atom(Vertex):
         Return ``True`` if the atom represents a boron atom or ``False`` if
         not.
         """
-        return self.element.numer == 5      
+        return self.element.number == 5      
 
     def increment_radical(self):
         """
