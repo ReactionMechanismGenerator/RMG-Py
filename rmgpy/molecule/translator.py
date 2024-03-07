@@ -169,7 +169,7 @@ def to_inchi(mol, backend='rdkit-first', aug_level=0):
     Uses RDKit or OpenBabel for conversion.
 
     Args:
-        backend     choice of backend, 'try-all', 'rdkit', or 'openbabel'
+        backend     choice of backend, 'rdkit-first' (default), 'try-all', 'rdkit', or 'openbabel'
         aug_level   level of augmentation, 0, 1, or 2
     """
     cython.declare(inchi=str, ulayer=str, player=str, mlayer=str)
@@ -205,7 +205,7 @@ def to_inchi_key(mol, backend='rdkit-first', aug_level=0):
     Uses RDKit or OpenBabel for conversion.
 
     Args:
-        backend     choice of backend, 'try-all', 'rdkit', or 'openbabel'
+        backend     choice of backend, 'rdkit-first' (default), 'try-all', 'rdkit', or 'openbabel'
         aug_level   level of augmentation, 0, 1, or 2
     """
     cython.declare(key=str, ulayer=str, player=str, mlayer=str)
@@ -277,8 +277,8 @@ def to_smiles(mol, backend='default'):
 def from_inchi(mol, inchistr, backend='try-all', raise_atomtype_exception=True):
     """
     Convert an InChI string `inchistr` to a molecular structure. Uses
-    a user-specified backend for conversion, currently supporting
-    rdkit (default) and openbabel.
+    a user-specified backend for conversion, currently supporting 'try-all' (default), rdkit-first,
+    rdkit, and openbabel.
     """
     if inchiutil.INCHI_PREFIX in inchistr:
         return _read(mol, inchistr, 'inchi', backend, raise_atomtype_exception=raise_atomtype_exception)
@@ -328,7 +328,7 @@ def from_smarts(mol, smartsstr, backend='rdkit', raise_atomtype_exception=True):
 def from_smiles(mol, smilesstr, backend='try-all', raise_atomtype_exception=True):
     """
     Convert a SMILES string `smilesstr` to a molecular structure. Uses
-    a user-specified backend for conversion, currently supporting
+    a user-specified backend for conversion, currently supporting try-all (default), rdkit-first,
     rdkit (default) and openbabel.
     """
     return _read(mol, smilesstr, 'smi', backend, raise_atomtype_exception=raise_atomtype_exception)
