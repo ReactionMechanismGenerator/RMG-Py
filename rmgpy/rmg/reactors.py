@@ -490,14 +490,19 @@ class ConstantTLiquidSurfaceReactor(Reactor):
         liq = phase_system.phases["Default"]
         surf = phase_system.phases["Surface"]
         interface = list(phase_system.interfaces.values())[0]
-        liq = rms.IdealDiluteSolution(liq.species, liq.reactions, liq.solvent, name="liquid")
+        if "mu" in self.initial_conditions["liquid"].keys():
+            solv = rms.Solvent("solvent",rms.ConstantViscosity(self.initial_conditions["liquid"]["mu"]))
+            liq_initial_cond = self.initial_conditions["liquid"].copy()
+            del liq_initial_cond["mu"]
+        else:
+            solv = liq.solvent
+            liq_initial_cond = self.initial_conditions["liquid"]
+        liq = rms.IdealDiluteSolution(liq.species, liq.reactions, solv, name="liquid",diffusionlimited=True)
         surf = rms.IdealSurface(surf.species, surf.reactions, surf.site_density, name="surface")
         liq_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in liq.species]]
         cat_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in surf.species]]
-        domainliq, y0liq, pliq = rms.ConstantTVDomain(phase=liq, initialconds=self.initial_conditions["liquid"], constantspecies=liq_constant_species)
-        domaincat, y0cat, pcat = rms.ConstantTAPhiDomain(
-            phase=surf, initialconds=self.initial_conditions["surface"], constantspecies=cat_constant_species
-        )
+        domainliq,y0liq,pliq = rms.ConstantTVDomain(phase=liq,initialconds=liq_initial_cond,constantspecies=liq_constant_species)
+        domaincat,y0cat,pcat  = rms.ConstantTAPhiDomain(phase=surf,initialconds=self.initial_conditions["surface"],constantspecies=cat_constant_species)
         if interface.reactions == []:
             inter, pinter = rms.ReactiveInternalInterfaceConstantTPhi(
                 domainliq,
