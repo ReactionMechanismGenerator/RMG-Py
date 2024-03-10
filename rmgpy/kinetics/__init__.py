@@ -30,7 +30,7 @@
 from rmgpy.kinetics.model import KineticsModel, PDepKineticsModel, TunnelingModel, \
                    get_rate_coefficient_units_from_reaction_order, get_reaction_order_from_rate_coefficient_units
 from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
-                   ArrheniusBM, ArrheniusChargeTransfer, ArrheniusChargeTransferBM
+                   ArrheniusBM, ArrheniusChargeTransfer, ArrheniusChargeTransferBM, Marcus
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.kinetics.falloff import ThirdBody, Lindemann, Troe
 from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
