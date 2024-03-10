@@ -4772,36 +4772,9 @@ def average_kinetics(kinetics_list):
     Hence we average n, Ea, arithmetically, but we
     average log A (geometric average)
     """
-    logA = 0.0
-    n = 0.0
-    Ea = 0.0
-    alpha = 0.5
-    electrons = None
-    if isinstance(kinetics_list[0], (SurfaceChargeTransfer, ArrheniusChargeTransfer)):
-        if electrons is None:
-            electrons = kinetics_list[0].electrons.value_si
-        if not all(np.abs(k.V0.value_si) < 0.0001 for k in kinetics_list):
-            raise ValueError(f"Trying to average charge transfer rates with non-zero V0 values: {[k.V0.value_si for k in kinetics_list]}")
-        if not all(np.abs(k.alpha.value_si - 0.5) < 0.001 for k in kinetics_list):
-            raise ValueError(f"Trying to average charge transfer rates with alpha values not equal to 0.5: {[k.alpha for k in kinetics_list]}")
-    V0 = 0.0
-    count = 0
-    for kinetics in kinetics_list:
-        count += 1
-        logA += np.log10(kinetics.A.value_si)
-        n += kinetics.n.value_si
-        Ea += kinetics.Ea.value_si
-
-    logA /= count
-    n /= count
-    alpha /= count
-    Ea /= count
-
-    ## The above could be replaced with something like:
-    # logA, n, Ea = np.mean([[np.log10(k.A.value_si),
-    #                   k.n.value_si,
-    #                   k.Ea.value_si] for k in kinetics_list], axis=1)
-
+    if type(kinetics_list[0]) not in [Arrhenius,SurfaceChargeTransfer,ArrheniusChargeTransfer,Marcus]:
+        raise Exception('Invalid kinetics type {0!r} for {1!r}.'.format(type(kinetics), self))
+    
     Aunits = kinetics_list[0].A.units
     if Aunits in {'cm^3/(mol*s)', 'cm^3/(molecule*s)', 'm^3/(molecule*s)'}:
         Aunits = 'm^3/(mol*s)'
@@ -4820,12 +4793,55 @@ def average_kinetics(kinetics_list):
         # surface: sticking coefficient
         pass
     else:
-        raise ValueError(f'Invalid units {Aunits} for averaging kinetics.')
+        raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
+    
+    logA = 0.0
+    n = 0.0
+    Ea = 0.0
+    alpha = 0.5
+    lmbd_i_coefs = np.zeros(4)
+    beta = 0.0
+    wr = 0.0
+    wp = 0.0
+    electrons = None
+    if isinstance(kinetics_list[0], SurfaceChargeTransfer) or isinstance(kinetics_list[0], ArrheniusChargeTransfer):
+        if electrons is None:
+            electrons = kinetics_list[0].electrons.value_si
+        assert all(np.abs(k.V0.value_si) < 0.0001 for k in kinetics_list), [k.V0.value_si for k in kinetics_list]
+        assert all(np.abs(k.alpha.value_si - 0.5) < 0.001 for k in kinetics_list), [k.alpha for k in kinetics_list]
+    V0 = 0.0
+    count = 0
+    for kinetics in kinetics_list:
+        count += 1
+        logA += np.log10(kinetics.A.value_si)
+        n += kinetics.n.value_si
+        if hasattr(kinetics,"Ea"):
+            Ea += kinetics.Ea.value_si
+        if hasattr(kinetics,"lmbd_i_coefs"):
+            lmbd_i_coefs += kinetics.lmbd_i_coefs.value_si
+            beta += kinetics.beta.value_si
+            wr += kinetics.wr.value_si
+            wp += kinetics.wp.value_si
 
-    if type(kinetics) not in {Arrhenius, SurfaceChargeTransfer, ArrheniusChargeTransfer}:
-        raise TypeError(f'Invalid kinetics type {type(kinetics)!r} for {self!r}.')
+    logA /= count
+    n /= count
+    Ea /= count
+    lmbd_i_coefs /= count
+    beta /= count 
+    wr /= count 
+    wp /= count
 
-    if isinstance(kinetics, SurfaceChargeTransfer):
+    if isinstance(kinetics, Marcus):
+        averaged_kinetics = Marcus(
+            A=(10 ** logA, Aunits),
+            n=n,
+            lmbd_i_coefs=lmbd_i_coefs,
+            beta=(beta,"1/m"),
+            wr=(wr * 0.001, "kJ/mol"),
+            wp=(wp * 0.001, "kJ/mol"),
+            comment="Averaged from {} reactions.".format(len(kinetics_list)),
+            )
+    elif isinstance(kinetics, SurfaceChargeTransfer):
         averaged_kinetics = SurfaceChargeTransfer(
             A=(10 ** logA, Aunits),
             n=n,
