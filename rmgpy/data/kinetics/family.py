@@ -56,7 +56,7 @@ from rmgpy.exceptions import ActionError, DatabaseError, InvalidActionError, Kek
                              ForbiddenStructureException, UndeterminableKineticsError
 from rmgpy.kinetics import Arrhenius, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficient, \
                            StickingCoefficientBEP, ArrheniusBM, SurfaceChargeTransfer, ArrheniusChargeTransfer, \
-                           ArrheniusChargeTransferBM, KineticsModel
+                           ArrheniusChargeTransferBM, KineticsModel, Marcus
 from rmgpy.kinetics.uncertainties import RateUncertainty, rank_accuracy_map
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
@@ -3547,7 +3547,25 @@ class KineticsFamily(Database):
         kinetics_list = kinetics_list[revinds]  # fix order
 
         for i, kinetics in enumerate(kinetics_list):
-            if kinetics is not None:
+            if isinstance(kinetics, Marcus):
+                entry = entries[i]
+                st = "Marcus rule fitted to {0} training reactions at node {1}".format(len(rxnlists[i][0]), entry.label)
+                new_entry = Entry(
+                    index=index,
+                    label=entry.label,
+                    item=self.forward_template,
+                    data=kinetics,
+                    rank=11,
+                    reference=None,
+                    short_desc=st,
+                    long_desc=st,
+                )
+                new_entry.data.comment = st
+
+                self.rules.entries[entry.label].append(new_entry)
+
+                index += 1
+            elif kinetics is not None:
                 entry = entries[i]
                 std = kinetics.uncertainty.get_expected_log_uncertainty() / 0.398  # expected uncertainty is std * 0.398
                 st = "BM rule fitted to {0} training reactions at node {1}".format(len(rxnlists[i][0]), entry.label)
