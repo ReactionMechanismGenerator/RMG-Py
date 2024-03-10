@@ -784,21 +784,9 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         reactants = [rms_species_list[i] for i in reactantinds]
         products = [rms_species_list[i] for i in productinds]
         kinetics = to_rms(obj.kinetics, species_names=species_names, rms_species_list=rms_species_list, rmg_species=rmg_species)
-        radchange = sum([spc.molecule[0].multiplicity - 1 for spc in obj.products]) - sum([spc.molecule[0].multiplicity - 1 for spc in obj.reactants])
-        electronchange = 0  # for now
-        return rms.ElementaryReaction(
-            index=obj.index,
-            reactants=reactants,
-            reactantinds=reactantinds,
-            products=products,
-            productinds=productinds,
-            kinetics=kinetics,
-            electronchange=electronchange,
-            radicalchange=radchange,
-            reversible=obj.reversible,
-            pairs=[],
-            comment=obj.kinetics.comment,
-        )
+        radchange = sum([spc.molecule[0].multiplicity-1 for spc in obj.products]) - sum([spc.molecule[0].multiplicity-1 for spc in obj.reactants])
+        electronchange = -sum([spc.molecule[0].get_net_charge() for spc in obj.products]) + sum([spc.molecule[0].get_net_charge() for spc in obj.reactants])
+        return rms.ElementaryReaction(index=obj.index, reactants=reactants, reactantinds=reactantinds, products=products, productinds=productinds, kinetics=kinetics, electronchange=electronchange, radicalchange=radchange, reversible=obj.reversible, pairs=[], comment=obj.kinetics.comment)
     elif isinstance(obj, SolventData):
         return rms.Solvent("solvent", rms.RiedelViscosity(float(obj.A), float(obj.B), float(obj.C), float(obj.D), float(obj.E)))
     elif isinstance(obj, TerminationTime):
