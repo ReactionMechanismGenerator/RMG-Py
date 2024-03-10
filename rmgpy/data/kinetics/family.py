@@ -4580,8 +4580,12 @@ def get_objective_function(kinetics1, kinetics2, obj=information_gain, T=1000.0)
     Error using mean: Err_1 + Err_2
     Split: abs(N1-N2)
     """
-    ks1 = np.array([np.log(k.get_rate_coefficient(T)) for k in kinetics1])
-    ks2 = np.array([np.log(k.get_rate_coefficient(T)) for k in kinetics2])
+    if not isinstance(kinetics1[0], Marcus):
+        ks1 = np.array([np.log(k.get_rate_coefficient(T)) for k in kinetics1])
+        ks2 = np.array([np.log(k.get_rate_coefficient(T)) for k in kinetics2])
+    else:
+        ks1 = np.array([k.get_lmbd_i(T) for k in kinetics1])
+        ks2 = np.array([k.get_lmbd_i(T) for k in kinetics2])
     N1 = len(ks1)
 
     return obj(ks1, ks2), N1 == 0
@@ -4606,6 +4610,9 @@ def _make_rule(rr):
     rxns = np.array(rxns)
     rs = np.array([r for r in rxns if type(r.kinetics) != KineticsModel])
     n = len(rs)
+    if n > 0 and isinstance(rs[0].kinetics, Marcus):
+        kin = average_kinetics([r.kinetics for r in rs])
+        return kin
     data_mean = np.mean(np.log([r.kinetics.get_rate_coefficient(Tref) for r in rs]))
     if n > 0:
         if isinstance(rs[0].kinetics, Arrhenius):
