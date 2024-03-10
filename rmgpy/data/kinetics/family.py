@@ -220,6 +220,30 @@ class TemplateReaction(Reaction):
         from rmgpy.data.rmg import get_db
         solvation_database = get_db('solvation')
         solvent_data = solvation_database.get_solvent_data(solvent)
+        
+        
+        if isinstance(self.kinetics, Marcus):
+            solvent_struct = solvation_database.get_solvent_structure(solvent)[0]
+            solv_solute_data = solvation_database.get_solute_data(solvent_struct.copy(deep=True))
+            Rsolv = math.pow((75 * solv_solute_data.V / constants.pi / constants.Na),
+                          (1.0 / 3.0)) / 100
+            Rtot = 0.0
+            Ner = 0
+            Nep = 0
+            for spc in self.reactants:
+                spc_solute_data = solvation_database.get_solute_data(spc.copy(deep=True))
+                spc_solute_data.set_mcgowan_volume(spc)
+                R = math.pow((75 * spc_solute_data.V / constants.pi / constants.Na),
+                            (1.0 / 3.0)) / 100
+                Rtot += R 
+                Ner += spc.get_net_charge()
+            for spc in self.products:
+                Nep += spc.get_net_charge()
+            
+            Rtot += Rsolv #radius of reactants plus first solvation shell
+            self.lmbd_o = constants.Na*(constants.e*(Nep-Ner))**2/(8.0*constants.pi*constants.epsilon_0*Rtot)*(1.0/solvent_data.n**2 - 1.0/solvent_data.eps)
+            return
+        
         site_data = to_soluteTSdata(self.kinetics.solute)
 
         #compute x from gas phase
@@ -237,7 +261,10 @@ class TemplateReaction(Reaction):
             except Exception:
                 logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
                 raise
+        
+        GTS = self.kinetics.Ea.value_si + GR
 
+        #x = abs(GTS - GR) / (abs(GP - GTS) + abs(GR - GTS))
         dGrxn = GP-GR
         if dGrxn > 0:
             x = 1.0
