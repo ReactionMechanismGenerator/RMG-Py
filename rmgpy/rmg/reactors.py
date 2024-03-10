@@ -34,6 +34,7 @@ import numpy as np
 import sys
 import logging
 import itertools
+import rmgpy.constants as constants
 
 if __debug__:
     try:
@@ -62,7 +63,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.wilhoit import Wilhoit
 from rmgpy.thermo.thermodata import ThermoData
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, ArrheniusBM, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, ArrheniusChargeTransfer
+from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, ArrheniusBM, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, ArrheniusChargeTransfer, Marcus
 from rmgpy.kinetics.kineticsdata import KineticsData
 from rmgpy.kinetics.falloff import Troe, ThirdBody, Lindemann
 from rmgpy.kinetics.chebyshev import Chebyshev
@@ -611,6 +612,10 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         Ea = obj._Ea.value_si
         q = obj._alpha.value_si*obj._electrons.value_si
         return rms.Arrheniusq(A, n, Ea, q, rms.EmptyRateUncertainty())
+    elif isinstance(obj, Marcus):
+        A = obj._A.value_si
+        n = obj._n.value_si
+        return rms.Marcus(A,n,obj._lmbd_i_coefs.value_si,obj._lmbd_o.value_si, obj._wr.value_si, obj._wp.value_si, obj._beta.value_si, rms.EmptyRateUncertainty())
     elif isinstance(obj, PDepArrhenius):
         Ps = obj._pressures.value_si
         arrs = [to_rms(arr) for arr in obj.arrhenius]
