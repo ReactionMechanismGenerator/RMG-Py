@@ -180,3 +180,22 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
 
     cpdef change_rate(self, double factor)
+
+cdef class Marcus(KineticsModel):
+
+    cdef public ScalarQuantity _A
+    cdef public ScalarQuantity _n
+    cdef public ArrayQuantity _lmbd_i_coefs
+    cdef public ScalarQuantity _V0
+    cdef public ScalarQuantity _beta
+    cdef public ScalarQuantity _wr 
+    cdef public ScalarQuantity _wp
+    cdef public ScalarQuantity _lmbd_o
+
+    cpdef double get_lmbd_i(self, double T)
+
+    cpdef double get_gibbs_activation_energy(self, double T, double dGrxn) except -1
+
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
+
+    cpdef change_rate(self, double factor)
