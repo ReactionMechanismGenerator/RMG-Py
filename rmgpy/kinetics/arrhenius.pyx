@@ -37,6 +37,7 @@ import rmgpy.quantity as quantity
 from rmgpy.exceptions import KineticsError
 from rmgpy.kinetics.uncertainties import rank_accuracy_map
 from rmgpy.molecule.molecule import Bond
+from rmgpy.kinetics.model import KineticsModel, PDepKineticsModel
 import logging
 
 # Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
@@ -1689,6 +1690,180 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
         converted to an Arrhenius form.
         """
         raise NotImplementedError('set_cantera_kinetics() is not implemented for ArrheniusEP class kinetics.')
+
+cdef class Marcus(KineticsModel):
+    """
+    A kinetics model based on the (modified) Arrhenius equation, using the
+    Evans-Polanyi equation to determine the activation energy. The attributes
+    are:
+
+    =============== =============================================================
+    Attribute       Description
+    =============== =============================================================
+    `A`             The preexponential factor
+    `n`             The temperature exponent
+    `lmbd_i_coefs`  Coefficients for inner sphere reorganization energy
+    `V0`            The reference potential
+    `beta`          Transmission decay coefficient
+    `wr`            Work to bring reactants together
+    `wp`            Work to bring products together 
+    `lmbd_o`        Outer sphere reorganization energy (solvent)
+    `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `solute`        Transition state solute data
+    `comment`       Information about the model (e.g. its source)
+    =============== =============================================================
+
+    """
+
+    def __init__(self, A=None, n=0.0, lmbd_i_coefs=np.array([0.0,0.0,0.0,0.0]), beta=(1.2e-10,"1/m"), 
+                wr=(0,"J/mol"), wp=(0,"J/mol"), lmbd_o=(0,"J/mol"), Tmin=None, Tmax=None,
+                Pmin=None, Pmax=None, solute=None, uncertainty=None, comment=''):
+
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, solute=solute, uncertainty=uncertainty,
+                 comment=comment)
+
+        self.A = A
+        self.n = n
+        self.lmbd_i_coefs = lmbd_i_coefs
+        self.beta = beta 
+        self.wr = wr 
+        self.wp = wp 
+        self.lmbd_o = lmbd_o
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        Marcus object.
+        """
+        string = 'Marcus(A={0!r}, n={1!r}, lmbd_i_coefs={2!r}, beta={3!r}, wr={4!r}, wp={5!r}, lmbd_o={6!r}'.format(
+            self.A, self.n, self.lmbd_i_coefs, self.beta, self.wr, self.wp, self.lmbd_o)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.solute: string += ', solute={0!r}'.format(self.solute)
+        if self.uncertainty: string += ', uncertainty={0!r}'.format(self.uncertainty)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling a Marcus object.
+        """
+        return (Marcus, (self.A, self.n, self.lmbd_i_coefs, self.beta, self.wr, self.wp, self.lmbd_o, 
+                            self.Tmin, self.Tmax, self.Pmin, self.Pmax,
+                            self.solute, self.uncertainty, self.comment))
+
+    property A:
+        """The preexponential factor."""
+        def __get__(self):
+            return self._A
+        def __set__(self, value):
+            self._A = quantity.RateCoefficient(value)
+
+    property n:
+        """The temperature exponent."""
+        def __get__(self):
+            return self._n
+        def __set__(self, value):
+            self._n = quantity.Dimensionless(value)
+
+    property lmbd_i_coefs:
+        """Temperature polynomial coefficients for inner sphere reogranization energy"""
+        def __get__(self):
+            return self._lmbd_i_coefs
+        def __set__(self, value):
+            self._lmbd_i_coefs = quantity.Dimensionless(value)
+
+    property beta:
+        """transmission coefficient"""
+        def __get__(self):
+            return self._beta
+        def __set__(self, value):
+            self._beta = quantity.UnitType('m^-1')(value)
+
+    property lmbd_o:
+        """outer sphere reorganization energy"""
+        def __get__(self):
+            return self._lmbd_o
+        def __set__(self, value):
+            self._lmbd_o = quantity.Energy(value)
+
+    property wr:
+        """outer sphere reorganization energy"""
+        def __get__(self):
+            return self._wr
+        def __set__(self, value):
+            self._wr = quantity.Energy(value)
+
+    property wp:
+        """outer sphere reorganization energy"""
+        def __get__(self):
+            return self._wp
+        def __set__(self, value):
+            self._wp = quantity.Energy(value)
+
+    cpdef double get_rate_coefficient(self, double T, double dGrxn=0.0) except -1:
+        """
+        Return the rate coefficient in the appropriate combination of m^3,
+        mol, and s at temperature `T` in K and enthalpy of reaction `dHrxn`
+        in J/mol.
+        """
+        cdef double A, n, dG
+        dG = self.get_gibbs_activation_energy(T, dGrxn)
+        A = self._A.value_si
+        n = self._n.value_si
+        return A * T ** n * exp(-dG / (constants.R * T))
+
+    cpdef double get_lmbd_i(self, double T):
+        """
+        Return lmbd_i in J/mol
+        """
+        return self.lmbd_i_coefs.value_si[0]+self.lmbd_i_coefs.value_si[1]*T+self.lmbd_i_coefs.value_si[2]*T**2+self.lmbd_i_coefs.value_si[3]*T**3
+    
+    cpdef double get_gibbs_activation_energy(self, double T, double dGrxn) except -1:
+        """
+        Return the activation energy in J/mol corresponding to the given
+        enthalpy of reaction `dHrxn` in J/mol.
+        """
+        cdef double lmbd_i
+        lmbd_i = self.get_lmbd_i(T)
+        return (lmbd_i+self.lmbd_o.value_si)/4.0*(1.0+dGrxn/(lmbd_i+self.lmbd_o.value_si))**2
+
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model.  Must match temperature
+        and pressure range of kinetics model, as well as parameters: A, n, Ea, T0. (Shouldn't have pressure
+        range if it's Arrhenius.) Otherwise returns ``False``.
+        """
+        if not isinstance(other_kinetics, Marcus):
+            return False
+        if not KineticsModel.is_identical_to(self, other_kinetics):
+            return False
+        if (not self.A.equals(other_kinetics.A) or not self.n.equals(other_kinetics.n)
+                or not self.lmbd_i_coefs.equals(other_kinetics.lmbd_i_coefs) or not self.lmbd_o.equals(other_kinetics.lmbd_o)
+                or not self.beta.equals(other_kinetics.beta)
+                or not self.electrons.equals(other_kinetics.electrons)):
+            return False
+
+        return True
+
+    cpdef change_rate(self, double factor):
+        """
+        Changes A factor by multiplying it by a ``factor``.
+        """
+        self._A.value_si *= factor
+
+    def set_cantera_kinetics(self, ct_reaction, species_list):
+        """
+        Sets a cantera ElementaryReaction() object with the modified Arrhenius object
+        converted to an Arrhenius form.
+        """
+        raise NotImplementedError('set_cantera_kinetics() is not implemented for Marcus class kinetics.')
 
 def get_w0(actions, rxn):
     """
