@@ -84,6 +84,7 @@ cdef class SurfaceReactor(ReactionSystem):
                  sensitivity_threshold=1e-3,
                  sens_conditions=None,
                  coverage_dependence=False,
+                 thermo_coverage_dependence=False,
                  ):
         ReactionSystem.__init__(self,
                                 termination,
@@ -103,12 +104,14 @@ cdef class SurfaceReactor(ReactionSystem):
         self.surface_volume_ratio = Quantity(surface_volume_ratio)
         self.surface_site_density = Quantity(surface_site_density)
         self.coverage_dependence = coverage_dependence
+        self.thermo_coverage_dependence = thermo_coverage_dependence
         self.V = 0  # will be set from ideal gas law in initialize_model
         self.constant_volume = True
         self.sens_conditions = sens_conditions
         self.n_sims = n_sims
 
         self.coverage_dependencies = {}
+        self.thermo_coverage_dependencies = {}
 
     def convert_initial_keys_to_species_objects(self, species_dict):
         """
@@ -194,6 +197,31 @@ cdef class SurfaceReactor(ReactionSystem):
                 self.coverage_dependencies[2] = [(3, 0.1, -1.0, 12000.0),]
                 means that Species with index 2 in the current simulation is used in
                 Reaction 3 with parameters a=0.1, m=-1, E=12 kJ/mol
+                """
+        for sp, sp_index in self.species_index.items():
+            if sp.contains_surface_site():
+                if self.thermo_coverage_dependence and sp.thermo.thermo_coverage_dependence:
+                    # think about the data structure of thermo coverage dependence
+                    # should not be a list, a dictionary would be better
+                    for spec, parameters in sp.thermo.coverage_dependence.items():
+                        species_index = self.species_index[spec]
+                        try:
+                            list_of_thermo_coverage_deps = self.thermo_coverage_dependencies[species_index]
+                        except KeyError: # doesn't exist yet
+                            list_of_thermo_coverage_deps = []
+                            self.thermo_coverage_dependencies[sp_index] = list_of_thermo_coverage_deps
+                        # need to specify the entropy and enthalpy models
+                        # linear, piecewise linear, polynomial, interpolative models
+                        list_of_thermo_coverage_deps.append((sp_index, parameters))
+                        
+                """
+                self.thermo_coverage_dependencies[2] = [(3, {"model":"linear","enthalpy-coefficients":[], "entropy-coefficients":[]}),]
+                self.thermo_coverage_dependencies[2] = [(3, {"model":"polynomial","enthalpy-coefficients":[], "entropy-coefficients":[]}),]
+                self.thermo_coverage_dependencies[2] = [(3, {"model":"piecewise-linear","enthalpy-coefficients":{"enthalpy_high":, "enthalpy_low":, "enthalpy_change":}, 
+                                                              "entropy-coefficients":{"entropy_high":, "entropy_low":, "entropy_change"}, "Cp":{"heat-capacity-a":, "heat-capacity-b":}}),]
+                self.thermo_coverage_dependencies[2] = {(3, {"model":"interpolative","enthalpy-coefficients":{"enthalpy-coverages":, "enthalpies":}, "entropy-coefficients":{"entropy-coverages":, "entropies":}}),}
+                means that Species with index 2 in the current simulation is used in
+                Species 3 with parameters for linear, polynomial, piecewise-linear, and interpolative models
                 """
         self.species_on_surface = species_on_surface
         self.reactions_on_surface = reactions_on_surface
@@ -422,7 +450,57 @@ cdef class SurfaceReactor(ReactionSystem):
                 C[j] = N[j] / V
             #: surface species are in mol/m2, gas phase are in mol/m3
             core_species_concentrations[j] = C[j]
-
+        
+        # Thermodynamic coverage dependence
+        free_energy_coverage_corrections = np.zeros(len(self.sp_index), float) # length of core + edge species
+        if self.thermo_coverage_dependence:
+            """
+            self.thermo_coverage_dependencies[2] = [(3, {"model":"linear","enthalpy-coefficients":[], "entropy-coefficients":[]}),]
+            self.thermo_coverage_dependencies[2] = [(3, {"model":"polynomial","enthalpy-coefficients":[], "entropy-coefficients":[]}),]
+            self.thermo_coverage_dependencies[2] = [(3, {"model":"piecewise-linear","enthalpy-coefficients":{"enthalpy_high":, "enthalpy_low":, "enthalpy_change":}, 
+                                                            "entropy-coefficients":{"entropy_high":, "entropy_low":, "entropy_change"}, "Cp":{"heat-capacity-a":, "heat-capacity-b":}}),]
+            self.thermo_coverage_dependencies[2] = {(3, {"model":"interpolative","enthalpy-coefficients":{"enthalpy-coverages":, "enthalpies":}, "entropy-coefficients":{"entropy-coverages":, "entropies":}}),}
+            means that Species with index 2 in the current simulation is used in
+            Species 3 with parameters for linear, polynomial, piecewise-linear, and interpolative models
+            """
+            for i, list_of_thermo_coverage_deps in self.thermo_coverage_dependencies.items():
+                surface_site_fraction = N[i] / total_sites
+                if surface_site_fraction < 1e-15:
+                    continue
+                for j, parameters in list_of_thermo_coverage_deps:
+                    # Species i, Species j
+                    # need to specify the entropy and enthalpy models
+                    # linear, piecewise linear, polynomial, interpolative models
+                    if parameters['model'] == "linear":
+                        pass
+                    elif parameters['model'] == "polynomial":
+                        enthalpy_cov_correction = np.polynomial.polynomial.polyval(surface_site_fraction, parameters['enthalpy-coefficients'].insert(0,0)) # insert 0 for the constant term 
+                        entropy_cov_correction = np.polynomial.polynomial.polyval(surface_site_fraction, parameters['entropy-coefficients'].insert(0,0))
+                        free_energy_coverage_corrections[j] += enthalpy_cov_correction - self.T.value_si * entropy_cov_correction
+                    elif parameters['model'] == "piecewise-linear":
+                        pass
+                    elif parameters['model'] == "interpolative":
+                        pass
+            corrected_K_eq = copy.deepcopy(self.K_eq)
+            # correct the K_eq
+            for j in range(ir.shape[0]):
+                if ir[j, 0] >= num_core_species or ir[j, 1] >= num_core_species or ir[j, 2] >= num_core_species:
+                    pass
+                elif ir[j, 1] == -1:  # only one reactant
+                    corrected_K_eq[j] *= np.exp(free_energy_coverage_corrections[ir[j, 0]] / (constants.R * self.T.value_si))
+                elif ir[j, 2] == -1:  # only two reactants
+                    corrected_K_eq[j] *= np.exp((free_energy_coverage_corrections[ir[j, 0]] + free_energy_coverage_corrections[ir[j, 1]]) / (constants.R * self.T.value_si))
+                else:  # three reactants!! (really?)
+                    corrected_K_eq[j] *= np.exp((free_energy_coverage_corrections[ir[j, 0]] + free_energy_coverage_corrections[ir[j, 1]] + free_energy_coverage_corrections[ir[j, 2]]) / (constants.R * self.T.value_si))
+                if ip[j, 0] >= num_core_species or ip[j, 1] >= num_core_species or ip[j, 2] >= num_core_species:
+                    pass
+                elif ip[j, 1] == -1:  # only one reactant
+                    corrected_K_eq[j] /= np.exp(free_energy_coverage_corrections[ir[j, 0]] / (constants.R * self.T.value_si))
+                elif ip[j, 2] == -1:  # only two reactants
+                    corrected_K_eq[j] /= np.exp((free_energy_coverage_corrections[ir[j, 0]] + free_energy_coverage_corrections[ir[j, 1]]) / (constants.R * self.T.value_si))
+                else:  # three reactants!! (really?)
+                    corrected_K_eq[j] /= np.exp((free_energy_coverage_corrections[ir[j, 0]] + free_energy_coverage_corrections[ir[j, 1]] + free_energy_coverage_corrections[ir[j, 2]]) / (constants.R * self.T.value_si))
+            kr = kf / corrected_K_eq
         # Coverage dependence
         coverage_corrections = np.ones_like(kf, float)
         if self.coverage_dependence:
