@@ -555,9 +555,6 @@ class RMG(util.Subject):
         # Load databases
         self.load_database()
 
-        for spec in self.initial_species:
-            self.reaction_model.add_species_to_edge(spec)
-
         for reaction_system in self.reaction_systems:
             if isinstance(reaction_system, Reactor):
                 reaction_system.finish_termination_criteria()
@@ -638,6 +635,14 @@ class RMG(util.Subject):
         self.walltime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
 
         # Initialize reaction model
+
+        for spec in self.initial_species:
+            if spec.reactive:
+                submit(spec, self.solvent)
+            if vapor_liquid_mass_transfer.enabled:
+                spec.get_liquid_volumetric_mass_transfer_coefficient_data()
+                spec.get_henry_law_constant_data()
+            self.reaction_model.add_species_to_edge(spec)
 
         # Seed mechanisms: add species and reactions from seed mechanism
         # DON'T generate any more reactions for the seed species at this time
