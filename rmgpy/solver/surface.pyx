@@ -43,6 +43,7 @@ cimport rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.quantity cimport ScalarQuantity
 from rmgpy.solver.base cimport ReactionSystem
+import copy
 
 cdef class SurfaceReactor(ReactionSystem):
     """
