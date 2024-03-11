@@ -120,7 +120,8 @@ def database(
 def catalyst_properties(bindingEnergies=None,
                         surfaceSiteDensity=None,
                         metal=None,
-                        coverageDependence=False):
+                        coverageDependence=False,
+                        thermoCoverageDependence=False,):
     """
     Specify the properties of the catalyst.
     Binding energies of C,H,O,N atoms, and the surface site density.
@@ -167,6 +168,7 @@ def catalyst_properties(bindingEnergies=None,
     else:
         logging.info("Coverage dependence is turned OFF")
     rmg.coverage_dependence = coverageDependence
+    rmg.thermo_coverage_dependence = thermoCoverageDependence
 
 def convert_binding_energies(binding_energies):
     """
@@ -1088,7 +1090,8 @@ def surface_reactor(temperature,
                             sensitive_species=sensitive_species,
                             sensitivity_threshold=sensitivityThreshold,
                             sens_conditions=sens_conditions,
-                            coverage_dependence=rmg.coverage_dependence)
+                            coverage_dependence=rmg.coverage_dependence,
+                            thermo_coverage_dependence=rmg.thermo_coverage_dependence)
     rmg.reaction_systems.append(system)
     system.log_initial_conditions(number=len(rmg.reaction_systems))
 
