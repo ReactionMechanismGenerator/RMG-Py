@@ -38,17 +38,17 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    b. On Fedora and Red Hat derivatives (RHEL 8+) the package manager is ``dnf`` ::
 
-       sudo dnf install git gcc gcc-c++ make libxrender1
+       sudo dnf install git gcc gcc-c++ make
 
    c. For Red Hat 7 and lower, replace ``dnf`` with ``yum`` in the preceding.
 
    d. On openSUSE the package manager is ``zypper``::
 
-       sudo zypper install git gcc gcc-c++ make libxrender1
+       sudo zypper install git gcc gcc-c++ make
 
    e. On Manjaro or Arch Linux the package manager is ``pacman`` ::
 
-       sudo pacman -S git gcc make libxrender1
+       sudo pacman -S git gcc make
 
    f. For MacOS users, the above packages can be easily obtained by installing the XCode Command Line Tools.
       These are a set of packages relevant for software development which have been bundled together by Apple.
