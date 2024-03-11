@@ -16,6 +16,7 @@
 #   made dependency list more explicit (@JacksonBurns).
 # - October 16, 2023 Switched RDKit and descripatastorus to conda-forge,
 #   moved diffeqpy to pip and (temporarily) removed chemprop
+# - Mar 11, 2024 Removed Julia dependencies, now considered optional
 #
 name: rmg_env
 channels:
@@ -47,10 +48,6 @@ dependencies:
   - conda-forge::cclib >=1.6.3,<1.8.0
   - conda-forge::openbabel >= 3
   - conda-forge::rdkit >=2022.09.1
-
-# general-purpose external software tools
-  - conda-forge::julia=1.9.1
-  - conda-forge::pyjulia >=0.6
 
 # Python tools
   - python >=3.7
@@ -88,20 +85,23 @@ dependencies:
   - rmg::pydas >=1.0.3
   - rmg::pydqed >=1.0.3
   - rmg::pyrdl
-  - rmg::pyrms
   - rmg::symmetry
-
-# packages we would like to stop maintaining (and why)
-  - rmg::diffeqpy
-  # we should use the official verison https://github.com/SciML/diffeqpy),
-  # rather than ours (which is only made so that we can get it from conda)
-  # It is only on pip, so we will need to do something like:
-  # https://stackoverflow.com/a/35245610
-  # Note that _some other_ dep. in this list requires diffeqpy in its recipe
-  # which will cause it to be downloaded from the rmg conda channel
 
 # conda mutex metapackage
   - nomkl
+
+# optional dependencies for using ReactionMechanismSimulator
+# remove the leading '#' to install the required dependencies
+  # - conda-forge::julia=1.9.1
+  # - conda-forge::pyjulia >=0.6
+  # - rmg::pyrms
+  # - rmg::diffeqpy
+
+# Note about diffeqpy:
+# we should use the official verison https://github.com/SciML/diffeqpy),
+# rather than ours (which is only made so that we can get it from conda)
+# It is only on pip, so we will need to do something like:
+# https://stackoverflow.com/a/35245610
 
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)
