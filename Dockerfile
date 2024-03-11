@@ -45,6 +45,8 @@ RUN git clone --single-branch --branch main --depth 1 https://github.com/Reactio
 WORKDIR /rmg/RMG-Py
 # build the conda environment
 RUN conda env create --file environment.yml && \
+    conda install -c conda-forge julia=1.9.1 pyjulia>=0.6 && \
+    conda install -c rmg pyrms diffeqpy && \
     conda clean --all --yes
 
 # This runs all subsequent commands inside the rmg_env conda environment
