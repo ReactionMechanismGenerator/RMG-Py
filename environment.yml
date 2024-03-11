@@ -75,17 +75,17 @@ dependencies:
   - matplotlib >=1.5
   - mpmath
   - pandas
+  - conda-forge::gprof2dot
+  - conda-forge::numdifftools
+  - conda-forge::quantities
 
 # packages we maintain
-  - rmg::gprof2dot
   - rmg::lpsolve55
   - rmg::muq2
-  - rmg::numdifftools
   - rmg::pydas >=1.0.3
   - rmg::pydqed >=1.0.3
   - rmg::pyrdl
   - rmg::pyrms
-  - rmg::quantities
   - rmg::symmetry
 
 # packages we would like to stop maintaining (and why)
