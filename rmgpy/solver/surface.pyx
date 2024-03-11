@@ -70,6 +70,9 @@ cdef class SurfaceReactor(ReactionSystem):
 
     cdef public bint coverage_dependence
     cdef public dict coverage_dependencies
+    cdef public bint thermo_coverage_dependence
+    cdef public dict thermo_coverage_dependencies
+
 
 
     def __init__(self,
@@ -453,7 +456,7 @@ cdef class SurfaceReactor(ReactionSystem):
             core_species_concentrations[j] = C[j]
         
         # Thermodynamic coverage dependence
-        free_energy_coverage_corrections = np.zeros(len(self.sp_index), float) # length of core + edge species
+        free_energy_coverage_corrections = np.zeros(len(self.species_index), float) # length of core + edge species
         if self.thermo_coverage_dependence:
             """
             self.thermo_coverage_dependencies[2] = [(3, {"model":"linear","enthalpy-coefficients":[], "entropy-coefficients":[]}),]
