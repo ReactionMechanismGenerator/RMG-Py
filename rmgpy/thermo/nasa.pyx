@@ -221,19 +221,20 @@ cdef class NASA(HeatCapacityModel):
     A heat capacity model based on a set of one, two, or three 
     :class:`NASAPolynomial` objects. The attributes are:
     
-    =============== ============================================================
-    Attribute       Description
-    =============== ============================================================
-    `polynomials`   The list of NASA polynomials to use in this model
-    `Tmin`          The minimum temperature in K at which the model is valid, or zero if unknown or undefined
-    `Tmax`          The maximum temperature in K at which the model is valid, or zero if unknown or undefined
-    `E0`            The energy at zero Kelvin (including zero point energy)
-    `comment`       Information about the model (e.g. its source)
-    =============== ============================================================
+    ============================ ============================================================
+    Attribute                    Description
+    ============================ ============================================================
+    `polynomials`                The list of NASA polynomials to use in this model
+    `Tmin`                       The minimum temperature in K at which the model is valid, or zero if unknown or undefined
+    `Tmax`                       The maximum temperature in K at which the model is valid, or zero if unknown or undefined
+    `E0`                         The energy at zero Kelvin (including zero point energy)
+    `thermo_coverage_dependence` The coverage dependence of the thermo
+    `comment`                    Information about the model (e.g. its source)
+    ============================ ============================================================
 
     """
     
-    def __init__(self, polynomials=None, Tmin=None, Tmax=None, E0=None, Cp0=None, CpInf=None, label='', comment=''):
+    def __init__(self, polynomials=None, Tmin=None, Tmax=None, E0=None, Cp0=None, CpInf=None, label='', thermo_coverage_dependence=None, comment=''):
         HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, Cp0=Cp0, CpInf=CpInf, label=label, comment=comment)
         if isinstance(polynomials, dict):
             self.polynomials = list(polynomials.values())
@@ -317,6 +318,21 @@ cdef class NASA(HeatCapacityModel):
             return self.poly3
         else:
             raise ValueError('No valid NASA polynomial at temperature {0:g} K.'.format(T))
+    
+    property thermo_coverage_dependence:
+        """The coverage dependence of the thermo"""
+        def __get__(self):
+            return self._thermo_coverage_dependence
+        def __set__(self, value):
+            self._thermo_coverage_dependence = {}
+            if value:
+                 for species, parameters in value.items():
+                    # just the polynomial model for now
+                     processed_parameters = {'model': parameters['model'],
+                                             'enthalpy-coefficients': [quantity.Dimensionless(p) for p in parameters['enthalpy-coefficients']],
+                                             'entropy-coefficients': [quantity.Dimensionless(p) for p in parameters['entropy-coefficients']],
+                                             }
+                     self._thermo_coverage_dependence[species] = processed_parameters
     
     cpdef double get_heat_capacity(self, double T) except -1000000000:
         """
