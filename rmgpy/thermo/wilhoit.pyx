@@ -45,24 +45,25 @@ cdef class Wilhoit(HeatCapacityModel):
     """
     A heat capacity model based on the Wilhoit equation. The attributes are:
     
-    =============== ============================================================
-    Attribute       Description
-    =============== ============================================================
-    `a0`            The zeroth-order Wilhoit polynomial coefficient
-    `a1`            The first-order Wilhoit polynomial coefficient
-    `a2`            The second-order Wilhoit polynomial coefficient
-    `a3`            The third-order Wilhoit polynomial coefficient
-    `H0`            The integration constant for enthalpy (not H at T=0)
-    `S0`            The integration constant for entropy (not S at T=0)
-    `E0`            The energy at zero Kelvin (including zero point energy)
-    `B`             The Wilhoit scaled temperature coefficient in K
-    `Tmin`          The minimum temperature in K at which the model is valid, or zero if unknown or undefined
-    `Tmax`          The maximum temperature in K at which the model is valid, or zero if unknown or undefined
-    `comment`       Information about the model (e.g. its source)
-    =============== ============================================================
+    ============================= =========================================================================================
+    Attribute                     Description
+    ============================= =========================================================================================
+    `a0`                          The zeroth-order Wilhoit polynomial coefficient
+    `a1`                          The first-order Wilhoit polynomial coefficient
+    `a2`                          The second-order Wilhoit polynomial coefficient
+    `a3`                          The third-order Wilhoit polynomial coefficient
+    `H0`                          The integration constant for enthalpy (not H at T=0)
+    `S0`                          The integration constant for entropy (not S at T=0)
+    `E0`                          The energy at zero Kelvin (including zero point energy)
+    `B`                           The Wilhoit scaled temperature coefficient in K
+    `Tmin`                        The minimum temperature in K at which the model is valid, or zero if unknown or undefined
+    `Tmax`                        The maximum temperature in K at which the model is valid, or zero if unknown or undefined
+    `thermo_covreage_dependence`  The coverage dependence of the thermo
+    `comment`                     Information about the model (e.g. its source)
+    ============================= =========================================================================================
     """
 
-    def __init__(self, Cp0=None, CpInf=None, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=None, S0=None, B=None, Tmin=None, Tmax=None, label='', comment=''):
+    def __init__(self, Cp0=None, CpInf=None, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=None, S0=None, B=None, Tmin=None, Tmax=None, label='', thermo_coverage_dependence=None, comment=''):
         HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Cp0=Cp0, CpInf=CpInf, label=label, comment=comment)
         self.B = B
         self.a0 = a0
@@ -71,6 +72,7 @@ cdef class Wilhoit(HeatCapacityModel):
         self.a3 = a3
         self.H0 = H0
         self.S0 = S0
+        self.thermo_coverage_dependence = thermo_coverage_dependence
     
     def __repr__(self):
         """
@@ -82,6 +84,7 @@ cdef class Wilhoit(HeatCapacityModel):
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.label != '': string += ', label="""{0}"""'.format(self.label)
+        if self.thermo_coverage_dependence is not None: string += ', thermo_coverage_dependence={0!r}'.format(self.thermo_coverage_dependence)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -90,7 +93,7 @@ cdef class Wilhoit(HeatCapacityModel):
         """
         A helper function used when pickling a Wilhoit object.
         """
-        return (Wilhoit, (self.Cp0, self.CpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B, self.Tmin, self.Tmax, self.label, self.comment))
+        return (Wilhoit, (self.Cp0, self.CpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B, self.Tmin, self.Tmax, self.label, self.thermo_coverage_dependence, self.comment))
 
     cpdef dict as_dict(self):
         """
@@ -136,6 +139,21 @@ cdef class Wilhoit(HeatCapacityModel):
             return self._S0
         def __set__(self, value):
             self._S0 = quantity.Entropy(value)
+    
+    property thermo_coverage_dependence:
+        """The coverage dependence of the thermo"""
+        def __get__(self):
+            return self._thermo_coverage_dependence
+        def __set__(self, value):
+            self._thermo_coverage_dependence = {}
+            if value:
+                 for species, parameters in value.items():
+                    # just the polynomial model for now
+                     processed_parameters = {'model': parameters['model'],
+                                             'enthalpy-coefficients': [quantity.Dimensionless(p) for p in parameters['enthalpy-coefficients']],
+                                             'entropy-coefficients': [quantity.Dimensionless(p) for p in parameters['entropy-coefficients']],
+                                             }
+                     self._coverage_dependence[species] = processed_parameters
 
     cpdef double get_heat_capacity(self, double T) except -1000000000:
         """
@@ -478,6 +496,7 @@ cdef class Wilhoit(HeatCapacityModel):
             Cp0 = self.Cp0,
             CpInf = self.CpInf,
             E0 = self.E0,
+            thermo_coverage_dependence = self.thermo_coverage_dependence,
             comment = self.comment
         )
     
@@ -582,6 +601,7 @@ cdef class Wilhoit(HeatCapacityModel):
             Cp0 = self.Cp0,
             CpInf = self.CpInf,
             label = self.label,
+            thermo_coverage_dependence = self.thermo_coverage_dependence,
             comment = self.comment,
         )
     
