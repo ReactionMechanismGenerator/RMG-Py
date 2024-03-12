@@ -34,6 +34,7 @@ cimport numpy as np
 from libc.math cimport log
 
 cimport rmgpy.constants as constants
+import rmgpy.quantity as quantity
 
 ################################################################################
 
@@ -123,7 +124,7 @@ cdef class NASAPolynomial(HeatCapacityModel):
                                              'enthalpy-coefficients': [quantity.Dimensionless(p) for p in parameters['enthalpy-coefficients']],
                                              'entropy-coefficients': [quantity.Dimensionless(p) for p in parameters['entropy-coefficients']],
                                              }
-                     self._coverage_dependence[species] = processed_parameters
+                     self._thermo_coverage_dependence[species] = processed_parameters
     
     cpdef double get_heat_capacity(self, double T) except -1000000000:
         """

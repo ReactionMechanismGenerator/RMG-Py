@@ -131,7 +131,7 @@ cdef class ThermoData(HeatCapacityModel):
                                              'enthalpy-coefficients': [quantity.Dimensionless(p) for p in parameters['enthalpy-coefficients']],
                                              'entropy-coefficients': [quantity.Dimensionless(p) for p in parameters['entropy-coefficients']],
                                              }
-                     self._coverage_dependence[species] = processed_parameters
+                     self._thermo_coverage_dependence[species] = processed_parameters
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
