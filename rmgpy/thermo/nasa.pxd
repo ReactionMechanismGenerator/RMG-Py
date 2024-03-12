@@ -57,6 +57,7 @@ cdef class NASAPolynomial(HeatCapacityModel):
 cdef class NASA(HeatCapacityModel):
 
     cdef public NASAPolynomial poly1, poly2, poly3
+    cdef public dict _thermo_coverage_dependence
     
     cpdef NASAPolynomial select_polynomial(self, double T)
 
