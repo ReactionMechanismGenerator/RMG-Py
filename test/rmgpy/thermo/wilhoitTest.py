@@ -45,7 +45,6 @@ class TestWilhoit:
     """
     Contains unit tests of the :class:`Wilhoit` class.
     """
-
     def setup_class(self):
         self.Cp0 = 4.0
         self.CpInf = 21.5
@@ -59,6 +58,7 @@ class TestWilhoit:
         self.Tmin = 300.0
         self.Tmax = 3000.0
         self.comment = "C2H6"
+        self.thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,2,3]}}
         self.wilhoit = Wilhoit(
             Cp0=(self.Cp0 * constants.R, "J/(mol*K)"),
             CpInf=(self.CpInf * constants.R, "J/(mol*K)"),
@@ -71,6 +71,7 @@ class TestWilhoit:
             S0=(self.S0 * constants.R, "J/(mol*K)"),
             Tmin=(self.Tmin, "K"),
             Tmax=(self.Tmax, "K"),
+            thermo_coverage_dependence=self.thermo_coverage_dependence,
             comment=self.comment,
         )
 
@@ -159,6 +160,12 @@ class TestWilhoit:
         Test that the Wilhoit comment property was properly set.
         """
         assert self.wilhoit.comment == self.comment
+    
+    def test_thermo_coverage_dependence(self):
+        """
+        Test that the Wilhoit thermo_coverage_dependence property was properly set.
+        """
+        assert repr(self.wilhoit.thermo_coverage_dependence) == repr(self.thermo_coverage_dependence)
 
     def test_is_temperature_valid(self):
         """
@@ -287,6 +294,7 @@ class TestWilhoit:
         assert self.wilhoit.Tmax.units == wilhoit.Tmax.units
         assert round(abs(self.wilhoit.E0.value - wilhoit.E0.value), 4) == 0
         assert self.wilhoit.E0.units == wilhoit.E0.units
+        assert repr(self.wilhoit.thermo_coverage_dependence) == repr(wilhoit.thermo_coverage_dependence)
         assert self.wilhoit.comment == wilhoit.comment
 
     def test_repr(self):
@@ -318,6 +326,7 @@ class TestWilhoit:
         assert self.wilhoit.Tmax.units == wilhoit.Tmax.units
         assert round(abs(self.wilhoit.E0.value - wilhoit.E0.value), 1) == 0
         assert self.wilhoit.E0.units == wilhoit.E0.units
+        assert repr(self.wilhoit.thermo_coverage_dependence) == repr(wilhoit.thermo_coverage_dependence)
         assert self.wilhoit.comment == wilhoit.comment
 
     def test_fit_to_data(self):
@@ -381,6 +390,7 @@ class TestWilhoit:
 
         spc = Species().from_smiles("CC")
         spc.get_thermo_data()
+        spc.thermo.thermo_coverage_dependence = self.thermo_coverage_dependence
 
         T = 1350.0  # not 298K!
 
@@ -448,6 +458,16 @@ class TestWilhoit:
                 "value": 178.76114800000002,
             },
             "class": "Wilhoit",
+            'thermo_coverage_dependence': {'OX': {
+                                                   'model': 'polynomial', 
+                                                   'enthalpy-coefficients': [{'class': 'ScalarQuantity', 'value': 1.0}, 
+                                                                             {'class': 'ScalarQuantity', 'value': 2.0}, 
+                                                                             {'class': 'ScalarQuantity', 'value': 3.0}
+                                                                            ], 
+                                                   'entropy-coefficients': [{'class': 'ScalarQuantity', 'value': 1.0}, 
+                                                                            {'class': 'ScalarQuantity', 'value': 2.0}, 
+                                                                            {'class': 'ScalarQuantity', 'value': 3.0}
+                                                                            ]}}
         }
 
     def test_make_wilhoit(self):
