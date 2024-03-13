@@ -205,9 +205,7 @@ cdef class SurfaceReactor(ReactionSystem):
         for sp, sp_index in self.species_index.items():
             if sp.contains_surface_site():
                 if self.thermo_coverage_dependence and sp.thermo.thermo_coverage_dependence:
-                    # think about the data structure of thermo coverage dependence
-                    # should not be a list, a dictionary would be better
-                    for spec, parameters in sp.thermo.coverage_dependence.items():
+                    for spec, parameters in sp.thermo.thermo_coverage_dependence.items():
                         species_index = self.species_index[spec]
                         try:
                             list_of_thermo_coverage_deps = self.thermo_coverage_dependencies[species_index]
@@ -216,6 +214,10 @@ cdef class SurfaceReactor(ReactionSystem):
                             self.thermo_coverage_dependencies[sp_index] = list_of_thermo_coverage_deps
                         # need to specify the entropy and enthalpy models
                         # linear, piecewise linear, polynomial, interpolative models
+                        if parameters['model'] == "polynomial":
+                            # for the case of polynomial, we need to insert a 0 for the constant term
+                            parameters['enthalpy-coefficients'] = [0]+[x.value_si for x in parameters['enthalpy-coefficients']]
+                            parameters['entropy-coefficients'] = [0]+[x.value_si for x in parameters['entropy-coefficients']]
                         list_of_thermo_coverage_deps.append((sp_index, parameters))
                         
                 """
@@ -478,14 +480,14 @@ cdef class SurfaceReactor(ReactionSystem):
                     if parameters['model'] == "linear":
                         pass
                     elif parameters['model'] == "polynomial":
-                        enthalpy_cov_correction = np.polynomial.polynomial.polyval(surface_site_fraction, parameters['enthalpy-coefficients'].insert(0,0)) # insert 0 for the constant term 
-                        entropy_cov_correction = np.polynomial.polynomial.polyval(surface_site_fraction, parameters['entropy-coefficients'].insert(0,0))
+                        enthalpy_cov_correction = np.polynomial.polynomial.polyval(surface_site_fraction, parameters['enthalpy-coefficients']) # insert 0 for the constant term 
+                        entropy_cov_correction = np.polynomial.polynomial.polyval(surface_site_fraction, parameters['entropy-coefficients'])
                         free_energy_coverage_corrections[j] += enthalpy_cov_correction - self.T.value_si * entropy_cov_correction
                     elif parameters['model'] == "piecewise-linear":
                         pass
                     elif parameters['model'] == "interpolative":
                         pass
-            corrected_K_eq = copy.deepcopy(self.K_eq)
+            corrected_K_eq = copy.deepcopy(self.Keq)
             # correct the K_eq
             for j in range(ir.shape[0]):
                 if ir[j, 0] >= num_core_species or ir[j, 1] >= num_core_species or ir[j, 2] >= num_core_species:
