@@ -350,6 +350,9 @@ Skips the first line (assuming it’s a label) unless <cite>withLabel</cite> is
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.from_inchi">
 <span class="sig-name descname"><span class="pre">from_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inchistr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert an InChI string <cite>inchistr</cite> to a molecular structure.</p>
+<p>RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+single backend or try different backends in sequence. The available options for the <code class="docutils literal notranslate"><span class="pre">backend</span></code>
+argument: ‘openbabel-first’(default), ‘rdkit-first’, ‘rdkit’, or ‘openbabel’.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -364,6 +367,9 @@ This Kekulizes everything, removing all aromatic atom types.</p>
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.from_smiles">
 <span class="sig-name descname"><span class="pre">from_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smilesstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_smiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a SMILES string <cite>smilesstr</cite> to a molecular structure.</p>
+<p>RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+single backend or try different backends in sequence. The available options for the <code class="docutils literal notranslate"><span class="pre">backend</span></code>
+argument: ‘openbabel-first’(default), ‘rdkit-first’, ‘rdkit’, or ‘openbabel’.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1045,19 +1051,25 @@ unconnected molecules into separate class:<cite>Molecule</cite> objects.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.to_augmented_inchi">
-<span class="sig-name descname"><span class="pre">to_augmented_inchi</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_augmented_inchi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_augmented_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_augmented_inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds an extra layer to the InChI denoting the multiplicity
 of the molecule.</p>
 <p>Separate layer with a forward slash character.</p>
+<p>RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+single backend or try different backends in sequence. The available options for the <code class="docutils literal notranslate"><span class="pre">backend</span></code>
+argument: ‘rdkit-first’(default), ‘openbabel-first’, ‘rdkit’, or ‘openbabel’.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.to_augmented_inchi_key">
-<span class="sig-name descname"><span class="pre">to_augmented_inchi_key</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_augmented_inchi_key" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_augmented_inchi_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_augmented_inchi_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds an extra layer to the InChIKey denoting the multiplicity
 of the molecule.</p>
 <p>Simply append the multiplicity string, do not separate by a
 character like forward slash.</p>
+<p>RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+single backend or try different backends in sequence. The available options for the <code class="docutils literal notranslate"><span class="pre">backend</span></code>
+argument: ‘rdkit-first’(default), ‘openbabel-first’, ‘rdkit’, or ‘openbabel’.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1068,23 +1080,29 @@ character like forward slash.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.to_inchi">
-<span class="sig-name descname"><span class="pre">to_inchi</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_inchi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an InChI string. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 Perceives aromaticity.</p>
 <p>or</p>
 <p>Convert a molecular structure to an InChI string. Uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
+<p>It is possible to use a single backend or try different backends in sequence.
+The available options for the <code class="docutils literal notranslate"><span class="pre">backend</span></code> argument: ‘rdkit-first’(default),
+‘openbabel-first’, ‘rdkit’, or ‘openbabel’.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.to_inchi_key">
-<span class="sig-name descname"><span class="pre">to_inchi_key</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_inchi_key" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_inchi_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_inchi_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an InChI Key string. Uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
 <p>or</p>
 <p>Convert a molecular structure to an InChI Key string. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.</p>
+<p>It is possible to use a single backend or try different backends in sequence.
+The available options for the <code class="docutils literal notranslate"><span class="pre">backend</span></code> argument: ‘rdkit-first’(default),
+‘openbabel-first’, ‘rdkit’, or ‘openbabel’.</p>
 </dd></dl>
 
 <dl class="py method">

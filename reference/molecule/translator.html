@@ -78,8 +78,8 @@ is used to fix a number of parsing errors made by the backends.</p>
 <dt class="sig sig-object py" id="rmgpy.molecule.translator.from_inchi">
 <span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">from_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inchistr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.translator.from_inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert an InChI string <cite>inchistr</cite> to a molecular structure. Uses
-a user-specified backend for conversion, currently supporting
-rdkit (default) and openbabel.</p>
+a user-specified backend for conversion, currently supporting ‘openbabel-first’ (default), rdkit-first,
+rdkit, and openbabel.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -94,8 +94,8 @@ This Kekulizes everything, removing all aromatic atom types.</p>
 <dt class="sig sig-object py" id="rmgpy.molecule.translator.from_smiles">
 <span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">from_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smilesstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.translator.from_smiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a SMILES string <cite>smilesstr</cite> to a molecular structure. Uses
-a user-specified backend for conversion, currently supporting
-rdkit (default) and openbabel.</p>
+a user-specified backend for conversion, currently supporting openbabel-first (default), rdkit-first,
+rdkit and openbabel.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -110,9 +110,7 @@ For aug_level=2, appends positions of unpaired and paired electrons.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>backend</strong> (<em>backend     choice of</em>) – </p></li>
-<li><p><strong>'try-all'</strong> – </p></li>
-<li><p><strong>'rdkit'</strong> – </p></li>
-<li><p><strong>'openbabel'</strong> (<em>or</em>) – </p></li>
+<li><p><strong>'rdkit-first'</strong> (<em>default</em>) – </p></li>
 <li><p><strong>augmentation</strong> (<em>aug_level   level of</em>) – </p></li>
 <li><p><strong>0</strong> – </p></li>
 <li><p><strong>1</strong> – </p></li>
@@ -134,9 +132,7 @@ For aug_level=2, appends positions of unpaired and paired electrons.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>backend</strong> (<em>backend     choice of</em>) – </p></li>
-<li><p><strong>'try-all'</strong> – </p></li>
-<li><p><strong>'rdkit'</strong> – </p></li>
-<li><p><strong>'openbabel'</strong> (<em>or</em>) – </p></li>
+<li><p><strong>'rdkit-first'</strong> (<em>default</em>) – </p></li>
 <li><p><strong>augmentation</strong> (<em>aug_level   level of</em>) – </p></li>
 <li><p><strong>0</strong> – </p></li>
 <li><p><strong>1</strong> – </p></li>
