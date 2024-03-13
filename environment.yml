@@ -97,6 +97,8 @@ dependencies:
   # rather than ours (which is only made so that we can get it from conda)
   # It is only on pip, so we will need to do something like:
   # https://stackoverflow.com/a/35245610
+  # Note that _some other_ dep. in this list requires diffeqpy in its recipe
+  # which will cause it to be downloaded from the rmg conda channel
 
 # conda mutex metapackage
   - nomkl
