@@ -34,7 +34,6 @@ from rmgpy.thermo.wilhoit cimport Wilhoit
 cdef class NASAPolynomial(HeatCapacityModel):
 
     cdef public double cm2, cm1, c0, c1, c2, c3, c4, c5, c6
-    cdef public dict _thermo_coverage_dependence
 
     cpdef dict as_dict(self)
     
