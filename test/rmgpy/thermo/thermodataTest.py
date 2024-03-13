@@ -53,6 +53,7 @@ class TestThermoData:
         self.Tmin = 100.0
         self.Tmax = 3000.0
         self.E0 = -782292.0
+        self.thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,2,3]}}
         self.comment = "C2H6"
         self.thermodata = ThermoData(
             Tdata=(self.Tdata, "K"),
@@ -64,6 +65,7 @@ class TestThermoData:
             Tmin=(self.Tmin, "K"),
             Tmax=(self.Tmax, "K"),
             E0=(self.E0, "J/mol"),
+            thermo_coverage_dependence=self.thermo_coverage_dependence,
             comment=self.comment,
         )
 
@@ -130,6 +132,12 @@ class TestThermoData:
         Test that the ThermoData comment property was properly set.
         """
         assert self.thermodata.comment == self.comment
+    
+    def test_thermo_coverage_dependence(self):
+        """
+        Test that the ThermoData thermo_coverage_dependence property was properly set.
+        """
+        assert repr(self.thermodata.thermo_coverage_dependence) == repr(self.thermo_coverage_dependence)
 
     def test_is_temperature_valid(self):
         """
@@ -261,6 +269,7 @@ class TestThermoData:
         assert round(abs(self.thermodata.E0.value - thermodata.E0.value), 4) == 0
         assert self.thermodata.E0.units == thermodata.E0.units
         assert self.thermodata.label == thermodata.label
+        assert repr(self.thermodata.thermo_coverage_dependence) == repr(thermodata.thermo_coverage_dependence)
         assert self.thermodata.comment == thermodata.comment
 
     def test_repr(self):
@@ -295,6 +304,7 @@ class TestThermoData:
         assert round(abs(self.thermodata.E0.value - thermodata.E0.value), 4) == 0
         assert self.thermodata.E0.units == thermodata.E0.units
         assert self.thermodata.label == thermodata.label
+        assert repr(self.thermodata.thermo_coverage_dependence) == repr(thermodata.thermo_coverage_dependence)
         assert self.thermodata.comment == thermodata.comment
 
     def test_is_all_zeros(self):
