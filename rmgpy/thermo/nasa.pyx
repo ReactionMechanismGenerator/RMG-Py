@@ -44,20 +44,19 @@ cdef class NASAPolynomial(HeatCapacityModel):
     seven-coefficient and nine-coefficient variations are supported.
     The attributes are:
     
-    ===========================  ============================================================
-    Attribute                    Description
-    ===========================  ============================================================
-    `coeffs`                     The seven or nine NASA polynomial coefficients
-    `Tmin`                       The minimum temperature in K at which the model is valid, or zero if unknown or undefined
-    `Tmax`                       The maximum temperature in K at which the model is valid, or zero if unknown or undefined
-    `E0`                         The energy at zero Kelvin (including zero point energy)
-    `thermo_coverage_dependence` The coverage dependence of the thermo
-    `comment`                    Information about the model (e.g. its source)
-    ===========================  ============================================================
+    =========  ============================================================
+    Attribute  Description
+    =========  ============================================================
+    `coeffs`   The seven or nine NASA polynomial coefficients
+    `Tmin`     The minimum temperature in K at which the model is valid, or zero if unknown or undefined
+    `Tmax`     The maximum temperature in K at which the model is valid, or zero if unknown or undefined
+    `E0`       The energy at zero Kelvin (including zero point energy)
+    `comment`  Information about the model (e.g. its source)
+    =========  ============================================================
 
     """
     
-    def __init__(self, coeffs=None, Tmin=None, Tmax=None, E0=None, label='', thermo_coverage_dependence=None, comment=''):
+    def __init__(self, coeffs=None, Tmin=None, Tmax=None, E0=None, label='', comment=''):
         HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, label=label, comment=comment)
         self.coeffs = coeffs
         
@@ -75,7 +74,6 @@ cdef class NASAPolynomial(HeatCapacityModel):
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.E0 is not None: string += ', E0={0!r}'.format(self.E0)
         if self.label != '': string += ', label="""{0}"""'.format(self.label)
-        if self.thermo_coverage_dependence is not None: string += ', thermo_coverage_dependence={0!r}'.format(self.thermo_coverage_dependence)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -84,7 +82,7 @@ cdef class NASAPolynomial(HeatCapacityModel):
         """
         A helper function used when pickling an object.
         """
-        return (NASAPolynomial, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.E0, self.label, self.thermo_coverage_dependence, self.comment))
+        return (NASAPolynomial, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.E0, self.label, self.comment))
 
     cpdef dict as_dict(self):
         output_dictionary = super(NASAPolynomial, self).as_dict()
@@ -110,21 +108,6 @@ cdef class NASAPolynomial(HeatCapacityModel):
                 self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6 = value
             else:
                 raise ValueError('Invalid number of NASA polynomial coefficients; expected 7 or 9, got {0:d}.'.format(len(value)))
-    
-    property thermo_coverage_dependence:
-        """The coverage dependence of the thermo"""
-        def __get__(self):
-            return self._thermo_coverage_dependence
-        def __set__(self, value):
-            self._thermo_coverage_dependence = {}
-            if value:
-                 for species, parameters in value.items():
-                    # just the polynomial model for now
-                     processed_parameters = {'model': parameters['model'],
-                                             'enthalpy-coefficients': [quantity.Dimensionless(p) for p in parameters['enthalpy-coefficients']],
-                                             'entropy-coefficients': [quantity.Dimensionless(p) for p in parameters['entropy-coefficients']],
-                                             }
-                     self._thermo_coverage_dependence[species] = processed_parameters
     
     cpdef double get_heat_capacity(self, double T) except -1000000000:
         """
@@ -240,6 +223,7 @@ cdef class NASA(HeatCapacityModel):
             self.polynomials = list(polynomials.values())
         else:
             self.polynomials = polynomials
+        self.thermo_coverage_dependence = thermo_coverage_dependence
     
     def __repr__(self):
         """
@@ -254,6 +238,7 @@ cdef class NASA(HeatCapacityModel):
         if self.Cp0 is not None: string += ', Cp0={0!r}'.format(self.Cp0)
         if self.CpInf is not None: string += ', CpInf={0!r}'.format(self.CpInf)
         if self.label != '': string += ', label="""{0}"""'.format(self.label)
+        if self.thermo_coverage_dependence is not None: string += ', thermo_coverage_dependence={0!r}'.format(self.thermo_coverage_dependence)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -262,7 +247,7 @@ cdef class NASA(HeatCapacityModel):
         """
         A helper function used when pickling an object.
         """
-        return (NASA, (self.polynomials, self.Tmin, self.Tmax, self.E0, self.Cp0, self.CpInf, self.label, self.comment))
+        return (NASA, (self.polynomials, self.Tmin, self.Tmax, self.E0, self.Cp0, self.CpInf, self.label, self.thermo_coverage_dependence, self.comment))
 
     cpdef dict as_dict(self):
         """
@@ -434,6 +419,7 @@ cdef class NASA(HeatCapacityModel):
             poly.change_base_entropy(deltaS)
         return self
 
+    # need to modify this to include the thermo coverage dependence
     def to_cantera(self):
         """
         Return the cantera equivalent NasaPoly2 object from this NASA object.
