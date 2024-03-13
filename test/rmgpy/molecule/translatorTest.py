@@ -57,7 +57,8 @@ class TranslatorTest:
         assert mol.to_smiles() == ""
         assert mol.to_inchi() == ""
 
-    @patch("rmgpy.molecule.translator.logging")
+    @pytest.mark.skip(reason='This unit test checks for a bug which has been '
+                             'patched in version of RDKit >= 2022.9.1.')
     def test_failure_message(self, mock_logging):
         """Test that we log the molecule adjlist upon failure."""
         mol = Molecule(smiles="[CH2-][N+]#N")
@@ -238,7 +239,7 @@ multiplicity 2
 3 O 1 {1,S}
 """
 
-        aug_inchi = "InChI=1/CH2O2/c2-1-3/h1H,(H,2,3)/u1,2"
+        aug_inchi = "InChI=1/CH2O2/c2-1-3/h1-2H/u1,3"
         self.compare(adjlist, aug_inchi)
 
     def test_c7h10(self):
@@ -1411,8 +1412,8 @@ class InChIParsingTest:
         self.compare(inchi, u_indices)
 
     def test_ch2o2(self):
-        inchi = "CH2O2/c2-1-3/h1H,(H,2,3)"
-        u_indices = [1, 2]
+        inchi = "CH2O2/c2-1-3/h1-2H"
+        u_indices = [1, 3]
         self.compare(inchi, u_indices)
 
     def test_c2h2o3(self):

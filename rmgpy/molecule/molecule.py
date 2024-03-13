@@ -1768,9 +1768,13 @@ class Molecule(Graph):
         os.unlink(temp_file_name)
         return png
 
-    def from_inchi(self, inchistr, backend='try-all', raise_atomtype_exception=True):
+    def from_inchi(self, inchistr, backend='openbabel-first', raise_atomtype_exception=True):
         """
         Convert an InChI string `inchistr` to a molecular structure.
+
+        RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+        single backend or try different backends in sequence. The available options for the ``backend``
+        argument: 'openbabel-first'(default), 'rdkit-first', 'rdkit', or 'openbabel'.
         """
         translator.from_inchi(self, inchistr, backend, raise_atomtype_exception=raise_atomtype_exception)
         return self
@@ -1782,9 +1786,13 @@ class Molecule(Graph):
         translator.from_augmented_inchi(self, aug_inchi, raise_atomtype_exception=raise_atomtype_exception)
         return self
 
-    def from_smiles(self, smilesstr, backend='try-all', raise_atomtype_exception=True):
+    def from_smiles(self, smilesstr, backend='openbabel-first', raise_atomtype_exception=True):
         """
         Convert a SMILES string `smilesstr` to a molecular structure.
+
+        RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+        single backend or try different backends in sequence. The available options for the ``backend``
+        argument: 'openbabel-first'(default), 'rdkit-first', 'rdkit', or 'openbabel'.
         """
         translator.from_smiles(self, smilesstr, backend, raise_atomtype_exception=raise_atomtype_exception)
         return self
@@ -1863,62 +1871,78 @@ class Molecule(Graph):
         new_mol.update_atomtypes(raise_exception=raise_atomtype_exception)
         return new_mol
 
-    def to_inchi(self):
+    def to_inchi(self, backend='rdkit-first'):
         """
         Convert a molecular structure to an InChI string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity.
-        
+
         or
-        
+
         Convert a molecular structure to an InChI string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+
+        It is possible to use a single backend or try different backends in sequence.
+        The available options for the ``backend`` argument: 'rdkit-first'(default),
+        'openbabel-first', 'rdkit', or 'openbabel'.
         """
         try:
-            return translator.to_inchi(self)
+            return translator.to_inchi(self, backend=backend)
         except:
             logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
             raise
 
-    def to_augmented_inchi(self):
+    def to_augmented_inchi(self, backend='rdkit-first'):
         """
         Adds an extra layer to the InChI denoting the multiplicity
         of the molecule.
-        
+
         Separate layer with a forward slash character.
+
+        RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+        single backend or try different backends in sequence. The available options for the ``backend``
+        argument: 'rdkit-first'(default), 'openbabel-first', 'rdkit', or 'openbabel'.
         """
         try:
-            return translator.to_inchi(self, aug_level=2)
+            return translator.to_inchi(self, backend=backend, aug_level=2)
         except:
             logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
             raise
 
-    def to_inchi_key(self):
+    def to_inchi_key(self, backend='rdkit-first'):
         """
         Convert a molecular structure to an InChI Key string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
-        
-        or 
-        
+
+        or
+
         Convert a molecular structure to an InChI Key string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
+
+        It is possible to use a single backend or try different backends in sequence.
+        The available options for the ``backend`` argument: 'rdkit-first'(default),
+        'openbabel-first', 'rdkit', or 'openbabel'.
         """
         try:
-            return translator.to_inchi_key(self)
+            return translator.to_inchi_key(self, backend=backend)
         except:
             logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
             raise
 
-    def to_augmented_inchi_key(self):
+    def to_augmented_inchi_key(self, backend='rdkit-first'):
         """
         Adds an extra layer to the InChIKey denoting the multiplicity
         of the molecule.
 
         Simply append the multiplicity string, do not separate by a
         character like forward slash.
+
+        RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+        single backend or try different backends in sequence. The available options for the ``backend``
+        argument: 'rdkit-first'(default), 'openbabel-first', 'rdkit', or 'openbabel'.
         """
         try:
-            return translator.to_inchi_key(self, aug_level=2)
+            return translator.to_inchi_key(self, backend=backend, aug_level=2)
         except:
             logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
             raise

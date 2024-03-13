@@ -520,11 +520,11 @@ class QMMolecule(object):
         self.qm_data = local_context["qmData"]
         return thermo
 
-    def get_augmented_inchi_key(self):
+    def get_augmented_inchi_key(self, backend='rdkit-first'):
         """
         Returns the augmented InChI from self.molecule
         """
-        return self.molecule.to_augmented_inchi_key()
+        return self.molecule.to_augmented_inchi_key(backend=backend)
 
     def get_mol_file_path_for_calculation(self, attempt):
         """
