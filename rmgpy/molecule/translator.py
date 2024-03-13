@@ -169,7 +169,7 @@ def to_inchi(mol, backend='rdkit-first', aug_level=0):
     Uses RDKit or OpenBabel for conversion.
 
     Args:
-        backend     choice of backend, 'rdkit-first' (default), 'try-all', 'rdkit', or 'openbabel'
+        backend     choice of backend, 'rdkit-first' (default), 'openbabel-first', 'rdkit', or 'openbabel'
         aug_level   level of augmentation, 0, 1, or 2
     """
     cython.declare(inchi=str, ulayer=str, player=str, mlayer=str)
@@ -205,7 +205,7 @@ def to_inchi_key(mol, backend='rdkit-first', aug_level=0):
     Uses RDKit or OpenBabel for conversion.
 
     Args:
-        backend     choice of backend, 'rdkit-first' (default), 'try-all', 'rdkit', or 'openbabel'
+        backend     choice of backend, 'rdkit-first' (default), 'openbabel-first', 'rdkit', or 'openbabel'
         aug_level   level of augmentation, 0, 1, or 2
     """
     cython.declare(key=str, ulayer=str, player=str, mlayer=str)
@@ -274,10 +274,10 @@ def to_smiles(mol, backend='default'):
         return output
 
 
-def from_inchi(mol, inchistr, backend='try-all', raise_atomtype_exception=True):
+def from_inchi(mol, inchistr, backend='openbabel-first', raise_atomtype_exception=True):
     """
     Convert an InChI string `inchistr` to a molecular structure. Uses
-    a user-specified backend for conversion, currently supporting 'try-all' (default), rdkit-first,
+    a user-specified backend for conversion, currently supporting 'openbabel-first' (default), rdkit-first,
     rdkit, and openbabel.
     """
     if inchiutil.INCHI_PREFIX in inchistr:
@@ -325,11 +325,11 @@ def from_smarts(mol, smartsstr, backend='rdkit', raise_atomtype_exception=True):
     return _read(mol, smartsstr, 'sma', backend, raise_atomtype_exception=raise_atomtype_exception)
 
 
-def from_smiles(mol, smilesstr, backend='try-all', raise_atomtype_exception=True):
+def from_smiles(mol, smilesstr, backend='openbabel-first', raise_atomtype_exception=True):
     """
     Convert a SMILES string `smilesstr` to a molecular structure. Uses
-    a user-specified backend for conversion, currently supporting try-all (default), rdkit-first,
-    rdkit (default) and openbabel.
+    a user-specified backend for conversion, currently supporting openbabel-first (default), rdkit-first,
+    rdkit and openbabel.
     """
     return _read(mol, smilesstr, 'smi', backend, raise_atomtype_exception=raise_atomtype_exception)
 
@@ -569,9 +569,9 @@ def _get_backend_list(backend):
     """
     if not isinstance(backend, str):
         raise ValueError("The backend argument should be a string. "
-                         "Accepted values are 'try-all', 'rdkit-first', 'rdkit', and 'openbabel'")
+                         "Accepted values are 'openbabel-first', 'rdkit-first', 'rdkit', and 'openbabel'")
     backend = backend.strip().lower()
-    if backend == 'try-all':
+    if backend == 'openbabel-first':
         return BACKENDS
     elif backend == 'rdkit-first':
         return reversed(BACKENDS)
@@ -579,4 +579,4 @@ def _get_backend_list(backend):
         return [backend]
     else:
         raise ValueError("Unrecognized value for backend argument. "
-                         "Accepted values are 'try-all', 'rdkit-first', 'rdkit', and 'openbabel'")
+                         "Accepted values are 'openbabel-first', 'rdkit-first', 'rdkit', and 'openbabel'")

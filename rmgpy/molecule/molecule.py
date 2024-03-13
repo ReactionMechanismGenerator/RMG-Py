@@ -1768,9 +1768,13 @@ class Molecule(Graph):
         os.unlink(temp_file_name)
         return png
 
-    def from_inchi(self, inchistr, backend='try-all', raise_atomtype_exception=True):
+    def from_inchi(self, inchistr, backend='openbabel-first', raise_atomtype_exception=True):
         """
         Convert an InChI string `inchistr` to a molecular structure.
+
+        RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+        single backend or try different backends in sequence. The available options for the ``backend``
+        argument: 'openbabel-first'(default), 'rdkit-first', 'rdkit', or 'openbabel'.
         """
         translator.from_inchi(self, inchistr, backend, raise_atomtype_exception=raise_atomtype_exception)
         return self
@@ -1782,9 +1786,13 @@ class Molecule(Graph):
         translator.from_augmented_inchi(self, aug_inchi, raise_atomtype_exception=raise_atomtype_exception)
         return self
 
-    def from_smiles(self, smilesstr, backend='try-all', raise_atomtype_exception=True):
+    def from_smiles(self, smilesstr, backend='openbabel-first', raise_atomtype_exception=True):
         """
         Convert a SMILES string `smilesstr` to a molecular structure.
+
+        RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+        single backend or try different backends in sequence. The available options for the ``backend``
+        argument: 'openbabel-first'(default), 'rdkit-first', 'rdkit', or 'openbabel'.
         """
         translator.from_smiles(self, smilesstr, backend, raise_atomtype_exception=raise_atomtype_exception)
         return self
@@ -1874,8 +1882,9 @@ class Molecule(Graph):
         Convert a molecular structure to an InChI string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
 
-        Available options for InChI backend: 'rdkit-first' (default),
-        'try-all', 'rdkit', or 'openbabel'.
+        It is possible to use a single backend or try different backends in sequence.
+        The available options for the ``backend`` argument: 'rdkit-first'(default),
+        'openbabel-first', 'rdkit', or 'openbabel'.
         """
         try:
             return translator.to_inchi(self, backend=backend)
@@ -1890,8 +1899,9 @@ class Molecule(Graph):
 
         Separate layer with a forward slash character.
 
-        Available options for InChI backend: 'rdkit-first' (default),
-        'try-all', 'rdkit', or 'openbabel'.
+        RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+        single backend or try different backends in sequence. The available options for the ``backend``
+        argument: 'rdkit-first'(default), 'openbabel-first', 'rdkit', or 'openbabel'.
         """
         try:
             return translator.to_inchi(self, backend=backend, aug_level=2)
@@ -1909,8 +1919,9 @@ class Molecule(Graph):
         Convert a molecular structure to an InChI Key string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
 
-        Available options for InChI backend: 'rdkit-first' (default),
-        'try-all', 'rdkit', or 'openbabel'.
+        It is possible to use a single backend or try different backends in sequence.
+        The available options for the ``backend`` argument: 'rdkit-first'(default),
+        'openbabel-first', 'rdkit', or 'openbabel'.
         """
         try:
             return translator.to_inchi_key(self, backend=backend)
@@ -1926,8 +1937,9 @@ class Molecule(Graph):
         Simply append the multiplicity string, do not separate by a
         character like forward slash.
 
-        Available options for InChI backend: 'rdkit-first' (default),
-        'try-all', 'rdkit', or 'openbabel'.
+        RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+        single backend or try different backends in sequence. The available options for the ``backend``
+        argument: 'rdkit-first'(default), 'openbabel-first', 'rdkit', or 'openbabel'.
         """
         try:
             return translator.to_inchi_key(self, backend=backend, aug_level=2)
