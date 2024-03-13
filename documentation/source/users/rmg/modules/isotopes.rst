@@ -49,10 +49,6 @@ not match the same depository reactions, leading to inconsistent kinetics. If
 degeneracy errors arise when generating reactions from scratch, try using this
 option to see if it reduces errors in degeneracy.
 
-The arguement ``--maximumIsotopicAtoms [integer]`` limits the number of enriched
-atoms in any isotopologue in the model. This is beneficial for decreasing model 
-size, runtime of model creation and runtime necessary for analysis.
-
 Adding kinetic isotope effects which are described in this paper can be obtained
 through the argument ``--kineticIsotopeEffect simple``. Currently this is the
 only supported method, though this can be extended to other effects.
