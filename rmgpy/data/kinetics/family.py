@@ -48,7 +48,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures, get_all_combinations
 from rmgpy.data.kinetics.common import save_entry, find_degenerate_reactions, generate_molecule_combos, \
-                                       ensure_independent_atom_ids
+                                       ensure_independent_atom_ids, check_for_same_reactants
 from rmgpy.data.kinetics.depository import KineticsDepository
 from rmgpy.data.kinetics.groups import KineticsGroups
 from rmgpy.data.kinetics.rules import KineticsRules
@@ -1749,42 +1749,8 @@ class KineticsFamily(Database):
         This method by default adjusts for double counting of identical reactants. 
         This should only be adjusted once per reaction. 
         """
-        # Check if the reactants are the same
-        # If they refer to the same memory address, then make a deep copy so
-        # they can be manipulated independently
         reactants = reaction.reactants
-        same_reactants = 0
-        if len(reactants) == 2:
-            if reactants[0] is reactants[1]:
-                reactants[1] = reactants[1].copy(deep=True)
-                same_reactants = 2
-            elif reactants[0].is_isomorphic(reactants[1]):
-                same_reactants = 2
-        elif len(reactants) == 3:
-            same_01 = reactants[0] is reactants[1]
-            same_02 = reactants[0] is reactants[2]
-            if same_01 and same_02:
-                same_reactants = 3
-                reactants[1] = reactants[1].copy(deep=True)
-                reactants[2] = reactants[2].copy(deep=True)
-            elif same_01:
-                same_reactants = 2
-                reactants[1] = reactants[1].copy(deep=True)
-            elif same_02:
-                same_reactants = 2
-                reactants[2] = reactants[2].copy(deep=True)
-            elif reactants[1] is reactants[2]:
-                same_reactants = 2
-                reactants[2] = reactants[2].copy(deep=True)
-            else:
-                same_01 = reactants[0].is_isomorphic(reactants[1])
-                same_02 = reactants[0].is_isomorphic(reactants[2])
-                if same_01 and same_02:
-                    same_reactants = 3
-                elif same_01 or same_02:
-                    same_reactants = 2
-                elif reactants[1].is_isomorphic(reactants[2]):
-                    same_reactants = 2
+        reactants, same_reactants = check_for_same_reactants(reactants)
 
         # Label reactant atoms for proper degeneracy calculation
         ensure_independent_atom_ids(reactants, resonance=resonance)
