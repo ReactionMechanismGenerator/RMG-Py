@@ -1763,7 +1763,7 @@ class KineticsFamily(Database):
 
         # remove degenerate reactions
         reactions = find_degenerate_reactions(reactions, same_reactants, template=reaction.template,
-                                              kinetics_family=self)
+                                              kinetics_family=self, resonance=resonance)
 
         # log issues
         if len(reactions) != 1:
