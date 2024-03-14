@@ -227,7 +227,7 @@ def check_for_same_reactants(reactants):
     Given a list reactants, check if the reactants are the same.
     If they refer to the same memory address, then make a deep copy so they can be manipulated independently.
     
-    Returns the modified reactants list and an integer containing the number of same reactants in the reactants list. 
+    Returns a tuple containing the modified reactants list, and an integer containing the number of identical reactants in the reactants list. 
     
     """
 
