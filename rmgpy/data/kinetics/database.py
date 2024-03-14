@@ -427,7 +427,7 @@ and immediately used in input files without any additional changes.
         if only_families is None:
             reaction_list.extend(self.generate_reactions_from_libraries(reactants, products))
         reaction_list.extend(self.generate_reactions_from_families(reactants, products,
-                                                                   only_families=None, resonance=resonance))
+                                                                   only_families=only_families, resonance=resonance))
         return reaction_list
 
     def generate_reactions_from_libraries(self, reactants, products=None):
