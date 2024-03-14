@@ -504,7 +504,8 @@ and immediately used in input files without any additional changes.
                                                       prod_resonance=resonance))
 
         # Calculate reaction degeneracy
-        reaction_list = find_degenerate_reactions(reaction_list, same_reactants, kinetics_database=self)
+        reaction_list = find_degenerate_reactions(reaction_list, same_reactants, kinetics_database=self,
+                                                  resonance=resonance)
         # Add reverse attribute to families with ownReverse
         to_delete = []
         for i, rxn in enumerate(reaction_list):
