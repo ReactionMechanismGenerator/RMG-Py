@@ -1741,15 +1741,13 @@ class KineticsFamily(Database):
                 rxn.reverse = reactions[0]
                 return True
 
-    def calculate_degeneracy(self, reaction):
+    def calculate_degeneracy(self, reaction, resonance=True):
         """
         For a `reaction`  with `Molecule` or `Species` objects given in the direction in which
-        the kinetics are defined, compute the reaction-path degeneracy.
+        the kinetics are defined, compute the reaction-path degeneracy. Can specify whether to consider resonance.
 
         This method by default adjusts for double counting of identical reactants. 
-        This should only be adjusted once per reaction. To not adjust for 
-        identical reactants (since you will be reducing them later in the algorithm), add
-        `ignoreSameReactants= True` to this method.
+        This should only be adjusted once per reaction. 
         """
         # Check if the reactants are the same
         # If they refer to the same memory address, then make a deep copy so
@@ -1789,7 +1787,7 @@ class KineticsFamily(Database):
                     same_reactants = 2
 
         # Label reactant atoms for proper degeneracy calculation
-        ensure_independent_atom_ids(reactants, resonance=True)
+        ensure_independent_atom_ids(reactants, resonance=resonance)
         molecule_combos = generate_molecule_combos(reactants)
 
         reactions = []
