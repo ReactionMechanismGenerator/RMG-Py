@@ -1759,7 +1759,7 @@ class KineticsFamily(Database):
         reactions = []
         for combo in molecule_combos:
             reactions.extend(self._generate_reactions(combo, products=reaction.products, forward=True,
-                                                      react_non_reactive=True))
+                                                      prod_resonance=resonance, react_non_reactive=True))
 
         # remove degenerate reactions
         reactions = find_degenerate_reactions(reactions, same_reactants, template=reaction.template,
