@@ -275,14 +275,17 @@ options(
     saveEdgeSpecies=False,
 )
 
+forbidden(
+    label='vacancies',
+    structure=adjacencyListGroup("""
+1 Xv u0 p0 c0
+"""),
+)
+
 generatedSpeciesConstraints(
     allowed=['input species','reaction libraries'],
     maximumSurfaceSites=1,
-    explicitlyForbiddenGroups=[groupAdjacencyList("""
-1 Xv u0 p0 c0
-""")],
-     maximumCarbonAtoms=8,
-     maximumOxygenAtoms=8,
+    maximumCarbonAtoms=8,
+    maximumOxygenAtoms=8,
     maximumRadicalElectrons=1,
 )
-
