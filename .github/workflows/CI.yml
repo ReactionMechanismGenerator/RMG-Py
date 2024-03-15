@@ -52,6 +52,10 @@ env:
 jobs:
   build-osx:
     runs-on: macos-13
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     defaults:
@@ -62,13 +66,13 @@ jobs:
         uses: actions/checkout@v4
 
       # configures the mamba environment manager and builds the environment
-      - name: Setup Mambaforge Python 3.7
+      - name: Setup Mambaforge Python ${{ matrix.python-version }}
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
           miniforge-variant: Mambaforge
           miniforge-version: latest
-          python-version: 3.7
+          python-version: ${{ matrix.python-version }}
           activate-environment: rmg_env
           use-mamba: true
 
@@ -99,6 +103,10 @@ jobs:
 
   build-and-test-linux:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: 
@@ -112,13 +120,13 @@ jobs:
         uses: actions/checkout@v4
 
       # configures the mamba environment manager and builds the environment
-      - name: Setup Mambaforge Python 3.7
+      - name: Setup Mambaforge Python ${{ matrix.python-version }}
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
           miniforge-variant: Mambaforge
           miniforge-version: latest
-          python-version: 3.7
+          python-version: ${{ matrix.python-version }}
           activate-environment: rmg_env
           use-mamba: true
 
