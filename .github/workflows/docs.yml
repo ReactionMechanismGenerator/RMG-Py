@@ -81,7 +81,7 @@ jobs:
           cd build/html
           touch .nojekyll
           git add -A --force .
-          git commit -m "Automated documentation rebuild" || true  # allow this to fail if no changes were made
+          git diff --exit-code --quiet || git commit -m "Automated documentation rebuild"  # only commit if changes were made
 
       - name: Check documentation links
         continue-on-error: true
