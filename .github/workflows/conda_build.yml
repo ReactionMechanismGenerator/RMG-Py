@@ -32,7 +32,7 @@ jobs:
           conda config --set anaconda_upload yes
       - name: Build Binary
         env: 
-          CONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+          CONDA_TOKEN: "need_to_add_this_secret"  # ${{ secrets.ANACONDA_TOKEN }}
         run: |
           conda config --add channels cantera
           conda config --add channels rmg
