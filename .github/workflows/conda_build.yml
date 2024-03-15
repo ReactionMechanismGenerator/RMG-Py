@@ -22,7 +22,6 @@ jobs:
         with:
           auto-update-conda: true
           conda-solver: libmamba
-          python-version: "3.7"
           auto-activate-base: true
           activate-environment: ""
       - name: Install Build Tools
