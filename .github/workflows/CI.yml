@@ -59,7 +59,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Checkout RMG-Py
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
@@ -109,11 +109,9 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Checkout RMG-Py
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # configures the mamba environment manager and builds the environment
-      - name: Patch Environment File
-        run: sed -i 's/  - conda-forge::julia>=1.8.5,!=1.9.0/  - conda-forge::julia=1.9.1/' environment.yml
       - name: Setup Mambaforge Python 3.7
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -132,7 +130,6 @@ jobs:
 
       # Clone RMG-database
       - name: Clone RMG-database
-        if: github.repository != 'ReactionMechanismGenerator/RMG-database'
         run: |
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
