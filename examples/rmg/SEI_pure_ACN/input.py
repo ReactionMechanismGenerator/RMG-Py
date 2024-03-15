@@ -18,7 +18,7 @@ database(
     'Li_Abstraction',
     'R_Addition_MultipleBond_Disprop',
     'Cation_R_Recombination',
-    'Cation_Addition_Multiple_Bond',
+    'Cation_Addition_MultipleBond',
     '1,2-Birad_to_alkene',
     '1,2_Insertion_CO',
     '1,2_Insertion_carbene',
@@ -158,16 +158,24 @@ options(
     saveEdgeSpecies=False,
 )
 
+forbidden(
+    label='vacancies',
+    structure=adjacencyListGroup("""
+1 Xv u0 p0 c0
+"""),
+)
+
+forbidden(
+    label='Li2',
+    structure=adjacencyList("""
+1 Li u0 p0 c0 {2,S}
+2 Li u0 p0 c0 {1,S}"""),
+)
+
 generatedSpeciesConstraints(
     allowed=['input species','reaction libraries'],
     maximumSurfaceSites=1,
-    explicitlyForbiddenGroups=[groupAdjacencyList("""
-1 Xv u0 p0 c0
-""")],
-    explicitlyForbiddenMolecules=[adjacencyList("""
-1 Li u0 p0 c0 {2,S}
-2 Li u0 p0 c0 {1,S}""")],
-     maximumCarbonAtoms=7,
-     maximumNitrogenAtoms=4,
+    maximumCarbonAtoms=7,
+    maximumOxygenAtoms=4,
     maximumRadicalElectrons=1,
 )
