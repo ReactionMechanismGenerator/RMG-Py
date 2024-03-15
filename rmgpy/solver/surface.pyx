@@ -67,6 +67,7 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public ScalarQuantity surface_site_density
     cdef public np.ndarray reactions_on_surface  # (catalyst surface, not core/edge surface)
     cdef public np.ndarray species_on_surface  # (catalyst surface, not core/edge surface)
+    cdef public np.ndarray thermo_coeff_matrix
 
     cdef public bint coverage_dependence
     cdef public dict coverage_dependencies
@@ -173,6 +174,8 @@ cdef class SurfaceReactor(ReactionSystem):
                                        )
         cdef np.ndarray[np.int_t, ndim=1] species_on_surface, reactions_on_surface
         cdef Py_ssize_t index
+        cdef np.ndarray thermo_coeff_matrix = np.zeros((len(self.species_index)*len(self.species_index), 4), dtype=np.float64)
+        self.thermo_coeff_matrix = thermo_coeff_matrix
         #: 1 if it's on a surface, 0 if it's in the gas phase
         reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), int)
         species_on_surface = np.zeros((self.num_core_species), int)
@@ -206,7 +209,10 @@ cdef class SurfaceReactor(ReactionSystem):
             if sp.contains_surface_site():
                 if self.thermo_coverage_dependence and sp.thermo.thermo_coverage_dependence:
                     for spec, parameters in sp.thermo.thermo_coverage_dependence.items():
-                        species_index = self.species_index[spec]
+                        try:
+                            species_index = self.species_index[spec]
+                        except KeyError:
+                            logging.warning("Species {} is not in the species list yet, skip the thermodynamic coverage effect estimation!".format(spec))
                         try:
                             list_of_thermo_coverage_deps = self.thermo_coverage_dependencies[species_index]
                         except KeyError: # doesn't exist yet
@@ -413,8 +419,6 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef list list_of_coverage_deps
         cdef double surface_site_fraction, total_sites, a, m, E
 
-
-
         ir = self.reactant_indices
         ip = self.product_indices
         equilibrium_constants = self.Keq
@@ -500,12 +504,12 @@ cdef class SurfaceReactor(ReactionSystem):
                     corrected_K_eq[j] *= np.exp((free_energy_coverage_corrections[ir[j, 0]] + free_energy_coverage_corrections[ir[j, 1]] + free_energy_coverage_corrections[ir[j, 2]]) / (constants.R * self.T.value_si))
                 if ip[j, 0] >= num_core_species or ip[j, 1] >= num_core_species or ip[j, 2] >= num_core_species:
                     pass
-                elif ip[j, 1] == -1:  # only one reactant
-                    corrected_K_eq[j] /= np.exp(free_energy_coverage_corrections[ir[j, 0]] / (constants.R * self.T.value_si))
-                elif ip[j, 2] == -1:  # only two reactants
-                    corrected_K_eq[j] /= np.exp((free_energy_coverage_corrections[ir[j, 0]] + free_energy_coverage_corrections[ir[j, 1]]) / (constants.R * self.T.value_si))
-                else:  # three reactants!! (really?)
-                    corrected_K_eq[j] /= np.exp((free_energy_coverage_corrections[ir[j, 0]] + free_energy_coverage_corrections[ir[j, 1]] + free_energy_coverage_corrections[ir[j, 2]]) / (constants.R * self.T.value_si))
+                elif ip[j, 1] == -1:  # only one product
+                    corrected_K_eq[j] /= np.exp(free_energy_coverage_corrections[ip[j, 0]] / (constants.R * self.T.value_si))
+                elif ip[j, 2] == -1:  # only two products
+                    corrected_K_eq[j] /= np.exp((free_energy_coverage_corrections[ip[j, 0]] + free_energy_coverage_corrections[ip[j, 1]]) / (constants.R * self.T.value_si))
+                else:  # three products!! (really?)
+                    corrected_K_eq[j] /= np.exp((free_energy_coverage_corrections[ip[j, 0]] + free_energy_coverage_corrections[ip[j, 1]] + free_energy_coverage_corrections[ip[j, 2]]) / (constants.R * self.T.value_si))
             kr = kf / corrected_K_eq
         # Coverage dependence
         coverage_corrections = np.ones_like(kf, float)
