@@ -16,6 +16,7 @@
 #   made dependency list more explicit (@JacksonBurns).
 # - October 16, 2023 Switched RDKit and descripatastorus to conda-forge,
 #   moved diffeqpy to pip and (temporarily) removed chemprop
+# - March 15, 2024 - started migration to Python 3.11/2
 #
 name: rmg_env
 channels:
@@ -53,7 +54,7 @@ dependencies:
   - conda-forge::pyjulia >=0.6
 
 # Python tools
-  - python >=3.7
+  - python =3.11,3.12
   - coverage
   - cython >=0.25.2
   - scikit-learn
@@ -68,13 +69,7 @@ dependencies:
   - networkx
   - pytest
   - pytest-cov
-  # we use a the pytest-check plugin, which is on Conda and PyPI, but the
-  # version compatible with Python 3.7 is only on PyPI
-  # switch to the conda version after upgrading to 3.11
-  # - conda-forge::pytest-check
-  - pip
-  - pip:
-    - pytest-check
+  - conda-forge::pytest-check
   - matplotlib >=1.5
   - mpmath
   - pandas
