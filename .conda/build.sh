@@ -1,3 +1,5 @@
+set -x
+
 # from https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2631#issuecomment-1998723914
 #make julia directory
 mkdir -p ${PREFIX}/share/julia/site
@@ -37,3 +39,5 @@ export PYTHON=$PREFIX/bin/python
 export PYTHONPATH=$SRC_DIR:$PYTHONPATH
 python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator'
+
+set +x
