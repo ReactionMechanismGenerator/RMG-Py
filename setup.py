@@ -215,7 +215,7 @@ scripts = [
     'scripts/standardizeModelSpeciesNames.py',
     'scripts/thermoEstimator.py',
     'scripts/isotopes.py',
-    'testing/databaseTest.py',
+    'test/database/databaseTest.py',
 ]
 
 modules = []
