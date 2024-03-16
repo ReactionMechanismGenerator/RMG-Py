@@ -240,7 +240,7 @@ Some charged atom types were merged together, and are marked as '*Composite atom
 
 ATOMTYPES = {}
 
-ATOMTYPES['Rx']    = AtomType(label='Rx', generic=[], specific=[
+ATOMTYPES['Rx'] = AtomType(label='Rx', generic=[], specific=[
     'H',
     'R',
     'R!H',
@@ -259,7 +259,7 @@ ATOMTYPES['Rx']    = AtomType(label='Rx', generic=[], specific=[
     'I','I1s',
     'F','F1s','X','Xv','Xo'])
 
-ATOMTYPES['Rx!H']    = AtomType(label='Rx!H', generic=['Rx'], specific=[
+ATOMTYPES['Rx!H'] = AtomType(label='Rx!H', generic=['Rx'], specific=[
     'R!H',
     'R!H!Val7',
     'Val4','Val5','Val6','Val7',
@@ -276,20 +276,20 @@ ATOMTYPES['Rx!H']    = AtomType(label='Rx!H', generic=['Rx'], specific=[
     'F','F1s','X','Xv','Xo'])
 
 # Surface sites:
-ATOMTYPES['X']   = AtomType(label='X', generic=['Rx', 'Rx!H'], specific=['Xv', 'Xo'])
+ATOMTYPES['X'] = AtomType(label='X', generic=['Rx', 'Rx!H'], specific=['Xv', 'Xo'])
 
 # Vacant surface site:
-ATOMTYPES['Xv']   = AtomType('Xv', generic=['X','Rx', 'Rx!H'], specific=[],
+ATOMTYPES['Xv'] = AtomType('Xv', generic=['X','Rx', 'Rx!H'], specific=[],
                              single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
                              benzene=[0], lone_pairs=[0])
 # Occupied surface site:
-ATOMTYPES['Xo']   = AtomType('Xo', generic=['X','Rx', 'Rx!H'], specific=[],
+ATOMTYPES['Xo'] = AtomType('Xo', generic=['X','Rx', 'Rx!H'], specific=[],
                              single=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], all_double=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], r_double=[], o_double=[], s_double=[], triple=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
                              quadruple=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], benzene=[0], lone_pairs=[0])
 
 
 # Non-surface atomTypes, R being the most generic:
-ATOMTYPES['R']    = AtomType(label='R', generic=['Rx'], specific=[
+ATOMTYPES['R'] = AtomType(label='R', generic=['Rx'], specific=[
     'H',
     'R!H',
     'R!H!Val7',
@@ -306,7 +306,7 @@ ATOMTYPES['R']    = AtomType(label='R', generic=['Rx'], specific=[
     'I','I1s',
     'F','F1s'])
 
-ATOMTYPES['R!H']  = AtomType(label='R!H', generic=['R', 'Rx', 'Rx!H'], specific=[
+ATOMTYPES['R!H'] = AtomType(label='R!H', generic=['R', 'Rx', 'Rx!H'], specific=[
     'Val4','Val5','Val6','Val7',
     'He','Ne','Ar',
     'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ctc','Ct','Cb','Cbf','Cq','C2s','C2sc','C2d','C2dc','C2tc',
@@ -320,7 +320,7 @@ ATOMTYPES['R!H']  = AtomType(label='R!H', generic=['R', 'Rx', 'Rx!H'], specific=
     'I','I1s',
     'F','F1s'])
 
-ATOMTYPES['R!H!Val7']  = AtomType(label='R!H!Val7', generic=['R', 'Rx', 'Rx!H'], specific=[
+ATOMTYPES['R!H!Val7'] = AtomType(label='R!H!Val7', generic=['R', 'Rx', 'Rx!H'], specific=[
     'Val4','Val5','Val6',
     'He','Ne','Ar',
     'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ctc','Ct','Cb','Cbf','Cq','C2s','C2sc','C2d','C2dc','C2tc',
