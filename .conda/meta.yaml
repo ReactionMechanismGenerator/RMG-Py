@@ -13,46 +13,46 @@ requirements:
   build:
     - {{ compiler('c') }}
   host:
-    - cairo
-    - cairocffi
-    - ffmpeg
-    - xlrd
-    - xlwt
-    - h5py
-    - graphviz
-    - markupsafe
-    - psutil
-    - ncurses
-    - suitesparse
-    - coolprop
-    - cantera =2.6
-    - mopac
-    - cclib >=1.6.3,!=1.8.0
-    - openbabel >=3
-    - rdkit >=2022.09.1
-    - julia =1.9.1
-    - pyjulia >=0.6
-    - python >=3.7
-    - coverage
-    - cython >=0.25.2
-    - scikit-learn
-    - scipy <1.11
-    - numpy >=1.10.0
-    - pydot
-    - jinja2
-    - jupyter
-    - pymongo
-    - pyparsing
-    - pyyaml
-    - networkx
-    - pytest
-    - pytest-cov
-    - matplotlib >=1.5
-    - mpmath
-    - pandas
-    - gprof2dot
-    - numdifftools
-    - quantities
+    - conda-forge::cairo
+    - conda-forge::cairocffi
+    - conda-forge::ffmpeg
+    - conda-forge::xlrd
+    - conda-forge::xlwt
+    - conda-forge::h5py
+    - conda-forge::graphviz
+    - conda-forge::markupsafe
+    - conda-forge::psutil
+    - conda-forge::ncurses
+    - conda-forge::suitesparse
+    - conda-forge::coolprop
+    - cantera::cantera =2.6
+    - conda-forge::mopac
+    - conda-forge::cclib >=1.6.3,!=1.8.0
+    - conda-forge::openbabel >=3
+    - conda-forge::rdkit >=2022.09.1
+    - conda-forge::julia =1.9.1
+    - conda-forge::pyjulia >=0.6
+    - conda-forge::python >=3.7
+    - conda-forge::coverage
+    - conda-forge::cython >=0.25.2
+    - conda-forge::scikit-learn
+    - conda-forge::scipy <1.11
+    - conda-forge::numpy >=1.10.0
+    - conda-forge::pydot
+    - conda-forge::jinja2
+    - conda-forge::jupyter
+    - conda-forge::pymongo
+    - conda-forge::pyparsing
+    - conda-forge::pyyaml
+    - conda-forge::networkx
+    - conda-forge::pytest
+    - conda-forge::pytest-cov
+    - conda-forge::matplotlib >=1.5
+    - conda-forge::mpmath
+    - conda-forge::pandas
+    - conda-forge::gprof2dot
+    - conda-forge::numdifftools
+    - conda-forge::quantities
     - rmg::lpsolve55
     - rmg::muq2
     - rmg::pydas >=1.0.3
@@ -61,48 +61,48 @@ requirements:
     - rmg::pyrms
     - rmg::symmetry
     - rmg::diffeqpy
-    - nomkl
+    - conda-forge::nomkl
   run:
-    - cairo
-    - cairocffi
-    - ffmpeg
-    - xlrd
-    - xlwt
-    - h5py
-    - graphviz
-    - markupsafe
-    - psutil
-    - ncurses
-    - suitesparse
-    - coolprop
-    - cantera =2.6
-    - mopac
-    - cclib >=1.6.3,!=1.8.0
-    - openbabel >=3
-    - rdkit >=2022.09.1
-    - julia =1.9.1
-    - pyjulia >=0.6
-    - python >=3.7
-    - coverage
-    - cython >=0.25.2
-    - scikit-learn
-    - scipy <1.11
-    - numpy >=1.10.0
-    - pydot
-    - jinja2
-    - jupyter
-    - pymongo
-    - pyparsing
-    - pyyaml
-    - networkx
-    - pytest
-    - pytest-cov
-    - matplotlib >=1.5
-    - mpmath
-    - pandas
-    - gprof2dot
-    - numdifftools
-    - quantities
+    - conda-forge::cairo
+    - conda-forge::cairocffi
+    - conda-forge::ffmpeg
+    - conda-forge::xlrd
+    - conda-forge::xlwt
+    - conda-forge::h5py
+    - conda-forge::graphviz
+    - conda-forge::markupsafe
+    - conda-forge::psutil
+    - conda-forge::ncurses
+    - conda-forge::suitesparse
+    - conda-forge::coolprop
+    - cantera::cantera =2.6
+    - conda-forge::mopac
+    - conda-forge::cclib >=1.6.3,!=1.8.0
+    - conda-forge::openbabel >=3
+    - conda-forge::rdkit >=2022.09.1
+    - conda-forge::julia =1.9.1
+    - conda-forge::pyjulia >=0.6
+    - conda-forge::python >=3.7
+    - conda-forge::coverage
+    - conda-forge::cython >=0.25.2
+    - conda-forge::scikit-learn
+    - conda-forge::scipy <1.11
+    - conda-forge::numpy >=1.10.0
+    - conda-forge::pydot
+    - conda-forge::jinja2
+    - conda-forge::jupyter
+    - conda-forge::pymongo
+    - conda-forge::pyparsing
+    - conda-forge::pyyaml
+    - conda-forge::networkx
+    - conda-forge::pytest
+    - conda-forge::pytest-cov
+    - conda-forge::matplotlib >=1.5
+    - conda-forge::mpmath
+    - conda-forge::pandas
+    - conda-forge::gprof2dot
+    - conda-forge::numdifftools
+    - conda-forge::quantities
     - rmg::lpsolve55
     - rmg::muq2
     - rmg::pydas >=1.0.3
@@ -111,49 +111,49 @@ requirements:
     - rmg::pyrms
     - rmg::symmetry
     - rmg::diffeqpy
-    - nomkl
+    - conda-forge::nomkl
 test:
   requires:
-    - cairo
-    - cairocffi
-    - ffmpeg
-    - xlrd
-    - xlwt
-    - h5py
-    - graphviz
-    - markupsafe
-    - psutil
-    - ncurses
-    - suitesparse
-    - coolprop
-    - cantera =2.6
-    - mopac
-    - cclib >=1.6.3,!=1.8.0
-    - openbabel >=3
-    - rdkit >=2022.09.1
-    - julia =1.9.1
-    - pyjulia >=0.6
-    - python >=3.7
-    - coverage
-    - cython >=0.25.2
-    - scikit-learn
-    - scipy <1.11
-    - numpy >=1.10.0
-    - pydot
-    - jinja2
-    - jupyter
-    - pymongo
-    - pyparsing
-    - pyyaml
-    - networkx
-    - pytest
-    - pytest-cov
-    - matplotlib >=1.5
-    - mpmath
-    - pandas
-    - gprof2dot
-    - numdifftools
-    - quantities
+    - conda-forge::cairo
+    - conda-forge::cairocffi
+    - conda-forge::ffmpeg
+    - conda-forge::xlrd
+    - conda-forge::xlwt
+    - conda-forge::h5py
+    - conda-forge::graphviz
+    - conda-forge::markupsafe
+    - conda-forge::psutil
+    - conda-forge::ncurses
+    - conda-forge::suitesparse
+    - conda-forge::coolprop
+    - cantera::cantera =2.6
+    - conda-forge::mopac
+    - conda-forge::cclib >=1.6.3,!=1.8.0
+    - conda-forge::openbabel >=3
+    - conda-forge::rdkit >=2022.09.1
+    - conda-forge::julia =1.9.1
+    - conda-forge::pyjulia >=0.6
+    - conda-forge::python >=3.7
+    - conda-forge::coverage
+    - conda-forge::cython >=0.25.2
+    - conda-forge::scikit-learn
+    - conda-forge::scipy <1.11
+    - conda-forge::numpy >=1.10.0
+    - conda-forge::pydot
+    - conda-forge::jinja2
+    - conda-forge::jupyter
+    - conda-forge::pymongo
+    - conda-forge::pyparsing
+    - conda-forge::pyyaml
+    - conda-forge::networkx
+    - conda-forge::pytest
+    - conda-forge::pytest-cov
+    - conda-forge::matplotlib >=1.5
+    - conda-forge::mpmath
+    - conda-forge::pandas
+    - conda-forge::gprof2dot
+    - conda-forge::numdifftools
+    - conda-forge::quantities
     - rmg::lpsolve55
     - rmg::muq2
     - rmg::pydas >=1.0.3
@@ -162,7 +162,7 @@ test:
     - rmg::pyrms
     - rmg::symmetry
     - rmg::diffeqpy
-    - nomkl
+    - conda-forge::nomkl
   source_files:
     - 'examples/rmg/superminimal'
     - 'examples/arkane/networks/n-butanol'
