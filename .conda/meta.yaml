@@ -47,9 +47,6 @@ requirements:
     - networkx
     - pytest
     - pytest-cov
-    - pip
-    - pip:
-      - pytest-check
     - matplotlib >=1.5
     - mpmath
     - pandas
@@ -100,9 +97,6 @@ requirements:
     - networkx
     - pytest
     - pytest-cov
-    - pip
-    - pip:
-      - pytest-check
     - matplotlib >=1.5
     - mpmath
     - pandas
@@ -154,9 +148,6 @@ test:
     - networkx
     - pytest
     - pytest-cov
-    - pip
-    - pip:
-      - pytest-check
     - matplotlib >=1.5
     - mpmath
     - pandas
