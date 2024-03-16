@@ -174,7 +174,7 @@ cdef class SurfaceReactor(ReactionSystem):
                                        )
         cdef np.ndarray[np.int_t, ndim=1] species_on_surface, reactions_on_surface
         cdef Py_ssize_t index
-        cdef np.ndarray thermo_coeff_matrix = np.zeros((len(self.species_index)*len(self.species_index), 4), dtype=np.float64)
+        cdef np.ndarray thermo_coeff_matrix = np.zeros((len(self.species_index), len(self.species_index), 6), dtype=np.float64)
         self.thermo_coeff_matrix = thermo_coeff_matrix
         #: 1 if it's on a surface, 0 if it's in the gas phase
         reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), int)
@@ -211,30 +211,11 @@ cdef class SurfaceReactor(ReactionSystem):
                     for spec, parameters in sp.thermo.thermo_coverage_dependence.items():
                         try:
                             species_index = self.species_index[spec]
+                            thermo_polynomials = parameters['enthalpy-coefficients'] + parameters['entropy-coefficients']
+                            self.thermo_coeff_matrix[sp_index, species_index] = [x.value_si for x in thermo_polynomials]
                         except KeyError:
                             logging.warning("Species {} is not in the species list yet, skip the thermodynamic coverage effect estimation!".format(spec))
-                        try:
-                            list_of_thermo_coverage_deps = self.thermo_coverage_dependencies[species_index]
-                        except KeyError: # doesn't exist yet
-                            list_of_thermo_coverage_deps = []
-                            self.thermo_coverage_dependencies[sp_index] = list_of_thermo_coverage_deps
-                        # need to specify the entropy and enthalpy models
-                        # linear, piecewise linear, polynomial, interpolative models
-                        if parameters['model'] == "polynomial":
-                            # for the case of polynomial, we need to insert a 0 for the constant term
-                            parameters['enthalpy-coefficients'] = [0]+[x.value_si for x in parameters['enthalpy-coefficients']]
-                            parameters['entropy-coefficients'] = [0]+[x.value_si for x in parameters['entropy-coefficients']]
-                        list_of_thermo_coverage_deps.append((sp_index, parameters))
-                        
-                """
-                self.thermo_coverage_dependencies[2] = [(3, {"model":"linear","enthalpy-coefficients":[], "entropy-coefficients":[]}),]
-                self.thermo_coverage_dependencies[2] = [(3, {"model":"polynomial","enthalpy-coefficients":[], "entropy-coefficients":[]}),]
-                self.thermo_coverage_dependencies[2] = [(3, {"model":"piecewise-linear","enthalpy-coefficients":{"enthalpy_high":, "enthalpy_low":, "enthalpy_change":}, 
-                                                              "entropy-coefficients":{"entropy_high":, "entropy_low":, "entropy_change"}, "Cp":{"heat-capacity-a":, "heat-capacity-b":}}),]
-                self.thermo_coverage_dependencies[2] = {(3, {"model":"interpolative","enthalpy-coefficients":{"enthalpy-coverages":, "enthalpies":}, "entropy-coefficients":{"entropy-coverages":, "entropies":}}),}
-                means that Species with index 2 in the current simulation is used in
-                Species 3 with parameters for linear, polynomial, piecewise-linear, and interpolative models
-                """
+
         self.species_on_surface = species_on_surface
         self.reactions_on_surface = reactions_on_surface
 
@@ -418,7 +399,6 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk
         cdef list list_of_coverage_deps
         cdef double surface_site_fraction, total_sites, a, m, E
-
         ir = self.reactant_indices
         ip = self.product_indices
         equilibrium_constants = self.Keq
@@ -452,7 +432,6 @@ cdef class SurfaceReactor(ReactionSystem):
         V = self.V  # constant volume reactor
         A = self.V * surface_volume_ratio_si  # area
         total_sites = self.surface_site_density.value_si * A  # todo: double check units
-
         for j in range(num_core_species):
             if species_on_surface[j]:
                 C[j] = (N[j] / V) / surface_volume_ratio_si
@@ -462,35 +441,22 @@ cdef class SurfaceReactor(ReactionSystem):
             core_species_concentrations[j] = C[j]
         
         # Thermodynamic coverage dependence
-        free_energy_coverage_corrections = np.zeros(len(self.species_index), float) # length of core + edge species
         if self.thermo_coverage_dependence:
-            """
-            self.thermo_coverage_dependencies[2] = [(3, {"model":"linear","enthalpy-coefficients":[], "entropy-coefficients":[]}),]
-            self.thermo_coverage_dependencies[2] = [(3, {"model":"polynomial","enthalpy-coefficients":[], "entropy-coefficients":[]}),]
-            self.thermo_coverage_dependencies[2] = [(3, {"model":"piecewise-linear","enthalpy-coefficients":{"enthalpy_high":, "enthalpy_low":, "enthalpy_change":}, 
-                                                            "entropy-coefficients":{"entropy_high":, "entropy_low":, "entropy_change"}, "Cp":{"heat-capacity-a":, "heat-capacity-b":}}),]
-            self.thermo_coverage_dependencies[2] = {(3, {"model":"interpolative","enthalpy-coefficients":{"enthalpy-coverages":, "enthalpies":}, "entropy-coefficients":{"entropy-coverages":, "entropies":}}),}
-            means that Species with index 2 in the current simulation is used in
-            Species 3 with parameters for linear, polynomial, piecewise-linear, and interpolative models
-            """
-            for i, list_of_thermo_coverage_deps in self.thermo_coverage_dependencies.items():
-                surface_site_fraction = N[i] / total_sites
-                if surface_site_fraction < 1e-15:
-                    continue
-                for j, parameters in list_of_thermo_coverage_deps:
-                    # Species i, Species j
-                    # need to specify the entropy and enthalpy models
-                    # linear, piecewise linear, polynomial, interpolative models
-                    if parameters['model'] == "linear":
-                        pass
-                    elif parameters['model'] == "polynomial":
-                        enthalpy_cov_correction = np.polynomial.polynomial.polyval(surface_site_fraction, parameters['enthalpy-coefficients']) # insert 0 for the constant term 
-                        entropy_cov_correction = np.polynomial.polynomial.polyval(surface_site_fraction, parameters['entropy-coefficients'])
-                        free_energy_coverage_corrections[j] += enthalpy_cov_correction - self.T.value_si * entropy_cov_correction
-                    elif parameters['model'] == "piecewise-linear":
-                        pass
-                    elif parameters['model'] == "interpolative":
-                        pass
+            coverages = []
+            for i in range(len(N)):
+                if species_on_surface[i]:
+                    surface_site_fraction = N[i] / total_sites
+                else:
+                    surface_site_fraction = 0
+                coverages.append(surface_site_fraction)
+            coverages = np.array(coverages)
+            thermo_dep_coverage = np.stack([coverages, coverages**2, coverages**3, -self.T.value_si*coverages, -self.T.value_si*coverages**2, -self.T.value_si*coverages**3])
+            free_energy_coverage_corrections = []
+            for matrix in self.thermo_coeff_matrix:
+                sp_free_energy_correction = np.diag(np.dot(matrix, thermo_dep_coverage)).sum()
+                free_energy_coverage_corrections.append(sp_free_energy_correction)
+            free_energy_coverage_corrections = np.array(free_energy_coverage_corrections)
+
             corrected_K_eq = copy.deepcopy(self.Keq)
             # correct the K_eq
             for j in range(ir.shape[0]):
