@@ -11,7 +11,7 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}
+    - {{ compiler('gcc') }}
   host:
     - conda-forge::cairo
     - conda-forge::cairocffi
