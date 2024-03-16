@@ -25,12 +25,12 @@ requirements:
     - ncurses
     - suitesparse
     - coolprop
-    - cantera=2.6
+    - cantera =2.6
     - mopac
     - cclib >=1.6.3,!=1.8.0
-    - openbabel >= 3
+    - openbabel >=3
     - rdkit >=2022.09.1
-    - julia=1.9.1
+    - julia =1.9.1
     - pyjulia >=0.6
     - python >=3.7
     - coverage
@@ -75,12 +75,12 @@ requirements:
     - ncurses
     - suitesparse
     - coolprop
-    - cantera=2.6
+    - cantera =2.6
     - mopac
     - cclib >=1.6.3,!=1.8.0
-    - openbabel >= 3
+    - openbabel >=3
     - rdkit >=2022.09.1
-    - julia=1.9.1
+    - julia =1.9.1
     - pyjulia >=0.6
     - python >=3.7
     - coverage
@@ -126,12 +126,12 @@ test:
     - ncurses
     - suitesparse
     - coolprop
-    - cantera=2.6
+    - cantera =2.6
     - mopac
     - cclib >=1.6.3,!=1.8.0
-    - openbabel >= 3
+    - openbabel >=3
     - rdkit >=2022.09.1
-    - julia=1.9.1
+    - julia =1.9.1
     - pyjulia >=0.6
     - python >=3.7
     - coverage
