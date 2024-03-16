@@ -34,6 +34,7 @@ jobs:
         env: 
           CONDA_TOKEN: "need_to_add_this_secret"  # ${{ secrets.ANACONDA_TOKEN }}
         run: |
-          conda config --add channels cantera
           conda config --add channels rmg
+          conda config --add channels cantera
+          conda config --add channels conda-forge
           conda build --token $CONDA_TOKEN --user rmg .conda
