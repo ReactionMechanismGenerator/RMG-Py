@@ -25,7 +25,7 @@ jobs:
           auto-activate-base: true
           activate-environment: ""
       - name: Install Build Tools
-        run: conda install anaconda-client conda-build
+        run: conda install anaconda-client conda-build=3.28.4
       - name: Configure Auto-Upload
         if: github.ref == 'refs/heads/stable'
         run: |
