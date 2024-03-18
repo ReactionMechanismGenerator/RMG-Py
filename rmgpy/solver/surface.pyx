@@ -68,6 +68,7 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public np.ndarray reactions_on_surface  # (catalyst surface, not core/edge surface)
     cdef public np.ndarray species_on_surface  # (catalyst surface, not core/edge surface)
     cdef public np.ndarray thermo_coeff_matrix
+    cdef public np.ndarray stoi_matrix
 
     cdef public bint coverage_dependence
     cdef public dict coverage_dependencies
@@ -175,7 +176,9 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef np.ndarray[np.int_t, ndim=1] species_on_surface, reactions_on_surface
         cdef Py_ssize_t index
         cdef np.ndarray thermo_coeff_matrix = np.zeros((len(self.species_index), len(self.species_index), 6), dtype=np.float64)
+        cdef np.ndarray stoi_matrix = np.zeros((self.reactant_indices.shape[0], len(self.species_index)), dtype=np.float64)
         self.thermo_coeff_matrix = thermo_coeff_matrix
+        self.stoi_matrix = stoi_matrix
         #: 1 if it's on a surface, 0 if it's in the gas phase
         reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), int)
         species_on_surface = np.zeros((self.num_core_species), int)
@@ -215,7 +218,36 @@ cdef class SurfaceReactor(ReactionSystem):
                             self.thermo_coeff_matrix[sp_index, species_index] = [x.value_si for x in thermo_polynomials]
                         except KeyError:
                             logging.warning("Species {} is not in the species list yet, skip the thermodynamic coverage effect estimation!".format(spec))
-
+        
+        if self.thermo_coverage_dependence:
+            ir = self.reactant_indices
+            ip = self.product_indices
+            for rxn_id, rxn_stoi_num in enumerate(stoi_matrix):
+                if ir[rxn_id, 0] >= self.num_core_species or ir[rxn_id, 1] >= self.num_core_species or ir[rxn_id, 2] >= self.num_core_species:
+                    continue
+                elif ip[rxn_id, 0] >= self.num_core_species or ip[rxn_id, 1] >= self.num_core_species or ip[rxn_id, 2] >= self.num_core_species:
+                    continue
+                else:
+                    if ir[rxn_id, 1] == -1:  # only one reactant
+                        rxn_stoi_num[ir[rxn_id, 0]] += -1
+                    elif ir[rxn_id, 2] == -1:  # only two reactants
+                        rxn_stoi_num[ir[rxn_id, 0]] += -1
+                        rxn_stoi_num[ir[rxn_id, 1]] += -1
+                    else:  # three reactants
+                        rxn_stoi_num[ir[rxn_id, 0]] += -1
+                        rxn_stoi_num[ir[rxn_id, 1]] += -1
+                        rxn_stoi_num[ir[rxn_id, 2]] += -1
+                    if ip[rxn_id, 1] == -1:  # only one product
+                        rxn_stoi_num[ip[rxn_id, 0]] += 1
+                    elif ip[rxn_id, 2] == -1:  # only two products
+                        rxn_stoi_num[ip[rxn_id, 0]] += 1
+                        rxn_stoi_num[ip[rxn_id, 1]] += 1
+                    else:  # three products
+                        rxn_stoi_num[ip[rxn_id, 0]] += 1
+                        rxn_stoi_num[ip[rxn_id, 1]] += 1
+                        rxn_stoi_num[ip[rxn_id, 2]] += 1
+            self.stoi_matrix = stoi_matrix
+        
         self.species_on_surface = species_on_surface
         self.reactions_on_surface = reactions_on_surface
 
@@ -455,28 +487,11 @@ cdef class SurfaceReactor(ReactionSystem):
             for matrix in self.thermo_coeff_matrix:
                 sp_free_energy_correction = np.diag(np.dot(matrix, thermo_dep_coverage)).sum()
                 free_energy_coverage_corrections.append(sp_free_energy_correction)
-            free_energy_coverage_corrections = np.array(free_energy_coverage_corrections)
-
+            rxns_free_energy_change = np.diag(np.dot(self.stoi_matrix, np.transpose(np.array([free_energy_coverage_corrections]))))
             corrected_K_eq = copy.deepcopy(self.Keq)
-            # correct the K_eq
-            for j in range(ir.shape[0]):
-                if ir[j, 0] >= num_core_species or ir[j, 1] >= num_core_species or ir[j, 2] >= num_core_species:
-                    pass
-                elif ir[j, 1] == -1:  # only one reactant
-                    corrected_K_eq[j] *= np.exp(free_energy_coverage_corrections[ir[j, 0]] / (constants.R * self.T.value_si))
-                elif ir[j, 2] == -1:  # only two reactants
-                    corrected_K_eq[j] *= np.exp((free_energy_coverage_corrections[ir[j, 0]] + free_energy_coverage_corrections[ir[j, 1]]) / (constants.R * self.T.value_si))
-                else:  # three reactants!! (really?)
-                    corrected_K_eq[j] *= np.exp((free_energy_coverage_corrections[ir[j, 0]] + free_energy_coverage_corrections[ir[j, 1]] + free_energy_coverage_corrections[ir[j, 2]]) / (constants.R * self.T.value_si))
-                if ip[j, 0] >= num_core_species or ip[j, 1] >= num_core_species or ip[j, 2] >= num_core_species:
-                    pass
-                elif ip[j, 1] == -1:  # only one product
-                    corrected_K_eq[j] /= np.exp(free_energy_coverage_corrections[ip[j, 0]] / (constants.R * self.T.value_si))
-                elif ip[j, 2] == -1:  # only two products
-                    corrected_K_eq[j] /= np.exp((free_energy_coverage_corrections[ip[j, 0]] + free_energy_coverage_corrections[ip[j, 1]]) / (constants.R * self.T.value_si))
-                else:  # three products!! (really?)
-                    corrected_K_eq[j] /= np.exp((free_energy_coverage_corrections[ip[j, 0]] + free_energy_coverage_corrections[ip[j, 1]] + free_energy_coverage_corrections[ip[j, 2]]) / (constants.R * self.T.value_si))
+            corrected_K_eq *= np.exp(-1 * rxns_free_energy_change / (constants.R * self.T.value_si))
             kr = kf / corrected_K_eq
+
         # Coverage dependence
         coverage_corrections = np.ones_like(kf, float)
         if self.coverage_dependence:
