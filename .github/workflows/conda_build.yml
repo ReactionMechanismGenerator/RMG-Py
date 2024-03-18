@@ -20,12 +20,12 @@ jobs:
       - name: Setup Conda
         uses: conda-incubator/setup-miniconda@v3
         with:
-          auto-update-conda: true
+          auto-update-conda: false
           conda-solver: libmamba
           auto-activate-base: true
           activate-environment: ""
       - name: Install Build Tools
-        run: conda install python=3.10* && conda install anaconda-client conda-build=3.28.4
+        run: conda install anaconda-client conda-build
       - name: Configure Auto-Upload
         if: github.ref == 'refs/heads/stable'
         run: |
