@@ -24,6 +24,7 @@ jobs:
           conda-solver: libmamba
           auto-activate-base: true
           activate-environment: ""
+          python-version: "3.10"
       - name: Install Build Tools
         run: conda install anaconda-client conda-build=3.28.4
       - name: Configure Auto-Upload
