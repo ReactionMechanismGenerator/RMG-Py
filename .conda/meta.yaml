@@ -10,8 +10,8 @@ build:
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
 
 requirements:
-  build:
-    - {{ compiler('c') }}
+  # build:
+  #   - {{ compiler('c') }}
   host:
     - conda-forge::cairo
     - conda-forge::cairocffi
