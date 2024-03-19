@@ -13,7 +13,8 @@ else
         # echo 'sed -i \'/julia.install/d\' $ACTIVATE_ENV' >> $ACTIVATE_ENV
 fi
 
-make install
+# make install -> should we 'install' or 'all'?
+make
 export PYTHON=$PREFIX/bin/python
 export PYTHONPATH=$SRC_DIR:$PYTHONPATH
 echo "testing rmgpy"
