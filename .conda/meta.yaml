@@ -10,6 +10,7 @@ build:
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
 
 requirements:
+      - {{ compiler('c') }} # [unix]
   # build:
   #   - {{ compiler('c') }}
   host:
