@@ -243,7 +243,7 @@ def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None):
             names[i] += "-" + str(names.count(name))
 
     result_dict = dict()
-    result_dict["species"] = [obj_to_dict(x, spcs, names=names) for x in spcs]
+    result_dict["species"] = [species_to_dict(x, spcs, names=names) for x in spcs]
 
     # separate gas and surface reactions
 
@@ -271,7 +271,7 @@ def get_mech_dict_nonsurface(spcs, rxns, solvent="solvent", solvent_data=None):
             names[i] += "-" + str(names.count(name))
 
     result_dict = dict()
-    result_dict["species"] = [obj_to_dict(x, spcs, names=names) for x in spcs]
+    result_dict["species"] = [species_to_dict(x, spcs, names=names) for x in spcs]
 
     reactions = []
     for rmg_rxn in rxns:
@@ -312,20 +312,20 @@ def reaction_to_dicts(obj, spcs):
     return reaction_list
 
 
-def obj_to_dict(obj, spcs, names=None, label="solvent"):
+def species_to_dict(obj, spc, names=None, label="solvent"):
     """
-    Takes an RMG species object (obj), returns a list of dictionaries
+    Takes an RMG species object (spc), returns a list of dictionaries
     for YAML properties. Also adds in the number of surface sites 
     ('sites') to dictionary. 
     """
 
     result_dict = dict()
 
-    if isinstance(obj, Species):
-        s = obj.to_cantera(use_chemkin_identifier=True)
+    if isinstance(spc, Species):
+        s = spc.to_cantera(use_chemkin_identifier=True)
         species_data = s.input_data
         try:
-            result_dict["note"] = obj.transport_data.comment
+            result_dict["note"] = spc.transport_data.comment
         except:
             pass
         if "size" in species_data:
