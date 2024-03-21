@@ -371,8 +371,8 @@ class CanteraWriter(object):
         if rmg.solvent:
             solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
         surface_site_density = None
-        NoneType = type(None)  # types.py no longer has NoneType, says slack.overview
-        if not type(rmg.reaction_model.surface_site_density) == NoneType:
+
+        if rmg.reaction_model.surface_site_density:
             surface_site_density = rmg.reaction_model.surface_site_density.value_si
         write_cantera(
             rmg.reaction_model.core.species,
