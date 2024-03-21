@@ -939,6 +939,7 @@ Miscellaneous options::
         saveSeedToDatabase=True,
         units='si',
         generateOutputHTML=True,
+        generateRMSEachIter=True,
         generatePlots=False,
         saveSimulationProfiles=True,
         verboseComments=False,
@@ -958,6 +959,8 @@ The ``units`` field is set to ``si``.  Currently there are no other unit options
 
 Setting ``generateOutputHTML`` to ``True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model.  It will save a visualized
 HTML file for your model containing all the species and reactions.  Turning this feature off by setting it to ``False`` may save memory if running large jobs.
+
+Setting ``generateRMSEachIter`` to ``True`` will have rmg generate an output yaml file containing the core mechanism for the current iteration, with the number of core species appended to the name of the file (e.g. for 28 core species, the file will be named ``chem28.rms``). If it is ``False`` then only one file will be generated at the end of the run. A value of ``False`` may result in a faster run, as this feature can take up a lot of cpu time. 
 
 Setting ``generatePlots`` to ``True`` will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.
 
