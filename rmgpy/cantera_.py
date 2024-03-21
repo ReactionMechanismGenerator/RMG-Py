@@ -89,7 +89,7 @@ phases:
     #make sure species with "[" or "]" is in quotes
     species_list_to_write = []
     for spc in species_to_write: 
-        if '[' or ']' in spc: 
+        if '[' in spc or ']' in spc: 
             edited_spc_name = "'" + spc + "'"
         else: 
             edited_spc_name = spc
@@ -149,7 +149,7 @@ def write_surface_species(spcs, rxns, surface_site_density):
     #make sure species with "[" or "]" is in quotes
     surface_species_list_to_write = []
     for spc in surface_species_to_write: 
-        if '[' or ']' in spc: 
+        if '[' in spc or ']' in spc: 
             edited_spc_name = "'" + spc + "'"
         else: 
             edited_spc_name = spc
