@@ -18,6 +18,8 @@
 #   moved diffeqpy to pip and (temporarily) removed chemprop
 # - April 17, 2024 Limit versions of cclib at advice of maintainers.
 # - August 4, 2024 Restricted pyrms to <2
+# - May 14, 2024 Removed diffeqpy by switching to call SciMLBase and Sundials using JuliaCall
+
 name: rmg_env
 channels:
   - rmg
@@ -50,8 +52,8 @@ dependencies:
   - conda-forge::rdkit >=2022.09.1
 
 # general-purpose external software tools
-  - conda-forge::julia=1.9.1
-  - conda-forge::pyjulia >=0.6
+  - conda-forge::juliaup
+  - conda-forge::pyjuliacall # for calling julia packages
 
 # Python tools
   - python >=3.7
@@ -89,17 +91,7 @@ dependencies:
 # packages we maintain
   - rmg::pydas >=1.0.3
   - rmg::pydqed >=1.0.3
-  - rmg::pyrms <2
   - rmg::symmetry
-
-# packages we would like to stop maintaining (and why)
-  - rmg::diffeqpy
-  # we should use the official verison https://github.com/SciML/diffeqpy),
-  # rather than ours (which is only made so that we can get it from conda)
-  # It is only on pip, so we will need to do something like:
-  # https://stackoverflow.com/a/35245610
-  # Note that _some other_ dep. in this list requires diffeqpy in its recipe
-  # which will cause it to be downloaded from the rmg conda channel
 
 # configure packages to use OpenBLAS instead of Intel MKL
   - blas=*=openblas
