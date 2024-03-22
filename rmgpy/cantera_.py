@@ -33,18 +33,17 @@ def write_cantera(
         result_dict = get_mech_dict_surface(
             spcs, rxns, solvent=solvent, solvent_data=solvent_data
         )
-        block1, block2, block3, block4 = write_surface_species(
-            spcs, rxns, surface_site_density
+        phases_block, elements_block = write_surface_species(
+            spcs, surface_site_density
         )
     else:
         # get_mech_dict writes yaml files without creating separate
         result_dict = get_mech_dict_nonsurface(
             spcs, rxns, solvent=solvent, solvent_data=solvent_data
         )
-        block1, block2, block3, block4 = write_nonsurface_species(spcs)
+        phases_block, elements_block = write_nonsurface_species(spcs)
 
     with open(path, "w") as f:
-
         # generator line
         f.write("generator: RMG\n")
 
@@ -61,29 +60,20 @@ def write_cantera(
 
         #'phases' line (below)
 
-        f.write(block1)
-        f.write(block2)
-        f.write(block3)
-        f.write(block4)
+        f.write(phases_block)
+        f.write(elements_block)
+
         yaml.dump(result_dict, stream=f, sort_keys=False)
 
 
 def write_nonsurface_species(spcs):
     """
     Yaml files without surface species begin with the following blocks of text.
+    Returns 'phases' and 'elements' sections.
     """
 
-    #'phases' line (below)
-    block1 = """
-phases:
-- name: gas
-  thermo: ideal-gas
-  elements: [H, D, T, C, Ci, O, Oi, N, Ne, Ar, He, Si, S, F, Cl, Br, I, X]"""
-
     #'species' section in phases section
-
     sorted_species = sorted(spcs, key=lambda spcs: spcs.index)
-
     species_to_write = [get_species_identifier(spec) for spec in sorted_species]    
     
     #make sure species with "[" or "]" is in quotes
@@ -91,21 +81,22 @@ phases:
     for spc in species_to_write: 
         if '[' in spc or ']' in spc: 
             edited_spc_name = "'" + spc + "'"
-        else: 
+        else:
             edited_spc_name = spc
         species_list_to_write.append(edited_spc_name)
-            
 
-    block2 = f"""
+    phases_block = f"""
+phases:
+- name: gas
+  thermo: ideal-gas
+  elements: [H, D, T, C, Ci, O, Oi, N, Ne, Ar, He, Si, S, F, Cl, Br, I]
   species: [{', '.join(species_list_to_write)}]
-  kinetics: gas"""
-
-    block3 = """
+  kinetics: gas
   transport: mixture-averaged
-  state: {T: 300.0, P: 1 atm}
-        """
+  state: {{T: 300.0, P: 1 atm}}
+"""
 
-    block4 = """
+    elements_block = """
 elements:
 - symbol: Ci
   atomic-weight: 13.003
@@ -115,18 +106,16 @@ elements:
   atomic-weight: 17.999
 - symbol: T
   atomic-weight: 3.016
-- symbol: X
-  atomic-weight: 195.083
 
 """
+    return phases_block, elements_block
 
-    return block1, block2, block3, block4
 
-
-def write_surface_species(spcs, rxns, surface_site_density):
+def write_surface_species(spcs, surface_site_density):
     """
     Yaml files with surface species begin with the following blocks of text, 
     which includes TWO phases instead of just one.
+    Returns 'phases' and 'elements' sections.
     """
     surface_species = []
     gas_species = []
@@ -155,14 +144,12 @@ def write_surface_species(spcs, rxns, surface_site_density):
             edited_spc_name = spc
         surface_species_list_to_write.append(edited_spc_name)
 
-
     sorted_gas_species = sorted(gas_species, key=lambda gas_species: gas_species.index)
-    
-        
+
     gas_species_to_write = [
         get_species_identifier(gas_species) for gas_species in sorted_gas_species
     ]
-    
+
     #make sure species with "[" or "]" is in quotes
     gas_species_list_to_write = []
     for spc in gas_species_to_write: 
@@ -171,35 +158,30 @@ def write_surface_species(spcs, rxns, surface_site_density):
         else: 
             edited_spc_name = spc
         gas_species_list_to_write.append(edited_spc_name)
-    
-    # gas part
-    block1 = f"""
+
+    phases_block = f"""
 phases:
 - name: gas
   thermo: ideal-gas
-  elements: [H, D, T, C, Ci, O, Oi, N, Ne, Ar, He, Si, S, F, Cl, Br, I, X]
+  elements: [H, D, T, C, Ci, O, Oi, N, Ne, Ar, He, Si, S, F, Cl, Br, I]
   species: [{', '.join(gas_species_list_to_write)}]
   kinetics: gas
-  reactions: [gas_reactions]"""
-
-    block2 = """
+  reactions: [gas_reactions]
   transport: mixture-averaged
-  state: {T: 300.0, P: 1 atm}"""
+  state: {{T: 300.0, P: 1 atm}}
 
-    block3 = f""" 
 - name: {surface_species[0].smiles.replace("[","").replace("]","")}_surface
   thermo: ideal-surface
   adjacent-phases: [gas]
   elements: [H, D, T, C, Ci, O, Oi, N, Ne, Ar, He, Si, S, F, Cl, Br, I, X]
   species: [{', '.join(surface_species_list_to_write)}]
   kinetics: surface
-  reactions: [surface_reactions]     
+  reactions: [surface_reactions]
   site-density: {surface_site_density * 1e-4 }
-        """
-
+"""
     # surface_site_density * 1e-4 #in units of mol/cm^2
 
-    block4 = """
+    elements_block = """
 elements:
 - symbol: Ci
   atomic-weight: 13.003
@@ -213,7 +195,7 @@ elements:
   atomic-weight: 195.083
 
 """
-    return block1, block2, block3, block4
+    return phases_block, elements_block
 
 def get_radicals(spc):
     if (
