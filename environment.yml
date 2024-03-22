@@ -49,7 +49,6 @@ dependencies:
   - conda-forge::rdkit >=2022.09.1
 
 # general-purpose external software tools
-  - conda-forge::julia=1.9.1
   - conda-forge::pyjuliacall >=0.6
 
 # Python tools
