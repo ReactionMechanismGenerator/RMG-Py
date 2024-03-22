@@ -372,8 +372,8 @@ class Reaction:
                 ct_reaction = ct.Reaction(equation=equation, rate=rate)
 
             elif isinstance(self.kinetics, Lindemann):
-                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics()
-                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics()
+                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
+                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
                 falloff = []
                 rate = ct.LindemannRate(low_rate, high_rate, falloff)
                 if ct_collider is not None:
