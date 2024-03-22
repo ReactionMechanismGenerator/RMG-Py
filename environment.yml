@@ -50,7 +50,7 @@ dependencies:
 
 # general-purpose external software tools
   - conda-forge::julia=1.9.1
-  - conda-forge::pyjulia >=0.6
+  - conda-forge::pyjuliacall >=0.6
 
 # Python tools
   - python >=3.7
