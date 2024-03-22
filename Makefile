@@ -62,16 +62,16 @@ decython:
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test-all:
-	python-jl -m pytest
+	python -m pytest
 
 test test-unittests:
-	python-jl -m pytest -m "not functional and not database"
+	python -m pytest -m "not functional and not database"
 
 test-functional:
-	python-jl -m pytest -m "functional"
+	python -m pytest -m "functional"
 
 test-database:
-	python-jl -m pytest -m "database"
+	python -m pytest -m "database"
 
 eg0: all
 	mkdir -p testing/eg0

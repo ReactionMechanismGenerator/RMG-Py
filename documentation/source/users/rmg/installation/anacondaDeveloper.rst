@@ -143,7 +143,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
-    python-jl replace/with/path/to/rmg.py input.py
+    python replace/with/path/to/rmg.py input.py
 
 You may now use RMG-Py, Arkane, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.
 
@@ -158,7 +158,7 @@ You might have to edit them slightly to match your exact paths. Specifically,
 you will need ``/opt/miniconda3/envs/rmg_env`` to point to where your conda environment is located.
 
 This configuration will allow you to debug the rms_constant_V example, running through
-python-jl. ::
+python. ::
 
         {
             "name": "Python: rmg.py rms_constant_V",
@@ -166,7 +166,7 @@ python-jl. ::
             "request": "launch",
             "cwd": "${workspaceFolder}/",
             "program": "rmg.py",
-            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python",
             "args": [
                 "examples/rmg/rms_constant_V/input.py",
             ],
@@ -185,7 +185,7 @@ Open one of the many test files named ``*Test.py`` in ``test/rmgpy`` before you 
             "type": "python",
             "request": "launch",
             "program": "/opt/miniconda3/envs/rmg_env/bin/pytest",
-            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python",
             "args": [
                 "--capture=no",
                 "--verbose",
@@ -205,7 +205,7 @@ This configuration will allow you to debug running all the database tests.::
             "type": "python",
             "request": "launch",
             "program": "/opt/miniconda3/envs/rmg_env/bin/pytest",
-            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python",
             "args": [
                 "--capture=no",
                 "--verbose",
@@ -226,7 +226,7 @@ This configuration will allow you to use the debugger breakpoints inside unit te
             "request": "launch",
             "program": "${file}",
             "purpose": ["debug-test"],
-            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python",
             "console": "integratedTerminal",
             "justMyCode": false,
             "env": {"PYTEST_ADDOPTS": "--no-cov",} // without disabling coverage VS Code doesn't stop at breakpoints while debugging because pytest-cov is using the same technique to access the source code being run
@@ -274,7 +274,7 @@ To configure the rest of the settings, find the ``settings.json`` file in your `
 You can use the following settings to configure the pytest framework::
 
     "python.testing.pytestEnabled": true,
-    "python.testing.pytestPath": "python-jl -m pytest",
+    "python.testing.pytestPath": "python -m pytest",
     "python.testing.pytestArgs": [
         "-p", "julia.pytestplugin",
         "--julia-compiled-modules=no",
