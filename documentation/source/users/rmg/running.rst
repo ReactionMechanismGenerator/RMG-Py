@@ -10,7 +10,7 @@ Running a basic RMG job is straightforward, as shown in the example below. Howev
 
 Basic run::
 
-	python-jl rmg.py input.py
+	python rmg.py input.py
 
 .. _inputflags:
 
@@ -19,7 +19,7 @@ Input flags
 
 The options for input flags can be found in ``/RMG-Py/rmgpy/util.py``. Running ::
 
- 	python-jl rmg.py -h
+ 	python rmg.py -h
 
 at the command line will print the documentation from ``util.py``, which is reproduced below for convenience::
 
@@ -63,23 +63,23 @@ Some representative example usages are shown below.
 
 Run by restarting from a seed mechanism::
 
-    python-jl rmg.py -r path/to/seed/ input.py
+    python rmg.py -r path/to/seed/ input.py
 
 Run with CPU time profiling::
 
-    python-jl rmg.py -p input.py
+    python rmg.py -p input.py
 
 Run with multiprocessing for reaction generation and QMTP::
 
-    python-jl rmg.py -n <Max number of processes allowed> input.py 
+    python rmg.py -n <Max number of processes allowed> input.py 
 
 Run with setting a limit on the maximum execution time::
 
-	python-jl rmg.py -t <DD:HH:MM:SS> input.py
+	python rmg.py -t <DD:HH:MM:SS> input.py
 
 Run with setting a limit on the maximum number of iterations::
 
-	python-jl rmg.py -i <Max number of desired iterations> input.py
+	python rmg.py -i <Max number of desired iterations> input.py
 
 
 Details on the multiprocessing implementation
