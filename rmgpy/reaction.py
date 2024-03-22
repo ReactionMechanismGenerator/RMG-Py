@@ -324,8 +324,8 @@ class Reaction:
                     ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products)
 
             elif isinstance(self.kinetics, Troe):
-                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics()
-                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics()
+                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
+                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
                 A = self.kinetics.alpha
                 T3 = self.kinetics.T3.value_si
                 T1 = self.kinetics.T1.value_si
