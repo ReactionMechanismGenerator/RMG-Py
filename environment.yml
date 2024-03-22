@@ -49,7 +49,8 @@ dependencies:
   - conda-forge::rdkit >=2022.09.1
 
 # general-purpose external software tools
-  - conda-forge::pyjuliacall >=0.6
+  - conda-forge::julia # for calling julia packages
+  - conda-forge::pyjuliacall # for calling julia packages
 
 # Python tools
   - python >=3.7
@@ -87,17 +88,11 @@ dependencies:
 # packages we maintain
   - rmg::pydas >=1.0.3
   - rmg::pydqed >=1.0.3
-  - rmg::pyrms
   - rmg::symmetry
 
 # packages we would like to stop maintaining (and why)
-  - rmg::diffeqpy
-  # we should use the official verison https://github.com/SciML/diffeqpy),
-  # rather than ours (which is only made so that we can get it from conda)
-  # It is only on pip, so we will need to do something like:
-  # https://stackoverflow.com/a/35245610
-  # Note that _some other_ dep. in this list requires diffeqpy in its recipe
-  # which will cause it to be downloaded from the rmg conda channel
+  - pip:
+    - diffeqpy # getting official version diffeqpy from pip (which uses PythonCall instead of PyCall)
 
 # conda mutex metapackage
   - nomkl

@@ -35,25 +35,10 @@ import sys
 import logging
 import itertools
 
-if __debug__:
-    try:
-        from os.path import dirname, abspath, join, exists
-
-        path_rms = dirname(dirname(dirname(abspath(__file__))))
-        from julia.api import Julia
-
-        jl = Julia(sysimage=join(path_rms, "rms.so")) if exists(join(path_rms, "rms.so")) else Julia(compiled_modules=False)
-        from pyrms import rms
-        from diffeqpy import de
-        from julia import Main
-    except Exception as e:
-        import warnings
-
-        warnings.warn("Unable to import Julia dependencies, original error: " + str(e), RuntimeWarning)
-else:
-    from pyrms import rms
-    from diffeqpy import de
-    from julia import Main
+from diffeqpy import de
+from juliacall import Main
+rms = juliacall.newmodule("RMS")
+rms.seval("using ReactionMechanismSimulator")
 
 from rmgpy.species import Species
 from rmgpy.molecule.fragment import Fragment
