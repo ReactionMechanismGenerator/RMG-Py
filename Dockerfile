@@ -68,7 +68,7 @@ RUN make && \
     python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
 # RMG-Py should now be installed and ready - trigger precompilation and test run
-RUN python-jl rmg.py examples/rmg/minimal/input.py
+RUN python rmg.py examples/rmg/minimal/input.py
 # delete the results, preserve input.py
 RUN mv examples/rmg/minimal/input.py . && \
     rm -rf examples/rmg/minimal/* && \
