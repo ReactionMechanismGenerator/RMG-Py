@@ -159,7 +159,7 @@ Date: August 2, 2023
     - Changed get_all_solute_data function for RMG-website use in order to apply halogen or radical correction on top of library or GAV
     - Added openSUSE installation instructions
     - Changed default branch to main
-    - Changed rmg.py shebang to use python-jl instead of python3 for compatibility with RMS/pyrms
+    - Changed rmg.py shebang to use python instead of python3 for compatibility with RMS/pyrms
     - Updated ketoenol template image to 1,3 sigmatropic rearrangement
     - Updated 2+2_cycloaddition images in documentation
     - Added licensing information to the README file

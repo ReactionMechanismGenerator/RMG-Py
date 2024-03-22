@@ -151,8 +151,9 @@ jobs:
       - name: Install and link Julia dependencies
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         run: |
-          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator'
+        
+          julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
+          python -c "import diffeqpy; diffeqpy.install()"
 
       - name: Install Q2DTor
         run: echo "" | make q2dtor
@@ -169,7 +170,7 @@ jobs:
         run: |
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat fragment RMS_constantVIdealGasReactor_fragment;
           do
-            if python-jl rmg.py test/regression/"$regr_test"/input.py; then
+            if python rmg.py test/regression/"$regr_test"/input.py; then
               echo "$regr_test" "Executed Successfully"
             else
               echo "$regr_test" "Failed to Execute" | tee -a $GITHUB_STEP_SUMMARY
@@ -258,7 +259,7 @@ jobs:
 
             echo "<details>"
             # Compare the edge and core
-            if python-jl scripts/checkModels.py \
+            if python scripts/checkModels.py \
                 "$regr_test-core" \
                 $REFERENCE/"$regr_test"/chemkin/chem_annotated.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
@@ -275,7 +276,7 @@ jobs:
             cat "$regr_test-core.log"
             echo "</details>"
             echo "<details>"
-            if python-jl scripts/checkModels.py \
+            if python scripts/checkModels.py \
                 "$regr_test-edge" \
                 $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
@@ -296,7 +297,7 @@ jobs:
             if [ -f test/regression/"$regr_test"/regression_input.py ];
             then
               echo "<details>"
-              if python-jl rmgpy/tools/regression.py \
+              if python rmgpy/tools/regression.py \
                 test/regression/"$regr_test"/regression_input.py \
                 $REFERENCE/"$regr_test"/chemkin \
                 test/regression/"$regr_test"/chemkin
