@@ -1,4 +1,4 @@
- # cython: embedsignature=True, cdivision=True
+# cython: embedsignature=True, cdivision=True
 
 ###############################################################################
 #                                                                             #
@@ -230,17 +230,18 @@ cdef class Lindemann(PDepKineticsModel):
         assert isinstance(ct_reaction.rate, ct.LindemannRate), "Must have a Cantera LindemannRate attribute"
 
         ct_reaction.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
-        ct_reaction.rate = self.to_cantera_kinetics()  
-                
+        ct_reaction.rate = self.to_cantera_kinetics() 
+        
+
     def to_cantera_kinetics(self): 
         """
         Converts the Lindemann object to a cantera LindemannRate object
         """
         import cantera as ct
 
-        high_rate = ct.Arrhenius(self.arrheniusHigh._A.value, self.arrheniusHigh._n.value, self.arrheniusHigh._Ea.value)
-        low_rate = ct.Arrhenius(self.arrheniusLow._A.value, self.arrheniusLow._n.value, self.arrheniusLow._Ea.value)
-        return ct.LindemannRate(low_rate, high_rate, [])
+        high_rate = self.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
+        low_rate = self.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
+        return ct.LindemannRate(low=low_rate, high=high_rate)
 
 
 ################################################################################
@@ -401,13 +402,12 @@ cdef class Troe(PDepKineticsModel):
         import cantera as ct
 
         assert isinstance(ct_reaction.rate, ct.TroeRate), "Must have a Cantera TroeRate attribute"
-        
+
         ct_reaction.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
 
         ct_reaction.rate = self.to_cantera_kinetics() 
-        
 
-    def to_cantera_kinetics(self):
+    def to_cantera_kinetics(self): 
         """
         Converts the Troe object to a cantera Troe object
         """
@@ -424,3 +424,7 @@ cdef class Troe(PDepKineticsModel):
         high = self.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
         low = self.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
         return ct.TroeRate(high=high, low=low, falloff_coeffs=falloff)
+        
+    
+
+        
