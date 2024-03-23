@@ -245,18 +245,6 @@ class Reaction:
         else:
             return rmgpy.chemkin.write_reaction_string(self)
 
-    def fix_reaction(self, ct_reactions, ct_products):
-        """
-        Fixes the formatting of StickingCoefficients reaction equations
-        """
-        rxn_stoic = [f"{v} {k}" for k, v in ct_reactions.items() if v != 1]
-        rxn_stoic.extend([k for k, v in ct_reactions.items() if v == 1])
-
-        prod_stoic = [f"{v} {k}" for k, v in ct_products.items() if v != 1]
-        prod_stoic.extend([k for k, v in ct_products.items() if v == 1])
-
-        equation = " + ".join(rxn_stoic) + " <=> " + " + ".join(prod_stoic)
-        return equation
 
     def to_cantera(self, species_list=None, use_chemkin_identifier=False):
         """
@@ -368,8 +356,14 @@ class Reaction:
                 Ea = self.kinetics._Ea.value_si * 1000  # convert from J/mol to J/kmol
                 rate = ct.StickingArrheniusRate(A, b, Ea)
                 ct_reaction = ct.Reaction(equation=str(self), rate=rate)
-                equation = self.fix_reaction(ct_reactants, ct_products)
-                ct_reaction = ct.Reaction(equation=equation, rate=rate)
+                ## I'm not sure why the following is necessary instead of the line above.
+                ## If there was reasoning in a commit message, it got lost in a rebase.
+                #rxn_stoic = [f"{v} {k}" for k, v in ct_reactants.items() if v != 1]
+                #rxn_stoic.extend([k for k, v in ct_reactants.items() if v == 1])
+                #prod_stoic = [f"{v} {k}" for k, v in ct_products.items() if v != 1]
+                #prod_stoic.extend([k for k, v in ct_products.items() if v == 1])
+                #equation = " + ".join(rxn_stoic) + " <=> " + " + ".join(prod_stoic)
+                #ct_reaction = ct.Reaction(equation=equation, rate=rate)
 
             elif isinstance(self.kinetics, Lindemann):
                 high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
