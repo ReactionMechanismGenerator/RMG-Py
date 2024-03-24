@@ -44,6 +44,7 @@ from rmgpy.quantity import Quantity
 from rmgpy.quantity cimport ScalarQuantity
 from rmgpy.solver.base cimport ReactionSystem
 import copy
+from rmgpy.molecule import Molecule
 
 cdef class SurfaceReactor(ReactionSystem):
     """
@@ -178,7 +179,6 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef np.ndarray thermo_coeff_matrix = np.zeros((len(self.species_index), len(self.species_index), 6), dtype=np.float64)
         cdef np.ndarray stoi_matrix = np.zeros((self.reactant_indices.shape[0], len(self.species_index)), dtype=np.float64)
         self.thermo_coeff_matrix = thermo_coeff_matrix
-        self.stoi_matrix = stoi_matrix
         #: 1 if it's on a surface, 0 if it's in the gas phase
         reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), int)
         species_on_surface = np.zeros((self.num_core_species), int)
@@ -212,13 +212,14 @@ cdef class SurfaceReactor(ReactionSystem):
             if sp.contains_surface_site():
                 if self.thermo_coverage_dependence and sp.thermo.thermo_coverage_dependence:
                     for spec, parameters in sp.thermo.thermo_coverage_dependence.items():
-                        try:
-                            species_index = self.species_index[spec]
-                            thermo_polynomials = parameters['enthalpy-coefficients'] + parameters['entropy-coefficients']
-                            self.thermo_coeff_matrix[sp_index, species_index] = [x.value_si for x in thermo_polynomials]
-                        except KeyError:
-                            logging.warning("Species {} is not in the species list yet, skip the thermodynamic coverage effect estimation!".format(spec))
-        
+                        molecule = Molecule().from_adjacency_list(spec)
+                        for species in self.species_index.keys():
+                            if species.is_isomorphic(molecule, strict=False):
+                                species_index = self.species_index[species]
+                                thermo_polynomials = parameters['enthalpy-coefficients'] + parameters['entropy-coefficients']
+                                self.thermo_coeff_matrix[sp_index, species_index] = [x.value_si for x in thermo_polynomials]
+        # create a stoichiometry matrix for reaction enthalpy and entropy correction 
+        # due to thermodynamic coverage dependence
         if self.thermo_coverage_dependence:
             ir = self.reactant_indices
             ip = self.product_indices
