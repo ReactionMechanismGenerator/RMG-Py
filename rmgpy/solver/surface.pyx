@@ -215,8 +215,8 @@ cdef class SurfaceReactor(ReactionSystem):
                         for species in self.species_index.keys():
                             if species.is_isomorphic(molecule, strict=False):
                                 species_index = self.species_index[species]
-                                thermo_polynomials = parameters['enthalpy-coefficients'] + parameters['entropy-coefficients']
-                                self.thermo_coeff_matrix[sp_index, species_index] = [x.value_si for x in thermo_polynomials]
+                                thermo_polynomials = np.concatenate((parameters['enthalpy-coefficients'], parameters['entropy-coefficients']), axis=0)
+                                self.thermo_coeff_matrix[sp_index, species_index] = [x for x in thermo_polynomials]
         # create a stoichiometry matrix for reaction enthalpy and entropy correction 
         # due to thermodynamic coverage dependence
         if self.thermo_coverage_dependence:
