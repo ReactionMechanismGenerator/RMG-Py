@@ -53,7 +53,7 @@ class TestThermoData:
         self.Tmin = 100.0
         self.Tmax = 3000.0
         self.E0 = -782292.0
-        self.thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,2,3]}}
+        self.thermo_coverage_dependence = {'1 O u0 p2 c0 {2,D} \n 2 X u0 p0 c0 {1,D}':{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,2,3]}}
         self.comment = "C2H6"
         self.thermodata = ThermoData(
             Tdata=(self.Tdata, "K"),

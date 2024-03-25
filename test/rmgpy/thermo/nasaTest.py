@@ -39,7 +39,6 @@ import numpy as np
 import rmgpy.constants as constants
 from rmgpy.quantity import ScalarQuantity
 from rmgpy.thermo.nasa import NASA, NASAPolynomial
-from rmgpy.quantity import Dimensionless
 
 
 class TestNASA:
@@ -70,7 +69,7 @@ class TestNASA:
         self.Tmax = 3000.0
         self.Tint = 650.73
         self.E0 = -782292.0  # J/mol.
-        self.thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,2,3]}}
+        self.thermo_coverage_dependence = {'1 O u0 p2 c0 {2,D} \n 2 X u0 p0 c0 {1,D}':{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,2,3]}}
         self.comment = "C2H6"
         self.nasa = NASA(
             polynomials=[
@@ -377,7 +376,11 @@ class TestNASA:
         assert nasa_dict["E0"]["value"] == self.E0
         assert nasa_dict["Tmin"]["value"] == self.Tmin
         assert nasa_dict["Tmax"]["value"] == self.Tmax
-        assert repr(nasa_dict["thermo_coverage_dependence"]) == "{'OX': {'model': 'polynomial', 'enthalpy-coefficients': [{'class': 'ScalarQuantity', 'value': 1.0}, {'class': 'ScalarQuantity', 'value': 2.0}, {'class': 'ScalarQuantity', 'value': 3.0}], 'entropy-coefficients': [{'class': 'ScalarQuantity', 'value': 1.0}, {'class': 'ScalarQuantity', 'value': 2.0}, {'class': 'ScalarQuantity', 'value': 3.0}]}}"
+        assert nasa_dict["thermo_coverage_dependence"].keys() == self.thermo_coverage_dependence.keys()
+        sp_name = list(self.thermo_coverage_dependence.keys())[0]
+        assert nasa_dict['thermo_coverage_dependence'][sp_name]['model'] == self.thermo_coverage_dependence[sp_name]['model']
+        assert nasa_dict['thermo_coverage_dependence'][sp_name]['enthalpy-coefficients']['object'] == self.thermo_coverage_dependence[sp_name]['enthalpy-coefficients']
+        assert nasa_dict['thermo_coverage_dependence'][sp_name]['entropy-coefficients']['object'] == self.thermo_coverage_dependence[sp_name]['entropy-coefficients']
         assert nasa_dict["comment"] == self.comment
         assert tuple(nasa_dict["polynomials"]["polynomial1"]["coeffs"]["object"]) == tuple(self.coeffs_low)
         assert tuple(nasa_dict["polynomials"]["polynomial2"]["coeffs"]["object"]) == tuple(self.coeffs_high)
