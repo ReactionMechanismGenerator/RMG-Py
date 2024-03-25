@@ -499,9 +499,9 @@ def find_adsorbate_delocalization_paths(atom1):
     paths = []
     if atom1.is_surface_site():
         for atom2, bond12 in atom1.edges.items():
-            if atom2.is_carbon():
+            if atom2.is_carbon() or atom2.is_nitrogen():
                 for atom3, bond23 in atom2.edges.items():
-                    if atom3.is_carbon():
+                    if atom3.is_carbon() or atom3.is_nitrogen():
                         for atom4, bond34 in atom3.edges.items():
                             if atom4.is_surface_site():
                                 paths.append([atom1, atom2, atom3, atom4, bond12, bond23, bond34])
@@ -526,11 +526,11 @@ def find_adsorbate_conjugate_delocalization_paths(atom1):
     paths = []
     if atom1.is_surface_site():
         for atom2, bond12 in atom1.edges.items():
-            if atom2.is_carbon():
+            if atom2.is_carbon() or atom2.is_nitrogen():
                 for atom3, bond23 in atom2.edges.items():
-                    if atom3.is_carbon():
+                    if atom3.is_carbon() or atom3.is_nitrogen():
                         for atom4, bond34 in atom3.edges.items():
-                            if atom2 is not atom4 and atom4.is_carbon():
+                            if atom2 is not atom4 and (atom4.is_carbon() or atom4.is_nitrogen()):
                                 for atom5, bond45 in atom4.edges.items():
                                     if atom5.is_surface_site():
                                         paths.append([atom1, atom2, atom3, atom4, atom5, bond12, bond23, bond34, bond45])
