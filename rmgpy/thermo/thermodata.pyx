@@ -128,8 +128,8 @@ cdef class ThermoData(HeatCapacityModel):
                  for species, parameters in value.items():
                     # just the polynomial model for now
                      processed_parameters = {'model': parameters['model'],
-                                             'enthalpy-coefficients': [quantity.Dimensionless(p) for p in parameters['enthalpy-coefficients']],
-                                             'entropy-coefficients': [quantity.Dimensionless(p) for p in parameters['entropy-coefficients']],
+                                             'enthalpy-coefficients': np.array([p for p in parameters['enthalpy-coefficients']]),
+                                             'entropy-coefficients': np.array([p for p in parameters['entropy-coefficients']]),
                                              }
                      self._thermo_coverage_dependence[species] = processed_parameters
 
