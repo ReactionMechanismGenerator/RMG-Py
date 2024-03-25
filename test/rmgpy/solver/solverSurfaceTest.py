@@ -765,7 +765,7 @@ class SurfaceReactorTest:
 
     def test_solve_h2_thermo_coverage_dependence(self):
         """
-        Test the surface batch reactor can properly apply thermo coverage dependent parameters
+        Test the surface batch reactor can properly apply thermodynamic coverage dependent parameters
         with the dissociative adsorption of H2.
 
         Here we choose a kinetic model consisting of the dissociative adsorption reaction
@@ -802,9 +802,9 @@ class SurfaceReactorTest:
                 Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
                 H298=(-11.26, "kcal/mol"),
                 S298=(0.44, "cal/(mol*K)"),
+                thermo_coverage_dependence={"1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}":{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,5,3]},}
             ),
         )
-        hx.thermo.thermo_coverage_dependence = {hx:{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,5,3]},}
         
         rxn1 = Reaction(
             reactants=[h2, x, x],
@@ -844,6 +844,7 @@ class SurfaceReactorTest:
             surface_volume_ratio=(1e1, "m^-1"),
             surface_site_density=(2.72e-9, "mol/cm^2"),
             coverage_dependence=True,
+            thermo_coverage_dependence=True,
             termination=[],
         )
 
@@ -853,11 +854,15 @@ class SurfaceReactorTest:
 
         assert isinstance(hx.thermo.thermo_coverage_dependence, dict)  # check to make sure coverage_dependence is still the correct type
         for species, parameters in hx.thermo.thermo_coverage_dependence.items():
-            assert isinstance(species, Species)  # species should be a Species
+            assert isinstance(species, str)  # species should be an ajacency list
             assert isinstance(parameters, dict)
             assert parameters["model"] is not None
             assert parameters["enthalpy-coefficients"] is not None
             assert parameters["entropy-coefficients"] is not None
+        assert np.array_equal(rxn_system.stoi_matrix, np.array([[-1., -2.,  2.]]))
+        thermo_coeffs = np.array([np.zeros((3,6))]*3)
+        thermo_coeffs[-1][-1] = [1., 2., 3., 1., 5., 3.]
+        assert np.array_equal(rxn_system.thermo_coeff_matrix, thermo_coeffs)
         # Integrate to get the solution at each time point
         t = []
         y = []
@@ -899,7 +904,7 @@ class SurfaceReactorTest:
 
     def test_solve_ch3_thermo_coverage_dependence(self):
         """
-        Test the surface batch reactor can properly apply coverage dependent parameters
+        Test the surface batch reactor can properly apply thermodynamic coverage dependent parameters
         with the nondissociative adsorption of CH3
 
         Here we choose a kinetic model consisting of the  adsorption reaction
@@ -1002,10 +1007,11 @@ class SurfaceReactorTest:
                 Tmin=(298, "K"),
                 Tmax=(2000, "K"),
                 E0=(-39.1285, "kJ/mol"),
+                thermo_coverage_dependence={"1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S} \n 2 H u0 p0 c0 {1,S} \n 3 H u0 p0 c0 {1,S} \n 4 H u0 p0 c0 {1,S} \n 5 X u0 p0 c0 {1,S}":
+                                            {'model':'polynomial', 'enthalpy-coefficients':[1e5,2,3], "entropy-coefficients":[1,5,3]},},
                 comment="""Thermo library: surfaceThermoNi111""",
             ),
         )
-        ch3x.thermo.thermo_coverage_dependence = {ch3x:{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,5,3]},}
 
         rxn1 = Reaction(
             reactants=[ch3, x],
@@ -1017,7 +1023,6 @@ class SurfaceReactorTest:
                 T0=(1, "K"),
                 Tmin=(200, "K"),
                 Tmax=(3000, "K"),
-                coverage_dependence={x: {"a": 0.0, "m": -1.0, "E": (0.0, "J/mol")}},
                 comment="""Exact match found for rate rule (Adsorbate;VacantSite)""",
             ),
         )
@@ -1036,7 +1041,7 @@ class SurfaceReactorTest:
             initial_surface_coverages={x: 1.0},
             surface_volume_ratio=(1.0, "m^-1"),
             surface_site_density=(2.72e-9, "mol/cm^2"),
-            coverage_dependence=True,
+            thermo_coverage_dependence=True,
             termination=[],
         )
         # in chemkin, the sites are mostly occupied in about 1e-8 seconds.
@@ -1052,13 +1057,21 @@ class SurfaceReactorTest:
             rxn1.get_surface_rate_coefficient(rxn_system.T.value_si, rxn_system.surface_site_density.value_si),
         )
 
-        assert isinstance(ch3.thermo.thermo_coverage_dependence, dict)  # check to make sure coverage_dependence is still the correct type
-        for species, parameters in ch3.thermo.thermo_coverage_dependence.items():
-            assert isinstance(species, Species)  # species should be a Species
+        assert isinstance(ch3x.thermo.thermo_coverage_dependence, dict)  # check to make sure coverage_dependence is still the correct type
+        for species, parameters in ch3x.thermo.thermo_coverage_dependence.items():
+            assert isinstance(species, str)  # species should be an ajacency list
             assert isinstance(parameters, dict)
             assert parameters["model"] is not None
             assert parameters["enthalpy-coefficients"] is not None
             assert parameters["entropy-coefficients"] is not None
+        
+        # check thermo_coverage_dependence is on
+        # and thermo_coeff_matrix and stoi_matrix are correctly created
+        assert rxn_system.thermo_coverage_dependence is True
+        assert np.array_equal(rxn_system.stoi_matrix, np.array([[-1, -1, 1]], dtype=float))
+        thermo_coeff_matrix = np.array([np.zeros((3,6))]*3)
+        thermo_coeff_matrix[-1][-1] = [1e5, 2, 3, 1, 5, 3]
+        assert np.array_equal(rxn_system.thermo_coeff_matrix, thermo_coeff_matrix)
 
         # Integrate to get the solution at each time point
         t = []
@@ -1122,6 +1135,12 @@ class SurfaceReactorTest:
         )
 
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
+        
+        # check thermo_coverage_dependence is off
+        # and thermo_coeff_matrix and stoi_matrix are not created
+        assert rxn_system.thermo_coverage_dependence is False
+        assert rxn_system.thermo_coeff_matrix is None
+        assert rxn_system.stoi_matrix is None
 
         tlist = np.logspace(-13, -5, 81, dtype=float)
 
