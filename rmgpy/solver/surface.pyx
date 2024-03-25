@@ -74,7 +74,6 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public bint coverage_dependence
     cdef public dict coverage_dependencies
     cdef public bint thermo_coverage_dependence
-    cdef public dict thermo_coverage_dependencies
 
 
 
@@ -118,7 +117,6 @@ cdef class SurfaceReactor(ReactionSystem):
         self.n_sims = n_sims
 
         self.coverage_dependencies = {}
-        self.thermo_coverage_dependencies = {}
 
     def convert_initial_keys_to_species_objects(self, species_dict):
         """
@@ -178,7 +176,8 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef Py_ssize_t index
         cdef np.ndarray thermo_coeff_matrix = np.zeros((len(self.species_index), len(self.species_index), 6), dtype=np.float64)
         cdef np.ndarray stoi_matrix = np.zeros((self.reactant_indices.shape[0], len(self.species_index)), dtype=np.float64)
-        self.thermo_coeff_matrix = thermo_coeff_matrix
+        if self.thermo_coverage_dependence:
+            self.thermo_coeff_matrix = thermo_coeff_matrix
         #: 1 if it's on a surface, 0 if it's in the gas phase
         reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), int)
         species_on_surface = np.zeros((self.num_core_species), int)
