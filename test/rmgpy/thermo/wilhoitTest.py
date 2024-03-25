@@ -58,7 +58,7 @@ class TestWilhoit:
         self.Tmin = 300.0
         self.Tmax = 3000.0
         self.comment = "C2H6"
-        self.thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,2,3]}}
+        self.thermo_coverage_dependence = {'1 O u0 p2 c0 {2,D} \n 2 X u0 p0 c0 {1,D}':{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,2,3]}}
         self.wilhoit = Wilhoit(
             Cp0=(self.Cp0 * constants.R, "J/(mol*K)"),
             CpInf=(self.CpInf * constants.R, "J/(mol*K)"),
@@ -458,16 +458,11 @@ class TestWilhoit:
                 "value": 178.76114800000002,
             },
             "class": "Wilhoit",
-            'thermo_coverage_dependence': {'OX': {
-                                                   'model': 'polynomial', 
-                                                   'enthalpy-coefficients': [{'class': 'ScalarQuantity', 'value': 1.0}, 
-                                                                             {'class': 'ScalarQuantity', 'value': 2.0}, 
-                                                                             {'class': 'ScalarQuantity', 'value': 3.0}
-                                                                            ], 
-                                                   'entropy-coefficients': [{'class': 'ScalarQuantity', 'value': 1.0}, 
-                                                                            {'class': 'ScalarQuantity', 'value': 2.0}, 
-                                                                            {'class': 'ScalarQuantity', 'value': 3.0}
-                                                                            ]}}
+            'thermo_coverage_dependence': {'1 O u0 p2 c0 {2,D} \n 2 X u0 p0 c0 {1,D}': {
+                                                                                        'model': 'polynomial', 
+                                                                                        'enthalpy-coefficients': {'class': 'np_array', 'object': [1, 2, 3]}, 
+                                                                                        'entropy-coefficients': {'class': 'np_array', 'object': [1, 2, 3]}}
+                                          }
         }
 
     def test_make_wilhoit(self):
@@ -476,6 +471,6 @@ class TestWilhoit:
         """
         wilhoit_dict = self.wilhoit.as_dict()
         new_wilhoit = Wilhoit.__new__(Wilhoit)
-        class_dictionary = {"ScalarQuantity": ScalarQuantity, "Wilhoit": Wilhoit}
+        class_dictionary = {"ScalarQuantity": ScalarQuantity, "Wilhoit": Wilhoit, "np_array": np.array}
 
         new_wilhoit.make_object(wilhoit_dict, class_dictionary)
