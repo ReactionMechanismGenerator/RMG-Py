@@ -13,6 +13,7 @@ requirements:
   build:
     - {{ compiler('c') }}
   host:
+    - conda-forge::libxcrypt  # remove after upgrading Python versions
     - conda-forge::cairo
     - conda-forge::cairocffi
     - conda-forge::ffmpeg
@@ -59,6 +60,8 @@ requirements:
     - rmg::symmetry
     - conda-forge::nomkl
   run:
+    - conda-forge::libxcrypt  # remove after upgrading Python versions
+    - rmg::rmgdatabase
     - conda-forge::cairo
     - conda-forge::cairocffi
     - conda-forge::ffmpeg
@@ -106,6 +109,8 @@ requirements:
     - conda-forge::nomkl
 test:
   requires:
+    - conda-forge::libxcrypt  # remove after upgrading Python versions
+    - rmg::rmgdatabase
     - conda-forge::cairo
     - conda-forge::cairocffi
     - conda-forge::ffmpeg
