@@ -917,7 +917,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                                              f'from the {rxn.library} library, and was not added to the model')
                                 break
                         else:
-                            reaction_model.add_reaction_to_core(net_reaction)
+                            reaction_model.add_reaction_to_core(net_reaction, requires_rms=True)
                     else:
                         # Check whether netReaction already exists in the edge as a LibraryReaction
                         for rxn in reaction_model.edge.reactions:
@@ -929,7 +929,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                                              f'from the {rxn.library} library, and was not added to the model')
                                 break
                         else:
-                            reaction_model.add_reaction_to_edge(net_reaction)
+                            reaction_model.add_reaction_to_edge(net_reaction, requires_rms=True)
 
                 # Set/update the net reaction kinetics using interpolation model
                 kdata = K[:, :, i, j].copy()
