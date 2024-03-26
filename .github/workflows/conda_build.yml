@@ -24,6 +24,12 @@ jobs:
           conda-solver: libmamba
           auto-activate-base: true
           activate-environment: ""
+      - name: Ubuntu - Install libcrypt
+        if: runner.os == 'Linux'
+        run: sudo apt-get install libcrypt1
+      - name: MacOS - Install libcrypt
+        if: runner.os == 'macOS'
+        run: brew install libgcrypt
       - name: Install Build Tools
         run: conda install anaconda-client conda-build
       - name: Configure Auto-Upload
