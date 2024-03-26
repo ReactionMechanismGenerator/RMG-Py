@@ -39,6 +39,7 @@ jobs:
           conda config --add channels rmg
           conda config --add channels cantera
           conda config --add channels conda-forge
+          conda config --add channels jacksonburns
           conda-build --token $CONDA_TOKEN --user rmg .conda
       - name: Test Binary Install with RMS
         run: |
