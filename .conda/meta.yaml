@@ -65,7 +65,7 @@ requirements:
     - conda-forge::nomkl
   run:
     - conda-forge::libxcrypt  # remove after upgrading Python versions
-    - rmg::rmgdatabase
+    - jacksonburns::rmgdatabase
     - conda-forge::cairo
     - conda-forge::cairocffi
     - conda-forge::ffmpeg
@@ -118,7 +118,7 @@ requirements:
 test:
   requires:
     - conda-forge::libxcrypt  # remove after upgrading Python versions
-    - rmg::rmgdatabase
+    - jacksonburns::rmgdatabase
     - conda-forge::cairo
     - conda-forge::cairocffi
     - conda-forge::ffmpeg
