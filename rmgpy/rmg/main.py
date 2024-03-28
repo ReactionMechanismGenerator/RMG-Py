@@ -50,6 +50,7 @@ import psutil
 import yaml
 from cantera import ck2yaml
 from scipy.optimize import brute
+import cantera as ct
 
 import rmgpy.util as util
 from rmgpy import settings
@@ -1232,6 +1233,42 @@ class RMG(util.Subject):
                     os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp"),
                     surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
                 )
+                if self.thermo_coverage_dependence:
+                    # add thermo coverage dependence to Cantera files
+                    chem_yaml_path = os.path.join(self.output_directory, "cantera", "chem.yaml")
+                    gas = ct.Solution(chem_yaml_path, "gas")
+                    surf = ct.Interface(chem_yaml_path, "surface1", [gas])
+                    with open(chem_yaml_path, 'r') as f:
+                        content = yaml.load(f, Loader=yaml.FullLoader)
+                    
+                    content['phases'][1]['reference-state-coverage'] = 0.11
+                    content['phases'][1]['thermo'] = 'coverage-dependent-surface'
+                    
+                    for s in self.reaction_model.core.species:
+                        if s.contains_surface_site() and s.thermo.thermo_coverage_dependence:
+                            for dep_sp, parameters in s.thermo.thermo_coverage_dependence.items():
+                                mol = Molecule().from_adjacency_list(dep_sp)
+                                for sp in self.reaction_model.core.species:
+                                    if sp.is_isomorphic(mol, strict=False):
+                                        try:
+                                            parameters['units'] = {'energy':'J', 'quantity':'mol'}
+                                            content["species"][surf.species_index(sp.label)]['coverage-dependencies'][sp.label] = parameters
+                                        except KeyError:
+                                            content["species"][surf.species_index(sp.label)]['coverage-dependencies'] = {sp.label: parameters}
+
+                    annotated_yaml_path = os.path.join(self.output_directory, "cantera", "chem_annotated.yaml")
+                    with open(annotated_yaml_path, 'r') as f:
+                        annotated_content = yaml.load(f, Loader=yaml.FullLoader)
+                    
+                    annotated_content['phases'] = content['phases']
+                    annotated_content['species'] = content['species']
+
+                    with open(chem_yaml_path, 'w') as output_f:
+                        yaml.dump(content, output_f, sort_keys=False)
+                    
+                    with open(annotated_yaml_path, 'w') as output_f:
+                        yaml.dump(annotated_content, output_f, sort_keys=False)
+                                       
             else:  # gas phase only
                 self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem.inp"))
                 self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem_annotated.inp"))
