@@ -688,8 +688,8 @@ ATOMTYPES['F1s'] = AtomType('F1s', generic=['R', 'R!H', 'F', 'Val7', 'Rx', 'Rx!H
                             single=[0,1], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[3], charge=[0])
 # examples for F1s: HF, [F], FO, CH3F, F2
 
-ATOMTYPES['Rx'].set_actions(increment_bond=['Rx'], decrement_bond=['Rx'], form_bond=['Rx'], break_bond=['Rx'], increment_radical=['Rx'], decrement_radical=['Rx'], increment_lone_pair=['Rx'], decrement_lone_pair=['Rx'])
-ATOMTYPES['Rx!H'].set_actions(increment_bond=['Rx!H'], decrement_bond=['Rx!H'], form_bond=['Rx!H'], break_bond=['Rx!H'], increment_radical=['Rx!H'], decrement_radical=['Rx!H'], increment_lone_pair=['Rx!H'], decrement_lone_pair=['Rx!H'])
+ATOMTYPES['Rx'].set_actions(increment_bond=['Rx'], decrement_bond=['Rx'], form_bond=['Rx'], break_bond=['Rx'], increment_radical=['Rx'], decrement_radical=['Rx'], increment_lone_pair=['Rx'], decrement_lone_pair=['Rx'], increment_charge=['Rx'], decrement_charge=['Rx'])
+ATOMTYPES['Rx!H'].set_actions(increment_bond=['Rx!H'], decrement_bond=['Rx!H'], form_bond=['Rx!H'], break_bond=['Rx!H'], increment_radical=['Rx!H'], decrement_radical=['Rx!H'], increment_lone_pair=['Rx!H'], decrement_lone_pair=['Rx!H'], increment_charge=['Rx!H'], decrement_charge=['Rx!H'])
 
 ATOMTYPES['e'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=[], decrement_charge=[])
 
