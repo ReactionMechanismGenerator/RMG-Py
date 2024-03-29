@@ -1252,9 +1252,9 @@ class RMG(util.Subject):
                                     if sp.is_isomorphic(mol, strict=False):
                                         try:
                                             parameters['units'] = {'energy':'J', 'quantity':'mol'}
-                                            content["species"][surf.species_index(sp.label)]['coverage-dependencies'][sp.label] = parameters
+                                            content["species"][surf.species_index(sp.to_chemkin())]['coverage-dependencies'][sp.to_chemkin()] = parameters
                                         except KeyError:
-                                            content["species"][surf.species_index(sp.label)]['coverage-dependencies'] = {sp.label: parameters}
+                                            content["species"][surf.species_index(sp.to_chemkin())]['coverage-dependencies'] = {sp.to_chemkin(): parameters}
 
                     annotated_yaml_path = os.path.join(self.output_directory, "cantera", "chem_annotated.yaml")
                     with open(annotated_yaml_path, 'r') as f:
