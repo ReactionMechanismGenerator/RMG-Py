@@ -1673,8 +1673,12 @@ class TestCyclicThermo:
         group_to_remove2 = rad_group.entries["CsJ"]
         rad_group.remove_group(group_to_remove2)
         # If group_to_remove was a data object, we point toward parent instead
+        # RJ2_triplet pointed to CsJ, which had data
+        # After we remove CsJ, RJ2_triplet points to the parent, which was RJ
         assert rad_group.entries["RJ2_triplet"].data == group_to_remove2.parent.label
         # If the parent pointed toward group_to_remove, we need should have copied data object
+        # RJ used to just point at CJ, which pointed at CsJ. After we remove CsJ,
+        # RJ should contain the data copied from CsJ
         Tlist = [300, 400, 500, 600, 800, 1000, 1500]
         assert not isinstance(group_to_remove2.parent.data, str)
         assert group_to_remove2.parent.data.get_enthalpy(298) == group_to_remove2.data.get_enthalpy(298)
