@@ -1644,6 +1644,9 @@ class TestCyclicThermo:
         group_to_remove = rad_group.entries["RJ"]
         children = group_to_remove.children
 
+        # set up for testing below
+        rad_group.entries["OJ"].data = "RJ"
+
         # remove the group
         rad_group.remove_group(group_to_remove)
 
@@ -1663,6 +1666,7 @@ class TestCyclicThermo:
 
         # if group_to_remove is a pointer and another node pointed to it, we copy
         # group_to_remove pointer
+        # OJ pointed to RJ and RJ pointed to CJ so if you remove RJ then OJ should point to CJ
         assert rad_group.entries["OJ"].data is group_to_remove.data
 
         # Remove an entry with a ThermoData object
