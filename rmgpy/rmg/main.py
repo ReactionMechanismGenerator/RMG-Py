@@ -1250,11 +1250,13 @@ class RMG(util.Subject):
                                 mol = Molecule().from_adjacency_list(dep_sp)
                                 for sp in self.reaction_model.core.species:
                                     if sp.is_isomorphic(mol, strict=False):
+                                        parameters['units'] = {'energy':'J', 'quantity':'mol'}
+                                        parameters['enthalpy-coefficients'] = [float(value) for value in parameters['enthalpy-coefficients']]
+                                        parameters['entropy-coefficients'] = [float(value) for value in parameters['entropy-coefficients']]
                                         try:
-                                            parameters['units'] = {'energy':'J', 'quantity':'mol'}
-                                            content["species"][surf.species_index(sp.to_chemkin())]['coverage-dependencies'][sp.to_chemkin()] = parameters
+                                            content["species"][gas.n_species+surf.species_index(sp.to_chemkin())]['coverage-dependencies'][sp.to_chemkin()] = parameters
                                         except KeyError:
-                                            content["species"][surf.species_index(sp.to_chemkin())]['coverage-dependencies'] = {sp.to_chemkin(): parameters}
+                                            content["species"][gas.n_species+surf.species_index(sp.to_chemkin())]['coverage-dependencies'] = {sp.to_chemkin(): parameters}
 
                     annotated_yaml_path = os.path.join(self.output_directory, "cantera", "chem_annotated.yaml")
                     with open(annotated_yaml_path, 'r') as f:
