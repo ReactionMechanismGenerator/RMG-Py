@@ -11,65 +11,163 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }} # [unix]
+    - {{ compiler('c') }}
   host:
-    - cython >=0.25.2
-    - lpsolve55
-    - numpy
-    - openbabel >=3
-    - pydas >=1.0.2
-    - pydqed >=1.0.1
-    - pyrdl
-    - python
-    - quantities
-    - rdkit >=2018
-    - scipy
-    - setuptools
+    - conda-forge::libxcrypt  # remove after upgrading Python versions
+    - conda-forge::cairo
+    - conda-forge::cairocffi
+    - conda-forge::ffmpeg
+    - conda-forge::xlrd
+    - conda-forge::xlwt
+    - conda-forge::h5py
+    - conda-forge::graphviz
+    - conda-forge::markupsafe
+    - conda-forge::psutil
+    - conda-forge::ncurses
+    - conda-forge::suitesparse
+    - conda-forge::coolprop
+    - cantera::cantera =2.6
+    - conda-forge::mopac
+    - conda-forge::cclib >=1.6.3,!=1.8.0
+    - conda-forge::openbabel >=3
+    - conda-forge::rdkit >=2022.09.1
+    - conda-forge::python >=3.7
+    - conda-forge::coverage
+    - conda-forge::cython >=0.25.2
+    - conda-forge::scikit-learn
+    - conda-forge::scipy <1.11
+    - conda-forge::numpy >=1.10.0
+    - conda-forge::pydot
+    - conda-forge::jinja2
+    - conda-forge::jupyter
+    - conda-forge::pymongo
+    - conda-forge::pyparsing
+    - conda-forge::pyyaml
+    - conda-forge::networkx
+    - conda-forge::pytest
+    - conda-forge::pytest-cov
+    - conda-forge::matplotlib >=1.5
+    - conda-forge::mpmath
+    - conda-forge::pandas
+    - conda-forge::gprof2dot
+    - conda-forge::numdifftools
+    - conda-forge::quantities
+    - rmg::lpsolve55
+    - rmg::muq2
+    - rmg::pydas >=1.0.3
+    - rmg::pydqed >=1.0.3
+    - rmg::pyrdl
+    - rmg::symmetry
+    - rmg::diffeqpy
+    - rmg::pyrms
+    - conda-forge::julia=1.9.1
+    - conda-forge::pyjulia>=0.6
+    - conda-forge::nomkl
   run:
-    - cairo
-    - cairocffi
-    - cantera >=2.3.0
-    - cclib >=1.6.3
-    - coolprop
-    - coverage
-    - cython >=0.25.2
-    - ffmpeg
-    - gprof2dot
-    - graphviz
-    - h5py
-    - jinja2
-    - jupyter
-    - lpsolve55
-    - markupsafe
-    - matplotlib >=1.5
-    - mopac
-    - mpmath
-    - muq2
-    - networkx
-    - nose
-    - numdifftools
-    - {{ pin_compatible('numpy') }}
-    - openbabel >=3
-    - pandas
-    - psutil
-    - pydas >=1.0.2
-    - pydot
-    - pydqed >=1.0.1
-    - pymongo
-    - pyparsing
-    - pyrdl
-    - python
-    - pyyaml
-    - pyzmq
-    - quantities
-    - rdkit >=2018
-    - rmgdatabase >=3.2.0
-    - scikit-learn
-    - scipy
-    - symmetry
-    - xlrd
-    - xlwt
+    - conda-forge::libxcrypt  # remove after upgrading Python versions
+    - rmg::rmgdatabase
+    - conda-forge::cairo
+    - conda-forge::cairocffi
+    - conda-forge::ffmpeg
+    - conda-forge::xlrd
+    - conda-forge::xlwt
+    - conda-forge::h5py
+    - conda-forge::graphviz
+    - conda-forge::markupsafe
+    - conda-forge::psutil
+    - conda-forge::ncurses
+    - conda-forge::suitesparse
+    - conda-forge::coolprop
+    - cantera::cantera =2.6
+    - conda-forge::mopac
+    - conda-forge::cclib >=1.6.3,!=1.8.0
+    - conda-forge::openbabel >=3
+    - conda-forge::rdkit >=2022.09.1
+    - conda-forge::python >=3.7
+    - conda-forge::coverage
+    - conda-forge::cython >=0.25.2
+    - conda-forge::scikit-learn
+    - conda-forge::scipy <1.11
+    - conda-forge::numpy >=1.10.0
+    - conda-forge::pydot
+    - conda-forge::jinja2
+    - conda-forge::jupyter
+    - conda-forge::pymongo
+    - conda-forge::pyparsing
+    - conda-forge::pyyaml
+    - conda-forge::networkx
+    - conda-forge::pytest
+    - conda-forge::pytest-cov
+    - conda-forge::matplotlib >=1.5
+    - conda-forge::mpmath
+    - conda-forge::pandas
+    - conda-forge::gprof2dot
+    - conda-forge::numdifftools
+    - conda-forge::quantities
+    - rmg::lpsolve55
+    - rmg::muq2
+    - rmg::pydas >=1.0.3
+    - rmg::pydqed >=1.0.3
+    - rmg::pyrdl
+    - rmg::symmetry
+    - rmg::diffeqpy
+    - rmg::pyrms
+    - conda-forge::julia=1.9.1
+    - conda-forge::pyjulia>=0.6
+    - conda-forge::nomkl
 test:
+  requires:
+    - conda-forge::libxcrypt  # remove after upgrading Python versions
+    - rmg::rmgdatabase
+    - conda-forge::cairo
+    - conda-forge::cairocffi
+    - conda-forge::ffmpeg
+    - conda-forge::xlrd
+    - conda-forge::xlwt
+    - conda-forge::h5py
+    - conda-forge::graphviz
+    - conda-forge::markupsafe
+    - conda-forge::psutil
+    - conda-forge::ncurses
+    - conda-forge::suitesparse
+    - conda-forge::coolprop
+    - cantera::cantera =2.6
+    - conda-forge::mopac
+    - conda-forge::cclib >=1.6.3,!=1.8.0
+    - conda-forge::openbabel >=3
+    - conda-forge::rdkit >=2022.09.1
+    - conda-forge::python >=3.7
+    - conda-forge::coverage
+    - conda-forge::cython >=0.25.2
+    - conda-forge::scikit-learn
+    - conda-forge::scipy <1.11
+    - conda-forge::numpy >=1.10.0
+    - conda-forge::pydot
+    - conda-forge::jinja2
+    - conda-forge::jupyter
+    - conda-forge::pymongo
+    - conda-forge::pyparsing
+    - conda-forge::pyyaml
+    - conda-forge::networkx
+    - conda-forge::pytest
+    - conda-forge::pytest-cov
+    - conda-forge::matplotlib >=1.5
+    - conda-forge::mpmath
+    - conda-forge::pandas
+    - conda-forge::gprof2dot
+    - conda-forge::numdifftools
+    - conda-forge::quantities
+    - rmg::lpsolve55
+    - rmg::muq2
+    - rmg::pydas >=1.0.3
+    - rmg::pydqed >=1.0.3
+    - rmg::pyrdl
+    - rmg::symmetry
+    - rmg::diffeqpy
+    - rmg::pyrms
+    - conda-forge::julia=1.9.1
+    - conda-forge::pyjulia>=0.6
+    - conda-forge::nomkl
   source_files:
     - 'examples/rmg/superminimal'
     - 'examples/arkane/networks/n-butanol'
@@ -77,10 +175,8 @@ test:
     - rmgpy
     - arkane
   commands:
-    - rmg.py examples/rmg/superminimal/input.py # [unix]
-    - Arkane.py examples/arkane/networks/n-butanol/input.py # [unix]
-    - python %SCRIPTS%\rmg.py examples\rmg\superminimal\input.py # [win]
-    - python %SCRIPTS\Arkane.py examples\arkane\networks\n-butanol\input.py # [win]
+    - rmg.py examples/rmg/superminimal/input.py
+    - Arkane.py examples/arkane/networks/n-butanol/input.py
 
 about:
   home: https://github.com/ReactionMechanismGenerator/RMG-Py

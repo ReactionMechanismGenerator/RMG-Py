@@ -1,6 +1,27 @@
-# Install RMG
-make install
+set -x
 
-# lazy "install" of everything in our 'external' folder.
-# most of which should probably be elsewhere
-cp -R ${SRC_DIR}/external ${SP_DIR}
+# from https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2631#issuecomment-1998723914
+#make julia directory
+mkdir -p ${PREFIX}/share/julia/site
+mkdir -p ${PREFIX}/bin
+#set JULIA_DEPOT_PATH in conda env
+export JULIA_DEPOT_PATH="${PREFIX}/share/julia/site"
+ACTIVATE_ENV="${PREFIX}/etc/conda/activate.d/env_vars.sh"
+DEACTIVATE_ENV="${PREFIX}/etc/conda/deactivate.d/env_vars.sh"
+
+if [ -f "$ACTIVATE_ENV" ]; then
+        echo 'python-jl -c "import julia; julia.install()"' >> $ACTIVATE_ENV
+        # echo 'sed -i \'/julia.install/d\' $ACTIVATE_ENV' >> $ACTIVATE_ENV
+else
+        mkdir -p ${PREFIX}/etc/conda/activate.d
+        touch ${PREFIX}/etc/conda/activate.d/env_vars.sh
+        echo '#!/bin/sh' >> $ACTIVATE_ENV
+        echo 'python-jl -c "import julia; julia.install()"' >> $ACTIVATE_ENV
+        # echo 'sed -i \'/julia.install/d\' $ACTIVATE_ENV' >> $ACTIVATE_ENV
+fi
+
+make install
+export PYTHON=$PREFIX/bin/python
+export PYTHONPATH=$SRC_DIR:$PYTHONPATH
+python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
+julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator'
