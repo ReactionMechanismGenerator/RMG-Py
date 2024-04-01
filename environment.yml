@@ -90,10 +90,6 @@ dependencies:
   - rmg::pydqed >=1.0.3
   - rmg::symmetry
 
-# packages we would like to stop maintaining (and why)
-  - pip:
-    - diffeqpy # getting official version diffeqpy from pip (which uses PythonCall instead of PyCall)
-
 # conda mutex metapackage
   - nomkl
 

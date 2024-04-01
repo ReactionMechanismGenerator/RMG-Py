@@ -153,7 +153,6 @@ jobs:
         run: |
           export JULIA_CONDAPKG_EXE=$CONDA/condabin/conda
           julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add("CondaPkg"); using CondaPkg; CondaPkg.add_channel("defaults"); CondaPkg.add_channel("rmg"); CondaPkg.add_channel("conda-forge"); CondaPkg.add_channel("cantera"); Pkg.add(PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
-          python -c "import diffeqpy; diffeqpy.install()"
 
       - name: Install Q2DTor
         run: echo "" | make q2dtor

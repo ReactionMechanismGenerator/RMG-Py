@@ -64,7 +64,6 @@ jobs:
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         run: |
           julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
-          python -c "import diffeqpy; diffeqpy.install()"
 
       - name: Checkout gh-pages Branch
         uses: actions/checkout@v2

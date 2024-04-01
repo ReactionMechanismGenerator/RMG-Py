@@ -35,7 +35,6 @@ import sys
 import logging
 import itertools
 
-from diffeqpy import de
 from juliacall import Main
 rms = juliacall.newmodule("RMS")
 rms.seval("using ReactionMechanismSimulator")
@@ -431,7 +430,7 @@ class Reactor:
             model_settings.tol_rxn_to_core_deadend_radical,
             atol=simulator_settings.atol,
             rtol=simulator_settings.rtol,
-            solver=de.CVODE_BDF(),
+            solver=rms.Sundials.CVODE_BDF(),
         )
 
         return (
