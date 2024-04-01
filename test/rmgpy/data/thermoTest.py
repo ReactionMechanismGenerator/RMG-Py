@@ -1208,6 +1208,65 @@ multiplicity 2
         assert "radical" in thermo.comment, "Expected to need radical correctinos to find CH2j-CH2-CH2j"
         assert "Adsorption correction" in thermo.comment, "Adsorption correction not added to thermo."
 
+    def test_remove_group(self):
+        """
+        Test removing groups, using nodes near the root of radical.py
+        """
+        # load up test data designed for this test
+        database2 = ThermoDatabase()
+        path = os.path.join(os.path.dirname(__file__),"..","test_data","testing_database","thermo")
+        database2.load(path, depository=False)
+
+        # load up the thermo radical database as a test
+        rad_group = database2.groups["radical"]
+
+        # use root as removed groups parent, which should be an LogicOr node
+        root = rad_group.top[0]
+        # use group to remove as
+        group_to_remove = rad_group.entries["RJ"]
+        children = group_to_remove.children
+
+        # set up for testing below
+        rad_group.entries["OJ"].data = "RJ"
+
+        # remove the group
+        rad_group.remove_group(group_to_remove)
+
+        # afterwards group_to_remove should not be in the database or root's children
+        assert group_to_remove not in list(rad_group.entries.values())
+        assert group_to_remove not in root.children
+
+        for child in children:
+            # group_to_remove children should all be in roots item.component and children attribuetes
+            assert child.label in root.item.components
+            assert child in root.children
+            # the children should all have root a their parent now
+            assert child.parent is root
+
+        # Specific to ThermoDatabase, (above test apply to all base class Database)
+        # we check that unicode entry.data pointers are correctly reassigned
+
+        # if group_to_remove is a pointer and another node pointed to it, we copy
+        # group_to_remove pointer
+        # OJ pointed to RJ and RJ pointed to CJ so if you remove RJ then OJ should point to CJ
+        assert rad_group.entries["OJ"].data is group_to_remove.data
+
+        # Remove an entry with a ThermoData object
+        group_to_remove2 = rad_group.entries["Cs_P"]
+        rad_group.remove_group(group_to_remove2)
+        # If group_to_remove was a data object, we point toward parent instead
+        # CsCsJ pointed to Cs_P, which had data.
+        # After we remove Cs_P, CsCsJ points to the parent, which was CsJ
+        assert rad_group.entries["CsCsJ"].data == group_to_remove2.parent.label
+        # If the parent pointed toward group_to_remove, we need should have copied data object
+        # CsJ (the parent) used to just point at Cs_P.
+        # After we remove Cs_P, CsJ should contain the data copied from Cs_P
+        Tlist = [300, 400, 500, 600, 800, 1000, 1500]
+        assert not isinstance(group_to_remove2.parent.data, str)
+        assert group_to_remove2.parent.data.get_enthalpy(298) == group_to_remove2.data.get_enthalpy(298)
+        assert group_to_remove2.parent.data.get_entropy(298) == group_to_remove2.data.get_entropy(298)
+        assert all([group_to_remove2.parent.data.get_heat_capacity(x) == group_to_remove2.data.get_heat_capacity(x) for x in Tlist])
+
 
 class TestThermoAccuracy:
     """
@@ -1625,65 +1684,6 @@ class TestCyclicThermo:
         spc.thermo = generate_thermo_data(spc)
 
         self.database.get_ring_groups_from_comments(spc.thermo)
-
-    def test_remove_group(self):
-        """
-        Test that removing groups using nodes near the root of radical.py
-        """
-        # load up test data designed for this test
-        database2 = ThermoDatabase()
-        path = os.path.join(os.path.dirname(__file__),"..","test_data","testing_database","thermo")
-        database2.load(path, depository=False)
-
-        # load up the thermo radical database as a test
-        rad_group = database2.groups["radical"]
-
-        # use root as removed groups parent, which should be an LogicOr node
-        root = rad_group.top[0]
-        # use group to remove as
-        group_to_remove = rad_group.entries["RJ"]
-        children = group_to_remove.children
-
-        # set up for testing below
-        rad_group.entries["OJ"].data = "RJ"
-
-        # remove the group
-        rad_group.remove_group(group_to_remove)
-
-        # afterwards group_to_remove should not be in the database or root's children
-        assert group_to_remove not in list(rad_group.entries.values())
-        assert group_to_remove not in root.children
-
-        for child in children:
-            # group_to_remove children should all be in roots item.component and children attribuetes
-            assert child.label in root.item.components
-            assert child in root.children
-            # the children should all have root a their parent now
-            assert child.parent is root
-
-        # Specific to ThermoDatabase, (above test apply to all base class Database)
-        # we check that unicode entry.data pointers are correctly reassigned
-
-        # if group_to_remove is a pointer and another node pointed to it, we copy
-        # group_to_remove pointer
-        # OJ pointed to RJ and RJ pointed to CJ so if you remove RJ then OJ should point to CJ
-        assert rad_group.entries["OJ"].data is group_to_remove.data
-
-        # Remove an entry with a ThermoData object
-        group_to_remove2 = rad_group.entries["Cs_P"]
-        rad_group.remove_group(group_to_remove2)
-        # If group_to_remove was a data object, we point toward parent instead
-        # CsCsJ pointed to Cs_P, which had data.
-        # After we remove Cs_P, CsCsJ points to the parent, which was CsJ
-        assert rad_group.entries["CsCsJ"].data == group_to_remove2.parent.label
-        # If the parent pointed toward group_to_remove, we need should have copied data object
-        # CsJ (the parent) used to just point at Cs_P.
-        # After we remove Cs_P, CsJ should contain the data copied from Cs_P
-        Tlist = [300, 400, 500, 600, 800, 1000, 1500]
-        assert not isinstance(group_to_remove2.parent.data, str)
-        assert group_to_remove2.parent.data.get_enthalpy(298) == group_to_remove2.data.get_enthalpy(298)
-        assert group_to_remove2.parent.data.get_entropy(298) == group_to_remove2.data.get_entropy(298)
-        assert all([group_to_remove2.parent.data.get_heat_capacity(x) == group_to_remove2.data.get_heat_capacity(x) for x in Tlist])
 
     def test_is_ring_partial_matched(self):
         # create testing molecule
