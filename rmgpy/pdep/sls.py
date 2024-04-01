@@ -33,8 +33,9 @@ and implementing the SLS master equation reduction method
 """
 import sys
 
-from diffeqpy import de
-from julia import Main
+import juliacall
+jl = juliacall.newmodule("SciMLBase")
+jl.seval("using SciMLBase")
 import scipy.sparse as sparse
 import numpy as np
 import scipy.linalg
@@ -98,17 +99,17 @@ function jac(u, M, t)
 end"""
     )
     tspan = (0.0, t)
-    fcn = de.ODEFunction(f, jac=jac)
-    prob = de.ODEProblem(fcn, p0, tspan, M)
-    sol = de.solve(prob, solver=de.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
+    fcn = jl.ODEFunction(f, jac=jac)
+    prob = jl.ODEProblem(fcn, p0, tspan, M)
+    sol = jl.solve(prob, solver=jl.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
     return sol
 
 
 def solve_me_fcns(f, jac, M, p0, t):
     tspan = (0.0, t)
-    fcn = de.ODEFunction(f, jac=jac)
-    prob = de.ODEProblem(fcn, p0, tspan, M)
-    sol = de.solve(prob, solver=de.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
+    fcn = jl.ODEFunction(f, jac=jac)
+    prob = jl.ODEProblem(fcn, p0, tspan, M)
+    sol = jl.solve(prob, solver=jl.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
     return sol
 
 
