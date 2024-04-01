@@ -141,11 +141,11 @@ jobs:
           echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
           echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
 
-      # RMG build step
-      - name: make RMG
-        run: |
-          make clean
-          make
+      # # RMG build step
+      # - name: make RMG
+      #   run: |
+      #     make clean
+      #     make
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
