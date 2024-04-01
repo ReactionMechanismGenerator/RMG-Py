@@ -1,5 +1,9 @@
 set -x
+# as done in the pure-python conda recipe
+make install
+python -c "from rmgpy.molecule import Molecule"
 
+# attempting to run the Julia install
 # from https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2631#issuecomment-1998723914
 #make julia directory
 mkdir -p ${PREFIX}/share/julia/site
@@ -20,7 +24,6 @@ else
         # echo 'sed -i \'/julia.install/d\' $ACTIVATE_ENV' >> $ACTIVATE_ENV
 fi
 
-make install
 export PYTHON=$PREFIX/bin/python
 export PYTHONPATH=$SRC_DIR:$PYTHONPATH
 echo "testing rmgpy"
