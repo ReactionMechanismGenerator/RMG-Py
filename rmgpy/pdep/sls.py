@@ -242,7 +242,7 @@ end"""
     xseq = []
     dxdtseq = []
 
-    # Single dojlant source simulations
+    # Single dominant source simulations
     for i, isomer in enumerate(isomers):
         xsout, dxdtout = run_single_source(network, isomer)
         for j in range(len(xsout)):
