@@ -47,7 +47,7 @@ nbproject/*
 .vscode/*
 
 # Unit test files
-.coverage
+.coverage*
 testing/*
 htmlcov/*
 
