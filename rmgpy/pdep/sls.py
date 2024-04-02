@@ -93,17 +93,17 @@ function jac(u, M, t)
 end"""
     )
     tspan = (0.0, t)
-    fcn = jl.ODEFunction(f, jac=jac)
-    prob = jl.ODEProblem(fcn, p0, tspan, M)
-    sol = jl.solve(prob, solver=jl.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
+    fcn = Main.ODEFunction(f, jac=jac)
+    prob = Main.ODEProblem(fcn, p0, tspan, M)
+    sol = Main.solve(prob, solver=Main.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
     return sol
 
 
 def solve_me_fcns(f, jac, M, p0, t):
     tspan = (0.0, t)
-    fcn = jl.ODEFunction(f, jac=jac)
-    prob = jl.ODEProblem(fcn, p0, tspan, M)
-    sol = jl.solve(prob, solver=jl.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
+    fcn = Main.ODEFunction(f, jac=jac)
+    prob = Main.ODEProblem(fcn, p0, tspan, M)
+    sol = Main.solve(prob, solver=Main.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
     return sol
 
 
@@ -145,13 +145,13 @@ def get_rate_coefficients_SLS(network, T, P, method="mexp", neglect_high_energy_
     tau = np.abs(1.0 / fastest_reaction)
 
     if method == "ode":
-        f = jl.eval(
+        f = Main.eval(
             """
 function f(u,M,t)
     return M*u
 end"""
         )
-        jac = jl.eval(
+        jac = Main.eval(
             """
 function jac(u,M,t)
     return M
