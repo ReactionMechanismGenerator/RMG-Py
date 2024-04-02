@@ -486,7 +486,7 @@ class ConstantTLiquidSurfaceReactor(Reactor):
             inter, pinter = rms.ReactiveInternalInterfaceConstantTPhi(
                 domainliq,
                 domaincat,
-                Main.eval("using ReactionMechanismSimulator; Vector{ElementaryReaction}()"),
+                Main.seval("using ReactionMechanismSimulator; Vector{ElementaryReaction}()"),
                 self.initial_conditions["liquid"]["T"],
                 self.initial_conditions["surface"]["A"],
             )
@@ -608,7 +608,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         for key, value in efficiencies.items():
             dstr += '"' + key + '"' "=>" + str(value) + ","
         dstr += "])"
-        return Main.eval(
+        return Main.seval(
             "using ReactionMechanismSimulator; ThirdBody(" + arrstr + ", Dict{Int64,Float64}([]), " + dstr + "," + "EmptyRateUncertainty())"
         )
     elif isinstance(obj, Lindemann):
@@ -619,7 +619,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         for key, value in efficiencies.items():
             dstr += '"' + key + '"' "=>" + str(value) + ","
         dstr += "])"
-        return Main.eval(
+        return Main.seval(
             "using ReactionMechanismSimulator; Lindemann("
             + arrhigh
             + ","
