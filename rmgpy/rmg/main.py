@@ -194,6 +194,7 @@ class RMG(util.Subject):
         self.surface_site_density = None
         self.binding_energies = None
         self.coverage_dependence = False
+        self.thermo_coverage_dependence = False
         self.forbidden_structures = []
 
         self.reaction_model = None
@@ -511,7 +512,7 @@ class RMG(util.Subject):
 
         # Read input file
         self.load_input(self.input_file)
-        
+
         # Check if ReactionMechanismSimulator reactors are being used
         # if RMS is not installed but the user attempted to use it, the load_input_file would have failed
         # if RMS is not installed and they did not use it, we avoid calling certain functions that would raise an error
@@ -769,7 +770,7 @@ class RMG(util.Subject):
         """
 
         self.attach(ChemkinWriter(self.output_directory))
-        
+
         self.attach(RMSWriter(self.output_directory))
 
         if self.generate_output_html:
