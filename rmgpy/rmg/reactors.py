@@ -760,7 +760,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
             electronchange=electronchange,
             radicalchange=radchange,
             reversible=obj.reversible,
-            pairs=[],
+            pairs=to_julia([]),
             comment=obj.kinetics.comment,
         )
     elif isinstance(obj, SolventData):
