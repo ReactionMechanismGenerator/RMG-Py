@@ -36,6 +36,8 @@ import logging
 import itertools
 
 import juliacall
+from juliacall import Main
+Main.seval("using PythonCall")
 rms = juliacall.newmodule("RMS")
 rms.seval("using ReactionMechanismSimulator")
 
@@ -135,8 +137,8 @@ class PhaseSystem:
 
         rxnlist = []
         for i, rxn in enumerate(self.phases[phase_label].reactions):
-            if (spc.name in [spec.name for spec in rxn.reactants + rxn.products]) and all(
-                [spec.name in phasesys.species_dict for spec in rxn.reactants + rxn.products]
+            if (spc.name in [spec.name for spec in Main.pylist(rxn.reactants) + Main.pylist(rxn.products)]) and all(
+                [spec.name in phasesys.species_dict for spec in Main.pylist(rxn.reactants) + Main.pylist(rxn.products)]
             ):
                 rxnlist.append(rxn)
 
@@ -430,7 +432,7 @@ class Reactor:
             model_settings.tol_rxn_to_core_deadend_radical,
             atol=simulator_settings.atol,
             rtol=simulator_settings.rtol,
-            solver=rms.Sundials.CVODE_BDF(),
+            solver=rms.ReactionMechanismSimulator.Sundials.CVODE_BDF(),
         )
 
         return (
@@ -456,7 +458,7 @@ class ConstantVIdealGasReactor(Reactor):
         """
         phase = phase_system.phases["Default"]
         ig = rms.IdealGas(phase.species, phase.reactions)
-        domain, y0, p = rms.ConstantVDomain(phase=ig, initialconds=self.initial_conditions)
+        domain, y0, p = rms.ConstantVDomain(phase=ig, initialconds=to_julia(self.initial_conditions))
         react = rms.Reactor(domain, y0, (0.0, self.tf), p=p)
         return react, domain, [], p
 
@@ -476,9 +478,9 @@ class ConstantTLiquidSurfaceReactor(Reactor):
         surf = rms.IdealSurface(surf.species, surf.reactions, surf.site_density, name="surface")
         liq_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in liq.species]]
         cat_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in surf.species]]
-        domainliq, y0liq, pliq = rms.ConstantTVDomain(phase=liq, initialconds=self.initial_conditions["liquid"], constantspecies=liq_constant_species)
+        domainliq, y0liq, pliq = rms.ConstantTVDomain(phase=liq, initialconds=to_julia(self.initial_conditions["liquid"]), constantspecies=liq_constant_species)
         domaincat, y0cat, pcat = rms.ConstantTAPhiDomain(
-            phase=surf, initialconds=self.initial_conditions["surface"], constantspecies=cat_constant_species
+            phase=surf, initialconds=to_julia(self.initial_conditions["surface"]), constantspecies=cat_constant_species
         )
         if interface.reactions == []:
             inter, pinter = rms.ReactiveInternalInterfaceConstantTPhi(
@@ -520,19 +522,19 @@ class ConstantTVLiquidReactor(Reactor):
         """
         phase = phase_system.phases["Default"]
         liq = rms.IdealDiluteSolution(phase.species, phase.reactions, phase.solvent)
-        domain, y0, p = rms.ConstantTVDomain(phase=liq, initialconds=self.initial_conditions, constantspecies=self.const_spc_names)
+        domain, y0, p = rms.ConstantTVDomain(phase=liq, initialconds=to_julia(self.initial_conditions), constantspecies=self.const_spc_names)
 
         interfaces = []
 
         if self.inlet_conditions:
             inlet_conditions = {key: value for (key, value) in self.inlet_conditions.items() if key != "F"}
             total_molar_flow_rate = self.inlet_conditions["F"]
-            inlet = rms.Inlet(domain, inlet_conditions, Main.eval("x->" + str(total_molar_flow_rate)))
+            inlet = rms.Inlet(domain, inlet_conditions, Main.seval("x->" + str(total_molar_flow_rate)))
             interfaces.append(inlet)
 
         if self.outlet_conditions:
             total_volumetric_flow_rate = self.outlet_conditions["Vout"]
-            outlet = rms.VolumetricFlowRateOutlet(domain, Main.eval("x->" + str(total_volumetric_flow_rate)))
+            outlet = rms.VolumetricFlowRateOutlet(domain, Main.seval("x->" + str(total_volumetric_flow_rate)))
             interfaces.append(outlet)
 
         if self.evap_cond_conditions:
@@ -555,10 +557,18 @@ class ConstantTPIdealGasReactor(Reactor):
         """
         phase = phase_system.phases["Default"]
         ig = rms.IdealGas(phase.species, phase.reactions)
-        domain, y0, p = rms.ConstantTPDomain(phase=ig, initialconds=self.initial_conditions)
+        domain, y0, p = rms.ConstantTPDomain(phase=ig, initialconds=to_julia(self.initial_conditions))
         react = rms.Reactor(domain, y0, (0.0, self.tf), p=p)
         return react, domain, [], p
 
+
+def to_julia(obj):
+    if isinstance(obj, dict):
+        return Main.PythonCall.pyconvert(Main.Dict, obj)
+    elif isinstance(obj, list) or isinstance(obj, np.ndarray):
+        return Main.PythonCall.pyconvert(Main.Vector, obj)
+    else:
+        return obj
 
 def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     """
@@ -575,21 +585,21 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         Ea = obj._Ea.value_si
         return rms.Arrhenius(A, n, Ea, rms.EmptyRateUncertainty())
     elif isinstance(obj, PDepArrhenius):
-        Ps = obj._pressures.value_si
-        arrs = [to_rms(arr) for arr in obj.arrhenius]
+        Ps = to_julia(obj._pressures.value_si)
+        arrs = to_julia([to_rms(arr) for arr in obj.arrhenius])
         return rms.PdepArrhenius(Ps, arrs, rms.EmptyRateUncertainty())
     elif isinstance(obj, MultiArrhenius):
-        arrs = [to_rms(arr) for arr in obj.arrhenius]
+        arrs = to_julia([to_rms(arr) for arr in obj.arrhenius])
         return rms.MultiArrhenius(arrs, rms.EmptyRateUncertainty())
     elif isinstance(obj, MultiPDepArrhenius):
-        parrs = [to_rms(parr) for parr in obj.arrhenius]
+        parrs = to_julia([to_rms(parr) for parr in obj.arrhenius])
         return rms.MultiPdepArrhenius(parrs, rms.EmptyRateUncertainty())
     elif isinstance(obj, Chebyshev):
         Tmin = obj.Tmin.value_si
         Tmax = obj.Tmax.value_si
         Pmin = obj.Pmin.value_si
         Pmax = obj.Pmax.value_si
-        coeffs = obj.coeffs.value_si.tolist()
+        coeffs = to_julia(obj.coeffs.value_si.tolist())
         return rms.Chebyshev(coeffs, Tmin, Tmax, Pmin, Pmax)
     elif isinstance(obj, ThirdBody):
         arrstr = arrhenius_to_julia_string(obj.arrheniusLow)
@@ -632,7 +642,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         for key, value in efficiencies.items():
             dstr += '"' + key + '"' "=>" + str(value) + ","
         dstr += "])"
-        return Main.eval(
+        return Main.seval(
             "using ReactionMechanismSimulator; Troe("
             + arrhigh
             + ","
@@ -677,6 +687,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
                 atomnums[atm.element.symbol] += 1
             else:
                 atomnums[atm.element.symbol] = 1
+        atomnums = to_julia(atomnums)
         bondnum = len(mol.get_all_edges())
         
         if not obj.molecule[0].contains_surface_site():
@@ -685,12 +696,12 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
             th = obj.get_thermo_data()
             thermo = to_rms(th)
             if obj.henry_law_constant_data:
-                kH = rms.TemperatureDependentHenryLawConstant(Ts=obj.henry_law_constant_data.Ts, kHs=obj.henry_law_constant_data.kHs)
+                kH = rms.TemperatureDependentHenryLawConstant(Ts=to_julia(obj.henry_law_constant_data.Ts), kHs=to_julia(obj.henry_law_constant_data.kHs))
             else:
                 kH = rms.EmptyHenryLawConstant()
             if obj.liquid_volumetric_mass_transfer_coefficient_data:
                 kLA = rms.TemperatureDependentLiquidVolumetricMassTransferCoefficient(
-                    Ts=obj.liquid_volumetric_mass_transfer_coefficient_data.Ts, kLAs=obj.liquid_volumetric_mass_transfer_coefficient_data.kLAs
+                    Ts=to_julia(obj.liquid_volumetric_mass_transfer_coefficient_data.Ts), kLAs=to_julia(obj.liquid_volumetric_mass_transfer_coefficient_data.kLAs)
                 )
             else:
                 kLA = rms.EmptyLiquidVolumetricMassTransferCoefficient()
@@ -732,10 +743,10 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
                 comment=obj.thermo.comment,
             )
     elif isinstance(obj, Reaction):
-        reactantinds = [species_names.index(spc.label) for spc in obj.reactants]
-        productinds = [species_names.index(spc.label) for spc in obj.products]
-        reactants = [rms_species_list[i] for i in reactantinds]
-        products = [rms_species_list[i] for i in productinds]
+        reactantinds = to_julia([species_names.index(spc.label) for spc in obj.reactants])
+        productinds = to_julia([species_names.index(spc.label) for spc in obj.products])
+        reactants = to_julia([rms_species_list[i] for i in reactantinds])
+        products = to_julia([rms_species_list[i] for i in productinds])
         kinetics = to_rms(obj.kinetics, species_names=species_names, rms_species_list=rms_species_list, rmg_species=rmg_species)
         radchange = sum([spc.molecule[0].multiplicity - 1 for spc in obj.products]) - sum([spc.molecule[0].multiplicity - 1 for spc in obj.reactants])
         electronchange = 0  # for now

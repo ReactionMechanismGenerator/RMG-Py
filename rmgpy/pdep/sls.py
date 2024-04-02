@@ -31,21 +31,15 @@
 Contains functionality for directly simulating the master equation
 and implementing the SLS master equation reduction method
 """
-import sys
 
-import juliacall
-jl = juliacall.newmodule("SciMLBase")
-jl.seval("using SciMLBase")
-import scipy.sparse as sparse
+import juliacall import Main
+Main.seval("using SciMLBase")
 import numpy as np
 import scipy.linalg
-import mpmath
 import scipy.optimize as opt
 
 import rmgpy.constants as constants
-from rmgpy.pdep.reaction import calculate_microcanonical_rate_coefficient
 from rmgpy.pdep.me import generate_full_me_matrix, states_to_configurations
-from rmgpy.statmech.translation import IdealGasTranslation
 
 
 def get_initial_condition(network, x0, indices):
@@ -151,13 +145,13 @@ def get_rate_coefficients_SLS(network, T, P, method="mexp", neglect_high_energy_
     tau = np.abs(1.0 / fastest_reaction)
 
     if method == "ode":
-        f = Main.eval(
+        f = jl.eval(
             """
 function f(u,M,t)
     return M*u
 end"""
         )
-        jac = Main.eval(
+        jac = jl.eval(
             """
 function jac(u,M,t)
     return M
@@ -248,7 +242,7 @@ end"""
     xseq = []
     dxdtseq = []
 
-    # Single domainant source simulations
+    # Single dojlant source simulations
     for i, isomer in enumerate(isomers):
         xsout, dxdtout = run_single_source(network, isomer)
         for j in range(len(xsout)):
