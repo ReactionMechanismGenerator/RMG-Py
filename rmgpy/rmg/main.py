@@ -193,6 +193,7 @@ class RMG(util.Subject):
         self.surface_site_density = None
         self.binding_energies = None
         self.coverage_dependence = False
+        self.thermo_coverage_dependence = False
         self.forbidden_structures = []
 
         self.reaction_model = None
@@ -277,6 +278,7 @@ class RMG(util.Subject):
             self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
             self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
         self.reaction_model.coverage_dependence = self.coverage_dependence
+        self.reaction_model.thermo_coverage_dependence = self.thermo_coverage_dependence
 
         self.reaction_model.verbose_comments = self.verbose_comments
         self.reaction_model.save_edge_species = self.save_edge_species
