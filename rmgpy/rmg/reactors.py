@@ -35,7 +35,7 @@ import sys
 import logging
 import itertools
 
-from juliacall import Main
+import juliacall
 rms = juliacall.newmodule("RMS")
 rms.seval("using ReactionMechanismSimulator")
 
