@@ -117,3 +117,4 @@ examples/**/dictionary.txt
 examples/**/reactions.py
 examples/**/RMG_libraries
 examples/**/species
+examples/**/plots
