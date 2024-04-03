@@ -327,7 +327,7 @@ class FunctionalInputTest:
             "examples",
             "arkane",
             "networks",
-            "acetyl+O2_mse",
+            "acetyl+O2_cse",
             "input.py",
         )
         (
