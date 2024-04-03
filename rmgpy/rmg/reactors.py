@@ -58,6 +58,15 @@ from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.depository import DepositoryReaction
 
 
+def to_julia(obj):
+    if isinstance(obj, dict):
+        return Main.PythonCall.pyconvert(Main.Dict, obj)
+    elif isinstance(obj, list) or isinstance(obj, np.ndarray):
+        return Main.PythonCall.pyconvert(Main.Array, obj)
+    else:
+        return obj
+
+
 class PhaseSystem:
     """
     Class for tracking and managing all the phases and interfaces of species/reactions
@@ -561,14 +570,6 @@ class ConstantTPIdealGasReactor(Reactor):
         react = rms.Reactor(domain, y0, (0.0, self.tf), p=p)
         return react, domain, [], p
 
-
-def to_julia(obj):
-    if isinstance(obj, dict):
-        return Main.PythonCall.pyconvert(Main.Dict, obj)
-    elif isinstance(obj, list) or isinstance(obj, np.ndarray):
-        return Main.PythonCall.pyconvert(Main.Vector, obj)
-    else:
-        return obj
 
 def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     """

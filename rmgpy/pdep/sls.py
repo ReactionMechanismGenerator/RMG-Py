@@ -32,14 +32,16 @@ Contains functionality for directly simulating the master equation
 and implementing the SLS master equation reduction method
 """
 
-import juliacall import Main
+from juliacall import Main
 Main.seval("using SciMLBase")
+Main.seval("using Sundials")
 import numpy as np
 import scipy.linalg
 import scipy.optimize as opt
 
 import rmgpy.constants as constants
 from rmgpy.pdep.me import generate_full_me_matrix, states_to_configurations
+from rmgpy.rmg.reactors import to_julia
 
 
 def get_initial_condition(network, x0, indices):
@@ -80,30 +82,36 @@ def get_initial_condition(network, x0, indices):
 
 
 def solve_me(M, p0, t):
-    f = Main.eval(
+    f = Main.seval(
         """
-function f(u, M, t)
-    return M*u
+function f(du, u, M, t)
+    du .= M * u
+    return du
 end"""
     )
-    jac = Main.eval(
+    jac = Main.seval(
         """
-function jac(u, M, t)
-    return M
+function jac(J, u, M, t)
+    J .= M
+    return J
 end"""
     )
+    p0 = to_julia(p0)
+    M = to_julia(M)
     tspan = (0.0, t)
     fcn = Main.ODEFunction(f, jac=jac)
     prob = Main.ODEProblem(fcn, p0, tspan, M)
-    sol = Main.solve(prob, solver=Main.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
+    sol = Main.solve(prob, Main.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
     return sol
 
 
 def solve_me_fcns(f, jac, M, p0, t):
+    p0 = to_julia(p0)
+    M = to_julia(M)
     tspan = (0.0, t)
     fcn = Main.ODEFunction(f, jac=jac)
     prob = Main.ODEProblem(fcn, p0, tspan, M)
-    sol = Main.solve(prob, solver=Main.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
+    sol = Main.solve(prob, Main.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
     return sol
 
 
@@ -145,16 +153,18 @@ def get_rate_coefficients_SLS(network, T, P, method="mexp", neglect_high_energy_
     tau = np.abs(1.0 / fastest_reaction)
 
     if method == "ode":
-        f = Main.eval(
+        f = Main.seval(
             """
-function f(u,M,t)
-    return M*u
+function f(du, u, M, t)
+    du .= M * u
+    return du
 end"""
         )
-        jac = Main.eval(
+        jac = Main.seval(
             """
-function jac(u,M,t)
-    return M
+function jac(J, u, M, t)
+    J .= M
+    return J
 end"""
         )
 
