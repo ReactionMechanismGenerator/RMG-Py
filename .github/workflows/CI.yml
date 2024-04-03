@@ -151,8 +151,8 @@ jobs:
       - name: Install and link Julia dependencies
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         run: |
-          export JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba
           which julia
+          export JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba
           julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add("SciMLBase"); Pkg.add("Sundials"); Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
 
       - name: Install Q2DTor
