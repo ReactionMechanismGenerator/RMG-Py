@@ -153,7 +153,7 @@ jobs:
         run: |
           export JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba
           which julia
-          julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add("SciMLBase"); Pkg.add("Sundials"); Pkg.add(PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
+          julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add("SciMLBase"); Pkg.add("Sundials"); Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
 
       - name: Install Q2DTor
         run: echo "" | make q2dtor
