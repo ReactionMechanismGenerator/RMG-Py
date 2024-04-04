@@ -263,6 +263,10 @@ def check_for_same_reactants(reactants):
                 same_reactants = 2
             elif reactants[1].is_isomorphic(reactants[2]):
                 same_reactants = 2
+    elif len(reactants) > 3:
+        raise ValueError('Cannot check for duplicate reactants if provided number of reactants is greater than 3. ' 
+                         'Got: {} reactants'.format(len(reactants))) 
+        
     return reactants, same_reactants
 
 def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kinetics_database=None,
