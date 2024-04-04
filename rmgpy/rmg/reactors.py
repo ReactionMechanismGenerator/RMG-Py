@@ -61,8 +61,13 @@ from rmgpy.data.kinetics.depository import DepositoryReaction
 def to_julia(obj):
     if isinstance(obj, dict):
         return Main.PythonCall.pyconvert(Main.Dict, obj)
-    elif isinstance(obj, list) or isinstance(obj, np.ndarray):
-        return Main.PythonCall.pyconvert(Main.Array, obj)
+    elif isinstance(obj, list):
+        return Main.PythonCall.pyconvert(Main.Vector, obj)
+    elif  isinstance(obj, np.ndarray):
+        if len(obj.shape) == 1:
+            return Main.PythonCall.pyconvert(Main.Vector, obj)
+        else:
+            return Main.PythonCall.pyconvert(Main.Matrix, obj)
     else:
         return obj
 
@@ -600,7 +605,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         Tmax = obj.Tmax.value_si
         Pmin = obj.Pmin.value_si
         Pmax = obj.Pmax.value_si
-        coeffs = to_julia(obj.coeffs.value_si.tolist())
+        coeffs = to_julia(obj.coeffs.value_si)
         return rms.Chebyshev(coeffs, Tmin, Tmax, Pmin, Pmax)
     elif isinstance(obj, ThirdBody):
         arrstr = arrhenius_to_julia_string(obj.arrheniusLow)
