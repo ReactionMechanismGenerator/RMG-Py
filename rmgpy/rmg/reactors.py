@@ -38,6 +38,7 @@ import itertools
 import juliacall
 from juliacall import Main
 Main.seval("using PythonCall")
+Main.seval("using Sundials")
 rms = juliacall.newmodule("RMS")
 rms.seval("using ReactionMechanismSimulator")
 
@@ -446,7 +447,7 @@ class Reactor:
             model_settings.tol_rxn_to_core_deadend_radical,
             atol=simulator_settings.atol,
             rtol=simulator_settings.rtol,
-            solver=rms.ReactionMechanismSimulator.Sundials.CVODE_BDF(),
+            solver=Main.Sundials.CVODE_BDF(),
         )
 
         return (
@@ -492,7 +493,7 @@ class ConstantTLiquidSurfaceReactor(Reactor):
         surf = rms.IdealSurface(surf.species, surf.reactions, surf.site_density, name="surface")
         liq_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in liq.species]]
         cat_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in surf.species]]
-        domainliq, y0liq, pliq = rms.ConstantTVDomain(phase=liq, initialconds=to_julia(self.initial_conditions["liquid"]), constantspecies=liq_constant_species)
+        domainliq, y0liq, pliq = rms.ConstantTVDomain(phase=liq, initialconds=to_julia(self.initial_conditions["liquid"]), constantspecies=to_julia(liq_constant_species))
         domaincat, y0cat, pcat = rms.ConstantTAPhiDomain(
             phase=surf, initialconds=to_julia(self.initial_conditions["surface"]), constantspecies=cat_constant_species
         )
@@ -536,14 +537,14 @@ class ConstantTVLiquidReactor(Reactor):
         """
         phase = phase_system.phases["Default"]
         liq = rms.IdealDiluteSolution(phase.species, phase.reactions, phase.solvent)
-        domain, y0, p = rms.ConstantTVDomain(phase=liq, initialconds=to_julia(self.initial_conditions), constantspecies=self.const_spc_names)
+        domain, y0, p = rms.ConstantTVDomain(phase=liq, initialconds=to_julia(self.initial_conditions), constantspecies=to_julia(self.const_spc_names))
 
         interfaces = []
 
         if self.inlet_conditions:
             inlet_conditions = {key: value for (key, value) in self.inlet_conditions.items() if key != "F"}
             total_molar_flow_rate = self.inlet_conditions["F"]
-            inlet = rms.Inlet(domain, inlet_conditions, Main.seval("x->" + str(total_molar_flow_rate)))
+            inlet = rms.Inlet(domain, to_julia(inlet_conditions), Main.seval("x->" + str(total_molar_flow_rate)))
             interfaces.append(inlet)
 
         if self.outlet_conditions:
