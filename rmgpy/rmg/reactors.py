@@ -495,7 +495,7 @@ class ConstantTLiquidSurfaceReactor(Reactor):
         cat_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in surf.species]]
         domainliq, y0liq, pliq = rms.ConstantTVDomain(phase=liq, initialconds=to_julia(self.initial_conditions["liquid"]), constantspecies=to_julia(liq_constant_species))
         domaincat, y0cat, pcat = rms.ConstantTAPhiDomain(
-            phase=surf, initialconds=to_julia(self.initial_conditions["surface"]), constantspecies=cat_constant_species
+            phase=surf, initialconds=to_julia(self.initial_conditions["surface"]), constantspecies=to_julia(cat_constant_species),
         )
         if interface.reactions == []:
             inter, pinter = rms.ReactiveInternalInterfaceConstantTPhi(
