@@ -200,13 +200,11 @@ Both <cite>node</cite> and <cite>node_other</cite> must be Entry types with item
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.KineticsFamily.calculate_degeneracy">
-<span class="sig-name descname"><span class="pre">calculate_degeneracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.calculate_degeneracy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calculate_degeneracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resonance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.calculate_degeneracy" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a <cite>reaction</cite>  with <cite>Molecule</cite> or <cite>Species</cite> objects given in the direction in which
-the kinetics are defined, compute the reaction-path degeneracy.</p>
+the kinetics are defined, compute the reaction-path degeneracy. Can specify whether to consider resonance.</p>
 <p>This method by default adjusts for double counting of identical reactants.
-This should only be adjusted once per reaction. To not adjust for
-identical reactants (since you will be reducing them later in the algorithm), add
-<cite>ignoreSameReactants= True</cite> to this method.</p>
+This should only be adjusted once per reaction.</p>
 </dd></dl>
 
 <dl class="py method">
