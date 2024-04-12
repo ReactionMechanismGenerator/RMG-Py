@@ -995,6 +995,7 @@ all of RMG's reaction families. ::
         maximumCarbeneRadicals=0,
         maximumIsotopicAtoms=2,
         allowSingletO2 = False,
+        speciesCuttingThreshold=20
     )
 
 An additional flag ``allowed`` can be set to allow species
@@ -1004,6 +1005,9 @@ products that form.
 
 By default, the ``allowSingletO2`` flag is set to ``False``.  See :ref:`representing_oxygen` for more information.
 
+Note that ``speciesCuttingThreshold`` is set by default to 20 heavy atoms. This means that if a species containing 
+20 or more heavy atoms is generated, it will be automatically split into fragments to save computational resources. 
+If fragments are not desired, the ``speciesCuttingThreshold`` may be set to an arbitrarily large number.
 
 Staging
 ========
