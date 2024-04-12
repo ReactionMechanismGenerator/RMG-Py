@@ -783,6 +783,8 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         productinds = [species_names.index(spc.label) for spc in obj.products]
         reactants = [rms_species_list[i] for i in reactantinds]
         products = [rms_species_list[i] for i in productinds]
+        if isinstance(obj.kinetics, SurfaceChargeTransfer):
+            obj.set_reference_potential(obj.kinetics._T0.value_si)
         kinetics = to_rms(obj.kinetics, species_names=species_names, rms_species_list=rms_species_list, rmg_species=rmg_species)
         radchange = sum([spc.molecule[0].multiplicity-1 for spc in obj.products]) - sum([spc.molecule[0].multiplicity-1 for spc in obj.reactants])
         electronchange = -sum([spc.molecule[0].get_net_charge() for spc in obj.products]) + sum([spc.molecule[0].get_net_charge() for spc in obj.reactants])
