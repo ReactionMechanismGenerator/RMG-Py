@@ -995,7 +995,7 @@ all of RMG's reaction families. ::
         maximumCarbeneRadicals=0,
         maximumIsotopicAtoms=2,
         allowSingletO2 = False,
-        speciesCuttingThreshold=20
+        speciesCuttingThreshold=20,
     )
 
 An additional flag ``allowed`` can be set to allow species
