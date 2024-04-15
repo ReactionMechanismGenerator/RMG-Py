@@ -953,6 +953,7 @@ all of RMG’s reaction families.</p>
     <span class="n">maximumCarbeneRadicals</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">maximumIsotopicAtoms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">allowSingletO2</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">speciesCuttingThreshold</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -961,6 +962,9 @@ from either the input file, seed mechanisms, or reaction libraries to bypass the
 Note that this should be done with caution, since the constraints will still apply to subsequent
 products that form.</p>
 <p>By default, the <code class="docutils literal notranslate"><span class="pre">allowSingletO2</span></code> flag is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.  See <a class="reference internal" href="species.html#representing-oxygen"><span class="std std-ref">Representing Oxygen</span></a> for more information.</p>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">speciesCuttingThreshold</span></code> is set by default to 20 heavy atoms. This means that if a species containing
+20 or more heavy atoms is generated, it will be automatically split into fragments to save computational resources.
+If fragments are not desired, the <code class="docutils literal notranslate"><span class="pre">speciesCuttingThreshold</span></code> may be set to an arbitrarily large number.</p>
 </section>
 <section id="staging">
 <h2><span class="section-number">4.14. </span>Staging<a class="headerlink" href="#staging" title="Permalink to this heading">¶</a></h2>
