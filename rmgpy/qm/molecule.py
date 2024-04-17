@@ -409,7 +409,23 @@ class QMMolecule(object):
         parser.logger.setLevel(
             logging.ERROR
         )  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-
+parser.molmass = None # give it an attribute and it won't delete it, leaving it on the parser object
+parser.rotcons = (  # for cclib < 1.8.0
+    []
+)
+parser.rotconsts = (  # for cclib >= 1.8.0
+    []
+)
+cclib_data = parser.parse()  # fills in either parser.rotcons or parser.rotconsts but not both
+assert bool(parser.rotconsts) != bool(parser.rotcons)
+if parser.rotcons:  # for cclib < 1.8.0
+    cclib_data.rotcons = (
+        parser.rotcons
+    )
+else:  # for cclib >= 1.8.0
+    cclib_data.rotconsts = (
+        parser.rotconsts
+    )
         parser.molmass = None  # give it an attribute and it won't delete it, leaving it on the parser object
         cclib_data = parser.parse()
 
