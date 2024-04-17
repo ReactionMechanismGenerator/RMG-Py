@@ -16,6 +16,7 @@
 #   made dependency list more explicit (@JacksonBurns).
 # - October 16, 2023 Switched RDKit and descripatastorus to conda-forge,
 #   moved diffeqpy to pip and (temporarily) removed chemprop
+# - April 17, 2024 Limit versions of cclib at advice of maintainers.
 #
 name: rmg_env
 channels:
@@ -44,7 +45,8 @@ dependencies:
   - coolprop
   - cantera::cantera=2.6
   - conda-forge::mopac
-  - conda-forge::cclib >=1.6.3,<1.8.0
+  # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2639#issuecomment-2050292972
+  - conda-forge::cclib >=1.6.3,<1.8.0,<2
   - conda-forge::openbabel >= 3
   - conda-forge::rdkit >=2022.09.1
 
