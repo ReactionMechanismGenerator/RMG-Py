@@ -426,20 +426,6 @@ else:  # for cclib >= 1.8.0
     cclib_data.rotconsts = (
         parser.rotconsts
     )
-        parser.molmass = None  # give it an attribute and it won't delete it, leaving it on the parser object
-        cclib_data = parser.parse()
-
-        # for bacwards compatibility with cclib <1.6
-        if not hasattr(cclib_data, "rotconsts"):
-             # this hack required because rotconsts not part of a default cclib data object
-            parser.rotconsts = (
-                []
-            )  # give it an attribute and it won't delete it, leaving it on the parser object
-
-            cclib_data.rotconsts = (
-                parser.rotconsts
-            ) 
-
         radical_number = self.molecule.get_radical_count()
         cclib_data.molmass = (
             parser.molmass
