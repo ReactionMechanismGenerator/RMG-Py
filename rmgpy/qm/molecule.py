@@ -408,7 +408,7 @@ class QMMolecule(object):
         parser = self.get_parser(self.output_file_path)
         parser.logger.setLevel(
             logging.ERROR
-        )  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
+        )  # cf. https://cclib.github.io/index.html#how-to-use-cclib
         parser.molmass = None # give it an attribute and it won't delete it, leaving it on the parser object
         parser.rotcons = (  # for cclib < 1.8.0
             []
