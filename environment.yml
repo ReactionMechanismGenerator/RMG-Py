@@ -46,7 +46,7 @@ dependencies:
   - cantera::cantera=2.6
   - conda-forge::mopac
   # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2639#issuecomment-2050292972
-  - conda-forge::cclib >=1.6.3,<1.8.0,<2
+  - conda-forge::cclib >=1.6.3,<2
   - conda-forge::openbabel >= 3
   - conda-forge::rdkit >=2022.09.1
 
