@@ -635,7 +635,10 @@ class CoreEdgeReactionModel:
                     display(new_species)  # if running in IPython --pylab mode, draws the picture!
 
                 # Add new species
-                reactions_moved_from_edge = self.add_species_to_core(new_species)
+                if new_species not in self.core.species:
+                    reactions_moved_from_edge = self.add_species_to_core(new_species)
+                else:
+                    reactions_moved_from_edge = []
 
             elif isinstance(new_object, tuple) and isinstance(new_object[0], PDepNetwork) and self.pressure_dependence:
                 pdep_network, new_species = new_object
