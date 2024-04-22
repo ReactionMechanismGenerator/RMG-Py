@@ -951,7 +951,7 @@ def load_transport_file(path, species_dict, skip_missing_species=False):
                         continue
                 species = species_dict[label]
                 species.transport_data = TransportData(
-                    shapeIndex=int(data[0]),
+                    shapeIndex=int(float(data[0])),
                     sigma=(float(data[2]), 'angstrom'),
                     epsilon=(float(data[1]), 'K'),
                     dipoleMoment=(float(data[3]), 'De'),
@@ -1035,15 +1035,16 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
     # Read in the thermo data from the thermo file        
     if thermo_path:
         with open(thermo_path, 'r') as f:
-            line0 = f.readline()
+            line0 = None
             while line0 != '':
-                line = remove_comment_from_line(line0)[0]
-                line = line.strip()
+                previous_line = f.tell()
+                line0 = f.readline()
+                line = remove_comment_from_line(line0)[0].strip()
                 if 'THERM' in line.upper():
-                    f.seek(-len(line0), 1)
+                    f.seek(previous_line)
                     read_thermo_block(f, species_dict)
                     break
-                line0 = f.readline()
+                
     # Index the reactions now to have identical numbering as in Chemkin
     index = 0
     for reaction in reaction_list:

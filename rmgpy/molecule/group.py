@@ -806,9 +806,9 @@ class GroupBond(Edge):
                 values.append('B')
             elif value == 0:
                 values.append('vdW')
-            elif value == 0.1:
+            elif abs(value - 0.1) < 1e-4:
                 values.append('H')
-            elif value == 0.05:
+            elif abs(value - 0.05) < 1e-4:
                 values.append('R')
             else:
                 raise TypeError('Bond order number {} is not hardcoded as a string'.format(value))
@@ -939,6 +939,23 @@ class GroupBond(Edge):
                 return False
         else:
             return abs(self.order[0]) <= 1e-9 and len(self.order) == 1
+
+            
+    def is_reaction_bond(self, wildcards=False):
+        """
+        Return ``True`` if the bond represents a van der Waals bond or ``False`` if
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are van der Waals.
+        """
+        if wildcards:
+            for order in self.order:
+                if abs(order[0] - 0.05) <= 1e-9:
+                    return True
+            else:
+                return False
+        else:
+            return abs(self.order[0]-0.05) <= 1e-9 and len(self.order) == 1
 
     def is_benzene(self, wildcards=False):
         """
@@ -1375,10 +1392,12 @@ class Group(Graph):
             atm.reg_dim_atm = [[], []]
             atm.reg_dim_u = [[], []]
             atm.reg_dim_r = [[], []]
+            atm.reg_dim_site = [[],[]]
+            atm.reg_dim_morphology = [[],[]]
         for bd in self.get_all_edges():
             bd.reg_dim = [[], []]
 
-    def get_extensions(self, r=None, basename='', atm_ind=None, atm_ind2=None, n_splits=None):
+    def get_extensions(self, r=None, r_bonds=None, r_un=None, basename='', atm_ind=None, atm_ind2=None, n_splits=None):
         """
         generate all allowed group extensions and their complements
         note all atomtypes except for elements and r/r!H's must be removed
@@ -1387,7 +1406,10 @@ class Group(Graph):
                        extents=list, RnH=list, typ=list)
 
         extents = []
-
+        if r_bonds is None:
+            r_bonds = [1, 1.5, 2, 3, 4]
+        if r_un is None:
+            r_un = [0, 1, 2, 3]
         if n_splits is None:
             n_splits = len(self.split())
 
@@ -1396,11 +1418,12 @@ class Group(Graph):
             r = elements.bde_elements  # set of possible r elements/atoms
             r = [ATOMTYPES[x] for x in r]
 
-        r_bonds = [1, 2, 3, 1.5, 4]
-        r_un = [0, 1, 2, 3]
-
-        RnH = r[:]
-        RnH.remove(ATOMTYPES['H'])
+        R = r[:]
+        if ATOMTYPES['X'] in R:
+            R.remove(ATOMTYPES['X'])
+        RnH = R[:]
+        if ATOMTYPES['H'] in RnH:
+            RnH.remove(ATOMTYPES['H'])
 
         atoms = self.atoms
         if atm_ind is None:
@@ -1409,9 +1432,12 @@ class Group(Graph):
                 if atm.reg_dim_atm[0] == []:
                     if len(typ) == 1:
                         if typ[0].label == 'R':
-                            extents.extend(self.specify_atom_extensions(i, basename, r))  # specify types of atoms
+                            extents.extend(self.specify_atom_extensions(i, basename, R))  # specify types of atoms
                         elif typ[0].label == 'R!H':
                             extents.extend(self.specify_atom_extensions(i, basename, RnH))
+                        elif typ[0].label == 'Rx':
+                            extents.extend(self.specify_atom_extensions(i, basename, r))
+
                     else:
                         extents.extend(self.specify_atom_extensions(i, basename, typ))
                 else:
@@ -1420,6 +1446,9 @@ class Group(Graph):
                             extents.extend(
                                 self.specify_atom_extensions(i, basename, atm.reg_dim_atm[0]))  # specify types of atoms
                         elif typ[0].label == 'R!H':
+                            extents.extend(
+                                self.specify_atom_extensions(i, basename, list(set(atm.reg_dim_atm[0]) & set(R))))
+                        elif typ[0].label == 'Rx':
                             extents.extend(
                                 self.specify_atom_extensions(i, basename, list(set(atm.reg_dim_atm[0]) & set(r))))
                     else:
@@ -1473,9 +1502,11 @@ class Group(Graph):
             if atm.reg_dim_atm[0] == []:
                 if len(typ) == 1:
                     if typ[0].label == 'R':
-                        extents.extend(self.specify_atom_extensions(i, basename, r))  # specify types of atoms
+                        extents.extend(self.specify_atom_extensions(i, basename, R))  # specify types of atoms
                     elif typ[0].label == 'R!H':
                         extents.extend(self.specify_atom_extensions(i, basename, RnH))
+                    elif typ[0].label == 'Rx':
+                        extents.extend(self.specify_atom_extensions(i, basename, r))
                 else:
                     extents.extend(self.specify_atom_extensions(i, basename, typ))
             else:
@@ -1702,7 +1733,8 @@ class Group(Graph):
         grps = []
         label_list = []
         Rbset = set(r_bonds)
-        bdict = {1: '-', 2: '=', 3: '#', 1.5: '-=', 4: '$'}
+        bdict = {1: '-', 2: '=', 3: '#', 1.5: '-=', 4: '$', 0.05: '..', 0: '--'}
+
         for bd in r_bonds:
             grp = deepcopy(self)
             grpc = deepcopy(self)
@@ -1738,8 +1770,14 @@ class Group(Graph):
             else:
                 atom_type_j_str = atom_type_j[0].label
 
+            b = None 
+            for v in bdict.keys():
+                if abs(v - bd) < 1e-4:
+                    b = bdict[v]
+
+
             grps.append((grp, grpc,
-                         basename + '_Sp-' + str(i + 1) + atom_type_i_str + bdict[bd] + str(j + 1) + atom_type_j_str,
+                        basename + '_Sp-' + str(i + 1) + atom_type_i_str + b + str(j + 1) + atom_type_j_str,
                          'bondExt', (i, j)))
 
         return grps
