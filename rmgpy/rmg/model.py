@@ -635,7 +635,10 @@ class CoreEdgeReactionModel:
                     display(new_species)  # if running in IPython --pylab mode, draws the picture!
 
                 # Add new species
-                reactions_moved_from_edge = self.add_species_to_core(new_species)
+                if new_species not in self.core.species:
+                    reactions_moved_from_edge = self.add_species_to_core(new_species)
+                else:
+                    reactions_moved_from_edge = []
 
             elif isinstance(new_object, tuple) and isinstance(new_object[0], PDepNetwork) and self.pressure_dependence:
                 pdep_network, new_species = new_object
@@ -1582,7 +1585,8 @@ class CoreEdgeReactionModel:
 
         self.new_reaction_list = []
         self.new_species_list = []
-
+        edge_species_to_move = []
+        
         num_old_core_species = len(self.core.species)
         num_old_core_reactions = len(self.core.reactions)
 
@@ -1611,6 +1615,9 @@ class CoreEdgeReactionModel:
                     reversible=rxn.reversible,
                 )
             r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.new_reaction_list
+            for s in rxn.reactants+rxn.products:
+                if s in self.edge.species and s not in edge_species_to_move:
+                    edge_species_to_move.append(s)
             if getattr(r.kinetics, "coverage_dependence", None):
                 self.process_coverage_dependence(r.kinetics)
             if not isNew:
@@ -1661,7 +1668,7 @@ class CoreEdgeReactionModel:
                         " explicitly allow it.".format(spec.label, seed_mechanism.label)
                     )
 
-        for spec in self.new_species_list:
+        for spec in edge_species_to_move+self.new_species_list:
             if spec.reactive:
                 submit(spec, self.solvent_name)
             if vapor_liquid_mass_transfer.enabled:
