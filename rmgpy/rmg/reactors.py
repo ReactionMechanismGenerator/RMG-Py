@@ -60,6 +60,19 @@ from rmgpy.data.kinetics.depository import DepositoryReaction
 
 
 def to_julia(obj):
+    """
+    Convert python object to julia object. If the object is a Python dict, it will be converted to a Julia Dict. If the object is a Python list, it will be converted to a Julia Vector. If the object is a 1-d numpy array, it will be converted to a Julia Array. If the object is a n-d (n > 1) numpy array, it will be converted to a Julia Matrix. Otherwise, the object will be returned as is.
+
+    Parameters
+    ----------
+    obj : dict | list | np.ndarray | object
+        The python object to convert
+
+    Returns
+    -------
+    object : Main.Dict | Main.Vector | Main.Matrix | object
+        The julia object
+    """
     if isinstance(obj, dict):
         return Main.PythonCall.pyconvert(Main.Dict, obj)
     elif isinstance(obj, list):
