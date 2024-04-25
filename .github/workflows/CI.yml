@@ -150,8 +150,9 @@ jobs:
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
+        # JULIA_CONDAPKG_EXE points to the existing conda/mamba to avoid JuliaCall from installing their own. See https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-a-Conda-environment.
         run: |
-          which julia
+          juliaup status
           export JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba
           julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add("SciMLBase"); Pkg.add("Sundials"); Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
 
