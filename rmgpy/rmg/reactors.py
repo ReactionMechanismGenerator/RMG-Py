@@ -180,8 +180,8 @@ class PhaseSystem:
             for i, rxn in enumerate(interface.reactions):
                 if (
                     (spc in rxn.reactants or spc in rxn.products)
-                    and all([spec.name in phasesys.species_dict for spec in rxn.reactants])
-                    and all([spec.name in phasesys.species_dict for spec in rxn.products])
+                    and all(spec.name in phasesys.species_dict for spec in rxn.reactants)
+                    and all(spec.name in phasesys.species_dict for spec in rxn.products)
                 ):
                     rxnlist.append(rxn)
 
