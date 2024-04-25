@@ -76,7 +76,7 @@ def to_julia(obj):
     if isinstance(obj, dict):
         return Main.PythonCall.pyconvert(Main.Dict, obj)
     elif isinstance(obj, (list, np.ndarray)):
-        if obj.getattr(shape, False) and len(obj.shape) > 1:
+        if obj.getattr("shape", False) and len(obj.shape) > 1:
             return Main.PythonCall.pyconvert(Main.Matrix, obj)
         return Main.PythonCall.pyconvert(Main.Vector, obj)
     else:
