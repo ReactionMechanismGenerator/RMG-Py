@@ -162,8 +162,11 @@ class PhaseSystem:
 
         rxnlist = []
         for i, rxn in enumerate(self.phases[phase_label].reactions):
-            if (spc.name in [spec.name for spec in Main.pylist(rxn.reactants) + Main.pylist(rxn.products)]) and all(
-                [spec.name in phasesys.species_dict for spec in Main.pylist(rxn.reactants) + Main.pylist(rxn.products)]
+            reactants = Main.pylist(rxn.reactants)
+            products = Main.pylist(rxn.products)
+            reacs_and_prods = reactants + products
+            if (spc.name in [spec.name for spec in reacs_and_prods]) and all(
+                [spec.name in phasesys.species_dict for spec in reacs_and_prods]
             ):
                 rxnlist.append(rxn)
 
