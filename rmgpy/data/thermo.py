@@ -2064,8 +2064,12 @@ class ThermoDatabase(object):
                                        "not {0}".format(thermo_data_sat))
                 thermo_data_sat = thermo_data_sat[0]
         else:
-            thermo_data_sat = stable_thermo_estimator(saturated_struct)
-
+            try:
+                thermo_data_sat = stable_thermo_estimator(saturated_struct)
+            except DatabaseError as e:
+                logging.error(f"Trouble finding thermo data for saturated structure {saturated_struct.to_adjacency_list()}"
+                              f"when trying to evaluate radical {molecule.to_adjacency_list()} via HBI.")
+                raise e
         if thermo_data_sat is None:
             # We couldn't get thermo for the saturated species from libraries, ml, or qm
             # However, if we were trying group additivity, this could be a problem
@@ -2570,9 +2574,10 @@ class ThermoDatabase(object):
         node = node0
         while node is not None and node.data is None:
             node = node.parent
-        if node is None:
+        if node is None: 
             raise DatabaseError(f'Unable to determine thermo parameters for atom {atom} in molecule {molecule}: '
-                                f'no data for node {node0} or any of its ancestors in database {database.label}.')
+                                f'no data for node {node0} or any of its ancestors in database {database.label}.\n' +
+                                molecule.to_adjacency_list())
 
         data = node.data
         comment = node.label

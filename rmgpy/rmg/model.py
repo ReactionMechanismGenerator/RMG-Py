@@ -815,7 +815,11 @@ class CoreEdgeReactionModel:
         Makes a reaction and decides where to put it: core, edge, or PDepNetwork.
         """
         for rxn in new_reactions:
-            rxn, is_new = self.make_new_reaction(rxn, generate_thermo=generate_thermo, generate_kinetics=generate_kinetics)
+            try:
+                rxn, is_new = self.make_new_reaction(rxn, generate_thermo=generate_thermo, generate_kinetics=generate_kinetics)
+            except Exception as e:
+                logging.error(f"Error when making reaction {rxn} from {rxn.family}")
+                raise e
             if rxn is None:
                 # Skip this reaction because there was something wrong with it
                 continue
