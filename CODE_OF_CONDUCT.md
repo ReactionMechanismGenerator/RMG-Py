@@ -1,4 +1,4 @@
-# RMG Code of Conduct
+# RMG Code of Conduct :+1:
 
 ## Our Pledge
 
