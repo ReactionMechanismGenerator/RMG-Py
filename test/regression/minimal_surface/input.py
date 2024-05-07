@@ -110,7 +110,7 @@ options(
     units='si',
     generateOutputHTML=False,
     generatePlots=False, # Enable to make plots of core and edge size etc. But takes a lot of the total runtime!
-    saveEdgeSpecies=False,
+    saveEdgeSpecies=True,
     saveSimulationProfiles=False,
 )
 generatedSpeciesConstraints(
