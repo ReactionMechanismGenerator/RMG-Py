@@ -16,7 +16,8 @@
 #   made dependency list more explicit (@JacksonBurns).
 # - October 16, 2023 Switched RDKit and descripatastorus to conda-forge,
 #   moved diffeqpy to pip and (temporarily) removed chemprop
-#
+# - May 14, 2024 Removed diffeqpy by switching to call SciMLBase and Sundials using JuliaCall
+
 name: rmg_env
 channels:
   - defaults
