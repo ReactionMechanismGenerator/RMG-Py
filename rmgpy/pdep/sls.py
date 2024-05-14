@@ -33,8 +33,8 @@ and implementing the SLS master equation reduction method
 """
 
 from juliacall import Main
-Main.seval("using SciMLBase")
-Main.seval("using Sundials")
+Main.seval("using ReactionMechanismSimulator.SciMLBase")
+Main.seval("using ReactionMechanismSimulator.Sundials")
 import numpy as np
 import scipy.linalg
 import scipy.optimize as opt

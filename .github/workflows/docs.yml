@@ -65,7 +65,7 @@ jobs:
         run: |
           which julia
           export JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba
-          julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add("SciMLBase"); Pkg.add("Sundials"); Pkg.add(PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
+          julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
 
       - name: Checkout gh-pages Branch
         uses: actions/checkout@v2

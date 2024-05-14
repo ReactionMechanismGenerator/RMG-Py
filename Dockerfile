@@ -64,7 +64,7 @@ ENV PATH="$RUNNER_CWD/RMG-Py:$PATH"
 # setting this env variable fixes an issue with Julia precompilation on Windows
 ENV JULIA_CPU_TARGET="x86-64,haswell,skylake,broadwell,znver1,znver2,znver3,cascadelake,icelake-client,cooperlake,generic"
 RUN make && \
-    julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add("SciMLBase"); Pkg.add("Sundials"); Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
+    julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
 
 # RMG-Py should now be installed and ready - trigger precompilation and test run
 RUN python rmg.py examples/rmg/minimal/input.py
