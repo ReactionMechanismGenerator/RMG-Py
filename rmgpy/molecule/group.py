@@ -1013,7 +1013,7 @@ class GroupBond(Edge):
         else:
             return abs(self.order[0]) <= 1e-9 and len(self.order) == 1
 
-            
+
     def is_reaction_bond(self, wildcards=False):
         """
         Return ``True`` if the bond represents a van der Waals bond or ``False`` if
@@ -1851,7 +1851,7 @@ class Group(Graph):
             else:
                 atom_type_j_str = atom_type_j[0].label
 
-            b = None 
+            b = None
             for v in bdict.keys():
                 if abs(v - bd) < 1e-4:
                     b = bdict[v]
@@ -2994,6 +2994,8 @@ class Group(Graph):
                                     'P0sc', 'P1sc', 'P1dc', 'P5sc',
                                     'S0sc', 'S2sc', 'S2dc', 'S2tc', 'S4sc', 'S4dc', 'S4tdc', 'S6sc', 'S6dc', 'S6tdc']
                 if atom.charge > 0 and any([group_atom.atomtype[0] is ATOMTYPES[x] or ATOMTYPES[x].is_specific_case_of(group_atom.atomtype[0]) for x in positive_charged]):
+                    pass
+                elif atom.charge < 0 and any([group_atom.atomtype[0] is ATOMTYPES[x] or ATOMTYPES[x].is_specific_case_of(group_atom.atomtype[0]) for x in negative_charged]):
                     pass
                 elif atom.charge in group_atom.atomtype[0].charge:
                     # declared charge in original group is same as new charge

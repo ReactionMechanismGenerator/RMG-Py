@@ -601,18 +601,18 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         A = obj._A.value_si
         if obj._T0.value_si != 1.0:
             A /= ((obj._T0.value_si) ** obj._n.value_si)
-        if obj._V0.value_si != 0.0:
-            A *= np.exp(obj._alpha.value_si*obj._electrons.value_si*constants.F*obj.V0.value_si)
+        # if obj._V0.value_si != 0.0:
+        #     A *= np.exp(obj._alpha.value_si*obj._electrons.value_si*constants.F*obj.V0.value_si/constants.R/300)
         n = obj._n.value_si
         Ea = obj._Ea.value_si
-        q = obj._alpha.value_si*obj._electrons.value_si
+        q = obj._alpha.value_si*obj._electrons.value_si    
         return rms.Arrheniusq(A, n, Ea, q, rms.EmptyRateUncertainty())
     elif isinstance(obj, SurfaceChargeTransfer):
         A = obj._A.value_si
         if obj._T0.value_si != 1.0:
             A /= ((obj._T0.value_si) ** obj._n.value_si)
-        if obj._V0.value_si != 0.0:
-            A *= np.exp(obj._alpha.value_si*obj._electrons.value_si*constants.F*obj.V0.value_si)
+        # if obj._V0.value_si != 0.0:
+        #     A *= np.exp(obj._alpha.value_si*obj._electrons.value_si*constants.F*obj.V0.value_si/constants.R/300)
         n = obj._n.value_si
         Ea = obj._Ea.value_si
         q = obj._alpha.value_si*obj._electrons.value_si
@@ -784,7 +784,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         reactants = [rms_species_list[i] for i in reactantinds]
         products = [rms_species_list[i] for i in productinds]
         if isinstance(obj.kinetics, SurfaceChargeTransfer):
-            obj.set_reference_potential(obj.kinetics._T0.value_si)
+            obj.set_reference_potential(300)
         kinetics = to_rms(obj.kinetics, species_names=species_names, rms_species_list=rms_species_list, rmg_species=rmg_species)
         radchange = sum([spc.molecule[0].multiplicity-1 for spc in obj.products]) - sum([spc.molecule[0].multiplicity-1 for spc in obj.reactants])
         electronchange = -sum([spc.molecule[0].get_net_charge() for spc in obj.products]) + sum([spc.molecule[0].get_net_charge() for spc in obj.reactants])
