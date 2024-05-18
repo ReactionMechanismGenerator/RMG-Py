@@ -62,6 +62,7 @@ class KineticsDatabase(object):
         self.recommended_families = {}
         self.families = {}
         self.libraries = {}
+        self.external_library_labels = {}
         self.library_order = []  # a list of tuples in the format ('library_label', LibraryType),
                                  # where LibraryType is set to either 'Reaction Library' or 'Seed'.
         self.local_context = {
@@ -227,7 +228,7 @@ class KineticsDatabase(object):
         The `path` points to the folder of kinetics libraries in the database,
         and the libraries should be in files like :file:`<path>/<library>.py`.
         """
-
+        self.external_library_labels = dict()
         if libraries is not None:
             for library_name in libraries:
                 library_file = os.path.join(path, library_name, 'reactions.py')
@@ -238,6 +239,7 @@ class KineticsDatabase(object):
                     library = KineticsLibrary(label=short_library_name)
                     library.load(library_file, self.local_context, self.global_context)
                     self.libraries[library.label] = library
+                    self.external_library_labels[library_name] = library.label
                 elif os.path.exists(library_file):
                     logging.info(f'Loading kinetics library {library_name} from {library_file}...')
                     library = KineticsLibrary(label=library_name)
