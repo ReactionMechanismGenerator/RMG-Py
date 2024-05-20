@@ -236,13 +236,17 @@ class Database(object):
             local_context[key] = value
 
         # Process the file
-        f = open(path, 'r')
+        with open(path, 'r') as f:
+            content = f.read()
         try:
-            exec(f.read(), global_context, local_context)
-        except Exception:
-            logging.error('Error while reading database {0!r}.'.format(path))
+            exec(content, global_context, local_context)
+        except Exception as e:
+            logging.exception(f'Error while reading database file {path}.')
+            line_number = e.__traceback__.tb_next.tb_lineno
+            logging.error(f'Error occurred at or near line {line_number} of {path}.')
+            lines = content.splitlines()
+            logging.error(f'Line: {lines[line_number - 1]}')
             raise
-        f.close()
 
         # Extract the database metadata
         self.name = local_context['name']
