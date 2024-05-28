@@ -679,6 +679,8 @@ cdef class ArrheniusBM(KineticsModel):
             lnA /= len(rxns)
             n /= len(rxns)
             E0 = min(E0, w0)
+            w0 = max(2 * E0, w0) # Expression only works if w0>2E0, and is insensitive to w0
+            self.w0 = (w0 * 0.001, 'kJ/mol')
             if E0 < 0:
                 E0 = w0 / 100.0
 
