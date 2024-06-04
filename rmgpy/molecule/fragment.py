@@ -1112,8 +1112,8 @@ class Fragment(Molecule):
                                     frag1_smi = frag1.replace("*", "R")
                                     frag2_smi = frag2.replace("*", "L")
                                 elif frag2_L > frag1_L and frag2_R <= frag1_R:
-                                    frag1_smi = frag1.replace("*", "R")
-                                    frag2_smi = frag2.replace("*", "L")
+                                    frag1_smi = frag1.replace("*", "L")
+                                    frag2_smi = frag2.replace("*", "R")
                                 elif frag2_R > frag1_R and frag2_L <= frag1_L:
                                     frag1_smi = frag1.replace("*", "R")
                                     frag2_smi = frag2.replace("*", "L")
