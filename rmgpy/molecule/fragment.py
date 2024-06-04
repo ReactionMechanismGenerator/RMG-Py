@@ -838,7 +838,7 @@ class Fragment(Molecule):
 
         return self
 
-    def cut_molecule(self, output_smiles=False, cut_through=True, size_threshold=None):
+    def cut_molecule(self, output_smiles=False, cut_through=True, size_threshold=5):
         """
         For given input, output a list of cut fragments (either string or Fragment).
         if output_smiles = True, the output list of fragments will be smiles.
