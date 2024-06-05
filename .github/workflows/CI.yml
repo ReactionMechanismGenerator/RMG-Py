@@ -215,13 +215,19 @@ jobs:
         run: mkdir stable_regression_results
 
       # Retrieve Stable Results for reference
+      - name : ChatGPT said this would work - Get most recent CI run ID
+        id: get-run-id
+        run: |
+          sudo apt-get install -y gh
+          run_id=$(gh run list -R ReactionMechanismGenerator/ReactionMechanismGenerator --workflow="Continuous Integration" --limit 1 --json run_id --jq '.[0].run_id')
+          echo "CI_RUN_ID=$run_id" >> $GITHUB_ENV
       - name: Retrieve Stable Regression Results
         if: ${{ env.REFERENCE_JOB == 'false' }}
         uses: actions/download-artifact@v4
         with:
         # this will search for the last successful execution of CI on main and download
         # the stable regression results
-          # run-id: need this?
+          run-id: ${{ env.CI_RUN_ID }}
           repository: ReactionMechanismGenerator/RMG-Py
           github-token:  ${{ secrets.GH_PAT }}
           name: stable_regression_results
