@@ -217,8 +217,9 @@ jobs:
       # Retrieve Stable Results for reference
       - name : ChatGPT said this would work - Get most recent CI run ID
         id: get-run-id
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          sudo apt-get install -y gh
           run_id=$(gh run list -R ReactionMechanismGenerator/ReactionMechanismGenerator --workflow="Continuous Integration" --limit 1 --json run_id --jq '.[0].run_id')
           echo "CI_RUN_ID=$run_id" >> $GITHUB_ENV
       - name: Retrieve Stable Regression Results
