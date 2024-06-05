@@ -220,7 +220,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          run_id=$(gh run list -R ReactionMechanismGenerator/ReactionMechanismGenerator --workflow="Continuous Integration" --limit 1 --json run_id --jq '.[0].run_id')
+          run_id=$(gh run list -R ReactionMechanismGenerator/ReactionMechanismGenerator --workflow="Continuous Integration" --limit 1 --json databaseId --jq '.[0].databaseId')
           echo "CI_RUN_ID=$run_id" >> $GITHUB_ENV
       - name: Retrieve Stable Regression Results
         if: ${{ env.REFERENCE_JOB == 'false' }}
