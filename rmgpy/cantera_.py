@@ -1,3 +1,38 @@
+#!/usr/bin/env python3
+
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2024 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
+
+"""
+This file defines functions for outputting the RMG generated mechanism to
+a yaml file that can be read by Cantera
+"""
+
+
 import os
 import yaml
 
@@ -21,7 +56,7 @@ def write_cantera(
 ):
     """
     Writes yaml file depending on the type of system (gas-phase, catalysis).
-    Writes beginning lines of yaml file, then uses yaml.dump(result_dict) to write species/reactions info. 
+    Writes beginning lines of yaml file, then uses yaml.dump(result_dict) to write species/reactions info.
     """
 
     # intro to file will change depending on the presence of surface species
@@ -69,9 +104,11 @@ def get_phases_elements_gas_only(spcs):
     """
     sorted_species = sorted(spcs, key=lambda spcs: spcs.index)
     species_to_write = [get_species_identifier(spec) for spec in sorted_species]
-    #make sure species with "[" or "]" is in quotes
-    species_to_write = [f"'{s}'" if '[' in s or '{' in s or ']' in s or '}' in s
-                          else s for s in species_to_write]
+    # make sure species with "[" or "]" is in quotes
+    species_to_write = [
+        f"'{s}'" if "[" in s or "{" in s or "]" in s or "}" in s else s
+        for s in species_to_write
+    ]
     phases_block = f"""
 phases:
 - name: gas
@@ -100,7 +137,7 @@ elements:
 
 def get_phases_elements_with_surface(spcs, surface_site_density):
     """
-    Yaml files with surface species begin with the following blocks of text, 
+    Yaml files with surface species begin with the following blocks of text,
     which includes TWO phases instead of just one.
     Returns 'phases' and 'elements' sections.
     """
@@ -117,18 +154,24 @@ def get_phases_elements_with_surface(spcs, surface_site_density):
         surface_species, key=lambda surface_species: surface_species.index
     )
 
-    surface_species_to_write = [get_species_identifier(s) for s in sorted_surface_species]
+    surface_species_to_write = [
+        get_species_identifier(s) for s in sorted_surface_species
+    ]
 
-    #make sure species with "[" or "]" is in quotes
-    surface_species_to_write = [f"'{s}'" if '[' in s or '{' in s or ']' in s or '}' in s
-                          else s for s in surface_species_to_write]
+    # make sure species with "[" or "]" is in quotes
+    surface_species_to_write = [
+        f"'{s}'" if "[" in s or "{" in s or "]" in s or "}" in s else s
+        for s in surface_species_to_write
+    ]
 
     sorted_gas_species = sorted(gas_species, key=lambda gas_species: gas_species.index)
-    gas_species_to_write = [get_species_identifier(s) for s in sorted_gas_species ]
+    gas_species_to_write = [get_species_identifier(s) for s in sorted_gas_species]
 
-    #make sure species with "[" or "]" is in quotes
-    gas_species_to_write = [f"'{s}'" if '[' in s or '{' in s or ']' in s or '}' in s
-                          else s for s in gas_species_to_write]
+    # make sure species with "[" or "]" is in quotes
+    gas_species_to_write = [
+        f"'{s}'" if "[" in s or "{" in s or "]" in s or "}" in s else s
+        for s in gas_species_to_write
+    ]
 
     phases_block = f"""
 phases:
@@ -168,6 +211,7 @@ elements:
 """
     return phases_block, elements_block
 
+
 def get_radicals(spc):
     if (
         spc.molecule[0].to_smiles() == "[O][O]"
@@ -179,7 +223,7 @@ def get_radicals(spc):
 
 def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None):
     """
-    For systems with surface species/reactions. 
+    For systems with surface species/reactions.
     Adds 'species', 'gas-reactions', and 'surface-reactions' to result_dict.
     """
     gas_rxns = []
@@ -215,7 +259,7 @@ def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None):
 
 def get_mech_dict_nonsurface(spcs, rxns, solvent="solvent", solvent_data=None):
     """
-    For gas-phase systems. 
+    For gas-phase systems.
     Adds 'species' and 'reactions' to result_dict.
     """
     names = [x.label for x in spcs]
@@ -268,8 +312,8 @@ def reaction_to_dicts(obj, spcs):
 def species_to_dict(obj, spc, names=None, label="solvent"):
     """
     Takes an RMG species object (spc), returns a list of dictionaries
-    for YAML properties. Also adds in the number of surface sites 
-    ('sites') to dictionary. 
+    for YAML properties. Also adds in the number of surface sites
+    ('sites') to dictionary.
     """
 
     result_dict = dict()
@@ -320,13 +364,15 @@ class CanteraWriter(object):
         make_output_subdirectory(output_directory, "cantera")
 
     def update(self, rmg):
+
         solvent_data = None
         if rmg.solvent:
             solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
-        surface_site_density = None
 
+        surface_site_density = None
         if rmg.reaction_model.surface_site_density:
             surface_site_density = rmg.reaction_model.surface_site_density.value_si
+
         write_cantera(
             rmg.reaction_model.core.species,
             rmg.reaction_model.core.reactions,
