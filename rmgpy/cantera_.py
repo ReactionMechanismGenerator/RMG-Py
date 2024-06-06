@@ -212,15 +212,6 @@ elements:
     return phases_block, elements_block
 
 
-def get_radicals(spc):
-    if (
-        spc.molecule[0].to_smiles() == "[O][O]"
-    ):  # treat oxygen as stable to improve radical analysis
-        return 0
-    else:
-        return spc.molecule[0].multiplicity - 1
-
-
 def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None):
     """
     For systems with surface species/reactions.
