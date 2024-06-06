@@ -51,7 +51,7 @@ env:
 
 jobs:
   build-osx:
-    runs-on: macos-latest
+    runs-on: macos-13
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     defaults:
