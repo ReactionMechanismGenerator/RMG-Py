@@ -63,7 +63,7 @@ jobs:
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
           miniforge-variant: Mambaforge
@@ -113,7 +113,7 @@ jobs:
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
           miniforge-variant: Mambaforge
