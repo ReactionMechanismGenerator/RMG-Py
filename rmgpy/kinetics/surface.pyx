@@ -50,7 +50,7 @@ cdef class StickingCoefficient(KineticsModel):
     ======================= =============================================================
     Attribute               Description
     ======================= =============================================================
-    `A`                     The preexponential factor
+    `A`                     The preexponential factor. Unitless (sticking probability)
     `T0`                    The reference temperature
     `n`                     The temperature exponent
     `Ea`                    The activation energy
@@ -287,9 +287,9 @@ cdef class StickingCoefficient(KineticsModel):
 
     def to_cantera_kinetics(self):
         """
-        Converts the Arrhenius object to a cantera Arrhenius object
+        Converts the Arrhenius object to a cantera StickingArrheniusRate object
 
-        Arrhenius(A,b,E) where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol
+        StickingArrheniusRate(A,b,E) where A is dimensionless, b is dimensionless, and E is in J/kmol
         """
 
         import cantera as ct
@@ -380,7 +380,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
                                          self.Pmin, self.Pmax, self.coverage_dependence, self.comment))
 
     property A:
-        """The preexponential factor."""
+        """The preexponential factor. Dimensionless (sticking probability)"""
         def __get__(self):
             return self._A
         def __set__(self, value):
@@ -423,7 +423,8 @@ cdef class StickingCoefficientBEP(KineticsModel):
     cpdef double get_sticking_coefficient(self, double T, double dHrxn=0.0) except -1:
         """
         Return the sticking coefficient (dimensionless) at
-        temperature `T` in K and enthalpy of reaction `dHrxn` in J/mol. 
+        temperature `T` in K and enthalpy of reaction `dHrxn` in J/mol.
+        Never exceeds 1.0.
         """
         cdef double A, n, Ea, stickingCoefficient
         Ea = self.get_activation_energy(dHrxn)
@@ -552,7 +553,7 @@ cdef class SurfaceArrhenius(Arrhenius):
     property A:
         """The preexponential factor. 
     
-        This is the only thing different from a normal Arrhenius class."""
+        This (and the coverage dependence) is the only thing different from a normal Arrhenius class."""
         def __get__(self):
             return self._A
         def __set__(self, value):
