@@ -609,9 +609,11 @@ cdef class SurfaceArrhenius(Arrhenius):
         import cantera as ct
 
         A = self._A.value_si
+        raise NotImplementedError("The units need fixing from mol to kmol?")
+        # SEE https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2597/
         b = self._n.value_si
         Ea = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
-
+        raise NotImplementedError("Should return InterfaceArrheniusRate(A, b, E)? (and fix docstrings)")
         return ct.Arrhenius(A, b, Ea)
 
 
