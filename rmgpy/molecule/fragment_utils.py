@@ -548,7 +548,7 @@ def make_new_reaction_string(species_smiles, starting_fragment_smiles, frag_list
     return f"{species_smiles} + {starting_fragment_smiles} => {frag_list_str}"
 
 
-def generate_add_partial_reattachment_reactions(seed_dir, starting_fragments)
+def generate_add_partial_reattachment_reactions(seed_dir, starting_fragments):
     seed_reactions_filename = os.path.join(seed_dir, "reactions.py")
     seed_dictionary_filename = os.path.join(seed_dir, "dictionary.txt")
 
