@@ -310,7 +310,7 @@ class GaussianLog(ESSAdapter):
             line = f.readline()
             while line != '':
                 if 'SCF Done:' in line:
-                    e_elect = float(re.findall(r"SCF Done:  E\(.+\) \=\s+[^\s]+",line)[0].split()[-1])* constants.E_h * constants.Na
+                    e_elect = float(re.findall(r"SCF Done:  E\(.+\) \=\s+[^\s]+", line)[0].split()[-1]) * constants.E_h * constants.Na
                     elect_energy_source = 'SCF'
                 elif ' E2(' in line and ' E(' in line:
                     e_elect = float(line.split()[-1].replace('D', 'E')) * constants.E_h * constants.Na
@@ -350,7 +350,6 @@ class GaussianLog(ESSAdapter):
                     # G4MP2 calculation without opt and freq calculation
                     # Keyword in Gaussian G4MP2(SP), No zero-point or thermal energies are included.
                     e_elect = float(line.split()[2]) * constants.E_h * constants.Na
-                
                 # Read the ZPE from the "E(ZPE)=" line, as this is the scaled version.
                 # Gaussian defines the following as
                 # E (0 K) = Elec + E(ZPE),
