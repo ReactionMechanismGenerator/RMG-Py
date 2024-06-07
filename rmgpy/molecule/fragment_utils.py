@@ -546,3 +546,88 @@ def process_new_fragment(species_smiles, starting_fragment_smiles,species_cuttin
 def make_new_reaction_string(species_smiles, starting_fragment_smiles, frag_list):
     frag_list_str = " + ".join(frag_list)
     return f"{species_smiles} + {starting_fragment_smiles} => {frag_list_str}"
+
+
+def generate_add_partial_reattachment_reactions(seed_dir, starting_fragments)
+    seed_reactions_filename = os.path.join(seed_dir, "reactions.py")
+    seed_dictionary_filename = os.path.join(seed_dir, "dictionary.txt")
+
+    with open(seed_dictionary_filename,'r') as f:
+        dictionary_lines = f.readlines()
+
+    fragment_to_name_dictionary = {}
+
+    dlines_iter = iter(dictionary_lines)
+    name = next(dlines_iter,"end").strip().strip('\n')
+    line = next(dlines_iter,"end")
+    while line != "end" and name !="end":
+        species_adjlist =""
+        line = next(dlines_iter,"end")
+        while line.strip().strip('\n') != "":
+            species_adjlist +=line
+            line = next(dlines_iter, "end")
+
+        f = Fragment().from_adjacency_list(species_adjlist)
+        fragment_to_name_dictionary[f] = name
+        name = next(dlines_iter,"end").strip().strip('\n')
+
+    rxn_strs = []
+    for f in fragment_to_name_dictionary.keys():
+        smiles = f.smiles
+        try:
+            for starting_fragment in starting_fragments:
+                options = process_new_fragment(smiles, starting_fragment,species_cutting_threshold=12)
+                if type(options) == list:
+                    for option in options:
+                        option_frags = [Fragment().from_smiles_like_string(x) for x in option]
+                        if all([option in fragment_to_name_dictionary.keys() for option in option_frags]):
+                            smiles_name = fragment_to_name_dictionary[Fragment().from_smiles_like_string(smiles)]
+                            starting_fragment_name = fragment_to_name_dictionary[Fragment().from_smiles_like_string(starting_fragment)]
+                            option_name = [fragment_to_name_dictionary[x] for x in option_frags]
+                            rxn_str = make_new_reaction_string(smiles_name, starting_fragment_name, option_name)
+                            if rxn_str not in rxn_strs:
+                                rxn_strs.append(rxn_str)
+                    
+        except:
+            continue
+
+    seed_reaction_template = """
+    entry(
+        index = {},
+        label = \"{}\",
+        degeneracy = 1.0,
+        reversible = False,
+        kinetics = Arrhenius(A=(3.18795e+13,'m^3/(mol*s)'), n=-1.177, Ea=(0,'kJ/mol'), T0=(1,'K'), Tmin=(300,'K'), Tmax=(1500,'K')),
+        longDesc = 
+    \"\"\"
+    \"\"\",
+    )"""
+
+    with open(seed_reactions_filename,"r") as f:
+        lines = f.readlines()
+    for line in lines[::-1]:
+        if "index = " in line:
+            largest_idx = int(line.split()[-1].strip('\n').strip(','))
+            break
+
+    rxn_strs_in_seed_core = []
+    for line in lines:
+        if "label = " in line:
+            r = line.split("\"")[1]
+            if r not in rxn_strs_in_seed_core:
+                rxn_strs_in_seed_core.append(r)
+
+    j = 0
+    seed_reaction_entries = []
+    for i, rxn_str in enumerate(rxn_strs):
+        if rxn_str not in rxn_strs_in_seed_core:
+            j+=1
+            entry = seed_reaction_template.format(largest_idx +j,rxn_str)
+            seed_reaction_entries.append(entry+"\n")
+
+    if seed_reaction_entries != []:
+        with open(seed_reactions_filename,'a') as f:
+            f.writelines(seed_reaction_entries)
+        return f"Added {len(seed_reaction_entries)} partial reattachment reactions to {seed_reactions_filename}."
+    else:
+        return "No partial reattachment reactions to add"
