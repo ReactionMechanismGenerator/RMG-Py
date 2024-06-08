@@ -302,18 +302,18 @@ def reaction_to_dicts(obj, spcs):
 
 def species_to_dict(obj, spc, names=None, label="solvent"):
     """
-    Takes an RMG species object (spc), returns a list of dictionaries
+    Takes an RMG species object (obj), returns a list of dictionaries
     for YAML properties. Also adds in the number of surface sites
     ('sites') to dictionary.
     """
 
     result_dict = dict()
 
-    if isinstance(spc, Species):
-        s = spc.to_cantera(use_chemkin_identifier=True)
+    if isinstance(obj, Species):
+        s = obj.to_cantera(use_chemkin_identifier=True)
         species_data = s.input_data
         try:
-            result_dict["note"] = spc.transport_data.comment
+            result_dict["note"] = obj.transport_data.comment
         except:
             pass
         if "size" in species_data:
@@ -324,6 +324,8 @@ def species_to_dict(obj, spc, names=None, label="solvent"):
         return (
             species_data  # returns composition, name, thermo, and transport, and note
         )
+    else:
+        raise Exception("Species object must be an RMG Species object")
 
 
 class CanteraWriter(object):
