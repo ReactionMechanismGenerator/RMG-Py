@@ -230,7 +230,7 @@ jobs:
         # the stable regression results
           run-id: ${{ env.CI_RUN_ID }}
           repository: ReactionMechanismGenerator/RMG-Py
-          github-token:  ${{ secrets.GH_PAT }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           name: stable_regression_results
           path: stable_regression_results
 
