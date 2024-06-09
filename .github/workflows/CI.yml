@@ -239,7 +239,7 @@ jobs:
         id: regression-comparison
         if: ${{ env.REFERENCE_JOB == 'false' }}
         env:
-          REFERENCE: stable_regression_results
+          REFERENCE: 'test/regression'  # stable_regression_results
         run: |
           exec 2> >(tee -a regression.stderr >&2) 1> >(tee -a regression.stdout)
           mkdir -p "test/regression-diff"
