@@ -358,6 +358,18 @@ def check_if_pibond_near_cutting_label(species_smiles):
         return False
 
 def merge_fragment_a_to_cutting_label_on_b(smiles_a, smiles_b, cuttinglabel):
+    """
+    This function takes two SMILES strings representing molecular fragments and merges them at the specified
+    cutting label on the fragment represented by smiles_b
+
+    Parameters:
+    smiles_a (str): The SMILES string of the first molecular fragment.
+    smiles_b (str): The SMILES string of the second molecular fragment.
+    cuttinglabel (CuttingLabel): The label indicating where the first fragment should be merged to the second.
+
+    Returns:
+    Fragment: A new fragment object obtained by merging the two input fragments at the specified cutting label.
+    """
     a_frag = Fragment().from_smiles_like_string(smiles_a)
     b_frag = Fragment().from_smiles_like_string(smiles_b)
     for vertex in b_frag.vertices:
