@@ -957,19 +957,38 @@ class Fragment(Molecule):
                                 frag1_L = frag1.count("K")
                                 frag2_R = frag2.count("Na")
                                 frag2_L = frag2.count("K")
-    
+
+                                # if frag 2 has the least Rs and frag 1 has the
+                                # same or fewer Ls than frag 2 -->
+                                # assign R to frag 2 and L to frag 1
                                 if frag1_R > frag2_R and frag1_L <= frag2_L:
                                     frag1_smi = frag1.replace("*", "L")
                                     frag2_smi = frag2.replace("*", "R")
+
+                                # if frag 2 has the least Ls and frag 1 has the
+                                # same or fewer Rs than frag 2 -->
+                                # assign R to frag 1 and L to frag 2
                                 elif frag1_L > frag2_L and frag1_R <= frag2_R:
                                     frag1_smi = frag1.replace("*", "R")
                                     frag2_smi = frag2.replace("*", "L")
+
+                                # if frag 1 has the least Ls and frag 2 has the
+                                # same or fewer Rs than frag 1 -->
+                                # assign R to frag 2 and L to frag 1
                                 elif frag2_L > frag1_L and frag2_R <= frag1_R:
                                     frag1_smi = frag1.replace("*", "L")
                                     frag2_smi = frag2.replace("*", "R")
+
+                                # if frag 1 has the least Rs and frag 2 has the
+                                # same or fewer Ls than frag 1 -->
+                                # assign R to frag 1 and L to frag 2
                                 elif frag2_R > frag1_R and frag2_L <= frag1_L:
                                     frag1_smi = frag1.replace("*", "R")
                                     frag2_smi = frag2.replace("*", "L")
+
+                                # else if frag 1 and frag 2 have equal number 
+                                # of Rs and Ls or one frag has more Rs and 
+                                # more Ls than the other, choose randomly
                                 elif randint(0,1)==1:
                                     frag1_smi = frag1.replace("*", "L")
                                     frag2_smi = frag2.replace("*", "R")
