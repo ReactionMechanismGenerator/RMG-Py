@@ -314,13 +314,12 @@ def merge_frag_list(to_be_merged):
 # print(newfraglist)
     return newfraglist
 
-import re
 def check_if_radical_near_cutting_label(species_smiles):
     species_fragment = Fragment().from_smiles_like_string(species_smiles)
     for i, atom in enumerate(species_fragment.atoms):
         species_fragment.atoms[i].id = i
     for atom in species_fragment.atoms:
-        if atom.radical_electrons ==1:
+        if atom.radical_electrons == 1:
             bonded_atoms = list(atom.bonds.keys())
             bonded_atom_types = [type(x) for x in bonded_atoms]
             if CuttingLabel in bonded_atom_types:
@@ -358,7 +357,7 @@ def check_if_pibond_near_cutting_label(species_smiles):
     else:
         return False
 
-def merge_fragment_a_to_cutting_label_on_b(smiles_a,smiles_b,cuttinglabel):
+def merge_fragment_a_to_cutting_label_on_b(smiles_a, smiles_b, cuttinglabel):
     a_frag = Fragment().from_smiles_like_string(smiles_a)
     b_frag = Fragment().from_smiles_like_string(smiles_b)
     for vertex in b_frag.vertices:
@@ -552,19 +551,19 @@ def generate_add_partial_reattachment_reactions(seed_dir, starting_fragments):
     seed_reactions_filename = os.path.join(seed_dir, "reactions.py")
     seed_dictionary_filename = os.path.join(seed_dir, "dictionary.txt")
 
-    with open(seed_dictionary_filename,'r') as f:
+    with open(seed_dictionary_filename, 'r') as f:
         dictionary_lines = f.readlines()
 
     fragment_to_name_dictionary = {}
 
     dlines_iter = iter(dictionary_lines)
-    name = next(dlines_iter,"end").strip().strip('\n')
-    line = next(dlines_iter,"end")
+    name = next(dlines_iter, "end").strip().strip('\n')
+    line = next(dlines_iter, "end")
     while line != "end" and name !="end":
-        species_adjlist =""
+        species_adjlist = ""
         line = next(dlines_iter,"end")
         while line.strip().strip('\n') != "":
-            species_adjlist +=line
+            species_adjlist += line
             line = next(dlines_iter, "end")
 
         f = Fragment().from_adjacency_list(species_adjlist)
@@ -576,7 +575,7 @@ def generate_add_partial_reattachment_reactions(seed_dir, starting_fragments):
         smiles = f.smiles
         try:
             for starting_fragment in starting_fragments:
-                options = process_new_fragment(smiles, starting_fragment,species_cutting_threshold=12)
+                options = process_new_fragment(smiles, starting_fragment, species_cutting_threshold=12)
                 if type(options) == list:
                     for option in options:
                         option_frags = [Fragment().from_smiles_like_string(x) for x in option]
@@ -603,7 +602,7 @@ def generate_add_partial_reattachment_reactions(seed_dir, starting_fragments):
     \"\"\",
     )"""
 
-    with open(seed_reactions_filename,"r") as f:
+    with open(seed_reactions_filename, "r") as f:
         lines = f.readlines()
     for line in lines[::-1]:
         if "index = " in line:
@@ -625,7 +624,7 @@ def generate_add_partial_reattachment_reactions(seed_dir, starting_fragments):
             entry = seed_reaction_template.format(largest_idx +j,rxn_str)
             seed_reaction_entries.append(entry+"\n")
 
-    if seed_reaction_entries != []:
+    if seed_reaction_entries:
         with open(seed_reactions_filename,'a') as f:
             f.writelines(seed_reaction_entries)
         return f"Added {len(seed_reaction_entries)} partial reattachment reactions to {seed_reactions_filename}."

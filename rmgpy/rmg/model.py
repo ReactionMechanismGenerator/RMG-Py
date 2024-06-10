@@ -306,15 +306,14 @@ class CoreEdgeReactionModel:
             # set size_threshold to about half the molecule size
             size_threshold = int((molecule.smiles.count("C")+molecule.smiles.count("c"))/2)
             # if the molecule type is Molecule, change type to Fragment before cutting
-            if type(molecule) == Molecule:
+            if isinstance(molecule, Molecule):
                 molecule = Fragment().from_adjacency_list(molecule.to_adjacency_list())
             # try to cut_molecule with size threshold set above
-            mols = molecule.cut_molecule(cut_through=False,size_threshold=size_threshold)
+            mols = molecule.cut_molecule(cut_through=False, size_threshold=size_threshold)
             # if cut above can't be made try with default size_threshold = 5
             if len(mols) == 1:
                 mols = molecule.cut_molecule(cut_through=False)
-            # if cut above can't be made, don't cut
-            if len(mols) == 1:
+                # if cut above can't be made, don't cut
                 molecule = mols[0]
             else:
                 return [self.make_new_species(mol, check_decay=check_decay) for mol in mols]

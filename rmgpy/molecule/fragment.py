@@ -989,7 +989,7 @@ class Fragment(Molecule):
                                 # else if frag 1 and frag 2 have equal number 
                                 # of Rs and Ls or one frag has more Rs and 
                                 # more Ls than the other, choose randomly
-                                elif randint(0,1)==1:
+                                elif randint(0, 1) == 1:
                                     frag1_smi = frag1.replace("*", "L")
                                     frag2_smi = frag2.replace("*", "R")
                                 else:
