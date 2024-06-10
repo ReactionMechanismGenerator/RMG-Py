@@ -290,7 +290,9 @@ jobs:
               export FAILED=Yes
             fi
             echo "" # blank line so next block is interpreted as markdown
-            cat "$regr_test-edge.log"
+            # cat "$regr_test-edge.log"
+            head -n 42 "$regr_test-edge.log"
+            echo "Complete log is available in the GitHub actions artifact."
             echo "</details>"
 
             # Check for Regression between Reference and Dynamic (skip superminimal)
