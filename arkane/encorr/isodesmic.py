@@ -47,18 +47,11 @@ from copy import deepcopy
 from typing import List, Union
 
 import numpy as np
-from lpsolve55 import EQ, LE, lpsolve
-from pyutilib.common import ApplicationError
+from scipy.optimize import Bounds, LinearConstraint, milp
 
 from arkane.modelchem import LOT
 from rmgpy.molecule import Bond, Molecule
 from rmgpy.quantity import ScalarQuantity
-
-# Optional Imports
-try:
-    import pyomo.environ as pyo
-except ImportError:
-    pyo = None
 
 
 class ErrorCancelingSpecies:
@@ -630,7 +623,7 @@ class ErrorCancelingScheme:
         ) = self.constraints.calculate_constraints()
         self.reference_species = self.constraints.reference_species
 
-    def _find_error_canceling_reaction(self, reference_subset, milp_software=None):
+    def _find_error_canceling_reaction(self, reference_subset):
         """
         Automatically find a valid error canceling reaction given a subset of the available benchmark species. This
         is done by solving a mixed integer linear programming (MILP) problem similiar to
@@ -638,18 +631,12 @@ class ErrorCancelingScheme:
 
         Args:
             reference_subset (list): A list of indices from self.reference_species that can participate in the reaction
-            milp_software (list, optional): Solvers to try in order. Defaults to ['lpsolve'] or if pyomo is available
-                defaults to ['lpsolve', 'pyomo']. lpsolve is usually faster.
 
         Returns:
             tuple(ErrorCancelingReaction, np.ndarray)
             - Reaction with the target species (if a valid reaction is found, else ``None``)
             - Indices (of the subset) for the species that participated in the return reaction
         """
-        if milp_software is None:
-            milp_software = ["lpsolve"]
-            if pyo is not None:
-                milp_software.append("pyomo")
 
         # Define the constraints based on the provided subset
         c_matrix = np.take(self.constraint_matrix, reference_subset, axis=0)
@@ -669,114 +656,20 @@ class ErrorCancelingScheme:
         n = c_matrix.shape[1]
         split = int(m / 2)
 
-        for solver in milp_software:
-            if solver == "pyomo":
-                # Check that pyomo is available
-                if pyo is None:
-                    raise ImportError(
-                        "Cannot import optional package pyomo. Either install this dependency with "
-                        "`conda install -c conda-forge pyomo glpk` or set milp_software to `lpsolve`"
-                    )
+        constraints = [LinearConstraint(A=np.concatenate((c_matrix[:split, j], -1 * c_matrix[split:, j]), lb=targets[j], ub=targets[j])) for j in n]
 
-                # Diable logging, pyomo outputs too often
-                logging.disable()
+        result = milp(
+            c_matrix,
+            integrality=1,
+            constraints=constraints,
+            options={"time_limit": 10},
+        )
 
-                # Setup the MILP problem using pyomo
-                lp_model = pyo.ConcreteModel()
-                lp_model.i = pyo.RangeSet(0, m - 1)
-                lp_model.j = pyo.RangeSet(0, n - 1)
-                lp_model.r = pyo.RangeSet(
-                    0, split - 1
-                )  # indices before the split correspond to reactants
-                lp_model.p = pyo.RangeSet(
-                    split, m - 1
-                )  # indices after the split correspond to products
-                lp_model.v = pyo.Var(
-                    lp_model.i, domain=pyo.NonNegativeIntegers
-                )  # The stoich. coef. we are solving for
-                lp_model.c = pyo.Param(
-                    lp_model.i,
-                    lp_model.j,
-                    initialize=lambda _, i_ind, j_ind: c_matrix[i_ind, j_ind],
-                )
-                lp_model.s = pyo.Param(
-                    lp_model.i, initialize=lambda _, i_ind: sum_constraints[i_ind]
-                )
-                lp_model.t = pyo.Param(
-                    lp_model.j, initialize=lambda _, j_ind: targets[j_ind]
-                )
-
-                lp_model.obj = pyo.Objective(rule=_pyo_obj_expression)
-                lp_model.constraints = pyo.Constraint(
-                    lp_model.j, rule=_pyo_constraint_rule
-                )
-
-                # Solve the MILP problem using the GLPK MILP solver (https://www.gnu.org/software/glpk/)
-                opt = pyo.SolverFactory("glpk")
-                try:
-                    results = opt.solve(lp_model, timelimit=10)
-                except ApplicationError:
-                    continue
-
-                # Return the solution if a valid reaction is found. Otherwise continue to next solver
-                if (
-                    results.solver.termination_condition
-                    == pyo.TerminationCondition.optimal
-                ):
-                    # Extract the solution and find the species with non-zero stoichiometric coefficients
-                    solution = lp_model.v.extract_values().values()
-                    break
-
-                # Re-enable logging
-                logging.disable(logging.NOTSET)
-
-            elif solver == "lpsolve":
-                # Save the current signal handler
-                sig = signal.getsignal(signal.SIGINT)
-
-                # Setup the MILP problem using lpsolve
-                lp = lpsolve("make_lp", 0, m)
-                lpsolve("set_verbose", lp, 2)  # Reduce the logging from lpsolve
-                lpsolve("set_obj_fn", lp, sum_constraints)
-                lpsolve("set_minim", lp)
-
-                for j in range(n):
-                    lpsolve(
-                        "add_constraint",
-                        lp,
-                        np.concatenate((c_matrix[:split, j], -1 * c_matrix[split:, j])),
-                        EQ,
-                        targets[j],
-                    )
-
-                lpsolve(
-                    "set_timeout", lp, 10
-                )  # Move on if lpsolve can't find a solution quickly
-
-                # All v_i must be integers
-                lpsolve("set_int", lp, [True] * m)
-
-                status = lpsolve("solve", lp)
-
-                # Reset signal handling since lpsolve changed it
-                try:
-                    signal.signal(signal.SIGINT, sig)
-                except TypeError:
-                    # This is not being run in the main thread, so we cannot reset signal
-                    pass
-
-                # Return the solution if a valid reaction is found. Otherwise continue to next solver
-                if status == 0:
-                    _, solution = lpsolve("get_solution", lp)[:2]
-                    break
-
-            else:
-                raise ValueError(
-                    f"Unrecognized MILP solver {solver} for isodesmic reaction generation"
-                )
-
-        else:
+        if result.status != 0:
+            logging.warning("Optimization could not find a valid solution.")
             return None, None
+        
+        solution = result.x
 
         reaction = ErrorCancelingReaction(self.target, dict())
         subset_indices = []
