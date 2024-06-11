@@ -95,7 +95,7 @@ jobs:
       - name: make RMG
         run: |
           make clean
-          CC=gcc CXX=g++ make
+          make
 
   build-and-test-linux:
     runs-on: ubuntu-latest
