@@ -231,14 +231,14 @@ class TestSpeciesConstraints:
         assert spcs_consts.reference_species == [self.propene, self.butane, self.benzene]
 
         # Then, test the output of the calculation
-        assert np.array_equal(target_consts, np.array([ 1,  1,  1, 10, 10,  1,  1,  2,  0,  8, 10,  4,  2]))
+        assert np.array_equal(target_consts, np.array([ 1,  1,  1, 10, 10,  1,  1,  2,  0,  8, 10,  4,  2])) # ['5_ring', '6_ring', 'C-C', 'C-H', 'C-N', 'C=C', 'C=N', 'C=O']
         assert np.array_equal(
             consts_matrix,
             np.array(
                 [
-                    [ 0,  0,  1,  6,  0,  1,  0,  0,  0,  3,  6,  0,  0],
-                    [ 0,  0,  3, 10,  0,  0,  0,  0,  0,  4, 10,  0,  0],
-                    [ 0,  1,  3,  6,  0,  3,  0,  0,  0,  6,  6,  0,  0],
+                    [ 0,  0,  1,  6,  0,  1,  0,  0,  0,  3,  6,  0,  0],  # ['5_ring', '6_ring', 'C-C', 'C-H', 'C-N', 'C=C', 'C=N', 'C=O']
+                    [ 0,  0,  3, 10,  0,  0,  0,  0,  0,  4, 10,  0,  0],  # ['5_ring', '6_ring', 'C-C', 'C-H', 'C-N', 'C=C', 'C=N', 'C=O']
+                    [ 0,  1,  3,  6,  0,  3,  0,  0,  0,  6,  6,  0,  0],  # ['5_ring', '6_ring', 'C-C', 'C-H', 'C-N', 'C=C', 'C=N', 'C=O']
                 ]
             ),
         )
