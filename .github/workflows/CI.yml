@@ -51,7 +51,7 @@ env:
 
 jobs:
   build-osx:
-    runs-on: macos-latest
+    runs-on: macos-13
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     defaults:
@@ -63,7 +63,7 @@ jobs:
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
           miniforge-variant: Mambaforge
@@ -113,7 +113,7 @@ jobs:
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python 3.7
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
           miniforge-variant: Mambaforge
@@ -185,7 +185,7 @@ jobs:
       # Upload Regression Results as Failed if above step failed
       - name: Upload Failed Results
         if: ${{ failure() && steps.regression-execution.conclusion == 'failure' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: failed_regression_results
           path: |
@@ -195,7 +195,7 @@ jobs:
       - name: Upload Results as Reference
         # upload the results for scheduled CI (on main) and pushes to main
         if: ${{ env.REFERENCE_JOB == 'true' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: stable_regression_results
           path: |
@@ -204,7 +204,7 @@ jobs:
       # Upload Regression Results as Dynamic if Push to non-main Branch
       - name: Upload Results as Dynamic
         if: ${{ env.REFERENCE_JOB == 'false' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dynamic_regression_results
           path: |
@@ -215,23 +215,24 @@ jobs:
         run: mkdir stable_regression_results
 
       # Retrieve Stable Results for reference
-      # Will need to use this -> https://github.com/dawidd6/action-download-artifact
+      - name : Find ID of Reference Results
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          run_id=$(gh run list -R ReactionMechanismGenerator/RMG-Py --workflow="Continuous Integration" --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
+          echo "CI_RUN_ID=$run_id" >> $GITHUB_ENV
+
       - name: Retrieve Stable Regression Results
         if: ${{ env.REFERENCE_JOB == 'false' }}
-        uses: dsnopek/action-download-artifact@91dda23aa09c68860977dd0ed11d93c0ed3795e7 # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2459#issuecomment-1582850815
+        uses: actions/download-artifact@v4
         with:
         # this will search for the last successful execution of CI on main and download
         # the stable regression results
-          workflow: CI.yml
-          workflow_conclusion: success
-          repo: ReactionMechanismGenerator/RMG-Py
-          branch: main
+          run-id: ${{ env.CI_RUN_ID }}
+          repository: ReactionMechanismGenerator/RMG-Py
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           name: stable_regression_results
           path: stable_regression_results
-          search_artifacts: true  # retrieves the last run result, either scheduled daily or on push to main
-          ensure_latest: true     # ensures that the latest run is retrieved
-          # should result in a set of folders inside stable_regression_results
-          # each of which has the stable result for that example/test
 
       # Regression Testing - Actual Comparisons
       - name: Regression Tests - Compare to Baseline
