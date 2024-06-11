@@ -92,7 +92,7 @@ surfaceReactor(
         "X": 1.0,
     },
     surfaceVolumeRatio=(1.e5, 'm^-1'),
-    terminationConversion = { "CH4": 0.95,},
+    terminationConversion={"CH4": 0.95,},
     terminationTime=(0.1, 's'),
     terminationRateRatio=0.01,
 )
@@ -110,7 +110,7 @@ options(
     units='si',
     generateOutputHTML=False,
     generatePlots=False, # Enable to make plots of core and edge size etc. But takes a lot of the total runtime!
-    saveEdgeSpecies=False,
+    saveEdgeSpecies=True,
     saveSimulationProfiles=False,
 )
 generatedSpeciesConstraints(

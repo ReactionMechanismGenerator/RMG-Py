@@ -48,7 +48,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures, get_all_combinations
 from rmgpy.data.kinetics.common import save_entry, find_degenerate_reactions, generate_molecule_combos, \
-                                       ensure_independent_atom_ids
+                                       ensure_independent_atom_ids, check_for_same_reactants
 from rmgpy.data.kinetics.depository import KineticsDepository
 from rmgpy.data.kinetics.groups import KineticsGroups
 from rmgpy.data.kinetics.rules import KineticsRules
@@ -1741,65 +1741,29 @@ class KineticsFamily(Database):
                 rxn.reverse = reactions[0]
                 return True
 
-    def calculate_degeneracy(self, reaction):
+    def calculate_degeneracy(self, reaction, resonance=True):
         """
         For a `reaction`  with `Molecule` or `Species` objects given in the direction in which
-        the kinetics are defined, compute the reaction-path degeneracy.
+        the kinetics are defined, compute the reaction-path degeneracy. Can specify whether to consider resonance.
 
         This method by default adjusts for double counting of identical reactants. 
-        This should only be adjusted once per reaction. To not adjust for 
-        identical reactants (since you will be reducing them later in the algorithm), add
-        `ignoreSameReactants= True` to this method.
+        This should only be adjusted once per reaction. 
         """
-        # Check if the reactants are the same
-        # If they refer to the same memory address, then make a deep copy so
-        # they can be manipulated independently
         reactants = reaction.reactants
-        same_reactants = 0
-        if len(reactants) == 2:
-            if reactants[0] is reactants[1]:
-                reactants[1] = reactants[1].copy(deep=True)
-                same_reactants = 2
-            elif reactants[0].is_isomorphic(reactants[1]):
-                same_reactants = 2
-        elif len(reactants) == 3:
-            same_01 = reactants[0] is reactants[1]
-            same_02 = reactants[0] is reactants[2]
-            if same_01 and same_02:
-                same_reactants = 3
-                reactants[1] = reactants[1].copy(deep=True)
-                reactants[2] = reactants[2].copy(deep=True)
-            elif same_01:
-                same_reactants = 2
-                reactants[1] = reactants[1].copy(deep=True)
-            elif same_02:
-                same_reactants = 2
-                reactants[2] = reactants[2].copy(deep=True)
-            elif reactants[1] is reactants[2]:
-                same_reactants = 2
-                reactants[2] = reactants[2].copy(deep=True)
-            else:
-                same_01 = reactants[0].is_isomorphic(reactants[1])
-                same_02 = reactants[0].is_isomorphic(reactants[2])
-                if same_01 and same_02:
-                    same_reactants = 3
-                elif same_01 or same_02:
-                    same_reactants = 2
-                elif reactants[1].is_isomorphic(reactants[2]):
-                    same_reactants = 2
+        reactants, same_reactants = check_for_same_reactants(reactants)
 
         # Label reactant atoms for proper degeneracy calculation
-        ensure_independent_atom_ids(reactants, resonance=True)
+        ensure_independent_atom_ids(reactants, resonance=resonance)
         molecule_combos = generate_molecule_combos(reactants)
 
         reactions = []
         for combo in molecule_combos:
             reactions.extend(self._generate_reactions(combo, products=reaction.products, forward=True,
-                                                      react_non_reactive=True))
+                                                      prod_resonance=resonance, react_non_reactive=True))
 
         # remove degenerate reactions
         reactions = find_degenerate_reactions(reactions, same_reactants, template=reaction.template,
-                                              kinetics_family=self)
+                                              kinetics_family=self, resonance=resonance)
 
         # log issues
         if len(reactions) != 1:

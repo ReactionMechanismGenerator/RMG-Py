@@ -81,19 +81,13 @@ jobs:
           cd build/html
           touch .nojekyll
           git add -A --force .
-          git commit -m "Automated documentation rebuild"
+          git diff --staged --exit-code --quiet || git commit -m "Automated documentation rebuild"  # only commit if changes were made
 
       - name: Check documentation links
         continue-on-error: true
         run: |
           cd documentation
           sphinx-build -b linkcheck -d build/doctrees/ source/ build/linkcheck | grep -e broken -e redirect | grep -v -e 'redirect  https://doi.org/' -e 'broken    https://doi.org/.* 403 Client Error: Forbidden'
-
-      - name: Test Publish Documentation
-        if: ${{  github.event_name != 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
-        run: |
-          cd documentation/build/html
-          git push --dry-run origin gh-pages
 
       - name: Publish Updated Documentation
         if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}

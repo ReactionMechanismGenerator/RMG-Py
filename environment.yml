@@ -14,6 +14,8 @@
 # Changelog:
 # - May 15, 2023 Added this changelog, added inline documentation,
 #   made dependency list more explicit (@JacksonBurns).
+# - October 16, 2023 Switched RDKit and descripatastorus to conda-forge,
+#   moved diffeqpy to pip and (temporarily) removed chemprop
 #
 name: rmg_env
 channels:
@@ -42,8 +44,9 @@ dependencies:
   - coolprop
   - cantera::cantera=2.6
   - conda-forge::mopac
-  - conda-forge::cclib >=1.6.3,!=1.8.0
+  - conda-forge::cclib >=1.6.3,<1.8.0
   - conda-forge::openbabel >= 3
+  - conda-forge::rdkit >=2022.09.1
 
 # general-purpose external software tools
   - conda-forge::julia=1.9.1
@@ -54,7 +57,7 @@ dependencies:
   - coverage
   - cython >=0.25.2
   - scikit-learn
-  - scipy
+  - scipy <1.11
   - numpy >=1.10.0
   - pydot
   - jinja2
@@ -94,14 +97,8 @@ dependencies:
   # rather than ours (which is only made so that we can get it from conda)
   # It is only on pip, so we will need to do something like:
   # https://stackoverflow.com/a/35245610
-
-  - rmg::chemprop
-  # Our build of this is version 0.0.1 (!!) and we are using parts
-  # of the API that are now gone. Need a serious PR to fix this.
-
-  - rmg::rdkit >=2020.03.3.0
-  # We should use the official channel, not sure how difficult this
-  # change will be.
+  # Note that _some other_ dep. in this list requires diffeqpy in its recipe
+  # which will cause it to be downloaded from the rmg conda channel
 
 # conda mutex metapackage
   - nomkl

@@ -65,6 +65,7 @@ from rmgpy.molecule.adjlist import Saturator
 from rmgpy.molecule.graph import Vertex
 from rmgpy.molecule.kekulize import kekulize
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
+from rmgpy.molecule.fragment import CuttingLabel
 
 
 def populate_resonance_algorithms(features=None):
@@ -830,7 +831,7 @@ def generate_kekule_structure(mol):
     cython.declare(atom=Vertex, molecule=Graph)
 
     for atom in mol.atoms:
-        if not isinstance(atom, Atom):
+        if isinstance(atom,CuttingLabel):
             continue
         if atom.atomtype.label == 'Cb' or atom.atomtype.label == 'Cbf':
             break
