@@ -688,7 +688,7 @@ class ErrorCancelingScheme:
         return reaction, np.array(subset_indices)
 
     def multiple_error_canceling_reaction_search(
-        self, n_reactions_max=20, milp_software=None
+        self, n_reactions_max=20,
     ):
         """
         Generate multiple error canceling reactions involving the target and a subset of the reference species.
@@ -700,8 +700,6 @@ class ErrorCancelingScheme:
         Args:
             n_reactions_max (int, optional): The maximum number of found reactions that will be returned, after which no
                 further searching will occur even if there are possible subsets left in the queue.
-            milp_software (list, optional): Solvers to try in order. Defaults to ['lpsolve'] or if pyomo is available
-                defaults to ['lpsolve', 'pyomo']. lpsolve is usually faster.
 
         Returns:
             list: A list of the found error canceling reactions
@@ -714,7 +712,7 @@ class ErrorCancelingScheme:
             if len(subset) == 0:
                 continue
             reaction, subset_indices = self._find_error_canceling_reaction(
-                subset, milp_software=milp_software
+                subset
             )
             if reaction is None:
                 continue
