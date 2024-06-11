@@ -813,7 +813,10 @@ class ThermoGroups(Database):
         groups we also, need to re-point any unicode thermo_data that may
         have pointed to the entry.
 
-        Returns the removed group
+        This is not (as of 2024/03) used within RMG-Py, but could be useful for
+        people making ancillary scripts to manipulate or edit the database.
+
+        Returns the removed group.
         """
 
         # First call base class method
