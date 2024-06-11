@@ -438,55 +438,55 @@ class SpeciesConstraints:
         return features
 
     def _enumerate_constraints(self, full_constraints_list):
+        """
+        Return the target constraint counts and the reference constraint counts.
+        """
 
-        # Initialize list of empty lists. Be careful to avoid making references to a singular empty list
-        enumerated_constraints = [[] for _ in range(len(full_constraints_list))]
+        target_constraints = full_constraints_list[0]
+        reference_constraintss = full_constraints_list[1:]
 
-        # Begin enumerating constraints
-        while True:
-            if (
-                len(full_constraints_list[0]) == 0
-            ):  # We have exhausted target constraints
-                if self.limit_scope:  # No need to enumerate any further
-                    break  # Out of the while loop
+        # Enumerate through the constraints of reference species and keep only those that are present in the target
+        enumerated_reference_constraintss = []
 
-            # Find a constraint to search for next
-            for spcs_constraints in full_constraints_list:
-                if len(spcs_constraints) != 0:
-                    constraint = spcs_constraints[0]
-                    break  # Out of the for loop
-
-            else:
-                break  # No more constraints, so break out of the while loop
-
-            # enumerate for each species
-            new_constraints_list = []
-            for i, spcs_constraints in enumerate(full_constraints_list):
-                new_spcs_constraints = [c for c in spcs_constraints if c != constraint]
-                matching_constraints = len(spcs_constraints) - len(new_spcs_constraints)
-                enumerated_constraints[i].append(matching_constraints)
-                new_constraints_list.append(new_spcs_constraints)
-
-            # Finally, update the new list
-            full_constraints_list = new_constraints_list
-
-        # Finalize list of reference species and corresponding constraints
-        reference_constraints = []
-        target_constraints = enumerated_constraints[0]
         if self.limit_scope:
-            for i, spcs in enumerate(self.all_reference_species):
-                # Add 1 to index to offset for the target
-                if (
-                    len(full_constraints_list[i + 1]) == 0
-                ):  # This species does not have extra constraints
-                    self.reference_species.append(spcs)
-                    reference_constraints.append(enumerated_constraints[i + 1])
+
+            for i, ref_spc in enumerate(self.all_reference_species):
+
+                if not all(constraint in target_constraints for constraint in reference_constraintss[i]):
+                    continue
+
+                self.reference_species.append(ref_spc)
+                enumerated_reference_constraintss.append(reference_constraintss[i])
 
         else:
             self.reference_species = self.all_reference_species
-            reference_constraints = enumerated_constraints[1:]
+            enumerated_reference_constraintss = reference_constraintss
+        
+        # Get a list of the unique constraints sorted by their string representation
+        if self.limit_scope:
 
-        return target_constraints, reference_constraints
+            # The scope of constraints to consider is the target constraints
+            unique_constraints = self._get_unique_constraints(target_constraints)
+            unique_constraints.sort(key=lambda x: x.__repr__())
+
+        else:
+            all_constraints = target_constraints + [constraint for constraints in enumerated_reference_constraintss for constraint in constraints]
+            unique_constraints = self._get_unique_constraints(all_constraints)
+            unique_constraints.sort(key=lambda x: x.__repr__())
+        
+        # Get the counts of each unique constraint in the target and reference constraints
+        target_constraint_counts = [target_constraints.count(c) for c in unique_constraints]
+        reference_constraint_counts = []
+
+        for i, ref_constraints in enumerate(enumerated_reference_constraintss):
+            reference_constraint_counts.append([ref_constraints.count(c) for c in unique_constraints])
+
+        return target_constraint_counts, reference_constraint_counts
+    
+    def _get_unique_constraints(self, constraints):
+        # Constraints are unhashable, so we need to use some workaround to get unique constraints
+        constraint_dict = {constraint.__repr__(): constraint for constraint in constraints}
+        return list(constraint_dict.values())
 
     def _enumerate_charge_constraints(self, target_constraints, reference_constraints):
         charge = self.target.molecule.get_net_charge()
