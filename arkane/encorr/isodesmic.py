@@ -47,7 +47,7 @@ from copy import deepcopy
 from typing import List, Union
 
 import numpy as np
-from scipy.optimize import Bounds, LinearConstraint, milp
+from scipy.optimize import LinearConstraint, milp
 
 from arkane.modelchem import LOT
 from rmgpy.molecule import Bond, Molecule
@@ -659,7 +659,7 @@ class ErrorCancelingScheme:
         constraints = [LinearConstraint(A=np.concatenate((c_matrix[:split, j], -1 * c_matrix[split:, j]), lb=targets[j], ub=targets[j])) for j in n]
 
         result = milp(
-            c_matrix,
+            sum_constraints,
             integrality=1,
             constraints=constraints,
             options={"time_limit": 10},
