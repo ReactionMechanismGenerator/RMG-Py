@@ -438,11 +438,9 @@ class SpeciesConstraints:
         return features
 
     def _enumerate_constraints(self, full_constraints_list):
-        enumerated_constraints = []
 
         # Initialize list of empty lists. Be careful to avoid making references to a singular empty list
-        for _ in range(len(full_constraints_list)):
-            enumerated_constraints.append([])
+        enumerated_constraints = [[] for _ in range(len(full_constraints_list))]
 
         # Begin enumerating constraints
         while True:
