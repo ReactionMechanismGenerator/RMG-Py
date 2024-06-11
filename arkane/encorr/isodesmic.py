@@ -178,16 +178,16 @@ class ErrorCancelingReaction:
         """
         low_level_h_rxn = (
             sum(
-                spec[0].low_level_hf298.value_si * spec[1]
-                for spec in self.species.items()
+                spec.low_level_hf298.value_si * coeff
+                for spec, coeff in self.species.items()
             )
             - self.target.low_level_hf298.value_si
         )
 
         target_thermo = (
             sum(
-                spec[0].high_level_hf298.value_si * spec[1]
-                for spec in self.species.items()
+                spec.high_level_hf298.value_si * coeff
+                for spec, coeff in self.species.items()
             )
             - low_level_h_rxn
         )
@@ -202,17 +202,7 @@ class AtomConstraint:
     def __eq__(self, other):
         if isinstance(other, AtomConstraint):
             if self.label == other.label:
-                if len(self.connections) == len(other.connections):
-                    connections = deepcopy(other.connections)
-                    for c in self.connections:
-                        for i, c_other in enumerate(connections):
-                            if c == c_other:
-                                break
-                        else:
-                            return False
-                        connections.pop(i)
-
-                    return True
+                return self.match_connections(other)
 
             return False
 
@@ -221,6 +211,21 @@ class AtomConstraint:
                 f"AtomConstraint object has no __eq__ defined for other object of type "
                 f"{type(other)}"
             )
+        
+    def match_connections(self, other):
+        if len(self.connections) != len(other.connections):
+            return False
+
+        connections = deepcopy(other.connections)
+        for c in self.connections:
+            for i, c_other in enumerate(connections):
+                if c == c_other:
+                    break
+            else:
+                return False
+            connections.pop(i)
+
+        return True
 
     def __repr__(self):
         return f"{self.label}" + "".join([f"({c})" for c in self.connections])
