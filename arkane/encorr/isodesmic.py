@@ -501,8 +501,10 @@ class SpeciesConstraints:
 
             if charge < 0:
                 allowable_charges = list(range(charge, 0))
+            elif charge > 0:
+                allowable_charges = list(range(1, charge + 1))
             else:
-                allowable_charges = list(range(0, charge + 1))
+                allowable_charges = [0]
             for i, spcs in enumerate(self.reference_species):
                 if reference_constraints[i][-1] in allowable_charges:
                     allowed_reference_species.append(spcs)
