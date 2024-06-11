@@ -57,7 +57,7 @@ dependencies:
   - coverage
   - cython >=0.25.2
   - scikit-learn
-  - scipy <1.11
+  - scipy >=1.9,<1.11
   - numpy >=1.10.0
   - pydot
   - jinja2
@@ -68,7 +68,6 @@ dependencies:
   - networkx
   - pytest
   - pytest-cov
-  - pyutilib
   # we use a the pytest-check plugin, which is on Conda and PyPI, but the
   # version compatible with Python 3.7 is only on PyPI
   # switch to the conda version after upgrading to 3.11
