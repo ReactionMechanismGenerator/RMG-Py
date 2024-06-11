@@ -170,7 +170,7 @@ class TestSpeciesConstraints:
 
         assert np.array_equal(
             benzene_constraints,
-            np.array([1, 3, 6, 3]), # 6_ring, C-C, C-H, C=C
+            np.array([1, 3, 6, 3]), # ['6_ring', 'C-C', 'C-H', 'C=C']
         )
 
         spcs_consts.all_reference_species = [self.propene]
@@ -179,7 +179,7 @@ class TestSpeciesConstraints:
         propene_constraints = reference_constraints[0]
         assert np.array_equal(
             propene_constraints,
-            np.array([0, 1, 6, 1]), # 6_ring, C-C, C-H, C=C
+            np.array([0, 1, 6, 1]), # ['6_ring', 'C-C', 'C-H', 'C=C']
         )
 
         spcs_consts.all_reference_species = [self.butane]
@@ -188,7 +188,7 @@ class TestSpeciesConstraints:
         butane_constraints = reference_constraints[0]
         assert np.array_equal(
             butane_constraints,
-            np.array([0, 3, 10, 0]), # 6_ring, C-C, C-H, C=C
+            np.array([0, 3, 10, 0]), # ['6_ring', 'C-C', 'C-H', 'C=C']
         )
 
         # Caffeine and ethyne should return empty list since they have features not found in benzene
