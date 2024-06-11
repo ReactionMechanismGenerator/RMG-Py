@@ -272,12 +272,12 @@ class TestErrorCancelingScheme:
 
     def test_creating_error_canceling_schemes(self):
         scheme = ErrorCancelingScheme(
-            self.propene,
-            [self.butane, self.benzene, self.caffeine, self.ethyne],
-            "rc2",
-            True,
-            True,
-            True,
+            target=self.propene,
+            reference_set=[self.butane, self.benzene, self.caffeine, self.ethyne],
+            isodesmic_class="rc2",
+            conserve_ring_size=True,
+            limit_charges=True,
+            limit_scope=True,
         )
 
         assert scheme.reference_species == [self.butane]
