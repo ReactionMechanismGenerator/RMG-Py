@@ -115,7 +115,6 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     make
 
 #. Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any folder.
-   *This is important before the next step in which julia dependencies are installed.*
    Also, add your RMG-Py folder to PATH to launch ``rmg.py`` from any folder.
 
    In general, these commands should be placed in the appropriate shell initialization file.
@@ -130,16 +129,21 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    Be sure to either close and reopen your terminal to refresh your environment variables (``source ~/.bashrc`` or ``source ~/.zshrc``).
 
-#. Install and Link Julia dependencies: ::
+#. **Optional (Recommended)**: Install and Link Julia dependencies. Ensure that you have modified your environment variables as described above, and then run the following: ::
 
      julia -e 'using Pkg; Pkg.add("PyCall");Pkg.build("PyCall");Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator;'
 
      python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
+    Installing these dependencies will allow using ``method='ode'`` when solving the Master Equation with Arkane and using ``ReactionMechanismSimulator.jl``-based reactors in RMG.
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
-    python-jl replace/with/path/to/rmg.py input.py
+     python-jl rmg.py input.py
+    
+    or, if the Julia dependencies are not installed: ::
+
+     python rmg.py input.py
 
 You may now use RMG-Py, Arkane, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.
 
