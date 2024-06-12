@@ -54,7 +54,7 @@ from rmgpy.data.kinetics.depository import KineticsDepository
 from rmgpy.data.kinetics.groups import KineticsGroups
 from rmgpy.data.kinetics.rules import KineticsRules
 from rmgpy.exceptions import ActionError, DatabaseError, InvalidActionError, KekulizationError, KineticsError, \
-                             ForbiddenStructureException, UndeterminableKineticsError
+                             ForbiddenStructureException, UndeterminableKineticsError, AtomTypeError
 from rmgpy.kinetics import Arrhenius, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficient, \
                            StickingCoefficientBEP, ArrheniusBM, SurfaceChargeTransfer, ArrheniusChargeTransfer, \
                            ArrheniusChargeTransferBM, KineticsModel, Marcus
@@ -1639,7 +1639,7 @@ class KineticsFamily(Database):
             product_structures = self.apply_recipe(reactant_structures, forward=forward, relabel_atoms=relabel_atoms)
             if not product_structures:
                 return None
-        except (InvalidActionError, KekulizationError):
+        except (InvalidActionError, KekulizationError, AtomTypeError):
             # If unable to apply the reaction recipe, then return no product structures
             return None
         except ActionError:
