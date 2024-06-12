@@ -35,26 +35,6 @@ import sys
 import logging
 import itertools
 
-if __debug__:
-    try:
-        from os.path import dirname, abspath, join, exists
-
-        path_rms = dirname(dirname(dirname(abspath(__file__))))
-        from julia.api import Julia
-
-        jl = Julia(sysimage=join(path_rms, "rms.so")) if exists(join(path_rms, "rms.so")) else Julia(compiled_modules=False)
-        from pyrms import rms
-        from diffeqpy import de
-        from julia import Main
-    except Exception as e:
-        import warnings
-
-        warnings.warn("Unable to import Julia dependencies, original error: " + str(e), RuntimeWarning)
-else:
-    from pyrms import rms
-    from diffeqpy import de
-    from julia import Main
-
 from rmgpy.species import Species
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.reaction import Reaction
@@ -70,6 +50,20 @@ from rmgpy.kinetics.surface import StickingCoefficient
 from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.depository import DepositoryReaction
+
+NO_JULIA = False
+try:
+    if __debug__:
+        from os.path import dirname, abspath, join, exists
+        from julia.api import Julia
+        path_rms = dirname(dirname(dirname(abspath(__file__))))
+        jl = Julia(sysimage=join(path_rms, "rms.so")) if exists(join(path_rms, "rms.so")) else Julia(compiled_modules=False)
+    from pyrms import rms
+    from diffeqpy import de
+    from julia import Main
+except Exception as e:
+    logging.info("Unable to import Julia dependencies, original error: " + str(e) + ". RMS features will not be available on this execution.")
+    NO_JULIA = True
 
 
 class PhaseSystem:
