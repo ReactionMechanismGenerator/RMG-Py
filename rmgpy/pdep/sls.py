@@ -32,9 +32,8 @@ Contains functionality for directly simulating the master equation
 and implementing the SLS master equation reduction method
 """
 import sys
+import warnings
 
-from diffeqpy import de
-from julia import Main
 import scipy.sparse as sparse
 import numpy as np
 import scipy.linalg
@@ -45,6 +44,17 @@ import rmgpy.constants as constants
 from rmgpy.pdep.reaction import calculate_microcanonical_rate_coefficient
 from rmgpy.pdep.me import generate_full_me_matrix, states_to_configurations
 from rmgpy.statmech.translation import IdealGasTranslation
+
+NO_JULIA = False
+try:
+    from diffeqpy import de
+    from julia import Main
+except Exception as e:
+    warnings.warn(
+        f"Unable to import Julia dependencies, original error: {str(e)}"
+        ". Master equation method 'ode' will not be available on this execution."
+    )
+    NO_JULIA = True
 
 
 def get_initial_condition(network, x0, indices):
@@ -150,6 +160,11 @@ def get_rate_coefficients_SLS(network, T, P, method="mexp", neglect_high_energy_
     tau = np.abs(1.0 / fastest_reaction)
 
     if method == "ode":
+        if NO_JULIA:
+            raise RuntimeError(
+                "Required Julia dependencies for method 'ode' are not installed.\n"
+                "Please check your installation (https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html)."
+            )
         f = Main.eval(
             """
 function f(u,M,t)
