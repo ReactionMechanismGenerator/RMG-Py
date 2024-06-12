@@ -25,6 +25,11 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
       Note that you should reinitialize or restart your terminal in order for the changes to take effect, as the installer will tell you.
 
+#. If your `conda` version is older than 23.10.0, switch the solver backend to `libmamba` ::
+
+    conda install -n base conda-libmamba-solver
+    conda config --set solver libmamba
+
 #. There are a few system-level dependencies which are required and should not be installed via Conda. These include
    `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG.
 
@@ -71,11 +76,6 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    For information on using ``ssh`` with GitHub see the `Connecting to GitHub with SSH <https://docs.github.com/en/authentication/connecting-to-github-with-ssh>`_
 
-#. Switch the conda solver backend to speed up creation of the RMG environment ::
-
-    conda install -n base conda-libmamba-solver
-    conda config --set solver libmamba
-
 #. Navigate to the RMG-Py directory ::
 
     cd RMG-Py
@@ -109,10 +109,6 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 #. Activate conda environment ::
 
     conda activate rmg_env
-
-#. Switch the conda solver to libmamba again, to accelerate any changes you might make to this conda environment in the future::
-
-    conda config --set solver libmamba
 
 #. Compile RMG-Py after activating the conda environment ::
 
