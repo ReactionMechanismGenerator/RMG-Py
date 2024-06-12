@@ -1560,7 +1560,10 @@ def read_input_file(path, rmg0):
     except (NameError, TypeError, SyntaxError) as e:
         logging.error('The input file "{0}" was invalid:'.format(full_path))
         if NO_JULIA:
-            logging.error("During runtime, import of Julia dependencies failed. To use phase systems and RMS reactors, install RMG-Py with RMS.")
+            logging.error(
+                "During runtime, import of Julia dependencies failed. To use phase systems and RMS reactors, install RMG-Py with RMS."
+                " (https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html)"
+            )
         logging.exception(e)
         raise
     finally:
