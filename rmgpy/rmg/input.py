@@ -1562,7 +1562,7 @@ def read_input_file(path, rmg0):
         if NO_JULIA:
             logging.error(
                 "During runtime, import of Julia dependencies failed. To use phase systems and RMS reactors, install RMG-Py with RMS."
-                " (https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html)"
+                " (https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/anacondaDeveloper.html)"
             )
         logging.exception(e)
         raise

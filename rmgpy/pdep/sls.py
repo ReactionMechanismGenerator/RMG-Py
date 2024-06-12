@@ -50,7 +50,7 @@ try:
     from diffeqpy import de
     from julia import Main
 except Exception as e:
-    warnings.warn(
+    logging.info(
         f"Unable to import Julia dependencies, original error: {str(e)}"
         ". Master equation method 'ode' will not be available on this execution."
     )
@@ -163,7 +163,7 @@ def get_rate_coefficients_SLS(network, T, P, method="mexp", neglect_high_energy_
         if NO_JULIA:
             raise RuntimeError(
                 "Required Julia dependencies for method 'ode' are not installed.\n"
-                "Please check your installation (https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html)."
+                "Please follow the steps to install Julia dependencies at https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/anacondaDeveloper.html."
             )
         f = Main.eval(
             """
