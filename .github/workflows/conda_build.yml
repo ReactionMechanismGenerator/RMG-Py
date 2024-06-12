@@ -1,58 +1,52 @@
 name: Conda Build
 
 on:
+  pull_request:
   push:
     branches:
       - stable
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-13]
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: actions/checkout@v4
+      - name: Setup Conda
+        uses: conda-incubator/setup-miniconda@v3
         with:
-          environment-file: environment.yml
-          python-version: 3.7
-          activate-environment: rmg_env
-      - name: Conda info
+          auto-update-conda: false
+          conda-solver: libmamba
+          auto-activate-base: true
+          activate-environment: ""
+      - name: Install Build Tools
+        run: conda install python anaconda-client conda-build
+      - name: Configure Auto-Upload
+        if: github.ref == 'refs/heads/stable'
         run: |
-          conda info
-          conda list
-      - name: Build Binary
-        env: 
-          CONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
-        run: |
-          conda install -y conda-build 
-          conda install -y anaconda-client 
-          conda config --add channels rmg
           conda config --set anaconda_upload yes
-          conda build --token $CONDA_TOKEN --user rmg .conda
-  build-osx:
-    runs-on: macos-latest
-    defaults:
-      run:
-        shell: bash -l {0}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          environment-file: environment.yml
-          python-version: 3.7
-          activate-environment: rmg_env
-      - name: Conda info
-        run: |
-          conda info
-          conda list
       - name: Build Binary
-        env: 
-          CONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
         run: |
-            conda install -y conda-build 
-            conda install -y anaconda-client 
-            conda config --add channels rmg
-            conda config --set anaconda_upload yes
-            xcrun --show-sdk-path
-            conda build --token $CONDA_TOKEN --user rmg .conda
+          # set a default value to the conda_token if needed (like from forks)
+          : "${CONDA_TOKEN:=${{ secrets.ANACONDA_TOKEN }}}"
+          : "${CONDA_TOKEN:=default_value}"
+          echo "CONDA_TOKEN=$CONDA_TOKEN" >> $GITHUB_ENV
+          conda config --add channels rmg
+          conda config --add channels cantera
+          conda config --add channels conda-forge
+          conda-build --token $CONDA_TOKEN --user rmg .conda
+      - name: Test Binary Install with RMS
+        run: |
+          conda create --name rmg_test python=3.7*
+          conda activate rmg_test
+          conda install -c local rmg
+          conda install -c conda-forge julia=1.9.1 pyjulia>=0.6
+          conda install -c rmg pyrms diffeqpy
+          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator'
+          python-jl rmg.py test/regression/RMS_constantVIdealGasReactor_superminimal/input.py
