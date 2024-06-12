@@ -81,7 +81,6 @@ from rmgpy.tools.plot import plot_sensitivity
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
 from rmgpy.yml import RMSWriter
 from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
-from rmgpy.rmg.reactionmechanismsimulator_reactors import NO_JULIA
 
 ################################################################################
 
@@ -560,7 +559,7 @@ class RMG(util.Subject):
             self.reaction_model.add_species_to_edge(spec, requires_rms=requires_rms)
 
         for reaction_system in self.reaction_systems:
-            if not NO_JULIA and isinstance(reaction_system, RMSReactor):
+            if isinstance(reaction_system, RMSReactor):
                 reaction_system.finish_termination_criteria()
 
         # Load restart seed mechanism (if specified)
@@ -711,7 +710,9 @@ class RMG(util.Subject):
         # advantages to write it here: this is run only once (as species indexes does not change over the generation)
         if self.solvent is not None:
             for index, reaction_system in enumerate(self.reaction_systems):
-                if ((NO_JULIA or not isinstance(reaction_system, RMSReactor)) and reaction_system.const_spc_names is not None):  # if no constant species provided do nothing
+                if (
+                    not isinstance(reaction_system, RMSReactor)
+                ) and reaction_system.const_spc_names is not None:  # if no constant species provided do nothing
                     reaction_system.get_const_spc_indices(self.reaction_model.core.species)  # call the function to identify indices in the solver
 
         self.initialize_reaction_threshold_and_react_flags()
@@ -729,7 +730,7 @@ class RMG(util.Subject):
         """
 
         self.attach(ChemkinWriter(self.output_directory))
-        if not NO_JULIA and requires_rms:
+        if requires_rms:
             self.attach(RMSWriter(self.output_directory))
 
         if self.generate_output_html:
@@ -742,7 +743,7 @@ class RMG(util.Subject):
 
         if self.save_simulation_profiles:
             for index, reaction_system in enumerate(self.reaction_systems):
-                if not NO_JULIA and requires_rms and isinstance(reaction_system, RMSReactor):
+                if requires_rms and isinstance(reaction_system, RMSReactor):
                     typ = type(reaction_system)
                     raise InputError(f"save_simulation_profiles=True not compatible with reactor of type {typ}")
                 reaction_system.attach(SimulationProfileWriter(self.output_directory, index, self.reaction_model.core.species))
@@ -786,7 +787,7 @@ class RMG(util.Subject):
             # Update react flags
             if self.filter_reactions:
                 # Run the reaction system to update threshold and react flags
-                if not NO_JULIA and requires_rms and isinstance(reaction_system, RMSReactor):
+                if requires_rms and isinstance(reaction_system, RMSReactor):
                     self.update_reaction_threshold_and_react_flags(
                         rxn_sys_unimol_threshold=np.zeros((len(self.reaction_model.core.species),), bool),
                         rxn_sys_bimol_threshold=np.zeros((len(self.reaction_model.core.species), len(self.reaction_model.core.species)), bool),
@@ -908,7 +909,7 @@ class RMG(util.Subject):
                             prune = False
 
                         try:
-                            if not NO_JULIA and requires_rms and isinstance(reaction_system, RMSReactor):
+                            if requires_rms and isinstance(reaction_system, RMSReactor):
                                 (
                                     terminated,
                                     resurrected,
@@ -1010,7 +1011,7 @@ class RMG(util.Subject):
                             temp_model_settings.tol_keep_in_edge = 0
                             if not resurrected:
                                 try:
-                                    if not NO_JULIA and requires_rms and isinstance(reaction_system, RMSReactor):
+                                    if requires_rms and isinstance(reaction_system, RMSReactor):
                                         (
                                             terminated,
                                             resurrected,
@@ -2229,7 +2230,7 @@ class RMG_Memory(object):
                 if isinstance(value, list):
                     self.Ranges[key] = [v.value_si for v in value]
 
-        if not NO_JULIA and isinstance(reaction_system, RMSReactor):
+        if isinstance(reaction_system, RMSReactor):
             self.tmax = reaction_system.tf
         else:
             for term in reaction_system.termination:

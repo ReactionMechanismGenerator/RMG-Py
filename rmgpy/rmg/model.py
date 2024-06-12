@@ -1134,7 +1134,7 @@ class CoreEdgeReactionModel:
 
         rxn_list = []
         if spec in self.edge.species:
-            if not NO_JULIA and requires_rms:
+            if requires_rms:
                 self.edge.phase_system.pass_species(spec.label, self.core.phase_system)
             # If species was in edge, remove it
             logging.debug("Removing species %s from edge.", spec)
@@ -1157,7 +1157,7 @@ class CoreEdgeReactionModel:
             for rxn in rxn_list:
                 self.add_reaction_to_core(rxn, requires_rms=requires_rms)
                 logging.debug("Moving reaction from edge to core: %s", rxn)
-        elif not NO_JULIA and requires_rms:
+        elif requires_rms:
             destination_phase = "Surface" if spec.molecule[0].contains_surface_site() else "Default"
             self.core.phase_system.phases[destination_phase].add_species(spec, edge_phase=self.edge.phase_system.phases[destination_phase])
             self.edge.phase_system.species_dict[spec.label] = spec
@@ -1170,7 +1170,7 @@ class CoreEdgeReactionModel:
         Add a species `spec` to the reaction model edge and optionally the RMS phase.
         """
         self.edge.species.append(spec)
-        if NO_JULIA or not requires_rms:
+        if not requires_rms:
             return
         destination_phase = "Surface" if spec.molecule[0].contains_surface_site() else "Default"
         self.edge.phase_system.phases[destination_phase].add_species(spec)
@@ -1395,12 +1395,12 @@ class CoreEdgeReactionModel:
         # remove the species
         self.edge.species.remove(spec)
         self.index_species_dict.pop(spec.index)
-        if not NO_JULIA and requires_rms:
+        if requires_rms:
             self.edge.phase_system.remove_species(spec)
 
         # clean up species references in reaction_systems
         for reaction_system in reaction_systems:
-            if NO_JULIA or not requires_rms or not isinstance(reaction_system, RMSReactor):
+            if not requires_rms or not isinstance(reaction_system, RMSReactor):
                 try:
                     reaction_system.species_index.pop(spec)
                 except KeyError:
@@ -1481,8 +1481,8 @@ class CoreEdgeReactionModel:
         """
         if rxn not in self.core.reactions:
             self.core.reactions.append(rxn)
-            
-            if not NO_JULIA and requires_rms and rxn not in self.edge.reactions:
+
+            if requires_rms and rxn not in self.edge.reactions:
                 # If a reaction is not in edge but is going to add to core, it is either a seed mechanism or a newly generated reaction where all reactants and products are already in core
                 # If the reaction is in edge, then the corresponding rms_rxn was moved from edge phase to core phase in pass_species already.
                 rms_species_list = self.core.phase_system.get_rms_species_list()
@@ -1508,7 +1508,7 @@ class CoreEdgeReactionModel:
         edge).
         """
         self.edge.reactions.append(rxn)
-        if NO_JULIA or not requires_rms:
+        if not requires_rms:
             return
         rms_species_list = self.edge.phase_system.get_rms_species_list()
         species_names = self.edge.phase_system.get_species_names()
