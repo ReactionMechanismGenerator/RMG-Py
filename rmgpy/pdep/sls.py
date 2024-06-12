@@ -32,7 +32,7 @@ Contains functionality for directly simulating the master equation
 and implementing the SLS master equation reduction method
 """
 import sys
-import warnings
+import logging
 
 import scipy.sparse as sparse
 import numpy as np
