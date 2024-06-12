@@ -32,16 +32,26 @@ import os
 from argparse import Namespace
 from typing import Callable, Union
 
+chemprop = None
 try:
     import chemprop
 except ImportError as e:
-    chemprop = None
     chemprop_exception = e
 import numpy as np
 
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
+
+ADMONITION = """
+Support for predicting thermochemistry using chemprop has been temporarily removed
+from RMG, pending official chemprop support for Python 3.11 and newer.
+
+To use chemprop and RMG, install a previous version of RMG (3.1.1 or earlier).
+
+See the link below for status of re-integration of chemprop:
+https://github.com/ReactionMechanismGenerator/RMG-Py/issues/2559
+"""
 
 
 class MLEstimator:
@@ -118,7 +128,7 @@ def load_estimator(model_dir: str) -> Callable[[str], np.ndarray]:
     if chemprop is None:
         # Delay chemprop ImportError until we actually try to use it
         # so that RMG can load successfully without chemprop.
-        raise chemprop_exception
+        raise RuntimeError(ADMONITION + "\nOriginal Exception:\n" + str(chemprop_exception))
 
     args = Namespace()  # Simple class to hold attributes
 

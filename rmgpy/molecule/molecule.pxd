@@ -224,14 +224,14 @@ cdef class Molecule(Graph):
                               bint raise_charge_exception=?, bint check_consistency=?)
 
     cpdef from_xyz(self, np.ndarray atomic_nums, np.ndarray coordinates, float critical_distance_factor=?, bint raise_atomtype_exception=?)
-    
-    cpdef str to_inchi(self)
 
-    cpdef str to_augmented_inchi(self)
+    cpdef str to_inchi(self, str backend=?)
 
-    cpdef str to_inchi_key(self)
+    cpdef str to_augmented_inchi(self, str backend=?)
 
-    cpdef str to_augmented_inchi_key(self)
+    cpdef str to_inchi_key(self, str backend=?)
+
+    cpdef str to_augmented_inchi_key(self, str backend=?)
 
     cpdef str to_smiles(self)
 

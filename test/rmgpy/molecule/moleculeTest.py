@@ -2056,6 +2056,22 @@ multiplicity 2
         assert not (adsorbed.is_surface_site())
         assert not (gas.is_surface_site())
 
+        # Check the "number of surface sites" method
+        bidentate = Molecule().from_adjacency_list(
+            """
+                1 C u0 p0 c0 {2,D} {3,S} {4,S}
+                2 C u0 p0 c0 {1,D} {5,S} {6,S}
+                3 H u0 p0 c0 {1,S}
+                4 X u0 p0 c0 {1,S}
+                5 H u0 p0 c0 {2,S}
+                6 X u0 p0 c0 {2,S}
+            """)
+        assert bidentate.contains_surface_site()
+        assert not (bidentate.is_surface_site())
+        assert gas.number_of_surface_sites() == 0
+        assert adsorbed.number_of_surface_sites() == 1
+        assert bidentate.number_of_surface_sites() == 2
+
     def test_malformed_augmented_inchi(self):
         """Test that augmented inchi without InChI layer raises Exception."""
         malform_aug_inchi = "foo"

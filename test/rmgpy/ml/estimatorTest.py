@@ -31,9 +31,11 @@ import os
 
 
 from rmgpy import settings
-from rmgpy.ml.estimator import MLEstimator
+from rmgpy.ml.estimator import MLEstimator, ADMONITION
 
+import pytest
 
+@pytest.mark.skip(reason=ADMONITION)
 class TestMLEstimator:
     """
     Contains unit tests for rmgpy.ml.estimator

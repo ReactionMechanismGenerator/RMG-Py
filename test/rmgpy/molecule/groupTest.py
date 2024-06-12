@@ -1625,3 +1625,21 @@ graph G {
         expected = {"C": 1, "N": 1, "P": 1}
         result = group.get_element_count()
         assert expected == result
+    
+    def test_is_reaction_bond(self):
+        """
+        Test the is_reaction_bond() function
+        """
+        group = Group().from_adjacency_list("""
+                                            1 R!H u1 {2,R} {3,vdW}
+                                            2 R u0 {1,R}
+                                            3 H u0 {1,vdW} {4,S}
+                                            4 O u0 p2 {3,S}""")
+        
+        bdr = group.atoms[1].bonds[group.atoms[0]]
+        bdv = group.atoms[0].bonds[group.atoms[2]]
+        bds = group.atoms[2].bonds[group.atoms[3]]
+        assert bdr.is_reaction_bond()
+        assert not bdv.is_reaction_bond()
+        assert not bds.is_reaction_bond()
+        
