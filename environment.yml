@@ -81,6 +81,7 @@ dependencies:
   - conda-forge::gprof2dot
   - conda-forge::numdifftools
   - conda-forge::quantities
+  - conda-forge::ringdecomposerlib-python
   - conda-forge::muq
 
 # packages we maintain
