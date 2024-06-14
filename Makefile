@@ -4,6 +4,9 @@
 #
 ################################################################################
 
+CC=gcc
+CXX=g++
+
 .PHONY : all minimal main solver check pycheck arkane clean install decython documentation test q2dtor
 
 all: pycheck main solver check
