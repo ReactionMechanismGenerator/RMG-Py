@@ -153,7 +153,7 @@ class TestTransportDatabase:
                 "CC(=O)C",
                 Length(5.36421, "angstroms"),
                 Energy(3.20446, "kJ/mol"),
-                "Epsilon & sigma estimated with Tc=500.53 K, Pc=47.11 bar (from Joback method)",
+                "Epsilon & sigma estimated with Tc=500.53 K, Pc=48.02 bar (from Joback method)",
             ],
             [
                 "cyclopenta-1,2-diene",
