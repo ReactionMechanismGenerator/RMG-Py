@@ -81,13 +81,13 @@ dependencies:
   - conda-forge::gprof2dot
   - conda-forge::numdifftools
   - conda-forge::quantities
+  - conda-forge::muq
+  - conda-forge::lpsolve55
+  - conda-forge::ringdecomposerlib-python
 
 # packages we maintain
-  - rmg::lpsolve55
-  - rmg::muq2
   - rmg::pydas >=1.0.3
   - rmg::pydqed >=1.0.3
-  - rmg::pyrdl
   - rmg::pyrms
   - rmg::symmetry
 
