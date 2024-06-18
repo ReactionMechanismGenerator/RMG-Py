@@ -94,7 +94,7 @@ set to its default value.  In particular, the thermodynamic properties for H and
 must be specified in one of the primary thermo libraries as they cannot be estimated
 by Benson’s method.</p>
 <p>For example, if you wish to use the GRI-Mech 3.0 mechanism <a class="reference internal" href="#grimech3-0" id="id1"><span>[GRIMech3.0]</span></a> as a ThermoLibrary in your model, the syntax will be:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <div role="list" class="citation-list">
@@ -125,7 +125,7 @@ from the start.</p>
 In the following example, the user has created
 a reaction library with a few additional reactions specific to n-butane, and these reactions
 are to be used in addition to the Glarborg C3 library:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Glarborg/C3&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">)],</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Glarborg/C3&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)],</span>
 </pre></div>
 </div>
 <p>The keyword False/True permits user to append all unused reactions (= kept in the edge) from this library to the chemkin file.
@@ -150,8 +150,23 @@ RMG would only use the rate coefficient supplied by you in generating the mechan
 Library.</p>
 </div>
 </section>
+<section id="external-libraries">
+<span id="externallib"></span><h3><span class="section-number">4.2.3. </span>External Libraries<a class="headerlink" href="#external-libraries" title="Permalink to this heading">¶</a></h3>
+<p>Users may direct RMG to use thermo and/or kinetic libraries which are not included in the RMG database,
+e.g., a library a user created that was intentionally saved to a path different than the conventional
+RMG-database location. In such cases, the user can specify the full path to the library in the input file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;path/to/your/thermo/library/file.py&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">your</span><span class="o">/</span><span class="n">kinetic</span><span class="o">/</span><span class="n">library</span><span class="o">/</span><span class="n">folder</span><span class="o">/</span><span class="s1">&#39;]</span>
+</pre></div>
+</div>
+<p>Combinations in any order of RMG’s legacy libraries and users’ external libraries are allowed,
+and the order in which the libraries are specified is the order in which they are loaded and given priority.</p>
+</section>
 <section id="seed-mechanisms">
-<span id="seedmechanism"></span><h3><span class="section-number">4.2.3. </span>Seed Mechanisms<a class="headerlink" href="#seed-mechanisms" title="Permalink to this heading">¶</a></h3>
+<span id="seedmechanism"></span><h3><span class="section-number">4.2.4. </span>Seed Mechanisms<a class="headerlink" href="#seed-mechanisms" title="Permalink to this heading">¶</a></h3>
 <p>The next section of the <code class="file docutils literal notranslate"><span class="pre">input.py</span></code> file specifies which, if any,
 Seed Mechanisms should be used.  If a seed mechanism is passed to RMG, every
 species and reaction present in the seed mechanism will be placed into the core, in
@@ -173,7 +188,7 @@ the instance of it from the first mechanism in which it appears is
 the one that gets used.</p>
 </section>
 <section id="kinetics-depositories">
-<span id="kineticsdepositories"></span><h3><span class="section-number">4.2.4. </span>Kinetics Depositories<a class="headerlink" href="#kinetics-depositories" title="Permalink to this heading">¶</a></h3>
+<span id="kineticsdepositories"></span><h3><span class="section-number">4.2.5. </span>Kinetics Depositories<a class="headerlink" href="#kinetics-depositories" title="Permalink to this heading">¶</a></h3>
 <p>Kinetics depositories store reactions which can be used for rate estimation.
 Depositories are divided by the sources of the data. Currently, RMG database
 has two depositories. The main depository is <cite>training</cite> which contains
@@ -187,7 +202,7 @@ strings describing which depositories to include.:</p>
 </div>
 </section>
 <section id="kinetics-families">
-<span id="kineticsfamilies"></span><h3><span class="section-number">4.2.5. </span>Kinetics Families<a class="headerlink" href="#kinetics-families" title="Permalink to this heading">¶</a></h3>
+<span id="kineticsfamilies"></span><h3><span class="section-number">4.2.6. </span>Kinetics Families<a class="headerlink" href="#kinetics-families" title="Permalink to this heading">¶</a></h3>
 <p>In this section users can specify the particular reaction families that they wish to use to generate their model.
 This can be specified with any combination of specific families and predefined sets from <code class="file docutils literal notranslate"><span class="pre">RMG-database/input/kinetics/families/recommended.py</span></code>.</p>
 <p>For example, you can use only the <code class="file docutils literal notranslate"><span class="pre">H_Abstraction</span></code> family to build the model:</p>
@@ -214,7 +229,7 @@ This can be specified with any combination of specific families and predefined s
 <p>Finally, you can also specify <code class="docutils literal notranslate"><span class="pre">'all'</span></code> or <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, which may be useful in certain cases.</p>
 </section>
 <section id="kinetics-estimator">
-<h3><span class="section-number">4.2.6. </span>Kinetics Estimator<a class="headerlink" href="#kinetics-estimator" title="Permalink to this heading">¶</a></h3>
+<h3><span class="section-number">4.2.7. </span>Kinetics Estimator<a class="headerlink" href="#kinetics-estimator" title="Permalink to this heading">¶</a></h3>
 <p>The last section is specifying that RMG is estimating kinetics of reactions from rate rules. For more details on how kinetic estimations is working check <a class="reference internal" href="kinetics.html#kinetics"><span class="std std-ref">Kinetics Estimation</span></a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span>
 </pre></div>
@@ -1056,10 +1071,11 @@ This can be done by setting <code class="docutils literal notranslate"><span cla
 <li><a class="reference internal" href="#datasources">4.2. Datasources</a><ul>
 <li><a class="reference internal" href="#thermo-libraries">4.2.1. Thermo Libraries</a></li>
 <li><a class="reference internal" href="#reaction-libraries">4.2.2. Reaction Libraries</a></li>
-<li><a class="reference internal" href="#seed-mechanisms">4.2.3. Seed Mechanisms</a></li>
-<li><a class="reference internal" href="#kinetics-depositories">4.2.4. Kinetics Depositories</a></li>
-<li><a class="reference internal" href="#kinetics-families">4.2.5. Kinetics Families</a></li>
-<li><a class="reference internal" href="#kinetics-estimator">4.2.6. Kinetics Estimator</a></li>
+<li><a class="reference internal" href="#external-libraries">4.2.3. External Libraries</a></li>
+<li><a class="reference internal" href="#seed-mechanisms">4.2.4. Seed Mechanisms</a></li>
+<li><a class="reference internal" href="#kinetics-depositories">4.2.5. Kinetics Depositories</a></li>
+<li><a class="reference internal" href="#kinetics-families">4.2.6. Kinetics Families</a></li>
+<li><a class="reference internal" href="#kinetics-estimator">4.2.7. Kinetics Estimator</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#list-of-species">4.3. List of species</a></li>
