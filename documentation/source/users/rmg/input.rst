@@ -59,7 +59,7 @@ ThermoLibrary field must be with respect to the :file:`$RMG/RMG-database/input/t
 directory.
 
 .. note::
-	Checks during the initialization are made to avoid users using "liquid thermo librairies" in gas phase simulations or using
+	Checks during the initialization are made to avoid users using "liquid thermo libraries" in gas phase simulations or using
 	"liquid phase libraries" obtained in another solvent than the one defined in the input file in liquid phase simulations.
 
 .. _reactionlibraries:
