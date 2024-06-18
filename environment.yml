@@ -57,7 +57,7 @@ dependencies:
   - coverage
   - cython >=0.25.2
   - scikit-learn
-  - scipy <1.11
+  - scipy >=1.9,<1.11
   - numpy >=1.10.0
   - pydot
   - jinja2
