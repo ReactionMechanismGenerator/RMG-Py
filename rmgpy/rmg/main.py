@@ -723,8 +723,10 @@ class RMG(util.Subject):
         """
 
         self.attach(ChemkinWriter(self.output_directory))
-        self.attach(RMSWriter(self.output_directory))
 
+        if self.generate_rms_each_iter:
+            self.attach(RMSWriter(self.output_directory))
+            
         if self.generate_output_html:
             self.attach(OutputHTMLWriter(self.output_directory))
 
@@ -1187,6 +1189,24 @@ class RMG(util.Subject):
         except Exception:
             logging.exception("Could not generate Cantera files for some reason.")
 
+        # if we're not writing rms files each iteration, only write one at the end.
+        if not self.generate_rms_each_iter:
+            from rmgpy.yml import write_yml
+
+            # make rms dir
+            dirname = os.path.join(self.output_directory, "rms")
+            if os.path.exists(dirname):
+                # The directory already exists, so delete it (and all its content!)
+                shutil.rmtree(dirname)
+            os.mkdir(dirname)
+
+            # save final rms file
+            solvent_data = None
+            if self.solvent:
+                solvent_data = self.database.solvation.get_solvent_data(self.solvent)
+            write_yml(self.reaction_model.core.species, self.reaction_model.core.reactions, solvent=self.solvent, solvent_data=solvent_data,
+                    path=os.path.join(dirname, 'chem.rms'))
+        
         self.check_model()
         # Write output file
         logging.info("")
