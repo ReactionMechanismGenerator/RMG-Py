@@ -621,7 +621,7 @@ cdef class SurfaceArrhenius(Arrhenius):
                                      'm^4/(molecule^2*s)': 2,
                                      'cm^2/(molecule*s)': 1,
                                      'cm^4/(molecule^2*s)': 2,
-                                     'cm^5/(mol^2*s)': 3,
+                                     'cm^5/(mol^2*s)': 2,
                                      }
 
         if self._T0.value_si != 1:
