@@ -43,9 +43,9 @@ dependencies:
 
 # external software tools for chemistry
   - coolprop
-  - cantera::cantera=2.6
+  - cantera::cantera >=3
   - conda-forge::mopac
-  - conda-forge::cclib >=1.6.3,<1.8.0
+  - conda-forge::cclib >=1.6.3
   - conda-forge::openbabel >= 3
   - conda-forge::rdkit >=2022.09.1
 
@@ -58,7 +58,7 @@ dependencies:
   - coverage
   - cython >=0.25.2
   - scikit-learn
-  - scipy <1.11
+  - scipy
   - numpy >=1.10.0
   - pydot
   - jinja2
