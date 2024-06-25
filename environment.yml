@@ -54,7 +54,7 @@ dependencies:
   - conda-forge::pyjulia >=0.6
 
 # Python tools
-  - python =3.11,3.12
+  - python =3.11
   - coverage
   - cython >=0.25.2
   - scikit-learn
@@ -78,16 +78,16 @@ dependencies:
   - conda-forge::quantities
   - conda-forge::muq
   - conda-forge::lpsolve55
-  - conda-forge::ringdecomposerlib-python
+#   - conda-forge::ringdecomposerlib-python
 
-# packages we maintain
-  - rmg::pydas >=1.0.3
-  - rmg::pydqed >=1.0.3
-  - rmg::pyrms
-  - rmg::symmetry
+# # packages we maintain
+#   - rmg::pydas >=1.0.3
+#   - rmg::pydqed >=1.0.3
+#   - rmg::pyrms
+#   - rmg::symmetry
 
-# packages we would like to stop maintaining (and why)
-  - rmg::diffeqpy
+# # packages we would like to stop maintaining (and why)
+#   - rmg::diffeqpy
   # we should use the official verison https://github.com/SciML/diffeqpy),
   # rather than ours (which is only made so that we can get it from conda)
   # It is only on pip, so we will need to do something like:
