@@ -19,7 +19,8 @@
 # - April 17, 2024 Limit versions of cclib at advice of maintainers.
 # - August 4, 2024 Restricted pyrms to <2
 # - May 14, 2024 Removed diffeqpy by switching to call SciMLBase and Sundials using JuliaCall
-
+# - March 15, 2024 - started migration to Python 3.9
+#
 name: rmg_env
 channels:
   - rmg
@@ -44,7 +45,7 @@ dependencies:
 
 # external software tools for chemistry
   - coolprop
-  - cantera::cantera=2.6
+  - cantera::cantera >=3
   - conda-forge::mopac
   # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2639#issuecomment-2050292972
   - conda-forge::cclib >=1.6.3,<1.9
@@ -56,11 +57,11 @@ dependencies:
   - conda-forge::pyjuliacall # for calling julia packages
 
 # Python tools
-  - python >=3.7
+  - python >=3.9  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
   - coverage
   - cython >=0.25.2
   - scikit-learn
-  - scipy <1.11
+  - scipy
   - numpy >=1.10.0
   - pydot
   - jinja2
@@ -71,13 +72,7 @@ dependencies:
   - networkx
   - pytest
   - pytest-cov
-  # we use a the pytest-check plugin, which is on Conda and PyPI, but the
-  # version compatible with Python 3.7 is only on PyPI
-  # switch to the conda version after upgrading to 3.11
-  # - conda-forge::pytest-check
-  - pip
-  - pip:
-    - pytest-check
+  - conda-forge::pytest-check
   - matplotlib >=1.5
   - mpmath
   - pandas

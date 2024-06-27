@@ -26,15 +26,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Mambaforge Python 3.7
+      - name: Setup Miniforge Python 3.9
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
           miniforge-variant: Miniforge3
           miniforge-version: latest
-          python-version: 3.7
+          python-version: 3.9
           activate-environment: rmg_env
           use-mamba: true
+          show-channel-urls: true
+          channels: conda-forge,cantera,rmg
 
       - name: Install sphinx
         run: mamba install -y sphinx
