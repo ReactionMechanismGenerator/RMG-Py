@@ -51,66 +51,14 @@ env:
 
 
 jobs:
-  build-osx:
-    runs-on: macos-13
-    # skip scheduled runs from forks
-    if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
-    defaults:
-      run:
-        shell: bash -l {0}
-    steps:
-      - name: Checkout RMG-Py
-        uses: actions/checkout@v4
-
-      # Step to create a custom condarc.yml before setting up conda
-      - name: Create custom conda config file
-        run: |
-          RUNNER_CWD=$(pwd)
-          echo "channels:" > $RUNNER_CWD/condarc.yml
-          echo "  - conda-forge" >> $RUNNER_CWD/condarc.yml
-          echo "  - rmg" >> $RUNNER_CWD/condarc.yml
-          echo "  - cantera" >> $RUNNER_CWD/condarc.yml
-          echo "show_channel_urls: true" >> $RUNNER_CWD/condarc.yml
-
-      # configures the mamba environment manager and builds the environment
-      - name: Setup Miniforge Python 3.7
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          environment-file: environment.yml
-          miniforge-variant: Miniforge3
-          miniforge-version: latest
-          python-version: 3.7
-          condarc-file: condarc.yml
-          activate-environment: rmg_env
-          use-mamba: true
-
-      # list the environment for debugging purposes
-      - name: mamba info
-        run: |
-          mamba info
-          mamba list
-
-      # Clone RMG-database
-      - name: Clone RMG-database
-        run: |
-          cd ..
-          git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
-
-      # modify env variables as directed in the RMG installation instructions
-      - name: Set Environment Variables
-        run: |
-          RUNNER_CWD=$(pwd)
-          echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
-          echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
-
-      # RMG build step
-      - name: make RMG
-        run: |
-          make clean
-          make
-
-  build-and-test-linux:
-    runs-on: ubuntu-latest
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+        os: [macos-13, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} Build and Test Python ${{ matrix.python-version }}
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: 
@@ -123,27 +71,17 @@ jobs:
       - name: Checkout RMG-Py
         uses: actions/checkout@v4
 
-      # Step to create a custom condarc.yml before setting up conda
-      - name: Create custom condarc.yml
-        run: |
-          RUNNER_CWD=$(pwd)
-          echo "channels:" > $RUNNER_CWD/condarc.yml
-          echo "  - conda-forge" >> $RUNNER_CWD/condarc.yml
-          echo "  - rmg" >> $RUNNER_CWD/condarc.yml
-          echo "  - cantera" >> $RUNNER_CWD/condarc.yml
-          echo "show_channel_urls: true" >> $RUNNER_CWD/condarc.yml
-
-      # configures the mamba environment manager and builds the environment
-      - name: Setup Miniforge Python 3.7
+      - name: Setup Miniforge Python ${{ matrix.python-version }}
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
           miniforge-variant: Miniforge3
           miniforge-version: latest
-          python-version: 3.7
-          condarc-file: condarc.yml
+          python-version: ${{ matrix.python-version }}
           activate-environment: rmg_env
           use-mamba: true
+          show-channel-urls: true
+          channels: conda-forge,cantera,rmg
 
       # list the environment for debugging purposes
       - name: mamba info
@@ -386,7 +324,7 @@ jobs:
     # who knows ¯\_(ツ)_/¯
     #
     # taken from https://github.com/docker/build-push-action
-    needs: build-and-test-linux
+    needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py'
     steps:
