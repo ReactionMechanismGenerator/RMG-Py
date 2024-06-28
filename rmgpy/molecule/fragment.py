@@ -947,71 +947,69 @@ class Fragment(Molecule):
                     # mol_set contains new set of fragments
                     mol_set = Chem.GetMolFrags(new_mol, asMols=True)
                     # check all fragments' size
-                    try:
-                        if all(sum(1 for atom in mol.GetAtoms() if atom.GetAtomicNum() == 6) >= size_threshold for mol in mol_set):
-                            if len(mol_set) == 2:
-                                frag1 = Chem.MolToSmiles(mol_set[0])
-                                frag2 = Chem.MolToSmiles(mol_set[1])
-    
-                                frag1_R = frag1.count("Na")
-                                frag1_L = frag1.count("K")
-                                frag2_R = frag2.count("Na")
-                                frag2_L = frag2.count("K")
 
-                                # if frag 2 has the least Rs and frag 1 has the
-                                # same or fewer Ls than frag 2 -->
-                                # assign R to frag 2 and L to frag 1
-                                if frag1_R > frag2_R and frag1_L <= frag2_L:
-                                    frag1_smi = frag1.replace("*", "L")
-                                    frag2_smi = frag2.replace("*", "R")
+                    if all(sum(1 for atom in mol.GetAtoms() if atom.GetAtomicNum() == 6) >= size_threshold for mol in mol_set):
+                        if len(mol_set) == 2:
+                            frag1 = Chem.MolToSmiles(mol_set[0])
+                            frag2 = Chem.MolToSmiles(mol_set[1])
 
-                                # if frag 2 has the least Ls and frag 1 has the
-                                # same or fewer Rs than frag 2 -->
-                                # assign R to frag 1 and L to frag 2
-                                elif frag1_L > frag2_L and frag1_R <= frag2_R:
-                                    frag1_smi = frag1.replace("*", "R")
-                                    frag2_smi = frag2.replace("*", "L")
+                            frag1_R = frag1.count("Na")
+                            frag1_L = frag1.count("K")
+                            frag2_R = frag2.count("Na")
+                            frag2_L = frag2.count("K")
 
-                                # if frag 1 has the least Ls and frag 2 has the
-                                # same or fewer Rs than frag 1 -->
-                                # assign R to frag 2 and L to frag 1
-                                elif frag2_L > frag1_L and frag2_R <= frag1_R:
-                                    frag1_smi = frag1.replace("*", "L")
-                                    frag2_smi = frag2.replace("*", "R")
+                            # if frag 2 has the least Rs and frag 1 has the
+                            # same or fewer Ls than frag 2 -->
+                            # assign R to frag 2 and L to frag 1
+                            if frag1_R > frag2_R and frag1_L <= frag2_L:
+                                frag1_smi = frag1.replace("*", "L")
+                                frag2_smi = frag2.replace("*", "R")
 
-                                # if frag 1 has the least Rs and frag 2 has the
-                                # same or fewer Ls than frag 1 -->
-                                # assign R to frag 1 and L to frag 2
-                                elif frag2_R > frag1_R and frag2_L <= frag1_L:
-                                    frag1_smi = frag1.replace("*", "R")
-                                    frag2_smi = frag2.replace("*", "L")
+                            # if frag 2 has the least Ls and frag 1 has the
+                            # same or fewer Rs than frag 2 -->
+                            # assign R to frag 1 and L to frag 2
+                            elif frag1_L > frag2_L and frag1_R <= frag2_R:
+                                frag1_smi = frag1.replace("*", "R")
+                                frag2_smi = frag2.replace("*", "L")
 
-                                # else if frag 1 and frag 2 have equal number 
-                                # of Rs and Ls or one frag has more Rs and 
-                                # more Ls than the other, choose randomly
-                                elif randint(0, 1) == 1:
-                                    frag1_smi = frag1.replace("*", "L")
-                                    frag2_smi = frag2.replace("*", "R")
+                            # if frag 1 has the least Ls and frag 2 has the
+                            # same or fewer Rs than frag 1 -->
+                            # assign R to frag 2 and L to frag 1
+                            elif frag2_L > frag1_L and frag2_R <= frag1_R:
+                                frag1_smi = frag1.replace("*", "L")
+                                frag2_smi = frag2.replace("*", "R")
+
+                            # if frag 1 has the least Rs and frag 2 has the
+                            # same or fewer Ls than frag 1 -->
+                            # assign R to frag 1 and L to frag 2
+                            elif frag2_R > frag1_R and frag2_L <= frag1_L:
+                                frag1_smi = frag1.replace("*", "R")
+                                frag2_smi = frag2.replace("*", "L")
+
+                            # else if frag 1 and frag 2 have equal number 
+                            # of Rs and Ls or one frag has more Rs and 
+                            # more Ls than the other, choose randomly
+                            elif randint(0, 1) == 1:
+                                frag1_smi = frag1.replace("*", "L")
+                                frag2_smi = frag2.replace("*", "R")
+                            else:
+                                frag1_smi = frag1.replace("*", "R")
+                                frag2_smi = frag2.replace("*", "L")
+
+                            frag_list = [frag1_smi, frag2_smi]
+
+                        elif len(mol_set) > 2: # means it cut into 3 fragments
+                            frag_list = []
+                            for ind, rdmol in enumerate(mol_set):
+                                frag = Chem.MolToSmiles(rdmol)
+                                if frag.count("*") > 1:
+                                    frag_smi = frag.replace("*", "R")
                                 else:
-                                    frag1_smi = frag1.replace("*", "R")
-                                    frag2_smi = frag2.replace("*", "L")
-    
-                                frag_list = [frag1_smi, frag2_smi]
-    
-                            elif len(mol_set) > 2: # means it cut into 3 fragments
-                                frag_list = []
-                                for ind, rdmol in enumerate(mol_set):
-                                    frag = Chem.MolToSmiles(rdmol)
-                                    if frag.count("*") > 1:
-                                        frag_smi = frag.replace("*", "R")
-                                    else:
-                                        frag_smi = frag.replace("*", "L")
-                                    frag_list.append(frag_smi)                          
-                                break
-                        else:
-                            # turn to next matched_atom_map
-                            continue
-                    except:
+                                    frag_smi = frag.replace("*", "L")
+                                frag_list.append(frag_smi)                          
+                            break
+                    else:
+                        # turn to next matched_atom_map
                         continue
             else:
                 # no match for this pattern
@@ -1113,52 +1111,49 @@ class Fragment(Molecule):
                     # mol_set contains new set of fragments
                     mol_set = Chem.GetMolFrags(new_mol, asMols=True)
                     # check all fragments' size
-                    try:
-                        if all(sum(1 for atom in mol.GetAtoms() if atom.GetAtomicNum() == 6) >= size_threshold for mol in mol_set):
-                            if len(mol_set) == 2:
-                                frag1 = Chem.MolToSmiles(mol_set[0])
-                                frag2 = Chem.MolToSmiles(mol_set[1])
+                    if all(sum(1 for atom in mol.GetAtoms() if atom.GetAtomicNum() == 6) >= size_threshold for mol in mol_set):
+                        if len(mol_set) == 2:
+                            frag1 = Chem.MolToSmiles(mol_set[0])
+                            frag2 = Chem.MolToSmiles(mol_set[1])
 
-                                frag1_R = frag1.count("Na")
-                                frag1_L = frag1.count("K")
-                                frag2_R = frag2.count("Na")
-                                frag2_L = frag2.count("K")
+                            frag1_R = frag1.count("Na")
+                            frag1_L = frag1.count("K")
+                            frag2_R = frag2.count("Na")
+                            frag2_L = frag2.count("K")
 
-                                if frag1_R > frag2_R and frag1_L <= frag2_L:
-                                    frag1_smi = frag1.replace("*", "L")
-                                    frag2_smi = frag2.replace("*", "R")
-                                elif frag1_L > frag2_L and frag1_R <= frag2_R:
-                                    frag1_smi = frag1.replace("*", "R")
-                                    frag2_smi = frag2.replace("*", "L")
-                                elif frag2_L > frag1_L and frag2_R <= frag1_R:
-                                    frag1_smi = frag1.replace("*", "L")
-                                    frag2_smi = frag2.replace("*", "R")
-                                elif frag2_R > frag1_R and frag2_L <= frag1_L:
-                                    frag1_smi = frag1.replace("*", "R")
-                                    frag2_smi = frag2.replace("*", "L")
-                                elif randint(0,1)==1:
-                                    frag1_smi = frag1.replace("*", "L")
-                                    frag2_smi = frag2.replace("*", "R")
+                            if frag1_R > frag2_R and frag1_L <= frag2_L:
+                                frag1_smi = frag1.replace("*", "L")
+                                frag2_smi = frag2.replace("*", "R")
+                            elif frag1_L > frag2_L and frag1_R <= frag2_R:
+                                frag1_smi = frag1.replace("*", "R")
+                                frag2_smi = frag2.replace("*", "L")
+                            elif frag2_L > frag1_L and frag2_R <= frag1_R:
+                                frag1_smi = frag1.replace("*", "L")
+                                frag2_smi = frag2.replace("*", "R")
+                            elif frag2_R > frag1_R and frag2_L <= frag1_L:
+                                frag1_smi = frag1.replace("*", "R")
+                                frag2_smi = frag2.replace("*", "L")
+                            elif randint(0,1)==1:
+                                frag1_smi = frag1.replace("*", "L")
+                                frag2_smi = frag2.replace("*", "R")
+                            else:
+                                frag1_smi = frag1.replace("*", "R")
+                                frag2_smi = frag2.replace("*", "L")
+
+                            frag_list = [frag1_smi, frag2_smi]
+
+                        elif len(mol_set) > 2: # means it cut into 3 fragments
+                            frag_list = []
+                            for ind, rdmol in enumerate(mol_set):
+                                frag = Chem.MolToSmiles(rdmol)
+                                if frag.count("*") > 1:
+                                    frag_smi = frag.replace("*", "R")
                                 else:
-                                    frag1_smi = frag1.replace("*", "R")
-                                    frag2_smi = frag2.replace("*", "L")
-
-                                frag_list = [frag1_smi, frag2_smi]
-
-                            elif len(mol_set) > 2: # means it cut into 3 fragments
-                                frag_list = []
-                                for ind, rdmol in enumerate(mol_set):
-                                    frag = Chem.MolToSmiles(rdmol)
-                                    if frag.count("*") > 1:
-                                        frag_smi = frag.replace("*", "R")
-                                    else:
-                                        frag_smi = frag.replace("*", "L")
-                                    frag_list.append(frag_smi)                          
-                                break
-                        else:
-                            # turn to next matched_atom_map
-                            continue
-                    except:
+                                    frag_smi = frag.replace("*", "L")
+                                frag_list.append(frag_smi)                          
+                            break
+                    else:
+                        # turn to next matched_atom_map
                         continue
             else:
                 # no match for this pattern
