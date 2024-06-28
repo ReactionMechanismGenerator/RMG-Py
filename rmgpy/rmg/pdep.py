@@ -892,6 +892,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 for r in self.net_reactions:
                     if r.has_template(configurations[j], configurations[i]):
                         net_reaction = r
+                        
                 # If net reaction does not already exist, make a new one
                 if net_reaction is None:
                     net_reaction = PDepReaction(
@@ -900,9 +901,12 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         network=self,
                         kinetics=None,
                     )
-                    net_reaction = reaction_model.make_new_pdep_reaction(net_reaction)
-                    self.net_reactions.append(net_reaction)
-
+                    num_unpaired_electrons_reactants = sum([reactant.multiplicity - 1 for reactant in configurations[j]])
+                    num_unpaired_electrons_products = sum([product.multiplicity - 1 for product in configurations[i]])
+                    if not (len(configurations[i]) > 1 and len(configurations[j])>1 and num_unpaired_electrons_reactants!=num_unpaired_electrons_products):
+                        net_reaction = reaction_model.make_new_pdep_reaction(net_reaction)
+                        self.net_reactions.append(net_reaction)
+                    
                     # Place the net reaction in the core or edge if necessary
                     # Note that leak reactions are not placed in the edge
                     if all([s in reaction_model.core.species for s in net_reaction.reactants]) \
