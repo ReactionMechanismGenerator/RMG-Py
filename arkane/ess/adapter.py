@@ -36,9 +36,6 @@ import logging
 import os
 import shutil
 
-from rmgpy.qm.qmdata import QMData
-from rmgpy.qm.symmetry import PointGroupCalculator
-
 
 class ESSAdapter(ABC):
     """
@@ -177,28 +174,28 @@ class ESSAdapter(ABC):
         scr_dir = os.path.join(os.path.abspath('.'), str('scratch'))
         if not os.path.exists(scr_dir):
             os.makedirs(scr_dir)
-        try:
-            qmdata = QMData(
-                groundStateDegeneracy=1,  # Only needed to check if valid QMData
-                numberOfAtoms=len(atom_numbers),
-                atomicNumbers=atom_numbers,
-                atomCoords=(coordinates, str('angstrom')),
-                energy=(0.0, str('kcal/mol'))  # Only needed to avoid error
-            )
-            # Dynamically create custom class to store the settings needed for the point group calculation
-            # Normally, it expects an rmgpy.qm.main.QMSettings object, but we don't need all of those settings
-            settings = type(str(''), (),
-                            dict(symmetryPath=str('symmetry'), scratchDirectory=scr_dir))()
-            pgc = PointGroupCalculator(settings, unique_id, qmdata)
-            pg = pgc.calculate()
-            if pg is not None:
-                optical_isomers = 2 if pg.chiral else 1
-                symmetry = pg.symmetry_number
-                logging.debug("Symmetry algorithm found {0} optical isomers and a symmetry number of {1}".format(
-                    optical_isomers, symmetry))
-            else:
-                logging.error('Symmetry algorithm errored when computing point group\nfor log file located at{0}.\n'
-                              'Manually provide values in Arkane input.'.format(self.path))
-            return optical_isomers, symmetry, pg.point_group
-        finally:
-            shutil.rmtree(scr_dir)
+        # try:
+        #     qmdata = QMData(
+        #         groundStateDegeneracy=1,  # Only needed to check if valid QMData
+        #         numberOfAtoms=len(atom_numbers),
+        #         atomicNumbers=atom_numbers,
+        #         atomCoords=(coordinates, str('angstrom')),
+        #         energy=(0.0, str('kcal/mol'))  # Only needed to avoid error
+        #     )
+        #     # Dynamically create custom class to store the settings needed for the point group calculation
+        #     # Normally, it expects an rmgpy.qm.main.QMSettings object, but we don't need all of those settings
+        #     settings = type(str(''), (),
+        #                     dict(symmetryPath=str('symmetry'), scratchDirectory=scr_dir))()
+        #     pgc = PointGroupCalculator(settings, unique_id, qmdata)
+        #     pg = pgc.calculate()
+        #     if pg is not None:
+        #         optical_isomers = 2 if pg.chiral else 1
+        #         symmetry = pg.symmetry_number
+        #         logging.debug("Symmetry algorithm found {0} optical isomers and a symmetry number of {1}".format(
+        #             optical_isomers, symmetry))
+        #     else:
+        #         logging.error('Symmetry algorithm errored when computing point group\nfor log file located at{0}.\n'
+        #                       'Manually provide values in Arkane input.'.format(self.path))
+        #     return optical_isomers, symmetry, pg.point_group
+        # finally:
+        shutil.rmtree(scr_dir)

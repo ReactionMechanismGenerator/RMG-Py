@@ -67,7 +67,6 @@ from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 from rmgpy.kinetics import ThirdBody
 from rmgpy.kinetics import Troe
 from rmgpy.molecule import Molecule
-from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
 from rmgpy.rmg.output import OutputHTMLWriter
@@ -729,7 +728,7 @@ class RMG(util.Subject):
             self.attach(OutputHTMLWriter(self.output_directory))
 
         if self.quantum_mechanics:
-            self.attach(QMDatabaseWriter())
+            pass
 
         self.attach(ExecutionStatsWriter(self.output_directory))
 
