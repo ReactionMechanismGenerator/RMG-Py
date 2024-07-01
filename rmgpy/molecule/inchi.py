@@ -30,6 +30,7 @@
 import itertools
 import re
 import warnings
+from operator import itemgetter
 
 import cython
 from rdkit import Chem
@@ -614,7 +615,7 @@ def create_augmented_layers(mol):
         atom_indices = [atom_indices.index(i + 1) for i, atom in enumerate(molcopy.atoms)]
 
         # sort the atoms based on the order of the atom indices
-        molcopy.atoms = [x for (y, x) in sorted(zip(atom_indices, molcopy.atoms), key=lambda pair: pair[0])]
+        molcopy.atoms = [x for (y, x) in sorted(zip(atom_indices, molcopy.atoms), key=itemgetter(0))]
 
         ulayer = _create_u_layer(molcopy, auxinfo)
 
@@ -704,17 +705,15 @@ def _convert_3_atom_2_bond_path(start, mol):
     """
     from rmgpy.data.kinetics.family import ReactionRecipe
 
-    def is_valid(mol):
-        """Check if total bond order of oxygen atoms is smaller than 4."""
-
-        for at in mol.atoms:
-            if at.number == 8:
-                order = at.get_total_bond_order()
-                not_correct = order >= 4
-                if not_correct:
-                    return False
-
-        return True
+    # Check if total bond order of oxygen atoms is smaller than 4
+    is_mol_valid = True
+    for at in mol.atoms:
+        if at.number == 8:
+            order = at.get_total_bond_order()
+            not_correct = order >= 4
+            if not_correct:
+                is_mol_valid = False
+                break
 
     paths = pathfinder.find_allyl_end_with_charge(start)
 
@@ -739,7 +738,7 @@ def _convert_3_atom_2_bond_path(start, mol):
         end.charge += 1 if end.charge < 0 else -1
         recipe.apply_forward(mol)
 
-        if is_valid(mol):
+        if is_mol_valid:
             # unlabel atoms so that they never cause trouble downstream
             for i, at in enumerate(path[::2]):
                 at.label = ''
