@@ -46,8 +46,91 @@ from rmgpy.molecule.element import PeriodicSystem
 from rmgpy.molecule.graph import Vertex, Edge, Graph
 from rmgpy.molecule.fragment import CuttingLabel
 
+# helper functions
+# these were originall nested inside the indicated parent function, but when we upgraded to
+# Cython 3 this was no longer allowed - thus, they now live here.
 
-################################################################################
+# add_implicit_benzene
+def check_set(super_list, sub_list):
+    """
+    Args:
+        super_list: list to check if superset of partList
+        sub_list:  list to check if subset of superList
+
+    Returns: Boolean to see if super_list is a superset of sub_list
+
+    """
+    super_set = set(super_list)
+    sub_set = set(sub_list)
+    return super_set.issuperset(sub_set)
+
+def add_cb_atom_to_ring(ring, cb_atom):
+    """
+    Every 'Cb' atom belongs in exactly one benzene ring. This function checks
+    adds the cb_atom to the ring (in connectivity order) if the cb_atom is connected
+    to any the last or first atom in the partial ring.
+
+    Args:
+        ring: list of :class:GroupAtoms representing a partial ring to merge
+        cb_atom: :class:GroupAtom with atomtype 'Cb'
+
+    Returns: If cb_atom connects to the beginning or end of ring, returns a
+    new list of the merged ring, otherwise an empty list
+
+    """
+
+    merged_ring = []
+    # ring already complete
+    if len(ring) == 6: return merged_ring
+    for atom2, bond12 in cb_atom.bonds.items():
+        if bond12.is_benzene():
+            if atom2 is ring[-1]:
+                merged_ring = ring + [cb_atom]
+            elif atom2 is ring[0]:
+                merged_ring = [cb_atom] + ring
+
+    return merged_ring
+
+def merge_overlapping_benzene_rings(ring1, ring2, od):
+    """
+    The input arguments of rings are always in the order that the atoms appear
+    inside the ring. That is, each atom is connected to the ones adjacent on the
+    list.
+
+    Args:
+        ring1: list of :class:GroupAtoms representing first partial ring to merge
+        ring2: list :class:GroupAtoms representing second partial ring to merge
+        od: in for overlap distance
+
+    This function tries to see if the beginning or ends of each list have the
+    same atom objects, i.e the two part rings should be merged together.
+
+    Returns: If rings are mergable, returns a new list of the merged ring, otherwise
+    an empty list
+
+    """
+    new_ring = []
+    # ring already complete
+    if len(ring1) == 6 or len(ring2) == 6: return new_ring
+
+    # start of ring1 matches end of ring2
+    match_list1 = [x1 is x2 for x1, x2 in zip(ring1[-od:], ring2[:od])]
+    # end of ring1 matches end of ring2
+    match_list2 = [x1 is x2 for x1, x2 in zip(ring1[-od:], ring2[:od - 1:-1])]
+    # start of ring1 matches end of ring2
+    match_list3 = [x1 is x2 for x1, x2 in zip(ring1[:od], ring2[-od:])]
+    # start of ring1 matches start of ring2
+    match_list4 = [x1 is x2 for x1, x2 in zip(ring1[:od], ring2[od::-1])]
+    if False not in match_list1:
+        new_ring = ring1 + ring2[od:]
+    elif False not in match_list2:
+        new_ring = ring1 + ring2[-od - 1::-1]
+    elif False not in match_list3:
+        new_ring = ring2[:-od] + ring1
+    elif False not in match_list4:
+        new_ring = ring2[:od - 1:-1] + ring1
+
+    return new_ring
 
 class GroupAtom(Vertex):
     """
@@ -2531,89 +2614,6 @@ class Group(Graph):
         # Note that atomtypes like N5bd are mostly referred to as Cb in this code,
         # which was first written for just carbon.
 
-        # First define some helper functions
-        def check_set(super_list, sub_list):
-            """
-            Args:
-                super_list: list to check if superset of partList
-                sub_list:  list to check if subset of superList
-
-            Returns: Boolean to see if super_list is a superset of sub_list
-
-            """
-            super_set = set(super_list)
-            sub_set = set(sub_list)
-            return super_set.issuperset(sub_set)
-
-        def add_cb_atom_to_ring(ring, cb_atom):
-            """
-            Every 'Cb' atom belongs in exactly one benzene ring. This function checks
-            adds the cb_atom to the ring (in connectivity order) if the cb_atom is connected
-            to any the last or first atom in the partial ring.
-
-            Args:
-                ring: list of :class:GroupAtoms representing a partial ring to merge
-                cb_atom: :class:GroupAtom with atomtype 'Cb'
-
-            Returns: If cb_atom connects to the beginning or end of ring, returns a
-            new list of the merged ring, otherwise an empty list
-
-            """
-
-            merged_ring = []
-            # ring already complete
-            if len(ring) == 6: return merged_ring
-            for atom2, bond12 in cb_atom.bonds.items():
-                if bond12.is_benzene():
-                    if atom2 is ring[-1]:
-                        merged_ring = ring + [cb_atom]
-                    elif atom2 is ring[0]:
-                        merged_ring = [cb_atom] + ring
-
-            return merged_ring
-
-        def merge_overlapping_benzene_rings(ring1, ring2, od):
-            """
-            The input arguments of rings are always in the order that the atoms appear
-            inside the ring. That is, each atom is connected to the ones adjacent on the
-            list.
-
-            Args:
-                ring1: list of :class:GroupAtoms representing first partial ring to merge
-                ring2: list :class:GroupAtoms representing second partial ring to merge
-                od: in for overlap distance
-
-            This function tries to see if the beginning or ends of each list have the
-            same atom objects, i.e the two part rings should be merged together.
-
-            Returns: If rings are mergable, returns a new list of the merged ring, otherwise
-            an empty list
-
-            """
-            new_ring = []
-            # ring already complete
-            if len(ring1) == 6 or len(ring2) == 6: return new_ring
-
-            # start of ring1 matches end of ring2
-            match_list1 = [x1 is x2 for x1, x2 in zip(ring1[-od:], ring2[:od])]
-            # end of ring1 matches end of ring2
-            match_list2 = [x1 is x2 for x1, x2 in zip(ring1[-od:], ring2[:od - 1:-1])]
-            # start of ring1 matches end of ring2
-            match_list3 = [x1 is x2 for x1, x2 in zip(ring1[:od], ring2[-od:])]
-            # start of ring1 matches start of ring2
-            match_list4 = [x1 is x2 for x1, x2 in zip(ring1[:od], ring2[od::-1])]
-            if False not in match_list1:
-                new_ring = ring1 + ring2[od:]
-            elif False not in match_list2:
-                new_ring = ring1 + ring2[-od - 1::-1]
-            elif False not in match_list3:
-                new_ring = ring2[:-od] + ring1
-            elif False not in match_list4:
-                new_ring = ring2[:od - 1:-1] + ring1
-
-            return new_ring
-
-        #######################################################################################
         # start of main algorithm
         copy_group = deepcopy(self)
         """

@@ -56,6 +56,7 @@ Currently supported resonance types:
 """
 
 import logging
+from operator import attrgetter
 
 import cython
 
@@ -965,6 +966,13 @@ def generate_clar_structures(mol, save_order=False):
 
     return mol_list
 
+# helper functions for sorting
+def _sum_atom_ids(atom_list):
+    return sum(atom.id for atom in atom_list)
+
+def _tuplize_bond(bond):
+    return (bond.atom1.id, bond.atom2.id)
+
 
 def _clar_optimization(mol, constraints=None, max_num=None, save_order=False):
     """
@@ -993,7 +1001,7 @@ def _clar_optimization(mol, constraints=None, max_num=None, save_order=False):
     molecule = mol.copy(deep=True)
 
     aromatic_rings = molecule.get_aromatic_rings(save_order=save_order)[0]
-    aromatic_rings.sort(key=lambda x: sum([atom.id for atom in x]))
+    aromatic_rings.sort(key=_sum_atom_ids)
 
     if not aromatic_rings:
         return []
@@ -1002,13 +1010,13 @@ def _clar_optimization(mol, constraints=None, max_num=None, save_order=False):
     atoms = set()
     for ring in aromatic_rings:
         atoms.update(ring)
-    atoms = sorted(atoms, key=lambda x: x.id)
+    atoms = sorted(atoms, key=attrgetter('id'))
 
     # Get list of bonds involving the ring atoms, ignoring bonds to hydrogen
     bonds = set()
     for atom in atoms:
         bonds.update([atom.bonds[key] for key in atom.bonds.keys() if key.is_non_hydrogen()])
-    bonds = sorted(bonds, key=lambda x: (x.atom1.id, x.atom2.id))
+    bonds = sorted(bonds, key=_tuplize_bond)
 
     # Identify exocyclic bonds, and save their bond orders
     exo = []
