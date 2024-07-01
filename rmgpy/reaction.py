@@ -65,6 +65,16 @@ from rmgpy.thermo import ThermoData
 
 ################################################################################
 
+# helper function for sorting
+def get_sorting_key(spc):
+    # List of elements to sort by, order is intentional
+    numbers = [6, 8, 7, 14, 16, 15, 17, 53, 9, 35]  # C, O, N, Si, S, P, Cl, I, F, Br
+    ele_count = dict([(n,0) for n in numbers])
+    for atom in spc.molecule[0].atoms:
+        if isinstance(atom, Atom) and atom.element.number in numbers:
+            ele_count[atom.element.number] += 1
+    return tuple(ele_count[n] for n in numbers)
+
 
 class Reaction:
     """
@@ -1516,14 +1526,7 @@ class Reaction:
             reactants = self.reactants[:]
             products = self.products[:]
 
-            def get_sorting_key(spc):
-                # List of elements to sort by, order is intentional
-                numbers = [6, 8, 7, 14, 16, 15, 17, 53, 9, 35]  # C, O, N, Si, S, P, Cl, I, F, Br
-                ele_count = dict([(n,0) for n in numbers])
-                for atom in spc.molecule[0].atoms:
-                    if isinstance(atom, Atom) and atom.element.number in numbers:
-                        ele_count[atom.element.number] += 1
-                return tuple(ele_count[n] for n in numbers)
+
             # Sort the reactants and products by element counts
             reactants.sort(key=get_sorting_key)
             products.sort(key=get_sorting_key)
@@ -1769,7 +1772,7 @@ class Reaction:
             mass_list = [spc.molecule[0].get_molecular_weight() for spc in self.products]
         else:
             mass_list = [spc.molecule[0].get_molecular_weight() for spc in self.reactants]
-        reduced_mass = reduce((lambda x, y: x * y), mass_list) / sum(mass_list)
+        reduced_mass = np.prod(mass_list) / sum(mass_list)
         return reduced_mass
 
     def get_mean_sigma_and_epsilon(self, reverse=False):
@@ -1795,7 +1798,8 @@ class Reaction:
         if any([x == 0 for x in sigmas + epsilons]):
             raise ValueError
         mean_sigmas = sum(sigmas) / num_of_spcs
-        mean_epsilons = reduce((lambda x, y: x * y), epsilons) ** (1 / len(epsilons))
+        mean_epsilons = np.prod(epsilons) ** (1 / len(epsilons))
+        
         return mean_sigmas, mean_epsilons
 
     def generate_high_p_limit_kinetics(self):
@@ -1805,6 +1809,15 @@ class Reaction:
         """
         raise NotImplementedError("generate_high_p_limit_kinetics is not implemented for all Reaction subclasses.")
 
+def same_object(object1, object2, _check_identical, _only_check_label,
+             _generate_initial_map, _strict, _save_order):
+    if _only_check_label:
+        return str(object1) == str(object2)
+    elif _check_identical:
+        return object1.is_identical(object2, strict=_strict)
+    else:
+        return object1.is_isomorphic(object2, generate_initial_map=_generate_initial_map,
+                                        strict=_strict, save_order=_save_order)
 
 def same_species_lists(list1, list2, check_identical=False, only_check_label=False, generate_initial_map=False,
                        strict=True, save_order=False):
@@ -1826,45 +1839,35 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
         ``True`` if the lists are the same and ``False`` otherwise
     """
 
-    def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label,
-             _generate_initial_map=generate_initial_map, _strict=strict, _save_order=save_order):
-        if _only_check_label:
-            return str(object1) == str(object2)
-        elif _check_identical:
-            return object1.is_identical(object2, strict=_strict)
-        else:
-            return object1.is_isomorphic(object2, generate_initial_map=_generate_initial_map,
-                                         strict=_strict, save_order=_save_order)
-
     if len(list1) == len(list2) == 1:
-        if same(list1[0], list2[0]):
+        if same_object(list1[0], list2[0]):
             return True
     elif len(list1) == len(list2) == 2:
-        if same(list1[0], list2[0]) and same(list1[1], list2[1]):
+        if same_object(list1[0], list2[0]) and same_object(list1[1], list2[1]):
             return True
-        elif same(list1[0], list2[1]) and same(list1[1], list2[0]):
+        elif same_object(list1[0], list2[1]) and same_object(list1[1], list2[0]):
             return True
     elif len(list1) == len(list2) == 3:
-        if same(list1[0], list2[0]):
-            if same(list1[1], list2[1]):
-                if same(list1[2], list2[2]):
+        if same_object(list1[0], list2[0]):
+            if same_object(list1[1], list2[1]):
+                if same_object(list1[2], list2[2]):
                     return True
-            elif same(list1[1], list2[2]):
-                if same(list1[2], list2[1]):
+            elif same_object(list1[1], list2[2]):
+                if same_object(list1[2], list2[1]):
                     return True
-        elif same(list1[0], list2[1]):
-            if same(list1[1], list2[0]):
-                if same(list1[2], list2[2]):
+        elif same_object(list1[0], list2[1]):
+            if same_object(list1[1], list2[0]):
+                if same_object(list1[2], list2[2]):
                     return True
-            elif same(list1[1], list2[2]):
-                if same(list1[2], list2[0]):
+            elif same_object(list1[1], list2[2]):
+                if same_object(list1[2], list2[0]):
                     return True
-        elif same(list1[0], list2[2]):
-            if same(list1[1], list2[0]):
-                if same(list1[2], list2[1]):
+        elif same_object(list1[0], list2[2]):
+            if same_object(list1[1], list2[0]):
+                if same_object(list1[2], list2[1]):
                     return True
-            elif same(list1[1], list2[1]):
-                if same(list1[2], list2[0]):
+            elif same_object(list1[1], list2[1]):
+                if same_object(list1[2], list2[0]):
                     return True
     elif len(list1) == len(list2):
         raise NotImplementedError("Can't check isomorphism of lists with {0} species/molecules".format(len(list1)))
