@@ -1274,8 +1274,11 @@ class RMG(util.Subject):
         if self.uncertainty is not None and self.uncertainty["global"]:
             try:
                 import muq
-            except ImportError:
-                logging.error("Unable to import MUQ. Skipping global uncertainty analysis.")
+            except ImportError as ie:
+                logging.error(
+                    f"Skipping global uncertainty analysis! Unable to import MUQ (original error: {str(ie)})."
+                    "Install muq with 'conda install -c conda-forge muq'."
+                )
                 self.uncertainty["global"] = False
             else:
                 import re
