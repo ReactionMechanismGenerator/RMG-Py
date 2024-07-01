@@ -26,13 +26,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Mambaforge Python 3.7
+      - name: Setup Mambaforge Python 3.9
         uses: conda-incubator/setup-miniconda@v2
         with:
           environment-file: environment.yml
           miniforge-variant: Mambaforge
           miniforge-version: latest
-          python-version: 3.7
+          python-version: 3.9
           activate-environment: rmg_env
           use-mamba: true
 
