@@ -80,7 +80,6 @@ dependencies:
   - conda-forge::gprof2dot
   - conda-forge::numdifftools
   - conda-forge::quantities
-  - conda-forge::muq
   - conda-forge::lpsolve55
   - conda-forge::ringdecomposerlib-python
 
