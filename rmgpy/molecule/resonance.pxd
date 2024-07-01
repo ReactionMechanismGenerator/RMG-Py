@@ -28,6 +28,10 @@
 from rmgpy.molecule.graph cimport Vertex, Edge, Graph
 from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
 
+cdef int _sum_atom_ids(atom_list)
+
+cdef tuple _tuplize_bond(bond)
+
 cpdef list populate_resonance_algorithms(dict features=?)
 
 cpdef dict analyze_molecule(Graph mol, bint save_order=?)
