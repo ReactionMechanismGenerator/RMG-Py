@@ -13,12 +13,12 @@ RUN ln -snf /bin/bash /bin/sh
 #  - libxrender1 required by RDKit
 RUN apt-get update && \
     apt-get install -y \
-    make \
-    gcc \
-    wget \
-    git \
-    g++ \
-    libxrender1 && \
+        make \
+        gcc \
+        wget \
+        git \
+        g++ \
+        libxrender1 && \
     apt-get autoremove -y && \
     apt-get clean -y
 
@@ -64,16 +64,15 @@ ENV PATH="$RUNNER_CWD/RMG-Py:$PATH"
 # setting this env variable fixes an issue with Julia precompilation on Windows
 ENV JULIA_CPU_TARGET="x86-64,haswell,skylake,broadwell,znver1,znver2,znver3,cascadelake,icelake-client,cooperlake,generic"
 RUN make && \
-    julia -e 'using Pkg; Pkg.add(PackageSpec(name="PyCall",rev="master")); Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator' && \
-    python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
+    julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
 
 # RMG-Py should now be installed and ready - trigger precompilation and test run
-RUN python-jl rmg.py examples/rmg/minimal/input.py
+RUN python rmg.py examples/rmg/minimal/input.py
 # delete the results, preserve input.py
 RUN mv examples/rmg/minimal/input.py . && \
     rm -rf examples/rmg/minimal/* && \
     mv input.py examples/rmg/minimal/
 
 # when running this image, open an interactive bash terminal inside the conda environment
-RUN echo "source activate rmg_env" > ~/.bashrc
+RUN echo "source activate rmg_env" >~/.bashrc
 ENTRYPOINT ["/bin/bash", "--login"]
