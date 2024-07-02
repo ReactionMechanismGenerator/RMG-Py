@@ -165,6 +165,9 @@ class Fragment(Molecule):
             return "{0}({1:d})".format(self.label, self.index)
 
     # override methods
+    def is_lithium(self):
+        return False
+
     def copy(self, deep=False):
         """
         Create a copy of the current graph. If `deep` is ``True``, a deep copy
@@ -388,7 +391,7 @@ class Fragment(Molecule):
                 return True
         return False
 
-    def update(self, sort_atoms=True):
+    def update(self, log_species=False, sort_atoms=False, raise_atomtype_exception=False):
         # currently sort_atoms does not work for fragments
         for v in self.vertices:
             if not isinstance(v, CuttingLabel):
@@ -657,9 +660,8 @@ class Fragment(Molecule):
                 substi = Atom(
                     element=get_element("Si"),
                     radical_electrons=0,
-                    charge=0,
-                    lone_pairs=3,
-                )
+                    charge=-3,
+                    lone_pairs=3)
                 substi.label = element_symbol
 
                 for bonded_atom, bond in atom.edges.items():

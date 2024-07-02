@@ -128,4 +128,74 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
     
+
+    cpdef change_rate(self, double factor)
+
+################################################################################
+cdef class ArrheniusChargeTransfer(KineticsModel):
+
+    cdef public ScalarQuantity _A
+    cdef public ScalarQuantity _n
+    cdef public ScalarQuantity _Ea
+    cdef public ScalarQuantity _T0
+    cdef public ScalarQuantity _V0
+    cdef public ScalarQuantity _alpha
+    cdef public ScalarQuantity _electrons
+
+    cpdef double get_activation_energy_from_potential(self, double V=?, bint non_negative=?)
+
+    cpdef double get_rate_coefficient(self, double T, double V=?) except -1
+
+    cpdef change_rate(self, double factor)
+
+    cpdef change_t0(self, double T0)
+
+    cpdef change_v0(self, double V0)
+
+    cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=?, np.ndarray weights=?, bint three_params=?)
+
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
+
+
+################################################################################
+
+cdef class ArrheniusChargeTransferBM(KineticsModel):
+
+    cdef public ScalarQuantity _A
+    cdef public ScalarQuantity _n
+    cdef public ScalarQuantity _E0
+    cdef public ScalarQuantity _w0
+    cdef public ScalarQuantity _V0
+    cdef public ScalarQuantity _alpha
+    cdef public ScalarQuantity _electrons
+
+    cpdef change_v0(self, double V0)
+
+    cpdef double get_activation_energy(self, double dGrxn) except -1
+
+    cpdef double get_rate_coefficient_from_potential(self, double T, double V, double dGrxn) except -1
+
+    cpdef ArrheniusChargeTransfer to_arrhenius_charge_transfer(self, double dGrxn)
+
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
+
+    cpdef change_rate(self, double factor)
+
+cdef class Marcus(KineticsModel):
+
+    cdef public ScalarQuantity _A
+    cdef public ScalarQuantity _n
+    cdef public ArrayQuantity _lmbd_i_coefs
+    cdef public ScalarQuantity _V0
+    cdef public ScalarQuantity _beta
+    cdef public ScalarQuantity _wr 
+    cdef public ScalarQuantity _wp
+    cdef public ScalarQuantity _lmbd_o
+
+    cpdef double get_lmbd_i(self, double T)
+
+    cpdef double get_gibbs_activation_energy(self, double T, double dGrxn) except -1
+
+    cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
+
     cpdef change_rate(self, double factor)
