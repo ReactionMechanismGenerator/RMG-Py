@@ -43,7 +43,7 @@ import logging
 import math
 import os.path
 from copy import deepcopy
-from functools import reduce
+from functools import reduce, partial
 from urllib.parse import quote
 
 import cython
@@ -1838,36 +1838,45 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
     Returns:
         ``True`` if the lists are the same and ``False`` otherwise
     """
+    
+    same_object_passthrough = partial(
+        same_object,
+        _check_identical=check_identical,
+        _only_check_label=only_check_label,
+        _generate_intial_map=generate_initial_map,
+        _strict=strict,
+        _save_order=save_order,
+    )
 
     if len(list1) == len(list2) == 1:
-        if same_object(list1[0], list2[0]):
+        if same_object_passthrough(list1[0], list2[0]):
             return True
     elif len(list1) == len(list2) == 2:
-        if same_object(list1[0], list2[0]) and same_object(list1[1], list2[1]):
+        if same_object_passthrough(list1[0], list2[0]) and same_object_passthrough(list1[1], list2[1]):
             return True
-        elif same_object(list1[0], list2[1]) and same_object(list1[1], list2[0]):
+        elif same_object_passthrough(list1[0], list2[1]) and same_object_passthrough(list1[1], list2[0]):
             return True
     elif len(list1) == len(list2) == 3:
-        if same_object(list1[0], list2[0]):
-            if same_object(list1[1], list2[1]):
-                if same_object(list1[2], list2[2]):
+        if same_object_passthrough(list1[0], list2[0]):
+            if same_object_passthrough(list1[1], list2[1]):
+                if same_object_passthrough(list1[2], list2[2]):
                     return True
-            elif same_object(list1[1], list2[2]):
-                if same_object(list1[2], list2[1]):
+            elif same_object_passthrough(list1[1], list2[2]):
+                if same_object_passthrough(list1[2], list2[1]):
                     return True
-        elif same_object(list1[0], list2[1]):
-            if same_object(list1[1], list2[0]):
-                if same_object(list1[2], list2[2]):
+        elif same_object_passthrough(list1[0], list2[1]):
+            if same_object_passthrough(list1[1], list2[0]):
+                if same_object_passthrough(list1[2], list2[2]):
                     return True
-            elif same_object(list1[1], list2[2]):
-                if same_object(list1[2], list2[0]):
+            elif same_object_passthrough(list1[1], list2[2]):
+                if same_object_passthrough(list1[2], list2[0]):
                     return True
-        elif same_object(list1[0], list2[2]):
-            if same_object(list1[1], list2[0]):
-                if same_object(list1[2], list2[1]):
+        elif same_object_passthrough(list1[0], list2[2]):
+            if same_object_passthrough(list1[1], list2[0]):
+                if same_object_passthrough(list1[2], list2[1]):
                     return True
-            elif same_object(list1[1], list2[1]):
-                if same_object(list1[2], list2[0]):
+            elif same_object_passthrough(list1[1], list2[1]):
+                if same_object_passthrough(list1[2], list2[0]):
                     return True
     elif len(list1) == len(list2):
         raise NotImplementedError("Can't check isomorphism of lists with {0} species/molecules".format(len(list1)))
