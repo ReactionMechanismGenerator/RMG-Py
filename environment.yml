@@ -78,7 +78,7 @@ dependencies:
   - conda-forge::numdifftools
   - conda-forge::quantities
   - conda-forge::lpsolve55
-  - conda-forge::ringdecomposerlib-python
+  # - conda-forge::ringdecomposerlib-python
 
 # packages we maintain
   - rmg::pydas >=1.0.3
