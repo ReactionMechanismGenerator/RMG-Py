@@ -17,7 +17,7 @@
 # - October 16, 2023 Switched RDKit and descripatastorus to conda-forge,
 #   moved diffeqpy to pip and (temporarily) removed chemprop
 # - May 14, 2024 Removed diffeqpy by switching to call SciMLBase and Sundials using JuliaCall
-# - March 15, 2024 - started migration to Python 3.9
+# - March 15, 2024 - started migration to Python 3.10
 #
 name: rmg_env
 channels:
@@ -55,7 +55,7 @@ dependencies:
   - conda-forge::pyjuliacall # for calling julia packages
 
 # Python tools
-  - python >=3.9  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
+  - python >=3.10  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
   - coverage
   - cython >=0.25.2
   - scikit-learn
