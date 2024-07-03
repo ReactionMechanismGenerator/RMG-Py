@@ -107,9 +107,18 @@ jobs:
           make
 
       # Setup Juliaup
-      - name: Set JULIAUP_DEPOT_PATH
+      - name: Set Julia paths
         run: |
           echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
+          echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
+          echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
+          echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
+          echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
+          echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
+          echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
+          echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
+          echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_ENV
+          echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_PATH
 
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v2
@@ -124,8 +133,7 @@ jobs:
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         # JULIA_CONDAPKG_EXE points to the existing conda/mamba to avoid JuliaCall from installing their own. See https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-a-Conda-environment.
         run: |
-          export JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba
-          julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
+          julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
 
       - name: Install Q2DTor
         run: echo "" | make q2dtor
