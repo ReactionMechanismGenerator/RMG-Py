@@ -52,6 +52,12 @@ import scipy.optimize as optimize
 from scipy.stats import distributions
 from sklearn.model_selection import KFold
 
+try:
+    import matplotlib.pyplot as plt
+except ImportError as e:
+    plt = None
+    matplotlib_exception = e
+
 from rmgpy.quantity import ScalarQuantity
 
 import arkane.encorr.data as data
@@ -190,10 +196,8 @@ class BACJob:
             output_directory: Save the plots in this directory.
             jobnum: Job number
         """
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError:
-            return
+        if plt is None:
+            raise matplotlib_exception
 
         model_chemistry_formatted = self.level_of_theory.to_model_chem().replace('//', '__').replace('/', '_')
         if self.crossval_n_folds == 1:
@@ -929,10 +933,9 @@ class BAC:
             path: Path to save figure to.
             labels: Parameter labels.
         """
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError:
-            return
+
+        if plt is None:
+            raise matplotlib_exception
 
         if self.correlation is None:
             raise BondAdditivityCorrectionError('Fit BACs before saving correlation matrix!')
@@ -1047,20 +1050,21 @@ class CrossVal:
             logging.info(f'RMSE/MAE before fitting: {stats_before.rmse:.2f}/{stats_before.mae:.2f} kcal/mol')
             logging.info(f'RMSE/MAE after fitting: {stats_after.rmse:.2f}/{stats_after.mae:.2f} kcal/mol')
 
-        rmse_before = [test_data.calculate_stats().rmse for test_data in test_data_results]
-        mae_before = [test_data.calculate_stats().mae for test_data in test_data_results]
-        rmse_after = [test_data.calculate_stats(for_bac_data=True).rmse for test_data in test_data_results]
-        mae_after = [test_data.calculate_stats(for_bac_data=True).mae for test_data in test_data_results]
+        num_test_data = sum(len(test_data) for test_data in test_data_results)
+        rmse_before = np.sqrt(np.sum([test_data.calculate_stats().rmse**2 * len(test_data) for test_data in test_data_results]) / num_test_data)
+        mae_before = np.sum([test_data.calculate_stats().mae * len(test_data) for test_data in test_data_results]) / num_test_data
+        rmse_after = np.sqrt(np.sum([test_data.calculate_stats(for_bac_data=True).rmse**2 * len(test_data) for test_data in test_data_results]) / num_test_data)
+        mae_after = np.sum([test_data.calculate_stats(for_bac_data=True).mae * len(test_data) for test_data in test_data_results]) / num_test_data
 
         logging.info('\nCross-validation results:')
-        logging.info(f'Testing RMSE before fitting (mean +- 1 std): '
-                     f'{np.average(rmse_before):.2f} +- {np.std(rmse_before):.2f} kcal/mol')
-        logging.info(f'Testing MAE before fitting (mean +- 1 std): '
-                     f'{np.average(mae_before):.2f} +- {np.std(mae_before):.2f} kcal/mol')
-        logging.info(f'Testing RMSE after fitting (mean +- 1 std): '
-                     f'{np.average(rmse_after):.2f} +- {np.std(rmse_after):.2f} kcal/mol')
-        logging.info(f'Testing MAE after fitting (mean +- 1 std): '
-                     f'{np.average(mae_after):.2f} +- {np.std(mae_after):.2f} kcal/mol')
+        logging.info(f'Testing RMSE before fitting: '
+                    f'{rmse_before:.2f} kcal/mol')
+        logging.info(f'Testing MAE before fitting: '
+                    f'{mae_before:.2f} kcal/mol')
+        logging.info(f'Testing RMSE after fitting: '
+                    f'{rmse_after:.2f} kcal/mol')
+        logging.info(f'Testing MAE after fitting: '
+                    f'{mae_after:.2f} kcal/mol')
 
 
 def get_confidence_intervals(x: np.ndarray,

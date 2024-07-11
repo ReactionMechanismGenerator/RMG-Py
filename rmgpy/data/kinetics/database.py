@@ -37,7 +37,8 @@ import numpy as np
 import rmgpy.constants as constants
 from rmgpy.data.base import LogicNode
 from rmgpy.data.kinetics.common import ensure_species, generate_molecule_combos, \
-                                       find_degenerate_reactions, ensure_independent_atom_ids
+                                       find_degenerate_reactions, ensure_independent_atom_ids, \
+                                       check_for_same_reactants
 from rmgpy.data.kinetics.family import KineticsFamily
 from rmgpy.data.kinetics.library import LibraryReaction, KineticsLibrary
 from rmgpy.exceptions import DatabaseError
@@ -61,6 +62,7 @@ class KineticsDatabase(object):
         self.recommended_families = {}
         self.families = {}
         self.libraries = {}
+        self.external_library_labels = {}
         self.library_order = []  # a list of tuples in the format ('library_label', LibraryType),
                                  # where LibraryType is set to either 'Reaction Library' or 'Seed'.
         self.local_context = {
@@ -226,17 +228,18 @@ class KineticsDatabase(object):
         The `path` points to the folder of kinetics libraries in the database,
         and the libraries should be in files like :file:`<path>/<library>.py`.
         """
-
+        self.external_library_labels = dict()
         if libraries is not None:
             for library_name in libraries:
                 library_file = os.path.join(path, library_name, 'reactions.py')
                 if os.path.exists(library_name):
                     library_file = os.path.join(library_name, 'reactions.py')
-                    short_library_name = os.path.split(library_name)[-1]
+                    short_library_name = os.path.basename(library_name.rstrip(os.path.sep))
                     logging.info(f'Loading kinetics library {short_library_name} from {library_name}...')
                     library = KineticsLibrary(label=short_library_name)
                     library.load(library_file, self.local_context, self.global_context)
                     self.libraries[library.label] = library
+                    self.external_library_labels[library_name] = library.label
                 elif os.path.exists(library_file):
                     logging.info(f'Loading kinetics library {library_name} from {library_file}...')
                     library = KineticsLibrary(label=library_name)
@@ -427,7 +430,7 @@ and immediately used in input files without any additional changes.
         if only_families is None:
             reaction_list.extend(self.generate_reactions_from_libraries(reactants, products))
         reaction_list.extend(self.generate_reactions_from_families(reactants, products,
-                                                                   only_families=None, resonance=resonance))
+                                                                   only_families=only_families, resonance=resonance))
         return reaction_list
 
     def generate_reactions_from_libraries(self, reactants, products=None):
@@ -487,43 +490,10 @@ and immediately used in input files without any additional changes.
         Returns:
             List of reactions containing Species objects with the specified reactants and products.
         """
-        # Check if the reactants are the same
-        # If they refer to the same memory address, then make a deep copy so
-        # they can be manipulated independently
         if isinstance(reactants, tuple):
             reactants = list(reactants)
-        same_reactants = 0
-        if len(reactants) == 2:
-            if reactants[0] is reactants[1]:
-                reactants[1] = reactants[1].copy(deep=True)
-                same_reactants = 2
-            elif reactants[0].is_isomorphic(reactants[1]):
-                same_reactants = 2
-        elif len(reactants) == 3:
-            same_01 = reactants[0] is reactants[1]
-            same_02 = reactants[0] is reactants[2]
-            if same_01 and same_02:
-                same_reactants = 3
-                reactants[1] = reactants[1].copy(deep=True)
-                reactants[2] = reactants[2].copy(deep=True)
-            elif same_01:
-                same_reactants = 2
-                reactants[1] = reactants[1].copy(deep=True)
-            elif same_02:
-                same_reactants = 2
-                reactants[2] = reactants[2].copy(deep=True)
-            elif reactants[1] is reactants[2]:
-                same_reactants = 2
-                reactants[2] = reactants[2].copy(deep=True)
-            else:
-                same_01 = reactants[0].is_isomorphic(reactants[1])
-                same_02 = reactants[0].is_isomorphic(reactants[2])
-                if same_01 and same_02:
-                    same_reactants = 3
-                elif same_01 or same_02:
-                    same_reactants = 2
-                elif reactants[1].is_isomorphic(reactants[2]):
-                    same_reactants = 2
+
+        reactants, same_reactants = check_for_same_reactants(reactants)
 
         # Label reactant atoms for proper degeneracy calculation (cannot be in tuple)
         ensure_independent_atom_ids(reactants, resonance=resonance)
@@ -536,7 +506,8 @@ and immediately used in input files without any additional changes.
                                                       prod_resonance=resonance))
 
         # Calculate reaction degeneracy
-        reaction_list = find_degenerate_reactions(reaction_list, same_reactants, kinetics_database=self)
+        reaction_list = find_degenerate_reactions(reaction_list, same_reactants, kinetics_database=self,
+                                                  resonance=resonance)
         # Add reverse attribute to families with ownReverse
         to_delete = []
         for i, rxn in enumerate(reaction_list):

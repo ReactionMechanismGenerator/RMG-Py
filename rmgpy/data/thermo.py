@@ -292,7 +292,7 @@ def average_thermo_data(thermo_data_list=None):
                 averaged_thermo_data.Cpdata.value_si[i] /= num_values
 
                 cp_data = [thermo_data.Cpdata.value_si[i] for thermo_data in thermo_data_list]
-                averaged_thermo_data.Cpdata.uncertainty[i] = 2 * np.std(cp_data, ddof=1)
+                averaged_thermo_data.Cpdata.uncertainty_si[i] = 2 * np.std(cp_data, ddof=1)
 
             h_data = [thermo_data.H298.value_si for thermo_data in thermo_data_list]
             averaged_thermo_data.H298.value_si /= num_values
@@ -813,7 +813,10 @@ class ThermoGroups(Database):
         groups we also, need to re-point any unicode thermo_data that may
         have pointed to the entry.
 
-        Returns the removed group
+        This is not (as of 2024/03) used within RMG-Py, but could be useful for
+        people making ancillary scripts to manipulate or edit the database.
+
+        Returns the removed group.
         """
 
         # First call base class method
@@ -2464,7 +2467,7 @@ class ThermoDatabase(object):
             entry = ring_database.descend_tree(molecule, atoms)
             matched_ring_entries.append(entry)
 
-        if matched_ring_entries is []:
+        if not matched_ring_entries:
             raise KeyError('Node not found in database.')
         # Decide which group to keep
         is_partial_match = True

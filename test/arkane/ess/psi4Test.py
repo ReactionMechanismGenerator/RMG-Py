@@ -28,7 +28,7 @@
 ###############################################################################
 
 """
-This module contains unit tests of the :mod:`arkane.ess.psi4` module.
+This module contains unit tests of the :mod:`arkane.ess.psi4_parser` module.
 """
 
 import os
@@ -44,7 +44,7 @@ from rmgpy.statmech import (
 )
 
 from arkane.exceptions import LogError
-from arkane.ess.psi4 import Psi4Log
+from arkane.ess.psi4_parser import Psi4Log
 import pytest
 
 

@@ -167,6 +167,16 @@ class TestSurfaceReaction:
 4 H u0 p0 c0 {1,S}
 5 X u0 p0 c0 {1,S}"""
         )
+        m_cx = Molecule().from_adjacency_list(
+            """1 X u0 p0 c0 {2,Q}
+2 C u0 p0 c0 {1,Q}"""
+        )
+        m_cxcx = Molecule().from_adjacency_list(
+            """1 X u0 p0 c0 {3,D}
+2 X u0 p0 c0 {4,D}
+3 C u0 p0 c0 {1,D} {4,D}
+4 C u0 p0 c0 {2,D} {3,D}"""
+        )
 
         s_h2 = Species(
             label="H2(1)",
@@ -284,6 +294,82 @@ class TestSurfaceReaction:
             ),
         )
 
+        s_cx = Species(
+            label="CX",
+            molecule=[m_cx],
+            thermo=NASA(
+                polynomials=[
+                    NASAPolynomial(
+                        coeffs=[
+                            -1.73430697E+00,
+                            1.89855471E-02,
+                            -3.23563661E-05,
+                            2.59269890E-08,
+                            -7.99102104E-12,
+                            6.36385922E+03,
+                            6.25445028E+00
+                        ],
+                        Tmin=(298.0, 'K'),
+                        Tmax=(1000.0, 'K')
+                    ),
+                    NASAPolynomial(
+                        coeffs=[
+                            2.82193241E+00,
+                            -6.61177416E-04,
+                            1.24180431E-06,
+                            -7.03993893E-10,
+                            1.32276605E-13,
+                            5.46467816E+03,
+                            -1.55251271E+01
+                        ],
+                        Tmin=(1000.0, 'K'),
+                        Tmax=(2000.0, 'K')
+                    ),
+                ],
+                Tmin=(298.0, 'K'),
+                Tmax=(2000.0, 'K'),
+                comment="""Thermo library: surfaceThermoPt111""",
+            ),
+        )
+
+        s_cxcx = Species(
+            label="CXCX",
+            molecule=[m_cxcx],
+            thermo=NASA(
+                polynomials=[
+                    NASAPolynomial(
+                        coeffs=[
+                            2.22282794E-01,
+                            1.96908600E-02,
+                            -3.07626817E-05,
+                            2.35937440E-08,
+                            -7.12438442E-12,
+                            2.42830208E+04,
+                            -3.03635113E+00
+                        ],
+                        Tmin=(298.0, 'K'),
+                        Tmax=(1000.0, 'K')
+                    ),
+                    NASAPolynomial(
+                        coeffs=[
+                            5.60759796E+00,
+                            -1.41921856E-03,
+                            2.63409811E-06,
+                            -1.47830656E-09,
+                            2.75649745E-13,
+                            2.31084908E+04,
+                            -2.93177601E+01
+                        ],
+                        Tmin=(1000.0, 'K'),
+                        Tmax=(2000.0, 'K')
+                    ),
+                ],
+                Tmin=(298.0, 'K'),
+                Tmax=(2000.0, 'K'),
+                comment="""Thermo library: surfaceThermoPt111""",
+            ),
+        )
+
         rxn1s = Reaction(
             reactants=[s_h2, s_x, s_x],
             products=[s_hx, s_hx],
@@ -339,6 +425,18 @@ class TestSurfaceReaction:
             ),
         )
 
+        self.rxn3 = Reaction(
+            reactants=[s_cxcx],
+            products=[s_cx, s_cx],
+            kinetics=SurfaceArrhenius(
+                A=(1e13, "1/s"),
+                n=0.0,
+                Ea=(100.0, "kJ/mol"),
+                T0=(1.0, "K"),
+                comment="""Approximate rate""",
+            ),
+        )
+
     def test_is_surface_reaction_species(self):
         """Test is_surface_reaction for reaction based on Species"""
         assert self.rxn1s.is_surface_reaction()
@@ -372,13 +470,19 @@ class TestSurfaceReaction:
 
     def test_equilibrium_constant_surface_kc(self):
         """
-        Test the Reaction.get_equilibrium_constant() method for Kc of a surface reaction.
+        Test the Reaction.get_equilibrium_constant() method for Kc of a surface reaction
+        and a reaction involving bidentate adsorbates
         """
         Tlist = numpy.arange(400.0, 1600.0, 200.0, numpy.float64)
         Kclist0 = [15375.20186, 1.566753, 0.017772, 0.0013485, 0.000263180, 8.73504e-05]
         Kclist = self.rxn1s.get_equilibrium_constants(Tlist, type="Kc")
         for i in range(len(Tlist)):
             assert round(abs(Kclist[i] / Kclist0[i] - 1.0), 4) == 0
+
+        Kclist0_rxn3 = [8.898588e+07, 3.591402e+03, 2.279520e+01, 1.097370, 1.454379e-01, 3.436572e-02]
+        Kclist_rxn3 = self.rxn3.get_equilibrium_constants(Tlist, type="Kc")
+        for i in range(len(Tlist)):
+            assert round(abs(Kclist_rxn3[i] / Kclist0_rxn3[i] - 2.0), 4) == 0
 
     def test_reverse_sticking_coeff_rate(self):
         """

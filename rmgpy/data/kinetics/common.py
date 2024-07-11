@@ -222,9 +222,55 @@ def ensure_independent_atom_ids(input_species, resonance=True):
         for species in input_species:
             species.generate_resonance_structures(keep_isomorphic=True)
 
+def check_for_same_reactants(reactants):
+    """
+    Given a list reactants, check if the reactants are the same.
+    If they refer to the same memory address, then make a deep copy so they can be manipulated independently.
+    
+    Returns a tuple containing the modified reactants list, and an integer containing the number of identical reactants in the reactants list. 
+    
+    """
+
+    same_reactants = 0
+    if len(reactants) == 2:
+        if reactants[0] is reactants[1]:
+            reactants[1] = reactants[1].copy(deep=True)
+            same_reactants = 2
+        elif reactants[0].is_isomorphic(reactants[1]):
+            same_reactants = 2
+    elif len(reactants) == 3:
+        same_01 = reactants[0] is reactants[1]
+        same_02 = reactants[0] is reactants[2]
+        if same_01 and same_02:
+            same_reactants = 3
+            reactants[1] = reactants[1].copy(deep=True)
+            reactants[2] = reactants[2].copy(deep=True)
+        elif same_01:
+            same_reactants = 2
+            reactants[1] = reactants[1].copy(deep=True)
+        elif same_02:
+            same_reactants = 2
+            reactants[2] = reactants[2].copy(deep=True)
+        elif reactants[1] is reactants[2]:
+            same_reactants = 2
+            reactants[2] = reactants[2].copy(deep=True)
+        else:
+            same_01 = reactants[0].is_isomorphic(reactants[1])
+            same_02 = reactants[0].is_isomorphic(reactants[2])
+            if same_01 and same_02:
+                same_reactants = 3
+            elif same_01 or same_02:
+                same_reactants = 2
+            elif reactants[1].is_isomorphic(reactants[2]):
+                same_reactants = 2
+    elif len(reactants) > 3:
+        raise ValueError('Cannot check for duplicate reactants if provided number of reactants is greater than 3. ' 
+                         'Got: {} reactants'.format(len(reactants))) 
+        
+    return reactants, same_reactants
 
 def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kinetics_database=None,
-                              kinetics_family=None, save_order=False):
+                              kinetics_family=None, save_order=False, resonance=True):
     """
     Given a list of Reaction objects, this method combines degenerate
     reactions and increments the reaction degeneracy value. For multiple
@@ -250,6 +296,7 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
         kinetics_database (KineticsDatabase, optional): provide a KineticsDatabase instance for calculating degeneracy
         kinetics_family (KineticsFamily, optional):     provide a KineticsFamily instance for calculating degeneracy
         save_order (bool, optional):                    reset atom order after performing atom isomorphism
+        resonance (bool, optional):                     whether to consider resonance when computing degeneracy 
 
     Returns:
         Reaction list with degenerate reactions combined with proper degeneracy values
@@ -340,7 +387,7 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
                 from rmgpy.data.rmg import get_db
                 family = get_db('kinetics').families[rxn.family]
             if not family.own_reverse:
-                rxn.degeneracy = family.calculate_degeneracy(rxn)
+                rxn.degeneracy = family.calculate_degeneracy(rxn, resonance=resonance)
 
     return rxn_list
 

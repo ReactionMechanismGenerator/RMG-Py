@@ -635,7 +635,10 @@ class CoreEdgeReactionModel:
                     display(new_species)  # if running in IPython --pylab mode, draws the picture!
 
                 # Add new species
-                reactions_moved_from_edge = self.add_species_to_core(new_species)
+                if new_species not in self.core.species:
+                    reactions_moved_from_edge = self.add_species_to_core(new_species)
+                else:
+                    reactions_moved_from_edge = []
 
             elif isinstance(new_object, tuple) and isinstance(new_object[0], PDepNetwork) and self.pressure_dependence:
                 pdep_network, new_species = new_object
@@ -996,18 +999,6 @@ class CoreEdgeReactionModel:
                     # Use the one for which the kinetics is the forward kinetics
                     keep_reverse = gibbs_is_positive and is_forward and rev_is_forward
                     reason = "Both directions matched the same entry in {0}, but this direction is exergonic.".format(reaction.family)
-                elif self.kinetics_estimator == "group additivity" and (
-                    kinetics.comment.find("Fitted to 1 rate") > 0 and not rev_kinetics.comment.find("Fitted to 1 rate") > 0
-                ):
-                    # forward kinetics were fitted to only 1 rate, but reverse are hopefully better
-                    keep_reverse = True
-                    reason = "Other direction matched a group only fitted to 1 rate."
-                elif self.kinetics_estimator == "group additivity" and (
-                    not kinetics.comment.find("Fitted to 1 rate") > 0 and rev_kinetics.comment.find("Fitted to 1 rate") > 0
-                ):
-                    # reverse kinetics were fitted to only 1 rate, but forward are hopefully better
-                    keep_reverse = False
-                    reason = "Other direction matched a group only fitted to 1 rate."
                 elif entry is not None and rev_entry is not None:
                     # Both directions matched explicit rate rules
                     # Keep the direction with the lower (but nonzero) rank
@@ -1594,7 +1585,8 @@ class CoreEdgeReactionModel:
 
         self.new_reaction_list = []
         self.new_species_list = []
-
+        edge_species_to_move = []
+        
         num_old_core_species = len(self.core.species)
         num_old_core_reactions = len(self.core.reactions)
 
@@ -1623,6 +1615,9 @@ class CoreEdgeReactionModel:
                     reversible=rxn.reversible,
                 )
             r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.new_reaction_list
+            for s in rxn.reactants+rxn.products:
+                if s in self.edge.species and s not in edge_species_to_move:
+                    edge_species_to_move.append(s)
             if getattr(r.kinetics, "coverage_dependence", None):
                 self.process_coverage_dependence(r.kinetics)
             if not isNew:
@@ -1673,7 +1668,7 @@ class CoreEdgeReactionModel:
                         " explicitly allow it.".format(spec.label, seed_mechanism.label)
                     )
 
-        for spec in self.new_species_list:
+        for spec in edge_species_to_move+self.new_species_list:
             if spec.reactive:
                 submit(spec, self.solvent_name)
             if vapor_liquid_mass_transfer.enabled:
@@ -1723,7 +1718,12 @@ class CoreEdgeReactionModel:
         num_old_edge_reactions = len(self.edge.reactions)
 
         logging.info("Adding reaction library {0} to model edge...".format(reaction_library))
-        reaction_library = database.kinetics.libraries[reaction_library]
+        if reaction_library in database.kinetics.libraries:
+            reaction_library = database.kinetics.libraries[reaction_library]
+        elif reaction_library in database.kinetics.external_library_labels:
+            reaction_library = database.kinetics.libraries[database.kinetics.external_library_labels[reaction_library]]
+        else:
+            raise ValueError(f'Library {reaction_library} not found.')
 
         rxns = reaction_library.get_library_reactions()
         for rxn in rxns:

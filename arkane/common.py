@@ -191,11 +191,11 @@ class ArkaneSpecies(RMGObject):
             self.multiplicity = species.molecule[0].multiplicity
             self.formula = species.molecule[0].get_formula()
             try:
-                inchi = to_inchi(species.molecule[0], backend='try-all', aug_level=0)
+                inchi = to_inchi(species.molecule[0], backend='openbabel-first', aug_level=0)
             except ValueError:
                 inchi = ''
             try:
-                inchi_key = to_inchi_key(species.molecule[0], backend='try-all', aug_level=0)
+                inchi_key = to_inchi_key(species.molecule[0], backend='openbabel-first', aug_level=0)
             except ValueError:
                 inchi_key = ''
             self.inchi = inchi

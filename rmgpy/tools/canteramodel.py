@@ -28,6 +28,7 @@
 ###############################################################################
 
 import os.path
+import logging
 
 import cantera as ct
 import numpy as np
@@ -63,17 +64,43 @@ class CanteraCondition(object):
 
     """
 
-    def __init__(self, reactor_type, reaction_time, mol_frac, T0=None, P0=None, V0=None):
+    def __init__(self, reactor_type, reaction_time, mol_frac, surface_mol_frac=None, T0=None, P0=None, V0=None):
         self.reactor_type = reactor_type
         self.reaction_time = Quantity(reaction_time)
 
         # Normalize initialMolFrac if not already done:
         if sum(mol_frac.values()) != 1.00:
+            logging.warning('Initial mole fractions do not sum to one; normalizing.')
+            logging.info('')
+            logging.info('Original composition:')
+            for spec, molfrac in mol_frac.items():
+                logging.info(f'{spec} = {molfrac}')
             total = sum(mol_frac.values())
+            logging.info('')
+            logging.info('Normalized mole fractions:')
             for species, value in mol_frac.items():
                 mol_frac[species] = value / total
+                logging.info(f'{species} = {mol_frac[species]}')
+            logging.info('')
 
         self.mol_frac = mol_frac
+
+        if surface_mol_frac:
+            # normalize surface mol fractions
+            if sum(surface_mol_frac.values()) != 1.00:
+                logging.warning('Initial surface mole fractions do not sum to one; normalizing.')
+                logging.info('')
+                logging.info('Original composition:')
+                for spec, molfrac in surface_mol_frac.items():
+                    logging.info(f'{spec} = {molfrac}')
+                logging.info('')
+                logging.info('Normalized mole fractions:')
+                total = sum(surface_mol_frac.values())
+                for species, value in surface_mol_frac.items():
+                    surface_mol_frac[species] = value / total
+                    logging.info(f'{species} = {surface_mol_frac[species]}')
+                logging.info('')
+            self.surface_mol_frac = surface_mol_frac
 
         # Check to see that one of the three attributes T0, P0, and V0 is less unspecified
         props = [T0, P0, V0]
@@ -121,7 +148,7 @@ class CanteraCondition(object):
         return string
 
 
-def generate_cantera_conditions(reactor_type_list, reaction_time_list, mol_frac_list, Tlist=None, Plist=None, Vlist=None):
+def generate_cantera_conditions(reactor_type_list, reaction_time_list, mol_frac_list, surface_mol_frac_list=None, Tlist=None, Plist=None, Vlist=None):
     """
     Creates a list of cantera conditions from from the arguments provided.
 
@@ -136,6 +163,8 @@ def generate_cantera_conditions(reactor_type_list, reaction_time_list, mol_frac_
 
     `reaction_time_list`      A tuple object giving the ([list of reaction times], units)
     `mol_frac_list`           A list of molfrac dictionaries with species object keys
+                           and mole fraction values
+    `surface_mol_frac_list`   A list of molfrac dictionaries with surface species object keys
                            and mole fraction values
     To specify the system for an ideal gas, you must define 2 of the following 3 parameters:
     `T0List`                A tuple giving the ([list of initial temperatures], units)
@@ -162,30 +191,35 @@ def generate_cantera_conditions(reactor_type_list, reaction_time_list, mol_frac_
                             for i in range(len(reaction_time_list.value))]
 
     conditions = []
+    if surface_mol_frac_list is None:
+        surface_mol_frac_list = []  # initialize here to avoid mutable default argument
 
     if Tlist is None:
         for reactor_type in reactor_type_list:
             for reaction_time in reaction_time_list:
                 for mol_frac in mol_frac_list:
-                    for P in Plist:
-                        for V in Vlist:
-                            conditions.append(CanteraCondition(reactor_type, reaction_time, mol_frac, P0=P, V0=V))
+                    for surface_mol_frac in surface_mol_frac_list:
+                        for P in Plist:
+                            for V in Vlist:
+                                conditions.append(CanteraCondition(reactor_type, reaction_time, mol_frac, surface_mol_frac=surface_mol_frac, P0=P, V0=V))
 
     elif Plist is None:
         for reactor_type in reactor_type_list:
             for reaction_time in reaction_time_list:
                 for mol_frac in mol_frac_list:
-                    for T in Tlist:
-                        for V in Vlist:
-                            conditions.append(CanteraCondition(reactor_type, reaction_time, mol_frac, T0=T, V0=V))
+                    for surface_mol_frac in surface_mol_frac_list:
+                        for T in Tlist:
+                            for V in Vlist:
+                                conditions.append(CanteraCondition(reactor_type, reaction_time, mol_frac, surface_mol_frac=surface_mol_frac, T0=T, V0=V))
 
     elif Vlist is None:
         for reactor_type in reactor_type_list:
             for reaction_time in reaction_time_list:
                 for mol_frac in mol_frac_list:
-                    for T in Tlist:
-                        for P in Plist:
-                            conditions.append(CanteraCondition(reactor_type, reaction_time, mol_frac, T0=T, P0=P))
+                    for surface_mol_frac in surface_mol_frac_list:
+                        for T in Tlist:
+                            for P in Plist:
+                                conditions.append(CanteraCondition(reactor_type, reaction_time, mol_frac, surface_mol_frac=surface_mol_frac, T0=T, P0=P))
 
     else:
         raise Exception("Cantera conditions must leave one of T0, P0, and V0 state variables unspecified")
@@ -198,7 +232,7 @@ class Cantera(object):
     """
 
     def __init__(self, species_list=None, reaction_list=None, canteraFile='', output_directory='', conditions=None,
-                 sensitive_species=None, thermo_SA=False):
+                 sensitive_species=None, thermo_SA=False, surface_species_list=None, surface_reaction_list=None):
         """
         `species_list`: list of RMG species objects
         `reaction_list`: list of RMG reaction objects
@@ -208,15 +242,27 @@ class Cantera(object):
         `sensitive_species`: a list of RMG species objects for conductng sensitivity analysis on
         `thermo_SA`: a boolean indicating whether or not to run thermo SA. By default, if sensitive_species is given,
                       only kinetic_SA will be calculated and it must be additionally specified to perform thermo SA.
+        `surface_species_list`: list of RMG species objects contianing the surface species. This is necessary for all surface mechanisms to initialize the starting mole fractions.
+        `surface_reaction_list`: list of RMG reaction objects containing the surface reactions.
+        For surface mechanisms, either canteraFile must be provided, or load_chemkin_model() must be called later on to create the Cantera file with the surface mechanism.
         """
         self.species_list = species_list
         self.reaction_list = reaction_list
         self.reaction_map = {}
         self.model = ct.Solution(canteraFile) if canteraFile else None
+        self.surface = bool(surface_species_list or surface_reaction_list)
+        self.surface_species_list = surface_species_list
+        self.surface_reaction_list = surface_reaction_list
         self.output_directory = output_directory if output_directory else os.getcwd()
         self.conditions = conditions if conditions else []
         self.sensitive_species = sensitive_species if sensitive_species else []
         self.thermo_SA = thermo_SA
+
+        if self.surface:
+            assert surface_species_list, "Surface species list must be specified to run a surface simulation"
+            if canteraFile:
+                self.surface = ct.Interface(canteraFile, 'surface1')
+                self.model = self.surface.adjacent['gas']
 
         # Make output directory if it does not yet exist:
         if not os.path.exists(self.output_directory):
@@ -225,7 +271,7 @@ class Cantera(object):
             except:
                 raise Exception('Cantera output directory could not be created.')
 
-    def generate_conditions(self, reactor_type_list, reaction_time_list, mol_frac_list, Tlist=None, Plist=None, Vlist=None):
+    def generate_conditions(self, reactor_type_list, reaction_time_list, mol_frac_list, surface_mol_frac_list=None, Tlist=None, Plist=None, Vlist=None):
         """
         This saves all the reaction conditions into the Cantera class.
         ======================= ====================================================
@@ -240,19 +286,19 @@ class Cantera(object):
         `reaction_time_list`      A tuple object giving the ([list of reaction times], units)
         `mol_frac_list`           A list of molfrac dictionaries with species object keys
                                and mole fraction values
+        `surface_mol_frac_list`   A list of molfrac dictionaries with surface species object keys and mole fraction values
         To specify the system for an ideal gas, you must define 2 of the following 3 parameters:
         `T0List`                A tuple giving the ([list of initial temperatures], units)
         'P0List'                A tuple giving the ([list of initial pressures], units)
         'V0List'                A tuple giving the ([list of initial specific volumes], units)
         """
 
-        self.conditions = generate_cantera_conditions(reactor_type_list, reaction_time_list, mol_frac_list, Tlist, Plist, Vlist)
+        self.conditions = generate_cantera_conditions(reactor_type_list, reaction_time_list, mol_frac_list, surface_mol_frac_list, Tlist, Plist, Vlist)
 
     def load_model(self):
         """
         Load a cantera Solution model from the job's own species_list and reaction_list attributes
         """
-
         ct_species = [spec.to_cantera(use_chemkin_identifier=True) for spec in self.species_list]
 
         self.reaction_map = {}
@@ -292,6 +338,7 @@ class Cantera(object):
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.yaml 
         and save it in the output_directory
         Then load it into self.model
+        Note that if this is a surface mechanism, the calling function much include surface_file as a keyword argument for the parser
         """
         from cantera import ck2yaml
 
@@ -301,8 +348,13 @@ class Cantera(object):
         if os.path.exists(out_name):
             os.remove(out_name)
         parser = ck2yaml.Parser()
+
         parser.convert_mech(chemkin_file, transport_file=transport_file, out_name=out_name, **kwargs)
         self.model = ct.Solution(out_name)
+
+        if self.surface:
+            self.surface = ct.Interface(out_name, 'surface1')
+            self.model = self.surface.adjacent['gas']
 
     def modify_reaction_kinetics(self, rmg_reaction_index, rmg_reaction):
         """
@@ -385,14 +437,23 @@ class Cantera(object):
         species_names_list = [get_species_identifier(species) for species in self.species_list]
         inert_index_list = [self.species_list.index(species) for species in self.species_list if species.index == -1]
 
+        if self.surface:
+            surface_species_names_list = [get_species_identifier(species) for species in self.surface_species_list]
+
         all_data = []
         for condition in self.conditions:
 
             # First translate the mol_frac from species objects to species names
             new_mol_frac = {}
-            for key, value in condition.mol_frac.items():
-                newkey = get_species_identifier(key)
-                new_mol_frac[newkey] = value
+            for rmg_species, mol_frac in condition.mol_frac.items():
+                species_name = get_species_identifier(rmg_species)
+                new_mol_frac[species_name] = mol_frac
+
+            if self.surface:
+                new_surface_mol_frac = {}
+                for rmg_species, mol_frac in condition.surface_mol_frac.items():
+                    species_name = get_species_identifier(rmg_species)
+                    new_surface_mol_frac[species_name] = mol_frac
 
             # Set Cantera simulation conditions
             if condition.V0 is None:
@@ -412,6 +473,11 @@ class Cantera(object):
                 cantera_reactor = ct.IdealGasConstPressureReactor(contents=self.model, energy='off')
             else:
                 raise Exception('Other types of reactor conditions are currently not supported')
+
+            # add the surface/gas adjacent thing...
+            if self.surface:
+                rsurf = ct.ReactorSurface(self.surface, cantera_reactor)
+                self.surface.TPX = condition.T0.value_si, condition.P0.value_si, new_surface_mol_frac
 
             # Run this individual condition as a simulation
             cantera_simulation = ct.ReactorNet([cantera_reactor])
@@ -451,7 +517,12 @@ class Cantera(object):
                 times.append(cantera_simulation.time)
                 temperature.append(cantera_reactor.T)
                 pressure.append(cantera_reactor.thermo.P)
-                species_data.append(cantera_reactor.thermo[species_names_list].X)
+                
+                if self.surface:
+                    species_data.append(np.concatenate((cantera_reactor.thermo[species_names_list].X, rsurf.kinetics.coverages)))
+                    N_gas = len(cantera_reactor.thermo[species_names_list].X)
+                else:
+                    species_data.append(cantera_reactor.thermo[species_names_list].X)
 
                 if self.sensitive_species:
                     # Cantera returns mass-based sensitivities rather than molar concentration or mole fraction based sensitivities.
@@ -531,6 +602,15 @@ class Cantera(object):
                                                    index=species.index
                                                    )
                 condition_data.append(species_generic_data)
+            if self.surface:
+                for index, species in enumerate(self.surface_species_list):
+                    # Create generic data object that saves the surface species object into the species object.
+                    species_generic_data = GenericData(label=surface_species_names_list[index],
+                                                       species=species,
+                                                       data=species_data[:, index + N_gas],
+                                                       index=species.index + N_gas
+                                                       )
+                    condition_data.append(species_generic_data)
 
             # save kinetic data as generic data object
             reaction_sensitivity_data = []

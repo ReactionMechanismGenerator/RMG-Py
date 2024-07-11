@@ -488,6 +488,13 @@ class Species(object):
         """Return ``True`` if the species is a vacant surface site."""
         return self.molecule[0].is_surface_site()
 
+    def number_of_surface_sites(self):
+        """
+        Return the number of surface sites for a species.
+        eg. 2 for bidentate.
+        """
+        return self.molecule[0].number_of_surface_sites()
+
     def get_partition_function(self, T):
         """
         Return the partition function for the species at the specified
@@ -733,17 +740,17 @@ class Species(object):
 
         return other
 
-    def get_augmented_inchi(self):
+    def get_augmented_inchi(self, backend='rdkit-first'):
         if self.aug_inchi is None:
-            self.aug_inchi = self.generate_aug_inchi()
+            self.aug_inchi = self.generate_aug_inchi(backend=backend)
         return self.aug_inchi
 
-    def generate_aug_inchi(self):
+    def generate_aug_inchi(self, backend='rdkit-first'):
         candidates = []
         self.generate_resonance_structures()
         for mol in self.molecule:
             try:
-                cand = [mol.to_augmented_inchi(), mol]
+                cand = [mol.to_augmented_inchi(backend=backend), mol]
             except ValueError:
                 pass  # not all resonance structures can be parsed into InChI (e.g. if containing a hypervalance atom)
             else:

@@ -56,6 +56,7 @@ else:
     from julia import Main
 
 from rmgpy.species import Species
+from rmgpy.molecule.fragment import Fragment
 from rmgpy.reaction import Reaction
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.wilhoit import Wilhoit
@@ -679,17 +680,21 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
     elif isinstance(obj, NASA):
         return rms.NASA([to_rms(poly) for poly in obj.polynomials], rms.EmptyThermoUncertainty())
     elif isinstance(obj, Species):
+
+        if isinstance(obj.molecule[0], Fragment):
+            obj.molecule[0].assign_representative_molecule()
+            mol = obj.molecule[0].mol_repr
+        else:
+            mol = obj.molecule[0]
+
         atomnums = dict()
-        for atm in obj.molecule[0].atoms:
-            try:
-                if atomnums.get(atm.element.symbol):
-                    atomnums[atm.element.symbol] += 1
-                else:
-                    atomnums[atm.element.symbol] = 1
-            except AttributeError:
-                # means it is fragment's cutting label
-                pass
-        bondnum = len(obj.molecule[0].get_all_edges())
+        for atm in mol.atoms:
+            if atomnums.get(atm.element.symbol):
+                atomnums[atm.element.symbol] += 1
+            else:
+                atomnums[atm.element.symbol] = 1
+        bondnum = len(mol.get_all_edges())
+        
         if not obj.molecule[0].contains_surface_site():
             rad = rms.getspeciesradius(atomnums, bondnum)
             diff = rms.StokesDiffusivity(rad)

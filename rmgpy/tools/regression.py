@@ -40,6 +40,7 @@ import sys
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
+from rmgpy.rmg.input import fragment_adj, fragment_smiles, smiles, adjacency_list
 from rmgpy.tools.canteramodel import CanteraCondition
 from rmgpy.tools.observablesregression import ObservablesTestCase
 
@@ -74,9 +75,11 @@ def read_input_file(path):
         'True': True,
         'False': False,
         'observable': observable,
-        'SMILES': SMILES,
+        'SMILES': smiles,
+        'fragment_adj': fragment_adj,
+        'fragment_SMILES': fragment_smiles,
         'species': species,
-        'adjacencyList': adjacencyList,
+        'adjacencyList': adjacency_list,
         'reactorSetups': reactorSetups,
         'options': options,
     }
@@ -98,6 +101,15 @@ def read_input_file(path):
         new_imfs.append(new_dict)
     setups[3] = new_imfs
 
+    # convert keys of the initial surface mole fraction dictionaries (ismfs) from labels into Species objects.
+    if setups[5][0]:
+        ismfs = setups[5]
+        new_ismfs = []
+        for ismf in ismfs:
+            new_dict = convert(ismf, initialSpecies)
+            new_ismfs.append(new_dict)
+        setups[5] = new_ismfs
+
     return casetitle, observables, setups, tol
 
 
@@ -112,22 +124,17 @@ def species(label, structure):
     return spc
 
 
-def reactorSetups(reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes):
+def reactorSetups(reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes, initialSurfaceMoleFractionsList=None):
     global setups
+
+    if initialSurfaceMoleFractionsList is None:
+        initialSurfaceMoleFractionsList = [None]
 
     terminationTimes = Quantity(terminationTimes)
     temperatures = Quantity(temperatures)
     pressures = Quantity(pressures)
 
-    setups = [reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes]
-
-
-def SMILES(string):
-    return Molecule().from_smiles(string)
-
-
-def adjacencyList(string):
-    return Molecule().from_adjacency_list(string)
+    setups = [reactorTypes, temperatures, pressures, initialMoleFractionsList, terminationTimes, initialSurfaceMoleFractionsList]
 
 
 def options(title='', tolerance=0.05):
@@ -159,11 +166,12 @@ def run(benchmarkDir, testDir, title, observables, setups, tol):
         ck2cti=False,
     )
 
-    reactor_types, temperatures, pressures, initial_mole_fractions_list, termination_times = setups
+    reactor_types, temperatures, pressures, initial_mole_fractions_list, termination_times, initial_surface_mole_fractions_list = setups
     case.generate_conditions(
         reactor_type_list=reactor_types,
         reaction_time_list=termination_times,
         mol_frac_list=initial_mole_fractions_list,
+        surface_mol_frac_list=initial_surface_mole_fractions_list,
         Tlist=temperatures,
         Plist=pressures
     )

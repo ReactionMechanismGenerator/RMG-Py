@@ -57,7 +57,8 @@ class TranslatorTest:
         assert mol.to_smiles() == ""
         assert mol.to_inchi() == ""
 
-    @patch("rmgpy.molecule.translator.logging")
+    @pytest.mark.skip(reason='This unit test checks for a bug which has been '
+                             'patched in version of RDKit >= 2022.9.1.')
     def test_failure_message(self, mock_logging):
         """Test that we log the molecule adjlist upon failure."""
         mol = Molecule(smiles="[CH2-][N+]#N")
@@ -238,7 +239,7 @@ multiplicity 2
 3 O 1 {1,S}
 """
 
-        aug_inchi = "InChI=1/CH2O2/c2-1-3/h1H,(H,2,3)/u1,2"
+        aug_inchi = "InChI=1/CH2O2/c2-1-3/h1-2H/u1,3"
         self.compare(adjlist, aug_inchi)
 
     def test_c7h10(self):
@@ -748,6 +749,47 @@ class SMILESGenerationTest:
         2 Br u0 p3 c0 {1,S}
         """
         smiles = "[C]Br"
+        self.compare(adjlist, smiles)
+
+        # Test CC-triplet-1
+        adjlist = '''
+        multiplicity 3
+        1 *3 C u1 p1 c0 {2,S}
+        2 *3 C u1 p1 c0 {1,S}
+        '''
+        smiles = '[C][C]'
+        self.compare(adjlist, smiles)
+
+        # Test CC-triplet-2
+        adjlist = '''
+        multiplicity 3
+        1 *3 C u1 p0 c0 {2,T}
+        2 *3 C u1 p0 c0 {1,T}
+        '''
+        smiles = '[C]#[C]'
+        self.compare(adjlist, smiles)
+
+        # todo: Test CC-singlet-1
+        # We couldn't test the case where C forms quadruple bond with C
+        # because `$ `is not added to rdkit until Jan 2022,
+        # and RMG environment usually has rdkit <= 2022.03
+        # as of Sep 2023.
+        # This test should be added after we update the rdkit dependency.
+
+        # adjlist = '''
+        # 1 *3 C u0 p0 c0 {2,Q}
+        # 2 *3 C u0 p0 c0 {1,Q}
+        # '''
+        # smiles = '[C]$[C]'
+        # self.compare(adjlist, smiles)
+
+        # Test CC-singlet-2
+        # We couldn't test the case where C forms quadruple bond with C
+        adjlist = '''
+        1 *3 C u0 p1 c0 {2,D}
+        2 *3 C u0 p1 c0 {1,D}
+        '''
+        smiles = '[C]=[C]'
         self.compare(adjlist, smiles)
 
     def test_aromatics(self):
@@ -1370,8 +1412,8 @@ class InChIParsingTest:
         self.compare(inchi, u_indices)
 
     def test_ch2o2(self):
-        inchi = "CH2O2/c2-1-3/h1H,(H,2,3)"
-        u_indices = [1, 2]
+        inchi = "CH2O2/c2-1-3/h1-2H"
+        u_indices = [1, 3]
         self.compare(inchi, u_indices)
 
     def test_c2h2o3(self):

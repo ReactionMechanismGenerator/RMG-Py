@@ -49,7 +49,7 @@ by Benson's method.
 
 For example, if you wish to use the GRI-Mech 3.0 mechanism [GRIMech3.0]_ as a ThermoLibrary in your model, the syntax will be::
 
-	thermoLibraries = ['primaryThermoLibrary','GRI-Mech3.0']
+	thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0']
 
 .. [GRIMech3.0] Gregory P. Smith, David M. Golden, Michael Frenklach, Nigel W. Moriarty, Boris Eiteneer, Mikhail Goldenberg, C. Thomas Bowman, Ronald K. Hanson, Soonho Song, William C. Gardiner, Jr., Vitali V. Lissianski, and Zhiwei Qin http://combustion.berkeley.edu/gri-mech/
 
@@ -78,7 +78,7 @@ In the following example, the user has created
 a reaction library with a few additional reactions specific to n-butane, and these reactions
 are to be used in addition to the Glarborg C3 library::
 
-	reactionLibraries = [('Glarborg/C3',False)],
+	reactionLibraries = [('Glarborg/C3', False)],
 
 The keyword False/True permits user to append all unused reactions (= kept in the edge) from this library to the chemkin file.
 True means those reactions will be appended. Using just the string inputs would lead to
@@ -103,6 +103,23 @@ given in each mechanism, the different mechanisms can have different units.
 	RMG will not handle irreversible reactions correctly, if supplied in a Reaction
 	Library.
 
+
+.. _externallib:
+
+External Libraries
+------------------
+Users may direct RMG to use thermo and/or kinetic libraries which are not included in the RMG database,
+e.g., a library a user created that was intentionally saved to a path different than the conventional
+RMG-database location. In such cases, the user can specify the full path to the library in the input file::
+
+    thermoLibraries = ['path/to/your/thermo/library/file.py']
+
+or::
+
+    reactionLibraries = [(path/to/your/kinetic/library/folder/']
+
+Combinations in any order of RMG's legacy libraries and users' external libraries are allowed,
+and the order in which the libraries are specified is the order in which they are loaded and given priority.
 
 .. _seedmechanism:
 
@@ -995,6 +1012,7 @@ all of RMG's reaction families. ::
         maximumCarbeneRadicals=0,
         maximumIsotopicAtoms=2,
         allowSingletO2 = False,
+        speciesCuttingThreshold=20,
     )
 
 An additional flag ``allowed`` can be set to allow species
@@ -1004,6 +1022,9 @@ products that form.
 
 By default, the ``allowSingletO2`` flag is set to ``False``.  See :ref:`representing_oxygen` for more information.
 
+Note that ``speciesCuttingThreshold`` is set by default to 20 heavy atoms. This means that if a species containing 
+20 or more heavy atoms is generated, it will be automatically split into fragments to save computational resources. 
+If fragments are not desired, the ``speciesCuttingThreshold`` may be set to an arbitrarily large number.
 
 Staging
 ========
