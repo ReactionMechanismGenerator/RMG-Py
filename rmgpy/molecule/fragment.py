@@ -1256,10 +1256,6 @@ class Fragment(Molecule):
 
         return False
 
-# this variable is used to name atom IDs so that there are as few conflicts by 
-# using the entire space of integer objects
-atom_id_counter = -2**15
-
     def from_smiles_like_string(self, smiles_like_string):
         smiles = smiles_like_string
 
