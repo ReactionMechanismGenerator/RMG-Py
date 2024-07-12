@@ -97,7 +97,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
                 label_dict[label] = [saved_index]
     rd_bonds = Chem.rdchem.BondType
     orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE, 'T': rd_bonds.TRIPLE, 'B': rd_bonds.AROMATIC,
-              'Q': rd_bonds.QUADRUPLE}
+              'Q': rd_bonds.QUADRUPLE, 'vdW': rd_bonds.UNSPECIFIED}
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.items():

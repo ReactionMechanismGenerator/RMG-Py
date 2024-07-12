@@ -1214,6 +1214,9 @@ class MoleculeDrawer(object):
             elif bond.is_hydrogen_bond():
                 # Draw a dashed line
                 self._draw_line(cr, x1, y1, x2, y2, dashed=True, dash_sizes=[0.5, 3.5])
+            elif bond.is_van_der_waals():
+                # Draw a dashed line
+                self._draw_line(cr, x1, y1, x2, y2, dashed=True, dash_sizes=[0.5, 3.5])
             else:
                 self._draw_line(cr, x1, y1, x2, y2)
         else:
