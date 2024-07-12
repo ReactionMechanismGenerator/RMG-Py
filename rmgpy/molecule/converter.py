@@ -99,10 +99,10 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True,
             label_dict[index] = atom.label
 
     rd_bonds = Chem.rdchem.BondType
-    # no vdW bond in RDKit, so "ZERO" or "OTHER" might be OK
+    # no vdW bond in RDKit, so use UNSPECIFIED
     orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE,
               'T': rd_bonds.TRIPLE, 'B': rd_bonds.AROMATIC,
-              'Q': rd_bonds.QUADRUPLE, 'vdW': rd_bonds.ZERO,
+              'Q': rd_bonds.QUADRUPLE, 'vdW': rd_bonds.UNSPECIFIED,
               'H': rd_bonds.HYDROGEN, 'R': rd_bonds.UNSPECIFIED,
               None: rd_bonds.UNSPECIFIED}
     # Add the bonds
