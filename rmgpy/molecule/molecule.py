@@ -1258,9 +1258,19 @@ class Molecule(Graph):
         Remove all van der Waals bonds.
         """
         cython.declare(bond=Bond)
-        for bond in self.get_all_edges():
-            if bond.is_van_der_waals():
-                self.remove_bond(bond)
+        if self.is_multidentate():
+            #bond_types =
+            #possible_bonds_with_resonance =  #TODO: Include possible nitrogen bonds
+            if any([k in ['O-X', 'C#X', 'C=X', 'C-X'] for k in self.enumerate_bonds()]):
+                pass
+            else:
+                for bond in self.get_all_edges():
+                    if bond.is_van_der_waals():
+                        self.remove_bond(bond)
+        else:
+            for bond in self.get_all_edges():
+                if bond.is_van_der_waals():
+                    self.remove_bond(bond)
 
     def sort_atoms(self):
         """
