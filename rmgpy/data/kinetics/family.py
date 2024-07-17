@@ -1681,11 +1681,6 @@ class KineticsFamily(Database):
                     for atom in molecule.atoms:
                         if atom.atomtype.label == 'Xv':
                             return True
-      #  elif "surface" in self.label.lower():
-      #      if molecule.get_num_atoms('X') > 1:
-      #          for atom in molecule.atoms:
-      #              if atom.atomtype.label == 'Xv':
-      #                  return True
 
         return False
 
