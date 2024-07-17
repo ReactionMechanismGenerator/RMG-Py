@@ -62,7 +62,7 @@ from rmgpy.molecule.fragment import CuttingLabel
 
 ################################################################################
 
-bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5, 'vdW': 0}
 
 globals().update({
     'bond_orders': bond_orders,
@@ -2952,6 +2952,8 @@ class Molecule(Graph):
                     bonded_atom.increment_radical()
                     bonded_atom.increment_lone_pairs()
                     bonded_atom.label = '*4'
+                elif bond.is_van_der_waals():
+                    bonded_atom.label = '*5'
                 else:
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
             desorbed_molecule.remove_atom(site)

@@ -1670,11 +1670,22 @@ class KineticsFamily(Database):
             return True
 
         # forbid vdw multi-dentate molecules for surface families
+        surface_sites = []
         if "surface" in self.label.lower():
-            if molecule.get_num_atoms('X') > 1:
-                for atom in molecule.atoms:
-                    if atom.atomtype.label == 'Xv':
-                        return True
+            if "surface_monodentate_to_vdw_bidentate" in self.label.lower() and molecule.get_num_atoms('X') > 1:
+                surface_sites = [atom.atomtype.label for atom in molecule.atoms if 'X' in atom.atomtype.label]
+                if all(site == 'Xv' for site in surface_sites):
+                    return True
+            else:
+                if molecule.get_num_atoms('X') > 1:
+                    for atom in molecule.atoms:
+                        if atom.atomtype.label == 'Xv':
+                            return True
+      #  elif "surface" in self.label.lower():
+      #      if molecule.get_num_atoms('X') > 1:
+      #          for atom in molecule.atoms:
+      #              if atom.atomtype.label == 'Xv':
+      #                  return True
 
         return False
 
