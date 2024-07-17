@@ -1133,8 +1133,8 @@ def _clar_transformation(mol, aromatic_ring):
 def generate_adsorbate_shift_down_resonance_structures(mol):
     """
     Generate all of the resonance structures formed by the shift a pi bond between two C-C atoms to both X-C bonds.
-    Example XCXCH: [X]C=C=[X] <=> [X]=CC#[X]
-    (where '=' denotes a double bond, '#' denotes a triple bond)
+    Example XCHXCH: [X]C=C[X] <=> [X]=CC=[X]
+    (where '=' denotes a double bond)
     """
     cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
     cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, atom3=Vertex, atom4=Vertex, bond12=Edge, bond23=Edge, bond34=Edge)
@@ -1144,11 +1144,10 @@ def generate_adsorbate_shift_down_resonance_structures(mol):
 
     if mol.is_multidentate():
         for atom in mol.vertices:
-            # print(atom)
             paths = pathfinder.find_adsorbate_delocalization_paths(atom)
             for atom1, atom2, atom3, atom4, bond12, bond23, bond34 in paths:
                 if bond23.is_single():
-                    pass
+                    continue
                 else:
                     bond12.increment_order()
                     bond23.decrement_order()
@@ -1165,11 +1164,12 @@ def generate_adsorbate_shift_down_resonance_structures(mol):
                         structures.append(structure)
     return structures
 
+
 def generate_adsorbate_shift_up_resonance_structures(mol):
     """
     Generate all of the resonance structures formed by the shift of two electrons from X-C bonds to increase the bond
     order between two C-C atoms by 1.
-    Example XCXCH: [X]=CC#[X] <=> [X]C=C=[X]
+    Example XCHXCH: [X]=CC=[X] <=> [X]C=C[X]
     (where '=' denotes a double bond, '#' denotes a triple bond)
     """
     cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
@@ -1197,6 +1197,7 @@ def generate_adsorbate_shift_up_resonance_structures(mol):
                     else:
                         structures.append(structure)
     return structures
+
 
 def generate_adsorbate_conjugate_resonance_structures(mol):
     """
