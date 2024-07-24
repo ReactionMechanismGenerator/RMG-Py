@@ -1576,7 +1576,7 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
         _same_object,
         _check_identical=check_identical,
         _only_check_label=only_check_label,
-        _generate_intial_map=generate_initial_map,
+        _generate_initial_map=generate_initial_map,
         _strict=strict,
         _save_order=save_order,
     )
