@@ -70,4 +70,4 @@ cpdef tuple _clar_optimization(Graph mol, bint save_order=?)
 
 cpdef list _solve_clar_milp(cnp.ndarray[cnp.int_t, ndim=1] c, bounds, tuple constraints, int n_ring, max_num=?)
 
-cpdef None _clar_transformation(Graph mol, list aromatic_ring)
+cpdef void _clar_transformation(Graph mol, list aromatic_ring)

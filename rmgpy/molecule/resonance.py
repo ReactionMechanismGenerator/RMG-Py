@@ -993,7 +993,7 @@ def _clar_optimization(mol, save_order=False):
     aromatic_rings.sort(key=_sum_atom_ids)
 
     if not aromatic_rings:
-        return []
+        return tuple()
 
     # Get list of atoms that are in rings
     atoms = set()
