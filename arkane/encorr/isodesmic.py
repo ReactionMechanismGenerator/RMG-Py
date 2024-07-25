@@ -516,8 +516,8 @@ class SpeciesConstraints:
         # Check that the target and reference species have the same elements to be able to satisfy mass conservation
         if set(self.target.molecule.get_element_count().keys()) != all_elements:
             logging.warning(
-                f"Target species and reference species do not have the same elements:",
-                f"Target: {self.target.molecule.get_element_count().keys()}",
+                "Target species and reference species do not have the same elements:",
+                f"Target: {' '.join(self.target.molecule.get_element_count().keys())}",
                 f"Reference: {all_elements}",
             )
 
