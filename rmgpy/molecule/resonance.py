@@ -920,7 +920,7 @@ def generate_clar_structures(mol, save_order=False):
 
     try:
         aromatic_rings, bonds, solutions = _clar_optimization(mol, save_order=save_order)
-    except RuntimeError:
+    except (RuntimeError, ValueError):  # either a crash during optimization or the result was an empty tuple
         # The optimization algorithm did not work on the first iteration
         return []
 
