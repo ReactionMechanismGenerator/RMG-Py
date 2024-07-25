@@ -984,7 +984,7 @@ def _clar_optimization(mol, save_order=False):
             J. Math. Chem. 1994, 15 (1), 93–107.
     """
     cython.declare(molecule=Graph, aromatic_rings=list, exo=list, n_rings=cython.int, n_atoms=cython.int, n_bonds=cython.int,
-                   A=list, solutions=tuple)
+                   A=list, solutions=list)
 
     # Make a copy of the molecule so we don't destroy the original
     molecule = mol.copy(deep=True)
