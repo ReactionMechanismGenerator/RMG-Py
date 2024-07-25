@@ -1038,9 +1038,9 @@ def _clar_optimization(mol, save_order=False):
         in_ring = [1 if atom in ring else 0 for ring in aromatic_rings]
         in_bond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
         A.append(in_ring + in_bond)
-    constraints = [LinearConstraint(
+    constraints = (LinearConstraint(
         A=np.array(A, dtype=int), lb=np.ones(n_atom, dtype=int), ub=np.ones(n_atom, dtype=int)
-    )]
+    ), )
 
     # Objective vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
     c = - np.array([1] * n_ring + [0] * n_bond, dtype=int)
@@ -1108,7 +1108,7 @@ def _solve_clar_milp(
 
     # Generate constraints based on the solution obtained
     y = solution[:n_ring]
-    constraints.append(
+    constraints = constraints + (
         LinearConstraint(
             A=np.hstack([y, [0] * (solution.shape[0] - n_ring)]),
             ub=sum(y) - 1,
