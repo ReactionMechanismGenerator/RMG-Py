@@ -44,7 +44,7 @@ dependencies:
 
 # external software tools for chemistry
   - coolprop
-  - cantera::cantera >=3
+  - cantera::cantera =2.6
   - conda-forge::mopac
   - conda-forge::cclib >=1.6.3,<1.8.0
   - conda-forge::openbabel >= 3
