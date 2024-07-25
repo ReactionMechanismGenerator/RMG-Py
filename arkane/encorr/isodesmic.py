@@ -656,7 +656,7 @@ class ErrorCancelingScheme:
         n = c_matrix.shape[1]
         split = int(m / 2)
 
-        constraints = [LinearConstraint(A=np.concatenate((c_matrix[:split, j], -1 * c_matrix[split:, j]), lb=targets[j], ub=targets[j])) for j in n]
+        constraints = [LinearConstraint(A=np.concatenate((c_matrix[:split, j], -1 * c_matrix[split:, j]), lb=targets[j], ub=targets[j])) for j in range(n)]
 
         result = milp(
             sum_constraints,
