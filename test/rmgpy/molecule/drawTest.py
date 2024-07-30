@@ -240,6 +240,24 @@ class TestMoleculeDrawer:
                 molecule.add_bond(Bond(b1, h1, order=1))
                 molecule.add_bond(Bond(b2, h2, order=1))
                 molecule.add_bond(Bond(b3, h3, order=1))
+            
+        test_molecules.append(Molecule().from_adjacency_list(
+"""
+1  C  u0 p0 c0 {2,S} {3,S} {9,S} {10,S}
+2  X u0 p0 c0 {1,S}
+3  C  u0 p0 c0 {1,S} {4,S} {5,S} {11,S}
+4  X u0 p0 c0 {3,S}
+5  C  u0 p0 c0 {3,S} {6,S} {7,S} {12,S}
+6  X u0 p0 c0 {5,S}
+7  C  u0 p0 c0 {5,S} {8,S} {13,S} {14,S}
+8  X u0 p0 c0 {7,S}
+9  H  u0 p0 c0 {1,S}
+10 H  u0 p0 c0 {1,S}
+11 H  u0 p0 c0 {3,S}
+12 H  u0 p0 c0 {5,S}
+13 H  u0 p0 c0 {7,S}
+14 H  u0 p0 c0 {7,S}
+"""))
 
         for number, molecule in enumerate(test_molecules, 1):
             path = f"test_polydentate_{number}.png"
