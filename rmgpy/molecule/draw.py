@@ -60,7 +60,7 @@ except ImportError:
 import numpy as np
 from rdkit.Chem import AllChem
 
-from rmgpy.molecule.molecule import Atom, Molecule
+from rmgpy.molecule.molecule import Atom, Molecule, Bond
 from rmgpy.qm.molecule import Geometry
 
 
@@ -207,7 +207,9 @@ class MoleculeDrawer(object):
                 # replace the bonds after generating coordinates. This avoids
                 # bugs with RDKit
                 old_bond_dictionary = self._make_single_bonds()
+                self._connect_surface_sites()
                 self._generate_coordinates()
+                self._disconnect_surface_sites()
                 self._replace_bonds(old_bond_dictionary)
 
                 # Generate labels to use
@@ -1623,6 +1625,38 @@ class MoleculeDrawer(object):
         """
         for bond, order in bond_order_dictionary.items():
             bond.set_order_num(order)
+
+    def _connect_surface_sites(self):
+        """
+        Creates single bonds between atoms that are surface sites.
+        This makes bidentate adsorbates look better.
+        Not well tested for things with n>2 surface sites.
+        """
+        for atom1 in self.molecule.atoms:
+            if atom1.is_surface_site():
+                for atom2 in self.molecule.atoms:
+                    if atom2.is_surface_site() and atom1 != atom2:
+                        # if atom2 is already bonded to a surface site, don't also bond it to atom1
+                        for atom3 in atom2.bonds:
+                            if atom3.is_surface_site():
+                                break
+                        else: # didn't break
+                            bond = atom1.bonds.get(atom2)
+                            if bond is None:
+                                bond = Bond(atom1, atom2, 1)
+                                atom1.bonds[atom2] = bond
+                                atom2.bonds[atom1] = bond
+
+    def _disconnect_surface_sites(self):
+        """
+        Removes all bonds between atoms that are surface sites.
+        """
+        for atom1 in self.molecule.atoms:
+            if atom1.is_surface_site():
+                for atom2 in list(atom1.bonds.keys()): # make a list copy so we can delete from the dict
+                    if atom2.is_surface_site():
+                        del atom1.bonds[atom2]
+                        del atom2.bonds[atom1]
 
 
 ################################################################################
