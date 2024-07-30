@@ -480,6 +480,16 @@ class MoleculeDrawer(object):
                 index = atoms.index(site)
                 coordinates[index, 1] = min(coordinates[:, 1]) - 0.8  # just move the site down a bit
                 coordinates[index, 0] = coordinates[:, 0].mean()  # and center it
+            sites = [atom for atom in self.molecule.atoms if atom.is_surface_site()]
+            if len(sites) == 2:
+                # rotate so the sites are horizontal
+                vector0 = coordinates[atoms.index(sites[1]), :] - coordinates[atoms.index(sites[0]), :]
+                angle = math.atan2(vector0[0], vector0[1]) - math.pi / 2
+                rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], float)
+                self.coordinates = coordinates = np.dot(coordinates, rot)
+                # if sites are above the middle, flip it
+                if coordinates[atoms.index(sites[0]), 1] > coordinates[:, 1].mean():
+                    coordinates[:, 1] *= -1
 
     def _find_cyclic_backbone(self):
         """
