@@ -249,9 +249,8 @@ cdef class PDepKineticsData(PDepKineticsModel):
                         Plow = Pdata[j]
                         Phigh = Pdata[j + 1]
                         if Plow <= P and P <= Phigh:
-                            klow = kdata[i, j] * (kdata[i + 1, j] / kdata[i, j]) ** ((T - Tlow) / (Thigh - Tlow))
-                            khigh = kdata[i, j + 1] * (kdata[i + 1, j + 1] / kdata[i, j + 1]) ** (
-                                        (T - Tlow) / (Thigh - Tlow))
+                            klow = kdata[i, j] * (kdata[i + 1, j] / kdata[i, j]) ** ((T - Tlow) / (Thigh - Tlow)).real
+                            khigh = kdata[i, j + 1] * (kdata[i + 1, j + 1] / kdata[i, j + 1]) ** ((T - Tlow) / (Thigh - Tlow)).real
                             k = klow * (khigh / klow) ** (log(P / Plow) / log(Phigh / Plow))
                             break
 

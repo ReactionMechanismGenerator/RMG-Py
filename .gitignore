@@ -47,7 +47,7 @@ nbproject/*
 .vscode/*
 
 # Unit test files
-.coverage
+.coverage*
 testing/*
 htmlcov/*
 
@@ -117,3 +117,4 @@ examples/**/dictionary.txt
 examples/**/reactions.py
 examples/**/RMG_libraries
 examples/**/species
+examples/**/plots
