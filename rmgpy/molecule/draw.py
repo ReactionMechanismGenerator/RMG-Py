@@ -61,6 +61,7 @@ import numpy as np
 from rdkit.Chem import AllChem
 
 from rmgpy.molecule.molecule import Atom, Molecule, Bond
+from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.qm.molecule import Geometry
 
 
@@ -1634,18 +1635,15 @@ class MoleculeDrawer(object):
         """
         for atom1 in self.molecule.atoms:
             if atom1.is_surface_site():
-                for atom2 in self.molecule.atoms:
-                    if atom2.is_surface_site() and atom1 != atom2:
-                        # if atom2 is already bonded to a surface site, don't also bond it to atom1
-                        for atom3 in atom2.bonds:
-                            if atom3.is_surface_site():
-                                break
-                        else: # didn't break
-                            bond = atom1.bonds.get(atom2)
-                            if bond is None:
-                                bond = Bond(atom1, atom2, 1)
-                                atom1.bonds[atom2] = bond
-                                atom2.bonds[atom1] = bond
+                other_sites = [a for a in self.molecule.atoms if a.is_surface_site() and a != atom1]
+                if not other_sites: break
+                nearest_sites = sorted(other_sites, key=lambda a: len(find_shortest_path(atom1, a)))
+                atom2 = nearest_sites[0]
+                bond = atom1.bonds.get(atom2)
+                if bond is None:
+                    bond = Bond(atom1, atom2, 1)
+                    atom1.bonds[atom2] = bond
+                    atom2.bonds[atom1] = bond
 
     def _disconnect_surface_sites(self):
         """
