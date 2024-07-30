@@ -266,5 +266,5 @@ class TestMoleculeDrawer:
             self.drawer.clear()
             surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(molecule, file_format="png", target=path)
             assert os.path.exists(path), "File doesn't exist"
-            # os.unlink(path)
+            os.unlink(path)
             assert isinstance(surface, ImageSurface)
