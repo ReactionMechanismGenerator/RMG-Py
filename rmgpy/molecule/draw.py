@@ -867,7 +867,7 @@ class MoleculeDrawer(object):
         # Check to see if atom1 is in any cycles in the molecule
         ring_system = None
         for ring_sys in self.ringSystems:
-            if any([atom1 in ring for ring in ring_sys]):
+            if any(atom1 in ring for ring in ring_sys):
                 ring_system = ring_sys
 
         if ring_system is not None:
