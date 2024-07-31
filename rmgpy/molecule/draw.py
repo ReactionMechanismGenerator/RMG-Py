@@ -490,6 +490,33 @@ class MoleculeDrawer(object):
                 # if sites are above the middle, flip it
                 if coordinates[atoms.index(sites[0]), 1] > coordinates[:, 1].mean():
                     coordinates[:, 1] *= -1
+            elif len(sites) > 2:
+                # find atoms bonded to sites
+                bonded = []
+                for site in sites:
+                    for atom in site.bonds:
+                        if atom not in sites:
+                            bonded.append(atom)
+                # find the best fit line through the bonded atoms
+                x = coordinates[[atoms.index(atom) for atom in bonded], 0]
+                y = coordinates[[atoms.index(atom) for atom in bonded], 1]
+                A = np.vstack([x, np.ones(len(x))]).T
+                m, c = np.linalg.lstsq(A, y, rcond=None)[0]
+                # rotate so the line is horizontal
+                angle = -math.atan(m)
+                rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], float)
+                self.coordinates = coordinates = np.dot(coordinates, rot)
+                # if the line is above the middle, flip it
+                if c > coordinates[[atoms.index(a) for a in atoms if not a.is_surface_site()], 1].mean():
+                    coordinates[:, 1] *= -1
+                x = coordinates[[atoms.index(atom) for atom in bonded], 0]
+                y = coordinates[[atoms.index(atom) for atom in bonded], 1]
+                site_y_pos = min(y) - 0.8
+                for site, x_pos in zip(sites, x):
+                    index = atoms.index(site)
+                    coordinates[index, 1] = site_y_pos
+                    coordinates[index, 0] = x_pos
+                
 
     def _find_cyclic_backbone(self):
         """
