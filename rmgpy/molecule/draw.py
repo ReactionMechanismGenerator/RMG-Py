@@ -1643,17 +1643,24 @@ class MoleculeDrawer(object):
         This makes bidentate adsorbates look better.
         Not well tested for things with n>2 surface sites.
         """
-        for atom1 in self.molecule.atoms:
-            if atom1.is_surface_site():
-                other_sites = [a for a in self.molecule.atoms if a.is_surface_site() and a != atom1]
-                if not other_sites: break
-                nearest_sites = sorted(other_sites, key=lambda a: len(find_shortest_path(atom1, a)))
-                atom2 = nearest_sites[0]
-                bond = atom1.bonds.get(atom2)
-                if bond is None:
-                    bond = Bond(atom1, atom2, 1)
-                    atom1.bonds[atom2] = bond
-                    atom2.bonds[atom1] = bond
+
+        ring_backbone = self._find_cyclic_backbone()[0] if self.cycles else []
+        if ring_backbone:
+            print('Ring backbone found: {0}'.format(ring_backbone))
+        sites = [a for a in self.molecule.atoms if a.is_surface_site()]
+        for atom1 in sites:
+            if atom1.bonds and next(iter(atom1.bonds)) in ring_backbone:
+                print(f"Atom {atom1} is attached to an atom in the ring backbone, so don't connect it.")
+                continue
+            other_sites = [a for a in sites if a != atom1]
+            if not other_sites: break
+            nearest_sites = sorted(other_sites, key=lambda a: len(find_shortest_path(atom1, a)))
+            atom2 = nearest_sites[0]
+            bond = atom1.bonds.get(atom2)
+            if bond is None:
+                bond = Bond(atom1, atom2, 1)
+                atom1.bonds[atom2] = bond
+                atom2.bonds[atom1] = bond
 
     def _disconnect_surface_sites(self):
         """
