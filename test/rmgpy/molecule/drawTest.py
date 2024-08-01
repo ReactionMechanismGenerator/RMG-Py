@@ -258,7 +258,35 @@ class TestMoleculeDrawer:
 13 H  u0 p0 c0 {7,S}
 14 H  u0 p0 c0 {7,S}
 """))
-
+        test_molecules.append(Molecule().from_adjacency_list(
+"""
+1 O u0 p2 c0 {4,S} {5,S}
+2 O u0 p2 c0 {5,S} {6,S}
+3 O u0 p2 c0 {6,S} {26,S}
+4 C u0 p0 c0 {1,S} {7,S} {8,S} {19,S}
+5 C u0 p0 c0 {1,S} {2,S} {10,S} {21,S}
+6 C u0 p0 c0 {2,S} {3,S} {9,S} {20,S}
+7 C u0 p0 c0 {4,S} {15,S} {16,S} {24,S}
+8 C u0 p0 c0 {4,S} {17,S} {18,S} {25,S}
+9 C u0 p0 c0 {6,S} {11,S} {12,S} {22,S}
+10 C u0 p0 c0 {5,S} {13,S} {14,S} {23,S}
+11 H u0 p0 c0 {9,S}
+12 H u0 p0 c0 {9,S}
+13 H u0 p0 c0 {10,S}
+14 H u0 p0 c0 {10,S}
+15 H u0 p0 c0 {7,S}
+16 H u0 p0 c0 {7,S}
+17 H u0 p0 c0 {8,S}
+18 H u0 p0 c0 {8,S}
+19 X u0 p0 c0 {4,S}
+20 X u0 p0 c0 {6,S}
+21 X u0 p0 c0 {5,S}
+22 X u0 p0 c0 {9,S}
+23 X u0 p0 c0 {10,S}
+24 X u0 p0 c0 {7,S}
+25 X u0 p0 c0 {8,S}
+26 X u0 p0 c0 {3,S}
+"""))
         for number, molecule in enumerate(test_molecules, 1):
             path = f"test_polydentate_{number}.png"
             if os.path.exists(path):
