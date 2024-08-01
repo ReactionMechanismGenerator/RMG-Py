@@ -483,14 +483,11 @@ class MoleculeDrawer(object):
             sites = [atom for atom in self.molecule.atoms if atom.is_surface_site()]
             if len(sites) >= 2:
                 # find atoms bonded to sites
-                bonded = []
-                for site in sites:
-                    for atom in site.bonds:
-                        if atom not in sites:
-                            bonded.append(atom)
+                bonded = [next(iter(site.bonds)) for site in sites]
+                bonded_indices = [atoms.index(atom) for atom in bonded]
                 # find the best fit line through the bonded atoms
-                x = coordinates[[atoms.index(atom) for atom in bonded], 0]
-                y = coordinates[[atoms.index(atom) for atom in bonded], 1]
+                x = coordinates[bonded_indices, 0]
+                y = coordinates[bonded_indices, 1]
                 A = np.vstack([x, np.ones(len(x))]).T
                 m, c = np.linalg.lstsq(A, y, rcond=None)[0]
                 # rotate so the line is horizontal
@@ -501,8 +498,8 @@ class MoleculeDrawer(object):
                 not_site_indices = [atoms.index(a) for a in atoms if not a.is_surface_site()]
                 if c > coordinates[not_site_indices, 1].mean():
                     coordinates[:, 1] *= -1
-                x = coordinates[[atoms.index(atom) for atom in bonded], 0]
-                y = coordinates[[atoms.index(atom) for atom in bonded], 1]
+                x = coordinates[bonded_indices, 0]
+                y = coordinates[bonded_indices, 1]
                 site_y_pos = min(min(y) - 0.8, min(coordinates[not_site_indices, 1]) - 0.5)
                 for site, x_pos in zip(sites, x):
                     index = atoms.index(site)
