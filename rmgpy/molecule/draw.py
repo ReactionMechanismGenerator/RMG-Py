@@ -460,28 +460,27 @@ class MoleculeDrawer(object):
                 coordinates[:, 0] = temp[:, 1]
                 coordinates[:, 1] = temp[:, 0]
 
-        # For surface species, rotate them so the site is at the bottom.
+        # For surface species
         if self.molecule.contains_surface_site():
             if len(self.molecule.atoms) == 1:
                 return coordinates
-            for site in self.molecule.atoms:
-                if site.is_surface_site():
-                    break
-            else:
-                raise Exception("Can't find surface site")
-            if site.bonds:
-                adsorbate = next(iter(site.bonds))
-                vector0 = coordinates[atoms.index(site), :] - coordinates[atoms.index(adsorbate), :]
-                angle = math.atan2(vector0[0], vector0[1]) - math.pi
-                rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], float)
-                self.coordinates = coordinates = np.dot(coordinates, rot)
-            else:
-                # van der waals
-                index = atoms.index(site)
-                coordinates[index, 1] = min(coordinates[:, 1]) - 0.8  # just move the site down a bit
-                coordinates[index, 0] = coordinates[:, 0].mean()  # and center it
             sites = [atom for atom in self.molecule.atoms if atom.is_surface_site()]
-            if len(sites) >= 2:
+            if len(sites) == 1:
+                # rotate them so the site is at the bottom.
+                site = sites[0]
+                if site.bonds:
+                    adsorbate = next(iter(site.bonds))
+                    vector0 = coordinates[atoms.index(site), :] - coordinates[atoms.index(adsorbate), :]
+                    angle = math.atan2(vector0[0], vector0[1]) - math.pi
+                    rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], float)
+                    self.coordinates = coordinates = np.dot(coordinates, rot)
+                else:
+                    # van der waals
+                    index = atoms.index(site)
+                    coordinates[index, 1] = min(coordinates[:, 1]) - 0.8  # just move the site down a bit
+                    coordinates[index, 0] = coordinates[:, 0].mean()  # and center it
+            else: # len(sites) >= 2:
+                # Rotate so the line of best fit through the adatoms is horizontal.
                 # find atoms bonded to sites
                 bonded = [next(iter(site.bonds)) for site in sites]
                 bonded_indices = [atoms.index(atom) for atom in bonded]
@@ -496,7 +495,7 @@ class MoleculeDrawer(object):
                 self.coordinates = coordinates = np.dot(coordinates, rot)
                 # if the line is above the middle, flip it
                 not_site_indices = [atoms.index(a) for a in atoms if not a.is_surface_site()]
-                if c > coordinates[not_site_indices, 1].mean():
+                if coordinates[bonded_indices, 1].mean() > coordinates[not_site_indices, 1].mean():
                     coordinates[:, 1] *= -1
                 x = coordinates[bonded_indices, 0]
                 y = coordinates[bonded_indices, 1]
@@ -505,7 +504,6 @@ class MoleculeDrawer(object):
                     index = atoms.index(site)
                     coordinates[index, 1] = site_y_pos
                     coordinates[index, 0] = x_pos
-                
 
     def _find_cyclic_backbone(self):
         """
@@ -1656,13 +1654,13 @@ class MoleculeDrawer(object):
     def _connect_surface_sites(self):
         """
         Creates single bonds between atoms that are surface sites.
-        This makes bidentate adsorbates look better.
-        Not well tested for things with n>2 surface sites.
+        This is to help make multidentate adsorbates look better.
         """
         sites = [a for a in self.molecule.atoms if a.is_surface_site()]
         for atom1 in sites:
             other_sites = [a for a in sites if a != atom1]
             if not other_sites: break
+            # connect to the nearest site
             atom2 = min(other_sites, key=lambda a: len(find_shortest_path(atom1, a)))
             bond = atom1.bonds.get(atom2)
             if bond is None:
