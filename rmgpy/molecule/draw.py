@@ -208,9 +208,12 @@ class MoleculeDrawer(object):
                 # replace the bonds after generating coordinates. This avoids
                 # bugs with RDKit
                 old_bond_dictionary = self._make_single_bonds()
-                self._connect_surface_sites()
-                self._generate_coordinates()
-                self._disconnect_surface_sites()
+                if molecule.contains_surface_site():
+                    self._connect_surface_sites()
+                    self._generate_coordinates()
+                    self._disconnect_surface_sites()
+                else:
+                    self._generate_coordinates()
                 self._replace_bonds(old_bond_dictionary)
 
                 # Generate labels to use
@@ -479,7 +482,7 @@ class MoleculeDrawer(object):
                     index = atoms.index(site)
                     coordinates[index, 1] = min(coordinates[:, 1]) - 0.8  # just move the site down a bit
                     coordinates[index, 0] = coordinates[:, 0].mean()  # and center it
-            else: # len(sites) >= 2:
+            elif len(sites) <= 4:
                 # Rotate so the line of best fit through the adatoms is horizontal.
                 # find atoms bonded to sites
                 bonded = [next(iter(site.bonds)) for site in sites]
@@ -504,6 +507,9 @@ class MoleculeDrawer(object):
                     index = atoms.index(site)
                     coordinates[index, 1] = site_y_pos
                     coordinates[index, 0] = x_pos
+            else:
+                # more than 4 surface sites? leave them alone
+                pass
 
     def _find_cyclic_backbone(self):
         """
@@ -1657,6 +1663,8 @@ class MoleculeDrawer(object):
         This is to help make multidentate adsorbates look better.
         """
         sites = [a for a in self.molecule.atoms if a.is_surface_site()]
+        if len(sites) > 4:
+            return
         for atom1 in sites:
             other_sites = [a for a in sites if a != atom1]
             if not other_sites: break
