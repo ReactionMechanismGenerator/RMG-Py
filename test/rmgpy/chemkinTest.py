@@ -817,8 +817,8 @@ C 1 H 3 N 1 O 2 S 1 X 1
             check_for_duplicates=False,
         )
 
-        bidentate_test = "CH2OX2(52)/2/"
-        tridentate_test = "CHOX3(61)/3/"
+        bidentate_test = "CH2OX2/2/"
+        tridentate_test = "CHOX3/3/"
         with open(chemkin_save_path, "r") as f:
             lines = [line.strip() for line in f]
         assert bidentate_test in lines
