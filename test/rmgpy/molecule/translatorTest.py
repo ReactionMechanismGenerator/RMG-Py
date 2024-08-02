@@ -863,8 +863,86 @@ class SMILESGenerationTest:
         assert smiles2 != smiles3
         assert smiles1 != smiles3
 
+    def test_smiles_rdkit_adsorbates(self):
+        """
+        Test that we can get from an adsorbate 
+        to SMILES and back again using RDKit
+        """
+        def compare(adjlist, smiles, alternatives=[]):
+            "the adjlist should convert to smiles, but the alternative smiles should give the same molecule"
+            molecule = Molecule().from_adjacency_list(adjlist)
+            assert to_smiles(molecule, backend="rdkit") == smiles, f"Expected {smiles}, got {to_smiles(molecule, backend='rdkit')}"
+            molecule2 = Molecule()
+            from_smiles(molecule2, smiles, backend="rdkit")
+            assert molecule2.is_isomorphic(molecule), f"Expected {molecule.to_smiles()} got {molecule2.to_smiles()}"
+            for alt in alternatives:
+                from_smiles(molecule2, alt, backend="rdkit")
+                assert molecule2.is_isomorphic(molecule), f"Expected {molecule.to_smiles()} got {molecule2.to_smiles()}"
+
+
+        adjlist = """
+        1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+        2 X u0 p0 c0 {1,S}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        """
+        smiles = '*C'
+        compare(adjlist, smiles, alternatives=['C*'])
+
+        adjlist = """
+        1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+        2 C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
+        3 X u0 p0 c0 {2,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {1,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {2,S}
+        """
+        smiles = '*CC'
+        compare(adjlist, smiles, alternatives=['CC*', 'C(*)C'])
+
+        adjlist = """
+        1 C u0 p0 c0 {2,D} {3,S} {4,S}
+        2 X u0 p0 c0 {1,D}
+        3 H u0 p0 c0 {1,S}
+        4 H u0 p0 c0 {1,S}
+        """
+        smiles = '*=C'
+        compare(adjlist, smiles, alternatives=['C=*'])
+
+        adjlist = """
+        1 X u0 p0 c0 {2,S}
+        2 H u0 p0 c0 {1,S}
+        """
+        smiles = '*[H]'
+        compare(adjlist, smiles, alternatives=['[*H]', '[H]*'])
+
+        adjlist = """
+        1 X u0 p0 c0 {2,D}
+        2 O u0 p2 c0 {1,D}
+        """
+        smiles = '*=O'
+        compare(adjlist, smiles, alternatives=['O=*'])
+
+        adjlist = """
+        1 X u0 p0 c0 {2,S}
+        2 C u0 p0 c0 {1,S} {3,S} {6,S} {7,S}
+        3 O u0 p2 c0 {2,S} {4,S}
+        4 C u0 p0 c0 {3,S} {5,S} {8,S} {9,S}
+        5 X u0 p0 c0 {4,S}
+        6 H u0 p0 c0 {2,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {4,S}
+        9 H u0 p0 c0 {4,S}
+        """
+        smiles = '*COC*'
+        compare(adjlist, smiles)
+
+
     def test_surface_molecule_rdkit(self):
-        """Test InChI generation for a surface molecule using RDKit"""
+        """Test SMILES generation for a surface molecule using RDKit"""
         mol = Molecule().from_adjacency_list(
             """
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
@@ -874,12 +952,11 @@ class SMILESGenerationTest:
 5 X u0 p0 c0 {1,S}
 """
         )
-        smiles = "C[Pt]"
-
+        smiles = "*C"
         assert to_smiles(mol, backend="rdkit") == smiles
 
     def test_surface_molecule_ob(self):
-        """Test InChI generation for a surface molecule using OpenBabel"""
+        """Test SMILES generation for a surface molecule using OpenBabel"""
         mol = Molecule().from_adjacency_list(
             """
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
@@ -890,7 +967,6 @@ class SMILESGenerationTest:
 """
         )
         smiles = "C[Pt]"
-
         assert to_smiles(mol, backend="openbabel") == smiles
 
 
