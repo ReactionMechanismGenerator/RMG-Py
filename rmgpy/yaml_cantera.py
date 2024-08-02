@@ -68,14 +68,14 @@ def write_cantera(
         result_dict = get_mech_dict_surface(
             spcs, rxns, solvent=solvent, solvent_data=solvent_data
         )
-        phases_block, elements_block = get_phases_elements_with_surface(
+        phases_block = get_phases_with_surface(
             spcs, surface_site_density
         )
     else:
         result_dict = get_mech_dict_nonsurface(
             spcs, rxns, solvent=solvent, solvent_data=solvent_data
         )
-        phases_block, elements_block = get_phases_elements_gas_only(spcs)
+        phases_block = get_phases_gas_only(spcs)
 
     with open(path, "w") as f:
         # generator line
@@ -92,14 +92,40 @@ def write_cantera(
         )
 
         f.write(phases_block)
-        f.write(elements_block)
+
+        f.write(ELEMENTS_BLOCK)
 
         yaml.dump(result_dict, stream=f, sort_keys=False)
 
-
-def get_phases_elements_gas_only(spcs):
+def get_elements_block():
     """
-    Returns 'phases' and 'elements' sections for a file
+    Returns the 'elements' section, and elements list for a phase
+    """
+    from rmgpy.molecule.element import get_element
+    elements_list = ['H', 'C', 'O', 'N', 'Ne', 'Ar', 'He', 'Si', 'S',
+                'F', 'Cl', 'Br', 'I']
+    isotopes = (('H', 2), ('H', 3), ('C', 13),('O', 18))
+    elements_block_list = ['', 'elements:']
+    for symbol, isotope in isotopes:
+        element = get_element(symbol, isotope=isotope)
+        chemkin_name = element.chemkin_name
+        mass = 1000 * element.mass
+        elements_block_list.append(f"- symbol: {chemkin_name}\n  atomic-weight: {mass:f}")
+        elements_list.append(chemkin_name)
+    # Surface sites
+    elements_list.append('X')
+    elements_block_list.append("- symbol: X\n  atomic-weight: 195.083\n\n")
+    elements_block = '\n'.join(elements_block_list)
+    elements_line = f"elements: [{', '.join(elements_list)}]"
+    return elements_block, elements_line
+# For now this is not dynamic, and includes everything, so we just evaluate it 
+# once and use it for all files.
+ELEMENTS_BLOCK, ELEMENTS_LINE = get_elements_block()
+
+
+def get_phases_gas_only(spcs):
+    """
+    Returns 'phases' sections for a file
     with only gas-phase species/reactions.
     """
     sorted_species = sorted(spcs, key=lambda spcs: spcs.index)
@@ -113,33 +139,20 @@ def get_phases_elements_gas_only(spcs):
 phases:
 - name: gas
   thermo: ideal-gas
-  elements: [H, D, T, C, Ci, O, Oi, N, Ne, Ar, He, Si, S, F, Cl, Br, I]
+  {ELEMENTS_LINE}
   species: [{', '.join(species_to_write)}]
   kinetics: gas
   transport: mixture-averaged
   state: {{T: 300.0, P: 1 atm}}
 """
-
-    elements_block = """
-elements:
-- symbol: Ci
-  atomic-weight: 13.003
-- symbol: D
-  atomic-weight: 2.014
-- symbol: Oi
-  atomic-weight: 17.999
-- symbol: T
-  atomic-weight: 3.016
-
-"""
-    return phases_block, elements_block
+    return phases_block
 
 
-def get_phases_elements_with_surface(spcs, surface_site_density):
+def get_phases_with_surface(spcs, surface_site_density):
     """
     Yaml files with surface species begin with the following blocks of text,
     which includes TWO phases instead of just one.
-    Returns 'phases' and 'elements' sections.
+    Returns 'phases' sections.
     """
     surface_species = []
     gas_species = []
@@ -177,7 +190,7 @@ def get_phases_elements_with_surface(spcs, surface_site_density):
 phases:
 - name: gas
   thermo: ideal-gas
-  elements: [H, D, T, C, Ci, O, Oi, N, Ne, Ar, He, Si, S, F, Cl, Br, I]
+  {ELEMENTS_LINE}
   species: [{', '.join(gas_species_to_write)}]
   kinetics: gas
   reactions: [gas_reactions]
@@ -187,7 +200,7 @@ phases:
 - name: {surface_species[0].smiles.replace("[","").replace("]","")}_surface
   thermo: ideal-surface
   adjacent-phases: [gas]
-  elements: [H, D, T, C, Ci, O, Oi, N, Ne, Ar, He, Si, S, F, Cl, Br, I, X]
+  {ELEMENTS_LINE}
   species: [{', '.join(surface_species_to_write)}]
   kinetics: surface
   reactions: [surface_reactions]
@@ -195,21 +208,7 @@ phases:
 """
     # surface_site_density * 1e-4 #in units of mol/cm^2
 
-    elements_block = """
-elements:
-- symbol: Ci
-  atomic-weight: 13.003
-- symbol: D
-  atomic-weight: 2.014
-- symbol: Oi
-  atomic-weight: 17.999
-- symbol: T
-  atomic-weight: 3.016
-- symbol: X
-  atomic-weight: 195.083
-
-"""
-    return phases_block, elements_block
+    return phases_block
 
 
 def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None):
