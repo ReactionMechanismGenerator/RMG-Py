@@ -966,9 +966,31 @@ class SMILESGenerationTest:
 5 X u0 p0 c0 {1,S}
 """
         )
-        smiles = "C[Pt]"
+        smiles = "C*"
         assert to_smiles(mol, backend="openbabel") == smiles
 
+    def test_smiles_adsorbates_round_trip(self):
+        """
+        Test that we can get from an adsorbate SMILES and back again,
+        by whatever back-end is chosen automatically.
+        """
+        def check(s0):
+            m = Molecule(smiles=s0)
+            s1 = m.to_smiles()
+            m2 = Molecule(smiles=s1)
+            assert m.is_isomorphic(m2)
+            s2 = m2.to_smiles()
+            assert s1 == s2
+        check("*C")
+        check("*CC")
+        check("*=C")
+        check("*[H]")
+        check("*=O")
+        check("*COC*")
+        check("*CNC")
+        check("*C1CCCC1")
+        check("*N")
+        check("*N(Cl)")
 
 class ParsingTest:
     def setup_class(self):

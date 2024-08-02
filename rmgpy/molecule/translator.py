@@ -441,6 +441,9 @@ def _openbabel_translator(input_object, identifier_type, mol=None):
             raise ValueError('Unexpected identifier type {0}.'.format(identifier_type))
         obmol = to_ob_mol(input_object)
         output = ob_conversion.WriteString(obmol).strip()
+        if identifier_type == 'smi':
+            # If we use * for surface sites, RDKit can read it again.
+            output = output.replace('[Pt]','*')
     else:
         raise ValueError('Unexpected input format. Should be a Molecule or a string.')
 
