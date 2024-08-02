@@ -373,7 +373,7 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
         if identifier_type == 'smi':
             rdkitmol = to_rdkit_mol(input_object, sanitize=False)
         else:
-            rdkitmol = to_rdkit_mol(input_object, sanitize=True)
+            rdkitmol = to_rdkit_mol(input_object, sanitize=True, X=78) # Use Pt (78) for surface sites.
         if identifier_type == 'inchi':
             output = Chem.inchi.MolToInchi(rdkitmol, options='-SNon')
         elif identifier_type == 'inchikey':
