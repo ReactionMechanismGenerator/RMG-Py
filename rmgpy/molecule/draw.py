@@ -472,24 +472,24 @@ class MoleculeDrawer(object):
                 # rotate them so the site is at the bottom.
                 site = sites[0]
                 if site.bonds:
-                    adsorbate = next(iter(site.bonds))
-                    vector0 = coordinates[atoms.index(site), :] - coordinates[atoms.index(adsorbate), :]
+                    adatom = next(iter(site.bonds))
+                    vector0 = coordinates[atoms.index(site), :] - coordinates[atoms.index(adatom), :]
                     angle = math.atan2(vector0[0], vector0[1]) - math.pi
                     rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], float)
                     self.coordinates = coordinates = np.dot(coordinates, rot)
                 else:
-                    # van der waals
+                    # van der Waals
                     index = atoms.index(site)
                     coordinates[index, 1] = min(coordinates[:, 1]) - 0.8  # just move the site down a bit
                     coordinates[index, 0] = coordinates[:, 0].mean()  # and center it
             elif len(sites) <= 4:
                 # Rotate so the line of best fit through the adatoms is horizontal.
                 # find atoms bonded to sites
-                bonded = [next(iter(site.bonds)) for site in sites]
-                bonded_indices = [atoms.index(atom) for atom in bonded]
+                adatoms = [next(iter(site.bonds)) for site in sites]
+                adatom_indices = [atoms.index(a) for a in adatoms]
                 # find the best fit line through the bonded atoms
-                x = coordinates[bonded_indices, 0]
-                y = coordinates[bonded_indices, 1]
+                x = coordinates[adatom_indices, 0]
+                y = coordinates[adatom_indices, 1]
                 A = np.vstack([x, np.ones(len(x))]).T
                 m, c = np.linalg.lstsq(A, y, rcond=None)[0]
                 # rotate so the line is horizontal
@@ -498,10 +498,10 @@ class MoleculeDrawer(object):
                 self.coordinates = coordinates = np.dot(coordinates, rot)
                 # if the line is above the middle, flip it
                 not_site_indices = [atoms.index(a) for a in atoms if not a.is_surface_site()]
-                if coordinates[bonded_indices, 1].mean() > coordinates[not_site_indices, 1].mean():
+                if coordinates[adatom_indices, 1].mean() > coordinates[not_site_indices, 1].mean():
                     coordinates[:, 1] *= -1
-                x = coordinates[bonded_indices, 0]
-                y = coordinates[bonded_indices, 1]
+                x = coordinates[adatom_indices, 0]
+                y = coordinates[adatom_indices, 1]
                 site_y_pos = min(min(y) - 0.8, min(coordinates[not_site_indices, 1]) - 0.5)
                 for site, x_pos in zip(sites, x):
                     index = atoms.index(site)
