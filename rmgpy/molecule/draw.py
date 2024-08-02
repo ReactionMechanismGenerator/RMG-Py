@@ -1665,27 +1665,27 @@ class MoleculeDrawer(object):
         sites = [a for a in self.molecule.atoms if a.is_surface_site()]
         if len(sites) > 4:
             return
-        for atom1 in sites:
-            other_sites = [a for a in sites if a != atom1]
+        for site1 in sites:
+            other_sites = [a for a in sites if a != site1]
             if not other_sites: break
             # connect to the nearest site
-            atom2 = min(other_sites, key=lambda a: len(find_shortest_path(atom1, a)))
-            bond = atom1.bonds.get(atom2)
+            site2 = min(other_sites, key=lambda a: len(find_shortest_path(site1, a)))
+            bond = site1.bonds.get(site2)
             if bond is None:
-                bond = Bond(atom1, atom2, 1)
-                atom1.bonds[atom2] = bond
-                atom2.bonds[atom1] = bond
+                bond = Bond(site1, site2, 1)
+                site1.bonds[site2] = bond
+                site2.bonds[site1] = bond
 
     def _disconnect_surface_sites(self):
         """
         Removes all bonds between atoms that are surface sites.
         """
-        for atom1 in self.molecule.atoms:
-            if atom1.is_surface_site():
-                for atom2 in list(atom1.bonds.keys()): # make a list copy so we can delete from the dict
-                    if atom2.is_surface_site():
-                        del atom1.bonds[atom2]
-                        del atom2.bonds[atom1]
+        for site1 in self.molecule.atoms:
+            if site1.is_surface_site():
+                for site2 in list(site1.bonds.keys()): # make a list copy so we can delete from the dict
+                    if site2.is_surface_site():
+                        del site1.bonds[site2]
+                        del site2.bonds[site1]
 
 
 ################################################################################
