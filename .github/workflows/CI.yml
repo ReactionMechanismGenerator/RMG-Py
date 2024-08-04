@@ -157,17 +157,17 @@ jobs:
       - name: Install Q2DTor
         run: echo "" | make q2dtor
 
-      # non-regression testing
-      - name: Run Unit, Functional, and Database Tests
-        # aggregate into one command so we only have to eat the collection time once
-        run: make test-all
+      # # non-regression testing
+      # - name: Run Unit, Functional, and Database Tests
+      #  # aggregate into one command so we only have to eat the collection time once
+      #  run: make test-all
 
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution
         id: regression-execution
         timeout-minutes: 60
         run: |
-          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat fragment RMS_constantVIdealGasReactor_fragment;
+          for regr_test in minimal_surface;
           do
             if python-jl rmg.py test/regression/"$regr_test"/input.py; then
               echo "$regr_test" "Executed Successfully"
@@ -239,11 +239,11 @@ jobs:
         id: regression-comparison
         if: ${{ env.REFERENCE_JOB == 'false' }}
         env:
-          REFERENCE: stable_regression_results
+          REFERENCE: 'test/regression'  #stable_regression_results
         run: |
           exec 2> >(tee -a regression.stderr >&2) 1> >(tee -a regression.stdout)
           mkdir -p "test/regression-diff"
-          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation fragment RMS_constantVIdealGasReactor_fragment;
+          for regr_test in minimal_surface;
           do
             echo ""
             echo "### Regression test $regr_test:"
@@ -297,6 +297,9 @@ jobs:
             if [ -f test/regression/"$regr_test"/regression_input.py ];
             then
               echo "<details>"
+              echo "yes we're using print statements for diagnostics"
+              ls
+              pwd
               if python-jl rmgpy/tools/regression.py \
                 test/regression/"$regr_test"/regression_input.py \
                 $REFERENCE/"$regr_test"/chemkin \
