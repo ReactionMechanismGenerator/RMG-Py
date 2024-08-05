@@ -342,7 +342,3 @@ class TestErrorCancelingScheme:
         target_thermo, rxn_list = scheme.calculate_target_enthalpy(n_reactions_max=3)
         assert target_thermo.value_si == 110000.0
         assert isinstance(rxn_list[0], ErrorCancelingReaction)
-
-        if self.pyo is not None:
-            target_thermo, _ = scheme.calculate_target_enthalpy(n_reactions_max=3)
-            assert target_thermo.value_si == 110000.0

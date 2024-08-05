@@ -42,7 +42,6 @@ https://doi.org/10.1021/jp404158v
 """
 
 import logging
-import signal
 from copy import deepcopy
 from typing import List, Union
 
@@ -756,18 +755,6 @@ class ErrorCancelingScheme:
             h298_list[i] = rxn.calculate_target_thermo().value_si
 
         return ScalarQuantity(np.median(h298_list), "J/mol"), reaction_list
-
-
-def _pyo_obj_expression(model):
-    return pyo.summation(model.v, model.s, index=model.i)
-
-
-def _pyo_constraint_rule(model, col):
-    return (
-        sum(model.v[row] * model.c[row, col] for row in model.r)
-        - sum(model.v[row] * model.c[row, col] for row in model.p)
-        == model.t[col]
-    )
 
 
 class IsodesmicScheme(ErrorCancelingScheme):
