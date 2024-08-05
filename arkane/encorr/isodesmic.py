@@ -518,7 +518,7 @@ class SpeciesConstraints:
             logging.warning(
                 "Target species and reference species do not have the same elements:",
                 f"Target: {' '.join(self.target.molecule.get_element_count().keys())}",
-                f"Reference: {all_elements}",
+                f"Reference: {str(all_elements)}",
             )
 
         all_elements.update(self.target.molecule.get_element_count().keys())
