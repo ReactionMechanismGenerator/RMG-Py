@@ -920,7 +920,7 @@ def generate_clar_structures(mol, save_order=False):
 
     try:
         aromatic_rings, bonds, solutions = _clar_optimization(mol, save_order=save_order)
-    except RuntimeError:
+    except (RuntimeError, ValueError):  # either a crash during optimization or the result was an empty tuple
         # The optimization algorithm did not work on the first iteration
         return []
 
@@ -984,7 +984,7 @@ def _clar_optimization(mol, save_order=False):
             J. Math. Chem. 1994, 15 (1), 93–107.
     """
     cython.declare(molecule=Graph, aromatic_rings=list, exo=list, n_rings=cython.int, n_atoms=cython.int, n_bonds=cython.int,
-                   A=list, solutions=tuple)
+                   A=list, solutions=list)
 
     # Make a copy of the molecule so we don't destroy the original
     molecule = mol.copy(deep=True)
@@ -993,7 +993,7 @@ def _clar_optimization(mol, save_order=False):
     aromatic_rings.sort(key=_sum_atom_ids)
 
     if not aromatic_rings:
-        return []
+        return tuple()
 
     # Get list of atoms that are in rings
     atoms = set()
@@ -1038,9 +1038,9 @@ def _clar_optimization(mol, save_order=False):
         in_ring = [1 if atom in ring else 0 for ring in aromatic_rings]
         in_bond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
         A.append(in_ring + in_bond)
-    constraints = [LinearConstraint(
+    constraints = (LinearConstraint(
         A=np.array(A, dtype=int), lb=np.ones(n_atom, dtype=int), ub=np.ones(n_atom, dtype=int)
-    )]
+    ), )
 
     # Objective vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
     c = - np.array([1] * n_ring + [0] * n_bond, dtype=int)
@@ -1108,7 +1108,7 @@ def _solve_clar_milp(
 
     # Generate constraints based on the solution obtained
     y = solution[:n_ring]
-    constraints.append(
+    constraints = constraints + (
         LinearConstraint(
             A=np.hstack([y, [0] * (solution.shape[0] - n_ring)]),
             ub=sum(y) - 1,
