@@ -9,43 +9,18 @@ We have compiled some common questions about installing and using RMG below.
 For any other questions related to RMG and its usage and installation, please
 post an issue on our `GitHub issues page <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`_,
 where you can also search for any previous reports of your issue.
-Alternatively, you can also ask questions via the `RMG-Py chat room <https://gitter.im/ReactionMechanismGenerator/RMG-Py>`_
-or by contacting us directly at rmg_dev@mit.edu.
+Alternatively, you can contact us directly at rmg_dev@mit.edu.
 
 
 Installing RMG
 ==============
 
-#. **How can I install RMG-Py without Anaconda?**
-
-   Usually we don't recommend installing RMG-Py without Anaconda because it takes longer and is easier to get trouble
-   with package management. But one still can try direct installation on Linux or MacOS by following
-   :ref:`Linux instruction<linux>` or :ref:`MacOS instruction<macos>`. The RMG team does not use this install approach
-   internally any more, so these instructions are not actively maintained.
-
-#. **Why does RMG-Py not work natively on Windows?**
+#. **Why does RMG-Py not work natively from source on Windows?**
 
    One major challenge with supporting Windows is ensuring that all of our dependencies support Windows. This becomes
    non-trivial as we add more dependencies to support increasing RMG functionality. Ensuring that code within RMG is
    platform-agnostic is also challenging, since it is rarely the first priority for new development because our main
    focus is on research.
-
-#. **What is the recommended way to run RMG-Py on Windows?**
-
-   The currently recommended way to run RMG on Windows is to set up a Linux environment. There are multiple ways you
-   can approach this. Windows 10 supports a Linux subsystem which allows one to set up a Linux environment within
-   Windows without using virtualization. You can find instructions on setting up RMG within the Linux subsystem
-   :ref:`here<linuxSubsystem>`.
-
-   Another option would be to set up a full Linux virtual machine using something like VirtualBox or VMWare Workstation.
-   The benefit of this option is being able to run in a full Linux environment. However, running two operating systems
-   simultaneously does result in excess resource overhead, so it may not be suitable for running extended RMG jobs.
-   Instructions for setting up a virtual machine can be found :ref:`here<virtualMachineSetup>`.
-
-   A third option that we are currently beginning to explore using `Docker <https://www.docker.com/>`_, which is a
-   container-based infrastructure which shares the same benefits as a virtual machine but with less overhead. There
-   are some test images of RMG-Py which can be found on `Docker Hub <https://hub.docker.com/>`_ if you would like to
-   give this a try. More detailed instructions will be made available once we officially support this approach.
 
 #. **Windows binary installation gives ``WindowsError: [Error 5]``?**
 
