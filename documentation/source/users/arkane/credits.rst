@@ -25,8 +25,8 @@ Developers: (rmg_dev@mit.edu)
 - Dr. R.J. Gillis
 - Dr. A.M. Payne
 - Asst. Prof. Y.-P. Li
-- X. Dong
-- K.A. Spiekermann
+- Dr. X. Dong
+- Dr. K.A. Spiekermann
 - H. Wu
 - Dr. E.E. Dames
 - Dr. Z.J. Buras,
