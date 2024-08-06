@@ -1644,6 +1644,7 @@ class ReactionDrawer(object):
         self.options = MoleculeDrawer().options.copy()
         self.options.update({
             'arrowLength': 36,
+            'drawReversibleArrow': True
         })
         if options:
             self.options.update(options)
@@ -1744,11 +1745,30 @@ class ReactionDrawer(object):
         rxn_cr.save()
         rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
         rxn_cr.set_line_width(1.0)
-        rxn_cr.move_to(rxn_x + 8, rxn_top + 0.5 * rxn_height)
-        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_top + 0.5 * rxn_height)
-        rxn_cr.move_to(rxn_x + arrow_width - 14, rxn_top + 0.5 * rxn_height - 3.0)
-        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_top + 0.5 * rxn_height)
-        rxn_cr.line_to(rxn_x + arrow_width - 14, rxn_top + 0.5 * rxn_height + 3.0)
+        if self.options['drawReversibleArrow'] and reaction.reversible:  # draw double harpoons
+            TOP_HARPOON_Y = rxn_top + (0.5 * rxn_height - 1.75)
+            BOTTOM_HARPOON_Y = rxn_top + (0.5 * rxn_height + 1.75)
+
+            # Draw top harpoon
+            rxn_cr.move_to(rxn_x + 8, TOP_HARPOON_Y)
+            rxn_cr.line_to(rxn_x + arrow_width - 8, TOP_HARPOON_Y)
+            rxn_cr.move_to(rxn_x + arrow_width - 14, TOP_HARPOON_Y - 3.0)
+            rxn_cr.line_to(rxn_x + arrow_width - 8, TOP_HARPOON_Y)
+
+            # Draw bottom harpoon
+            rxn_cr.move_to(rxn_x + arrow_width - 8, BOTTOM_HARPOON_Y)
+            rxn_cr.line_to(rxn_x + 8, BOTTOM_HARPOON_Y)
+            rxn_cr.move_to(rxn_x + 14, BOTTOM_HARPOON_Y + 3.0)
+            rxn_cr.line_to(rxn_x + 8, BOTTOM_HARPOON_Y)
+
+            
+        else:  # draw forward arrow
+            rxn_cr.move_to(rxn_x + 8, rxn_top + 0.5 * rxn_height)
+            rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_top + 0.5 * rxn_height)
+            rxn_cr.move_to(rxn_x + arrow_width - 14, rxn_top + 0.5 * rxn_height - 3.0)
+            rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_top + 0.5 * rxn_height)
+            rxn_cr.line_to(rxn_x + arrow_width - 14, rxn_top + 0.5 * rxn_height + 3.0)
+
         rxn_cr.stroke()
         rxn_cr.restore()
         rxn_x += arrow_width
