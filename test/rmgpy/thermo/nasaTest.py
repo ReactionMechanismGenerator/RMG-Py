@@ -69,6 +69,7 @@ class TestNASA:
         self.Tmax = 3000.0
         self.Tint = 650.73
         self.E0 = -782292.0  # J/mol.
+        self.thermo_coverage_dependence = {'1 O u0 p2 c0 {2,D} \n 2 X u0 p0 c0 {1,D}':{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,2,3]}}
         self.comment = "C2H6"
         self.nasa = NASA(
             polynomials=[
@@ -82,6 +83,7 @@ class TestNASA:
             Tmin=(self.Tmin, "K"),
             Tmax=(self.Tmax, "K"),
             E0=(self.E0, "J/mol"),
+            thermo_coverage_dependence=self.thermo_coverage_dependence,
             comment=self.comment,
         )
 
@@ -136,6 +138,12 @@ class TestNASA:
         Test that the NASA comment property was properly set.
         """
         assert self.nasa.comment == self.comment
+    
+    def test_thermo_coverage_dependence(self):
+        """
+        Test that the thermo_coverage_dependence property was properly set.
+        """
+        assert repr(self.nasa.thermo_coverage_dependence) == repr(self.thermo_coverage_dependence)
 
     def test_is_temperature_valid(self):
         """
@@ -263,6 +271,7 @@ class TestNASA:
         assert self.nasa.Tmax.units == nasa.Tmax.units
         assert self.nasa.E0.value == nasa.E0.value
         assert self.nasa.E0.units == nasa.E0.units
+        assert repr(self.nasa.thermo_coverage_dependence) == repr(nasa.thermo_coverage_dependence)
         assert self.nasa.comment == nasa.comment
 
     def test_repr(self):
@@ -296,6 +305,7 @@ class TestNASA:
         assert self.nasa.Tmax.units == nasa.Tmax.units
         assert self.nasa.E0.value == nasa.E0.value
         assert self.nasa.E0.units == nasa.E0.units
+        assert repr(self.nasa.thermo_coverage_dependence) == repr(nasa.thermo_coverage_dependence)
         assert self.nasa.comment == nasa.comment
 
     def test_to_cantera(self):
@@ -326,6 +336,7 @@ class TestNASA:
 
         spc = Species().from_smiles("CC")
         spc.get_thermo_data()
+        spc.thermo.thermo_coverage_dependence = self.thermo_coverage_dependence
 
         T = 1350.0  # not 298K!
 
@@ -353,6 +364,7 @@ class TestNASA:
 
         assert round(abs(s_nasa - s_td), -1) == 0
         assert wilhoit.comment == nasa.comment
+        assert repr(wilhoit.thermo_coverage_dependence) == repr(nasa.thermo_coverage_dependence)
 
         # nasa to wilhoi performed in wilhoitTest
 
@@ -364,6 +376,11 @@ class TestNASA:
         assert nasa_dict["E0"]["value"] == self.E0
         assert nasa_dict["Tmin"]["value"] == self.Tmin
         assert nasa_dict["Tmax"]["value"] == self.Tmax
+        assert nasa_dict["thermo_coverage_dependence"].keys() == self.thermo_coverage_dependence.keys()
+        sp_name = list(self.thermo_coverage_dependence.keys())[0]
+        assert nasa_dict['thermo_coverage_dependence'][sp_name]['model'] == self.thermo_coverage_dependence[sp_name]['model']
+        assert nasa_dict['thermo_coverage_dependence'][sp_name]['enthalpy-coefficients']['object'] == self.thermo_coverage_dependence[sp_name]['enthalpy-coefficients']
+        assert nasa_dict['thermo_coverage_dependence'][sp_name]['entropy-coefficients']['object'] == self.thermo_coverage_dependence[sp_name]['entropy-coefficients']
         assert nasa_dict["comment"] == self.comment
         assert tuple(nasa_dict["polynomials"]["polynomial1"]["coeffs"]["object"]) == tuple(self.coeffs_low)
         assert tuple(nasa_dict["polynomials"]["polynomial2"]["coeffs"]["object"]) == tuple(self.coeffs_high)
