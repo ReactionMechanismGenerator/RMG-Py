@@ -1718,7 +1718,12 @@ class CoreEdgeReactionModel:
         num_old_edge_reactions = len(self.edge.reactions)
 
         logging.info("Adding reaction library {0} to model edge...".format(reaction_library))
-        reaction_library = database.kinetics.libraries[reaction_library]
+        if reaction_library in database.kinetics.libraries:
+            reaction_library = database.kinetics.libraries[reaction_library]
+        elif reaction_library in database.kinetics.external_library_labels:
+            reaction_library = database.kinetics.libraries[database.kinetics.external_library_labels[reaction_library]]
+        else:
+            raise ValueError(f'Library {reaction_library} not found.')
 
         rxns = reaction_library.get_library_reactions()
         for rxn in rxns:
