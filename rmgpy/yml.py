@@ -34,17 +34,18 @@ Reaction Mechanism Simulator (RMS)
 
 import os
 import yaml
+import logging
 
 from rmgpy.chemkin import load_chemkin_file
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.wilhoit import Wilhoit
-from rmgpy.kinetics.arrhenius import Arrhenius, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
+from rmgpy.kinetics.arrhenius import Arrhenius, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, ArrheniusChargeTransfer, Marcus
 from rmgpy.kinetics.falloff import Troe, ThirdBody, Lindemann
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.data.solvation import SolventData
-from rmgpy.kinetics.surface import StickingCoefficient
+from rmgpy.kinetics.surface import StickingCoefficient, SurfaceChargeTransfer
 from rmgpy.util import make_output_subdirectory
 
 
@@ -141,6 +142,7 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
         result_dict["type"] = "ElementaryReaction"
         result_dict["radicalchange"] = sum([get_radicals(x) for x in obj.products]) - \
                                        sum([get_radicals(x) for x in obj.reactants])
+        result_dict["electronchange"] = -sum([spc.molecule[0].get_net_charge() for spc in obj.products]) + sum([spc.molecule[0].get_net_charge() for spc in obj.reactants])
         result_dict["comment"] = obj.kinetics.comment
     elif isinstance(obj, Arrhenius):
         obj.change_t0(1.0)
@@ -148,6 +150,30 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
         result_dict["A"] = obj.A.value_si
         result_dict["Ea"] = obj.Ea.value_si
         result_dict["n"] = obj.n.value_si
+    elif isinstance(obj, ArrheniusChargeTransfer):
+        obj.change_t0(1.0)
+        obj.change_v0(0.0)
+        result_dict["type"] = "Arrheniusq"
+        result_dict["A"] = obj.A.value_si
+        result_dict["Ea"] = obj.Ea.value_si
+        result_dict["n"] = obj.n.value_si
+        result_dict["q"] = obj._alpha.value_si*obj._electrons.value_si
+    elif isinstance(obj, SurfaceChargeTransfer):
+        obj.change_v0(0.0)
+        result_dict["type"] = "Arrheniusq"
+        result_dict["A"] = obj.A.value_si
+        result_dict["Ea"] = obj.Ea.value_si
+        result_dict["n"] = obj.n.value_si
+        result_dict["q"] = obj._alpha.value_si*obj._electrons.value_si
+    elif isinstance(obj, Marcus):
+        result_dict["type"] = "Marcus"
+        result_dict["A"] = obj.A.value_si
+        result_dict["n"] = obj.n.value_si
+        result_dict["lmbd_i_coefs"] = obj.lmbd_i_coefs.value_si.tolist()
+        result_dict["lmbd_o"] = obj.lmbd_o.value_si
+        result_dict["wr"] = obj.wr.value_si
+        result_dict["wp"] = obj.wp.value_si
+        result_dict["beta"] = obj.beta.value_si
     elif isinstance(obj, StickingCoefficient):
         obj.change_t0(1.0)
         result_dict["type"] = "StickingCoefficient"

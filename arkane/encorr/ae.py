@@ -73,7 +73,9 @@ SPECIES_LABELS = [
     'Methane',
     'Methyl',
     'Ammonia',
-    'Chloromethane'
+    'Chloromethane',
+    'Lithium Hydride',
+    'Lithium Fluoride'
 ]
 
 
