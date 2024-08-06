@@ -16,16 +16,14 @@ Project Supervisors:
  
 Current Developers: (rmg_dev@mit.edu)
 
-- Dr. Alon Grinberg Dana
+- Prof. Alon Grinberg Dana
 - Dr. Matt Johnson
-- Yen-Ting Wang
-- Xiaorui Dong
-- Hao-Wei Pang
+- Dr. Anna Doner
 - Oscar Wu
-- Kevin Spiekermann
 - Jonathan Zheng
 - Jackson Burns
 - Nathan Morgan
+- Prof. Richard H. West
 - Prof. C. Franklin Goldsmith
 - Dr. Katrin Blondal
 - Dr. Bjarne Kreitz
@@ -35,6 +33,10 @@ Current Developers: (rmg_dev@mit.edu)
 
 Previous Developers: 
 
+- Dr. Xiaorui Dong
+- Dr. Hao-Wei Pang
+- Dr. Kevin Spiekermann
+- Yen-Ting Wang
 - Dr. Joshua W. Allen
 - Dr. Yunsie Chung
 - Dr. David Farina
