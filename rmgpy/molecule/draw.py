@@ -1670,6 +1670,10 @@ class MoleculeDrawer(object):
             if not other_sites: break
             # connect to the nearest site
             site2 = min(other_sites, key=lambda a: len(find_shortest_path(site1, a)))
+            if len(find_shortest_path(site1, site2)) > 2 and len(sites) > 3:
+                # if there are more than 3 sites, don't connect sites that aren't neighbors
+                continue
+
             bond = site1.bonds.get(site2)
             if bond is None:
                 bond = Bond(site1, site2, 1)
