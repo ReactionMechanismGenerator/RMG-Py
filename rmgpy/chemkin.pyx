@@ -1968,22 +1968,22 @@ def mark_duplicate_reaction(test_reaction, reaction_list):
             # duplicates of one another.
             # RHW question: why can't TemplateReaction be duplicate of LibraryReaction, in Chemkin terms? I guess it shouldn't happen in RMG.
             continue
-        same_dir_match = (reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products)
-        opposite_dir_match = (reaction1.products == reaction2.reactants and reaction1.reactants == reaction2.products)
+        same_dir_match = (sorted(reaction1.reactants) == sorted(reaction2.reactants) and sorted(reaction1.products) == sorted(reaction2.products))
+        opposite_dir_match = (sorted(reaction1.products) == sorted(reaction2.reactants) and sorted(reaction1.reactants) == sorted(reaction2.products))
         if (same_dir_match or opposite_dir_match) and (reaction1.specific_collider == reaction2.specific_collider):
             if reaction1.duplicate and reaction2.duplicate:
                 if reaction1.kinetics.is_pressure_dependent() != reaction2.kinetics.is_pressure_dependent():
                     # Reactions with mixed pressure dependence do not need to be marked duplicate in Chemkin
-                    logging.warning('Marked reaction {0} as not duplicate because of mixed pressure dependence '
-                                    'for saving to Chemkin file.'.format(reaction1))
-                    reaction1.duplicate = False
-                    reaction2.duplicate = False
+                    logging.warning('Reaction {0} is marked as duplicate but for Chemkin file it '
+                                    'doesn\'t need to be because of mixed pressure dependence'
+                                    '.'.format(reaction1))
+                    # But leave it alone in case it's a DUPLICATE of some _other_ reaction.
                 elif opposite_dir_match and not reaction1.reversible and not reaction2.reversible:
                     # Irreversible reactions in opposite directions do not need to be marked duplicate in Chemkin
-                    logging.warning('Marked reaction {0} as not duplicate because they are irreversible '
-                                    'in opposite directions for saving to Chemkin file.'.format(reaction1))
-                    reaction1.duplicate = False
-                    reaction2.duplicate = False
+                    logging.warning('Reaction {0} is marked as duplicate but for Chemkin file it '
+                                    'doesn\'t need to be because they are irreversible '
+                                    'in opposite directions.'.format(reaction1))
+                    # But leave it alone in case it's a DUPLICATE of some _other_ reaction.
             else:
                 if (reaction1.kinetics.is_pressure_dependent() == reaction2.kinetics.is_pressure_dependent()
                         and ((reaction1.reversible and reaction2.reversible)
@@ -2149,7 +2149,7 @@ def save_chemkin_file(path, species, reactions, verbose=True, check_for_duplicat
         f.write('\n')
     f.write('END\n\n')
     f.close()
-    logging.info("Chemkin file contains {0} reactions.".format(_chemkin_reaction_count))
+    logging.info("Chemkin surface file contains {0} reactions.".format(_chemkin_reaction_count))
     _chemkin_reaction_count = None
 
 
