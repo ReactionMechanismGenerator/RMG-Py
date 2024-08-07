@@ -409,7 +409,6 @@ class MoleculeDrawer(object):
             # If two atoms lie on top of each other, push them apart a bit
             # This is ugly, but at least the mess you end up with isn't as misleading
             # as leaving everything piled on top of each other at the origin
-            import itertools
             for atom1, atom2 in itertools.combinations(backbone, 2):
                 i1, i2 = atoms.index(atom1), atoms.index(atom2)
                 if np.linalg.norm(coordinates[i1, :] - coordinates[i2, :]) < 0.5:
@@ -421,7 +420,6 @@ class MoleculeDrawer(object):
             # If two atoms lie on top of each other, push them apart a bit
             # This is ugly, but at least the mess you end up with isn't as misleading
             # as leaving everything piled on top of each other at the origin
-            import itertools
             for atom1, atom2 in itertools.combinations(backbone, 2):
                 i1, i2 = atoms.index(atom1), atoms.index(atom2)
                 if np.linalg.norm(coordinates[i1, :] - coordinates[i2, :]) < 0.5:
