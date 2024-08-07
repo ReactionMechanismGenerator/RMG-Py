@@ -49,6 +49,7 @@ import logging
 import math
 import os.path
 import re
+import itertools
 
 try:
     import cairocffi as cairo
@@ -96,6 +97,12 @@ def create_new_surface(file_format, target=None, width=1024, height=768):
 
 
 ################################################################################
+
+class AdsorbateDrawingError(Exception):
+    """
+    When something goes wrong trying to draw an adsorbate.
+    """
+    pass
 
 class MoleculeDrawer(object):
     """
@@ -209,9 +216,13 @@ class MoleculeDrawer(object):
                 # bugs with RDKit
                 old_bond_dictionary = self._make_single_bonds()
                 if molecule.contains_surface_site():
-                    self._connect_surface_sites()
-                    self._generate_coordinates()
-                    self._disconnect_surface_sites()
+                    try:
+                        self._connect_surface_sites()
+                        self._generate_coordinates()
+                        self._disconnect_surface_sites()
+                    except AdsorbateDrawingError as e:
+                        self._disconnect_surface_sites()
+                        self._generate_coordinates(fix_surface_sites=False)
                 else:
                     self._generate_coordinates()
                 self._replace_bonds(old_bond_dictionary)
@@ -329,11 +340,13 @@ class MoleculeDrawer(object):
                 if not found:
                     self.ringSystems.append([cycle])
 
-    def _generate_coordinates(self):
+    def _generate_coordinates(self, fix_surface_sites=True):
         """
         Generate the 2D coordinates to be used when drawing the current 
         molecule. The function uses rdKits 2D coordinate generation.
         Updates the self.coordinates Array in place.
+        If `fix_surface_sites` is True, then the surface sites are placed
+        at the bottom of the molecule.
         """
         atoms = self.molecule.atoms
         natoms = len(atoms)
@@ -464,7 +477,7 @@ class MoleculeDrawer(object):
                 coordinates[:, 1] = temp[:, 0]
 
         # For surface species
-        if self.molecule.contains_surface_site():
+        if fix_surface_sites and self.molecule.contains_surface_site():
             if len(self.molecule.atoms) == 1:
                 return coordinates
             sites = [atom for atom in self.molecule.atoms if atom.is_surface_site()]
@@ -503,10 +516,16 @@ class MoleculeDrawer(object):
                 x = coordinates[adatom_indices, 0]
                 y = coordinates[adatom_indices, 1]
                 site_y_pos = min(min(y) - 0.8, min(coordinates[not_site_indices, 1]) - 0.5)
+                if max(y) - site_y_pos > 1.5:
+                    raise AdsorbateDrawingError("Adsorbate bond too long")
+                for x1, x2 in itertools.combinations(x, 2):
+                    if abs(x1 - x2) < 0.2:
+                        raise AdsorbateDrawingError("Sites overlapping")
                 for site, x_pos in zip(sites, x):
                     index = atoms.index(site)
                     coordinates[index, 1] = site_y_pos
                     coordinates[index, 0] = x_pos
+                
             else:
                 # more than 4 surface sites? leave them alone
                 pass
