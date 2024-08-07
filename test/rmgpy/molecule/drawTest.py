@@ -287,6 +287,8 @@ class TestMoleculeDrawer:
 25 X u0 p0 c0 {8,S}
 26 X u0 p0 c0 {3,S}
 """))
+        test_molecules.append(Molecule(smiles="*CC(*)(C*)OCC#*"))
+        test_molecules.append(Molecule(smiles="*CC(*)(C*)C*"))
         for number, molecule in enumerate(test_molecules, 1):
             path = f"test_polydentate_{number}.png"
             if os.path.exists(path):
