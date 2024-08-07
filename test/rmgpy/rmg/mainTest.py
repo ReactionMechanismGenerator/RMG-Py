@@ -87,6 +87,12 @@ class TestMain:
         assert isinstance(self.rmg.database, RMGDatabase)
         assert self.rmg.done
 
+    def test_disable_rms_yaml_writer(self):
+        """
+        generateRMSEachIter = False in input should set the corresponding property in RMG instance
+        """
+        self.assertFalse(self.rmg.generate_rms_each_iter)
+
     def test_rmg_increases_reactions(self):
         """Test that RMG.execute increases reactions and species."""
         assert len(self.rmg.reaction_model.core.reactions) > 0
