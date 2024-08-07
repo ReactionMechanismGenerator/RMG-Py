@@ -58,3 +58,7 @@ cpdef list find_N5dc_radical_delocalization_paths(Vertex atom1)
 cpdef bint is_atom_able_to_gain_lone_pair(Vertex atom)
 
 cpdef bint is_atom_able_to_lose_lone_pair(Vertex atom)
+
+cpdef list find_adsorbate_delocalization_paths(Vertex atom1)
+
+cpdef list find_adsorbate_conjugate_delocalization_paths(Vertex atom1)
