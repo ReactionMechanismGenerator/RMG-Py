@@ -33,7 +33,7 @@ Thank you for contributing to RMG-Py! Please take a moment to review our guideli
 
 * The live version of the documentation is hosted on the `gh-pages` branch which is updated upon pushes to the `main` branch of RMG-Py.
 
-* To add new documentation, create or modify `.rst` (reStructuredText) files under the `documentation` directory. For a primer on how to write `.rst` markup, please [check out the Sphinx documentation.](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html)
+* To add new documentation, create or modify `.rst` (reStructuredText) files under the `documentation` directory and create a PR to push to `main`. For a primer on how to write `.rst` markup, please [check out the Sphinx documentation.](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html)
 
 * Please test the documentation on a local build (e.g., via `make html` in the `documentation` directory) before pushing changes.
 
