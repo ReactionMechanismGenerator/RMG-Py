@@ -9,9 +9,8 @@ Thank you for contributing to RMG-Py! Please take a moment to review our guideli
     * [RMG-database](https://github.com/ReactionMechanismGenerator/RMG-database/issues): For issues related to the data available to RMG
     * [RMG-website](https://github.com/ReactionMechanismGenerator/RMG-website/issues): For issues related to the [RMG website](https://rmg.mit.edu)
 
-* For more detailed information on submitting a bug report and creating an issue, visit our [reporting guidelines](https://example.com).
 
-### **Did you write code that fixes a bug, or adds a new feature?**
+### **Did you write code that fixes a bug or adds a new feature?**
 
 * Open a new GitHub PR to merge into the main branch. Make sure the PR clearly describes the problem + solution. If applicable, include the relevant issue.
 
