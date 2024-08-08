@@ -16,7 +16,9 @@ Thank you for contributing to RMG-Py! Please take a moment to review our guideli
 
 * Your PR must pass unit tests, regression tests, and code coverage, and receive approval from at least one reviewer before it can be merged in.
 
-* If you wrote a new feature, please add unit tests. If it is a significant new feature, please add a regression test.
+* If you wrote a new feature, please [add unit tests](https://github.com/ReactionMechanismGenerator/RMG-Py/tree/main/test/rmgpy). We currently use [pytest](https://docs.pytest.org/en/stable/) for our unit testing.
+
+* If you wrote a significant new feature, please add a regression test:
     * First, please create an input file that includes your new feature. Ensure `saveEdgeSpecies` is set to `True` so that the edge model will also be saved to a file. If applicable, include diverse sets of input conditions to test compatibility with other features.
     * Generate the reaction mechanism corresponding to the input file. Ensure that the simulation does not take more than 15 minutes maximum. You can reduce simulation times in multiple ways, e.g. by increasing the `toleranceMoveToCore` flag.
     * In the `test/regression` folder, create a new folder with a relevant name, and copy the RMG-Py simulation input file in this folder. Include this new folder in your PR.
