@@ -2,7 +2,7 @@
 
 Thank you for contributing to RMG-Py! Please take a moment to review our guidelines:
 
-#### **Did you find a bug? Do you want to see a new feature?**
+### **Did you find a bug? Do you want to see a new feature?**
 
 * Please open an Issue to the corresponding repository:
     * [RMG-Py](https://github.com/ReactionMechanismGenerator/RMG-Py/issues): For functionality of the RMG and Arkane software packages
@@ -11,7 +11,7 @@ Thank you for contributing to RMG-Py! Please take a moment to review our guideli
 
 * For more detailed information on submitting a bug report and creating an issue, visit our [reporting guidelines](https://example.com).
 
-#### **Did you write code that fixes a bug, or adds a new feature?**
+### **Did you write code that fixes a bug, or adds a new feature?**
 
 * Open a new GitHub PR to merge into the main branch. Make sure the PR clearly describes the problem + solution. If applicable, include the relevant issue.
 
@@ -23,11 +23,10 @@ Thank you for contributing to RMG-Py! Please take a moment to review our guideli
     * In the `test/regression` folder, create a new folder with a relevant name, and copy the RMG-Py simulation input file in this folder. Include this new folder in your PR.
     * In `.github/workflows/CI.yml`, edit the two lists of regression tests in the `Regression Tests - Execution` and `Regression Tests - Compare to Baseline` steps to add the name of your folder. Be sure to follow BASH syntax.
 
-    > ** Warning **
-    > This will __fail__ CI because of directory not found errors. This is because the baseline files used for comparison in the regression tests do not exist yet. Your PR will need to be merged by bypassing branch protection restrictions.
+    * > Warning: This will __fail__ CI because of directory not found errors. This is because the baseline files used for comparison in the regression tests do not exist yet. Your PR will need to be merged by bypassing branch protection restrictions.
 
 
-#### **Do you want to contribute to the documentation?**
+### **Do you want to contribute to the documentation?**
 
 * Documentation is [hosted here](http://reactionmechanismgenerator.github.io/RMG-Py/) using [Sphinx](https://www.sphinx-doc.org/en/master/). 
 
@@ -37,11 +36,11 @@ Thank you for contributing to RMG-Py! Please take a moment to review our guideli
 
 * Please test the documentation on a local build (e.g., via `make html` in the `documentation` directory) before pushing changes.
 
-#### **Do you have questions?**
+### **Do you have questions?**
 
 * Email us at rmg_dev@mit.edu.
 
-####  **Best practices for PRs**
+###  **Best practices for PRs**
 
 * Rebase to the main branch before working, to avoid merge conflicts.
 
