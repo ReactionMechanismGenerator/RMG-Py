@@ -25,8 +25,8 @@ Current Developers: (rmg_dev@mit.edu)
 - Nathan Morgan
 - Prof. Richard H. West
 - Prof. C. Franklin Goldsmith
-- Dr. Katrin Blondal
 - Dr. Bjarne Kreitz
+- Chao Xu
 - Chris Blais
 - Sevy Harris
 - Nora Khalil
@@ -38,6 +38,7 @@ Previous Developers:
 - Dr. Kevin Spiekermann
 - Yen-Ting Wang
 - Dr. Joshua W. Allen
+- Dr. Katrin Blondal
 - Dr. Yunsie Chung
 - Dr. David Farina
 - Dr. Mark Goldman
