@@ -9,7 +9,7 @@ Project Supervisors:
 - Prof. William H. Green (whgreen@mit.edu)
 - Prof. Richard H. West (r.west@northeastern.edu)
 - Prof. C. Franklin Goldsmith (franklin_Goldsmith@brown.edu)
-- Asst. Prof. Alon Grinberg Dana (alon@technion.ac.il)
+- Prof. Alon Grinberg Dana (alon@technion.ac.il)
 
 Developers: (rmg_dev@mit.edu)
 
@@ -27,7 +27,7 @@ Developers: (rmg_dev@mit.edu)
 - Prof. Y.-P. Li
 - Dr. X. Dong
 - Dr. K.A. Spiekermann
-- H. Wu
+- Mr. H. Wu
 - Dr. E.E. Dames
 - Dr. Z.J. Buras,
 - Dr. N.M. Vandewiele
@@ -41,4 +41,4 @@ Developers: (rmg_dev@mit.edu)
 How to Cite
 ***********
 
-Please refer to the `CITATIONS.bib file <https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/CITATIONS.bib>`_.
+Please refer to the ``Arkane`` reference in the `CITATIONS.bib file <https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/CITATIONS.bib>`_.
