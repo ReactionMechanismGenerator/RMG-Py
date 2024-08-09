@@ -69,4 +69,4 @@ Previous Developers:
 How to Cite
 ***********
 
-Please refer to the `CITATIONS.bib file <https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/CITATIONS.bib>`_.
+Please refer to the ``RMG``, ``RMG3``, and ``RMG_Database`` citations in the `CITATIONS.bib file <https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/CITATIONS.bib>`_.
