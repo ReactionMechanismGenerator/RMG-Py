@@ -27,7 +27,7 @@ Developers: (rmg_dev@mit.edu)
 - Prof. Y.-P. Li
 - Dr. X. Dong
 - Dr. K.A. Spiekermann
-- H. Wu
+- Mr. H. Wu
 - Dr. E.E. Dames
 - Dr. Z.J. Buras,
 - Dr. N.M. Vandewiele
