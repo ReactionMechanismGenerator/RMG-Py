@@ -24,7 +24,7 @@ Developers: (rmg_dev@mit.edu)
 - Dr. D.S. Ranasinghe
 - Dr. R.J. Gillis
 - Dr. A.M. Payne
-- Asst. Prof. Y.-P. Li
+- Prof. Y.-P. Li
 - Dr. X. Dong
 - Dr. K.A. Spiekermann
 - H. Wu
