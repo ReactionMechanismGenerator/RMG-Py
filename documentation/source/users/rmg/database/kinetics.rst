@@ -52,7 +52,7 @@ Kinetic libraries should also be used in the cases where:
 * No family exists for the class of reaction
 * You are not confident about the accuracy of kinetic parameters
 
-A full list of the libraries `can be found on the RMG website: <https://rmg.mit.edu/database/kinetics/libraries/>`_ (please allow 1-2 minutes for the website to load).
+`A full list of the libraries can be found on the RMG website <https://rmg.mit.edu/database/kinetics/libraries/>`_ (please allow 1-2 minutes for the website to load).
 
 
 .. _kinetics_families_db:
@@ -69,7 +69,7 @@ Each reaction family contains the files:
 * training.py containing a training set for the family
 * rules.py containing kinetic parameters for rules
 
-A full list of the kinetic families `can be found on the RMG website: <https://rmg.mit.edu/database/kinetics/families/>`_ (please allow 1-2 minutes for the website to load).
+`A full list of the kinetic families can be found on the RMG website <https://rmg.mit.edu/database/kinetics/families/>`_ (please allow 1-2 minutes for the website to load).
 
 Recipe
 ------

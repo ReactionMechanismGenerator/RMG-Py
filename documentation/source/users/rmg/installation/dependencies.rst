@@ -8,7 +8,7 @@ Dependencies
 List of Dependencies
 ====================
 
-A list of RMG's dependencies can be found in the ``environment.yml`` file on the `RMG GitHub page: <https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/environment.yml>`_. 
+A list of RMG's dependencies can be found in the ``environment.yml`` file on the `RMG GitHub page <https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/environment.yml>`_. 
 
 
 .. _dependenciesRestrictions:
