@@ -9,7 +9,7 @@ Project Supervisors:
 - Prof. William H. Green (whgreen@mit.edu)
 - Prof. Richard H. West (r.west@northeastern.edu)
 - Prof. C. Franklin Goldsmith (franklin_Goldsmith@brown.edu)
-- Asst. Prof. Alon Grinberg Dana (alon@technion.ac.il)
+- Prof. Alon Grinberg Dana (alon@technion.ac.il)
 
 Developers: (rmg_dev@mit.edu)
 
@@ -24,10 +24,10 @@ Developers: (rmg_dev@mit.edu)
 - Dr. D.S. Ranasinghe
 - Dr. R.J. Gillis
 - Dr. A.M. Payne
-- Asst. Prof. Y.-P. Li
-- X. Dong
-- K.A. Spiekermann
-- H. Wu
+- Prof. Y.-P. Li
+- Dr. X. Dong
+- Dr. K.A. Spiekermann
+- Mr. H. Wu
 - Dr. E.E. Dames
 - Dr. Z.J. Buras,
 - Dr. N.M. Vandewiele
@@ -41,11 +41,4 @@ Developers: (rmg_dev@mit.edu)
 How to Cite
 ***********
 
-A. Grinberg Dana, M.S. Johnson, J.W. Allen, S. Sharma, S. Raman, M. Liu, C.W. Gao, C.A. Grambow, M.J. Goldman,
-D.S. Ranasinghe, R.J. Gillis, A.M. Payne, Y.-P. Li, X. Dong, K.A. Spiekermann, H. Wu, E.E. Dames, Z.J. Buras,
-N.M. Vandewiele, N.W. Yee, S.S. Merchant, B. Buesser, C.A. Class, C.F. Goldsmith, R.H. West, W.H. Green,
-"Automated reaction kinetics and network exploration (Arkane):
-A statistical mechanics, thermodynamics, transition state theory, and master equation software",
-*International Journal of Chemical Kinetics* 2023, 55(6), 300-323.
-
-DOI: `10.1002/kin.21637 <https://doi.org/10.1002/kin.21637>`_
+Please refer to the ``Arkane`` reference in the `CITATIONS.bib file <https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/CITATIONS.bib>`_.
