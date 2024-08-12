@@ -4,9 +4,29 @@
 Species Representation
 **********************
 
-Species objects in RMG contain a variety of attributes, including user given names, 
-thermochemistry, as well as structural isomers.  See the :ref:`rmgpy.species.Species` class
-documentation for more information.
+The base class for chemical structures in RMG is ``Graph`` (see :ref:`rmgpy.molecule.Graph`), 
+which is a basic implementation of a 2D mathematical graph. 
+A graph is comprised of a set of vertices connected by a set of edges. 
+In RMG, the Graph class does not store any chemical information on its own, 
+but it is the parent class of Group and Molecule.
+
+The ``Group`` class is used to represent a molecular fragment, whereas the ``Molecule`` class 
+is used to represent a specific molecular structure. 
+A ``Group`` object can have a list of allowed specifications for each atom or bond property, 
+while a ``Molecule`` object  can only have one. Additionally, a ``Group`` object does not 
+have to have a complete molecule while a Molecule object must be a full chemical structure.
+See the :ref:`rmgpy.molecule.Group` and :ref:`rmgpy.molecule.Molecule` class documentation.
+
+Finally, there is the ``Species`` class. Although colloquially we use molecules and species 
+interchangeably, these terms have precise meanings in RMG. 
+A ``Species`` object contains a list of molecule objects which are different representations of 
+the same chemical compound (i.e., resonance structures). 
+It also contains a descriptive label for the species, its thermochemical properties, transport data, 
+and molecular weight, among other information. This distinction is important because many chemical 
+compounds have resonance structures. Therefore, a ``Molecule`` object is a graph that denotes the structure 
+of a specific resonance isomer, while a ``Species`` incorporates all resonance structures found into one object. 
+This prevents duplicate reactions from being generated for two molecule objects that are really the same chemical compound.
+See the :ref:`rmgpy.species.Species` class documentation for more information.
 
 RMG considers each species to be unique, and comprised of a set of molecular structural 
 isomers, including resonance isomers.  RMG uses the list of resonance isomers to 
