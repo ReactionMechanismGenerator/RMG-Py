@@ -134,7 +134,7 @@ def fails_species_constraints(species):
         if struct.get_singlet_carbene_count() > max_carbenes:
             return True
 
-    max_carbene_radicals = species_constraints.get('maximumCarbeneRadicals', 0)
+    max_carbene_radicals = species_constraints.get('maximumCarbeneRadicals', 1) #changing this from 0 to 1 (PFAS chemistry involves carbene radicals)
     if max_carbene_radicals != -1:
         if struct.get_singlet_carbene_count() > 0 and struct.get_radical_count() > max_carbene_radicals:
             return True
