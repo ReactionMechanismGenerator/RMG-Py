@@ -335,6 +335,22 @@ ATOMTYPES['R!H'] = AtomType(label='R!H', generic=['R', 'Rx', 'Rx!H'], specific=[
     'I','I1s',
     'F','F1s'])
 
+
+ATOMTYPES['R!O']  = AtomType(label='R!O', generic=['R'], specific=[
+    'Val4','Val5','Val6','Val7',
+    'He','Ne','Ar',
+    'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ctc','Ct','Cb','Cbf','Cq','C2s','C2sc','C2d','C2dc','C2tc',
+    'N','N0sc','N1s','N1sc','N1dc','N3s','N3sc','N3d','N3t','N3b','N5sc','N5dc','N5ddc','N5dddc','N5tc','N5b','N5bd',
+    'H',
+    'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf','Siq',
+    'P','P0sc','P1s','P1sc','P1dc','P3s','P3d','P3t','P3b','P5s','P5sc','P5d','P5dd','P5dc','P5ddc','P5t','P5td','P5tc','P5b','P5bd',
+    'S','Sa','S0sc','S2s','S2sc','S2d','S2dc','S2tc','S4s','S4sc','S4d','S4dd','S4dc','S4b','S4t','S4tdc','S6s','S6sc','S6d','S6dd','S6ddd','S6dc','S6t','S6td','S6tt','S6tdc',
+    'Cl','Cl1s',
+    'Br','Br1s',
+    'I','I1s',
+    'F','F1s'])
+
+
 ATOMTYPES['R!H!Val7'] = AtomType(label='R!H!Val7', generic=['R', 'Rx', 'Rx!H'], specific=[
     'Val4','Val5','Val6',
     'He','Ne','Ar',
@@ -709,6 +725,7 @@ ATOMTYPES['Xo'].set_actions(increment_bond=['Xo'], decrement_bond=['Xo'], form_b
 
 ATOMTYPES['R'].set_actions(increment_bond=['R'], decrement_bond=['R'], form_bond=['R'], break_bond=['R'], increment_radical=['R'], decrement_radical=['R'], increment_lone_pair=['R'], decrement_lone_pair=['R'], increment_charge=['R'], decrement_charge=['R'])
 ATOMTYPES['R!H'].set_actions(increment_bond=['R!H'], decrement_bond=['R!H'], form_bond=['R!H'], break_bond=['R!H'], increment_radical=['R!H'], decrement_radical=['R!H'], increment_lone_pair=['R!H'], decrement_lone_pair=['R!H'], increment_charge=['R!H'], decrement_charge=['R!H'])
+ATOMTYPES['R!O'].set_actions(increment_bond=['R!O'], decrement_bond=['R!O'], form_bond=['R!O'], break_bond=['R!O'], increment_radical=['R!O'], decrement_radical=['R!O'], increment_lone_pair=['R!O'], decrement_lone_pair=['R!O'], increment_charge=['R!O'], decrement_charge=['R!O'])
 ATOMTYPES['R!H!Val7'].set_actions(increment_bond=['R!H!Val7'], decrement_bond=['R!H!Val7'], form_bond=['R!H!Val7'], break_bond=['R!H!Val7'], increment_radical=['R!H!Val7'], decrement_radical=['R!H!Val7'], increment_lone_pair=['R!H!Val7'], decrement_lone_pair=['R!H!Val7'], increment_charge=[], decrement_charge=[])
 ATOMTYPES['Val4'].set_actions(increment_bond=['Val4'], decrement_bond=['Val4'], form_bond=['Val4'], break_bond=['Val4'], increment_radical=['Val4'], decrement_radical=['Val4'], increment_lone_pair=['Val4'], decrement_lone_pair=['Val4'],increment_charge=[], decrement_charge=[])
 ATOMTYPES['Val5'].set_actions(increment_bond=['Val5'], decrement_bond=['Val5'], form_bond=['Val5'], break_bond=['Val5'], increment_radical=['Val5'], decrement_radical=['Val5'], increment_lone_pair=['Val5'], decrement_lone_pair=['Val5'],increment_charge=[], decrement_charge=[])
