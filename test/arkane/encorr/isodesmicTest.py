@@ -31,7 +31,6 @@
 This script contains unit tests of the :mod:`arkane.isodesmic` module.
 """
 
-
 import numpy as np
 
 from rmgpy.molecule import Molecule
@@ -137,12 +136,11 @@ class TestSpeciesConstraints:
         """
         Test that the constraint map is properly initialized when a SpeciesConstraints object is initialized
         """
-        caffeine_consts = SpeciesConstraints(self.caffeine, [self.butane, self.benzene])
-        assert set(caffeine_consts.constraint_map.keys()) == {
-            "H",
-            "C",
-            "O",
-            "N",
+        consts = SpeciesConstraints(self.caffeine, [self.butane, self.benzene])
+        caffeine_features = consts._get_all_constraints(self.caffeine)
+        caffeine_constraint_list = [feat.__repr__() for feat in caffeine_features]
+
+        assert set(caffeine_constraint_list) == {
             "C=O",
             "C-N",
             "C-H",
@@ -154,55 +152,69 @@ class TestSpeciesConstraints:
         }
 
         no_rings = SpeciesConstraints(self.caffeine, [self.butane, self.benzene], conserve_ring_size=False)
-        assert set(no_rings.constraint_map.keys()) == {"H", "C", "O", "N", "C=O", "C-N", "C-H", "C=C", "C=N", "C-C"}
-
-        atoms_only = SpeciesConstraints(self.caffeine, [self.butane], conserve_ring_size=False, conserve_bonds=False)
-        assert set(atoms_only.constraint_map.keys()) == {"H", "C", "O", "N"}
+        caffeine_features = no_rings._get_all_constraints(self.caffeine)
+        caffeine_constraint_list = [feat.__repr__() for feat in caffeine_features]
+        assert set(caffeine_constraint_list) == {"C=O", "C-N", "C-H", "C=C", "C=N", "C-C"}
 
     def test_enumerating_constraints(self):
         """
         Test that a SpeciesConstraints object can properly enumerate the constraints of a given ErrorCancelingSpecies
         """
         spcs_consts = SpeciesConstraints(self.benzene, [])
-        assert set(spcs_consts.constraint_map.keys()) == {"C", "H", "C=C", "C-C", "C-H", "6_ring"}
+        benzene_features = spcs_consts._get_all_constraints(self.benzene)
+        benzene_constraint_list = [feat.__repr__() for feat in benzene_features]
+        assert set(benzene_constraint_list) == {"C=C", "C-C", "C-H", "6_ring"}
 
-        # Now that we have confirmed that the correct keys are present, overwrite the constraint map to set the order
-        spcs_consts.constraint_map = {
-            "H": 0,
-            "C": 1,
-            "C=C": 2,
-            "C-C": 3,
-            "C-H": 4,
-            "6_ring": 5,
-        }
+        target_constraints, _ = spcs_consts._enumerate_constraints([benzene_features])
+        benzene_constraints = target_constraints
 
         assert np.array_equal(
-            spcs_consts._enumerate_constraints(self.propene),
-            np.array([6, 3, 1, 1, 6, 0]),
-        )
-        assert np.array_equal(
-            spcs_consts._enumerate_constraints(self.butane),
-            np.array([10, 4, 0, 3, 10, 0]),
-        )
-        assert np.array_equal(
-            spcs_consts._enumerate_constraints(self.benzene),
-            np.array([6, 6, 3, 3, 6, 1]),
+            benzene_constraints,
+            np.array([1, 3, 6, 3]), # ['6_ring', 'C-C', 'C-H', 'C=C']
         )
 
-        # Caffeine and ethyne should return None since they have features not found in benzene
-        assert spcs_consts._enumerate_constraints(self.caffeine) is None
-        assert spcs_consts._enumerate_constraints(self.ethyne) is None
+        spcs_consts.all_reference_species = [self.propene]
+        propene_features = spcs_consts._get_all_constraints(self.propene)
+        _, reference_constraints = spcs_consts._enumerate_constraints([benzene_features, propene_features])
+        propene_constraints = reference_constraints[0]
+        assert np.array_equal(
+            propene_constraints,
+            np.array([0, 1, 6, 1]), # ['6_ring', 'C-C', 'C-H', 'C=C']
+        )
+
+        spcs_consts.all_reference_species = [self.butane]
+        butane_features = spcs_consts._get_all_constraints(self.butane)
+        _, reference_constraints = spcs_consts._enumerate_constraints([benzene_features, butane_features])
+        butane_constraints = reference_constraints[0]
+        assert np.array_equal(
+            butane_constraints,
+            np.array([0, 3, 10, 0]), # ['6_ring', 'C-C', 'C-H', 'C=C']
+        )
+
+        # Caffeine and ethyne should return empty list since they have features not found in benzene
+        spcs_consts.all_reference_species = [self.caffeine]
+        caffeine_features = spcs_consts._get_all_constraints(self.caffeine)
+        _, reference_constraints = spcs_consts._enumerate_constraints([benzene_features, caffeine_features])
+        assert len(reference_constraints) == 0
+
+        spcs_consts.all_reference_species = [self.ethyne]
+        ethyne_features = spcs_consts._get_all_constraints(self.ethyne)
+        _, reference_constraints = spcs_consts._enumerate_constraints([benzene_features, ethyne_features])
+        assert len(reference_constraints) == 0
 
     def test_calculating_constraints(self):
         """
         Test that a SpeciesConstraints object can properly return the target constraint vector and the constraint matrix
         """
         spcs_consts = SpeciesConstraints(self.caffeine, [self.propene, self.butane, self.benzene, self.ethyne])
-        assert set(spcs_consts.constraint_map.keys()) == {
-            "H",
-            "C",
-            "O",
-            "N",
+        caffeine_features = spcs_consts._get_all_constraints(self.caffeine)
+        propene_features = spcs_consts._get_all_constraints(self.propene)
+        butane_features = spcs_consts._get_all_constraints(self.butane)
+        benzene_features = spcs_consts._get_all_constraints(self.benzene)
+        ethyne_features = spcs_consts._get_all_constraints(self.ethyne)
+
+        caffeine_feature_list = [feat.__repr__() for feat in caffeine_features]
+        assert set(caffeine_feature_list) == {
             "C=O",
             "C-N",
             "C-H",
@@ -213,36 +225,20 @@ class TestSpeciesConstraints:
             "6_ring",
         }
 
-        # Now that we have confirmed that the correct keys are present, overwrite the constraint map to set the order
-        spcs_consts.constraint_map = {
-            "H": 0,
-            "C": 1,
-            "O": 2,
-            "N": 3,
-            "C=O": 4,
-            "C-N": 5,
-            "C-H": 6,
-            "C=C": 7,
-            "C=N": 8,
-            "C-C": 9,
-            "5_ring": 10,
-            "6_ring": 11,
-        }
-
         target_consts, consts_matrix = spcs_consts.calculate_constraints()
 
         # First, test that ethyne is not included in the reference set
         assert spcs_consts.reference_species == [self.propene, self.butane, self.benzene]
 
         # Then, test the output of the calculation
-        assert np.array_equal(target_consts, np.array([10, 8, 2, 4, 2, 10, 10, 1, 1, 1, 1, 1]))
+        assert np.array_equal(target_consts, np.array([ 1,  1,  1, 10, 10,  1,  1,  2,  0,  8, 10,  4,  2])) # ['5_ring', '6_ring', 'C-C', 'C-H', 'C-N', 'C=C', 'C=N', 'C=O']
         assert np.array_equal(
             consts_matrix,
             np.array(
                 [
-                    [6, 3, 0, 0, 0, 0, 6, 1, 0, 1, 0, 0],
-                    [10, 4, 0, 0, 0, 0, 10, 0, 0, 3, 0, 0],
-                    [6, 6, 0, 0, 0, 0, 6, 3, 0, 3, 0, 1],
+                    [ 0,  0,  1,  6,  0,  1,  0,  0,  0,  3,  6,  0,  0],  # ['5_ring', '6_ring', 'C-C', 'C-H', 'C-N', 'C=C', 'C=N', 'C=O']
+                    [ 0,  0,  3, 10,  0,  0,  0,  0,  0,  4, 10,  0,  0],  # ['5_ring', '6_ring', 'C-C', 'C-H', 'C-N', 'C=C', 'C=N', 'C=O']
+                    [ 0,  1,  3,  6,  0,  3,  0,  0,  0,  6,  6,  0,  0],  # ['5_ring', '6_ring', 'C-C', 'C-H', 'C-N', 'C=C', 'C=N', 'C=O']
                 ]
             ),
         )
@@ -255,12 +251,6 @@ class TestErrorCancelingScheme:
 
     @classmethod
     def setup_class(cls):
-        try:
-            import pyomo as pyo
-        except ImportError:
-            pyo = None
-        cls.pyo = pyo
-
         lot = LevelOfTheory("test")
         cls.propene = ErrorCancelingSpecies(Molecule(smiles="CC=C"), (100, "kJ/mol"), lot, (105, "kJ/mol"))
         cls.propane = ErrorCancelingSpecies(Molecule(smiles="CCC"), (75, "kJ/mol"), lot, (80, "kJ/mol"))
@@ -276,10 +266,12 @@ class TestErrorCancelingScheme:
 
     def test_creating_error_canceling_schemes(self):
         scheme = ErrorCancelingScheme(
-            self.propene,
-            [self.butane, self.benzene, self.caffeine, self.ethyne],
-            True,
-            True,
+            target=self.propene,
+            reference_set=[self.butane, self.benzene, self.caffeine, self.ethyne],
+            isodesmic_class="rc2",
+            conserve_ring_size=True,
+            limit_charges=True,
+            limit_scope=True,
         )
 
         assert scheme.reference_species == [self.butane]
@@ -288,26 +280,20 @@ class TestErrorCancelingScheme:
 
         assert isodesmic_scheme.reference_species == [self.butane, self.benzene]
 
-    # def test_find_error_canceling_reaction(self):
-    #     """
-    #     Test that the MILP problem can be solved to find a single isodesmic reaction
-    #     """
-    #     scheme = IsodesmicScheme(
-    #         self.propene,
-    #         [self.propane, self.butane, self.butene, self.caffeine, self.ethyne],
-    #     )
+    def test_find_error_canceling_reaction(self):
+        """
+        Test that the MILP problem can be solved to find a single isodesmic reaction
+        """
+        scheme = IsodesmicScheme(
+            self.propene,
+            [self.propane, self.butane, self.butene, self.caffeine, self.ethyne],
+        )
 
-    #     # Note that caffeine and ethyne will not be allowed, so for the full set the indices are [0, 1, 2]
-    #     rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software=["lpsolve"])
-    #     assert rxn.species[self.butane] == -1
-    #     assert rxn.species[self.propane] == 1
-    #     assert rxn.species[self.butene] == 1
-
-    #     if self.pyo is not None:
-    #         rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software=["pyomo"])
-    #         assert rxn.species[self.butane] == -1
-    #         assert rxn.species[self.propane] == 1
-    #         assert rxn.species[self.butene] == 1
+        # Note that caffeine and ethyne will not be allowed, so for the full set the indices are [0, 1, 2]
+        rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2])
+        assert rxn.species[self.butane] == -1
+        assert rxn.species[self.propane] == 1
+        assert rxn.species[self.butene] == 1
 
     def test_multiple_error_canceling_reactions(self):
         """
@@ -328,19 +314,12 @@ class TestErrorCancelingScheme:
         )
 
         reaction_list = scheme.multiple_error_canceling_reaction_search(n_reactions_max=20)
-        assert len(reaction_list) == 20
+        assert len(reaction_list) == 6
         reaction_string = reaction_list.__repr__()
         # Consider both permutations of the products in the reaction string
         rxn_str1 = "<ErrorCancelingReaction 1*C=CC + 1*CCCC <=> 1*CCC + 1*C=CCC >"
         rxn_str2 = "<ErrorCancelingReaction 1*C=CC + 1*CCCC <=> 1*C=CCC + 1*CCC >"
         assert any(rxn_string in reaction_string for rxn_string in [rxn_str1, rxn_str2])
-
-        if self.pyo is not None:
-            # pyomo is slower, so don't test as many
-            reaction_list = scheme.multiple_error_canceling_reaction_search(n_reactions_max=5, milp_software=["pyomo"])
-            assert len(reaction_list) == 5
-            reaction_string = reaction_list.__repr__()
-            assert any(rxn_string in reaction_string for rxn_string in [rxn_str1, rxn_str2])
 
     def test_calculate_target_enthalpy(self):
         """
@@ -360,10 +339,6 @@ class TestErrorCancelingScheme:
             ],
         )
 
-        target_thermo, rxn_list = scheme.calculate_target_enthalpy(n_reactions_max=3, milp_software=["lpsolve"])
-        assert target_thermo.value_si == 115000.0
+        target_thermo, rxn_list = scheme.calculate_target_enthalpy(n_reactions_max=3)
+        assert target_thermo.value_si == 110000.0
         assert isinstance(rxn_list[0], ErrorCancelingReaction)
-
-        if self.pyo is not None:
-            target_thermo, _ = scheme.calculate_target_enthalpy(n_reactions_max=3, milp_software=["pyomo"])
-            assert target_thermo.value_si == 115000.0

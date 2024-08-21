@@ -48,7 +48,6 @@ def check_dependencies():
     print('{0:<15}{1:<15}{2}'.format('Package', 'Version', 'Location'))
 
     missing = {
-        'lpsolve': _check_lpsolve(),
         'openbabel': _check_openbabel(),
         'pydqed': _check_pydqed(),
         'pyrdl': _check_pyrdl(),
@@ -78,23 +77,6 @@ RDKit should be installed from the RDKit channel instead:
         print("""
 Everything was found :)
 """)
-
-
-def _check_lpsolve():
-    """Check for lpsolve"""
-    missing = False
-
-    try:
-        import lpsolve55
-    except ImportError:
-        print('{0:<30}{1}'.format('lpsolve55',
-                                  'Not found. Necessary for generating Clar structures for aromatic species.'))
-        missing = True
-    else:
-        location = lpsolve55.__file__
-        print('{0:<30}{1}'.format('lpsolve55', location))
-
-    return missing
 
 
 def _check_openbabel():
