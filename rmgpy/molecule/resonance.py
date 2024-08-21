@@ -1021,7 +1021,7 @@ def _clar_optimization(mol, save_order=False):
     # Dimensions
     n_ring = len(aromatic_rings)
     n_atom = len(atoms)
-    n_bond = len(bonds)
+    n_bond = n_ring + len(bonds)
 
     # The aromaticity assignment problem is formulated as an MILP problem
     # minimize:
