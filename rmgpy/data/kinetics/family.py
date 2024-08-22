@@ -1529,7 +1529,7 @@ class KineticsFamily(Database):
                 struct.reset_ring_membership()
                 if label in ['1,2_insertion_co', 'r_addition_com', 'co_disproportionation',
                              'intra_no2_ono_conversion', 'lone_electron_pair_bond',
-                             '1,2_nh3_elimination', '1,3_nh3_elimination', 'co2_elimination_from_lactone_ether']:
+                             '1,2_nh3_elimination', '1,3_nh3_elimination', 'co2_elimination_from_lactone_ether']: #, 'enol_ether_formation']:
                     struct.update_charge()
             else:
                 raise TypeError('Expecting Molecule or Group object, not {0}'.format(struct.__class__.__name__))
@@ -1639,8 +1639,9 @@ class KineticsFamily(Database):
             product_structures = self.apply_recipe(reactant_structures, forward=forward, relabel_atoms=relabel_atoms)
             if not product_structures:
                 return None
-        except (InvalidActionError, KekulizationError, AtomTypeError):
+        except (InvalidActionError, KekulizationError, AtomTypeError) as e:
             # If unable to apply the reaction recipe, then return no product structures
+            print(e)
             return None
         except ActionError:
             logging.error('Could not generate product structures for reaction family {0} in {1} '
