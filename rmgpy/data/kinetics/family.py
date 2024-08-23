@@ -1836,7 +1836,7 @@ class KineticsFamily(Database):
                 specified reactants and products within this family.
             Degenerate reactions are returned as separate reactions.
         """
-
+        check_spin = True
         rxn_list = []
 
         # Wrap each reactant in a list if not already done (this is done to 
@@ -1892,7 +1892,9 @@ class KineticsFamily(Database):
                             pass
                         else:
                             if product_structures is not None:
-                                rxn = self._create_reaction(reactant_structures, product_structures, forward)
+                                if self.label in allowed_spin_violation_families:
+                                    check_spin = False
+                                rxn = self._create_reaction(reactant_structures, product_structures, forward, check_spin = check_spin)
                                 if rxn:
                                     rxn_list.append(rxn)
         # Bimolecular reactants: A + B --> products
@@ -1935,7 +1937,9 @@ class KineticsFamily(Database):
                                     pass
                                 else:
                                     if product_structures is not None:
-                                        rxn = self._create_reaction(reactant_structures, product_structures, forward)
+                                        if self.label in allowed_spin_violation_families:
+                                            check_spin = False
+                                        rxn = self._create_reaction(reactant_structures, product_structures, forward, check_spin = check_spin)
                                         if rxn:
                                             rxn_list.append(rxn)
 
@@ -1959,8 +1963,9 @@ class KineticsFamily(Database):
                                         pass
                                     else:
                                         if product_structures is not None:
-                                            rxn = self._create_reaction(reactant_structures, product_structures,
-                                                                        forward)
+                                            if self.label in allowed_spin_violation_families:
+                                               check_spin = False
+                                            rxn = self._create_reaction(reactant_structures, product_structures, forward, check_spin = check_spin)
                                             if rxn:
                                                 rxn_list.append(rxn)
 
@@ -2013,7 +2018,9 @@ class KineticsFamily(Database):
                             pass
                         else:
                             if product_structures is not None:
-                                rxn = self._create_reaction(reactant_structures, product_structures, forward)
+                                if self.label in allowed_spin_violation_families:
+                                    check_spin = False
+                                rxn = self._create_reaction(reactant_structures, product_structures, forward, check_spin = check_spin)
                                 if rxn:
                                     rxn_list.append(rxn)
             else:
@@ -2078,7 +2085,9 @@ class KineticsFamily(Database):
                             pass
                         else:
                             if product_structures is not None:
-                                rxn = self._create_reaction(reactant_structures, product_structures, forward)
+                                if self.label in allowed_spin_violation_families:
+                                    check_spin = False
+                                rxn = self._create_reaction(reactant_structures, product_structures, forward, check_spin = check_spin)
                                 if rxn:
                                     rxn_list.append(rxn)
 
@@ -4524,3 +4533,5 @@ def average_kinetics(kinetics_list):
             Ea=(Ea * 0.001, "kJ/mol"),
         )
     return averaged_kinetics
+
+allowed_spin_violation_families =['1,2-Birad_to_alkene','1,4_Cyclic_birad_scission','1,4_Linear_birad_scission']
