@@ -1030,15 +1030,15 @@ class Reaction:
             return self.reverse_arrhenius_rate(kf, kunits)
 
         elif isinstance(kf, Chebyshev):
-            Tlist = 1.0 / np.linspace(1.0 / kf.Tmax.value, 1.0 / kf.Tmin.value, 50)
-            Plist = np.linspace(kf.Pmin.value, kf.Pmax.value, 20)
+            Tlist = 1.0 / np.linspace(1.0 / kf.Tmax.value_si, 1.0 / kf.Tmin.value_si, 50)
+            Plist = np.linspace(kf.Pmin.value_si, kf.Pmax.value_si, 20)
             K = np.zeros((len(Tlist), len(Plist)), float)
             for Tindex, T in enumerate(Tlist):
                 for Pindex, P in enumerate(Plist):
                     K[Tindex, Pindex] = kf.get_rate_coefficient(T, P) / self.get_equilibrium_constant(T)
             kr = Chebyshev()
-            kr.fit_to_data(Tlist, Plist, K, kunits, kf.degreeT, kf.degreeP, kf.Tmin.value, kf.Tmax.value, kf.Pmin.value,
-                         kf.Pmax.value)
+            kr.fit_to_data(Tlist, Plist, K, kunits, kf.degreeT, kf.degreeP, kf.Tmin.value, kf.Tmax.value,
+                           kf.Pmin.value_si, kf.Pmax.value_si)
             return kr
 
         elif isinstance(kf, PDepArrhenius):
