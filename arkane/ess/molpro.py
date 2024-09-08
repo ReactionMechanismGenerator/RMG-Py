@@ -371,6 +371,9 @@ class MolproLog(ESSAdapter):
                     if 'CCSD' in line and 'energy=' in line:
                         e_elect = float(line.split()[-1])
                         break
+                    if 'RS2C' in line and 'energy' in line:
+                        e_elect = float(line.split()[-1])
+                        break
             if e_elect is None and mrci:
                 # No Davidson correction is given, search for MRCI energy
                 read_e_elect = False
