@@ -20,7 +20,6 @@
 # - August 4, 2024 Restricted pyrms to <2
 name: rmg_env
 channels:
-  - defaults
   - rmg
   - conda-forge
   - cantera
