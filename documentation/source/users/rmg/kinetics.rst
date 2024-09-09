@@ -6,6 +6,8 @@ Kinetics Estimation
 This section gives in-depth descriptions of algorithms used for determining 
 kinetic parameters. For general usage of the kinetic database see :ref:`kineticsDatabase`. 
 
+
+
 Priority of Kinetic Databases
 -----------------------------
 When multiple sources are available for kinetic parameters, the following priority
@@ -49,27 +51,27 @@ parameters
 
 The rank of 0 is assigned to kinetics that are generally default values for top level nodes 
 that we have little faith in.  It is never used in generation and its value will in fact be overriden
-by averages of its child nodes, which generates an averaged rate rule with rank 11.  
+by averages of its child nodes, which generates an averaged rate rule with rank 10. 
 
 Only non-zero rules are used in generation.  A rank of 1 is assigned to the most trustworthy kinetics, while a rank of 10 is considered very poor.
 Thus, a rate rule of rank 3 will be given priority over a rate rule of rank 5.  
 
-Short Glossary:  
+**Short Glossary:**
 
-FCI (Full Configuration Interaction):  Exact solution to Schrodinger equation within the chosen basis
+**FCI (Full Configuration Interaction):**  Exact solution to Schrodinger equation within the chosen basis
 set and Born-Oppenheimer approximation; possible for about 12 electrons with reasonably sized basis set
 (cost grows factorially with number of electrons).  
 
-Wn (Weizmann-n):  Composite methods often with sub-kJ/mol accuracies; W1 is possible for about 9 heavy 
+**Wn (Weizmann-n):**  Composite methods often with sub-kJ/mol accuracies; W1 is possible for about 9 heavy 
 atoms; W1 aims to reproduce CCSD(T)/CBS; W4 aims to reproduce CCSDTQ5/CBS.  
 
-HEAT (High Accuracy Extrapolated ab inito thermochemistry):  Sub-kJ/mol accuracies; essentially
+**HEAT (High Accuracy Extrapolated ab inito thermochemistry):**  Sub-kJ/mol accuracies; essentially
 CCSDTQ with various corrections; similar in cost to Wn.  
 
-CBS (Complete Basis Set):  Typically obtained by extrapolating to the complete basis set limit,
+**CBS (Complete Basis Set):**  Typically obtained by extrapolating to the complete basis set limit,
 i.e., successive cc-pVDZ, cc-pVTZ, cc-pVQZ, etc. calculations with some extrapolation formula.  
 
-CCSD(T)-F12:  Coupled cluster with explicit electron correlation; chemical accuracy (1 kcal/mol)
+**CCSD(T)-F12:**  Coupled cluster with explicit electron correlation; chemical accuracy (1 kcal/mol)
 possible with double-zeta basis sets.  
 
 Kinetic Families
@@ -113,3 +115,19 @@ up to more and more general nodes. In the worst case, the root nodes may be used
 
 A :ref:`Full List of the Kinetics Families <kinetics_families_db>` in RMG is available.
 
+Reverse Rates
+-------------
+Rates in the reverse direction are calculated from the forward rate (as defined by the family) 
+and the equilibrium constant (as calculated from thermodynamic parameters).
+
+Reaction Comments
+-----------------
+Reaction comments are saved by RMG to the chem_annotated.inp Chemkin input file. 
+These comments contain information about the source of the reaction rate and are read by RMG when 
+loading the Chemkin file. These comments are compiled from many different locations in the code.
+
+Comments attached to the kinetics attribute of the entry used are included first. 
+These can occur if there is a comment hard-coded in the kinetics database, or if the rate rule was 
+derived from a training reaction, in which case ``From Training reaction # for rate rule ##`` 
+is automatically added. Then, comments describing the match are added based on the details of 
+how the kinetics were estiamted. Finally, additional metadata about the reaction type are included.
