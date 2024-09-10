@@ -65,6 +65,8 @@ class OrcaTest:
         Uses Orca log files to test that
         number of atoms can be properly read.
         """
+        log = OrcaLog(os.path.join(self.data_path, "N_MRCI.log"))
+        assert log.get_number_of_atoms() == 1
         log = OrcaLog(os.path.join(self.data_path, "Orca_opt_freq_test.log"))
         assert log.get_number_of_atoms() == 3
         log = OrcaLog(os.path.join(self.data_path, "Orca_dlpno_test.log"))
@@ -143,6 +145,13 @@ class OrcaTest:
         assert len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1
         assert len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1
         assert len(unscaled_frequencies) == 3
+
+        log = OrcaLog(os.path.join(self.data_path, "N_MRCI.log"))
+        conformer, unscaled_frequencies = log.load_conformer()
+        assert len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1
+        assert len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 0
+        assert len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 0
+        assert len(unscaled_frequencies) == 0
 
     def test_spin_multiplicity_from_orca_log(self):
         """
